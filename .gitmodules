@@ -1,0 +1,3 @@
+[submodule "BreezySTM32"]
+	path = breezystm32
+	url = https://github.com/simondlevy/BreezySTM32.git
