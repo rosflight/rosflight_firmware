@@ -1,7 +1,7 @@
 #include <breezystm32.h>
 
-#include "param.h"
 #include "mavlink.h"
+#include "param.h"
 #include "sensors.h"
 
 void setup(void)

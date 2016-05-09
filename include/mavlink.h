@@ -1,5 +1,5 @@
 #pragma once
-#include "mavlink.h"
+
 #include <stdint.h>
 
 // function declarations

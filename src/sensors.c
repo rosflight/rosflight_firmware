@@ -1,9 +1,11 @@
-#include "sensors.h"
-#include "param.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #include <drv_mpu6050.h>
 
-#include <stdbool.h>
+#include "param.h"
+
+#include "sensors.h"
 
 // global variable definitions
 imuData_t _imu_data;

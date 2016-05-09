@@ -1,6 +1,8 @@
-#include "mavlink.h"
 #include <mavlink/v1.0/common/mavlink.h>
+
 #include "param.h"
+
+#include "mavlink.h"
 
 // local definitions
 #define MAVLINK_HIGHRES_IMU_FIELDS 0xFC00
