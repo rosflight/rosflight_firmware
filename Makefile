@@ -7,13 +7,13 @@
 ###############################################################################
 
 # Change this to wherever you put BreezySTM32
-BREEZY_DIR = breezystm32/
+BREEZY_DIR = lib/breezystm32
 
 # Fill this out with source files for your specific project
-PROJECT_SRC = sensors.c \
-              main.c \
-              param.c \
-              mavlink.c
+PROJECT_SRC = src/main.c \
+              src/mavlink.c \
+              src/param.c \
+              src/sensors.c
 
 ###############################################################################
 
@@ -35,11 +35,10 @@ ROOT		 = $(dir $(lastword $(MAKEFILE_LIST)))
 SRC_DIR		 = $(ROOT)
 CMSIS_DIR	 = $(BREEZY_DIR)/lib/CMSIS
 STDPERIPH_DIR	 = $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
-OBJECT_DIR	 = $(ROOT)/obj
-BIN_DIR		 = $(ROOT)/obj
+OBJECT_DIR	 = $(ROOT)/build
+BIN_DIR		 = $(ROOT)/build
 
 rosflight2_SRC = $(BREEZY_DIR)/main.c \
-		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
 		   $(BREEZY_DIR)/drv_gpio.c \
 		   $(BREEZY_DIR)/drv_i2c.c \
 		   $(BREEZY_DIR)/drv_adc.c \
@@ -52,6 +51,7 @@ rosflight2_SRC = $(BREEZY_DIR)/main.c \
 		   $(BREEZY_DIR)/drv_mpu6050.c \
 		   $(BREEZY_DIR)/drv_mb1242.c \
 		   $(BREEZY_DIR)/printf.c \
+		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
 		   $(PROJECT_SRC) \
 		   $(CMSIS_SRC) \
 		   $(STDPERIPH_SRC)
@@ -78,7 +78,7 @@ OBJCOPY	 = arm-none-eabi-objcopy
 #
 # Tool options.
 #
-INCLUDE_DIRS	 = $(SRC_DIR) \
+INCLUDE_DIRS	 = include \
 		   $(BREEZY_DIR) \
 		   $(STDPERIPH_DIR)/inc \
 		   $(CMSIS_DIR)/CM3/CoreSupport \
@@ -158,7 +158,7 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.S
 	@$(CC) -c -o $@ $(ASFLAGS) $<
 
 clean:
-	rm -rf $(TARGET_HEX) $(TARGET_ELF) $(TARGET_OBJS) $(TARGET_MAP) obj
+	rm -rf $(TARGET_HEX) $(TARGET_ELF) $(TARGET_OBJS) $(TARGET_MAP) $(BIN_DIR) $(OBJECT_DIR)
 
 flash_$(TARGET): $(TARGET_HEX)
 	stty -F $(SERIAL_DEVICE) raw speed 115200 -crtscts cs8 -parenb -cstopb -ixon
