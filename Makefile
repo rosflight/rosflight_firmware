@@ -6,10 +6,11 @@
 
 ###############################################################################
 
-# Change this to wherever you put BreezySTM32
+# external libraries
 BREEZY_DIR = lib/breezystm32
+MAVLINK_INCLUDE_DIR = lib/mavlink/include
 
-# Fill this out with source files for your specific project
+# project source files
 PROJECT_SRC = src/main.c \
               src/mavlink.c \
               src/param.c \
@@ -80,6 +81,7 @@ OBJCOPY	 = arm-none-eabi-objcopy
 #
 INCLUDE_DIRS	 = include \
 		   $(BREEZY_DIR) \
+		   $(MAVLINK_INCLUDE_DIR) \
 		   $(STDPERIPH_DIR)/inc \
 		   $(CMSIS_DIR)/CM3/CoreSupport \
 		   $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x \

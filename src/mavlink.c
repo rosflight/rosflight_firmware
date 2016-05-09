@@ -1,5 +1,5 @@
 #include "mavlink.h"
-#include "mavlink/v1.0/common/mavlink.h"
+#include <mavlink/v1.0/common/mavlink.h>
 #include "param.h"
 
 // local definitions
