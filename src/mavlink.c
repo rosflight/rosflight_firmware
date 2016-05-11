@@ -1,19 +1,18 @@
-#include "param.h"
 #include "mavlink_bridge.h"
+#include "param.h"
 
 #include "mavlink.h"
 
 // local definitions
 #define MAVLINK_HIGHRES_IMU_FIELDS 0xFC00
 
-// local function definitions
-static void send_message(const mavlink_message_t msg, uint16_t len)
+// function definitions
+void init_mavlink(void)
 {
-  (void)msg;
-  (void)len;
+  mavlink_system.sysid = _params.mavlink.system_id;
+  mavlink_system.compid = _params.mavlink.component_id;
 }
 
-// function definitions
 void send_heartbeat(void)
 {
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_GENERIC, MAV_MODE_MANUAL_DISARMED, 0, MAV_STATE_STANDBY);

@@ -11,6 +11,7 @@ void setup(void)
 {
   i2cInit(I2CDEV_2);
   init_params();
+  init_mavlink();
 
   last_heartbeat_us = 0;
   heartbeat_period_us = 1e6;
