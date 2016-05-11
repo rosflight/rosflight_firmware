@@ -1,6 +1,5 @@
-#include <mavlink/v1.0/common/mavlink.h>
-
 #include "param.h"
+#include "mavlink_bridge.h"
 
 #include "mavlink.h"
 
@@ -15,6 +14,11 @@ static void send_message(const mavlink_message_t msg, uint16_t len)
 }
 
 // function definitions
+void send_heartbeat(void)
+{
+  mavlink_msg_heartbeat_send(MAVLINK_COMM_0, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_GENERIC, MAV_MODE_MANUAL_DISARMED, 0, MAV_STATE_STANDBY);
+}
+
 void send_imu(uint64_t time_usec, float ax, float ay, float az, float gx, float gy, float gz)
 {
   mavlink_message_t msg;
