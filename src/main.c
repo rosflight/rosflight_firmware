@@ -23,6 +23,7 @@ void loop(void)
   update_sensors(micros());
   if (loop_time_us - last_heartbeat_us >= heartbeat_period_us)
   {
+    last_heartbeat_us = loop_time_us;
     send_heartbeat();
   }
 }
