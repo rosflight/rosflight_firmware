@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <drv_mpu6050.h>
+#include <breezystm32/drv_mpu6050.h>
 
 #include "param.h"
 
