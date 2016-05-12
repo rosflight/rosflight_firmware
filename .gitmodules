@@ -3,4 +3,4 @@
 	url = https://github.com/simondlevy/BreezySTM32.git
 [submodule "lib/mavlink/v1.0"]
 	path = lib/mavlink/v1.0
-	url = https://github.com/mavlink/c_library.git
+	url = https://github.com/BYU-MAGICC/mavlink_c_library.git
