@@ -43,8 +43,10 @@ void loop(void)
     // Run Estimator - uses global sensor information
     // state = runEstimator(sensors, dt, state); <--- state has to be persistent
 
-    /// IF ARMED:
-      // IF ALT_MODE:
+    /// Need to mix between RC and computer based on override mode and RC & computer control modes
+    /// (happens at multiple levels between control loops)
+    /// IF ARMED: <--armedState
+      // IF ALT_MODE: <-- controlMode
         // Run Alt_Controller
         // thrust_c = runAltController(alt_c, state);
         // ATTITUDE_MODE = True
@@ -62,28 +64,26 @@ void loop(void)
   /// ELSE:
     // write_motors_disarmed(); <-- For spin when armed
 
+    // send serial sensor data
+    // sendSensorData(time); <-- internal timers figure out what to send
+
+    // send low priority messages (e.g. param values)
+    // mavlink_send_low_priority();
 
   /// Post-Process
-    // update RC data
-    // RC = updateRC();
+    // receive mavlink messages
+    // mavlink_receive();
+
     // commands from the computer will be updated by callbacks
+    // update controlModeComp
 
+    // (for next steps get most recent RC value from drv_pwm as needed)
     // if it has been at least 50 Hz
-    // update RC params <-- params that can be set by the safety pilot
-      // This will write ARMED, ALT_MODE, ATTITUDE_MODE, RATE_MODE
-      // updateRCParams();
-    // update computer params
-    // updateParams();
-
-    // send serial senor data
-    // sendSensorData();
-
-    // Figure Out Commands for next loop
-    // IF ARMED
-      // IF ALT_MODE:
-        // alt_c = getCommands();  <-- pulls from the global, and chooses the appropriate command
-      // IF ATTITUDE_MODE:
-        // theta_c = getCommands();
-      // IF RATE_MODE:
-        // omega_c = getCommands();
-}
+    // update overrideMode (read switch if present)
+        // OFFBOARD               (can override RPY by moving RC out of deadzone)
+        // OFFBOARD_MIN_THROTTLE  (same as above, but takes min throttle)
+        // MANUAL_RC              (listens only to RC)
+        // RC switch moves between MANUAL_RC and OFFBOARD_xx
+        // which offboard mode you go to is set by a param
+    // update controlModeRC (read switch if present)
+    // update armedState (read switch)
