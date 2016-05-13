@@ -38,4 +38,6 @@ void loop(void)
     last_heartbeat_us = loop_time_us;
     send_heartbeat();
   }
+
+  mavlink_receive();
 }
