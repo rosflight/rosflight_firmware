@@ -44,7 +44,7 @@ void init_sensors(void)
 
 void update_sensors(uint32_t time_us)
 {
-  if (time_us - imu_last_us >= _params.sensors.imu_period_us)
+  if (time_us - imu_last_us >= 5000)
   {
     update_imu();
     imu_last_us = time_us;

@@ -16,9 +16,7 @@ void setup(void)
   init_mavlink();
 
   last_heartbeat_us = 0;
-  heartbeat_period_us = 1e6;
   last_imu_us = 0;
-  imu_period_us = 10000;
 }
 
 void loop(void)
@@ -27,17 +25,18 @@ void loop(void)
 
   update_sensors(loop_time_us);
 
-  if (loop_time_us - last_imu_us >= imu_period_us)
+  if (loop_time_us - last_imu_us >= _params.values[PARAM_STREAM_IMU_RATE])
   {
     last_imu_us = loop_time_us;
     send_imu(1,2,3,4,5,6);
   }
 
-  if (loop_time_us - last_heartbeat_us >= heartbeat_period_us)
+  if (loop_time_us - last_heartbeat_us >= _params.values[PARAM_STREAM_HEARTBEAT_RATE])
   {
     last_heartbeat_us = loop_time_us;
     send_heartbeat();
   }
 
   mavlink_receive();
+  mavlink_send_low_priority();
 }
