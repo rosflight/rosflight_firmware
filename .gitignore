@@ -3,3 +3,8 @@
 *.bak
 
 /build/
+*.config
+*.creator
+*.user
+*.files
+*.includes
