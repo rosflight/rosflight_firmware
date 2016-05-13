@@ -12,7 +12,7 @@
 mavlink_system_t mavlink_system;
 
 #define MAVLINK_USE_CONVENIENCE_FUNCTIONS
-#include <mavlink/v1.0/common/mavlink.h>
+#include <mavlink/v1.0/rosflight/mavlink.h>
 
 inline void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 {
