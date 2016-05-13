@@ -29,8 +29,8 @@ void loop(void)
 
   if (loop_time_us - last_imu_us >= imu_period_us)
   {
-      last_imu_us = loop_time_us;
-      send_imu(1,2,3,4,5,6);
+    last_imu_us = loop_time_us;
+    send_imu(1,2,3,4,5,6);
   }
 
   if (loop_time_us - last_heartbeat_us >= heartbeat_period_us)
