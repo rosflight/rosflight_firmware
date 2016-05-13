@@ -12,7 +12,7 @@ BREEZY_DIR = lib/breezystm32
 # project source files
 PROJECT_SRC = src/main.c \
               src/mavlink.c \
-							src/mavlink_bridge.c \
+              src/mavlink_bridge.c \
               src/param.c \
               src/sensors.c
 
