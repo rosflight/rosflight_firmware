@@ -2,6 +2,11 @@
 
 #include <stdint.h>
 
+#include <mavlink/v1.0/mavlink_types.h>
+
+// global variables
+extern mavlink_message_t _msgbuf; // this is the buffer for both sending and receiving
+
 // function declarations
 void init_mavlink(void);
 void send_heartbeat(void);
