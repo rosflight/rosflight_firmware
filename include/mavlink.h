@@ -1,6 +1,12 @@
 #pragma once
 
-#include <stdint.h>
+#include <mavlink/v1.0/mavlink_types.h>
+
+#define MAVLINK_USE_CONVENIENCE_FUNCTIONS
+extern mavlink_system_t mavlink_system;
+void comm_send_ch(mavlink_channel_t chan, uint8_t ch);
+
+#include <mavlink/v1.0/rosflight/mavlink.h>
 
 // function declarations
-void send_imu(uint64_t time_usec, float ax, float ay, float az, float gx, float gy, float gz);
+void init_mavlink(void);
