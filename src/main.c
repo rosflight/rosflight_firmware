@@ -1,6 +1,9 @@
 #include <breezystm32/breezystm32.h>
 
 #include "mavlink.h"
+#include "mavlink_param.h"
+#include "mavlink_receive.h"
+#include "mavlink_stream.h"
 #include "param.h"
 #include "sensors.h"
 
