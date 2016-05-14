@@ -26,15 +26,8 @@ static void handle_param_set_msg(void)
     if (set.param_type == MAV_PARAM_TYPE_INT32) // TODO support other param types? (uint32 at least?)
     {
       uint8_t id = lookup_param_id(set.param_id);
-      if (id < PARAMS_COUNT)
-      {
-        int32_t value = *(int32_t *) &set.param_value;
-        if (value != _params.values[id])
-        {
-          _params.values[id] = value;
-          mavlink_msg_param_value_send_buf(&out_buf, MAVLINK_COMM_0, _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
-        }
-      }
+      if (set_param_by_id(id, *(int32_t *) &set.param_value))
+        mavlink_msg_param_value_send_buf(&out_buf, MAVLINK_COMM_0, _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
     }
   }
 }

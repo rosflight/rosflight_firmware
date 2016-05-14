@@ -1,13 +1,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "mavlink.h"
+
 #include "param.h"
 
 // global variable definitions
 params_t _params;
 
 // local function definitions
-void init_param(uint8_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
+static void init_param(uint8_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   _params.values[id] = value;
   strcpy(_params.names[id], name);
@@ -19,6 +21,28 @@ void init_params(void)
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1000000);
   init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 10000);
+
+  for (uint8_t id = 0; id < PARAMS_COUNT; id++)
+    param_change_callback(id);
+}
+
+void param_change_callback(uint8_t id)
+{
+  switch (id)
+  {
+  case PARAM_SYSTEM_ID:
+    mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
+    break;
+  case PARAM_STREAM_HEARTBEAT_RATE:
+    // heartbeat_period_us = 1e6 / _param.values[PARAM_STREAM_HEARTBEAT_RATE];
+    break;
+  case PARAM_STREAM_IMU_RATE:
+    // imu_period_us = 1e6 / _param.values[PARAM_STREAM_IMU_RATE];
+    break;
+  default:
+    // no action needed for this parameter
+    break;
+  }
 }
 
 uint8_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
@@ -45,27 +69,4 @@ uint8_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
   }
 
   return PARAMS_COUNT;
-}
-
-bool set_param_by_id(uint8_t id, int32_t value)
-{
-  if (id < PARAMS_COUNT)
-  {
-    _params.values[id] = value;
-    return true;
-  }
-
-  return false;
-}
-
-bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
-{
-  uint8_t id = lookup_param_id(name);
-  if (id < PARAMS_COUNT)
-  {
-    _params.values[id] = value;
-    return true;
-  }
-
-  return false;
 }
