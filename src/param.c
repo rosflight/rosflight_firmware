@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "mavlink.h"
+#include "mavlink_stream.h"
 
 #include "param.h"
 
@@ -20,8 +21,8 @@ static void init_param(uint8_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 void init_params(void)
 {
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
-  init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1000000);
-  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 10000);
+  init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
+  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
 
   for (uint8_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback(id);
@@ -35,10 +36,10 @@ void param_change_callback(uint8_t id)
     mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
-    // heartbeat_period_us = 1e6 / _param.values[PARAM_STREAM_HEARTBEAT_RATE];
+    mavlink_stream_set_heartbeat_period_us(1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
   case PARAM_STREAM_IMU_RATE:
-    // imu_period_us = 1e6 / _param.values[PARAM_STREAM_IMU_RATE];
+    mavlink_stream_set_imu_period_us(1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
     break;
   default:
     // no action needed for this parameter
