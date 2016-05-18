@@ -8,11 +8,13 @@
 
 # external libraries
 BREEZY_DIR = lib/breezystm32
-MAVLINK_INCLUDE_DIR = lib/mavlink/include
 
 # project source files
 PROJECT_SRC = src/main.c \
               src/mavlink.c \
+              src/mavlink_param.c \
+              src/mavlink_receive.c \
+              src/mavlink_stream.c \
               src/param.c \
               src/sensors.c
 
@@ -80,8 +82,8 @@ OBJCOPY	 = arm-none-eabi-objcopy
 # Tool options.
 #
 INCLUDE_DIRS	 = include \
+		   lib \
 		   $(BREEZY_DIR) \
-		   $(MAVLINK_INCLUDE_DIR) \
 		   $(STDPERIPH_DIR)/inc \
 		   $(CMSIS_DIR)/CM3/CoreSupport \
 		   $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x \
