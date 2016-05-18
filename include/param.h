@@ -5,7 +5,7 @@
 
 #include "mavlink.h"
 
-#define PARAMS_COUNT 3
+#define PARAMS_COUNT 60
 #define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
 
 /*********************************/
@@ -15,7 +15,11 @@
 #define PARAM_SYSTEM_ID 0
 #define PARAM_STREAM_HEARTBEAT_RATE 1
 #define PARAM_STREAM_IMU_RATE 2
-#define PARAM_LOOPTIME 3
+#define PARAM_STREAM_MAG_RATE 3
+#define PARAM_STREAM_AIRSPEED_RATE 4
+#define PARAM_STREAM_GPS_RATE 5
+#define PARAM_STREAM_SONAR_RATE 6
+#define PARAM_LOOPTIME 7
 
 /***********************/
 /*** 11-30 PID GAINS ***/
@@ -46,7 +50,7 @@
 #define PARAM_PID_ALT_D 28
 
 /*******************************/
-/*** 31-41 PWM CONFIGURATION ***/
+/*** 31-40 PWM CONFIGURATION ***/
 /*******************************/
 
 #define PARAM_MOTOR_PWM_SEND_RATE 31
@@ -56,35 +60,15 @@
 #define PARAM_RC_YAW_CHANNEL 34
 #define PARAM_RC_THROTTLE_CHANNEL 35
 #define PARAM_RC_TYPE 36 // 0 is PWM, 1 is PPM
+#define PARAM_IDLE_PWM 37
 
 /*************************************/
-/*** 41-51 ESTIMATOR CONFIGURATION ***/
+/*** 41-50 ESTIMATOR CONFIGURATION ***/
 /*************************************/
 
 #define PARAM_ESTIMATOR_LPF_ALPHA 41
 #define PARAM_GYRO_LPF_ALPHA 42
 #define PARAM_ACC_LPF_ALPHA 43
-
-/***********************************/
-/*** 51-61 DISARMED STATE CONFIG ***/
-/***********************************/
-
-#define 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // type definitions
 typedef struct
