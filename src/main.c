@@ -6,6 +6,8 @@
 #include "mavlink_stream.h"
 #include "param.h"
 #include "sensors.h"
+#include "state.h"
+#include "estimator.h"
 
 void setup(void)
 {
@@ -30,6 +32,7 @@ void setup(void)
 
   // Initialize Motor Mixing
   // Initialize Estimator
+  state_t _current_state = init_estimator();
   // Initialize Controller
   // Initialize State Machine
 }

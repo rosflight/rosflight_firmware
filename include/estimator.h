@@ -1,8 +1,6 @@
-<stdint.h>
-<stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-struct attitude_t{
-  int16_t roll;
-  int16_t pitch;
-  int16_t yaw;
-} estAttitude;
+state_t init_estimator();
+state_t run_estimator(int16_t dt);
+
