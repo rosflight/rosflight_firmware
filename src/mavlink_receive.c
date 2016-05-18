@@ -18,10 +18,10 @@ static void handle_mavlink_message(void)
   case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-    start_send_param_list();
+    mavlink_handle_msg_param_request_list();
     break;
   case MAVLINK_MSG_ID_PARAM_SET:
-    handle_param_set_msg(&in_buf);
+    mavlink_handle_msg_param_set(&in_buf);
     break;
   default:
     break;

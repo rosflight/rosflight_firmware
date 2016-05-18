@@ -14,7 +14,7 @@ mavlink_system_t mavlink_system;
 void init_mavlink(void)
 {
   mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
-  mavlink_system.compid = 50;
+  mavlink_system.compid = 250;
 }
 
 // implement for mavlink convenience functions

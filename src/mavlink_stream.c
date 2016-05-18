@@ -10,6 +10,12 @@ static uint32_t last_heartbeat_us = 0;
 static uint32_t imu_period_us;
 static uint32_t last_imu_us = 0;
 
+// local function definitions
+static void mavlink_send_low_priority(void)
+{
+  mavlink_send_next_param();
+}
+
 // function definitions
 void mavlink_stream(uint32_t time_us)
 {
