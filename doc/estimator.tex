@@ -1,0 +1,116 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\usepackage{bm}
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{
+\normalfont \normalsize
+\textsc{MAGICC Lab - Brigham Young University} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Estimator \\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{James Jackson} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 1
+%----------------------------------------------------------------------------------------
+
+\section{Onboard Estimator Derivation}
+
+The estimator is designed to calculate an estimator of the attitude and angular velocity of the multirotor.  It is assumed that the FCU is mounted rigidly to the body of the aircraft (perhaps with dampening material to remove vibrations from the motors), such that measurements of the onboard IMU are consistent with the motion of the aircraft.
+
+Due to the limited computational power on the embedded processor, and to calculate attitude estimates at speeds up to 1000Hz, a simple complementary filter is used, rather than a Kalman filter.  In practice, this method works extremely well, and it used widely throughout commercially available autopilots.
+
+Accelerometers measure all the forces acting on the aircraft.  We can assume that these forces consist primarily of forces from the propellers, but it often also consists of vibrations from unbalanced motors and propellers, wind, ground effect, and a variety of other sources. One thing accelerometers do \textit{not} measure is acceleration due to gravity.  As a result, if you hold an accelerometer still and look at it's measurements, you'll notice it measures the forces required to hold it in place.  For example, if you set an accelerometer on a table, it will measure the normal force the table exerts on the accelerometer.  If we assume that the accelerometer is at rest (albeit a rather significant assumption for a MAV), then we can assume that the forces acting on the accelerometer must be directly opposite gravity.  If we know the direction of gravity (read, inertial frame) relative to the body-fixed frame of the MAV, then we can back out the attitude of the MAV using the following formula.
+
+\begin{equation}
+	\begin{aligned}
+		\phi_{meas} &= \atan \left( \frac{a_x}{a_z} \right)  \\
+		\theta_{meas} &= \atan \left( \frac{a_y}{a_z}  \right)
+	\end{aligned}
+\end{equation}
+
+As you might expect, a MAV is not always at rest, so accelerometer measurements tend to bounce around as the MAV accelerates.  There are often also a lot of high-frequency external forces (such as vibrations induced by imbalanced propellers and motors) on a MAV in flight which adds noise to the accelerometer measurement.  We can assume, however, that these accelerations are short-lived, and the accelerometer measurement remains stable over time.  To leverage this fact, we will low-pass filter the sensor data from the accelerometers and use a smoothed-out version to calculate our attitude.
+
+Gyroscopes, on the other hand, directly measure the angular velocity of the IMU.  Gyroscopes are not susceptible to external forces like accelerometers, and instead measure angular velocity directly, but integrating gyroscopes over time to calculate attitude would lead to large amounts of drift.
+
+To get the best of both worlds, we will derive a complementary filter.  This filter will high pass and integrate gyroscope data to get high-frequency measurements, then add low-pass filtered accelerometer data to correct the drift accumulated by integrating the gyroscope.  The transfer function of the complementary filter is shown in Equation~\ref{eq:comp_filter_TF}
+
+\begin{equation}
+	\bm{\theta} = \frac{1}{1+Ts}\bm{a} + \frac{Ts}{1+Ts}\frac{1}{s}\bm{\omega}
+	\label{eq:comp_filter_TF}
+\end{equation}
+
+Transforming into the $z$-domain results in
+
+\begin{equation}
+	\begin{aligned}
+	  \bm{\theta_i} &= \alpha \left( \bm{\theta_{i-1}} + \bm{\omega}_i\Delta t  \right) + (1-\alpha) \bm{a}_i
+  \end{aligned}
+\end{equation}
+
+Where
+\begin{equation}
+	\alpha = \frac{\frac{T}{\Delta t}}{1 + \frac{T}{\Delta t}}
+\end{equation}
+
+
+\end{document}
