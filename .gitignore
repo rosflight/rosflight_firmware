@@ -4,6 +4,7 @@
 *.user
 *.creator
 *.includes
+*.gch
 *.config
 *.files
 

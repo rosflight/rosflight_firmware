@@ -5,12 +5,70 @@
 
 #include "mavlink.h"
 
-#define PARAMS_COUNT 3
+#define PARAMS_COUNT 60
 #define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
+
+/*********************************/
+/*** 0-10 SERIAL CONFIGURATION ***/
+/*********************************/
 
 #define PARAM_SYSTEM_ID 0
 #define PARAM_STREAM_HEARTBEAT_RATE 1
 #define PARAM_STREAM_IMU_RATE 2
+#define PARAM_STREAM_MAG_RATE 3
+#define PARAM_STREAM_AIRSPEED_RATE 4
+#define PARAM_STREAM_GPS_RATE 5
+#define PARAM_STREAM_SONAR_RATE 6
+#define PARAM_LOOPTIME 7
+
+/***********************/
+/*** 11-30 PID GAINS ***/
+/***********************/
+
+#define PARAM_PID_ROLL_RATE_P 11
+#define PARAM_PID_ROLL_RATE_I 12
+#define PARAM_PID_ROLL_RATE_D 13
+
+#define PARAM_PID_PITCH_RATE_P 14
+#define PARAM_PID_PITCH_RATE_I 15
+#define PARAM_PID_PITCH_RATE_D 16
+
+#define PARAM_PID_YAW_RATE_P 17
+#define PARAM_PID_YAW_RATE_I 18
+#define PARAM_PID_YAW_RATE_D 19
+
+#define PARAM_PID_ROLL_ANGLE_P 20
+#define PARAM_PID_ROLL_ANGLE_I 21
+#define PARAM_PID_ROLL_ANGLE_D 22
+
+#define PARAM_PID_PITCH_ANGLE_P 23
+#define PARAM_PID_PITCH_ANGLE_I 24
+#define PARAM_PID_PITCH_ANGLE_D 25
+
+#define PARAM_PID_ALT_P 26
+#define PARAM_PID_ALT_I 27
+#define PARAM_PID_ALT_D 28
+
+/*******************************/
+/*** 31-40 PWM CONFIGURATION ***/
+/*******************************/
+
+#define PARAM_MOTOR_PWM_SEND_RATE 31
+
+#define PARAM_RC_ROLL_CHANNEL 32
+#define PARAM_RC_PITCH_CHANNEL 33
+#define PARAM_RC_YAW_CHANNEL 34
+#define PARAM_RC_THROTTLE_CHANNEL 35
+#define PARAM_RC_TYPE 36 // 0 is PWM, 1 is PPM
+#define PARAM_IDLE_PWM 37
+
+/*************************************/
+/*** 41-50 ESTIMATOR CONFIGURATION ***/
+/*************************************/
+
+#define PARAM_ESTIMATOR_LPF_ALPHA 41
+#define PARAM_GYRO_LPF_ALPHA 42
+#define PARAM_ACC_LPF_ALPHA 43
 
 // type definitions
 typedef struct
