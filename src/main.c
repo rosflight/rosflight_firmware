@@ -12,7 +12,7 @@
 void setup(void)
 {
   // Read EEPROM to get initial params
-  init_params();
+  // init_params();
 
   /***********************/
   /***  Hardware Setup ***/
@@ -22,7 +22,7 @@ void setup(void)
   i2cInit(I2CDEV_2);
   // Initialize PWM
   // Initialize Serial Communication
-  init_mavlink();
+  // init_mavlink();
 
 
 
