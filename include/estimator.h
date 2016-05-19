@@ -1,6 +1,18 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-state_t init_estimator();
+typedef struct state_t{
+  int16_t p;
+  int16_t q;
+  int16_t r;
+
+  int32_t phi;
+  int32_t theta;
+  int32_t psi;
+} state_t;
+
+state_t _current_state_;
+
+void init_estimator();
 state_t run_estimator(int16_t dt);
 
