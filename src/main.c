@@ -35,7 +35,8 @@ void setup(void)
 
 
   // Initialize Serial Communication
-  // init_mavlink();
+  init_mavlink();
+  init_sensors();
 
 
   /***********************/
