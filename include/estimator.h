@@ -11,8 +11,8 @@ typedef struct state_t{
   int32_t psi;
 } state_t;
 
-state_t _current_state_;
+extern state_t _current_state;
 
 void init_estimator();
-state_t run_estimator(int16_t dt);
+void run_estimator(int32_t dt);
 

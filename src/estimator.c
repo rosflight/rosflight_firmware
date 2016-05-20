@@ -17,13 +17,25 @@ void init_estimator(){
   _current_state.psi = 0;
 }
 
-state_t run_estimator(int16_t dt){
-  int32_t prev_phi = _current_state.phi;
-  int32_t prev_theta =_current_state.theta;
+void run_estimator(int32_t dt){
+  int32_t tau = 100; // desired time constant of the filter (us) <-- should be a param
+  int32_t alpha = (1000000*tau)/(tau*1000+5000);
 
-  int32_t alpha = 980;
+  // pull in accelerometer data
+  int32_t acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
+  int32_t acc_theta = turboatan2(_accel_data[0], _accel_data[2]);
 
-  acc_phi = turboatan2(_acc)
+  // pull in gyro data
+  _current_state.p = _gyro_data[0];
+  _current_state.q = _gyro_data[1];
+  _current_state.r = _gyro_data[2];
 
-  _current_state.phi = alpha*(prev_phi + (_current_state.p*dt)/1000) + (1-alpha)*
+  _current_state.phi = ((alpha*(_current_state.phi + (_current_state.p*dt)/1000000)) + (1000-alpha)*acc_phi)/1000;
+  _current_state.theta = ((alpha*(_current_state.theta + (_current_state.q*dt)/1000000)) + (1000-alpha)*acc_theta)/1000;
+  _current_state.psi = _current_state.psi + (_current_state.r*dt)/1000000;
+
+  // wrap psi because we don't actually get a measurement of it
+  if(abs(_current_state.psi) > 3142){
+    _current_state.psi += 6284 * -1* sign(_current_state.psi);
+  }
 }

@@ -83,8 +83,8 @@ Accelerometers measure all the forces acting on the aircraft.  We can assume tha
 
 \begin{equation}
 	\begin{aligned}
-		\phi_{meas} &= \atan \left( \frac{a_x}{a_z} \right)  \\
-		\theta_{meas} &= \atan \left( \frac{a_y}{a_z}  \right)
+		\phi_{meas} &= \textrm{atan} \left( \frac{a_x}{a_z} \right)  \\
+		\theta_{meas} &= \textrm{atan} \left( \frac{a_y}{a_z}  \right)
 	\end{aligned}
 \end{equation}
 
@@ -99,18 +99,27 @@ To get the best of both worlds, we will derive a complementary filter.  This fil
 	\label{eq:comp_filter_TF}
 \end{equation}
 
-Transforming into the $z$-domain results in
+Transforming into the $z$-domain using backwards difference results in
 
 \begin{equation}
 	\begin{aligned}
-	  \bm{\theta_i} &= \alpha \left( \bm{\theta_{i-1}} + \bm{\omega}_i\Delta t  \right) + (1-\alpha) \bm{a}_i
+	  \bm{\theta_i} &= \alpha \left( \bm{\theta_{i-1}} + \bm{\omega}_i dt  \right) + (1-\alpha) \bm{a}_i
   \end{aligned}
 \end{equation}
 
 Where
 \begin{equation}
-	\alpha = \frac{\frac{T}{\Delta t}}{1 + \frac{T}{\Delta t}}
+	\alpha = \frac{\tau}{\tau + dt}
 \end{equation}
 
+and $\tau$ is the desired time constant, and $dt$ is the sample rate.  With sample rates of approximately 7ms, and a desired $\tau$ of 0.2 seconds, $\alpha$ is approximately 0.966.
+
+\subsection{Implementation}
+
+Because the STM32F10x lacks a floating-point unit, and to reduce the amount of time between receiving sensor measurements and writing motor commands, estimation is performed entirely with integers.  A custom atan2 fuction, called turboatan2, performs atan2 via a lookup table (leveraging the identity $\textrm{atan2}(x) = \tfrac{\pi}{2} - \textrm{atan2}\left(\tfrac{1}{x}\right)$ to reduce the memory footprint of the lookup table).  The accelerometer is scaled to return mm/s$^2$, and the gyro is scaled to return $\mu$rad/s$^2$ so as to utilize the scale of 32-bit integers as fully as possible.  The return of turboatan2 is in mrad.  The complementary filter is implemented in estimator.c, and is relatively straight-forward except the need for scaling multiples of these different units to remain in the range of 32-bit integers.
+
+\subsection{Accuracy}
+
+The Invensense MPU6050 has a 16-bit ADC and an accelerometer and gyro onboard.  The accelerometer, when scaled to $\pm$4g, has a resolution of 0.002394 m/s$^2$.  Scaled up to mm/s$^2$ accuracy of the 32-bit integer is capable of representing the full resolution of the accelerometer.  The gyroscope has a range of 500$^\circ$/s, or a resolution of 0.000532632 rad/s.  Scaled up to $\mu$rad/s, the 32-bit integer is more than able to represent the full resolution of the gyroscope.  The lookup table method used by turboatan2 is accurate to $\pm$ 0.001 rad, which means that the scaled measurements provided to the complementary filter are the same resolution of the original measurements by the accelerometer, and any error in the filter is caused by noise in the measurement, not in the numerical conversion to 32-bit integers rather than floating-point.  However, an enourmous boost in speed is available through using an entirely integer-based estimator.
 
 \end{document}

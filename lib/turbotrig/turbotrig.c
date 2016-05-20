@@ -46,32 +46,43 @@ int32_t sign(int32_t y){
   return (0 < y) - (y < 0);
 }
 
-int32_t turboatan_lookup(int32_t x){
+int32_t turboatan(int32_t x){
+  if(x < 0){
+    return -1*turboatan(-1*x);
+  }
   if (x > 1000){
-    return 1571 - turboatan_lookup(1000000/x);
+    return 1571 - turboatan(1000000/x);
   }
   return atan_lookup_table[x];
 }
 
 
 
-int32_t turboatan2_approx(int32_t y, int32_t x){
-  if(x == 0){
-    if(y == 0){
-      return 0;
-    }else{}
-      return 1571 * sign(y);
-  }else{
-    int32_t arctan = turboatan_lookup((1000*x)/y);
+int32_t turboatan2(int32_t y, int32_t x){
+  if(y == 0){
     if(x < 0){
-      return arctan + 1571*sign(y);
+      return 3142;
+    }else{
+      return 0;
     }
-    return arctan;
+  }else if(x == 0){
+    return 1572*sign(y);
+  }else{
+    int32_t arctan = turboatan((1000*x)/y);
+    if(y > 0){
+      return 1571 - arctan;
+    }else if( y < 0){
+      return -1571 - arctan;
+    }else if( x < 0){
+      return arctan + 3142;
+    }else{
+      return arctan;
+    }
   }
 }
 
 
-int32_t turboatan(int32_t x){
+int32_t turboatan_taylor(int32_t x){
   if(x > 1000){
     return 1571-turboatan(1000000/x);
   }

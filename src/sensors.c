@@ -4,7 +4,6 @@
 #include <breezystm32/drv_mpu6050.h>
 
 #include "param.h"
-
 #include "sensors.h"
 
 // global variable definitions
