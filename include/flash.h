@@ -1,7 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
-#include <breezystm32.h>
 
 #define ASSERT_CONCAT_(a, b) a##b
 #define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)
@@ -29,12 +29,12 @@ void initEEPROM(void);
 
 /**
  * @brief Read the _param struct from Flash
- * @returns 1 if the read was successful (validEEPROM), 0 otherwise
+ * @returns true if the read was successful (validEEPROM), false otherwise
  */
-uint8_t readEEPROM(void);
+bool readEEPROM(void);
 
 /**
  * @brief write the _param struct to Flash
- * @param b Blink the led after writing if not zero
+ * @param b Blink the led after writing if true
  */
-void writeEEPROM(uint8_t b);
+void writeEEPROM(bool b);

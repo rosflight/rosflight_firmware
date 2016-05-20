@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "flash.h"
 #include "mavlink.h"
 #include "mavlink_stream.h"
 
 #include "param.h"
-#include "flash.h"
 
 // global variable definitions
 params_t _params;
@@ -30,7 +30,8 @@ void init_params(void)
 
       for (uint8_t id = 0; id < PARAMS_COUNT; id++)
         param_change_callback(id);
-      writeEEPROM(0b1);
+
+      writeEEPROM(true);
   }
 }
 
