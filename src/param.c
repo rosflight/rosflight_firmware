@@ -6,6 +6,7 @@
 #include "mavlink_stream.h"
 
 #include "param.h"
+#include "flash.h"
 
 // global variable definitions
 params_t _params;
@@ -20,12 +21,17 @@ static void init_param(uint8_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 // function definitions
 void init_params(void)
 {
-  init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
-  init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
-  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
+  initEEPROM();
+  if(!readEEPROM())
+  {
+      init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
+      init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
+      init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
 
-  for (uint8_t id = 0; id < PARAMS_COUNT; id++)
-    param_change_callback(id);
+      for (uint8_t id = 0; id < PARAMS_COUNT; id++)
+        param_change_callback(id);
+      writeEEPROM(0b1);
+  }
 }
 
 void param_change_callback(uint8_t id)
