@@ -77,7 +77,7 @@ typedef enum {
   PARAM_ACC_LPF_ALPHA,
 
   // keep track of size of params array
-  PARAMS_COUNT = PARAM_ACC_LPF_ALPHA
+  PARAMS_COUNT
 } paramId_t;
 
 // type definitions

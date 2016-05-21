@@ -8,6 +8,9 @@
 
 #include "param.h"
 
+//TODO temporary
+#include <stdio.h>
+
 // global variable definitions
 params_t _params;
 
@@ -29,8 +32,12 @@ void init_params(void)
     init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
 
     // temporary: replace with actual initialisation of rest of params
+    char temp_name[PARAMS_NAME_LENGTH];
     for (paramId_t id = 3; id < PARAMS_COUNT; id++)
-      init_param(id, "NULL", -1);
+    {
+      sprintf(temp_name, "TEMP%d", id);
+      init_param(id, temp_name, id);
+    }
 
     for (paramId_t id = 0; id < PARAMS_COUNT; id++)
       param_change_callback(id);
@@ -47,10 +54,12 @@ void param_change_callback(paramId_t id)
     mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
-    mavlink_stream_set_heartbeat_period_us(1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    mavlink_stream_set_heartbeat_period_us(_params.values[PARAM_STREAM_HEARTBEAT_RATE] == 0 ?
+                                             0 : 1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
   case PARAM_STREAM_IMU_RATE:
-    mavlink_stream_set_imu_period_us(1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
+    mavlink_stream_set_imu_period_us(_params.values[PARAM_STREAM_IMU_RATE] == 0 ?
+                                       0 : 1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
     break;
   default:
     // no action needed for this parameter
