@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "mixing.h"
+#include "mixer.h"
 
 
 int16_t _motor_outputs[8];
@@ -51,7 +51,7 @@ static mixer_t fixedwing_mixing = {
 
 static mixer_t mixer_to_use;
 
-static mixer_t* array_of_mixers[2] = {
+static mixer_t* array_of_mixers[3] = {
   &quadcopter_plus_mixing,
   &quadcopter_x_mixing,
   &fixedwing_mixing

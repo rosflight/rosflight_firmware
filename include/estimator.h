@@ -1,8 +1,18 @@
-<stdint.h>
-<stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-struct attitude_t{
-  int16_t roll;
-  int16_t pitch;
-  int16_t yaw;
-} estAttitude;
+typedef struct state_t{
+  int16_t p;
+  int16_t q;
+  int16_t r;
+
+  int32_t phi;
+  int32_t theta;
+  int32_t psi;
+} state_t;
+
+extern state_t _current_state;
+
+void init_estimator();
+void run_estimator(int32_t dt);
+

@@ -4,33 +4,22 @@
 #include <breezystm32/drv_mpu6050.h>
 
 #include "param.h"
-
 #include "sensors.h"
 
 // global variable definitions
-imuData_t _imu_data;
+int16_t _accel_data[3];
+int16_t _gyro_data[3];
+int32_t _accel_scale;
+int32_t _gyro_scale;
 
 // local variable definitions
 static uint32_t imu_last_us;
-static float accel_scale;
-static float gyro_scale;
 
 // local function definitions
 static void update_imu(void)
 {
-  int16_t accel_raw[3];
-  int16_t gyro_raw[3];
-
-  mpu6050_read_accel(accel_raw);
-  mpu6050_read_gyro(gyro_raw);
-
-  _imu_data.ax = accel_raw[0] * accel_scale;
-  _imu_data.ay = accel_raw[1] * accel_scale;
-  _imu_data.az = accel_raw[2] * accel_scale;
-
-  _imu_data.gx = gyro_raw[0] * gyro_scale;
-  _imu_data.gy = gyro_raw[1] * gyro_scale;
-  _imu_data.gz = gyro_raw[2] * gyro_scale;
+  mpu6050_read_accel(_accel_data);
+  mpu6050_read_gyro(_gyro_data);
 }
 
 // function definitions
@@ -38,15 +27,18 @@ void init_sensors(void)
 {
   // IMU
   uint16_t acc1G;
+  float gyro_scale;
   mpu6050_init(true, &acc1G, &gyro_scale);
-  accel_scale = 9.80665f / acc1G;
+  _accel_scale = 9807 / acc1G; // convert to mm/s^2
+  _gyro_scale = 1e6 * gyro_scale; // convert to urad/s
+  imu_last_us = 0;
 }
 
 void update_sensors(uint32_t time_us)
 {
   if (time_us - imu_last_us >= 5000)
   {
-    update_imu();
     imu_last_us = time_us;
+    update_imu();
   }
 }
