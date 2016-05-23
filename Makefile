@@ -18,7 +18,7 @@ PROJECT_SRC = src/main.c \
               src/mavlink_stream.c \
               src/param.c \
               src/sensors.c \
-              src/flash.c
+              src/flash.c \
               src/estimator.c
 
 ###############################################################################
