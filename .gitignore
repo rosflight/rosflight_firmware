@@ -7,6 +7,7 @@
 *.gch
 *.config
 *.files
+*.orig
 
 /build/
 
