@@ -25,7 +25,7 @@ static void init_param(paramId_t id, char name[PARAMS_NAME_LENGTH], int32_t valu
 void init_params(void)
 {
   initEEPROM();
-  if(!readEEPROM())
+  if (!readEEPROM())
   {
     init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
     init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
@@ -55,11 +55,11 @@ void param_change_callback(paramId_t id)
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_heartbeat_period_us(_params.values[PARAM_STREAM_HEARTBEAT_RATE] == 0 ?
-                                             0 : 1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+                                           0 : 1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
   case PARAM_STREAM_IMU_RATE:
     mavlink_stream_set_imu_period_us(_params.values[PARAM_STREAM_IMU_RATE] == 0 ?
-                                       0 : 1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
+                                     0 : 1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
     break;
   default:
     // no action needed for this parameter

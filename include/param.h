@@ -7,7 +7,8 @@
 
 #define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
 
-typedef enum {
+typedef enum
+{
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/

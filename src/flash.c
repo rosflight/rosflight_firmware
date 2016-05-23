@@ -70,7 +70,8 @@ void writeEEPROM(bool b)
 
   // write it
   FLASH_Unlock();
-  for (unsigned int tries = 3; tries; tries--) {
+  for (unsigned int tries = 3; tries; tries--)
+  {
     FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);
 
     FLASH_ErasePage(FLASH_WRITE_ADDR);
@@ -83,14 +84,15 @@ void writeEEPROM(bool b)
   FLASH_Lock();
 
   // Flash write failed - just die now
-  if (status != FLASH_COMPLETE || !validEEPROM()) {
+  if (status != FLASH_COMPLETE || !validEEPROM())
+  {
     failureMode(10);
   }
 
   if (b)
 //    blinkLED(15, 20, 1);
   {
-    for(uint8_t i=0;i < 10;i++)
+    for (uint8_t i=0; i < 10; i++)
     {
       LED0_TOGGLE;
       delay(100);
