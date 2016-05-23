@@ -35,7 +35,7 @@ void init_params(void)
     char temp_name[PARAMS_NAME_LENGTH];
     for (paramId_t id = 3; id < PARAMS_COUNT; id++)
     {
-      sprintf(temp_name, "TEMP%d", id);
+      sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
       init_param(id, temp_name, id);
     }
 
