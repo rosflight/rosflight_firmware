@@ -2,19 +2,11 @@
 
 #include <stdint.h>
 
-// type definitions
-typedef struct
-{
-  float ax;
-  float ay;
-  float az;
-  float gx;
-  float gy;
-  float gz;
-} imuData_t;
-
 // global variable declarations
-extern imuData_t _imu_data;
+extern int16_t _accel_data[3];
+extern int16_t _gyro_data[3];
+extern int32_t _accel_scale; // converts to mm/s^2
+extern int32_t _gyro_scale; // converts to urad/s
 
 // function declarations
 void init_sensors(void);

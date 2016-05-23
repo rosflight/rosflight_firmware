@@ -8,6 +8,7 @@
 
 # external libraries
 BREEZY_DIR = lib/breezystm32
+TURBOTRIG_DIR = lib/turbotrig
 
 # project source files
 PROJECT_SRC = src/main.c \
@@ -18,6 +19,7 @@ PROJECT_SRC = src/main.c \
               src/param.c \
               src/sensors.c \
               src/flash.c
+              src/estimator.c
 
 ###############################################################################
 
@@ -56,6 +58,7 @@ rosflight2_SRC = $(BREEZY_DIR)/main.c \
 		   $(BREEZY_DIR)/drv_mb1242.c \
 		   $(BREEZY_DIR)/printf.c \
 		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
+			 lib/turbotrig/turbotrig.c \
 		   $(PROJECT_SRC) \
 		   $(CMSIS_SRC) \
 		   $(STDPERIPH_SRC)

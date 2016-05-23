@@ -12,12 +12,13 @@
 #include "param.h"
 #include "mode.h"
 #include "sensors.h"
+#include "estimator.h"
 
 void setup(void)
 {
   // Load Default Params
   // Read EEPROM to get initial params
-  init_params();
+  // init_params();
 
   /***********************/
   /***  Hardware Setup ***/
@@ -35,6 +36,7 @@ void setup(void)
 
   // Initialize Serial Communication
   init_mavlink();
+  init_sensors();
 
 
   /***********************/
@@ -43,24 +45,28 @@ void setup(void)
 
   // Initialize Motor Mixing
   // Initialize Estimator
+  init_estimator();
+
   // Initialize Controller
   // Initialize State Machine
 }
 
 void loop(void)
 {
-  uint32_t loop_time_us = micros();
-
   /// Pre-process
-    // get looptime - store time in a global variable
-    // dt = micros();
-    // update sensors (only the ones that need updating)
-    // sensors = update_sensors(dt);
-  update_sensors(loop_time_us);
+  // get loop time
+  static uint32_t prev_time;
+  static int32_t dt = 0;
+  uint32_t now = micros();
+  dt = now - prev_time;
+  prev_time = now;
+
+  // update sensors (only the ones that need updating)
+  update_sensors(now);
 
   /// Main Thread
-    // Run Estimator - uses global sensor information
-    // state = runEstimator(sensors, dt, state); <--- state has to be persistent
+  // run estimator
+  run_estimator(dt);
 
     /// Need to mix between RC and computer based on override mode and RC & computer control modes
     /// (happens at multiple levels between control loops)
@@ -92,7 +98,7 @@ void loop(void)
     // send serial sensor data
     // send low priority messages (e.g. param values)
     //  internal timers figure out what to send
-  mavlink_stream(loop_time_us);
+  mavlink_stream(now);
 
   /// Post-Process
     // receive mavlink messages

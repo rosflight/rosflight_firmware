@@ -1,5 +1,6 @@
 #include "mavlink.h"
 #include "mavlink_param.h"
+#include "sensors.h"
 
 #include "mavlink_stream.h"
 
@@ -31,7 +32,8 @@ void mavlink_stream(uint32_t time_us)
   if (imu_period_us && time_us - last_imu_us >= imu_period_us)
   {
     last_imu_us = time_us;
-    mavlink_msg_small_imu_send(MAVLINK_COMM_0, 1, 2, 3, 4, 5, 6);
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+      _accel_data[0], _accel_data[1], _accel_data[2], _gyro_data[0], _gyro_data[1], _gyro_data[2]);
   }
 
   if (time_us - last_low_priority_us >= low_priority_period_us)
