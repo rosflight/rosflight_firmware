@@ -3,16 +3,15 @@
 #include <stdlib.h>
 
 #include <breezystm32/breezystm32.h>
-#include <breezystm32/drv_pwm.h>
 
+#include "estimator.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mavlink_receive.h"
 #include "mavlink_stream.h"
-#include "param.h"
 #include "mode.h"
+#include "param.h"
 #include "sensors.h"
-#include "estimator.h"
 
 void setup(void)
 {

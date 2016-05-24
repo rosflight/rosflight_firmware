@@ -1,5 +1,4 @@
 #include <breezystm32/breezystm32.h>
-#include <breezystm32/drv_serial.h>
 
 #include "mavlink.h"
 #include "mavlink_param.h"
