@@ -20,7 +20,7 @@ void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
 
   if (read.target_system == (uint8_t) _params.values[PARAM_SYSTEM_ID]) // TODO check if component id matches?
   {
-    paramId_t id = lookup_param_id(read.param_id);
+    param_id_t id = lookup_param_id(read.param_id);
     if (id < PARAMS_COUNT)
     {
       mavlink_msg_param_value_send(MAVLINK_COMM_0,
@@ -38,7 +38,7 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
   {
     if (set.param_type == MAV_PARAM_TYPE_INT32) // TODO support other param types? (uint32 at least?)
     {
-      paramId_t id = lookup_param_id(set.param_id);
+      param_id_t id = lookup_param_id(set.param_id);
       if (set_param_by_id(id, *(int32_t *) &set.param_value))
         mavlink_msg_param_value_send(MAVLINK_COMM_0,
                                      _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);

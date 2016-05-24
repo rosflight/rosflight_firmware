@@ -15,7 +15,7 @@
 params_t _params;
 
 // local function definitions
-static void init_param(paramId_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
+static void init_param(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   _params.values[id] = value;
   strcpy(_params.names[id], name);
@@ -33,20 +33,20 @@ void init_params(void)
 
     // temporary: replace with actual initialisation of rest of params
     char temp_name[PARAMS_NAME_LENGTH];
-    for (paramId_t id = 3; id < PARAMS_COUNT; id++)
+    for (param_id_t id = 3; id < PARAMS_COUNT; id++)
     {
       sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
       init_param(id, temp_name, id);
     }
 
-    for (paramId_t id = 0; id < PARAMS_COUNT; id++)
+    for (param_id_t id = 0; id < PARAMS_COUNT; id++)
       param_change_callback(id);
 
     writeEEPROM(true);
   }
 }
 
-void param_change_callback(paramId_t id)
+void param_change_callback(param_id_t id)
 {
   switch (id)
   {
@@ -67,9 +67,9 @@ void param_change_callback(paramId_t id)
   }
 }
 
-paramId_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
+param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 {
-  for (paramId_t id = 0; id < PARAMS_COUNT; id++)
+  for (param_id_t id = 0; id < PARAMS_COUNT; id++)
   {
     bool match = true;
     for (uint8_t i = 0; i < PARAMS_NAME_LENGTH; i++)

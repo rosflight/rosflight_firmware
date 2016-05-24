@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct state_t
+typedef struct
 {
   int16_t p;
   int16_t q;
