@@ -7,7 +7,8 @@
 
 #define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
 
-typedef enum {
+typedef enum
+{
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -78,7 +79,7 @@ typedef enum {
 
   // keep track of size of params array
   PARAMS_COUNT
-} paramId_t;
+} param_id_t;
 
 // type definitions
 typedef struct
@@ -108,14 +109,14 @@ void init_params(void);
  * @brief Callback for executing actions that need to be taken when a parameter value changes
  * @param id The ID of the parameter that was changed
  */
-void param_change_callback(paramId_t id);
+void param_change_callback(param_id_t id);
 
 /**
  * @brief Gets the id of a parameter from its name
  * @param name The name of the parameter
  * @returns The ID of the parameter if the name is valid, PARAMS_COUNT otherwise (invalid ID)
  */
-paramId_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
+param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
 
 /**
  * @brief Sets the value of a parameter by ID and calls the parameter change callback
@@ -123,7 +124,7 @@ paramId_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
  * @param value The new value
  * @returns True if a parameter value was changed, false otherwise
  */
-inline bool set_param_by_id(paramId_t id, int32_t value)
+inline bool set_param_by_id(param_id_t id, int32_t value)
 {
   if (id < PARAMS_COUNT && value != _params.values[id])
   {

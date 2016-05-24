@@ -1,14 +1,16 @@
+#include <math.h>
 
-#include <breezystm32/drv_mpu6050.h>
+#include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 
 #include "sensors.h"
-#include "estimator.h"
 
+#include "estimator.h"
 
 state_t _current_state;
 
-void init_estimator(){
+void init_estimator()
+{
   _current_state.p = 0;
   _current_state.q = 0;
   _current_state.r = 0;
@@ -17,7 +19,8 @@ void init_estimator(){
   _current_state.psi = 0;
 }
 
-void run_estimator(int32_t dt){
+void run_estimator(int32_t dt)
+{
   int32_t tau = 100; // desired time constant of the filter (us) <-- should be a param
   int32_t alpha = (1000000*tau)/(tau*1000+5000);
 
@@ -35,7 +38,8 @@ void run_estimator(int32_t dt){
   _current_state.psi = _current_state.psi + (_current_state.r*dt)/1000000;
 
   // wrap psi because we don't actually get a measurement of it
-  if(abs(_current_state.psi) > 3142){
+  if (abs(_current_state.psi) > 3142)
+  {
     _current_state.psi += 6284 * -1* sign(_current_state.psi);
   }
 }
