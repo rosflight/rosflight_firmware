@@ -1,12 +1,13 @@
 #include <stdint.h>
 
-#include <breezystm32/drv_pwm.h>
+#include <breezystm32.h>
 
 #include "mixer.h"
 
 int16_t _GPIO_outputs[8];
 int16_t _outputs[8];
 command_t _command;
+output_type_t _GPIO_output_type[8];
 
 static mixer_t quadcopter_plus_mixing = {
   {M, M, M, M, 0, 0, 0, 0}, // output_type
@@ -68,7 +69,7 @@ static mixer_t *array_of_mixers[5] = {
 void init_mixing()
 {
   // We need a better way to choosing the mixer
-  mixer_to_use = *array_of_mixers[FIXEDWING];
+  mixer_to_use = *array_of_mixers[QUADCOPTER_X];
 
   for(int8_t i=0; i<8; i++)
   {
@@ -80,37 +81,6 @@ void init_mixing()
   _command.x = 0;
   _command.y = 0;
   _command.z = 0;
-}
-
-void mix_output()
-{
-  // Mix Output
-  for (int8_t i=0; i<8; i++)
-  {
-    output_type_t output_type = mixer_to_use.output_type[i];
-    if(output_type != NONE)
-    {
-      // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
-      _outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                    _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
-    }
-    else
-    {
-      // Incorporate GPIO on not already reserved outputs
-      _outputs[i] = _GPIO_outputs[i];
-      output_type = _GPIO_output_type[i];
-    }
-
-    if (output_type == S)
-    {
-      write_servo(i, _outputs[i]);
-    }
-    else
-    {
-      write_motor(i, _outputs[i]);
-    }
-    // If we need to configure another type of output, do it here
-  }
 }
 
 
@@ -144,4 +114,39 @@ void write_servo(uint8_t index, int16_t value){
     value = 0;
   }
   pwmWriteMotor(index, value);
+}
+
+void mix_output()
+{
+  printf("COMMANDS: F = %d, x = %d, y = %d, z = %d\n", _command.F, _command.x, _command.y, _command.z);
+  // Mix Output
+  for (int8_t i=0; i<8; i++)
+  {
+    output_type_t output_type = mixer_to_use.output_type[i];
+    if(output_type != NONE)
+    {
+      // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
+      _outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
+                    _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
+      printf("mixer col %d: %d %d %d %d\t", i, mixer_to_use.F[i], mixer_to_use.x[i], mixer_to_use.y[i], mixer_to_use.z[i]);
+    }
+    else
+    {
+      // Incorporate GPIO on not already reserved outputs
+      _outputs[i] = _GPIO_outputs[i];
+      output_type = _GPIO_output_type[i];
+    }
+
+    if (output_type == S)
+    {
+      write_servo(i, _outputs[i]);
+      printf("writing SERVO %d, %d\n", i+1, _outputs[i]);
+    }
+    else
+    {
+      write_motor(i, _outputs[i]);
+      printf("writing MOTOR %d: %d\n", i+1, _outputs[i]);
+    }
+    // If we need to configure another type of output, do it here
+  }
 }
