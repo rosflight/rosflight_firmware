@@ -2,6 +2,8 @@
 
 #include "mavlink.h"
 #include "mavlink_param.h"
+#include "mode.h"
+#include "param.h"
 
 #include "mavlink_receive.h"
 
@@ -10,6 +12,53 @@ static mavlink_message_t in_buf;
 static mavlink_status_t status;
 
 // local function definitions
+static void handle_mavlink_msg_command(const mavlink_message_t *const msg)
+{
+  mavlink_command_int_t cmd;
+  mavlink_msg_command_int_decode(msg, &cmd);
+
+  if (cmd.target_system == _params.values[PARAM_SYSTEM_ID])
+  {
+    uint8_t result;
+
+    switch (cmd.command)
+    {
+    case MAV_CMD_PREFLIGHT_STORAGE:
+      if (false) //TODO temporarily reject if armed
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        bool success;
+        switch ((uint8_t) cmd.param1)
+        {
+        case 0:
+          success = read_params();
+          break;
+        case 1:
+          success = write_params();
+          break;
+        case 2:
+          set_param_defaults();
+          success = true;
+          break;
+        default:
+          success = false;
+          break;
+        }
+        result = success ? MAV_RESULT_ACCEPTED : MAV_RESULT_FAILED;
+      }
+      break;
+    default:
+      result = MAV_RESULT_UNSUPPORTED;
+      break;
+    }
+
+    mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, result);
+  }
+}
+
 static void handle_mavlink_message(void)
 {
   switch (in_buf.msgid)
