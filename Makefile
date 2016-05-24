@@ -12,13 +12,14 @@ TURBOTRIG_DIR = lib/turbotrig
 
 # project source files
 PROJECT_SRC = src/main.c \
+              src/estimator.c \
+              src/flash.c \
               src/mavlink.c \
               src/mavlink_param.c \
               src/mavlink_receive.c \
               src/mavlink_stream.c \
               src/param.c \
               src/sensors.c \
-							src/estimator.c \
 							src/mixer.c
 
 ###############################################################################

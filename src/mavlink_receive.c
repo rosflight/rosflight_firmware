@@ -1,5 +1,4 @@
 #include <breezystm32/breezystm32.h>
-#include <breezystm32/drv_serial.h>
 
 #include "mavlink.h"
 #include "mavlink_param.h"
@@ -19,6 +18,9 @@ static void handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
     mavlink_handle_msg_param_request_list();
+    break;
+  case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+    mavlink_handle_msg_param_request_read(&in_buf);
     break;
   case MAVLINK_MSG_ID_PARAM_SET:
     mavlink_handle_msg_param_set(&in_buf);

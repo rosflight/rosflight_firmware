@@ -1,6 +1,7 @@
 #include <turbotrig/turbotrig.h>
 
-int16_t atan_lookup_table[1001] = {
+int16_t atan_lookup_table[1001] =
+{
   0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,
   36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,
   69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,
@@ -42,43 +43,65 @@ int16_t atan_lookup_table[1001] = {
   773,774,774,775,775,776,776,777,777,778,778,779,779,780,780,781,781,782,782,783,783,784,784,785
 };
 
+
 int32_t sign(int32_t y)
 {
   return (0 < y) - (y < 0);
 }
 
+
 int32_t turboatan(int32_t x)
 {
-  if (x < 0) {
+  if (x < 0)
+  {
     return -1*turboatan(-1*x);
   }
-  if (x > 1000) {
+  if (x > 1000)
+  {
     return 1571 - turboatan(1000000/x);
   }
+
   return atan_lookup_table[x];
 }
 
 
-
 int32_t turboatan2(int32_t y, int32_t x)
 {
-  if (y == 0) {
-    if (x < 0) {
+  if (y == 0)
+  {
+    if (x < 0)
+    {
       return 3142;
-    } else {
+    }
+    else
+    {
       return 0;
     }
-  } else if (x == 0) {
+  }
+
+  else if (x == 0)
+  {
     return 1572*sign(y);
-  } else {
+  }
+
+  else
+  {
     int32_t arctan = turboatan((1000*x)/y);
-    if (y > 0) {
+
+    if (y > 0)
+    {
       return 1571 - arctan;
-    } else if ( y < 0) {
+    }
+    else if (y < 0)
+    {
       return -1571 - arctan;
-    } else if ( x < 0) {
+    }
+    else if (x < 0)
+    {
       return arctan + 3142;
-    } else {
+    }
+    else
+    {
       return arctan;
     }
   }
@@ -87,30 +110,37 @@ int32_t turboatan2(int32_t y, int32_t x)
 
 int32_t turboatan_taylor(int32_t x)
 {
-  if (x > 1000) {
+  if (x > 1000)
+  {
     return 1571-turboatan(1000000/x);
   }
+
   return (972*x/1000) - (((191*x*x)/1000)*x)/(1000*1000); // the weird order of operations is to prevent overflow
 }
 
+
 int32_t turbocos(int32_t x)
 {
-   return turbosin(x + 1571);
+  return turbosin(x + 1571);
 }
+
 
 int32_t turbosin(int32_t x)
 {
   // wrap to +/- PI
-  if (x < -3142) {
-      x += 6283;
-  } else  if (x >  3142) {
-      x -= 6283;
-  }
+  if (x < -3142)
+    x += 6283;
+  else if (x >  3142)
+    x -= 6283;
 
-  if (x < 0) {
+  if (x < 0)
+  {
     return (1273 * x)/1000 + (405 * x * x)/(1000*1000);
-  } else {
+  }
+  else
+  {
     return (1273 * x)/1000 - (405 * x * x)/(1000*1000);
   }
+
   return x;
 }

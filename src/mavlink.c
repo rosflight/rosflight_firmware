@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 #include <breezystm32/breezystm32.h>
-#include <breezystm32/drv_serial.h>
 
 #include "param.h"
 

@@ -2,16 +2,16 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <breezystm32.h>
+#include <breezystm32/breezystm32.h>
 
+#include "estimator.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mavlink_receive.h"
 #include "mavlink_stream.h"
-#include "param.h"
 #include "mode.h"
+#include "param.h"
 #include "sensors.h"
-#include "estimator.h"
 #include "mixer.h"
 
 void setup(void)
@@ -46,7 +46,7 @@ void setup(void)
   // Initialize Motor Mixing
   init_mixing();
   // Initialize Estimator
-  init_estimator();
+//  init_estimator();
 
 }
 
@@ -64,6 +64,8 @@ void loop(void)
   _command.x = 1000;
   _command.y = 1000;
 
-  mix_output();
+  pwmWriteMotor(0,1100);
+
+//  mix_output();
   delay(500);
 }
