@@ -17,7 +17,7 @@ void setup(void)
 {
   // Load Default Params
   // Read EEPROM to get initial params
-  // init_params();
+  init_params();
 
   /***********************/
   /***  Hardware Setup ***/

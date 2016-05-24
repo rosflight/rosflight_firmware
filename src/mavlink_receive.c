@@ -12,7 +12,7 @@ static mavlink_message_t in_buf;
 static mavlink_status_t status;
 
 // local function definitions
-static void handle_mavlink_msg_command(const mavlink_message_t *const msg)
+static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
 {
   mavlink_command_int_t cmd;
   mavlink_msg_command_int_decode(msg, &cmd);
@@ -73,6 +73,9 @@ static void handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_PARAM_SET:
     mavlink_handle_msg_param_set(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_COMMAND_INT:
+    mavlink_handle_msg_command_int(&in_buf);
     break;
   default:
     break;
