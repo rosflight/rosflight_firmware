@@ -15,6 +15,8 @@
 
 void setup(void)
 {
+  delay(500);
+
   // Load Default Params
   // Read EEPROM to get initial params
   init_params();
