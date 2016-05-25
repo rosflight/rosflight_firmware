@@ -18,6 +18,7 @@
 
 void setup(void)
 {
+  delay(500);
   i2cInit(I2CDEV_2);
   init_sensors();
   init_estimator();
