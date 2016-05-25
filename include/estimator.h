@@ -2,9 +2,9 @@
 #include <stdbool.h>
 
 typedef struct state_t{
-  int16_t p;
-  int16_t q;
-  int16_t r;
+  int32_t p;
+  int32_t q;
+  int32_t r;
 
   int32_t phi;
   int32_t theta;

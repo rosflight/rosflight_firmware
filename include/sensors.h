@@ -10,4 +10,4 @@ extern int32_t _gyro_scale; // converts to urad/s
 
 // function declarations
 void init_sensors(void);
-void update_sensors(uint32_t time_us);
+bool update_sensors(uint32_t time_us);
