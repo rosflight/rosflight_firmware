@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // global variable declarations
 extern int16_t _accel_data[3];

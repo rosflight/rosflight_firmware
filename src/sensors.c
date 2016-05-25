@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <breezystm32/drv_mpu6050.h>
+#include <breezystm32/breezystm32.h>
 
 #include "param.h"
 #include "sensors.h"
@@ -29,8 +29,10 @@ void init_sensors(void)
   uint16_t acc1G;
   float gyro_scale;
   mpu6050_init(true, &acc1G, &gyro_scale);
+
   _accel_scale = 2394; // convert to um/s^2
   _gyro_scale = 4261; // convert to urad/s
+
   imu_last_us = 0;
 }
 

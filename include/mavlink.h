@@ -6,6 +6,7 @@
 extern mavlink_system_t mavlink_system;
 void comm_send_ch(mavlink_channel_t chan, uint8_t ch);
 
+// this needs to be include after the above declarations
 #include <mavlink/v1.0/rosflight/mavlink.h>
 
 // function declarations

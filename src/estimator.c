@@ -1,14 +1,16 @@
+#include <math.h>
 
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 
 #include "sensors.h"
-#include "estimator.h"
 
+#include "estimator.h"
 
 state_t _current_state;
 
-void init_estimator(){
+void init_estimator()
+{
   _current_state.p = 0;
   _current_state.q = 0;
   _current_state.r = 0;
@@ -16,6 +18,7 @@ void init_estimator(){
   _current_state.theta = 0;
   _current_state.psi = 0;
 }
+
 
 void run_estimator(int32_t now){
   static int32_t last_time = 0;
