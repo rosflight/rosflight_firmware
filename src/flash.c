@@ -41,7 +41,6 @@ bool readEEPROM(void)
   // Sanity check
   if (!validEEPROM())
   {
-//    failureMode(10);
     return false;
   }
 
@@ -50,7 +49,7 @@ bool readEEPROM(void)
   return true;
 }
 
-void writeEEPROM(bool b)
+bool writeEEPROM(bool blink)
 {
   FLASH_Status status;
   uint8_t chk = 0;
@@ -86,13 +85,12 @@ void writeEEPROM(bool b)
   // Flash write failed - just die now
   if (status != FLASH_COMPLETE || !validEEPROM())
   {
-    failureMode(10);
+    return false;
   }
 
-  if (b)
-//    blinkLED(15, 20, 1);
+  if (blink)
   {
-    for (uint8_t i=0; i < 10; i++)
+    for (uint8_t i=0; i < 3; i++)
     {
       LED0_TOGGLE;
       delay(100);
@@ -100,4 +98,6 @@ void writeEEPROM(bool b)
       delay(50);
     }
   }
+
+  return true;
 }

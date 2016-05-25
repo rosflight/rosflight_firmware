@@ -25,25 +25,39 @@ static void init_param(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t val
 void init_params(void)
 {
   initEEPROM();
-  if (!readEEPROM())
+  if (!read_params())
   {
-    init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
-    init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
-    init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
-
-    // temporary: replace with actual initialisation of rest of params
-    char temp_name[PARAMS_NAME_LENGTH];
-    for (param_id_t id = 3; id < PARAMS_COUNT; id++)
-    {
-      sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
-      init_param(id, temp_name, id);
-    }
-
-    for (param_id_t id = 0; id < PARAMS_COUNT; id++)
-      param_change_callback(id);
-
-    writeEEPROM(true);
+    set_param_defaults();
+    write_params();
   }
+
+  for (param_id_t id = 0; id < PARAMS_COUNT; id++)
+    param_change_callback(id);
+}
+
+void set_param_defaults(void)
+{
+  init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
+  init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
+  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
+
+  // temporary: replace with actual initialisation of rest of params
+  char temp_name[PARAMS_NAME_LENGTH];
+  for (param_id_t id = 3; id < PARAMS_COUNT; id++)
+  {
+    sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
+    init_param(id, temp_name, id);
+  }
+}
+
+bool read_params(void)
+{
+  return readEEPROM();
+}
+
+bool write_params(void)
+{
+  return writeEEPROM(true);
 }
 
 void param_change_callback(param_id_t id)

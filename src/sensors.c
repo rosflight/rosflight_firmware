@@ -30,7 +30,7 @@ void init_sensors(void)
   float gyro_scale;
   mpu6050_init(true, &acc1G, &gyro_scale);
   _accel_scale = 9807 / acc1G; // convert to mm/s^2
-  _gyro_scale = 1e6 * gyro_scale; // convert to urad/s
+  _gyro_scale = (int32_t) (1e6 * gyro_scale); // convert to urad/s
   imu_last_us = 0;
 }
 
