@@ -16,9 +16,11 @@
 
 void setup(void)
 {
+  delay(500);
+
   // Load Default Params
   // Read EEPROM to get initial params
-  // init_params();
+  init_params();
 
   /***********************/
   /***  Hardware Setup ***/
@@ -67,12 +69,6 @@ void loop(void)
   dt = now - prev_time;
   prev_time = now;
 
-  _command.F = 1500;
-  _command.x = 1000;
-  _command.y = 1000;
-
-  pwmWriteMotor(0,1100);
-
 
   if(update_sensors(now));
     run_estimator(now);
@@ -92,6 +88,6 @@ void loop(void)
   counter++;
   average_time += dt;
 
-//  mix_output();
+  mix_output();
   delay(500);
 }

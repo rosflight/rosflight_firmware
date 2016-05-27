@@ -35,6 +35,6 @@ bool readEEPROM(void);
 
 /**
  * @brief write the _param struct to Flash
- * @param b Blink the led after writing if true
+ * @param blink Blink the led after writing if true
  */
-void writeEEPROM(bool b);
+bool writeEEPROM(bool blink);

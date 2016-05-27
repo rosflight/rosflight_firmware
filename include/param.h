@@ -106,6 +106,23 @@ extern params_t _params;
 void init_params(void);
 
 /**
+ * @brief Set all parameters to default values
+ */
+void set_param_defaults(void);
+
+/**
+ * @brief Read parameter values from non-volatile memory
+ * @return True if successful, false otherwise
+ */
+bool read_params(void);
+
+/**
+ * @brief Write current parameter values to non-volatile memory
+ * @return True if successful, false otherwise
+ */
+bool write_params(void);
+
+/**
  * @brief Callback for executing actions that need to be taken when a parameter value changes
  * @param id The ID of the parameter that was changed
  */
