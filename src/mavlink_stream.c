@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "sensors.h"

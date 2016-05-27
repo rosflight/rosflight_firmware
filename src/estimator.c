@@ -26,19 +26,19 @@ void run_estimator(int32_t now){
   last_time = now;
 
   int32_t tau = 100; // desired time constant of the filter (us) <-- should be a param
-  int32_t alpha = 1000;
+  int32_t alpha = 1000;  // only trust gyro unless we figure out it's safe to use accel
+
+  // check if z-acceleration is greater than 1.15G and less than 0.85G
   int32_t acc_phi = 0;
   int32_t acc_theta = 0;
-
-  // if the accleration in the z-direction is less than 1.15G and greater than .85G, then use
-  // it to calculate the attitude, otherwise it breaks the assumption that we are not accelerating
-  // We can instead just use the gyros and assume we will even out soon
-  if (_accel_data[2] * _accel_scale > 11277647 && _accel_data[2] * _accel_scale < 8335652)
+  if( _accel_data[2] *_accel_scale > 1.15*980665 && _accel_data[2] * _accel_scale > 0.85*980665)
   {
-    alpha = (1000000*tau)/(tau*1000+dt);
     // pull in accelerometer data
     acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
     acc_theta = turboatan2(_accel_data[0], _accel_data[2]);
+
+    // calculate filter constant
+    alpha = (1000000*tau)/(tau*1000+dt);
   }
 
   // pull in gyro data

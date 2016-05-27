@@ -71,35 +71,19 @@ void loop(void)
   {
     // run estimator
     run_estimator(now);
+    printf("phi = %d theta = %d psi = %d\n", _current_state.phi/1000, _current_state.theta/1000, _current_state.psi/1000);
 
-    /// Need to mix between RC and computer based on override mode and RC & computer control modes
-    /// (happens at multiple levels between control loops)
-    switch (armed_state)
-    {
-      case ARMED:
-        switch (composite_control_mode)
-        {
-          case ALT_MODE:
-            // thrust_c = runAltController(alt_c, state);
-          case ATTITUDE_MODE:
-            // omega_c = runAttController(theta_c, state);
-          case RATE_MODE:
-            // tau_c = runRateController(omega_c, state);
-            // motor_speeds = mixOutput(tau_c);
-          case PASSTHROUGH:
-            // write_motors_armed(motor_speeds);
-            break;
-          default:
-            error_state = INVALID_CONTROL_MODE;
-            break;
-            break;
-        }
-      case DISARMED:
-        // write_motors_armed();
-        break;
-      default:
-        error_state = INVALID_ARMED_STATE;
-    }
+//  if(counter > 10000){
+//    printf("accx = %d accy = %d accz = %d gx = %d gy = %d gz = %d\n",
+//           (_accel_data[0]*_accel_scale)/1000,
+//           (_accel_data[1]*_accel_scale)/1000,
+//           (_accel_data[2]*_accel_scale)/1000,
+//           (_gyro_data[0]*_gyro_scale)/1000,
+//           (_gyro_data[1]*_gyro_scale)/1000,
+//           (_gyro_data[2]*_gyro_scale)/1000);
+//    printf("phi = %d theta = %d psi = %d dt = %d \n\n", _current_state.phi, _current_state.theta, _current_state.psi, average_time/10000);
+//    average_time = 0;
+//    counter = 0;
   }
   counter++;
   average_time += dt;
@@ -107,11 +91,11 @@ void loop(void)
   // send serial sensor data
   // send low priority messages (e.g. param values)
   //  internal timers figure out what to send
-  mavlink_stream(now);
+//  mavlink_stream(now);
 
   /// Post-Process
   // receive mavlink messages
-  mavlink_receive();
+//  mavlink_receive();
 
   // commands from the computer will be updated by callbacks
   // update controlModeComp
