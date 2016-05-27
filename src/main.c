@@ -34,8 +34,10 @@ void loop(void)
   dt = now - prev_time;
   prev_time = now;
 
-  if(update_sensors(now));
+  if(update_sensors(now))
+  {
     run_estimator(now);
+    printf("phi = %d theta = %d psi = %d\n", _current_state.phi/1000, _current_state.theta/1000, _current_state.psi/1000);
 
 //  if(counter > 10000){
 //    printf("accx = %d accy = %d accz = %d gx = %d gy = %d gz = %d\n",
@@ -48,7 +50,7 @@ void loop(void)
 //    printf("phi = %d theta = %d psi = %d dt = %d \n\n", _current_state.phi, _current_state.theta, _current_state.psi, average_time/10000);
 //    average_time = 0;
 //    counter = 0;
-//  }
+  }
   counter++;
   average_time += dt;
 
