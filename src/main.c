@@ -37,8 +37,8 @@ void setup(void)
 
 
   // Initialize Serial Communication
-//  init_mavlink();
-//  init_sensors();
+  init_mavlink();
+  init_sensors();
 
 
   /***********************/
@@ -47,12 +47,8 @@ void setup(void)
 
   // Initialize Motor Mixing
   init_mixing();
-  // Initialize Estimator
-//  init_estimator();
 
-  delay(500);
-  i2cInit(I2CDEV_2);
-  init_sensors();
+  // Initialize Estimator
   init_estimator();
 }
 
