@@ -29,16 +29,21 @@ void init_sensors(void)
   uint16_t acc1G;
   float gyro_scale;
   mpu6050_init(true, &acc1G, &gyro_scale);
-  _accel_scale = 9807 / acc1G; // convert to mm/s^2
-  _gyro_scale = (int32_t) (1e6 * gyro_scale); // convert to urad/s
+
+  _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
+  _gyro_scale = (int32_t)(gyro_scale*1000000000000.0f); // convert to urad/s
+
   imu_last_us = 0;
 }
 
-void update_sensors(uint32_t time_us)
+bool update_sensors(uint32_t time_us)
 {
   if (time_us - imu_last_us >= 5000)
   {
     imu_last_us = time_us;
     update_imu();
+    return true;
   }
+  else
+    return false;
 }

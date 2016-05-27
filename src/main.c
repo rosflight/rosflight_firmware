@@ -52,6 +52,9 @@ void setup(void)
   // Initialize State Machine
 }
 
+uint32_t counter = 0;
+uint32_t average_time = 0;
+
 void loop(void)
 {
   /// Pre-process
@@ -63,40 +66,43 @@ void loop(void)
   prev_time = now;
 
   // update sensors (only the ones that need updating)
-  update_sensors(now);
-
-  /// Main Thread
-  // run estimator
-  run_estimator(dt);
-
-  /// Need to mix between RC and computer based on override mode and RC & computer control modes
-  /// (happens at multiple levels between control loops)
-  switch (armed_state)
+  // If I have new IMU data, then perform control, otherwise, do something else
+  if (update_sensors(now))
   {
-  case ARMED:
-    switch (composite_control_mode)
+    // run estimator
+    run_estimator(now);
+
+    /// Need to mix between RC and computer based on override mode and RC & computer control modes
+    /// (happens at multiple levels between control loops)
+    switch (armed_state)
     {
-    case ALT_MODE:
-      // thrust_c = runAltController(alt_c, state);
-    case ATTITUDE_MODE:
-      // omega_c = runAttController(theta_c, state);
-    case RATE_MODE:
-      // tau_c = runRateController(omega_c, state);
-      // motor_speeds = mixOutput(tau_c);
-    case PASSTHROUGH:
-      // write_motors_armed(motor_speeds);
-      break;
-    default:
-      error_state = INVALID_CONTROL_MODE;
-      break;
-      break;
+      case ARMED:
+        switch (composite_control_mode)
+        {
+          case ALT_MODE:
+            // thrust_c = runAltController(alt_c, state);
+          case ATTITUDE_MODE:
+            // omega_c = runAttController(theta_c, state);
+          case RATE_MODE:
+            // tau_c = runRateController(omega_c, state);
+            // motor_speeds = mixOutput(tau_c);
+          case PASSTHROUGH:
+            // write_motors_armed(motor_speeds);
+            break;
+          default:
+            error_state = INVALID_CONTROL_MODE;
+            break;
+            break;
+        }
+      case DISARMED:
+        // write_motors_armed();
+        break;
+      default:
+        error_state = INVALID_ARMED_STATE;
     }
-  case DISARMED:
-    // write_motors_armed();
-    break;
-  default:
-    error_state = INVALID_ARMED_STATE;
   }
+  counter++;
+  average_time += dt;
 
   // send serial sensor data
   // send low priority messages (e.g. param values)
