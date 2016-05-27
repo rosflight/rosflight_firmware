@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
-typedef struct state_t{
+typedef struct
+{
   int32_t p;
   int32_t q;
   int32_t r;

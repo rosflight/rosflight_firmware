@@ -27,7 +27,7 @@ void setup(void)
   /***********************/
 
   // Initialize I2c
-//  i2cInit(I2CDEV_2);
+  i2cInit(I2CDEV_2);
 
   // Initialize PWM
   bool useCPPM = _params.values[PARAM_RC_TYPE];
@@ -69,25 +69,65 @@ void loop(void)
   dt = now - prev_time;
   prev_time = now;
 
-
-  if(update_sensors(now));
+  // update sensors (only the ones that need updating)
+  // If I have new IMU data, then perform control, otherwise, do something else
+  if (update_sensors(now))
+  {
+    // run estimator
     run_estimator(now);
 
-//  if(counter > 10000){
-//    printf("accx = %d accy = %d accz = %d gx = %d gy = %d gz = %d\n",
-//           (_accel_data[0]*_accel_scale)/1000,
-//           (_accel_data[1]*_accel_scale)/1000,
-//           (_accel_data[2]*_accel_scale)/1000,
-//           (_gyro_data[0]*_gyro_scale)/1000,
-//           (_gyro_data[1]*_gyro_scale)/1000,
-//           (_gyro_data[2]*_gyro_scale)/1000);
-//    printf("phi = %d theta = %d psi = %d dt = %d \n\n", _current_state.phi, _current_state.theta, _current_state.psi, average_time/10000);
-//    average_time = 0;
-//    counter = 0;
-//  }
+    /// Need to mix between RC and computer based on override mode and RC & computer control modes
+    /// (happens at multiple levels between control loops)
+    switch (armed_state)
+    {
+      case ARMED:
+        switch (composite_control_mode)
+        {
+          case ALT_MODE:
+            // thrust_c = runAltController(alt_c, state);
+          case ATTITUDE_MODE:
+            // omega_c = runAttController(theta_c, state);
+          case RATE_MODE:
+            // tau_c = runRateController(omega_c, state);
+            // motor_speeds = mixOutput(tau_c);
+          case PASSTHROUGH:
+            // write_motors_armed(motor_speeds);
+            break;
+          default:
+            error_state = INVALID_CONTROL_MODE;
+            break;
+            break;
+        }
+      case DISARMED:
+        // write_motors_armed();
+        break;
+      default:
+        error_state = INVALID_ARMED_STATE;
+    }
+  }
   counter++;
   average_time += dt;
 
-  mix_output();
-  delay(500);
+  // send serial sensor data
+  // send low priority messages (e.g. param values)
+  //  internal timers figure out what to send
+  mavlink_stream(now);
+
+  /// Post-Process
+  // receive mavlink messages
+  mavlink_receive();
+
+  // commands from the computer will be updated by callbacks
+  // update controlModeComp
+
+  // (for next steps get most recent RC value from drv_pwm as needed)
+  // if it has been at least 50 Hz
+  // update overrideMode (read switch if present)
+  // OFFBOARD               (can override RPY by moving RC out of deadzone)
+  // OFFBOARD_MIN_THROTTLE  (same as above, but takes min throttle)
+  // MANUAL_RC              (listens only to RC)
+  // RC switch moves between MANUAL_RC and OFFBOARD_xx
+  // which offboard mode you go to is set by a param
+  // update controlModeRC (read switch if present)
+  // update armedState (read switch)
 }
