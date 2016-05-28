@@ -170,12 +170,10 @@ void mix_output()
     if (output_type == S)
     {
       write_servo(i, _outputs[i]);
-      printf("writing SERVO %d, %d\n", i+1, _outputs[i]);
     }
     else if (output_type == M)
     {
       write_motor(i, _outputs[i]);
-      printf("writing MOTOR %d: %d\n", i+1, _outputs[i]);
     }
     // If we need to configure another type of output, do it here
   }
