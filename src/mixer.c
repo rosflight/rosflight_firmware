@@ -75,7 +75,7 @@ void init_mixing()
   {
     _outputs[i] = 0;
     _GPIO_outputs[i] = 0;
-    _GPIO_output_type[i] = 0;
+    _GPIO_output_type[i] = NONE;
   }
   _command.F = 0;
   _command.x = 0;
@@ -97,7 +97,7 @@ void write_motor(uint8_t index, int32_t value){
   {
     value = 0;
   }
-  pwmWriteMotor(index, value+2000);
+  pwmWriteMotor(index, value+1000);
 }
 
 void write_servo(uint8_t index, int32_t value){
@@ -118,7 +118,6 @@ void write_servo(uint8_t index, int32_t value){
 
 void mix_output()
 {
-  printf("COMMANDS: F = %d, x = %d, y = %d, z = %d\n", _command.F, _command.x, _command.y, _command.z);
   // Mix Output
   int32_t max_output = 0;
   for (int8_t i=0; i<8; i++)
@@ -132,7 +131,6 @@ void mix_output()
       {
         max_output = _outputs[i];
       }
-      printf("mixer col %d: %d %d %d %d\t", i, mixer_to_use.F[i], mixer_to_use.x[i], mixer_to_use.y[i], mixer_to_use.z[i]);
     }
   }
 

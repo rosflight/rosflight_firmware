@@ -44,10 +44,6 @@
 \renewcommand{\footrulewidth}{0pt} % Remove footer underlines
 \setlength{\headheight}{13.6pt} % Customize the height of the header
 
-\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
-\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
-\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
-
 \setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
 
 %----------------------------------------------------------------------------------------
@@ -124,14 +120,14 @@ In addition, each mixer contains information about what kind of output each outp
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[scale=0.3]{./fig/motor_layout.jpg}
+	\includegraphics[scale=0.3]{fig/motor_layout.jpg}
 	\label{fig:motor_layout}
 	\caption{The motor layout for the mixers}
 \end{figure}
 
 \section{Saturation}
 
-There are often agressive maneuvers which may cause all of the motor outputs to become saturated.  This is of particular concern in multirotors, and can be illustrated in the example of the command of maximum roll while at full throttle in a quadcopter.  Full throttle, with no other command, would normally cause all four motors to saturate at a maximum PWM command of 2000$\upmu}$s.  Mixing in a maximum roll command would cause two of the motors to reduce to 1500$\upmu}$s, while the other two would go to 2500$\upmu}$s.  Because 2500$\upmu}$s is beyond the maximum limit, the maximum roll command would actually be interpreted as a half-roll command as the difference between the motors on opposite sides of the MAV would be halved.  To increase controllability in these sorts of situations, we take the motor control value from the mixer, before it is shifted up 1000$\upmu}$s to the standard PWM range, and find the scaling factor which would reduce the maximum motor command to 1000$\upmu}$s.  We then apply this scaling factor to all other motors, and then shift them up to the standard PWM range of 1000$\upmu}$s to 2000$\upmu}$s.  This does not completely solve the problem, because the maximum roll command is still reduced somewhat, but it trades off maximum thrust for some additional controllability.  The problem is really caused by a limit in how much acceleration is really possible in the MAV, not so much the way in which these commands are interpreted.  In the case of a simultaneous maximum roll and maximum throttle, two of the motors will receive a command of 2000$\upmu}$s, while the other two will receive a command of 1333$\upmu}$s, as opposed to the 1500$\upmu}$s without the saturation, and maintains controllability even at high levels of throttle.
+There are often agressive maneuvers which may cause all of the motor outputs to become saturated.  This is of particular concern in multirotors, and can be illustrated in the example of the command of maximum roll while at full throttle in a quadcopter.  Full throttle, with no other command, would normally cause all four motors to saturate at a maximum PWM command of 2000$\upmu$s.  Mixing in a maximum roll command would cause two of the motors to reduce to 1500$\upmu$s, while the other two would go to 2500$\upmu$s.  Because 2500$\upmu$s is beyond the maximum limit, the maximum roll command would actually be interpreted as a half-roll command as the difference between the motors on opposite sides of the MAV would be halved.  To increase controllability in these sorts of situations, we take the motor control value from the mixer, before it is shifted up 1000$\upmu$s to the standard PWM range, and find the scaling factor which would reduce the maximum motor command to 1000$\upmu$s.  We then apply this scaling factor to all other motors, and then shift them up to the standard PWM range of 1000$\upmu$s to 2000$\upmu$s.  This does not completely solve the problem, because the maximum roll command is still reduced somewhat, but it trades off maximum thrust for some additional controllability.  The problem is really caused by a limit in how much acceleration is really possible in the MAV, not so much the way in which these commands are interpreted.  In the case of a simultaneous maximum roll and maximum throttle, two of the motors will receive a command of 2000$\upmu$s, while the other two will receive a command of 1333$\upmu$s, as opposed to the 1500$\upmu$s without the saturation, and maintains controllability even at high levels of throttle.
 
 
 
