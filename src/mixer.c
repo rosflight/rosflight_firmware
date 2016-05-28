@@ -9,7 +9,8 @@ int32_t _outputs[8];
 command_t _command;
 output_type_t _GPIO_output_type[8];
 
-static mixer_t quadcopter_plus_mixing = {
+static mixer_t quadcopter_plus_mixing =
+{
   {M, M, M, M, 0, 0, 0, 0}, // output_type
 
   { 1000, 1000,  1000, 1000, 0, 0, 0, 0}, // F Mix
@@ -19,7 +20,8 @@ static mixer_t quadcopter_plus_mixing = {
 };
 
 
-static mixer_t quadcopter_x_mixing = {
+static mixer_t quadcopter_x_mixing =
+{
   {M, M, M, M, 0, 0, 0, 0}, // output_type
 
   { 1000, 1000, 1000, 1000,  0, 0, 0, 0}, // F Mix
@@ -28,7 +30,8 @@ static mixer_t quadcopter_x_mixing = {
   { 1000,-1000,-1000, 1000,  0, 0, 0, 0}  // Z Mix
 };
 
-static mixer_t fixedwing_mixing = {
+static mixer_t fixedwing_mixing =
+{
   {M, S, S, S, 0, 0, 0, 0},
 
   {1000, 0,    0,    0,    0, 0, 0, 0}, // F Mix
@@ -37,7 +40,8 @@ static mixer_t fixedwing_mixing = {
   {0,    0,    0,    1000, 0, 0, 0, 0}  // Z Mix
 };
 
-static mixer_t tricopter_mixing = {
+static mixer_t tricopter_mixing =
+{
   {M, M, M, S, 0, 0, 0, 0},
 
   {1000,  1000, 1000, 0,    0, 0, 0, 0}, // F Mix
@@ -46,7 +50,8 @@ static mixer_t tricopter_mixing = {
   {0,     0,    0,    1000, 0, 0, 0, 0}  // Z Mix
 };
 
-static mixer_t Y6_mixing = {
+static mixer_t Y6_mixing =
+{
   {M, M, M, M, M, M, 0, 0},
   { 1000, 1000, 1000, 1000, 1000, 1000, 0, 0}, // F Mix
   { 0,   -1000, 1000, 0,   -1000, 1000, 0, 0}, // X Mix
@@ -56,7 +61,8 @@ static mixer_t Y6_mixing = {
 
 static mixer_t mixer_to_use;
 
-static mixer_t *array_of_mixers[5] = {
+static mixer_t *array_of_mixers[5] =
+{
   &quadcopter_plus_mixing,
   &quadcopter_x_mixing,
   &tricopter_mixing,
@@ -71,7 +77,7 @@ void init_mixing()
   // We need a better way to choosing the mixer
   mixer_to_use = *array_of_mixers[QUADCOPTER_X];
 
-  for(int8_t i=0; i<8; i++)
+  for (int8_t i=0; i<8; i++)
   {
     _outputs[i] = 0;
     _GPIO_outputs[i] = 0;
@@ -84,7 +90,8 @@ void init_mixing()
 }
 
 
-void write_motor(uint8_t index, int32_t value){
+void write_motor(uint8_t index, int32_t value)
+{
   /** TODO:
    * reverse the PWM -> mRad conversion in RC
    */
@@ -100,7 +107,8 @@ void write_motor(uint8_t index, int32_t value){
   pwmWriteMotor(index, value+1000);
 }
 
-void write_servo(uint8_t index, int32_t value){
+void write_servo(uint8_t index, int32_t value)
+{
   /** TODO:
    * reverse the PWM conversion in RC (if any)
    */
@@ -126,7 +134,7 @@ void mix_output()
     {
       // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
       _outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                    _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
+                     _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
       if (_outputs[i] > 1000 && _outputs[i] > max_output)
       {
         max_output = _outputs[i];
@@ -140,7 +148,7 @@ void mix_output()
     int32_t scale_factor = (max_output*1000)/1000;
     for (int8_t i=0; i<8; i++)
     {
-      if ( mixer_to_use.output_type[i] == M)
+      if (mixer_to_use.output_type[i] == M)
       {
         _outputs[i] = (_outputs[i]*1000)/scale_factor; // divide by scale factor
       }
@@ -148,10 +156,10 @@ void mix_output()
   }
 
   // Add in GPIO inptus from Onboard Computer
-  for ( int8_t i=0; i<8; i++)
+  for (int8_t i=0; i<8; i++)
   {
     output_type_t output_type = mixer_to_use.output_type[i];
-    if ( output_type == NONE)
+    if (output_type == NONE)
     {
       // Incorporate GPIO on not already reserved outputs
       _outputs[i] = _GPIO_outputs[i];

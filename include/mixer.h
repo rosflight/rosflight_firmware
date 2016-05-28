@@ -2,7 +2,8 @@
 #include <stdbool.h>
 
 
-typedef enum{
+typedef enum
+{
   QUADCOPTER_PLUS,
   QUADCOPTER_X,
   TRICOPTER,
@@ -10,21 +11,24 @@ typedef enum{
   FIXEDWING
 } mixer_type_t;
 
-typedef enum{
+typedef enum
+{
   NONE, // None
   S, // Servo
   M, // Motor
   G // GPIO
 } output_type_t;
 
-typedef struct {
+typedef struct
+{
   int32_t F;
   int32_t x;
   int32_t y;
   int32_t z;
 } command_t;
 
-typedef struct {
+typedef struct
+{
   output_type_t output_type[8];
   int32_t F[8];
   int32_t x[8];
