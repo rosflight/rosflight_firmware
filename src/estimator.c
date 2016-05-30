@@ -1,4 +1,4 @@
-#include <math.h>
+#include <stdlib.h>
 
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
@@ -20,7 +20,8 @@ void init_estimator()
 }
 
 
-void run_estimator(int32_t now){
+void run_estimator(int32_t now)
+{
   static int32_t last_time = 0;
   int32_t dt = now - last_time;
   last_time = now;
@@ -31,7 +32,7 @@ void run_estimator(int32_t now){
   // check if z-acceleration is greater than 1.15G and less than 0.85G
   int32_t acc_phi = 0;
   int32_t acc_theta = 0;
-  if( _accel_data[2] *_accel_scale > 1.15*980665 && _accel_data[2] * _accel_scale > 0.85*980665)
+  if (_accel_data[2] *_accel_scale > 1.15*980665 && _accel_data[2] * _accel_scale > 0.85*980665)
   {
     // pull in accelerometer data
     acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
@@ -52,7 +53,8 @@ void run_estimator(int32_t now){
   _current_state.psi = _current_state.psi + (_current_state.r/100*dt)/10000;
 
   // wrap psi because we don't actually get a measurement of it
-  if(abs(_current_state.psi) > 3141593){
+  if (abs(_current_state.psi) > 3141593)
+  {
     _current_state.psi += 6283185 * -1* sign(_current_state.psi);
   }
 }

@@ -12,6 +12,7 @@
 #include "mode.h"
 #include "param.h"
 #include "sensors.h"
+#include "mixer.h"
 
 void setup(void)
 {
@@ -45,11 +46,10 @@ void setup(void)
   /***********************/
 
   // Initialize Motor Mixing
+  init_mixing();
+
   // Initialize Estimator
   init_estimator();
-
-  // Initialize Controller
-  // Initialize State Machine
 }
 
 uint32_t counter = 0;
@@ -76,29 +76,29 @@ void loop(void)
     /// (happens at multiple levels between control loops)
     switch (armed_state)
     {
-      case ARMED:
-        switch (composite_control_mode)
-        {
-          case ALT_MODE:
-            // thrust_c = runAltController(alt_c, state);
-          case ATTITUDE_MODE:
-            // omega_c = runAttController(theta_c, state);
-          case RATE_MODE:
-            // tau_c = runRateController(omega_c, state);
-            // motor_speeds = mixOutput(tau_c);
-          case PASSTHROUGH:
-            // write_motors_armed(motor_speeds);
-            break;
-          default:
-            error_state = INVALID_CONTROL_MODE;
-            break;
-            break;
-        }
-      case DISARMED:
-        // write_motors_armed();
+    case ARMED:
+      switch (composite_control_mode)
+      {
+      case ALT_MODE:
+        // thrust_c = runAltController(alt_c, state);
+      case ATTITUDE_MODE:
+        // omega_c = runAttController(theta_c, state);
+      case RATE_MODE:
+        // tau_c = runRateController(omega_c, state);
+        // motor_speeds = mixOutput(tau_c);
+      case PASSTHROUGH:
+        // write_motors_armed(motor_speeds);
         break;
       default:
-        error_state = INVALID_ARMED_STATE;
+        error_state = INVALID_CONTROL_MODE;
+        break;
+        break;
+      }
+    case DISARMED:
+      // write_motors_armed();
+      break;
+    default:
+      error_state = INVALID_ARMED_STATE;
     }
   }
   counter++;

@@ -43,10 +43,12 @@ int16_t atan_lookup_table[1001] =
   773,774,774,775,775,776,776,777,777,778,778,779,779,780,780,781,781,782,782,783,783,784,784,785
 };
 
+
 int32_t sign(int32_t y)
 {
   return (0 < y) - (y < 0);
 }
+
 
 int32_t turboatan(int32_t x)
 {
@@ -61,6 +63,7 @@ int32_t turboatan(int32_t x)
 
   return atan_lookup_table[x];
 }
+
 
 int32_t turboatan2(int32_t y, int32_t x)
 {
@@ -104,6 +107,7 @@ int32_t turboatan2(int32_t y, int32_t x)
   }
 }
 
+
 int32_t turboatan_taylor(int32_t x)
 {
   if (x > 1000)
@@ -114,10 +118,12 @@ int32_t turboatan_taylor(int32_t x)
   return (972*x/1000) - (((191*x*x)/1000)*x)/(1000*1000); // the weird order of operations is to prevent overflow
 }
 
+
 int32_t turbocos(int32_t x)
 {
   return turbosin(x + 1571);
 }
+
 
 int32_t turbosin(int32_t x)
 {
