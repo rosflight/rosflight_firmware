@@ -6,8 +6,6 @@
 #include "param.h"
 #include "rc.h"
 
-rc_control_t _rc_commands;
-
 void init_rc()
 {
   _rc_control.x.type = ANGLE;
@@ -21,17 +19,59 @@ void init_rc()
   _rc_control.F.value = 0;
 }
 
+static void convertPWMtoRad(){
+  // Get Roll control command out of RC
+  if ( _rc_control.x.type == ANGLE)
+  {
+    _rc_control.x.value = ((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
+        *_params.values[PARAM_RC_MAX_ROLL_MRAD])/_params.values[PARAM_RC_X_RANGE];
+  }
+  else if (_rc_control.x.type == RATE)
+  {
+    _rc_control.x.value = ((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
+        *_params.values[PARAM_RC_MAX_ROLLRATE_MRAD_S])/_params.values[PARAM_RC_X_RANGE];
+  }
+  else
+  {
+    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_X_CHANNEL]);
+  }
+
+  // Get Pitch control command out of RC
+  if ( _rc_control.y.type == ANGLE)
+  {
+    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+        *_params.values[PARAM_RC_MAX_PITCH_MRAD])/_params.values[PARAM_RC_Y_RANGE];
+  }
+  else if (_rc_control.y.type == RATE)
+  {
+    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+        *_params.values[PARAM_RC_MAX_PITCHRATE_MRAD_S])/_params.values[PARAM_RC_Y_RANGE];
+  }
+  else
+  {
+    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_Y_CHANNEL]);
+  }
+
+  // Get the Yaw control command type out of RC
+  if ( _rc_control.z.type == RATE)
+  {
+    _rc_control.z.value = ((pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER])
+        *_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S])/_params.values[PARAM_RC_Z_RANGE];
+  }
+  else
+  {
+    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_Z_CHANNEL]);
+  }
+
+  // Finally, the throttle command
+  _rc_control.F.value = (pwmRead(_params.values[PARAM_RC_F_CHANNEL]) - _params.values[PARAM_RC_F_BOTTOM])
+      * 1000 / _params.values[PARAM_RC_F_RANGE];
+}
+
+
 void receive_rc()
 {
   static uint32_t time_of_last_stick_deviation = 0;
-
-  // Start by getting Values from RC
-  _rc_control.x.value = pwmRead(_params.values[PARAM_RC_X_CHANNEL]);
-  _rc_control.y.value = pwmRead(_params.values[PARAM_RC_Y_CHANNEL]);
-  _rc_control.z.value = pwmRead(_params.values[PARAM_RC_Z_CHANNEL]);
-  _rc_control.F.value = pwmRead(_params.values[PARAM_RC_F_CHANNEL]);
-
-
   // Get timestamp for deadband control lag
   uint32_t now = micros();
 
@@ -46,6 +86,8 @@ void receive_rc()
     rc_F_type = THROTTLE;
   }
 
+  // Interpret PWM Values from RC
+  convertPWMtoRad();
 
   // Set flags for attitude channels
   if (pwmRead(_params.values[PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL]) > 1500 || now - time_of_last_stick_deviation < _params.values[PARAM_OVERRIDE_LAG_TIME])
@@ -59,9 +101,9 @@ void receive_rc()
   {
     // Check for stick deviation - if so, then that channel is active
     // Otherwise let onboard computer have control
-    _rc_control.x.active = abs(_rc_commands.x - _params.values[PARAM_RC_X_CENTER]) >  _params.values[PARAM_RC_OVERRIDE_DEVIATION];
-    _rc_control.y.active = abs(_rc_commands.y - _params.values[PARAM_RC_Y_CENTER]) >  _params.values[PARAM_RC_OVERRIDE_DEVIATION];
-    _rc_control.z.active = abs(_rc_commands.z - _params.values[PARAM_RC_Z_CENTER]) >  _params.values[PARAM_RC_OVERRIDE_DEVIATION];
+    _rc_control.x.active = abs(pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER]) >  _params.values[PARAM_RC_OVERRIDE_DEVIATION];
+    _rc_control.y.active = abs(pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER]) >  _params.values[PARAM_RC_OVERRIDE_DEVIATION];
+    _rc_control.z.active = abs(pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER]) >  _params.values[PARAM_RC_OVERRIDE_DEVIATION];
     time_of_last_stick_deviation = now;
   }
 
@@ -74,9 +116,12 @@ void receive_rc()
   }
   else
   {
-    // Onboard Control
+    // Onboard Control - min throttle Checking will be done in mux and in the controller.
     _rc_control.F.active = false;
   }
+
+
+  // Convert PWM inputs to rad or rads/
 }
 
 
