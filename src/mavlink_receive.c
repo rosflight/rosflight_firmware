@@ -9,7 +9,7 @@
 
 // global variable definitions
 mavlink_offboard_control_t _offboard_control;
-uint32_t _offboard_control_time_;
+uint32_t _offboard_control_time;
 
 // local variable definitions
 static mavlink_message_t in_buf;
