@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 

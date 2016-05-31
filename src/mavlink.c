@@ -2,6 +2,7 @@
 
 #include <breezystm32/breezystm32.h>
 
+#include "mavlink_receive.h"
 #include "param.h"
 
 #include "mavlink.h"
@@ -14,6 +15,8 @@ void init_mavlink(void)
 {
   mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
   mavlink_system.compid = 250;
+
+  _offboard_control_time = 0;
 }
 
 // implement for mavlink convenience functions
