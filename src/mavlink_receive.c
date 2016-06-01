@@ -76,10 +76,10 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
   _offboard_control.F.value = mavlink_offboard_control.value4;
 
   // Move flags into standard message
-  _offboard_control.x.active = mavlink_offboard_control.ignore & IGNORE_VALUE1;
-  _offboard_control.y.active = mavlink_offboard_control.ignore & IGNORE_VALUE2;
-  _offboard_control.z.active = mavlink_offboard_control.ignore & IGNORE_VALUE3;
-  _offboard_control.F.active = mavlink_offboard_control.ignore & IGNORE_VALUE4;
+  _offboard_control.x.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE1);
+  _offboard_control.y.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE2);
+  _offboard_control.z.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE3);
+  _offboard_control.F.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE4);
 
   // translate modes into standard message
   switch(mavlink_offboard_control.mode)
