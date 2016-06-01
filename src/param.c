@@ -68,12 +68,12 @@ void param_change_callback(param_id_t id)
     mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
-    mavlink_stream_set_heartbeat_period_us(_params.values[PARAM_STREAM_HEARTBEAT_RATE] == 0 ?
-                                           0 : 1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    mavlink_stream_set_period(MAVLINK_STREAM_ID_HEARTBEAT,
+      _params.values[PARAM_STREAM_HEARTBEAT_RATE] == 0 ? 0 : 1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
   case PARAM_STREAM_IMU_RATE:
-    mavlink_stream_set_imu_period_us(_params.values[PARAM_STREAM_IMU_RATE] == 0 ?
-                                     0 : 1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
+    mavlink_stream_set_period(MAVLINK_STREAM_ID_IMU,
+      _params.values[PARAM_STREAM_IMU_RATE] == 0 ? 0 : 1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
     break;
   default:
     // no action needed for this parameter
