@@ -7,6 +7,10 @@
 
 #include "mavlink_receive.h"
 
+// global variable definitions
+mavlink_offboard_control_t _offboard_control;
+uint32_t _offboard_control_time;
+
 // local variable definitions
 static mavlink_message_t in_buf;
 static mavlink_status_t status;
@@ -59,11 +63,18 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
   }
 }
 
+static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
+{
+  _offboard_control_time = micros();
+  mavlink_msg_offboard_control_decode(msg, &_offboard_control);
+}
+
 static void handle_mavlink_message(void)
 {
   switch (in_buf.msgid)
   {
   case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
+    mavlink_handle_msg_offboard_control(&in_buf);
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
     mavlink_handle_msg_param_request_list();
