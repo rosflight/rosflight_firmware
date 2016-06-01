@@ -1,16 +1,5 @@
 typedef enum
 {
-  ALT_MODE,
-  ATTITUDE_MODE,
-  RATE_MODE,
-  PASSTHROUGH
-} control_mode_t;
-control_mode_t onboard_control_mode;
-control_mode_t rc_control_mode;
-control_mode_t composite_control_mode;
-
-typedef enum
-{
   ARMED,
   DISARMED
 } armed_state_t;
