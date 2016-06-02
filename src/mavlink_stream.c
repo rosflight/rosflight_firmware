@@ -2,6 +2,7 @@
 
 #include "mavlink.h"
 #include "mavlink_param.h"
+#include "mixer.h"
 #include "sensors.h"
 
 #include "mavlink_stream.h"
@@ -32,6 +33,21 @@ static void mavlink_send_imu(void)
     _gyro_data[2]);
 }
 
+static void mavlink_send_servo_output_raw(void)
+{
+  mavlink_msg_servo_output_raw_send(MAVLINK_COMM_0,
+    micros(),
+    0,
+    _outputs[0],
+    _outputs[1],
+    _outputs[2],
+    _outputs[3],
+    _outputs[4],
+    _outputs[5],
+    _outputs[6],
+    _outputs[7]);
+}
+
 static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
@@ -41,6 +57,7 @@ static void mavlink_send_low_priority(void)
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] = {
   { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
   { .period_us = 1e4, .last_time_us = 0, .send_function = mavlink_send_imu },
+  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
   { .period_us = 1e5, .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 
