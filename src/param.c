@@ -37,17 +37,19 @@ void init_params(void)
 
 void set_param_defaults(void)
 {
-  init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
-  init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
-  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
-
   // temporary: replace with actual initialisation of rest of params
   char temp_name[PARAMS_NAME_LENGTH];
-  for (param_id_t id = 3; id < PARAMS_COUNT; id++)
+  for (param_id_t id = 0; id < PARAMS_COUNT; id++)
   {
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
     init_param(id, temp_name, id);
   }
+
+  init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
+  init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
+  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
+
+  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
 }
 
 bool read_params(void)
@@ -68,12 +70,13 @@ void param_change_callback(param_id_t id)
     mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
-    mavlink_stream_set_heartbeat_period_us(_params.values[PARAM_STREAM_HEARTBEAT_RATE] == 0 ?
-                                           0 : 1e6 / _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
   case PARAM_STREAM_IMU_RATE:
-    mavlink_stream_set_imu_period_us(_params.values[PARAM_STREAM_IMU_RATE] == 0 ?
-                                     0 : 1e6 / _params.values[PARAM_STREAM_IMU_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, _params.values[PARAM_STREAM_IMU_RATE]);
+    break;
+  case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, _params.values[PARAM_STREAM_SERVO_OUTPUT_RAW_RATE]);
     break;
   default:
     // no action needed for this parameter

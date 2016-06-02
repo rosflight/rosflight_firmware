@@ -20,7 +20,8 @@ void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
 
   if (read.target_system == (uint8_t) _params.values[PARAM_SYSTEM_ID]) // TODO check if component id matches?
   {
-    param_id_t id = lookup_param_id(read.param_id);
+    param_id_t id = (read.param_index < 0) ? lookup_param_id(read.param_id) : read.param_index;
+
     if (id < PARAMS_COUNT)
     {
       mavlink_msg_param_value_send(MAVLINK_COMM_0,
