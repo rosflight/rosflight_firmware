@@ -64,8 +64,15 @@ control_t rate_controller(control_t rate_command, uint32_t now)
   if (rate_command.z.active && rate_command.z.type == RATE)
   {
     int32_t error = rate_command.z.value - _current_state.r/1000;
-    z_integrator = error * dt;
-    motor_command.z.value = sat((rate_command.x.value*_params.values[PARAM_PID_YAW_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
+    z_integrator += error * dt;
+    // integrator anti-windup - TEST THIS
+    motor_command.z.value = (error*_params.values[PARAM_PID_YAW_RATE_P])/1000 + (z_integrator*_params.values[PARAM_PID_YAW_RATE_I])/1000000;
+    if ( abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
+    {
+      int32_t integrator_overshoot = motor_command.z.value - _params.values[PARAM_MAX_COMMAND]*sign(motor_command.z.value);
+      motor_command.z.value -= integrator_overshoot;
+      z_integrator -= (1000000*integrator_overshoot)/_params.values[PARAM_PID_YAW_RATE_I];
+    }
     motor_command.z.type = PASSTHROUGH;
   }
   else
