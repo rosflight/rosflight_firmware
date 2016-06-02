@@ -23,6 +23,7 @@ PROJECT_SRC = src/main.c \
               src/sensors.c \
               src/mux.c \
               src/rc.c \
+              src/controller.c \
 			  src/mixer.c
 
 ###############################################################################
