@@ -13,4 +13,5 @@ typedef enum
 
 // function declarations
 void mavlink_stream(uint32_t time_us);
+void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate);
 void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us);
