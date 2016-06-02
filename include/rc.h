@@ -3,4 +3,4 @@
 #include "mux.h"
 
 void init_rc(void);
-void receive_rc(void);
+bool receive_rc(uint32_t now);

@@ -13,6 +13,7 @@
 #include "param.h"
 #include "sensors.h"
 #include "mixer.h"
+#include "rc.h"
 
 void setup(void)
 {
@@ -30,14 +31,15 @@ void setup(void)
   i2cInit(I2CDEV_2);
 
   // Initialize PWM
-  bool useCPPM = _params.values[PARAM_RC_TYPE];
+  bool useCPPM = false;//_params.values[PARAM_RC_TYPE];
   int16_t motor_refresh_rate = _params.values[PARAM_MOTOR_PWM_SEND_RATE];
   int16_t idle_pwm = _params.values[PARAM_IDLE_PWM];
   pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);
+  init_rc();
 
 
   // Initialize Serial Communication
-  init_mavlink();
+//  init_mavlink();
   init_sensors();
 
 
@@ -71,47 +73,35 @@ void loop(void)
   {
     // run estimator
     run_estimator(now);
-
-    /// Need to mix between RC and computer based on override mode and RC & computer control modes
-    /// (happens at multiple levels between control loops)
-    switch (armed_state)
-    {
-    case ARMED:
-      switch (composite_control_mode)
-      {
-      case ALT_MODE:
-        // thrust_c = runAltController(alt_c, state);
-      case ATTITUDE_MODE:
-        // omega_c = runAttController(theta_c, state);
-      case RATE_MODE:
-        // tau_c = runRateController(omega_c, state);
-        // motor_speeds = mixOutput(tau_c);
-      case PASSTHROUGH:
-        // write_motors_armed(motor_speeds);
-        break;
-      default:
-        error_state = INVALID_CONTROL_MODE;
-        break;
-        break;
-      }
-    case DISARMED:
-      // write_motors_armed();
-      break;
-    default:
-      error_state = INVALID_ARMED_STATE;
-    }
   }
-  counter++;
   average_time += dt;
 
   // send serial sensor data
   // send low priority messages (e.g. param values)
   //  internal timers figure out what to send
-  mavlink_stream(now);
+//  mavlink_stream(now);
 
   /// Post-Process
   // receive mavlink messages
-  mavlink_receive();
+//  mavlink_receive();
+
+  // receive rc (if time)
+  if( receive_rc(now))
+  {
+    if(counter > 10)
+    {
+    printf("\nNew RC:\n");
+    printf("rc: %d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", pwmRead(0), pwmRead(1), pwmRead(2), pwmRead(3), pwmRead(4), pwmRead(5), pwmRead(6), pwmRead(7));
+    printf("flags:  %d\t%d\t%d\t%d\n", _rc_control.x.active, _rc_control.y.active, _rc_control.z.active, _rc_control.F.active );
+    printf("Types:  %d\t%d\t%d\t%d\n", _rc_control.x.type, _rc_control.y.type, _rc_control.z.type, _rc_control.F.type );
+    printf("Values: %d\t%d\t%d\t%d\n", _rc_control.x.value, _rc_control.y.value, _rc_control.z.value, _rc_control.F.value );
+    counter = 0;
+    }
+    else
+    {
+      counter++;
+    }
+  }
 
   // commands from the computer will be updated by callbacks
   // update controlModeComp
@@ -127,3 +117,4 @@ void loop(void)
   // update controlModeRC (read switch if present)
   // update armedState (read switch)
 }
+
