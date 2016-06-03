@@ -51,6 +51,9 @@ void set_param_defaults(void)
 
   init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
 
+  init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_SEND_RATE", 400);
+  init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
+  init_param(PARAM_RC_TYPE, "RC_TYPE", 0);
   init_param(PARAM_RC_X_CHANNEL, "RC_X_CHANNEL", 0);
   init_param(PARAM_RC_Y_CHANNEL, "RC_Y_CHANNEL", 1);
   init_param(PARAM_RC_Z_CHANNEL, "RC_Z_CHANNEL", 3);
@@ -80,8 +83,8 @@ void set_param_defaults(void)
   init_param(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE_MRAD_S", 12566); // 720 deg/s
   init_param(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE_MRAD_S", 6283); // 360 deg/s
 
-  init_param(PARAM_ARM_STICKS, "ARM_STICKS", false);
-  init_param(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 4);
+  init_param(PARAM_ARM_STICKS, "ARM_STICKS", true);
+  init_param(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 7);
   init_param(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 200);
 
   init_param(PARAM_FIXED_WING, "FIXED_WING", false);

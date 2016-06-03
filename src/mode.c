@@ -16,6 +16,18 @@ void init_mode(void)
   _armed_state = DISARMED;
 }
 
+void arm(void)
+{
+  _armed_state = ARMED;
+  LED1_ON;
+}
+
+void disarm(void)
+{
+  _armed_state = DISARMED;
+  LED1_OFF;
+}
+
 bool check_mode(uint32_t now)
 {
   static uint32_t prev_time = 0;
@@ -83,16 +95,4 @@ bool check_mode(uint32_t now)
     }
   }
   return true;
-}
-
-void arm(void)
-{
-  _armed_state = ARMED;
-  LED1_ON;
-}
-
-void disarm(void)
-{
-  _armed_state = DISARMED;
-  LED1_OFF;
 }

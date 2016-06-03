@@ -7,9 +7,16 @@
 control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
+bool _new_command;
 
-void mux_inputs()
+bool mux_inputs()
 {
+  if( !_new_command)
+  {
+    // we haven't received any new commands, so we shouldn't do anything
+    return false;
+  }
+  // otherwise combine the new commands
 
   if(_rc_control.x.active)
   {
@@ -85,4 +92,8 @@ void mux_inputs()
     _combined_control.F = _rc_control.F;
     _combined_control.F.active = true;
   }
+
+  // reset the new command flag
+  _new_command = false;
+  return true;
 }

@@ -3,6 +3,7 @@
 #include <breezystm32.h>
 
 #include "mixer.h"
+#include "param.h"
 
 int32_t _GPIO_outputs[8];
 int32_t _outputs[8];
@@ -87,6 +88,14 @@ void init_mixing()
   _command.x = 0;
   _command.y = 0;
   _command.z = 0;
+}
+
+void init_PWM()
+{
+  bool useCPPM = _params.values[PARAM_RC_TYPE];
+  int16_t motor_refresh_rate = _params.values[PARAM_MOTOR_PWM_SEND_RATE];
+  int16_t idle_pwm = _params.values[PARAM_MOTOR_IDLE_PWM];
+  pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);
 }
 
 

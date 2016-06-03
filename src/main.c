@@ -17,6 +17,7 @@
 
 void setup(void)
 {
+  // Make sure all the perhipherals are done booting up before starting
   delay(500);
 
   // Load Default Params
@@ -30,16 +31,14 @@ void setup(void)
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
-  // Initialize PWM
-  bool useCPPM = false;//_params.values[PARAM_RC_TYPE];
-  int16_t motor_refresh_rate = _params.values[PARAM_MOTOR_PWM_SEND_RATE];
-  int16_t idle_pwm = _params.values[PARAM_IDLE_PWM];
-  pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);
+  // Initialize PWM and RC
+  init_PWM();
   init_rc();
 
+  // Initialize MAVlink Communication
+  init_mavlink();
 
-  // Initialize Serial Communication
-//  init_mavlink();
+  // Initialize Sensors
   init_sensors();
 
 
@@ -55,12 +54,11 @@ void setup(void)
   init_mode();
 }
 
-uint32_t counter = 0;
-uint32_t average_time = 0;
-
 void loop(void)
 {
-  /// Pre-process
+  /*********************/
+  /***  Pre-Process ***/
+  /*********************/
   // get loop time
   static uint32_t prev_time;
   static int32_t dt = 0;
@@ -68,56 +66,35 @@ void loop(void)
   dt = now - prev_time;
   prev_time = now;
 
-  // update sensors (only the ones that need updating)
-  // If I have new IMU data, then perform control, otherwise, do something else
+  /*********************/
+  /***  Control Loop ***/
+  /*********************/
+  // update sensors - an internal timer runs this at a fixed rate
   if (update_sensors(now))
   {
+    // If I have new IMU data, then perform control
     // run estimator
     run_estimator(now);
+//    run_controller(now);
+//    mix_outputs();
   }
-  average_time += dt;
 
-  // send serial sensor data
-  // send low priority messages (e.g. param values)
-  //  internal timers figure out what to send
-//  mavlink_stream(now);
+  /*********************/
+  /***  Post-Process ***/
+  /*********************/
+  // internal timers figure out what to send
+  mavlink_stream(now);
 
-  /// Post-Process
   // receive mavlink messages
-//  mavlink_receive();
+  mavlink_receive();
 
-  // receive rc (if time)
+  // update the armed_states, an internal timer runs this at a fixed rate
   check_mode(now);
-  if( receive_rc(now))
-  {
-    if(counter > 10)
-    {
-    printf("\nNew RC:\n");
-    printf("rc: %d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", pwmRead(0), pwmRead(1), pwmRead(2), pwmRead(3), pwmRead(4), pwmRead(5), pwmRead(6), pwmRead(7));
-    printf("flags:  %d\t%d\t%d\t%d\n", _rc_control.x.active, _rc_control.y.active, _rc_control.z.active, _rc_control.F.active );
-    printf("Types:  %d\t%d\t%d\t%d\n", _rc_control.x.type, _rc_control.y.type, _rc_control.z.type, _rc_control.F.type );
-    printf("Values: %d\t%d\t%d\t%d\n", _rc_control.x.value, _rc_control.y.value, _rc_control.z.value, _rc_control.F.value );
-    printf("Mode:   %d\t%d\n", _armed_state,pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) < (_params.values[PARAM_RC_Z_CENTER]-_params.values[PARAM_RC_Z_RANGE]/2) + _params.values[PARAM_ARM_THRESHOLD]);
-    counter = 0;
-    }
-    else
-    {
-      counter++;
-    }
-  }
 
-  // commands from the computer will be updated by callbacks
-  // update controlModeComp
+  // get RC, an internal timer runs this every 20 ms (50 Hz)
+  receive_rc(now);
 
-  // (for next steps get most recent RC value from drv_pwm as needed)
-  // if it has been at least 50 Hz
-  // update overrideMode (read switch if present)
-  // OFFBOARD               (can override RPY by moving RC out of deadzone)
-  // OFFBOARD_MIN_THROTTLE  (same as above, but takes min throttle)
-  // MANUAL_RC              (listens only to RC)
-  // RC switch moves between MANUAL_RC and OFFBOARD_xx
-  // which offboard mode you go to is set by a param
-  // update controlModeRC (read switch if present)
-  // update armedState (read switch)
+  // update commands (internal logic tells whether or not we should do anything or not)
+  mux_inputs();
 }
 

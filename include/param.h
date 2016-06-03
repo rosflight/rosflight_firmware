@@ -62,13 +62,7 @@ typedef enum
   /*************************/
 
   PARAM_MOTOR_PWM_SEND_RATE,
-
-  PARAM_RC_ROLL_CHANNEL,
-  PARAM_RC_PITCH_CHANNEL,
-  PARAM_RC_YAW_CHANNEL,
-  PARAM_RC_THROTTLE_CHANNEL,
-  PARAM_RC_TYPE, // 0 is PWM, 1 is PPM
-  PARAM_IDLE_PWM,
+  PARAM_MOTOR_IDLE_PWM,
 
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
@@ -82,6 +76,7 @@ typedef enum
   /*** RC CONFIGURATION ***/
   /************************/
 
+  PARAM_RC_TYPE,
   PARAM_RC_X_CHANNEL,
   PARAM_RC_Y_CHANNEL,
   PARAM_RC_Z_CHANNEL,

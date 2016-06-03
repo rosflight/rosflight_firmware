@@ -5,6 +5,7 @@
 
 #include "param.h"
 #include "rc.h"
+#include "mux.h"
 
 void init_rc()
 {
@@ -136,6 +137,7 @@ bool receive_rc(uint32_t now)
     _rc_control.F.active = false;
   }
 
+  _new_command = true;
   return true;
 
   // Convert PWM inputs to rad or rads/
