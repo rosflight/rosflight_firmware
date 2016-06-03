@@ -80,6 +80,10 @@ void set_param_defaults(void)
   init_param(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE_MRAD_S", 12566); // 720 deg/s
   init_param(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE_MRAD_S", 6283); // 360 deg/s
 
+  init_param(PARAM_ARM_STICKS, "ARM_STICKS", true);
+  init_param(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 7);
+  init_param(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 200);
+
   init_param(PARAM_FIXED_WING, "FIXED_WING", false);
 }
 

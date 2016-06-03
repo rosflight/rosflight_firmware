@@ -110,7 +110,19 @@ typedef enum
   PARAM_RC_MAX_PITCHRATE_MRAD_S,
   PARAM_RC_MAX_YAWRATE_MRAD_S,
 
+  /***************************/
+  /*** FRAME CONFIGURATION ***/
+  /***************************/
+
   PARAM_FIXED_WING,
+  PARAM_MIXER,
+
+  /********************/
+  /*** ARMING SETUP ***/
+  /********************/
+  PARAM_ARM_STICKS,
+  PARAM_ARM_CHANNEL,
+  PARAM_ARM_THRESHOLD,
 
   // keep track of size of params array
   PARAMS_COUNT

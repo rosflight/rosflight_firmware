@@ -52,6 +52,7 @@ void setup(void)
 
   // Initialize Estimator
   init_estimator();
+  init_mode();
 }
 
 uint32_t counter = 0;
@@ -86,6 +87,7 @@ void loop(void)
 //  mavlink_receive();
 
   // receive rc (if time)
+  check_mode(now);
   if( receive_rc(now))
   {
     if(counter > 10)
@@ -95,6 +97,7 @@ void loop(void)
     printf("flags:  %d\t%d\t%d\t%d\n", _rc_control.x.active, _rc_control.y.active, _rc_control.z.active, _rc_control.F.active );
     printf("Types:  %d\t%d\t%d\t%d\n", _rc_control.x.type, _rc_control.y.type, _rc_control.z.type, _rc_control.F.type );
     printf("Values: %d\t%d\t%d\t%d\n", _rc_control.x.value, _rc_control.y.value, _rc_control.z.value, _rc_control.F.value );
+    printf("Mode:   %d\t%d\n", _armed_state,pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) < (_params.values[PARAM_RC_Z_CENTER]-_params.values[PARAM_RC_Z_RANGE]/2) + _params.values[PARAM_ARM_THRESHOLD]);
     counter = 0;
     }
     else

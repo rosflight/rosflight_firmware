@@ -59,7 +59,7 @@
 \normalfont \normalsize
 \textsc{MAGICC Lab - Brigham Young University} \\ [25pt] % Your university, school and/or department name(s)
 \horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
-\huge RC and Safety Pilot Integration \\ % The assignment title
+\huge Offboard Control, RC and Safety Pilot Integration \\ % The assignment title
 \horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
 }
 
@@ -101,7 +101,9 @@ A very important feature for ROSflight is the tight integration of an RC safety 
 	\caption{Diagram of how signals from RC and MAVlink are muxed in ROSflight}
 \end{figure}
 
-To do this, a command structure is created from both the incoming rc commands and commands over the mavlink serial line.  These structures are combined in the mux, as shown in figure~\ref{mux_configuration}.  This structure has four channels, which represent the four actuatable degrees of freedom on the MAV.  In general, the $x$ channel refers to roll, roll rate or aileron deflection, the $y$ channel to pitch, pitch rate or elevator deflection, the $z$ to yaw rate and rudder deflection and the $F$ channel to throttle.  
+\section{Implementation}
+
+To accomplish this task, a command structure is created from both the incoming rc commands and commands over the mavlink serial line.  These structures are combined in the mux, as shown in figure~\ref{mux_configuration}.  This structure has four channels, which represent the four actuatable degrees of freedom on the MAV.  In general, the $x$ channel refers to roll, roll rate or aileron deflection, the $y$ channel to pitch, pitch rate or elevator deflection, the $z$ to yaw rate and rudder deflection and the $F$ channel to throttle.  
 
 Each channel has three fields as shown in table~\ref{command_structure}.  The flag field refers to whether or not that particular channel is being controlled in this message.  If true, then the channel is active, and should be listened to.  If false, then it should be ignored.  If the message from both the offboard control and the RC are both inactive, then the RC signal is taken by default.  The type field indicates the type of information being carried by this channel.  For the $x$ and $y$ channels, this could be an angular rate in mrad/s, or an angle in mrad, the $z$ channel can carry only an angular rate in mrad/s and the $F$ channel can carry a throttle from 0-1000 or an altitude command in cm.  Each channel can also act in ``passthrough'' mode which means that the received PWM signal is forwarded directly to the mixer.  The value field is simply the data being carried in the channel.  This is interpreted according to the type field.
 
@@ -130,7 +132,7 @@ Each channel has three fields as shown in table~\ref{command_structure}.  The fl
 	\end{tabular}
 \end{table}
 
-The logic required to construct the rc command structure is shown in figure~\ref{fig:rc_flow}.
+The logic required to construct the rc command structure is shown in figure~\ref{fig:rc_flow}.  The MAVLink structure is converted to its final form upon receiving the message, but the logic to do so is trivial, and is ommitted here for brevity.
 
 \begin{figure}
 \centering
@@ -257,7 +259,7 @@ Once both the RC and offboard MAVlink command structures have been created from 
   \end{adjustbox}
 
   \label{fig:attitude_mux}
-  \caption{Logic used to mux any of the three attitude channels $x$, $y$, or $z$}
+  \caption{Logic used to mux any of the three attitude channels $x$, $y$, or $z$.  This logic must be computed for each channel independently, as it is to have a combined output made up of both RC and Offboard control}
 \end{figure}
 
 \begin{figure}
@@ -331,7 +333,7 @@ Once both the RC and offboard MAVlink command structures have been created from 
   \end{adjustbox}
 
   \label{fig:throttle_mux}
-  \caption{Logic used to mux the throttle channel, $F$}
+  \caption{Logic used to mux the throttle channel, $F$.  The additional logic here is to account for the case in which altitudes have been commanded by one control source while throttles are commanded by the other.  Both sources are first converted to throttle commands so as to compare equivalent channels when taking the minimum throttle}
 \end{figure}
 
 
