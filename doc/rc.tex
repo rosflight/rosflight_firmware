@@ -138,7 +138,7 @@ The logic of the mux is shown in figure~\ref{mux_logic}
     					minimum height=3em, minimum width=6em, align=center]
   \tikzstyle{node}=[draw, ellipse, minimum size=3em,
     					align=center]
-  \tikzstyle{dec}=[draw, diamond, aspect=2, align=center]
+  \tikzstyle{dec}=[draw, diamond, aspect=3, align=center]
   \tikzstyle{coordinate}=[draw, none]
   \tikzstyle{a}=[-triangle 60]
 
@@ -169,7 +169,7 @@ The logic of the mux is shown in figure~\ref{mux_logic}
 	\node[block, below right=2em and 0em of deviated, text width = 6em] (set_lag) {\scriptsize set override stick lag};
 	\node[block, below left=7em and 0em of deviated, text width=7em] (xyz_inactive) {\scriptsize x.flag=INACTIVE y.flag=INACTIVE z.flag=INACTIVE};
 
-	\node[dec, below=2em of xyz_active, text width=6em] (thr_over) {\scriptsize Thr override switch};
+	\node[dec, below=2em of xyz_active, text width=10em] (thr_over) {\scriptsize Thr override switch};
 	\node[block, below left=2em and 2em of thr_over] (f_inactive){\scriptsize F.flag=INACTIVE};
 	\node[block, below right=2em and 2em of thr_over] (f_active){\scriptsize F.flag=ACTIVE};
 
@@ -204,7 +204,7 @@ The logic of the mux is shown in figure~\ref{mux_logic}
 	\draw (lag) -- node[above] {yes} (over_merge1);
 	\draw[a] (deviated) |- node[left, pos=0.25] {yes} (set_lag);
 	\draw[a] (deviated) -| node[above, pos=0.25] {no} (xyz_inactive);
-	\coordinate[right=8.7em of set_lag] (over_merge2);
+	\coordinate[right=10.3em of set_lag] (over_merge2);
 	\draw (set_lag) -- (over_merge2);
 
 	\coordinate[above=1em of thr_over] (thr_merge);
@@ -220,9 +220,75 @@ The logic of the mux is shown in figure~\ref{mux_logic}
   \end{tikzpicture}
   \end{adjustbox}
 
+  \label{fig:rc_flow}
+  \caption{logic diagram of the construction of the rc command structure}
+
 	
 
 \end{figure}
+
+
+\begin{table}[h]
+	\centering
+	\caption{Command Structure}
+	\label{command_structure}
+	\begin{tabular}{| c | c |}
+		\hline
+		\multirow{3}{*} {$x$ channel}
+			& flag \\ \cline{2-2}
+			& type \\ \cline{2-2}
+			& value \\ \hline
+			\multirow{3}{*} {$y$ channel}
+			& flag \\ \cline{2-2}
+			& type \\ \cline{2-2}
+			& value \\ \hline
+			\multirow{3}{*} {$z$ channel}
+			& flag \\ \cline{2-2}
+			& type \\ \cline{2-2}
+			& value \\ \hline
+			\multirow{3}{*} {$F$ channel}
+			& flag \\ \cline{2-2}
+			& type \\ \cline{2-2}
+			& value \\ \hline
+	\end{tabular}
+\end{table}
+
+The logic of the mux is shown in figure~\ref{mux_logic}
+
+\begin{figure}
+\centering
+	\tikzstyle{block} = [draw, rectangle, 
+    					minimum height=3em, minimum width=6em, align=center]
+  \tikzstyle{node}=[draw, ellipse, minimum size=3em,
+    					align=center]
+  \tikzstyle{dec}=[draw, diamond, aspect=3, align=center]
+  \tikzstyle{coordinate}=[draw, none]
+  \tikzstyle{a}=[-triangle 60]
+
+  \begin{adjustbox}{max size={\textwidth}{\textheight}}
+  \begin{tikzpicture}
+
+  \node[node] (start) {start};
+  \node[dec, below=2em of start] (off_active) {Offboard Active?};
+  \node[block, below left=2em and 2em of off_active] (comb_rc) {Combined=RC};
+  \node[block, below right=2em and 2em of off_active] (comb_off) {Combined=Offboard};
+  \node[block, below=5em of off_active] (comb_active) {Combined=Active};
+  \node[node, below=2em of comb_active] (done) {done};
+
+  \draw[a] (start) -- (off_active);
+  \draw[a] (off_active) -| node[above, pos=0.25] {no} (comb_rc);
+  \draw[a] (off_active) -| node[above, pos=0.25] {yes} (comb_off);
+  \draw[a] (comb_rc) |- (comb_active);
+  \draw[a] (comb_off) |- (comb_active);
+  \draw[a] (comb_active) -- (done);
+
+  \end{tikzpicture}
+  \end{adjustbox}
+
+	
+
+\end{figure}
+
 
 
 
