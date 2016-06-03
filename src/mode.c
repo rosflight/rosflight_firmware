@@ -48,8 +48,7 @@ bool check_mode(uint32_t now)
       }
       if (time_sticks_have_been_in_arming_position > 500000)
       {
-        _armed_state = ARMED;
-        LED1_ON;
+        arm();
         time_sticks_have_been_in_arming_position = 0;
       }
     }
@@ -67,8 +66,7 @@ bool check_mode(uint32_t now)
       }
       if (time_sticks_have_been_in_arming_position > 500000)
       {
-        LED1_OFF;
-        _armed_state = DISARMED;
+        disarm();
         time_sticks_have_been_in_arming_position = 0;
       }
     }
@@ -77,12 +75,24 @@ bool check_mode(uint32_t now)
   {
     if (pwmRead(_params.values[PARAM_ARM_CHANNEL]) > 1500)
     {
-      _armed_state = ARMED;
+      arm();
     }
     else
     {
-      _armed_state = DISARMED;
+      disarm();
     }
   }
   return true;
+}
+
+void arm(void)
+{
+  _armed_state = ARMED;
+  LED1_ON;
+}
+
+void disarm(void)
+{
+  _armed_state = DISARMED;
+  LED1_OFF;
 }
