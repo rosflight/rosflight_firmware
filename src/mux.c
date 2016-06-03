@@ -63,8 +63,7 @@ void mux_inputs()
     {
       if (_rc_control.F.type == THROTTLE && _offboard_control.F.type == THROTTLE)
       {
-        _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?
-        _offboard_control.F.value : _rc_control.F.value;
+        _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?  _offboard_control.F.value : _rc_control.F.value;
         _combined_control.F.type = THROTTLE;
         _combined_control.F.active = true;
       }
