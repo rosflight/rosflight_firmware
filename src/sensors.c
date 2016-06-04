@@ -16,10 +16,18 @@ int32_t _gyro_scale;
 static uint32_t imu_last_us;
 
 // local function definitions
-static void update_imu(void)
+static bool update_imu(void)
 {
-  mpu6050_read_accel(_accel_data);
-  mpu6050_read_gyro(_gyro_data);
+  if (mpuDataReady)
+  {
+    mpu6050_read_accel(_accel_data);
+    mpu6050_read_gyro(_gyro_data);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 // function definitions
@@ -36,10 +44,8 @@ void init_sensors(void)
 
 bool update_sensors(uint32_t time_us)
 {
-  if (time_us - imu_last_us >= 5000)
+  if( update_imu())
   {
-    imu_last_us = time_us;
-    update_imu();
     return true;
   }
   else
