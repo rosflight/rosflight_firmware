@@ -24,6 +24,7 @@ PROJECT_SRC = src/main.c \
               src/mux.c \
               src/rc.c \
               src/controller.c \
+              src/mode.c \
 			  src/mixer.c
 
 ###############################################################################

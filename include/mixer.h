@@ -43,5 +43,6 @@ extern output_type_t _GPIO_output_type[8];
 
 extern int32_t _outputs[8];
 
+void init_PWM();
 void init_mixing();
 void mix_output();

@@ -63,13 +63,7 @@ typedef enum
   /*************************/
 
   PARAM_MOTOR_PWM_SEND_RATE,
-
-  PARAM_RC_ROLL_CHANNEL,
-  PARAM_RC_PITCH_CHANNEL,
-  PARAM_RC_YAW_CHANNEL,
-  PARAM_RC_THROTTLE_CHANNEL,
-  PARAM_RC_TYPE, // 0 is PWM, 1 is PPM
-  PARAM_IDLE_PWM,
+  PARAM_MOTOR_IDLE_PWM,
 
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
@@ -83,6 +77,7 @@ typedef enum
   /*** RC CONFIGURATION ***/
   /************************/
 
+  PARAM_RC_TYPE,
   PARAM_RC_X_CHANNEL,
   PARAM_RC_Y_CHANNEL,
   PARAM_RC_Z_CHANNEL,
@@ -111,7 +106,19 @@ typedef enum
   PARAM_RC_MAX_PITCHRATE_MRAD_S,
   PARAM_RC_MAX_YAWRATE_MRAD_S,
 
+  /***************************/
+  /*** FRAME CONFIGURATION ***/
+  /***************************/
+
   PARAM_FIXED_WING,
+  PARAM_MIXER,
+
+  /********************/
+  /*** ARMING SETUP ***/
+  /********************/
+  PARAM_ARM_STICKS,
+  PARAM_ARM_CHANNEL,
+  PARAM_ARM_THRESHOLD,
 
   // keep track of size of params array
   PARAMS_COUNT

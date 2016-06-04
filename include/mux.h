@@ -31,5 +31,7 @@ extern control_t _rc_control;
 extern control_t _offboard_control;
 extern control_t _combined_control;
 
-void mux_inputs();
+extern bool _new_command;
+
+bool mux_inputs();
 

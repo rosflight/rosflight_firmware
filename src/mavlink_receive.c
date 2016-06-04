@@ -110,6 +110,7 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
       break;
       // Handle error state
   }
+  _new_command = true;
 }
 
 static void handle_mavlink_message(void)
