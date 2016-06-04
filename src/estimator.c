@@ -32,7 +32,10 @@ void run_estimator(int32_t now)
   // check if z-acceleration is greater than 1.15G and less than 0.85G
   int32_t acc_phi = 0;
   int32_t acc_theta = 0;
-  if (_accel_data[2] *_accel_scale > 1.15*980665 && _accel_data[2] * _accel_scale > 0.85*980665)
+  int32_t acc_mag_squared = (_accel_data[2]*_accel_data[2])/1000
+                          + (_accel_data[1]*_accel_data[1])/1000
+                          + (_accel_data[0]*_accel_data[0])/1000;
+  if ( acc_mag_squared < 19294 && acc_mag_squared > 14261)
   {
     // pull in accelerometer data
     acc_phi = turboatan2(_accel_data[1], _accel_data[2]);

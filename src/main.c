@@ -101,8 +101,15 @@ void loop(void)
   }
 
   //    mix_outputs();
+  if(counter == 50)
+  {
+    printf("phi=%d\ttheta=%d\tpsi=%d\t",
+           _current_state.phi/1000,
+           _current_state.theta/1000,
+           _current_state.psi/1000);
+  }
 
-  if(counter > 1000)
+  if(counter > 100)
   {
     printf("average time = %d us\n", average_time/counter);
     counter = 0;
