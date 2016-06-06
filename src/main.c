@@ -33,8 +33,8 @@ void setup(void)
   i2cInit(I2CDEV_2);
 
   // Initialize PWM and RC
-  //  init_PWM();
-  //  init_rc();
+  init_PWM();
+  init_rc();
 
   // Initialize MAVlink Communication
   //  init_mavlink();
@@ -48,7 +48,7 @@ void setup(void)
   /***********************/
 
   // Initialize Motor Mixing
-  //  init_mixing();
+  init_mixing();
 
   // Initialize Estimator
   init_estimator();
@@ -72,44 +72,51 @@ void loop(void)
   /***  Control Loop ***/
   /*********************/
   // update sensors - an internal timer runs this at a fixed rate
-  if (update_sensors(now))
+  if (update_sensors(now)) // 434 us
   {
     // If I have new IMU data, then perform control
     run_estimator(now);
 
-    control_t rate_command;
-    rate_command.F.value = 0;
-    rate_command.x.value = 0;
-    rate_command.y.value = 0;
-    rate_command.z.value = 0;
-    rate_command.x.type = rate_command.y.type = rate_command.z.type = ANGLE;
-    rate_command.x.active = rate_command.y.active = rate_command.z.active = true;
-    rate_command.F.type = THROTTLE;
-    rate_command.F.active = true;
+    _combined_control.x.type = ANGLE;
+    _combined_control.y.type = ANGLE;
+    _combined_control.z.type = RATE;
+    _combined_control.F.type = THROTTLE;
 
-    control_t motor_command;
+    _combined_control.x.active = true;
+    _combined_control.y.active = true;
+    _combined_control.z.active = true;
+    _combined_control.F.active = true;
 
+    _combined_control.F.value = 500;
+    _combined_control.x.value = 0;
+    _combined_control.y.value = 0;
+    _combined_control.z.value = 0;
+
+    run_controller(now); // 6us
+
+    // loop time calculation
     dt = now - prev_time;
     prev_time = now;
     average_time+=dt;
     counter++;
-    motor_command = attitude_controller(rate_command, now);
-    //      printf("\ncontrol\n");
-    //      printf("%d\t%d\t%d\t%d\n", motor_command.F.value, motor_command.x.value, motor_command.y.value, motor_command.z.value);
-    //      printf("%d\t%d\t%d\t%d\n", motor_command.F.type, motor_command.x.type, motor_command.y.type, motor_command.z.type);
-    //      printf("%d\t%d\t%d\t%d\n", motor_command.F.active, motor_command.x.active, motor_command.y.active, motor_command.z.active);
+
+    mix_output(); // 1 us
+
+    if(counter == 50)
+    {
+//      printf("outputs:\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+//             _outputs[0],
+//             _outputs[1],
+//             _outputs[2],
+//             _outputs[3],
+//             _outputs[4],
+//             _outputs[5],
+//             _outputs[6],
+//             _outputs[7]);
+    }
   }
 
-  //    mix_outputs();
-  if(counter == 50)
-  {
-    printf("phi=%d\ttheta=%d\tpsi=%d\t",
-           _current_state.phi/1000,
-           _current_state.theta/1000,
-           _current_state.psi/1000);
-  }
-
-  if(counter > 100)
+  if(counter > 1000)
   {
     printf("average time = %d us\n", average_time/counter);
     counter = 0;
@@ -126,13 +133,13 @@ void loop(void)
   //  mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
-  check_mode(now);
+  check_mode(now); // 0 us
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(now);
+  receive_rc(now); // 1 us
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  mux_inputs();
+  mux_inputs(); // 3 us
 }
 
 
