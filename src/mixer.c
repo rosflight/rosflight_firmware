@@ -4,6 +4,7 @@
 
 #include "mixer.h"
 #include "param.h"
+#include "mode.h"
 
 int32_t _GPIO_outputs[8];
 int32_t _outputs[8];
@@ -101,15 +102,22 @@ void init_PWM()
 
 void write_motor(uint8_t index, int32_t value)
 {
-  /** TODO:
-   * reverse the PWM -> mRad conversion in RC
-   */
-
-  if (value > 1000)
+  if(_armed_state == ARMED)
   {
-    value = 1000;
+    if (value > 1000)
+    {
+      value = 1000;
+    }
+    else if (value < 150 && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
+    {
+      value = 150;
+    }
+    else if (value < 0)
+    {
+      value = 0;
+    }
   }
-  else if (value < 0)
+  else
   {
     value = 0;
   }
@@ -118,10 +126,6 @@ void write_motor(uint8_t index, int32_t value)
 
 void write_servo(uint8_t index, int32_t value)
 {
-  /** TODO:
-   * reverse the PWM conversion in RC (if any)
-   */
-
   if (value > 500)
   {
     value = 500;
@@ -137,6 +141,7 @@ void mix_output()
 {
   // Mix Output
   int32_t max_output = 0;
+  int32_t min_output = 0;
   for (int8_t i=0; i<8; i++)
   {
     if (mixer_to_use.output_type[i] != NONE)
@@ -148,23 +153,27 @@ void mix_output()
       {
         max_output = _outputs[i];
       }
-    }
-  }
-
-  // saturate outputs to maintain controllability even at high levels of throttle
-  if (max_output > 1000)
-  {
-    int32_t scale_factor = (max_output*1000)/1000;
-    for (int8_t i=0; i<8; i++)
-    {
-      if (mixer_to_use.output_type[i] == M)
+      else if(_outputs[i] < 0 && _outputs[i] < min_output)
       {
-        _outputs[i] = (_outputs[i]*1000)/scale_factor; // divide by scale factor
+        min_output = _outputs[i];
       }
     }
   }
 
-  // Add in GPIO inptus from Onboard Computer
+  // saturate outputs to maintain controllability even during aggressive maneuvers
+  if (max_output > 1000 || min_output < 0)
+  {
+    int32_t scale_factor = ((max_output-min_output)*1000)/1000;
+    for (int8_t i=0; i<8; i++)
+    {
+      if (mixer_to_use.output_type[i] == M)
+      {
+        _outputs[i] = ((_outputs[i]-min_output)*1000)/scale_factor; // divide by scale factor
+      }
+    }
+  }
+
+  // Add in GPIO inputs from Onboard Computer
   for (int8_t i=0; i<8; i++)
   {
     output_type_t output_type = mixer_to_use.output_type[i];

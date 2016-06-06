@@ -64,6 +64,7 @@ typedef enum
 
   PARAM_MOTOR_PWM_SEND_RATE,
   PARAM_MOTOR_IDLE_PWM,
+  PARAM_SPIN_MOTORS_WHEN_ARMED,
 
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
@@ -72,6 +73,12 @@ typedef enum
   PARAM_ESTIMATOR_LPF_ALPHA,
   PARAM_GYRO_LPF_ALPHA,
   PARAM_ACC_LPF_ALPHA,
+  PARAM_GYRO_X_BIAS,
+  PARAM_GYRO_Y_BIAS,
+  PARAM_GYRO_Z_BIAS,
+  PARAM_ACC_X_BIAS,
+  PARAM_ACC_Y_BIAS,
+  PARAM_ACC_Z_BIAS,
 
   /************************/
   /*** RC CONFIGURATION ***/

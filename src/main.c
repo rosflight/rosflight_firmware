@@ -52,7 +52,7 @@ void setup(void)
 
   // Initialize Estimator
   init_estimator();
-  //  init_mode();
+  init_mode();
 }
 
 uint32_t counter = 0;
@@ -94,32 +94,43 @@ void loop(void)
 
     run_controller(now); // 6us
 
+
     // loop time calculation
     dt = now - prev_time;
     prev_time = now;
     average_time+=dt;
-    counter++;
 
     mix_output(); // 1 us
 
-    if(counter == 50)
+    if(counter > 50)
     {
-//      printf("outputs:\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
-//             _outputs[0],
-//             _outputs[1],
-//             _outputs[2],
-//             _outputs[3],
-//             _outputs[4],
-//             _outputs[5],
-//             _outputs[6],
-//             _outputs[7]);
+      printf("outputs:\t%d\t%d\t%d\t%d\tinputs=%d\t%d\t%d\t%d\tarmed=%d\n",
+             _outputs[0],
+             _outputs[1],
+             _outputs[2],
+             _outputs[3],
+             pwmRead(0),
+             pwmRead(1),
+             pwmRead(2),
+             pwmRead(3),
+             _armed_state);
+      counter = 0;
     }
+    counter++;
   }
 
-  if(counter > 1000)
+  if(counter > 10)
   {
-    printf("average time = %d us\n", average_time/counter);
-    counter = 0;
+//    printf("average time = %d us\n", average_time/counter);
+//    printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+//        _gyro_scale,
+//        _current_state.p/1000,
+//        _current_state.q/1000,
+//        _current_state.r/1000,
+//        _current_state.phi/1000,
+//        _current_state.theta/1000,
+//        _current_state.psi/1000);
+//    counter = 0;
     average_time = 0;
   }
 

@@ -55,7 +55,7 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
     int32_t error = (attitude_command.x.value - _current_state.phi/1000);
     x_integrator += (error*dt)/1000;
     rate_command.x.value = (error*_params.values[PARAM_PID_ROLL_ANGLE_P])/1000
-        + (x_integrator*_params.values[PARAM_PID_ROLL_ANGLE_I])/1000
+        + (x_integrator/1000*_params.values[PARAM_PID_ROLL_ANGLE_I])/1000
         - (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);
     // integrator anti-windup
     if (abs(rate_command.x.value) > _params.values[PARAM_MAX_ROLL_RATE])
@@ -76,7 +76,7 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
 
   if (attitude_command.y.type == ANGLE)
   {
-    int32_t error = (attitude_command.y.value - _current_state.phi/1000);
+    int32_t error = (attitude_command.y.value - _current_state.theta/1000);
     y_integrator += (error*dt)/1000;
     rate_command.y.value = (error*_params.values[PARAM_PID_PITCH_ANGLE_P])/1000
         + (y_integrator*_params.values[PARAM_PID_PITCH_ANGLE_I])/1000
@@ -93,20 +93,6 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
     }
       rate_command.y.type = RATE;
   }
-
-//  if (counter > 100)
-//  {
-//    printf("rate_command_out = \t%d\t%d\t%d\t%d\n",
-//           rate_command.x.value,
-//           rate_command.y.value,
-//           rate_command.z.value,
-//           rate_command.F.value);
-//    counter = 0;
-//  }
-//  else
-//  {
-//    counter++;
-//  }
 
   return rate_command;
 }
@@ -130,15 +116,15 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     int32_t error = (rate_command.x.value - _current_state.p/1000);
     motor_command.x.value = sat((error *_params.values[PARAM_PID_ROLL_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
-    if (counter > 100)
-    {
-      printf("motor_command = \t%d\t%d\t%d\t%d\n",
-             motor_command.x.value,
-             error,
-             _current_state.p/1000,
-             motor_command.F.value);
-      counter = 0;
-    }
+//    if (counter > 100)
+//    {
+//      printf("error=%d\tout=%d\tp=%d\tin=%d\n",
+//             error,
+//             motor_command.x.value,
+//             _current_state.p/1000,
+//             rate_command.x.value);
+//      counter = 0;
+//    }
   }
 
   if (rate_command.y.active && rate_command.y.type == RATE)
@@ -166,7 +152,7 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     motor_command.z.type = PASSTHROUGH;
   }
 
-  counter++;
+//  counter++;
 
   return motor_command;
 }
