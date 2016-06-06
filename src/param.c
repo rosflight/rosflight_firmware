@@ -107,7 +107,7 @@ void set_param_defaults(void)
   init_param(PARAM_PID_PITCH_RATE_P, "PARAM_PID_PITCH_RATE_P", (12566*1000)/(2*786));
   init_param(PARAM_MAX_PITCH_RATE, "PARAM_MAX_PITCH_RATE", 12566);
 
-  init_param(PARAM_PID_YAW_RATE_P, "PARAM_PID_YAW_RATE_P", 0);
+  init_param(PARAM_PID_YAW_RATE_P, "PARAM_PID_YAW_RATE_P", 100);
   init_param(PARAM_PID_YAW_RATE_I, "PARAM_PID_YAW_RATE_I", 0);
   init_param(PARAM_MAX_YAW_RATE, "PARAM_MAX_YAW_RATE", 6283);
 
