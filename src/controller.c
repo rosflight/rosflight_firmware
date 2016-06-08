@@ -39,13 +39,13 @@ control_t altitude_controller(control_t altitude_command)
 
 
 control_t attitude_controller(control_t attitude_command, uint32_t now)
-{  static uint32_t counter = 0;
-
-  control_t rate_command = attitude_command;
-
+{
+  static uint32_t counter = 0;
   static int32_t x_integrator = 0;
   static int32_t y_integrator = 0;
   static int32_t prev_time = 0;
+
+  control_t rate_command = attitude_command;
 
   int32_t dt = (int32_t) now - prev_time;
   prev_time = now;
@@ -101,14 +101,13 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
 control_t rate_controller(control_t rate_command, uint32_t now)
 {
   static uint32_t counter = 0;
-  control_t motor_command = rate_command;
-
   static int32_t z_integrator = 0;
   static int32_t prev_time = 0;
 
+  control_t motor_command = rate_command;
+
   int32_t dt = (int32_t) now - prev_time;
   prev_time = now;
-
 
   // Set values
   if (rate_command.x.active && rate_command.x.type == RATE)
@@ -116,15 +115,6 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     int32_t error = (rate_command.x.value - _current_state.p/1000);
     motor_command.x.value = sat((error *_params.values[PARAM_PID_ROLL_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
-//    if (counter > 100)
-//    {
-//      printf("error=%d\tout=%d\tp=%d\tin=%d\n",
-//             error,
-//             motor_command.x.value,
-//             _current_state.p/1000,
-//             rate_command.x.value);
-//      counter = 0;
-//    }
   }
 
   if (rate_command.y.active && rate_command.y.type == RATE)

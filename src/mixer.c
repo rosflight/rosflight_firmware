@@ -77,7 +77,7 @@ static mixer_t *array_of_mixers[5] =
 void init_mixing()
 {
   // We need a better way to choosing the mixer
-  mixer_to_use = *array_of_mixers[QUADCOPTER_X];
+  mixer_to_use = *array_of_mixers[FIXEDWING];
 
   for (int8_t i=0; i<8; i++)
   {

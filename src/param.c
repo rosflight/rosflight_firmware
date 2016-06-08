@@ -87,7 +87,7 @@ void set_param_defaults(void)
 
   init_param(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVERRIDE_DEVIATION", 100);
   init_param(PARAM_OVERRIDE_LAG_TIME, "OVERRIDE_LAG_TIME", 1000);
-  init_param(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "RC_OVERRIDE_TAKE_MIN_THROTTLE", true);
+  init_param(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "RC_OVERRIDE_TAKE_MIN_THROTTLE", false);
 
   init_param(PARAM_RC_MAX_ROLL_MRAD, "RC_MAX_ROLL_MRAD", 786); // 45 deg
   init_param(PARAM_RC_MAX_PITCH_MRAD, "RC_MAX_PITCH_MRAD", 786);
@@ -125,7 +125,7 @@ void set_param_defaults(void)
   init_param(PARAM_PID_ALT_I, "PARAM_PID_ALT_I", 0);
   init_param(PARAM_PID_ALT_D, "PARAM_PID_ALT_D", 0);
 
-  init_param(PARAM_FIXED_WING, "FIXED_WING", false);
+  init_param(PARAM_FIXED_WING, "FIXED_WING", true);
 }
 
 bool read_params(void)

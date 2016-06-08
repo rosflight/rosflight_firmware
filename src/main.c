@@ -74,46 +74,33 @@ void loop(void)
   // update sensors - an internal timer runs this at a fixed rate
   if (update_sensors(now)) // 434 us
   {
-    // If I have new IMU data, then perform control
-    run_estimator(now);
-
-    _combined_control.x.type = ANGLE;
-    _combined_control.y.type = ANGLE;
-    _combined_control.z.type = RATE;
-    _combined_control.F.type = THROTTLE;
-
-    _combined_control.x.active = true;
-    _combined_control.y.active = true;
-    _combined_control.z.active = true;
-    _combined_control.F.active = true;
-
-    _combined_control.F.value = 500;
-    _combined_control.x.value = 0;
-    _combined_control.y.value = 0;
-    _combined_control.z.value = 0;
-
-    run_controller(now); // 6us
-
-
     // loop time calculation
     dt = now - prev_time;
     prev_time = now;
     average_time+=dt;
 
+    // If I have new IMU data, then perform control
+    run_estimator(now);
+
+    run_controller(now); // 6us
+
     mix_output(); // 1 us
 
     if(counter > 50)
     {
-      printf("outputs:\t%d\t%d\t%d\t%d\tinputs=%d\t%d\t%d\t%d\tarmed=%d\n",
+      printf("rc = %d\t%d\t%d\t%d\tcombined=%d\t%d\t%d\t%d\tout=%d\t%d\t%d\t%d\n",
+             _rc_control.x.value,
+             _rc_control.y.value,
+             _rc_control.z.value,
+             _rc_control.F.value,
+             _combined_control.x.value,
+             _combined_control.y.value,
+             _combined_control.z.value,
+             _combined_control.F.value,
              _outputs[0],
              _outputs[1],
              _outputs[2],
-             _outputs[3],
-             pwmRead(0),
-             pwmRead(1),
-             pwmRead(2),
-             pwmRead(3),
-             _armed_state);
+             _outputs[3]);
       counter = 0;
     }
     counter++;
@@ -147,10 +134,24 @@ void loop(void)
   check_mode(now); // 0 us
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(now); // 1 us
+//  receive_rc(now); // 1 us
+  _rc_control.x.active = true;
+  _rc_control.y.active = true;
+  _rc_control.z.active = true;
+  _rc_control.F.active = true;
+  _rc_control.x.type = PASSTHROUGH;
+  _rc_control.y.type = PASSTHROUGH;
+  _rc_control.z.type = PASSTHROUGH;
+  _rc_control.F.type = THROTTLE;
+  _rc_control.x.value = 500;
+  _rc_control.y.value = 500;
+  _rc_control.z.value = 500;
+  _rc_control.F.value = 500;
+  _new_command = true;
 
   // update commands (internal logic tells whether or not we should do anything or not)
   mux_inputs(); // 3 us
 }
+
 
 

@@ -32,9 +32,9 @@ static void convertPWMtoRad(){
     _rc_control.x.value = ((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
         *2*_params.values[PARAM_RC_MAX_ROLLRATE_MRAD_S])/_params.values[PARAM_RC_X_RANGE];
   }
-  else
+  else if (_rc_control.x.type == PASSTHROUGH)
   {
-    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_X_CHANNEL]);
+    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_X_CHANNEL])-_params.values[PARAM_RC_X_CENTER];
   }
 
   // Get Pitch control command out of RC - note that pitch channels are usually reversed
@@ -48,9 +48,9 @@ static void convertPWMtoRad(){
     _rc_control.y.value = -1*((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
         *2*_params.values[PARAM_RC_MAX_PITCHRATE_MRAD_S])/_params.values[PARAM_RC_Y_RANGE];
   }
-  else
+  else if (_rc_control.y.type == PASSTHROUGH)
   {
-    _rc_control.y.value = pwmRead(_params.values[PARAM_RC_Y_CHANNEL]);
+    _rc_control.y.value = pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER];
   }
 
   // Get the Yaw control command type out of RC
@@ -59,9 +59,9 @@ static void convertPWMtoRad(){
     _rc_control.z.value = ((pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER])
         *2*_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S])/_params.values[PARAM_RC_Z_RANGE];
   }
-  else
+  else if (_rc_control.z.type == PASSTHROUGH)
   {
-    _rc_control.z.value = pwmRead(_params.values[PARAM_RC_Z_CHANNEL]);
+    _rc_control.z.value = pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER];
   }
 
   // Finally, the throttle command
