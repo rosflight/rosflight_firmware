@@ -109,10 +109,10 @@ void loop(void)
   _rc_control.y.type = ANGLE;
   _rc_control.z.type = RATE;
   _rc_control.F.type = THROTTLE;
-  _rc_control.x.value = 0;
-  _rc_control.y.value = 750;
+  _rc_control.x.value = 10;
+  _rc_control.y.value = 10;
   _rc_control.z.value = 0;
-  _rc_control.F.value = 500;
+  _rc_control.F.value = 100;
   _new_command = true;
 
   // update commands (internal logic tells whether or not we should do anything or not)
