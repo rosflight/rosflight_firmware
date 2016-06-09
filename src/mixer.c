@@ -153,7 +153,7 @@ void mix_output()
         max_output = _outputs[i];
       }
       // negative motor outputs are set to zero when writing to the motor,
-      // but they have to be allowed because the same logic is used for
+      // but they have to be allowed here because the same logic is used for
       // servo commands, which may be negative
     }
   }
