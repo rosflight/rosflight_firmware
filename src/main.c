@@ -82,9 +82,9 @@ void loop(void)
     // If I have new IMU data, then perform control
     run_estimator(now);
 
-//    run_controller(now); // 6us
+    run_controller(now); // 6us
 
-    mix_output(); // 1 us
+//    mix_output();
   }
 
   /*********************/
@@ -112,7 +112,7 @@ void loop(void)
   _rc_control.x.value = 0;
   _rc_control.y.value = 750;
   _rc_control.z.value = 0;
-  _rc_control.F.value = 100;
+  _rc_control.F.value = 500;
   _new_command = true;
 
   // update commands (internal logic tells whether or not we should do anything or not)
@@ -121,7 +121,7 @@ void loop(void)
   if(counter > 100)
   {
     printf("average time = %d us\n", average_time/counter);
-    printf("rc\t%d\t%d\t%d\t%d\n",
+    printf("\n\nrc\t%d\t%d\t%d\t%d\n",
            _rc_control.x.value,
            _rc_control.y.value,
            _rc_control.z.value,
@@ -131,17 +131,12 @@ void loop(void)
         _combined_control.y.value,
         _combined_control.z.value,
         _combined_control.F.value);
-    run_controller(now);
-//    control_t outgoing_command = rate_controller(_combined_control, now);
-//    _command.F = outgoing_command.F.value;
-//    _command.x = outgoing_command.x.value;
-//    _command.y = outgoing_command.y.value;
-//    _command.z = outgoing_command.z.value;
     printf("command   %d\t%d\t%d\t%d\n",
         _command.x,
         _command.y,
         _command.z,
         _command.F);
+    mix_output(); // 1 us
     printf("output   %d\t%d\t%d\t%d\t",
          _outputs[0],
         _outputs[1],

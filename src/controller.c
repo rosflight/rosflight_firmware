@@ -71,6 +71,7 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
       // Saturate the signal
       rate_command.x.value = sat(rate_command.x.value, (int32_t)_params.values[PARAM_MAX_ROLL_RATE]);
     }
+    rate_command.x.type = RATE;
   }
 
   if (attitude_command.y.type == ANGLE)
@@ -91,11 +92,6 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
       rate_command.y.value = sat(rate_command.y.value, (int32_t)_params.values[PARAM_MAX_PITCH_RATE]);
     }
     rate_command.y.type = RATE;
-    printf("phi err = %d, cur phi = %d, phi_out = %d ",
-           error,
-           _current_state.phi,
-           rate_command.x.value);
-    rate_command.x.type = RATE;
   }
 
   return rate_command;
@@ -126,10 +122,6 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     int32_t error = rate_command.y.value - _current_state.q;
     motor_command.y.value = sat((error*_params.values[PARAM_PID_PITCH_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
     motor_command.y.type = PASSTHROUGH;
-    printf("p err = %d, p cur = %d, p_out = %d\n",
-           error,
-           _current_state.p,
-           motor_command.x.value);
   }
 
   if (rate_command.z.active && rate_command.z.type == RATE)
