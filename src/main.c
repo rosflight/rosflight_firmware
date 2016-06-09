@@ -82,43 +82,9 @@ void loop(void)
     // If I have new IMU data, then perform control
     run_estimator(now);
 
-    run_controller(now); // 6us
+//    run_controller(now); // 6us
 
     mix_output(); // 1 us
-
-    if(counter > 50)
-    {
-      printf("rc = %d\t%d\t%d\t%d\tcombined=%d\t%d\t%d\t%d\tout=%d\t%d\t%d\t%d\n",
-             _rc_control.x.value,
-             _rc_control.y.value,
-             _rc_control.z.value,
-             _rc_control.F.value,
-             _combined_control.x.value,
-             _combined_control.y.value,
-             _combined_control.z.value,
-             _combined_control.F.value,
-             _outputs[0],
-             _outputs[1],
-             _outputs[2],
-             _outputs[3]);
-      counter = 0;
-    }
-    counter++;
-  }
-
-  if(counter > 10)
-  {
-//    printf("average time = %d us\n", average_time/counter);
-//    printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
-//        _gyro_scale,
-//        _current_state.p/1000,
-//        _current_state.q/1000,
-//        _current_state.r/1000,
-//        _current_state.phi/1000,
-//        _current_state.theta/1000,
-//        _current_state.psi/1000);
-//    counter = 0;
-    average_time = 0;
   }
 
   /*********************/
@@ -131,7 +97,7 @@ void loop(void)
   //  mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
-  check_mode(now); // 0 us
+//  check_mode(now); // 0 us
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
 //  receive_rc(now); // 1 us
@@ -139,18 +105,56 @@ void loop(void)
   _rc_control.y.active = true;
   _rc_control.z.active = true;
   _rc_control.F.active = true;
-  _rc_control.x.type = PASSTHROUGH;
-  _rc_control.y.type = PASSTHROUGH;
-  _rc_control.z.type = PASSTHROUGH;
+  _rc_control.x.type = ANGLE;
+  _rc_control.y.type = ANGLE;
+  _rc_control.z.type = RATE;
   _rc_control.F.type = THROTTLE;
-  _rc_control.x.value = 500;
-  _rc_control.y.value = 500;
-  _rc_control.z.value = 500;
-  _rc_control.F.value = 500;
+  _rc_control.x.value = 0;
+  _rc_control.y.value = 750;
+  _rc_control.z.value = 0;
+  _rc_control.F.value = 100;
   _new_command = true;
 
   // update commands (internal logic tells whether or not we should do anything or not)
   mux_inputs(); // 3 us
+
+  if(counter > 100)
+  {
+    printf("average time = %d us\n", average_time/counter);
+    printf("rc\t%d\t%d\t%d\t%d\n",
+           _rc_control.x.value,
+           _rc_control.y.value,
+           _rc_control.z.value,
+           _rc_control.F.value);
+    printf("combined %d\t%d\t%d\t%d\n",
+        _combined_control.x.value,
+        _combined_control.y.value,
+        _combined_control.z.value,
+        _combined_control.F.value);
+    run_controller(now);
+//    control_t outgoing_command = rate_controller(_combined_control, now);
+//    _command.F = outgoing_command.F.value;
+//    _command.x = outgoing_command.x.value;
+//    _command.y = outgoing_command.y.value;
+//    _command.z = outgoing_command.z.value;
+    printf("command   %d\t%d\t%d\t%d\n",
+        _command.x,
+        _command.y,
+        _command.z,
+        _command.F);
+    printf("output   %d\t%d\t%d\t%d\t",
+         _outputs[0],
+        _outputs[1],
+        _outputs[2],
+        _outputs[3]);
+
+
+    counter = 0;
+    average_time = 0;
+  }
+  counter++;
+
+
 }
 
 
