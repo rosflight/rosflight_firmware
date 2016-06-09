@@ -141,7 +141,6 @@ void mix_output()
 {
   // Mix Output
   int32_t max_output = 0;
-  int32_t min_output = 0;
   for (int8_t i=0; i<8; i++)
   {
     if (mixer_to_use.output_type[i] != NONE)
@@ -153,24 +152,26 @@ void mix_output()
       {
         max_output = _outputs[i];
       }
-      else if(_outputs[i] < 0 && _outputs[i] < min_output)
-      {
-        min_output = _outputs[i];
-      }
+      // negative motor outputs are set to zero when writing to the motor,
+      // but they have to be allowed because the same logic is used for
+      // servo commands, which may be negative
     }
   }
 
   // saturate outputs to maintain controllability even during aggressive maneuvers
-  if (max_output > 1000 || min_output < 0)
+  if (max_output > 1000)
   {
-    int32_t scale_factor = ((max_output-min_output)*1000)/1000;
+    int32_t scale_factor = 1000*1000/max_output;
     for (int8_t i=0; i<8; i++)
     {
       if (mixer_to_use.output_type[i] == M)
       {
-        _outputs[i] = ((_outputs[i]-min_output)*1000)/scale_factor; // divide by scale factor
+        _outputs[i] = (_outputs[i])*scale_factor/1000; // divide by scale factor
       }
     }
+    printf("max = %d\t scale = %d\n",
+           max_output,
+           scale_factor);
   }
 
   // Add in GPIO inputs from Onboard Computer
