@@ -40,7 +40,10 @@ void run_estimator(int32_t now)
   {
     // pull in accelerometer data
     acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
-    acc_theta = turboatan2(_accel_data[0], _accel_data[2]);
+    acc_theta = turboatan2(1000*_accel_data[0], turbocos(acc_phi)*_accel_data[2]);
+//    printf("acc phi = %d theta = %d\n",
+//           acc_phi,
+//           acc_theta);
 
     // calculate filter constant
     alpha = (1000000*tau)/(tau*1000+dt);
@@ -58,12 +61,14 @@ void run_estimator(int32_t now)
 
   // Perform the Complementary Filter (forgive the unit adjustments.  This was written with basically a lot of trial an error)
   // current_state angles are in urad
-  _current_state.phi = (alpha*(_current_state.phi  + (meas_p*dt)/1000)/1000 + (1000-alpha)*acc_phi);
-  _current_state.theta = (alpha*(_current_state.theta  + (meas_q*dt)/1000)/1000 + (1000-alpha)*acc_theta);
+  alpha = 0;
+  _current_state.phi = (alpha*(_current_state.phi  + (meas_p*dt)/1000))/1000 + (1000-alpha)*acc_phi;
+  _current_state.theta = (alpha*( _current_state.theta  + (meas_q*dt)/1000))/1000 + (1000-alpha)*acc_theta;
   _current_state.psi = _current_state.psi  + (meas_r*dt)/1000;
 
   // wrap psi because we don't actually get a measurement of it
   if (abs(_current_state.psi) > 3141593)
+
   {
     _current_state.psi += 6283185 * -1* sign(_current_state.psi);
   }

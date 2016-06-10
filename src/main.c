@@ -137,11 +137,15 @@ void loop(void)
         _command.z,
         _command.F);
     mix_output(); // 1 us
-    printf("output   %d\t%d\t%d\t%d\t",
+    printf("output   %d\t%d\t%d\t%d\n",
          _outputs[0],
         _outputs[1],
         _outputs[2],
         _outputs[3]);
+    printf("state %d\t%d\t%d\n",
+           _current_state.phi/1000,
+           _current_state.theta/1000,
+           _current_state.psi/1000);
 
 
     counter = 0;
