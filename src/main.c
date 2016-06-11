@@ -37,7 +37,7 @@ void setup(void)
   init_rc();
 
   // Initialize MAVlink Communication
-//    init_mavlink();
+  init_mavlink();
 
   // Initialize Sensors
   init_sensors();
@@ -92,68 +92,19 @@ void loop(void)
   /***  Post-Process ***/
   /*********************/
   // internal timers figure out what to send
-//    mavlink_stream(now);
+  mavlink_stream(now);
 
   // receive mavlink messages
-//    mavlink_receive();
+  mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
-//  check_mode(now); // 0 us
+  check_mode(now); // 0 us
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-//  receive_rc(now); // 1 us
-  _rc_control.x.active = true;
-  _rc_control.y.active = true;
-  _rc_control.z.active = true;
-  _rc_control.F.active = true;
-  _rc_control.x.type = ANGLE;
-  _rc_control.y.type = ANGLE;
-  _rc_control.z.type = RATE;
-  _rc_control.F.type = THROTTLE;
-  _rc_control.x.value = 10;
-  _rc_control.y.value = 10;
-  _rc_control.z.value = 0;
-  _rc_control.F.value = 100;
-  _new_command = true;
+  receive_rc(now); // 1 us
 
   // update commands (internal logic tells whether or not we should do anything or not)
   mux_inputs(); // 3 us
-
-  if(counter > 100)
-  {
-    printf("average time = %d us\n", average_time/counter);
-    printf("\n\nrc\t%d\t%d\t%d\t%d\n",
-           _rc_control.x.value,
-           _rc_control.y.value,
-           _rc_control.z.value,
-           _rc_control.F.value);
-    printf("combined %d\t%d\t%d\t%d\n",
-        _combined_control.x.value,
-        _combined_control.y.value,
-        _combined_control.z.value,
-        _combined_control.F.value);
-    printf("command   %d\t%d\t%d\t%d\n",
-        _command.x,
-        _command.y,
-        _command.z,
-        _command.F);
-    mix_output(); // 1 us
-    printf("output   %d\t%d\t%d\t%d\n",
-         _outputs[0],
-        _outputs[1],
-        _outputs[2],
-        _outputs[3]);
-    printf("state %d\t%d\t%d\n",
-           _current_state.phi/1000,
-           _current_state.theta/1000,
-           _current_state.psi/1000);
-
-
-    counter = 0;
-    average_time = 0;
-  }
-  counter++;
-
 
 }
 
