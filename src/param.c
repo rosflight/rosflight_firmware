@@ -49,7 +49,7 @@ void set_param_defaults(void)
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
   init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
 
-  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 100);
 
   init_param(PARAM_GYRO_LPF_ALPHA, "GYRO_LPF_ALPHA", 100);
   init_param(PARAM_ACC_LPF_ALPHA, "GYRO_LPF_ALPHA", 500);

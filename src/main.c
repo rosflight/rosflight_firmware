@@ -37,7 +37,7 @@ void setup(void)
   init_rc();
 
   // Initialize MAVlink Communication
-  //  init_mavlink();
+//    init_mavlink();
 
   // Initialize Sensors
   init_sensors();
@@ -53,6 +53,7 @@ void setup(void)
   // Initialize Estimator
   init_estimator();
   init_mode();
+  _armed_state = ARMED;
 }
 
 uint32_t counter = 0;
@@ -84,17 +85,17 @@ void loop(void)
 
     run_controller(now); // 6us
 
-//    mix_output();
+    mix_output();
   }
 
   /*********************/
   /***  Post-Process ***/
   /*********************/
   // internal timers figure out what to send
-  //  mavlink_stream(now);
+//    mavlink_stream(now);
 
   // receive mavlink messages
-  //  mavlink_receive();
+//    mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
 //  check_mode(now); // 0 us

@@ -40,7 +40,7 @@ void run_estimator(int32_t now)
   {
     // pull in accelerometer data
     acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
-    acc_theta = turboatan2(1000*_accel_data[0], turbocos(acc_phi)*_accel_data[2]);
+    acc_theta = turboatan2(_accel_data[0], _accel_data[2]);
 //    printf("acc phi = %d theta = %d\n",
 //           acc_phi,
 //           acc_theta);

@@ -7,6 +7,7 @@
 #include "mode.h"
 
 int32_t _GPIO_outputs[8];
+static int32_t prescaled_outputs[8];
 int32_t _outputs[8];
 command_t _command;
 output_type_t _GPIO_output_type[8];
@@ -82,6 +83,7 @@ void init_mixing()
   for (int8_t i=0; i<8; i++)
   {
     _outputs[i] = 0;
+    prescaled_outputs[i] = 0;
     _GPIO_outputs[i] = 0;
     _GPIO_output_type[i] = NONE;
   }
@@ -121,7 +123,8 @@ void write_motor(uint8_t index, int32_t value)
   {
     value = 0;
   }
-  pwmWriteMotor(index, value+1000);
+  _outputs[index] = value +1000;
+  pwmWriteMotor(index, _outputs[index]);
 }
 
 void write_servo(uint8_t index, int32_t value)
@@ -134,7 +137,8 @@ void write_servo(uint8_t index, int32_t value)
   {
     value = -500;
   }
-  pwmWriteMotor(index, 1500+value);
+  _outputs[index] = value+1500;
+  pwmWriteMotor(index, _outputs[index]);
 }
 
 void mix_output()
@@ -146,11 +150,11 @@ void mix_output()
     if (mixer_to_use.output_type[i] != NONE)
     {
       // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
-      _outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
+      prescaled_outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
                      _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
-      if (_outputs[i] > 1000 && _outputs[i] > max_output)
+      if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
       {
-        max_output = _outputs[i];
+        max_output = prescaled_outputs[i];
       }
       // negative motor outputs are set to zero when writing to the motor,
       // but they have to be allowed here because the same logic is used for
@@ -166,12 +170,9 @@ void mix_output()
     {
       if (mixer_to_use.output_type[i] == M)
       {
-        _outputs[i] = (_outputs[i])*scale_factor/1000; // divide by scale factor
+        prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
       }
     }
-    printf("max = %d\t scale = %d\n",
-           max_output,
-           scale_factor);
   }
 
   // Add in GPIO inputs from Onboard Computer
@@ -181,18 +182,18 @@ void mix_output()
     if (output_type == NONE)
     {
       // Incorporate GPIO on not already reserved outputs
-      _outputs[i] = _GPIO_outputs[i];
+      prescaled_outputs[i] = _GPIO_outputs[i];
       output_type = _GPIO_output_type[i];
     }
 
     // Write output to motors
     if (output_type == S)
     {
-      write_servo(i, _outputs[i]);
+      write_servo(i, prescaled_outputs[i]);
     }
     else if (output_type == M)
     {
-      write_motor(i, _outputs[i]);
+      write_motor(i, prescaled_outputs[i]);
     }
     // If we need to configure another type of output, do it here
   }
