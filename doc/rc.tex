@@ -37,17 +37,13 @@
 \usepackage{multirow}
 \usepackage{array}
 \usepackage{adjustbox}
+\usepackage[section]{placeins}
 \usetikzlibrary{shapes.geometric}
 \usetikzlibrary{positioning}
 \usetikzlibrary{shapes, arrows}
-\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
-\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
-\fancyfoot[L]{} % Empty left footer
-\fancyfoot[C]{} % Empty center footer
-\fancyfoot[R]{\thepage} % Page numbering for right footer
 \renewcommand{\headrulewidth}{0pt} % Remove header underlines
 \renewcommand{\footrulewidth}{0pt} % Remove footer underlines
-\setlength{\headheight}{13.6pt} % Customize the height of the header
+\setlength{\headheight}{5pt} % Customize the height of the header
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
@@ -79,13 +75,15 @@
 
 A very important feature for ROSflight is the tight integration of an RC safety pilot.  The safety pilot is usually a highly experienced RC operator who is capable of knowing when the computer is doing something unsafe and taking over fast enough to land the MAV safely where researchers can fix the bugs and try again.  ROSflight can be used independently of an onboard computer similar to more fully-developed codes such as cleanflight and baseflight, however it is primarily designed to quickly test research code developed in ROS on hardware.  This means that we can assume that the controls coming from the onboard computer may be suspect, and may at any time try to make the MAV do something drastic, (such as full-throttle into the ceiling or full-power front flips).  While this may be exciting, it is often expensive and dangerous unless there is some safety pilot intervention.  The RC controls are designed to be first interpreted, then mixed with the onboard controls in a way that the safety pilot has quick access to correct dangerous maneuvers commanded by the onboard computer but is primarily on stand-by while the computer does it's thing with the hardware.
 
-\begin{figure}[h!]
+\begin{figure}[]
 	\centering
 
 	\tikzstyle{block} = [draw, rectangle, 
     					minimum height=3em, minimum width=6em]
   \tikzstyle{node}=[draw, ellipse, minimum size=3em,
     					align=center]
+
+  \begin{adjustbox}{max size={\textwidth}{0.2\textheight}}
 	\begin{tikzpicture}
 		\node[block] (rc) {RC};
 		\node[block, right=5em of rc] (offboard) {MAVlink};
@@ -96,45 +94,47 @@ A very important feature for ROSflight is the tight integration of an RC safety 
 		\draw[-triangle 60] (offboard) -- (mux);
 		\draw[-triangle 60] (mux) -- (combined);
 	\end{tikzpicture}
+  \end{adjustbox}
 
 	\label{mux_configuration}
 	\caption{Diagram of how signals from RC and MAVlink are muxed in ROSflight}
 \end{figure}
 
-\section{Implementation}
+\section{Building The Command Structure}
 
-To accomplish this task, a command structure is created from both the incoming rc commands and commands over the mavlink serial line.  These structures are combined in the mux, as shown in figure~\ref{mux_configuration}.  This structure has four channels, which represent the four actuatable degrees of freedom on the MAV.  In general, the $x$ channel refers to roll, roll rate or aileron deflection, the $y$ channel to pitch, pitch rate or elevator deflection, the $z$ to yaw rate and rudder deflection and the $F$ channel to throttle.  
+To accomplish this task, a command structure is created from both the incoming rc commands and commands over the mavlink serial line.  These structures are combined in the mux, as shown in figure~\ref{mux_configuration}.  This structure has four channels, which represent the four actuatable degrees of freedom on the MAV.  In general, the $x$ channel refers to roll, roll rate or aileron deflection, the $y$ channel to pitch, pitch rate or elevator deflection, the $z$ to yaw rate and rudder deflection and the $F$ channel to throttle.
+
+
+\begin{table}[h]
+  \centering
+  \label{command_structure}
+  \caption{Command Structure}
+  \begin{tabular}{| c | c |}
+    \hline
+    \multirow{3}{*} {$x$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+      \multirow{3}{*} {$y$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+      \multirow{3}{*} {$z$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+      \multirow{3}{*} {$F$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+  \end{tabular}
+\end{table}
 
 Each channel has three fields as shown in table~\ref{command_structure}.  The flag field refers to whether or not that particular channel is being controlled in this message.  If true, then the channel is active, and should be listened to.  If false, then it should be ignored.  If the message from both the offboard control and the RC are both inactive, then the RC signal is taken by default.  The type field indicates the type of information being carried by this channel.  For the $x$ and $y$ channels, this could be an angular rate in mrad/s, or an angle in mrad, the $z$ channel can carry only an angular rate in mrad/s and the $F$ channel can carry a throttle from 0-1000 or an altitude command in cm.  Each channel can also act in ``passthrough'' mode which means that the received PWM signal is forwarded directly to the mixer.  The value field is simply the data being carried in the channel.  This is interpreted according to the type field.
 
-\begin{table}[h]
-	\centering
-	\caption{Command Structure}
-	\label{command_structure}
-	\begin{tabular}{| c | c |}
-		\hline
-		\multirow{3}{*} {$x$ channel}
-			& flag \\ \cline{2-2}
-			& type \\ \cline{2-2}
-			& value \\ \hline
-			\multirow{3}{*} {$y$ channel}
-			& flag \\ \cline{2-2}
-			& type \\ \cline{2-2}
-			& value \\ \hline
-			\multirow{3}{*} {$z$ channel}
-			& flag \\ \cline{2-2}
-			& type \\ \cline{2-2}
-			& value \\ \hline
-			\multirow{3}{*} {$F$ channel}
-			& flag \\ \cline{2-2}
-			& type \\ \cline{2-2}
-			& value \\ \hline
-	\end{tabular}
-\end{table}
-
 The logic required to construct the rc command structure is shown in figure~\ref{fig:rc_flow}.  The MAVLink structure is converted to its final form upon receiving the message, but the logic to do so is trivial, and is ommitted here for brevity.
 
-\begin{figure}
+\begin{figure}[!htb]
 \centering
 	\tikzstyle{block} = [draw, rectangle, 
     					minimum height=3em, minimum width=6em, align=center]
@@ -144,7 +144,7 @@ The logic required to construct the rc command structure is shown in figure~\ref
   \tikzstyle{coordinate}=[draw, none]
   \tikzstyle{a}=[-triangle 60]
 
-  \begin{adjustbox}{max size={\textwidth}{\textheight}}
+  \begin{adjustbox}{max size={\textwidth}{0.79\textheight}}
   \begin{tikzpicture}[scale=0.4]
 
   \node[node] (start) {start};
@@ -226,9 +226,11 @@ The logic required to construct the rc command structure is shown in figure~\ref
   \caption{Logic used to construct of the RC command structure}
 \end{figure}
 
+\section{Combinining the MAVLink and RC Command Structures}
+
 Once both the RC and offboard MAVlink command structures have been created from thier respective sources, they must be combined into the composite command structure, which is then passed to the controller to be converted into primitive torques, then mixed into motor outputs.  The three attitude channels $x$, $y$, and $z$ are all interpreted in the same way, as shown in Figure~\ref{fig:attitude_mux}, however, to handle minimum throttle cases, the logic to combined the $F$ channel is a bit more complex, as shown in Figure~\ref{fig:throttle_mux}.  In order to mux throttles with the MIN\_THROTTLE param set true, altitude commands must be first converted into throttles using the altitude controller.  They are then compared with one another and the lower of the two is taken.
 
-\begin{figure}
+\begin{figure}[h]
 \centering
 	\tikzstyle{block} = [draw, rectangle, 
     					minimum height=3em, minimum width=6em, align=center]
@@ -258,8 +260,8 @@ Once both the RC and offboard MAVlink command structures have been created from 
   \end{tikzpicture}
   \end{adjustbox}
 
-  \label{fig:attitude_mux}
   \caption{Logic used to mux any of the three attitude channels $x$, $y$, or $z$.  This logic must be computed for each channel independently, as it is to have a combined output made up of both RC and Offboard control}
+  \label{fig:attitude_mux}
 \end{figure}
 
 \begin{figure}
@@ -332,8 +334,8 @@ Once both the RC and offboard MAVlink command structures have been created from 
   \end{tikzpicture}
   \end{adjustbox}
 
-  \label{fig:throttle_mux}
   \caption{Logic used to mux the throttle channel, $F$.  The additional logic here is to account for the case in which altitudes have been commanded by one control source while throttles are commanded by the other.  Both sources are first converted to throttle commands so as to compare equivalent channels when taking the minimum throttle}
+  \label{fig:throttle_mux}
 \end{figure}
 
 
