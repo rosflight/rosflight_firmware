@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "flash.h"
 #include "mavlink.h"
@@ -18,7 +17,7 @@ params_t _params;
 static void init_param(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   _params.values[id] = value;
-  strcpy(_params.names[id], name);
+  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
 }
 
 // function definitions
