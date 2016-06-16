@@ -28,36 +28,36 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
 
     switch (cmd.command)
     {
-      case MAV_CMD_PREFLIGHT_STORAGE:
-        if (false) //TODO temporarily reject if armed
+    case MAV_CMD_PREFLIGHT_STORAGE:
+      if (false) //TODO temporarily reject if armed
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        bool success;
+        switch ((uint8_t) cmd.param1)
         {
-          result = MAV_RESULT_TEMPORARILY_REJECTED;
+        case 0:
+          success = read_params();
+          break;
+        case 1:
+          success = write_params();
+          break;
+        case 2:
+          set_param_defaults();
+          success = true;
+          break;
+        default:
+          success = false;
+          break;
         }
-        else
-        {
-          bool success;
-          switch ((uint8_t) cmd.param1)
-          {
-            case 0:
-              success = read_params();
-              break;
-            case 1:
-              success = write_params();
-              break;
-            case 2:
-              set_param_defaults();
-              success = true;
-              break;
-            default:
-              success = false;
-              break;
-          }
-          result = success ? MAV_RESULT_ACCEPTED : MAV_RESULT_FAILED;
-        }
-        break;
-      default:
-        result = MAV_RESULT_UNSUPPORTED;
-        break;
+        result = success ? MAV_RESULT_ACCEPTED : MAV_RESULT_FAILED;
+      }
+      break;
+    default:
+      result = MAV_RESULT_UNSUPPORTED;
+      break;
     }
 
     mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, result);
@@ -82,33 +82,33 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
   _offboard_control.F.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE4);
 
   // translate modes into standard message
-  switch(mavlink_offboard_control.mode)
+  switch (mavlink_offboard_control.mode)
   {
-    case MODE_PASS_THROUGH:
-      _offboard_control.x.type = PASSTHROUGH;
-      _offboard_control.y.type = PASSTHROUGH;
-      _offboard_control.z.type = PASSTHROUGH;
-      _offboard_control.F.type = PASSTHROUGH;
-      break;
-    case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-      _offboard_control.x.type = RATE;
-      _offboard_control.y.type = RATE;
-      _offboard_control.z.type = RATE;
-      _offboard_control.F.type = THROTTLE;
-      break;
-    case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
-      _offboard_control.x.type = ANGLE;
-      _offboard_control.y.type = ANGLE;
-      _offboard_control.z.type = RATE;
-      _offboard_control.F.type = THROTTLE;
-      break;
-    case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
-      _offboard_control.x.type = ANGLE;
-      _offboard_control.y.type = ANGLE;
-      _offboard_control.z.type = RATE;
-      _offboard_control.F.type = ALTITUDE;
-      break;
-      // Handle error state
+  case MODE_PASS_THROUGH:
+    _offboard_control.x.type = PASSTHROUGH;
+    _offboard_control.y.type = PASSTHROUGH;
+    _offboard_control.z.type = PASSTHROUGH;
+    _offboard_control.F.type = PASSTHROUGH;
+    break;
+  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+    _offboard_control.x.type = RATE;
+    _offboard_control.y.type = RATE;
+    _offboard_control.z.type = RATE;
+    _offboard_control.F.type = THROTTLE;
+    break;
+  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
+    _offboard_control.x.type = ANGLE;
+    _offboard_control.y.type = ANGLE;
+    _offboard_control.z.type = RATE;
+    _offboard_control.F.type = THROTTLE;
+    break;
+  case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
+    _offboard_control.x.type = ANGLE;
+    _offboard_control.y.type = ANGLE;
+    _offboard_control.z.type = RATE;
+    _offboard_control.F.type = ALTITUDE;
+    break;
+    // Handle error state
   }
   _new_command = true;
 }
@@ -117,23 +117,23 @@ static void handle_mavlink_message(void)
 {
   switch (in_buf.msgid)
   {
-    case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
-      mavlink_handle_msg_offboard_control(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-      mavlink_handle_msg_param_request_list();
-      break;
-    case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-      mavlink_handle_msg_param_request_read(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_PARAM_SET:
-      mavlink_handle_msg_param_set(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_COMMAND_INT:
-      mavlink_handle_msg_command_int(&in_buf);
-      break;
-    default:
-      break;
+  case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
+    mavlink_handle_msg_offboard_control(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
+    mavlink_handle_msg_param_request_list();
+    break;
+  case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+    mavlink_handle_msg_param_request_read(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_PARAM_SET:
+    mavlink_handle_msg_param_set(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_COMMAND_INT:
+    mavlink_handle_msg_command_int(&in_buf);
+    break;
+  default:
+    break;
   }
 }
 

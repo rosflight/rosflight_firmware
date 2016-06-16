@@ -11,18 +11,18 @@ bool _new_command;
 
 bool mux_inputs()
 {
-  if( !_new_command)
+  if (!_new_command)
   {
     // we haven't received any new commands, so we shouldn't do anything
     return false;
   }
   // otherwise combine the new commands
 
-  if(_rc_control.x.active)
+  if (_rc_control.x.active)
   {
     _combined_control.x = _rc_control.x;
   }
-  else if(_offboard_control.x.active)
+  else if (_offboard_control.x.active)
   {
     _combined_control.x = _offboard_control.x;
   }
@@ -34,11 +34,11 @@ bool mux_inputs()
   }
 
 
-  if(_rc_control.y.active)
+  if (_rc_control.y.active)
   {
     _combined_control.y = _rc_control.y;
   }
-  else if(_offboard_control.y.active)
+  else if (_offboard_control.y.active)
   {
     _combined_control.y = _offboard_control.y;
   }
@@ -50,11 +50,11 @@ bool mux_inputs()
   }
 
 
-  if(_rc_control.z.active)
+  if (_rc_control.z.active)
   {
     _combined_control.z = _rc_control.z;
   }
-  else if(_offboard_control.z.active)
+  else if (_offboard_control.z.active)
   {
     _combined_control.z = _offboard_control.z;
   }
@@ -64,13 +64,14 @@ bool mux_inputs()
     _combined_control.z.active = true;
   }
 
-  if(_offboard_control.F.active)
+  if (_offboard_control.F.active)
   {
-    if ( _params.values[PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE])
+    if (_params.values[PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE])
     {
       if (_rc_control.F.type == THROTTLE && _offboard_control.F.type == THROTTLE)
       {
-        _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?  _offboard_control.F.value : _rc_control.F.value;
+        _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?  _offboard_control.F.value :
+                                    _rc_control.F.value;
         _combined_control.F.type = THROTTLE;
         _combined_control.F.active = true;
       }

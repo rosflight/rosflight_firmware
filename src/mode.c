@@ -35,7 +35,7 @@ bool check_mode(uint32_t now)
 
   // see it has been at least 20 ms
   uint32_t dt = now-prev_time;
-  if ( dt < 20000)
+  if (dt < 20000)
   {
     return false;
   }
@@ -49,8 +49,10 @@ bool check_mode(uint32_t now)
     if (_armed_state == DISARMED)
     {
       // if left stick is down and to the left
-      if(pwmRead(_params.values[PARAM_RC_F_CHANNEL]) < _params.values[PARAM_RC_F_BOTTOM] + _params.values[PARAM_ARM_THRESHOLD]
-         && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) > (_params.values[PARAM_RC_Z_CENTER]+_params.values[PARAM_RC_Z_RANGE]/2) - _params.values[PARAM_ARM_THRESHOLD])
+      if (pwmRead(_params.values[PARAM_RC_F_CHANNEL]) < _params.values[PARAM_RC_F_BOTTOM] +
+          _params.values[PARAM_ARM_THRESHOLD]
+          && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) > (_params.values[PARAM_RC_Z_CENTER]+_params.values[PARAM_RC_Z_RANGE]/2)
+          - _params.values[PARAM_ARM_THRESHOLD])
       {
         time_sticks_have_been_in_arming_position += dt;
       }
@@ -67,8 +69,10 @@ bool check_mode(uint32_t now)
     else // _armed_state is ARMED
     {
       // if left stick is down and to the right
-      if(pwmRead(_params.values[PARAM_RC_F_CHANNEL]) < _params.values[PARAM_RC_F_BOTTOM] + _params.values[PARAM_ARM_THRESHOLD]
-         && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) < (_params.values[PARAM_RC_Z_CENTER]-_params.values[PARAM_RC_Z_RANGE]/2) + _params.values[PARAM_ARM_THRESHOLD])
+      if (pwmRead(_params.values[PARAM_RC_F_CHANNEL]) < _params.values[PARAM_RC_F_BOTTOM] +
+          _params.values[PARAM_ARM_THRESHOLD]
+          && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) < (_params.values[PARAM_RC_Z_CENTER]-_params.values[PARAM_RC_Z_RANGE]/2)
+          + _params.values[PARAM_ARM_THRESHOLD])
       {
         time_sticks_have_been_in_arming_position += dt;
       }
