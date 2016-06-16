@@ -18,13 +18,13 @@ PROJECT_SRC = src/main.c \
               src/mavlink_param.c \
               src/mavlink_receive.c \
               src/mavlink_stream.c \
+              src/mavlink_util.c \
+              src/mixer.c \
               src/param.c \
               src/rc.c \
               src/sensors.c \
               src/mux.c \
-              src/rc.c \
               src/mode.c \
-			  src/mixer.c
 
 ###############################################################################
 
