@@ -90,7 +90,7 @@ void loop(void)
   mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
-//  check_mode(now);
+  check_mode(now);
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
   receive_rc(now);
