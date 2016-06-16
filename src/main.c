@@ -113,11 +113,4 @@ void loop(void)
   /// Post-Process
   // receive mavlink messages
   mavlink_receive();
-
-  // these lines cause the FCU to be unable to connect with fcu_io
-  if(counter > 10000)
-  {
-    mavlink_send_named_value_float("test_float", 1.0);
-    mavlink_send_named_value_int("test_int", 5);
-  }
 }
