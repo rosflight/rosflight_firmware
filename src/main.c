@@ -9,6 +9,7 @@
 #include "mavlink_param.h"
 #include "mavlink_receive.h"
 #include "mavlink_stream.h"
+#include "mavlink_util.h"
 #include "mode.h"
 #include "param.h"
 #include "sensors.h"
@@ -113,17 +114,10 @@ void loop(void)
   // receive mavlink messages
   mavlink_receive();
 
-  // commands from the computer will be updated by callbacks
-  // update controlModeComp
-
-  // (for next steps get most recent RC value from drv_pwm as needed)
-  // if it has been at least 50 Hz
-  // update overrideMode (read switch if present)
-  // OFFBOARD               (can override RPY by moving RC out of deadzone)
-  // OFFBOARD_MIN_THROTTLE  (same as above, but takes min throttle)
-  // MANUAL_RC              (listens only to RC)
-  // RC switch moves between MANUAL_RC and OFFBOARD_xx
-  // which offboard mode you go to is set by a param
-  // update controlModeRC (read switch if present)
-  // update armedState (read switch)
+  // these lines cause the FCU to be unable to connect with fcu_io
+  if(counter > 10000)
+  {
+    mavlink_send_named_value_float("test_float", 1.0);
+    mavlink_send_named_value_int("test_int", 5);
+  }
 }
