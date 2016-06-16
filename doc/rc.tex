@@ -75,7 +75,7 @@
 
 A very important feature for ROSflight is the tight integration of an RC safety pilot.  The safety pilot is usually a highly experienced RC operator who is capable of knowing when the computer is doing something unsafe and taking over fast enough to land the MAV safely where researchers can fix the bugs and try again.  ROSflight can be used independently of an onboard computer similar to more fully-developed codes such as cleanflight and baseflight, however it is primarily designed to quickly test research code developed in ROS on hardware.  This means that we can assume that the controls coming from the onboard computer may be suspect, and may at any time try to make the MAV do something drastic, (such as full-throttle into the ceiling or full-power front flips).  While this may be exciting, it is often expensive and dangerous unless there is some safety pilot intervention.  The RC controls are designed to be first interpreted, then mixed with the onboard controls in a way that the safety pilot has quick access to correct dangerous maneuvers commanded by the onboard computer but is primarily on stand-by while the computer does it's thing with the hardware.
 
-\begin{figure}[]
+\begin{figure}
 	\centering
 
 	\tikzstyle{block} = [draw, rectangle, 
