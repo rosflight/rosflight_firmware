@@ -8,6 +8,7 @@
 *.config
 *.files
 *.orig
+*.user.*
 
 /build/
 
