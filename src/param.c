@@ -49,7 +49,8 @@ void set_param_defaults(void)
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
   init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
 
-  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
+  init_param(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_SEND_RATE", 400);
   init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
@@ -116,6 +117,8 @@ void param_change_callback(param_id_t id)
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, _params.values[PARAM_STREAM_SERVO_OUTPUT_RAW_RATE]);
     break;
+  case PARAM_STREAM_RC_RAW_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, _params.values[PARAM_STREAM_RC_RAW_RATE]);
   default:
     // no action needed for this parameter
     break;

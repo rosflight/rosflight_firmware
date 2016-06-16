@@ -93,9 +93,9 @@ void loop(void)
   check_mode(now);
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(now);
+//  receive_rc(now);
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  mux_inputs();
+//  mux_inputs();
 }
 
