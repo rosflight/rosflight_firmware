@@ -48,7 +48,7 @@ void set_param_defaults(void)
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
   init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
 
-  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
+  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
   init_param(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_SEND_RATE", 400);
@@ -85,9 +85,9 @@ void set_param_defaults(void)
 
   init_param(PARAM_ARM_STICKS, "ARM_STICKS", true);
   init_param(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 7);
-  init_param(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 200);
+  init_param(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 400);
 
-  init_param(PARAM_FIXED_WING, "FIXED_WING", false);
+  init_param(PARAM_FIXED_WING, "FIXED_WING", true);
 }
 
 bool read_params(void)

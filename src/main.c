@@ -76,8 +76,8 @@ void loop(void)
     // If I have new IMU data, then perform control
     // run estimator
     run_estimator(now);
-//    run_controller(now);
-//    mix_outputs();
+    run_controller(now);
+    mix_output();
   }
 
   /*********************/
@@ -93,9 +93,9 @@ void loop(void)
   check_mode(now);
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-//  receive_rc(now);
+  receive_rc(now);
 
   // update commands (internal logic tells whether or not we should do anything or not)
-//  mux_inputs();
+  mux_inputs();
 }
 
