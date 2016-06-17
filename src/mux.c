@@ -68,12 +68,12 @@ bool mux_inputs()
 
   if (_params.values[PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE])
   {
-    if(_offboard_control.F.active)
+    if (_offboard_control.F.active)
     {
       if (_rc_control.F.type == THROTTLE && _offboard_control.F.type == THROTTLE)
       {
         _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?
-                                      _offboard_control.F.value : _rc_control.F.value;
+                                    _offboard_control.F.value : _rc_control.F.value;
         _combined_control.F.type = THROTTLE;
         _combined_control.F.active = true;
       }
@@ -92,7 +92,7 @@ bool mux_inputs()
     {
       _combined_control.F = _rc_control.F;
     }
-    else if(_offboard_control.F.active)
+    else if (_offboard_control.F.active)
     {
       _combined_control.F = _offboard_control.F;
     }
@@ -104,7 +104,7 @@ bool mux_inputs()
   }
 
   // Light to indicate override
-  if(_rc_control.x.active || _rc_control.y.active || _rc_control.z.active || _rc_control.F.active)
+  if (_rc_control.x.active || _rc_control.y.active || _rc_control.z.active || _rc_control.F.active)
   {
     LED0_ON;
   }

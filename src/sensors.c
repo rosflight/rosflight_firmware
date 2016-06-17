@@ -56,7 +56,7 @@ void init_sensors(void)
 
 bool update_sensors(uint32_t time_us)
 {
-  if( update_imu())
+  if (update_imu())
   {
     return true;
   }

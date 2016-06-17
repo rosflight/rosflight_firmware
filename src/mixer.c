@@ -105,7 +105,7 @@ void init_PWM()
 
 void write_motor(uint8_t index, int32_t value)
 {
-  if(_armed_state == ARMED)
+  if (_armed_state == ARMED)
   {
     if (value > 1000)
     {
@@ -153,7 +153,7 @@ void mix_output()
     {
       // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
       prescaled_outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                     _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
+                              _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
       if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
       {
         max_output = prescaled_outputs[i];

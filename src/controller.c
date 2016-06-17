@@ -55,15 +55,15 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
     int32_t error = (attitude_command.x.value - _current_state.phi/1000);
     x_integrator += (error*dt)/1000;
     rate_command.x.value = (error*_params.values[PARAM_PID_ROLL_ANGLE_P])/1000
-        + (x_integrator/1000*_params.values[PARAM_PID_ROLL_ANGLE_I])/1000
-        - (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);
+                           + (x_integrator/1000*_params.values[PARAM_PID_ROLL_ANGLE_I])/1000
+                           - (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);
     // integrator anti-windup <-- Check this before fielding
     if (abs(rate_command.x.value) > _params.values[PARAM_MAX_ROLL_RATE])
     {
       // find the remaining space after the P and D terms to saturate
       int32_t space = _params.values[PARAM_MAX_ROLL_RATE]
-          - (error*_params.values[PARAM_PID_ROLL_ANGLE_P])/1000
-          + (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);;
+                      - (error*_params.values[PARAM_PID_ROLL_ANGLE_P])/1000
+                      + (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);;
       // Make the integrator fill that space
       x_integrator = (space*1000)/_params.values[PARAM_PID_ROLL_ANGLE_I];
       // Make sure the integrator never goes negative
@@ -79,14 +79,14 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
     int32_t error = (attitude_command.y.value - _current_state.theta/1000);
     y_integrator += (error*dt)/1000;
     rate_command.y.value = (error*_params.values[PARAM_PID_PITCH_ANGLE_P])/1000
-        + (y_integrator*_params.values[PARAM_PID_PITCH_ANGLE_I])/1000
-        - (_current_state.q/1000 *_params.values[PARAM_PID_PITCH_ANGLE_D]);
+                           + (y_integrator*_params.values[PARAM_PID_PITCH_ANGLE_I])/1000
+                           - (_current_state.q/1000 *_params.values[PARAM_PID_PITCH_ANGLE_D]);
     // integrator anti-windup
     if (abs(rate_command.y.value) > _params.values[PARAM_MAX_PITCH_RATE])
     {
       int32_t space = _params.values[PARAM_MAX_PITCH_RATE]
-          - (error*_params.values[PARAM_PID_PITCH_ANGLE_P])/1000
-          + (_current_state.p/1000 *_params.values[PARAM_PID_PITCH_ANGLE_D]);;
+                      - (error*_params.values[PARAM_PID_PITCH_ANGLE_P])/1000
+                      + (_current_state.p/1000 *_params.values[PARAM_PID_PITCH_ANGLE_D]);;
       y_integrator = (space*1000)/_params.values[PARAM_PID_PITCH_ANGLE_I];
       y_integrator = (y_integrator > 0) ? y_integrator : 0;
       rate_command.y.value = sat(rate_command.y.value, (int32_t)_params.values[PARAM_MAX_PITCH_RATE]);
@@ -130,12 +130,12 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     int32_t error = rate_command.z.value*1000 - _current_state.r; // urad
     z_integrator += (error*dt)/1000; // urad
     motor_command.z.value = (error*_params.values[PARAM_PID_YAW_RATE_P])/1000
-        +(z_integrator/1000*_params.values[PARAM_PID_YAW_RATE_I])/1000;
+                            +(z_integrator/1000*_params.values[PARAM_PID_YAW_RATE_I])/1000;
     // anti-windup
-    if(abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
+    if (abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
     {
       int32_t space = _params.values[PARAM_MAX_COMMAND]
-          - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
+                      - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
       z_integrator = (space*1000)/_params.values[PARAM_PID_YAW_RATE_I];
       z_integrator = (z_integrator > 0) ? z_integrator : 0;
       motor_command.z.value = sat(motor_command.z.value, _params.values[PARAM_MAX_COMMAND]);

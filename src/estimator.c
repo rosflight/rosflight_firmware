@@ -34,9 +34,9 @@ void run_estimator(int32_t now)
   int32_t acc_phi = 0;
   int32_t acc_theta = 0;
   int32_t acc_mag_squared = (_accel_data[2]*_accel_data[2])/1000
-                          + (_accel_data[1]*_accel_data[1])/1000
-                          + (_accel_data[0]*_accel_data[0])/1000;
-  if ( acc_mag_squared < 19294 && acc_mag_squared > 14261)
+                            + (_accel_data[1]*_accel_data[1])/1000
+                            + (_accel_data[0]*_accel_data[0])/1000;
+  if (acc_mag_squared < 19294 && acc_mag_squared > 14261)
   {
     // pull in accelerometer data
     acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
@@ -55,15 +55,18 @@ void run_estimator(int32_t now)
   int32_t meas_r = -1*((int32_t)_gyro_data[2]*_gyro_scale);
 
   // filter gyro data for angular rate measurements
-  _current_state.p = (_current_state.p*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_p*(_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
-  _current_state.q = (_current_state.q*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_q*(_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
-  _current_state.r = (_current_state.r*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_r*(_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
+  _current_state.p = (_current_state.p*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_p*
+                      (_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
+  _current_state.q = (_current_state.q*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_q*
+                      (_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
+  _current_state.r = (_current_state.r*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_r*
+                      (_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
 
   // Perform the Complementary Filter (forgive the unit adjustments.  This was written with basically a lot of trial an error)
   // current_state angles are in urad
   alpha = 0;
   _current_state.phi = (alpha*(_current_state.phi  + (meas_p*dt)/1000))/1000 + (1000-alpha)*acc_phi;
-  _current_state.theta = (alpha*( _current_state.theta  + (meas_q*dt)/1000))/1000 + (1000-alpha)*acc_theta;
+  _current_state.theta = (alpha*(_current_state.theta  + (meas_q*dt)/1000))/1000 + (1000-alpha)*acc_theta;
   _current_state.psi = _current_state.psi  + (meas_r*dt)/1000;
 
   // wrap psi because we don't actually get a measurement of it
