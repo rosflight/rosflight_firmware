@@ -43,6 +43,7 @@ void set_param_defaults(void)
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
     init_param(id, temp_name, id);
   }
+  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 5);
 
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
@@ -63,7 +64,7 @@ void set_param_defaults(void)
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
   init_param(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
-  init_param(PARAM_RC_TYPE, "RC_TYPE", 0);
+  init_param(PARAM_RC_TYPE, "RC_TYPE", 1);
   init_param(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0);
   init_param(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1);
   init_param(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3);
@@ -123,6 +124,11 @@ void set_param_defaults(void)
   init_param(PARAM_PID_ALT_I, "PID_ALT_I", 0);
   init_param(PARAM_PID_ALT_D, "PID_ALT_D", 0);
 
+
+  init_param(PARAM_MIXER, "MIXER", 0);
+  init_param(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 1);
+  init_param(PARAM_AILERON_REVERSE, "AIL_REV", 0);
+  init_param(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
   init_param(PARAM_FIXED_WING, "FIXED_WING", true);
 }
 

@@ -48,7 +48,7 @@ void init_sensors(void)
   // IMU
   uint16_t acc1G;
   float gyro_scale;
-  mpu6050_init(true, &acc1G, &gyro_scale);
+  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
   _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
   _gyro_scale = (int32_t)(gyro_scale*1000000000.0f); // convert to mrad/s
   imu_last_us = 0;
