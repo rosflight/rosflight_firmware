@@ -88,7 +88,11 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.x.type = PASSTHROUGH;
     _offboard_control.y.type = PASSTHROUGH;
     _offboard_control.z.type = PASSTHROUGH;
-    _offboard_control.F.type = PASSTHROUGH;
+    _offboard_control.F.type = THROTTLE;
+    _offboard_control.x.value = mavlink_offboard_control.value1/2;
+    _offboard_control.y.value = mavlink_offboard_control.value2/2;
+    _offboard_control.z.value = mavlink_offboard_control.value3/2;
+    _offboard_control.F.value = mavlink_offboard_control.value4;
     break;
   case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
     _offboard_control.x.type = RATE;

@@ -13,6 +13,7 @@
 #include "mode.h"
 #include "param.h"
 #include "sensors.h"
+#include "controller.h"
 #include "mixer.h"
 #include "rc.h"
 
@@ -53,7 +54,11 @@ void setup(void)
   // Initialize Estimator
   init_estimator();
   init_mode();
+  _armed_state = ARMED;
 }
+
+uint32_t counter = 0;
+uint32_t average_time = 0;
 
 void loop(void)
 {
@@ -64,19 +69,21 @@ void loop(void)
   static uint32_t prev_time;
   static int32_t dt = 0;
   uint32_t now = micros();
-  dt = now - prev_time;
-  prev_time = now;
 
   /*********************/
   /***  Control Loop ***/
   /*********************/
   // update sensors - an internal timer runs this at a fixed rate
-  if (update_sensors(now))
+  if (update_sensors(now)) // 434 us
   {
+    // loop time calculation
+    dt = now - prev_time;
+    prev_time = now;
+    average_time+=dt;
+
     // If I have new IMU data, then perform control
-    // run estimator
     run_estimator(now);
-    run_controller(now);
+    run_controller(now); // 6us
     mix_output();
   }
 
@@ -90,12 +97,15 @@ void loop(void)
   mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
-  check_mode(now);
+  check_mode(now); // 0 us
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(now);
+  receive_rc(now); // 1 us
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  mux_inputs();
+  mux_inputs(); // 3 us
+
 }
+
+
 

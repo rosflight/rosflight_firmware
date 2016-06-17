@@ -1,5 +1,7 @@
 #include <stdbool.h>
 
+#include "mavlink_util.h"
+
 #include "rc.h"
 #include "mux.h"
 #include "param.h"
@@ -64,14 +66,14 @@ bool mux_inputs()
     _combined_control.z.active = true;
   }
 
-  if (_offboard_control.F.active)
+  if (_params.values[PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE])
   {
-    if (_params.values[PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE])
+    if(_offboard_control.F.active)
     {
       if (_rc_control.F.type == THROTTLE && _offboard_control.F.type == THROTTLE)
       {
-        _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?  _offboard_control.F.value :
-                                    _rc_control.F.value;
+        _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?
+                                      _offboard_control.F.value : _rc_control.F.value;
         _combined_control.F.type = THROTTLE;
         _combined_control.F.active = true;
       }
@@ -83,18 +85,36 @@ bool mux_inputs()
         _combined_control.F = _rc_control.F;
       }
     }
-    else // offboard is active, but not min throttle
+  }
+  else // no min throttle check
+  {
+    if (_rc_control.F.active)
+    {
+      _combined_control.F = _rc_control.F;
+    }
+    else if(_offboard_control.F.active)
     {
       _combined_control.F = _offboard_control.F;
     }
+    else
+    {
+      _combined_control.F = _rc_control.F;
+      _combined_control.F.active = true;
+    }
+  }
+
+  // Light to indicate override
+  if(_rc_control.x.active || _rc_control.y.active || _rc_control.z.active || _rc_control.F.active)
+  {
+    LED0_ON;
   }
   else
   {
-    _combined_control.F = _rc_control.F;
-    _combined_control.F.active = true;
+    LED0_OFF;
   }
 
   // reset the new command flag
   _new_command = false;
+
   return true;
 }

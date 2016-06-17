@@ -24,6 +24,7 @@ PROJECT_SRC = src/main.c \
               src/rc.c \
               src/sensors.c \
               src/mux.c \
+              src/controller.c \
               src/mode.c \
 
 ###############################################################################

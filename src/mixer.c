@@ -2,10 +2,13 @@
 
 #include <breezystm32.h>
 
+#include "mavlink_util.h"
 #include "mixer.h"
 #include "param.h"
+#include "mode.h"
 
 int32_t _GPIO_outputs[8];
+static int32_t prescaled_outputs[8];
 int32_t _outputs[8];
 command_t _command;
 output_type_t _GPIO_output_type[8];
@@ -33,11 +36,11 @@ static mixer_t quadcopter_x_mixing =
 
 static mixer_t fixedwing_mixing =
 {
-  {M, S, S, S, 0, 0, 0, 0},
+  {S, S, M, S, 0, 0, 0, 0},
 
-  {1000, 0,    0,    0,    0, 0, 0, 0}, // F Mix
-  {0,    1000, 0,    0,    0, 0, 0, 0}, // X Mix
-  {0,    0,    1000, 0,    0, 0, 0, 0}, // Y Mix
+  {0,    0,    1000, 0,    0, 0, 0, 0}, // F Mix
+  {1000, 0,    0,    0,    0, 0, 0, 0}, // X Mix
+  {0,    1000, 0,    0,    0, 0, 0, 0}, // Y Mix
   {0,    0,    0,    1000, 0, 0, 0, 0}  // Z Mix
 };
 
@@ -81,6 +84,7 @@ void init_mixing()
   for (int8_t i=0; i<8; i++)
   {
     _outputs[i] = 0;
+    prescaled_outputs[i] = 0;
     _GPIO_outputs[i] = 0;
     _GPIO_output_type[i] = NONE;
   }
@@ -101,27 +105,32 @@ void init_PWM()
 
 void write_motor(uint8_t index, int32_t value)
 {
-  /** TODO:
-   * reverse the PWM -> mRad conversion in RC
-   */
-
-  if (value > 1000)
+  if(_armed_state == ARMED)
   {
-    value = 1000;
+    if (value > 1000)
+    {
+      value = 1000;
+    }
+    else if (value < 150 && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
+    {
+      value = 150;
+    }
+    else if (value < 0)
+    {
+      value = 0;
+    }
   }
-  else if (value < 0)
+  else
   {
     value = 0;
   }
-  pwmWriteMotor(index, value+1000);
+  _outputs[index] = value +1000;
+  pwmWriteMotor(index, _outputs[index]);
 }
+
 
 void write_servo(uint8_t index, int32_t value)
 {
-  /** TODO:
-   * reverse the PWM conversion in RC (if any)
-   */
-
   if (value > 500)
   {
     value = 500;
@@ -130,36 +139,40 @@ void write_servo(uint8_t index, int32_t value)
   {
     value = -500;
   }
-  pwmWriteMotor(index, 1500+value);
+  _outputs[index] = value+1500;
+  pwmWriteMotor(index, _outputs[index]);
 }
+
 
 void mix_output()
 {
-  // Mix Output
   int32_t max_output = 0;
   for (int8_t i=0; i<8; i++)
   {
     if (mixer_to_use.output_type[i] != NONE)
     {
       // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
-      _outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
+      prescaled_outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
                      _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
-      if (_outputs[i] > 1000 && _outputs[i] > max_output)
+      if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
       {
-        max_output = _outputs[i];
+        max_output = prescaled_outputs[i];
       }
+      // negative motor outputs are set to zero when writing to the motor,
+      // but they have to be allowed here because the same logic is used for
+      // servo commands, which may be negative
     }
   }
 
-  // saturate outputs to maintain controllability even at high levels of throttle
+  // saturate outputs to maintain controllability even during aggressive maneuvers
   if (max_output > 1000)
   {
-    int32_t scale_factor = (max_output*1000)/1000;
+    int32_t scale_factor = 1000*1000/max_output;
     for (int8_t i=0; i<8; i++)
     {
       if (mixer_to_use.output_type[i] == M)
       {
-        _outputs[i] = (_outputs[i]*1000)/scale_factor; // divide by scale factor
+        prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
       }
     }
   }
@@ -171,18 +184,18 @@ void mix_output()
     if (output_type == NONE)
     {
       // Incorporate GPIO on not already reserved outputs
-      _outputs[i] = _GPIO_outputs[i];
+      prescaled_outputs[i] = _GPIO_outputs[i];
       output_type = _GPIO_output_type[i];
     }
 
     // Write output to motors
     if (output_type == S)
     {
-      write_servo(i, _outputs[i]);
+      write_servo(i, prescaled_outputs[i]);
     }
     else if (output_type == M)
     {
-      write_motor(i, _outputs[i]);
+      write_motor(i, prescaled_outputs[i]);
     }
     // If we need to configure another type of output, do it here
   }
