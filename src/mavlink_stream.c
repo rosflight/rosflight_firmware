@@ -66,6 +66,13 @@ static void mavlink_send_rc_raw(void)
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
 }
 
+static void mavlink_send_diff_pressure(void)
+{
+  mavlink_msg_diff_pressure_send(MAVLINK_COMM_0,
+                                 _diff_pressure,
+                                 _temperature);
+}
+
 static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
@@ -78,6 +85,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 1e4, .last_time_us = 0, .send_function = mavlink_send_imu },
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
+  { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
   { .period_us = 1e5, .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 

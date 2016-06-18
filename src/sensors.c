@@ -12,8 +12,13 @@ int16_t _gyro_data[3];
 int32_t _accel_scale;
 int32_t _gyro_scale;
 
+bool _diff_pressure_present;
+int16_t _diff_pressure;
+int16_t _temperature;
+
 // local variable definitions
 static uint32_t imu_last_us;
+static uint32_t diff_press_last_us;
 
 
 static void correct_imu(void)
@@ -52,11 +57,20 @@ void init_sensors(void)
   _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
   _gyro_scale = (int32_t)(gyro_scale*1000000000.0f); // convert to mrad/s
   imu_last_us = 0;
+
+  // DIFF PRESSURE
+  _diff_pressure_present = ms4525_detect();
+  diff_press_last_us = 0;
 }
 
 bool update_sensors(uint32_t time_us)
 {
-  if (update_imu())
+  if ( time_us - diff_press_last_us > 20000 )
+  {
+    ms4525_read(&_diff_pressure, &_temperature);
+  }
+
+  if( update_imu())
   {
     return true;
   }
