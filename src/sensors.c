@@ -65,12 +65,12 @@ void init_sensors(void)
 
 bool update_sensors(uint32_t time_us)
 {
-  if ( time_us - diff_press_last_us > 20000 )
+  if (time_us - diff_press_last_us > 20000)
   {
     ms4525_read(&_diff_pressure, &_temperature);
   }
 
-  if( update_imu())
+  if (update_imu())
   {
     return true;
   }
