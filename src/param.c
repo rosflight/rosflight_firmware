@@ -54,12 +54,12 @@ void set_param_defaults(void)
   init_param(PARAM_GYRO_LPF_ALPHA, "GYRO_LPF_ALPHA", 100);
   init_param(PARAM_ACC_LPF_ALPHA, "GYRO_LPF_ALPHA", 500);
 
-  init_param(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", -20);
-  init_param(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 5);
-  init_param(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 6);
-  init_param(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", -110);
-  init_param(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 50);
-  init_param(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 46);
+  init_param(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0);
+  init_param(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0);
+  init_param(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0);
+  init_param(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0);
+  init_param(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0);
+  init_param(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0);
 
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
