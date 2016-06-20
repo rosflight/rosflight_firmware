@@ -1,0 +1,349 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\usepackage{bm}
+\usepackage{upgreek}
+\usepackage{tikz}
+\usepackage{tabulary}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage[section]{placeins}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes, arrows}
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{5pt} % Customize the height of the header
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{
+\normalfont \normalsize
+\textsc{MAGICC Lab - Brigham Young University} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Offboard Control, RC and Safety Pilot Integration \\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{James Jackson} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 1
+%----------------------------------------------------------------------------------------
+
+\section{Introduction}
+
+A very important feature for ROSflight is the tight integration of an RC safety pilot.  The safety pilot is usually a highly experienced RC operator who is capable of knowing when the computer is doing something unsafe and taking over fast enough to land the MAV safely where researchers can fix the bugs and try again.  ROSflight can be used independently of an onboard computer similar to more fully-developed codes such as cleanflight and baseflight, however it is primarily designed to quickly test research code developed in ROS on hardware.  This means that we can assume that the controls coming from the onboard computer may be suspect, and may at any time try to make the MAV do something drastic, (such as full-throttle into the ceiling or full-power front flips).  While this may be exciting, it is often expensive and dangerous unless there is some safety pilot intervention.  The RC controls are designed to be first interpreted, then mixed with the onboard controls in a way that the safety pilot has quick access to correct dangerous maneuvers commanded by the onboard computer but is primarily on stand-by while the computer does it's thing with the hardware.
+
+\begin{figure}
+	\centering
+
+	\tikzstyle{block} = [draw, rectangle, 
+    					minimum height=3em, minimum width=6em]
+  \tikzstyle{node}=[draw, ellipse, minimum size=3em,
+    					align=center]
+
+  \begin{adjustbox}{max size={\textwidth}{0.2\textheight}}
+	\begin{tikzpicture}
+		\node[block] (rc) {RC};
+		\node[block, right=5em of rc] (offboard) {MAVlink};
+		\node[node, below right=2.5em and 1.5em of rc] (mux) {mux};
+		\node[block, below=2.5em of mux] (combined) {Composite};
+
+		\draw[-triangle 60] (rc) -- (mux);
+		\draw[-triangle 60] (offboard) -- (mux);
+		\draw[-triangle 60] (mux) -- (combined);
+	\end{tikzpicture}
+  \end{adjustbox}
+
+	\label{mux_configuration}
+	\caption{Diagram of how signals from RC and MAVlink are muxed in ROSflight}
+\end{figure}
+
+\section{Building The Command Structure}
+
+To accomplish this task, a command structure is created from both the incoming rc commands and commands over the mavlink serial line.  These structures are combined in the mux, as shown in figure~\ref{mux_configuration}.  This structure has four channels, which represent the four actuatable degrees of freedom on the MAV.  In general, the $x$ channel refers to roll, roll rate or aileron deflection, the $y$ channel to pitch, pitch rate or elevator deflection, the $z$ to yaw rate and rudder deflection and the $F$ channel to throttle.
+
+
+\begin{table}[h]
+  \centering
+  \label{command_structure}
+  \caption{Command Structure}
+  \begin{tabular}{| c | c |}
+    \hline
+    \multirow{3}{*} {$x$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+      \multirow{3}{*} {$y$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+      \multirow{3}{*} {$z$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+      \multirow{3}{*} {$F$ channel}
+      & flag \\ \cline{2-2}
+      & type \\ \cline{2-2}
+      & value \\ \hline
+  \end{tabular}
+\end{table}
+
+Each channel has three fields as shown in table~\ref{command_structure}.  The flag field refers to whether or not that particular channel is being controlled in this message.  If true, then the channel is active, and should be listened to.  If false, then it should be ignored.  If the message from both the offboard control and the RC are both inactive, then the RC signal is taken by default.  The type field indicates the type of information being carried by this channel.  For the $x$ and $y$ channels, this could be an angular rate in mrad/s, or an angle in mrad, the $z$ channel can carry only an angular rate in mrad/s and the $F$ channel can carry a throttle from 0-1000 or an altitude command in cm.  Each channel can also act in ``passthrough'' mode which means that the received PWM signal is forwarded directly to the mixer.  The value field is simply the data being carried in the channel.  This is interpreted according to the type field.
+
+The logic required to construct the rc command structure is shown in figure~\ref{fig:rc_flow}.  The MAVLink structure is converted to its final form upon receiving the message, but the logic to do so is trivial, and is ommitted here for brevity.
+
+\begin{figure}[!htb]
+\centering
+	\tikzstyle{block} = [draw, rectangle, 
+    					minimum height=3em, minimum width=6em, align=center]
+  \tikzstyle{node}=[draw, ellipse, minimum size=3em,
+    					align=center]
+  \tikzstyle{dec}=[draw, diamond, aspect=3, align=center]
+  \tikzstyle{coordinate}=[draw, none]
+  \tikzstyle{a}=[-triangle 60]
+
+  \begin{adjustbox}{max size={\textwidth}{0.79\textheight}}
+  \begin{tikzpicture}[scale=0.4]
+
+  \node[node] (start) {start};
+  \node[dec, below=2em of start] (time) {\footnotesize Has it been 20ms?};
+  \node[node, right=2em of time] (done1) {done};
+  \node[dec, below=1em of time] (fixed_wing) {Fixed Wing?};
+  \node[dec, below left=2em and 4em of fixed_wing] (att_switch) {\footnotesize Att. Ctrl. Switch};
+  \node[block, below right=2em and 4em of fixed_wing, text width = 11em] (pass) {\scriptsize x.type = PASSTHROUGH y.type = PASSTHROUGH z.type = PASSTHROUGH};
+  \node [block, below left=2em and 2em of att_switch, text width = 7em] (angle) {\scriptsize x.type=ANGLE y.type=ANGLE};
+  \node [block, below right=2em and 2em of att_switch, text width = 7em] (rate) {\scriptsize x.type=RATE y.type=RATE};
+	\node [block, below=6em of att_switch, text width = 7em] (yaw_angle) {\scriptsize z.type=RATE};
+	\node [dec, below=2em of yaw_angle] (f_switch) {\footnotesize F Ctrl. Switch};
+	\node [block, below left=2em and 2em of f_switch] (F_alt) {\scriptsize F.type=ALTITUDE};
+	\node [block, below right=2em and 2.5em of f_switch] (F_thr) {\scriptsize F.type=THROTTLE};
+
+	\node [block, below=2em of F_thr] (convert) {Convert PWM to Rad};
+
+	\node [dec, below=2em of convert] (att_over) {\scriptsize Att. override switch};
+
+	\node [dec, below left=2em and 2em of att_over] (lag) {\scriptsize override stick lag};
+	\node [dec, left=2em of lag] (deviated) {\scriptsize sticks deviated?};
+
+	\node[block, below=10em of att_over, text width=6em] (xyz_active) {\scriptsize x.flag=ACTIVE y.flag=ACTIVE z.flag=ACTIVE};
+	\node[block, below right=2em and 0em of deviated, text width = 6em] (set_lag) {\scriptsize set override stick lag};
+	\node[block, below left=7em and 0em of deviated, text width=7em] (xyz_inactive) {\scriptsize x.flag=INACTIVE y.flag=INACTIVE z.flag=INACTIVE};
+
+	\node[dec, below=2em of xyz_active, text width=10em] (thr_over) {\scriptsize Thr override switch};
+	\node[block, below left=2em and 2em of thr_over] (f_inactive){\scriptsize F.flag=INACTIVE};
+	\node[block, below right=2em and 2em of thr_over] (f_active){\scriptsize F.flag=ACTIVE};
+
+	\node[node, below=4em of thr_over] (done2) {done};
+
+
+	\draw[a] (start) -- (time);
+	\draw[a] (time) -- node[above] {no} (done1);
+	\draw[a] (time) -- node[left] {yes} (fixed_wing);
+	\draw[a] (fixed_wing) -| node[above, pos=0.25] {yes} (pass);
+	\draw[a] (fixed_wing) -| node[above, pos=0.25] {no} (att_switch);
+	\draw[a] (att_switch) -| node[above, pos=0.25] {on} (angle);
+	\draw[a] (att_switch) -| node[above, pos=0.25] {off} (rate);
+	\draw[a] (rate) |- (yaw_angle);
+	\draw[a] (angle) |- (yaw_angle);
+	\draw[a] (yaw_angle) -- (f_switch);
+
+	\coordinate[above=1em of f_switch] (f_switch_merge) {};
+	\draw (pass) |- (f_switch_merge);
+
+	\draw[a] (f_switch) -| node[above, pos=0.25]{off} (F_thr);
+	\draw[a] (f_switch) -| node[above, pos=0.25]{on} (F_alt);
+	\draw[a] (F_thr) -- (convert);
+	\draw[a] (F_alt) |- (convert);
+
+	\draw[a] (convert) -- (att_over);
+	\draw[a] (att_over) -| node[above, pos=0.25] {no} (lag);
+	\draw[a] (att_over) -- node[right] {yes} (xyz_active);
+
+	\draw[a] (lag) -- node[above] {no} (deviated);
+	\coordinate[below=2em of att_over] (over_merge1);
+	\draw (lag) -- node[above] {yes} (over_merge1);
+	\draw[a] (deviated) |- node[left, pos=0.25] {yes} (set_lag);
+	\draw[a] (deviated) -| node[above, pos=0.25] {no} (xyz_inactive);
+	\coordinate[right=10.3em of set_lag] (over_merge2);
+	\draw (set_lag) -- (over_merge2);
+
+	\coordinate[above=1em of thr_over] (thr_merge);
+	\draw (xyz_inactive) |- (thr_merge);
+	\draw[a] (xyz_active) -- (thr_over);
+
+	\draw[a] (thr_over) -| node[above, pos=0.25] {off} (f_inactive);
+	\draw[a] (thr_over) -| node[above, pos=0.25] {on} (f_active);
+
+	\draw[a] (f_inactive) |- (done2);
+	\draw[a] (f_active) |- (done2);
+
+  \end{tikzpicture}
+  \end{adjustbox}
+
+  \label{fig:rc_flow}
+  \caption{Logic used to construct of the RC command structure}
+\end{figure}
+
+\section{Combinining the MAVLink and RC Command Structures}
+
+Once both the RC and offboard MAVlink command structures have been created from thier respective sources, they must be combined into the composite command structure, which is then passed to the controller to be converted into primitive torques, then mixed into motor outputs.  The three attitude channels $x$, $y$, and $z$ are all interpreted in the same way, as shown in Figure~\ref{fig:attitude_mux}, however, to handle minimum throttle cases, the logic to combined the $F$ channel is a bit more complex, as shown in Figure~\ref{fig:throttle_mux}.  In order to mux throttles with the MIN\_THROTTLE param set true, altitude commands must be first converted into throttles using the altitude controller.  They are then compared with one another and the lower of the two is taken.
+
+\begin{figure}[h]
+\centering
+	\tikzstyle{block} = [draw, rectangle, 
+    					minimum height=3em, minimum width=6em, align=center]
+  \tikzstyle{node}=[draw, ellipse, minimum size=3em,
+    					align=center]
+  \tikzstyle{dec}=[draw, diamond, aspect=3, align=center]
+  \tikzstyle{coordinate}=[draw, none]
+  \tikzstyle{a}=[-triangle 60]
+
+  \begin{adjustbox}{max size={\textwidth}{\textheight}}
+  \begin{tikzpicture}
+
+  \node[node] (start) {start};
+  \node[dec, below=2em of start] (off_active) {Offboard Active?};
+  \node[block, below left=2em and 2em of off_active] (comb_rc) {Combined=RC};
+  \node[block, below right=2em and 2em of off_active] (comb_off) {Combined=Offboard};
+  \node[block, below=5em of off_active] (comb_active) {Combined=Active};
+  \node[node, below=2em of comb_active] (done) {done};
+
+  \draw[a] (start) -- (off_active);
+  \draw[a] (off_active) -| node[above, pos=0.25] {no} (comb_rc);
+  \draw[a] (off_active) -| node[above, pos=0.25] {yes} (comb_off);
+  \draw[a] (comb_rc) |- (comb_active);
+  \draw[a] (comb_off) |- (comb_active);
+  \draw[a] (comb_active) -- (done);
+
+  \end{tikzpicture}
+  \end{adjustbox}
+
+  \caption{Logic used to mux any of the three attitude channels $x$, $y$, or $z$.  This logic must be computed for each channel independently, as it is to have a combined output made up of both RC and Offboard control}
+  \label{fig:attitude_mux}
+\end{figure}
+
+\begin{figure}
+\centering
+	\tikzstyle{block} = [draw, rectangle, 
+    					minimum height=3em, minimum width=6em, align=center]
+  \tikzstyle{node}=[draw, ellipse, minimum size=3em,
+    					align=center]
+  \tikzstyle{dec}=[draw, diamond, aspect=3, align=center]
+  \tikzstyle{coordinate}=[draw, none]
+  \tikzstyle{a}=[-triangle 60]
+
+  \begin{adjustbox}{max size={\textwidth}{\textheight}}
+  \begin{tikzpicture}
+
+  \node[node] (start) {start};
+  \node[dec, below=2em of start] (off_active) {Offboard Active?};
+  \node[dec, below right=2em and 6em of off_active] (rc_thr) {RC=THROTTLE?};
+  \node[block, below left=2em and 1em of rc_thr] (comb_rc) {Combined=RC};
+  \node[block, below right=2em and 1em of rc_thr] (rc_alt) {RC=altCtrl(RC)};
+  \node[node, below=2em of comb_rc] (done1) {done};
+
+  \draw[a] (start) -- (off_active);
+  \draw[a] (off_active) -| node[above, pos=0.25] {no} (rc_thr);
+  \draw[a] (rc_thr) -| node[above, pos=0.25] {no} (rc_alt);
+  \draw[a] (rc_thr) -| node[above, pos=0.25] {yes} (comb_rc);
+  \draw[a] (rc_alt) -- (comb_rc);
+  \draw[a] (comb_rc) -- (done1);
+
+  \node[dec, below left=12em and 3em of off_active] (min_throttle) {MIN\_THROTTLE?};
+  \node[dec, below right=2em and 2em of min_throttle] (off_thr) {offboard=THROTTLE?};
+  \node[block, below right=2em and 0em of off_thr] (off_alt) {Offboard=altCtrl(Offboard)};
+  \node[block, below left=2em and 0em of off_thr] (comb_off) {Combined=Offboard};
+  \node[node, below=2em of comb_off] (done2) {done};
+  \draw[a] (off_active) -| node[above, pos=0.25] {yes} (min_throttle);
+  \draw[a] (min_throttle) -| node[above, pos=0.25] {no} (off_thr);
+  \draw[a] (off_thr) -| node[above, pos=0.25] {yes} (comb_off);
+  \draw[a] (off_thr) -| node[above, pos=0.25] {no} (off_alt);
+  \draw[a] (off_alt) -- (comb_off);
+  \draw[a] (comb_off) -- (done2);
+
+  \node[dec, below left=3em and 12em of min_throttle] (rc_thr2) {RC=THROTTLE?};
+  \node[block, below right=1em and 2em of rc_thr2] (rc_alt2) {RC=altCtrl(RC)};
+  \coordinate[below left=2.5em and 5.9em of rc_thr2] (rc_thr_merge);
+  \node[dec, below left=6em and 2em of rc_thr2](off_thr2){Offboard=THROTTLE?};
+
+  \draw[a] (min_throttle) -| node[above, pos=0.25] {yes} (rc_thr2);
+  \draw[a] (rc_thr2) -| node[above, pos=0.25] {no} (rc_alt2);
+  \draw[a] (rc_thr2) -| node[above, pos=0.25] {yes} (off_thr2);
+  \draw (rc_alt2) -- (rc_thr_merge);
+
+  \node[block, below right=1em and 2em of off_thr2] (off_alt2) {Offboard=altCtrl(Offboard)};
+  \coordinate[below left=2.5em and 5em of off_thr2] (off_thr_merge);
+  \node[dec, below left=6em and 2em of off_thr2](rc_off){RC > Offboard?};
+
+  \draw[a] (off_thr2) -| node[above, pos=0.25] {no} (off_alt2);
+  \draw[a] (off_thr2) -| node[above, pos=0.25] {yes} (rc_off);
+  \draw (off_alt2) -- (off_thr_merge);
+
+  \node[block, below left=2em and 2em of rc_off] (comb_off2) {Combined=Offboard};
+  \node[block, below right=2em and 2em of rc_off] (comb_rc2) {Combined=RC};
+  \node[node, below=6em of rc_off] (done3) {done};
+
+  \draw[a] (rc_off) -| node[above, pos=0.25] {no} (comb_rc2);
+  \draw[a] (rc_off) -| node[above, pos=0.25] {yes} (comb_off2);
+  \draw[a] (comb_rc2) |- (done3);
+  \draw[a] (comb_off2) |- (done3);
+
+
+  \end{tikzpicture}
+  \end{adjustbox}
+
+  \caption{Logic used to mux the throttle channel, $F$.  The additional logic here is to account for the case in which altitudes have been commanded by one control source while throttles are commanded by the other.  Both sources are first converted to throttle commands so as to compare equivalent channels when taking the minimum throttle}
+  \label{fig:throttle_mux}
+\end{figure}
+
+
+
+
+
+
+
+
+\end{document}
+

@@ -13,10 +13,13 @@
 #include "mode.h"
 #include "param.h"
 #include "sensors.h"
+#include "controller.h"
 #include "mixer.h"
+#include "rc.h"
 
 void setup(void)
 {
+  // Make sure all the perhipherals are done booting up before starting
   delay(500);
 
   // Load Default Params
@@ -30,15 +33,14 @@ void setup(void)
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
-  // Initialize PWM
-  bool useCPPM = _params.values[PARAM_RC_TYPE];
-  int16_t motor_refresh_rate = _params.values[PARAM_MOTOR_PWM_SEND_RATE];
-  int16_t idle_pwm = _params.values[PARAM_IDLE_PWM];
-  pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);
+  // Initialize PWM and RC
+  init_PWM();
+  init_rc();
 
-
-  // Initialize Serial Communication
+  // Initialize MAVlink Communication
   init_mavlink();
+
+  // Initialize Sensors
   init_sensors();
 
 
@@ -51,6 +53,8 @@ void setup(void)
 
   // Initialize Estimator
   init_estimator();
+  init_mode();
+  _armed_state = ARMED;
 }
 
 uint32_t counter = 0;
@@ -58,59 +62,50 @@ uint32_t average_time = 0;
 
 void loop(void)
 {
-  /// Pre-process
+  /*********************/
+  /***  Pre-Process ***/
+  /*********************/
   // get loop time
   static uint32_t prev_time;
   static int32_t dt = 0;
   uint32_t now = micros();
-  dt = now - prev_time;
-  prev_time = now;
 
-  // update sensors (only the ones that need updating)
-  // If I have new IMU data, then perform control, otherwise, do something else
-  if (update_sensors(now))
+  /*********************/
+  /***  Control Loop ***/
+  /*********************/
+  // update sensors - an internal timer runs this at a fixed rate
+  if (update_sensors(now)) // 434 us
   {
-    // run estimator
+    // loop time calculation
+    dt = now - prev_time;
+    prev_time = now;
+    average_time+=dt;
+
+    // If I have new IMU data, then perform control
     run_estimator(now);
-
-    /// Need to mix between RC and computer based on override mode and RC & computer control modes
-    /// (happens at multiple levels between control loops)
-    switch (armed_state)
-    {
-    case ARMED:
-      switch (composite_control_mode)
-      {
-      case ALT_MODE:
-        // thrust_c = runAltController(alt_c, state);
-      case ATTITUDE_MODE:
-        // omega_c = runAttController(theta_c, state);
-      case RATE_MODE:
-        // tau_c = runRateController(omega_c, state);
-        // motor_speeds = mixOutput(tau_c);
-      case PASSTHROUGH:
-        // write_motors_armed(motor_speeds);
-        break;
-      default:
-        error_state = INVALID_CONTROL_MODE;
-        break;
-        break;
-      }
-    case DISARMED:
-      // write_motors_armed();
-      break;
-    default:
-      error_state = INVALID_ARMED_STATE;
-    }
+    run_controller(now); // 6us
+    mix_output();
   }
-  counter++;
-  average_time += dt;
 
-  // send serial sensor data
-  // send low priority messages (e.g. param values)
-  //  internal timers figure out what to send
+  /*********************/
+  /***  Post-Process ***/
+  /*********************/
+  // internal timers figure out what to send
   mavlink_stream(now);
 
-  /// Post-Process
   // receive mavlink messages
   mavlink_receive();
+
+  // update the armed_states, an internal timer runs this at a fixed rate
+  check_mode(now); // 0 us
+
+  // get RC, an internal timer runs this every 20 ms (50 Hz)
+  receive_rc(now); // 1 us
+
+  // update commands (internal logic tells whether or not we should do anything or not)
+  mux_inputs(); // 3 us
+
 }
+
+
+

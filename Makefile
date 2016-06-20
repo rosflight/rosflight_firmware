@@ -21,7 +21,11 @@ PROJECT_SRC = src/main.c \
               src/mavlink_util.c \
               src/mixer.c \
               src/param.c \
-              src/sensors.c
+              src/rc.c \
+              src/sensors.c \
+              src/mux.c \
+              src/controller.c \
+              src/mode.c \
 
 ###############################################################################
 
@@ -60,7 +64,7 @@ rosflight2_SRC = $(BREEZY_DIR)/main.c \
 		   $(BREEZY_DIR)/drv_mb1242.c \
 		   $(BREEZY_DIR)/printf.c \
 		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
-			 $(TURBOTRIG_DIR)/turbotrig.c \
+		   $(TURBOTRIG_DIR)/turbotrig.c \
 		   $(PROJECT_SRC) \
 		   $(CMSIS_SRC) \
 		   $(STDPERIPH_SRC)

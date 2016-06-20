@@ -1,5 +1,7 @@
 #include <stdbool.h>
 
+#include <breezystm32/breezystm32.h>
+
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mixer.h"
@@ -48,6 +50,22 @@ static void mavlink_send_servo_output_raw(void)
                                     _outputs[7]);
 }
 
+static void mavlink_send_rc_raw(void)
+{
+  mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
+                               micros(),
+                               0,
+                               pwmRead(0),
+                               pwmRead(1),
+                               pwmRead(2),
+                               pwmRead(3),
+                               pwmRead(4),
+                               pwmRead(5),
+                               pwmRead(6),
+                               pwmRead(7),
+                               0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
+}
+
 static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
@@ -59,6 +77,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
   { .period_us = 1e4, .last_time_us = 0, .send_function = mavlink_send_imu },
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
+  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
   { .period_us = 1e5, .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 

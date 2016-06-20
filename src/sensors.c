@@ -15,11 +15,31 @@ int32_t _gyro_scale;
 // local variable definitions
 static uint32_t imu_last_us;
 
-// local function definitions
-static void update_imu(void)
+
+static void correct_imu(void)
 {
-  mpu6050_read_accel(_accel_data);
-  mpu6050_read_gyro(_gyro_data);
+  _accel_data[0] += _params.values[PARAM_ACC_X_BIAS];
+  _accel_data[1] += _params.values[PARAM_ACC_Y_BIAS];
+  _accel_data[2] += _params.values[PARAM_ACC_Z_BIAS];
+  _gyro_data[0] += _params.values[PARAM_GYRO_X_BIAS];
+  _gyro_data[1] += _params.values[PARAM_GYRO_Y_BIAS];
+  _gyro_data[2] += _params.values[PARAM_GYRO_Z_BIAS];
+}
+
+// local function definitions
+static bool update_imu(void)
+{
+  if (mpuDataReady)
+  {
+    mpu6050_read_accel(_accel_data);
+    mpu6050_read_gyro(_gyro_data);
+    correct_imu();
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 // function definitions
@@ -30,18 +50,17 @@ void init_sensors(void)
   float gyro_scale;
   mpu6050_init(true, &acc1G, &gyro_scale);
   _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
-  _gyro_scale = (int32_t)(gyro_scale*1000000000000.0f); // convert to urad/s
+  _gyro_scale = (int32_t)(gyro_scale*1000000000.0f); // convert to mrad/s
   imu_last_us = 0;
 }
 
 bool update_sensors(uint32_t time_us)
 {
-  if (time_us - imu_last_us >= 5000)
+  if (update_imu())
   {
-    imu_last_us = time_us;
-    update_imu();
     return true;
   }
   else
     return false;
 }
+
