@@ -177,6 +177,14 @@ void mix_output()
     }
   }
 
+  // Reverse Fixedwing channels
+  if (_params.values[PARAM_FIXED_WING])
+  {
+    prescaled_outputs[0] *= _params.values[PARAM_AILERON_REVERSE] ? -1 : 1;
+    prescaled_outputs[1] *= _params.values[PARAM_ELEVATOR_REVERSE] ? -1 : 1;
+    prescaled_outputs[3] *= _params.values[PARAM_RUDDER_REVERSE] ? -1 : 1;
+  }
+
   // Add in GPIO inputs from Onboard Computer
   for (int8_t i=0; i<8; i++)
   {

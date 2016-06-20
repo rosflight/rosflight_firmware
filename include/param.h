@@ -9,11 +9,14 @@
 
 typedef enum
 {
+  /******************************/
+  /*** HARDWARE CONFIGURATION ***/
+  /******************************/
+  PARAM_BOARD_REVISION,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
   /*****************************/
-
   PARAM_SYSTEM_ID,
   PARAM_STREAM_HEARTBEAT_RATE,
 
@@ -119,9 +122,11 @@ typedef enum
   /***************************/
   /*** FRAME CONFIGURATION ***/
   /***************************/
-
   PARAM_FIXED_WING,
   PARAM_MIXER,
+  PARAM_ELEVATOR_REVERSE,
+  PARAM_AILERON_REVERSE,
+  PARAM_RUDDER_REVERSE,
 
   /********************/
   /*** ARMING SETUP ***/
