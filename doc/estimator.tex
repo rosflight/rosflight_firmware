@@ -77,49 +77,193 @@
 
 The estimator is designed to calculate an estimator of the attitude and angular velocity of the multirotor.  It is assumed that the FCU is mounted rigidly to the body of the aircraft (perhaps with dampening material to remove vibrations from the motors), such that measurements of the onboard IMU are consistent with the motion of the aircraft.
 
-Due to the limited computational power on the embedded processor, and to calculate attitude estimates at speeds up to 1000Hz, a simple complementary filter is used, rather than a Kalman filter.  In practice, this method works extremely well, and it used widely throughout commercially available autopilots.
+Due to the limited computational power on the embedded processor, and to calculate attitude estimates at speeds up to 1000Hz, a simple complementary filter is used, rather than a Kalman filter.  In practice, this method works extremely well, and it used widely throughout commercially available autopilots.  There are a variety of complementary filters, but the general theory is the same.  A complementary filter is a method to fuse the measurements from a gyroscope, accelerometer and sometimes magnetometer to produce an estimate of the attitude of the MAV.  Before getting into nitty-gritties of the filter derivation, let's just overview some of the characteristics of IMUs.
 
-Accelerometers measure all the forces acting on the aircraft.  We can assume that these forces consist primarily of forces from the propellers, but it often also consists of vibrations from unbalanced motors and propellers, wind, ground effect, and a variety of other sources. One thing accelerometers do \textit{not} measure is acceleration due to gravity.  As a result, if you hold an accelerometer still and look at it's measurements, you'll notice it measures the forces required to hold it in place.  For example, if you set an accelerometer on a table, it will measure the normal force the table exerts on the accelerometer.  If we assume that the accelerometer is at rest (albeit a rather significant assumption for a MAV), then we can assume that the forces acting on the accelerometer must be directly opposite gravity.  If we know the direction of gravity (read, inertial frame) relative to the body-fixed frame of the MAV, then we can back out the attitude of the MAV using the following formula.
+\subsection{Accelerometers}
 
-\begin{equation}
-	\begin{aligned}
-		\phi_{meas} &= \textrm{atan} \left( \frac{a_x}{a_z} \right)  \\
-		\theta_{meas} &= \textrm{atan} \left( \frac{a_y}{a_z}  \right)
-	\end{aligned}
-\end{equation}
+Accelerometers measure all the forces acting on the aircraft.  We can assume that these forces consist primarily of forces from the propellers, but it often also consists of vibrations from unbalanced motors and propellers, wind, ground effect, and a variety of other sources. One thing accelerometers do \textit{not} measure is acceleration due to gravity.  As a result, if you hold an accelerometer still and look at it's measurements, you'll notice it measures the forces required to hold it in place.  For example, if you set an accelerometer on a table, it will measure the normal force the table exerts on the accelerometer.  If we assume that the accelerometer is at rest (albeit a rather significant assumption for a MAV), then we can assume that the forces acting on the accelerometer must be directly opposite gravity.  If we know the direction of gravity (read, inertial frame) relative to the body-fixed frame of the MAV, then we can back out the attitude of the MAV.  
 
-As you might expect, a MAV is not always at rest, so accelerometer measurements tend to bounce around as the MAV accelerates.  There are often also a lot of high-frequency external forces (such as vibrations induced by imbalanced propellers and motors) on a MAV in flight which adds noise to the accelerometer measurement.  We can assume, however, that these accelerations are short-lived, and the accelerometer measurement remains stable over time.  To leverage this fact, we will low-pass filter the sensor data from the accelerometers and use a smoothed-out version to calculate our attitude.
+As you might expect, a MAV is not always at rest, so accelerometer measurements tend to bounce around as the MAV accelerates.  There are often also a lot of high-frequency external forces (such as vibrations induced by imbalanced propellers and motors) on a MAV in flight which adds noise to the accelerometer measurement.  We can assume, however, that these accelerations are short-lived, and the accelerometer measurement remains stable over time.
+
+\subsection{Gyrocopes}
 
 Gyroscopes, on the other hand, directly measure the angular velocity of the IMU.  Gyroscopes are not susceptible to external forces like accelerometers, and instead measure angular velocity directly, but integrating gyroscopes over time to calculate attitude would lead to large amounts of drift.
 
-To get the best of both worlds, we will derive a complementary filter.  This filter will high pass and integrate gyroscope data to get high-frequency measurements, then add low-pass filtered accelerometer data to correct the drift accumulated by integrating the gyroscope.  The transfer function of the complementary filter is shown in Equation~\ref{eq:comp_filter_TF}
+\subsection{Magnetometers}
 
+Magnetometers are often included on many flight control units, and in theory, act like a compass by measuring earth's magnetic field.  Using both the magnetometer and the accelerometer allows you to solve for both the attitude and heading of the vehicle.  Without a magnetometer, the MAV's attitude roll and pitch angles can be estimated, but yaw is unobservable during level flight.
+
+However, because most MAV's now use electric motors, the magnetic field created by these motors, and high-current electricity flowing throughout the MAV, the magnetic field is subject to wander significantly during flight.  As a result, magnetometers are not very reliable in practice, and should be supplanted instead with GPS.  In this derivation, we will assume that we are not using a magnetometer.
+
+\section{Attitude Representation}
+
+There are a number of ways to represent the attitude of a MAV.  Most commonly, there is the euler-angle representation, roll, pitch, and yaw.  This is often the most easy for users to understand and interpret, but it is the least computationally efficient method.  To propagate euler angles, the following kinematics are employed:
 \begin{equation}
-	\bm{\theta} = \frac{1}{1+Ts}\bm{a} + \frac{Ts}{1+Ts}\frac{1}{s}\bm{\omega}
-	\label{eq:comp_filter_TF}
+	\begin{bmatrix}
+		\dot{\phi} \\
+		\dot{\theta} \\
+		\dot{\psi} \\
+	\end{bmatrix}
+	= 
+	\begin{bmatrix}
+		1 & \sin(\phi) \tan(\theta) & \cos(\phi)\tan(\theta) \\
+		0 & \cos(\phi)              & -\sin(\phi) \\
+		0 & \frac{\sin(\phi)}{\cos(\theta)} & \frac{\cos(\phi)}{\cos(\theta)}  \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		p \\
+		q \\
+		r \\
+	\end{bmatrix}
 \end{equation}
 
-Transforming into the $z$-domain using backwards difference results in
+Note the large number of trigonometric functions associated with this propagation.  In a complementary filter, this will be evaluated at every measurement, and the non-linear coupling between $\bm{\omega}$  and the attitude becomes very expensive, particularly on embedded processors.
+
+\subsection{Direction Cosine Matrix}
+
+Rotation matrices, or Direction Cosine Matrices (DCM), are often used in attitude estimation, because they do not suffer from gimbal lock, are quickly converted to and from euler angles, and because of the kinematic equation
+
+\begin{equation}
+	\dot{R} = \lfloor\bm{\omega}\rfloor R
+\end{equation}
+
+where $\lfloor \bm{\omega} \rfloor$ is the skew-symmetric matrix of $\bm{\omega}$, and is related to calculating the cross product.  This propagation step is linear with respect to the angular rates, which simplifies calculation significantly.
+
+\subsection{Quaternions}
+
+Quaternions are a number system which extends complex numbers.  They have four elements, commonly known as $w$, $x$, $y$, and $z$.  The last three elements can be though of as describing an axis, $\beta$ about which a rotation occurred, while the first element, $w$ can be though of as describing the amount of rotation $\alpha$ about that axis (see eq~\ref{eq:euler_to_axis_angle}).  While this may seem straight-forward, quaternions are normalized so that they can form a group.  (That is, a quaternion multiplied by a quaternion is a quaternion), and they are actually really difficult for a human being to interpret.  Given that, they provide some amazing computational efficiencies, most of which comes from the mathematics associated with quaternions.  
+
+\begin{equation}
+	\bm{q} = \begin{bmatrix}
+				q_w \\
+				q_x \\
+				q_y \\
+				q_z 
+			 \end{bmatrix} 
+		   = \begin{bmatrix}
+				\cos(\alpha/2) \\
+				\sin(\alpha/2)\cos(\beta_x) \\
+				\sin(\alpha/2)\cos(\beta_y) \\
+				\sin(\alpha/2)\cos(\beta_y) 
+			 \end{bmatrix}
+	\label{eq:euler_to_axis_angle}
+\end{equation}
+
+To convert to and from euler angles, use the following equations
+
+\begin{equation}
+	\bm{q} = 
+	  \begin{bmatrix}
+	  	\cos(\theta/2)\cos(\theta/2)\cos(\psi/2) + \sin(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
+	  	\sin(\theta/2)\cos(\theta/2)\cos(\psi/2) - \cos(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
+	  	\cos(\theta/2)\sin(\theta/2)\cos(\psi/2) + \sin(\phi/2)\cos(\theta/2)\sin(\psi/2) \\
+	  	\cos(\theta/2)\cos(\theta/2)\sin(\psi/2) - \sin(\phi/2)\sin(\theta/2)\cos(\psi/2) \\
+	  \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+	\begin{bmatrix}
+		\phi \\
+		\theta \\
+		\psi \\
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\textrm{atan2}\left( 2\left(q_wq_x + q_yq_z\right),1-2\left(q_x^2+q_y^2\right) \right) \\
+		\textrm{sin}^{-1}\left( 2 \left( q_wq_y - q_zq_x \right)  \right) \\
+		\textrm{atan2}\left( 2 \left( q_wq_z + q_xq_y \right), 1 - 2 \left( q_y^2 q_z^2 \right)  \right) 
+	\end{bmatrix}
+\end{equation}
+
+And quaternions are ``closed'' under the following operation, termed a quaternion multiply.
+
+\begin{equation}
+	\bm{q_1} \otimes \bm{q_2} = \begin{bmatrix}
+									\alpha_1\alpha_2 - \bm{\beta_1}^\top\bm{\beta_2} \\
+									\alpha_1\bm{\beta_2} + \alpha_2\bm{\beta_1} + \bm{\beta_1} \times \bm{\beta_2}
+								\end{bmatrix}
+\end{equation}
+
+To take the ``inverse'' of a quaternion is simply to multiply $\alpha$ or $\beta$ by $-1$
+
+\begin{equation}
+	\bm{q}^{-1} = \begin{bmatrix}
+				-q_w \\
+				q_x \\
+				q_y \\
+				q_z 
+			 \end{bmatrix} 
+			 	= \begin{bmatrix}
+				q_w \\
+				-q_x \\
+				-q_y \\
+				-q_z 
+			 \end{bmatrix} 
+\end{equation}
+
+and to find the difference between two quaternions, just quaternion multiply the inverse of one quaternion with the other.
+
+\begin{equation}
+	\tilde{\bm{q}} = \hat{\bm{q}}^{-1} \otimes \bm{q}
+\end{equation}
+
+However, the most important part of quaternions is the way we propagate dynamics.
+
+\begin{equation}
+	\dot{\bm{q}} = \frac{1}{2} \bm{q} \otimes \bm{q_{\omega}}
+\end{equation}
+
+where $\bm{q_{\omega}}$ is the pure quaternion created from angular rates.
+
+\begin{equation}
+	\bm{q_{\omega}} = \textrm{p}(\bm{\omega}) =
+			  \begin{bmatrix}
+				0 \\
+				p \\
+				q \\
+				r 
+			 \end{bmatrix} 
+\end{equation}
+
+What this means is that, like rotation matrices, quaternion dynamics are \textit{linear} with respect to angular rates, as opposed to euler angles, which are non-linear, and they take less computation than rotation matrices because they have fewer terms.  Casey et al.~\cite{Casey2013} did a study comparing all three of the above representations, and found that complementary filters using an euler angle representation took 12 times longer to compute on average than a quaternion-based filter.  Quaternions were also about 20\% more efficient when compared with rotation matrices.  As a result, we will be using quaternions in our filter.
+
+\subsection{Implementation}
+
+ROSflight2 implements a quaternion-based Passive Filter as described in~\cite{Mahony2007}.  In particular, we implement equation 47 from that paper, which also estimates biases.  A Lyuapanov stability analysis is performed in that paper, in which it is shown that all states and biases, except heading, are asymptotically stable given an accelerometer measurement and gyroscope.  In this paper, it also describes how a magnetometer can be integrated in a similar method to the accelerometer which has been ommitted here.
+
+There has been a few modifications to the passive filter described in~\cite{Mahony2007}, with contributions from~\cite{Casey2013}.  Rather than simply taking gyroscope measurements as an estimate of $\bm{\omega}$, a quadratic polynomial is used to approximate the true angular rate from gyroscope measurements to reduce error.  In~\cite{Casey2013}, this process was shown to reduce RMS error by more than 1,000 times for limited amount of extra computational burden.  Therefore, we define
+
+\begin{equation}
+	\bar{\bm{\omega}} = \frac{1}{12}\left(-\bm{\omega}\left(t_{n-2}\right) + 8\bm{\omega}\left(t_{n-1}) + 5\bm{\omega}\left(t_n\right) \right)
+\end{equation}
+
+where $\bm{\omega}(t_{n-x}})$ is the gyroscope measurement of the angular rate $x$ measurements previous.
+
+
+
+The filter propagates pers the following dynamics:
 
 \begin{equation}
 	\begin{aligned}
-	  \bm{\theta_i} &= \alpha \left( \bm{\theta_{i-1}} + \bm{\omega}_i dt  \right) + (1-\alpha) \bm{a}_i
-  \end{aligned}
+	\bm{\dot{\hat{q}}} &= \frac{1}{2} \bm{\hat{q}} \otimes \bm{q}_{y}\\
+	\bm{\dot{\hat{b}}} &= -2k_I\tilde{\alpha}\tilde{\bm{\beta}}
+	\end{aligned}
 \end{equation}
 
-Where
+where $\bm{q}_{\omega}$ is the pure quaternion formed from estimated angular rates $\bar{\bm{\omega}}$, biases, $\hat{\bm{b}}$, and an adjustment calculated from accelerometer measurements, $\bm{\omega}_{acc}$.
 \begin{equation}
-	\alpha = \frac{\tau}{\tau + dt}
+	\bm{q}_{\omega} = \textrm{p}(\bar{\bm{\omega}} - \hat{\bm{b}} + k_P\bm{\omega}_{acc})
 \end{equation}
 
-and $\tau$ is the desired time constant, and $dt$ is the sample rate.  With sample rates of approximately 7ms, and a desired $\tau$ of 0.2 seconds, $\alpha$ is approximately 0.966.
-
-\subsection{Implementation}
 
 Because the STM32F10x lacks a floating-point unit, and to reduce the amount of time between receiving sensor measurements and writing motor commands, estimation is performed entirely with integers.  A custom atan2 fuction, called turboatan2, performs atan2 via a lookup table (leveraging the identity $\textrm{atan2}(x) = \tfrac{\pi}{2} - \textrm{atan2}\left(\tfrac{1}{x}\right)$ to reduce the memory footprint of the lookup table).  The accelerometer is scaled to return mm/s$^2$, and the gyro is scaled to return $\mu$rad/s$^2$ so as to utilize the scale of 32-bit integers as fully as possible.  The return of turboatan2 is in mrad.  The complementary filter is implemented in estimator.c, and is relatively straight-forward except the need for scaling multiples of these different units to remain in the range of 32-bit integers.
 
 \subsection{Accuracy}
 
 The Invensense MPU6050 has a 16-bit ADC and an accelerometer and gyro onboard.  The accelerometer, when scaled to $\pm$4g, has a resolution of 0.002394 m/s$^2$.  Scaled up to mm/s$^2$ accuracy of the 32-bit integer is capable of representing the full resolution of the accelerometer.  The gyroscope has a range of 500$^\circ$/s, or a resolution of 0.000532632 rad/s.  Scaled up to $\mu$rad/s, the 32-bit integer is more than able to represent the full resolution of the gyroscope.  The lookup table method used by turboatan2 is accurate to $\pm$ 0.001 rad, which means that the scaled measurements provided to the complementary filter are the same resolution of the original measurements by the accelerometer, and any error in the filter is caused by noise in the measurement, not in the numerical conversion to 32-bit integers rather than floating-point.  However, an enourmous boost in speed is available through using an entirely integer-based estimator.
+
+\bibliographystyle{plain}
+\bibliography{./library}
+
 
 \end{document}

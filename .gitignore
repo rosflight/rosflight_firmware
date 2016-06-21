@@ -19,3 +19,5 @@
 *.pdf
 *.autosave
 *.synctex.gz
+*.bbl
+*.blg
