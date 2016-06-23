@@ -18,8 +18,6 @@
 #include "mixer.h"
 #include "rc.h"
 
-serialPort_t * Serial1;
-
 extern void SetSysClock(bool overclock);
 
 int main(void)
@@ -53,9 +51,6 @@ void setup(void)
   /***  Hardware Setup ***/
   /***********************/
 
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, _params.values[PARAM_BAUD_RATE], MODE_RXTX);
-
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
@@ -81,7 +76,6 @@ void setup(void)
   init_estimator(false, true, true);
   init_mode();
   _armed_state = ARMED;
-  delay(1000);
 }
 
 

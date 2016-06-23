@@ -10,9 +10,14 @@
 // global variable definitions
 mavlink_system_t mavlink_system;
 
+serialPort_t * Serial1;
+
 // function definitions
 void init_mavlink(void)
 {
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, _params.values[PARAM_BAUD_RATE], MODE_RXTX);
+
   mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
   mavlink_system.compid = 250;
 
