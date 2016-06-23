@@ -13,6 +13,7 @@ typedef enum
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BOARD_REVISION,
+  PARAM_BAUD_RATE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/

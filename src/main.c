@@ -18,25 +18,27 @@
 #include "mixer.h"
 #include "rc.h"
 
-void printvec(int32_t* v)
+serialPort_t * Serial1;
+
+extern void SetSysClock(bool overclock);
+
+int main(void)
 {
-  printf("[%d, %d, %d]\n", v[0], v[1], v[2]);
+    // Configure clock, this figures out HSE for hardware autodetect
+    SetSysClock(0);
+    systemInit();
+
+    // Perform Setup Operations
+    setup();
+
+    while (1)
+    {
+      // Main loop
+      loop();
+    }
 }
 
-void printquat(int32_t* q)
-{
-  printf("[%d, %d, %d, %d]\n", q[0], q[1], q[2], q[3]);
-}
 
-void pfvec(vector_t v)
-{
-  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000000), (int32_t)(v.y*1000000), (int32_t)(v.z*1000000));
-}
-
-void pfquat(quaternion_t v)
-{
-  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000000), (int32_t)(v.x*1000000), (int32_t)(v.y*1000000), (int32_t)(v.z*1000000));
-}
 
 void setup(void)
 {
@@ -51,6 +53,9 @@ void setup(void)
   /***  Hardware Setup ***/
   /***********************/
 
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, _params.values[PARAM_BAUD_RATE], MODE_RXTX);
+
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
@@ -59,7 +64,7 @@ void setup(void)
   init_rc();
 
   // Initialize MAVlink Communication
-//  init_mavlink();
+ init_mavlink();
 
   // Initialize Sensors
   init_sensors();
@@ -79,8 +84,10 @@ void setup(void)
   delay(1000);
 }
 
+
 uint32_t counter = 0;
 uint32_t average_time = 0;
+
 
 void loop(void)
 {
@@ -98,22 +105,22 @@ void loop(void)
   // update sensors - an internal timer runs this at a fixed rate
   if (update_sensors(now)) // 434 us
   {
-//    // loop time calculation
+    //    // loop time calculation
     dt = now - prev_time;
     average_time+=dt;
     counter++;
 
-//    // If I have new IMU data, then perform control
+    //    // If I have new IMU data, then perform control
     run_estimator(now); // 234 us (acc and gyro, float-based quad integration, euler propagation)
-//    run_controller(now); // 6us
-//    mix_output();
+    //    run_controller(now); // 6us
+    //    mix_output();
   }
 
-//  if(counter > 1000){
-//    printf("average time = %d\n", average_time/counter);
-//    counter = 0;
-//    average_time = 0;
-//  }
+  //  if(counter > 1000){
+  //    printf("average time = %d\n", average_time/counter);
+  //    counter = 0;
+  //    average_time = 0;
+  //  }
   prev_time = now;
 
 
@@ -134,8 +141,4 @@ void loop(void)
 
   // update commands (internal logic tells whether or not we should do anything or not)
   mux_inputs(); // 3 us
-
 }
-
-
-

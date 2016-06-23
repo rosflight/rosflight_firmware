@@ -45,6 +45,8 @@ void set_param_defaults(void)
   }
   init_param(PARAM_BOARD_REVISION, "BOARD_REV", 4);
 
+  init_param(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
+
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
   init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
