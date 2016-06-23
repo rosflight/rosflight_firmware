@@ -13,20 +13,20 @@ ROSFLIGHT_DIR = ../../src
 
 # project source files
 PROJECT_SRC = estimator_test.c \
-              $(ROSFLIGHT_DIR)/estimator.c \
-              $(ROSFLIGHT_DIR)/flash.c \
-              $(ROSFLIGHT_DIR)/mavlink.c \
-              $(ROSFLIGHT_DIR)/mavlink_param.c \
-              $(ROSFLIGHT_DIR)/mavlink_receive.c \
-              $(ROSFLIGHT_DIR)/mavlink_stream.c \
-              $(ROSFLIGHT_DIR)/mavlink_util.c \
-              $(ROSFLIGHT_DIR)/mixer.c \
-              $(ROSFLIGHT_DIR)/param.c \
-              $(ROSFLIGHT_DIR)/rc.c \
-              $(ROSFLIGHT_DIR)/sensors.c \
-              $(ROSFLIGHT_DIR)/mux.c \
-              $(ROSFLIGHT_DIR)/controller.c \
-              $(ROSFLIGHT_DIR)/mode.c \
+							$(ROSFLIGHT_DIR)/estimator.c \
+							$(ROSFLIGHT_DIR)/flash.c \
+							$(ROSFLIGHT_DIR)/mavlink.c \
+							$(ROSFLIGHT_DIR)/mavlink_param.c \
+							$(ROSFLIGHT_DIR)/mavlink_receive.c \
+							$(ROSFLIGHT_DIR)/mavlink_stream.c \
+							$(ROSFLIGHT_DIR)/mavlink_util.c \
+							$(ROSFLIGHT_DIR)/mixer.c \
+							$(ROSFLIGHT_DIR)/param.c \
+							$(ROSFLIGHT_DIR)/rc.c \
+							$(ROSFLIGHT_DIR)/sensors.c \
+							$(ROSFLIGHT_DIR)/mux.c \
+							$(ROSFLIGHT_DIR)/controller.c \
+							$(ROSFLIGHT_DIR)/mode.c \
 
 ###############################################################################
 

@@ -73,7 +73,7 @@ void setup(void)
   init_mixing();
 
   // Initialize Estimator
-  init_estimator();
+  init_estimator(false, true, true);
   init_mode();
   _armed_state = ARMED;
   delay(1000);
@@ -96,17 +96,15 @@ void loop(void)
   /***  Control Loop ***/
   /*********************/
   // update sensors - an internal timer runs this at a fixed rate
-  uint32_t before = micros();
   if (update_sensors(now)) // 434 us
   {
-    uint32_t after = micros();
 //    // loop time calculation
-    dt = after-before;
+    dt = now - prev_time;
     average_time+=dt;
     counter++;
 
 //    // If I have new IMU data, then perform control
-    run_estimator(now); // 193 us (gyro only, float-based)
+    run_estimator(now); // 234 us (acc and gyro, float-based quad integration, euler propagation)
 //    run_controller(now); // 6us
 //    mix_output();
   }
@@ -116,25 +114,26 @@ void loop(void)
 //    counter = 0;
 //    average_time = 0;
 //  }
+  prev_time = now;
 
 
   /*********************/
   /***  Post-Process ***/
   /*********************/
   // internal timers figure out what to send
-//  mavlink_stream(now);
+  mavlink_stream(now);
 
   // receive mavlink messages
-//  mavlink_receive();
+  mavlink_receive();
 
   // update the armed_states, an internal timer runs this at a fixed rate
-//  check_mode(now); // 0 us
+  check_mode(now); // 0 us
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-//  receive_rc(now); // 1 us
+  receive_rc(now); // 1 us
 
   // update commands (internal logic tells whether or not we should do anything or not)
-//  mux_inputs(); // 3 us
+  mux_inputs(); // 3 us
 
 }
 

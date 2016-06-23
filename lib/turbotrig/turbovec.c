@@ -193,19 +193,18 @@ quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
                     q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y,
                     q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x,
                     q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w};
-  return quaternion_normalize(q);
+  return q;
 }
 
 quaternion_t quaternion_inverse(quaternion_t q)
 {
-  quaternion_t q_inv = {-1.0*q.w, q.x, q.y, q.z};
-  return q_inv;
+  q.w *= -1.0f;
+  return q;
 }
 
 quaternion_t quat_from_two_vectors(vector_t u, vector_t v)
 {
-  vector_t half = vector_normalize(vector_add(u,v));
-  float w = dot(u, half);
+  float w = 1.0f + dot(u, v);
   vector_t xyz = cross(u, v);
   quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
   return quaternion_normalize(q);

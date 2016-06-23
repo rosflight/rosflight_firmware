@@ -10,7 +10,8 @@
 *.orig
 *.user.*
 *.o
-/build/
+/build/*
+test/estimator/build/*
 
 *.aux
 *.fdb_latexmk

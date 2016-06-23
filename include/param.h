@@ -67,7 +67,6 @@ typedef enum
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/
-
   PARAM_MOTOR_PWM_SEND_RATE,
   PARAM_MOTOR_IDLE_PWM,
   PARAM_SPIN_MOTORS_WHEN_ARMED,
@@ -75,7 +74,7 @@ typedef enum
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
-
+  PARAM_INIT_TIME,
   PARAM_FILTER_KP,
   PARAM_FILTER_KI,
   PARAM_GYRO_X_BIAS,
@@ -88,7 +87,6 @@ typedef enum
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-
   PARAM_RC_TYPE,
   PARAM_RC_X_CHANNEL,
   PARAM_RC_Y_CHANNEL,

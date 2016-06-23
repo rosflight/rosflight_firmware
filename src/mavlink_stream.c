@@ -8,6 +8,7 @@
 #include "sensors.h"
 
 #include "mavlink_stream.h"
+#include "mavlink_util.h"
 
 // typedefs
 typedef struct
@@ -22,6 +23,11 @@ static void mavlink_send_heartbeat(void)
 {
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_GENERIC, MAV_MODE_MANUAL_DISARMED, 0,
                              MAV_STATE_STANDBY);
+}
+
+static uint32_t time_mavlink_send_message(void* f)
+{
+
 }
 
 static void mavlink_send_imu(void)
@@ -82,7 +88,7 @@ static void mavlink_send_low_priority(void)
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 {
   { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
-  { .period_us = 1e4, .last_time_us = 0, .send_function = mavlink_send_imu },
+  { .period_us = 1e3, .last_time_us = 0, .send_function = mavlink_send_imu },
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
   { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
@@ -96,7 +102,8 @@ void mavlink_stream(uint32_t time_us)
   {
     if (mavlink_streams[i].period_us && time_us - mavlink_streams[i].last_time_us >= mavlink_streams[i].period_us)
     {
-      mavlink_streams[i].last_time_us = time_us;
+      // if we took too long, set the last_time_us to be where it should have been
+      mavlink_streams[i].last_time_us = time_us - (time_us - mavlink_streams[i].last_time_us-mavlink_streams[i].period_us);
       mavlink_streams[i].send_function();
     }
   }
@@ -104,8 +111,7 @@ void mavlink_stream(uint32_t time_us)
 
 void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate)
 {
-
-  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1e6 / rate);
+  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : (int32_t)((1000000.0f) / (float)rate));
 }
 
 void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us)
