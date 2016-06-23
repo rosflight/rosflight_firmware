@@ -1,0 +1,226 @@
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+
+#include <breezystm32/breezystm32.h>
+
+#include "turbovec.h"
+
+int32_t int_dot(intvec_t v1, intvec_t v2)
+{
+  return (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z)/1000;
+}
+
+intvec_t int_cross(intvec_t u, intvec_t v)
+{
+  intvec_t out;
+  out.x = (u.y*v.z - u.z*v.y)/1000;
+  out.y = (u.z*v.x - u.x*v.z)/1000;
+  out.z = (u.x*v.y - u.y*v.x)/1000;
+  return out;
+}
+
+intvec_t int_scalar_multiply(int32_t s, intvec_t v)
+{
+  intvec_t out;
+  out.x = (s*v.x)/1000;
+  out.y = (s*v.y)/1000;
+  out.z = (s*v.z)/1000;
+  return out;
+}
+
+intvec_t int_vector_add(intvec_t u, intvec_t v)
+{
+  intvec_t out;
+  out.x = u.x + v.x;
+  out.y = u.y + v.y;
+  out.z = u.z + v.z;
+  return out;
+}
+
+intvec_t int_vector_sub(intvec_t u, intvec_t v)
+{
+  intvec_t out;
+  out.x = u.x - v.x;
+  out.y = u.y - v.y;
+  out.z = u.z - v.z;
+  return out;
+}
+
+int32_t int_sqrd_norm(intvec_t v)
+{
+  return v.x*v.x + v.y*v.y + v.z*v.z;
+}
+
+intvec_t int_vector_normalize(intvec_t v)
+{
+  float recipNorm = turboInvSqrt((v.x*v.x + v.y*v.y + v.z*v.z)/1000000.0);
+  return int_scalar_multiply((int32_t)(1000*recipNorm), v);
+}
+
+intquat_t int_quaternion_normalize(intquat_t q)
+{
+  float recipNorm = turboInvSqrt((q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z) / 1000000.0);
+  int32_t intRecipNorm = (int32_t)(recipNorm*1000);
+  intquat_t out;
+  out.w = (intRecipNorm*q.w)/1000;
+  out.x = (intRecipNorm*q.x)/1000;
+  out.y = (intRecipNorm*q.y)/1000;
+  out.z = (intRecipNorm*q.z)/1000;
+  return out;
+}
+
+intquat_t int_quaternion_multiply(intquat_t q1, intquat_t q2)
+{
+  int32_t s1 = q1.w;
+  int32_t s2 = q2.w;
+
+  intvec_t v1 = {q1.x, q1.y, q2.z};
+  intvec_t v2 = {q2.x, q2.y, q2.z};
+
+  int32_t w = (s1*s2)/1000 - int_dot(v1, v2);
+  // xyz = s1*v2 + s2*v1 - v1 x v2)
+  intvec_t xyz = int_vector_sub(int_vector_add(int_scalar_multiply(s1, v2), int_scalar_multiply(s2,v1)), int_cross(v1,v2));
+  intquat_t q = {w, xyz.x, xyz.y, xyz.z};
+  return int_quaternion_normalize(q);
+}
+
+
+intquat_t int_quaternion_inverse(intquat_t q)
+{
+  intquat_t out = {-1*q.x, q.y, q.x, q.z};
+  return out;
+}
+
+intquat_t int_quaternion_from_two_vectors(intvec_t u, intvec_t v)
+{
+  u = int_vector_normalize(u);
+  v = int_vector_normalize(v);
+
+  intvec_t half = int_vector_normalize(int_vector_add(u,v));
+
+  int32_t w = int_dot(u, half);
+  intvec_t xyz = int_cross(u,v);
+  intquat_t q = {w, xyz.x, xyz.y, xyz.z};
+  return int_quaternion_normalize(q);
+}
+
+
+/**************************************/
+/*** FLOATING POINT IMPLEMENTATIONS ***/
+/**************************************/
+float dot(vector_t v1, vector_t v2)
+{
+  return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+}
+
+vector_t cross(vector_t u, vector_t v)
+{
+  vector_t out = {u.y*v.z - u.z*v.y,
+                  u.z*v.x - u.x*v.y,
+                  u.x*v.y - u.y*v.x};
+  return out;
+}
+
+vector_t scalar_multiply(float s, vector_t v)
+{
+  vector_t out = {s*v.x,
+                  s*v.y,
+                  s*v.z};
+  return out;
+}
+
+vector_t vector_add(vector_t u, vector_t v)
+{
+  vector_t out = {u.x + v.x,
+                  u.y + v.y,
+                  u.z + v.z};
+  return out;
+
+}
+
+vector_t vector_sub(vector_t u, vector_t v)
+{
+  vector_t out = {u.x - v.x,
+                  u.y - v.y,
+                  u.z - v.z};
+  return out;
+}
+
+float sqrd_norm(vector_t v)
+{
+  return v.x*v.x + v.y*v.y + v.z*v.z;
+}
+
+float norm(vector_t v)
+{
+  float out = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+  return out;
+}
+
+vector_t vector_normalize(vector_t v)
+{
+  float recipNorm = turboInvSqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+  vector_t out = {recipNorm*v.x,
+                  recipNorm*v.y,
+                  recipNorm*v.z};
+  return out;
+}
+
+quaternion_t quaternion_normalize(quaternion_t q)
+{
+  float recipNorm = turboInvSqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
+  quaternion_t out = {recipNorm*q.w,
+                      recipNorm*q.x,
+                      recipNorm*q.y,
+                      recipNorm*q.z};
+  return out;
+}
+
+quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
+{
+  vector_t v1 = {q1.x, q1.y, q1.z};
+  vector_t v2 = {q2.x, q2.y, q2.z};
+
+  float w = q1.x*q1.x - dot(v1, v2);
+  vector_t xyz = vector_sub(vector_add(scalar_multiply(q1.x,v2), scalar_multiply(q2.x, v1)),cross(v1, v2));
+  quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
+  return quaternion_normalize(q);
+}
+
+quaternion_t quaternion_inverse(quaternion_t q)
+{
+  quaternion_t q_inv = {-1.0*q.w, q.x, q.y, q.z};
+  return q_inv;
+}
+
+quaternion_t quat_from_two_vectors(vector_t u, vector_t v)
+{
+  if(fabs(sqrd_norm(u) - 1.0) > 0.001){
+    u = vector_normalize(u);
+  }
+  if(fabs(sqrd_norm(v) - 1.0) > 0.001){
+    v = vector_normalize(v);
+  }
+  vector_t half = vector_normalize(vector_add(u,v));
+  float w = dot(u, half);
+  vector_t xyz = cross(u, v);
+  quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
+  return quaternion_normalize(q);
+}
+
+
+float turboInvSqrt(float x)
+{
+  long i;
+  float x2, y;
+  const float threehalfs = 1.5F;
+
+  x2 = x * 0.5F;
+  y  = x;
+  i  = * ( long * ) &y;                       // evil floating point bit level hacking
+  i  = 0x5f3759df - ( i >> 1 );               // what the f***?
+  y  = * ( float * ) &i;
+  y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+  return y;
+}

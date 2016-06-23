@@ -43,7 +43,7 @@ void set_param_defaults(void)
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
     init_param(id, temp_name, id);
   }
-  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 5);
+  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 4);
 
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);

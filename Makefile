@@ -66,6 +66,7 @@ rosflight2_SRC = $(BREEZY_DIR)/main.c \
 		   $(BREEZY_DIR)/printf.c \
 		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
 		   $(TURBOTRIG_DIR)/turbotrig.c \
+			 $(TURBOTRIG_DIR)/turbovec.c \
 		   $(PROJECT_SRC) \
 		   $(CMSIS_SRC) \
 		   $(STDPERIPH_SRC)

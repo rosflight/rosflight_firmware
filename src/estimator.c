@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
+#include <turbotrig/turbovec.h>
 
 #include "sensors.h"
 #include "param.h"
@@ -9,6 +11,29 @@
 #include "estimator.h"
 
 state_t _current_state;
+
+static vector_t w1;
+static vector_t w2;
+static vector_t w;
+static vector_t wbar;
+static vector_t wfinal;
+static vector_t w_meas;
+static vector_t a;
+static vector_t g;
+static vector_t b;
+static quaternion_t q_tilde;
+static quaternion_t q_hat;
+
+static void pfvec(vector_t v)
+{
+  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
+}
+
+static void pfquat(quaternion_t v)
+{
+  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
+}
+
 
 void init_estimator()
 {
@@ -18,6 +43,23 @@ void init_estimator()
   _current_state.phi = 0;
   _current_state.theta = 0;
   _current_state.psi = 0;
+
+  q_hat.w = 1.0f;
+  q_hat.x = 0.0f;
+  q_hat.y = 0.0f;
+  q_hat.z = 0.0f;
+
+  w1.x = 0.0f;
+  w1.y = 0.0f;
+  w1.z = 0.0f;
+
+  w2.x = 0.0f;
+  w2.y = 0.0f;
+  w2.z = 0.0f;
+
+  b.x = 0.096;
+  b.y = -0.008;
+  b.z = -0.028;
 }
 
 
@@ -27,52 +69,51 @@ void run_estimator(int32_t now)
   int32_t dt = now - last_time;
   last_time = now;
 
-  int32_t tau = 100; // desired time constant of the filter (us) <-- should be a param
-  int32_t alpha = 1000;  // only trust gyro unless we figure out it's safe to use accel
+  w_meas.x = 0.0f;
+  w_meas.y = 0.0f;
+  w_meas.z = 0.0f;
 
-  // check if z-acceleration is greater than 1.15G and less than 0.85G
-  int32_t acc_phi = 0;
-  int32_t acc_theta = 0;
-  int32_t acc_mag_squared = (_accel_data[2]*_accel_data[2])/1000
-                            + (_accel_data[1]*_accel_data[1])/1000
-                            + (_accel_data[0]*_accel_data[0])/1000;
-  if (acc_mag_squared < 19294 && acc_mag_squared > 14261)
+  q_tilde.w = 1.0f;
+  q_tilde.x = 0.0f;
+  q_tilde.y = 0.0f;
+  q_tilde.z = 0.0f;
+
+  w.x = ((float)(_gyro_data[0]*_gyro_scale))/1000.0f;
+  w.y = ((float)(_gyro_data[1]*_gyro_scale))/1000.0f;
+  w.z = ((float)(_gyro_data[2]*_gyro_scale))/1000.0f;
+
+  // this integration step adds 21 us
+  wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)), scalar_multiply(5.0f/12.0f,w));
+  w2 = w1;
+  w1 = w;
+
+  wfinal = vector_sub(wbar, b);
+
+  float norm_w = sqrt(sqrd_norm(wfinal));
+
+  if(norm_w > 0.0f)
+  // Matrix Exponential Approximation (From Attitude Representation and Kinematic
+  // Propagation for Low-Cost UAVs by Robert T. Casey e
   {
-    // pull in accelerometer data
-    acc_phi = turboatan2(_accel_data[1], _accel_data[2]);
-    acc_theta = turboatan2(_accel_data[0], _accel_data[2]);
-//    printf("acc phi = %d theta = %d\n",
-//           acc_phi,
-//           acc_theta);
-
-    // calculate filter constant
-    alpha = (1000000*tau)/(tau*1000+dt);
+    float p = wfinal.x;
+    float q = wfinal.y;
+    float r = wfinal.z;
+    quaternion_t qhat_np1;
+    float t1 = cos((norm_w*dt)/(2000000.0f));
+    float t2 = 1.0/norm_w * sin((norm_w*dt)/(2000000.0f));
+    qhat_np1.w = t1*q_hat.w   - t2*p*q_hat.x - t2*q*q_hat.y - t2*r*q_hat.z;
+    qhat_np1.x = t2*p*q_hat.w + t1*q_hat.x   + t2*r*q_hat.y - t2*q*q_hat.z;
+    qhat_np1.y = t2*q*q_hat.w - t2*r*q_hat.x + t1*q_hat.y   + t2*p*q_hat.z;
+    qhat_np1.z = t2*r*q_hat.w + t2*q*q_hat.x - t2*p*q_hat.y + t1*q_hat.z;
+    q_hat = quaternion_normalize(qhat_np1);
   }
 
-  // pull in gyro data
-  int32_t meas_p = ((int32_t)_gyro_data[0]*_gyro_scale); // mrad/s
-  int32_t meas_q = -1*((int32_t)_gyro_data[1]*_gyro_scale); // Convert to NED
-  int32_t meas_r = -1*((int32_t)_gyro_data[2]*_gyro_scale);
-
-  // filter gyro data for angular rate measurements
-  _current_state.p = (_current_state.p*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_p*
-                      (_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
-  _current_state.q = (_current_state.q*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_q*
-                      (_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
-  _current_state.r = (_current_state.r*(1000-_params.values[PARAM_GYRO_LPF_ALPHA]) + meas_r*
-                      (_params.values[PARAM_GYRO_LPF_ALPHA]))/1000;
-
-  // Perform the Complementary Filter (forgive the unit adjustments.  This was written with basically a lot of trial an error)
-  // current_state angles are in urad
-  alpha = 0;
-  _current_state.phi = (alpha*(_current_state.phi  + (meas_p*dt)/1000))/1000 + (1000-alpha)*acc_phi;
-  _current_state.theta = (alpha*(_current_state.theta  + (meas_q*dt)/1000))/1000 + (1000-alpha)*acc_theta;
-  _current_state.psi = _current_state.psi  + (meas_r*dt)/1000;
-
-  // wrap psi because we don't actually get a measurement of it
-  if (abs(_current_state.psi) > 3141593)
-
-  {
-    _current_state.psi += 6283185 * -1* sign(_current_state.psi);
-  }
+  // Extract Euler Angles
+  _current_state.phi = turboatan2((int32_t)(2000*(q_hat.w*q_hat.x + q_hat.y*q_hat.z)),
+                                  1000 - (int32_t)(2000*(q_hat.x*q_hat.x + q_hat.y*q_hat.y)));
+  _current_state.theta = turboasin((int32_t)(2000*(q_hat.w*q_hat.y - q_hat.z*q_hat.x)));
+  _current_state.psi = turboatan2((int32_t)(2000*(q_hat.w*q_hat.z + q_hat.x*q_hat.y)),
+                                  1000 - (int32_t)(2000*(q_hat.y*q_hat.y + q_hat.z*q_hat.z)));
+//  printf("roll = %d, pitch = %d, yaw = %d\n", _current_state.phi, _current_state.theta, _current_state.psi);
 }
+

@@ -9,7 +9,7 @@
 *.files
 *.orig
 *.user.*
-
+*.o
 /build/
 
 *.aux
