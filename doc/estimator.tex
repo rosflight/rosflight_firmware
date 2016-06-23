@@ -266,7 +266,7 @@ where $\bm{q_{\omega}}$ is the pure quaternion created from angular rates.
 
 What this means is that, like rotation matrices, quaternion dynamics are \textit{linear} with respect to angular rates, as opposed to euler angles, which are non-linear, and they take less computation than rotation matrices because they have fewer terms.  Casey et al.~\cite{Casey2013} performed a study comparing all three of the above representations, and found that complementary filters using an euler angle representation took \textbf{12 times} longer to compute on average than a quaternion-based filter.  Quaternions were also about 20\% more efficient when compared with rotation matrices.  As a result, we will be using quaternions in our filter.
 
-\subsection{Derivation}
+\section{Derivation}
 
 ROSflight2 implements the quaternion-based Passive Filter as described in~\cite{Mahony2007}.  In particular, we implement equation 47 from that paper, which also estimates gyroscope biases.  A Lyuapanov stability analysis is performed in that paper, in which it is shown that all states and biases, except heading, are globally asymptotically stable given an accelerometer measurement and gyroscope.  In that paper, it also describes how a magnetometer can be integrated in a similar method to the accelerometer.  That portion of the filter is ommitted here due to the unreliable nature of magnetometers onboard modern small UAS.
 
