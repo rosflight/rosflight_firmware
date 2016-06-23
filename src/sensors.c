@@ -65,7 +65,6 @@ void init_sensors(void)
   imu_last_us = 0;
 
   // BAROMETER <-- for some reason, this has to come before diff pressure
-//  i2cWrite(0,0,0);
   _baro_present = ms5611_init();
   baro_next_us = 0;
 
@@ -76,6 +75,7 @@ void init_sensors(void)
 
 bool update_sensors(uint32_t time_us)
 {
+  // using else so that we don't do all sensor updates on the same loop
   if (_diff_pressure_present && time_us >= diff_press_next_us )
   {
     diff_press_next_us += _params.values[PARAM_DIFF_PRESS_UPDATE];
@@ -86,6 +86,7 @@ bool update_sensors(uint32_t time_us)
     baro_next_us += _params.values[PARAM_BARO_UPDATE];
     ms5611_update();
     _baro_pressure = ms5611_read_pressure();
+    _baro_temperature = ms5611_read_temperature();
   }
   return update_imu();
 }
