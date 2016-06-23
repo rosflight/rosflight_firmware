@@ -17,12 +17,15 @@ static vector_t w2;
 static vector_t w;
 static vector_t wbar;
 static vector_t wfinal;
-static vector_t w_meas;
+static vector_t w_acc;
 static vector_t a;
 static vector_t g;
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
+
+static float kp;
+static float ki;
 
 static void pfvec(vector_t v)
 {
@@ -57,9 +60,16 @@ void init_estimator()
   w2.y = 0.0f;
   w2.z = 0.0f;
 
-  b.x = 0.096;
-  b.y = -0.008;
-  b.z = -0.028;
+  b.x = 0.0f;
+  b.y = 0.0f;
+  b.z = 0.0f;
+
+  g.x = 0.0f;
+  g.y = 0.0f;
+  g.z = 1.0f;
+
+  kp = 1.0f;
+  ki = 0.001f;
 }
 
 
@@ -69,25 +79,51 @@ void run_estimator(int32_t now)
   int32_t dt = now - last_time;
   last_time = now;
 
-  w_meas.x = 0.0f;
-  w_meas.y = 0.0f;
-  w_meas.z = 0.0f;
+  w_acc.x = 0.0f;
+  w_acc.y = 0.0f;
+  w_acc.z = 0.0f;
 
   q_tilde.w = 1.0f;
   q_tilde.x = 0.0f;
   q_tilde.y = 0.0f;
   q_tilde.z = 0.0f;
 
+  // add in accelerometer
+  a.x = ((float)(_accel_data[0]*_accel_scale))/1000000.0f;
+  a.y = ((float)(_accel_data[1]*_accel_scale))/1000000.0f;
+  a.z = ((float)(_accel_data[2]*_accel_scale))/1000000.0f;
+  float a_sqrd_norm = a.x*a.x + a.y*a.y + a.z*a.z;
+
+  if(a_sqrd_norm < 1.15*1.15*9.80665*9.80665 && a_sqrd_norm > 0.85*0.85*9.80665*9.80665)
+  {
+    a = vector_normalize(a);
+    quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g));
+//    printf("q_acc_inv = "); pfquat(q_acc_inv);
+    int32_t roll, pitch, yaw;
+    euler_from_quat(q_acc_inv, &roll, &pitch, &yaw);
+    q_tilde = quaternion_multiply(q_acc_inv, q_hat);
+//    printf("q_tilde = "); pfquat(q_tilde);
+//    w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
+//    w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
+//    w_acc.z = -2.0f*q_tilde.w*q_tilde.z;
+    euler_from_quat(q_tilde, &roll, &pitch, &yaw);
+    printf("q_acc_inv: roll = %d\tpitch = %d\tyaw = %d\n", roll, pitch, yaw);
+//    printf("wacc = ");pfvec(w_acc);
+  }
+
+  // integrate biases
+
   w.x = ((float)(_gyro_data[0]*_gyro_scale))/1000.0f;
-  w.y = ((float)(_gyro_data[1]*_gyro_scale))/1000.0f;
-  w.z = ((float)(_gyro_data[2]*_gyro_scale))/1000.0f;
+  w.y = 0.0f;//((float)(_gyro_data[1]*_gyro_scale))/1000.0f;
+  w.z = 0.0f;//((float)(_gyro_data[2]*_gyro_scale))/1000.0f;
 
   // this integration step adds 21 us
-  wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)), scalar_multiply(5.0f/12.0f,w));
-  w2 = w1;
-  w1 = w;
+//  wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)), scalar_multiply(5.0f/12.0f,w));
+//  w2 = w1;
+//  w1 = w;
+  wbar = w;
 
-  wfinal = vector_sub(wbar, b);
+  wfinal = w; //vector_add(vector_sub(wbar, b), scalar_multiply(kp, w_acc));
 
   float norm_w = sqrt(sqrd_norm(wfinal));
 
@@ -109,11 +145,9 @@ void run_estimator(int32_t now)
   }
 
   // Extract Euler Angles
-  _current_state.phi = turboatan2((int32_t)(2000*(q_hat.w*q_hat.x + q_hat.y*q_hat.z)),
-                                  1000 - (int32_t)(2000*(q_hat.x*q_hat.x + q_hat.y*q_hat.y)));
-  _current_state.theta = turboasin((int32_t)(2000*(q_hat.w*q_hat.y - q_hat.z*q_hat.x)));
-  _current_state.psi = turboatan2((int32_t)(2000*(q_hat.w*q_hat.z + q_hat.x*q_hat.y)),
-                                  1000 - (int32_t)(2000*(q_hat.y*q_hat.y + q_hat.z*q_hat.z)));
-//  printf("roll = %d, pitch = %d, yaw = %d\n", _current_state.phi, _current_state.theta, _current_state.psi);
+  euler_from_quat(q_tilde, &_current_state.phi, &_current_state.theta, &_current_state.psi);
+  printf("q_hat:    roll = %d\tpitch = %d\tyaw = %d\t", _current_state.phi, _current_state.theta, _current_state.psi);
+  printf("omega = "); pfvec(w);
+//  printf("kp = %d\tki = %d\taccel = ", (int32_t)(kp*1000), (int32_t)(ki*1000)); pfvec(a);
 }
 

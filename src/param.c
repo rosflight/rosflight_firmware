@@ -51,8 +51,8 @@ void set_param_defaults(void)
   init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
   init_param(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
-  init_param(PARAM_GYRO_LPF_ALPHA, "GYRO_LPF_ALPHA", 100);
-  init_param(PARAM_ACC_LPF_ALPHA, "GYRO_LPF_ALPHA", 500);
+  init_param(PARAM_FILTER_KP, "FILTER_KP", 10000);
+  init_param(PARAM_FILTER_KI, "FILTER_KI", 1000);
 
   init_param(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0);
   init_param(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0);

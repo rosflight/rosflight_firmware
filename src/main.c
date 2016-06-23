@@ -76,6 +76,7 @@ void setup(void)
   init_estimator();
   init_mode();
   _armed_state = ARMED;
+  delay(1000);
 }
 
 uint32_t counter = 0;
@@ -105,16 +106,16 @@ void loop(void)
     counter++;
 
 //    // If I have new IMU data, then perform control
-//    run_estimator(now); // 193 us (gyro only, float-based)
+    run_estimator(now); // 193 us (gyro only, float-based)
 //    run_controller(now); // 6us
 //    mix_output();
   }
 
-  if(counter > 1000){
-    printf("average time = %d\n", average_time/counter);
-    counter = 0;
-    average_time = 0;
-  }
+//  if(counter > 1000){
+//    printf("average time = %d\n", average_time/counter);
+//    counter = 0;
+//    average_time = 0;
+//  }
 
 
   /*********************/

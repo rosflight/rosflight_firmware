@@ -4,6 +4,18 @@
 
 #include "turbovec.h"
 
+static void pfvec(vector_t v)
+{
+  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
+}
+
+static void pfquat(quaternion_t v)
+{
+  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
+}
+
+
+
 int32_t int_dot(intvec_t v1, intvec_t v2)
 {
   return (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z)/1000;
@@ -115,7 +127,7 @@ float dot(vector_t v1, vector_t v2)
 vector_t cross(vector_t u, vector_t v)
 {
   vector_t out = {u.y*v.z - u.z*v.y,
-                  u.z*v.x - u.x*v.y,
+                  u.z*v.x - u.x*v.z,
                   u.x*v.y - u.y*v.x};
   return out;
 }
@@ -177,12 +189,10 @@ quaternion_t quaternion_normalize(quaternion_t q)
 
 quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
 {
-  vector_t v1 = {q1.x, q1.y, q1.z};
-  vector_t v2 = {q2.x, q2.y, q2.z};
-
-  float w = q1.x*q1.x - dot(v1, v2);
-  vector_t xyz = vector_sub(vector_add(scalar_multiply(q1.x,v2), scalar_multiply(q2.x, v1)),cross(v1, v2));
-  quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
+  quaternion_t q = {q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z,
+                    q1.w*q2.x + q1.x*q2.w - q1.y*q2.z + q1.z*q2.y,
+                    q1.w*q2.y + q1.x*q2.z + q1.y*q2.w - q1.z*q2.x,
+                    q1.w*q2.z - q1.x*q2.y + q1.y*q2.x + q1.z*q2.w};
   return quaternion_normalize(q);
 }
 
@@ -194,17 +204,20 @@ quaternion_t quaternion_inverse(quaternion_t q)
 
 quaternion_t quat_from_two_vectors(vector_t u, vector_t v)
 {
-  if(fabs(sqrd_norm(u) - 1.0) > 0.001){
-    u = vector_normalize(u);
-  }
-  if(fabs(sqrd_norm(v) - 1.0) > 0.001){
-    v = vector_normalize(v);
-  }
   vector_t half = vector_normalize(vector_add(u,v));
   float w = dot(u, half);
   vector_t xyz = cross(u, v);
   quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
   return quaternion_normalize(q);
+}
+
+void euler_from_quat(quaternion_t q, int32_t* phi, int32_t* theta, int32_t* psi)
+{
+  *phi = turboatan2((int32_t)(2000*(q.w*q.x + q.y*q.z)),
+                   (int32_t)(1000 - 2000*(q.x*q.x + q.y*q.y)));
+  *theta = turboasin((int32_t)(2000*(q.w*q.y - q.z*q.x)));
+  *psi = turboatan2((int32_t)(2000*(q.w*q.z + q.x*q.y)),
+                   (int32_t)(1000-2000*(q.y*q.y + q.z*q.z)));
 }
 
 
