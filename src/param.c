@@ -63,6 +63,11 @@ void set_param_defaults(void)
   init_param(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0);
   init_param(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0);
 
+  init_param(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
+  init_param(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
+  init_param(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 1000000);
+  init_param(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
+  
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
   init_param(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);

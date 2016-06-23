@@ -103,7 +103,7 @@ void mavlink_stream(uint32_t time_us)
     if (mavlink_streams[i].period_us && time_us - mavlink_streams[i].last_time_us >= mavlink_streams[i].period_us)
     {
       // if we took too long, set the last_time_us to be where it should have been
-      mavlink_streams[i].last_time_us = time_us - (time_us - mavlink_streams[i].last_time_us-mavlink_streams[i].period_us);
+      mavlink_streams[i].last_time_us = mavlink_streams[i].last_time_us + mavlink_streams[i].period_us;
       mavlink_streams[i].send_function();
     }
   }

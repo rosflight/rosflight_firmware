@@ -35,6 +35,10 @@ typedef enum
   /****************************/
 
   PARAM_LOOPTIME,
+  PARAM_DIFF_PRESS_UPDATE,
+  PARAM_BARO_UPDATE,
+  PARAM_SONAR_UPDATE,
+  PARAM_MAG_UPDATE,
 
   /*****************/
   /*** PID GAINS ***/
