@@ -121,8 +121,8 @@ void loop(void)
 
     //    // If I have new IMU data, then perform control
     run_estimator(now); // 234 us (acc and gyro, float-based quad integration, euler propagation)
-    //    run_controller(now); // 6us
-    //    mix_output();
+    run_controller(now); // 6us
+    mix_output();
   }
 
   //  if(counter > 1000){

@@ -56,17 +56,18 @@ static bool update_imu(void)
 // function definitions
 void init_sensors(void)
 {
+  // BAROMETER <-- for some reason, this has to come before diff pressure
+  i2cWrite(0,0,0);
+  _baro_present = ms5611_init();
+  baro_next_us = 0;
+
   // IMU
   uint16_t acc1G;
   float gyro_scale;
-  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+  mpu6050_init(true, &acc1G, &gyro_scale, 5);
   _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
   _gyro_scale = (int32_t)(gyro_scale*1000000000.0f); // convert to mrad/s
   imu_last_us = 0;
-
-  // BAROMETER <-- for some reason, this has to come before diff pressure
-  _baro_present = ms5611_init();
-  baro_next_us = 0;
 
   // DIFF PRESSURE
   _diff_pressure_present = ms4525_detect();
