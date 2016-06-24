@@ -98,7 +98,7 @@ intquat_t int_quaternion_multiply(intquat_t q1, intquat_t q2)
 
 intquat_t int_quaternion_inverse(intquat_t q)
 {
-  intquat_t out = {-1*q.x, q.y, q.x, q.z};
+  intquat_t out = {q.w,-1*q.y, -1*q.x, -1*q.z};
   return out;
 }
 
@@ -198,7 +198,9 @@ quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
 
 quaternion_t quaternion_inverse(quaternion_t q)
 {
-  q.w *= -1.0f;
+  q.x *= -1.0f;
+  q.y *= -1.0f;
+  q.z *= -1.0f;
   return q;
 }
 
