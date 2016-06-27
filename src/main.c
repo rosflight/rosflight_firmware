@@ -75,7 +75,6 @@ void setup(void)
   // Initialize Estimator
   init_estimator(false, true, true);
   init_mode();
-  _armed_state = ARMED;
 }
 
 
@@ -104,17 +103,12 @@ void loop(void)
     average_time+=dt;
     counter++;
 
-    //    // If I have new IMU data, then perform control
+    // If I have new IMU data, then perform control
     run_estimator(now); // 234 us (acc and gyro, float-based quad integration, euler propagation)
-    //    run_controller(now); // 6us
-    //    mix_output();
+    run_controller(now); // 6us
+    mix_output();
   }
 
-  //  if(counter > 1000){
-  //    printf("average time = %d\n", average_time/counter);
-  //    counter = 0;
-  //    average_time = 0;
-  //  }
   prev_time = now;
 
 

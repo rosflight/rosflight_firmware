@@ -25,11 +25,6 @@ static void mavlink_send_heartbeat(void)
                              MAV_STATE_STANDBY);
 }
 
-static uint32_t time_mavlink_send_message(void* f)
-{
-
-}
-
 static void mavlink_send_imu(void)
 {
   mavlink_msg_small_imu_send(MAVLINK_COMM_0,
@@ -103,7 +98,7 @@ void mavlink_stream(uint32_t time_us)
     if (mavlink_streams[i].period_us && time_us - mavlink_streams[i].last_time_us >= mavlink_streams[i].period_us)
     {
       // if we took too long, set the last_time_us to be where it should have been
-      mavlink_streams[i].last_time_us = time_us - (time_us - mavlink_streams[i].last_time_us-mavlink_streams[i].period_us);
+      mavlink_streams[i].last_time_us += mavlink_streams[i].period_us;
       mavlink_streams[i].send_function();
     }
   }
@@ -111,7 +106,7 @@ void mavlink_stream(uint32_t time_us)
 
 void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate)
 {
-  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : (int32_t)((1000000.0f) / (float)rate));
+  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/rate);
 }
 
 void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us)
