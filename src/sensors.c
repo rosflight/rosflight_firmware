@@ -34,7 +34,7 @@ static void correct_imu(void)
 // local function definitions
 static bool update_imu(void)
 {
-  if(mpuDataReady)
+  if (mpuDataReady)
   {
     mpu6050_read_accel(_accel_data);
     mpu6050_read_gyro(_gyro_data);

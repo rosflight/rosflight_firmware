@@ -102,7 +102,7 @@ void run_estimator(int32_t now)
 {
   static bool initializing;
   static float kp, ki;
-  if(last_time == 0)
+  if (last_time == 0)
   {
     last_time = now;
     return;
@@ -129,7 +129,7 @@ void run_estimator(int32_t now)
   a.z = ((float)(_accel_data[2]*_accel_scale))/1000000.0f;
   float a_sqrd_norm = a.x*a.x + a.y*a.y + a.z*a.z;
 
-  if(use_acc && a_sqrd_norm < 1.15*1.15*9.80665*9.80665 && a_sqrd_norm > 0.85*0.85*9.80665*9.80665)
+  if (use_acc && a_sqrd_norm < 1.15*1.15*9.80665*9.80665 && a_sqrd_norm > 0.85*0.85*9.80665*9.80665)
   {
     // Get error estimated by accelerometer measurement
     a = vector_normalize(a);
@@ -163,11 +163,12 @@ void run_estimator(int32_t now)
   w.y = ((float)(_gyro_data[1]*_gyro_scale))/1000.0f;
   w.z = ((float)(_gyro_data[2]*_gyro_scale))/1000.0f;
 
-  if(quad_int)
+  if (quad_int)
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
-    wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)), scalar_multiply(5.0f/12.0f,w));
+    wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)),
+                      scalar_multiply(5.0f/12.0f,w));
     w2 = w1;
     w1 = w;
   }
@@ -182,7 +183,7 @@ void run_estimator(int32_t now)
 
   // Propagate Dynamics (only if we've moved)
   float sqrd_norm_w = sqrd_norm(wfinal);
-  if(sqrd_norm_w > 0.0f)
+  if (sqrd_norm_w > 0.0f)
   {
     float p = wfinal.x;
     float q = wfinal.y;
@@ -198,7 +199,7 @@ void run_estimator(int32_t now)
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/(2000000.0f));
       float t2 = 1.0/norm_w * sin((norm_w*dt)/(2000000.0f));
-      qhat_np1.w = t1*q_hat.w   - t2*(            p*q_hat.x - q*q_hat.y - r*q_hat.z);
+      qhat_np1.w = t1*q_hat.w   - t2*(p*q_hat.x - q*q_hat.y - r*q_hat.z);
       qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w +             r*q_hat.y - q*q_hat.z);
       qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x +             p*q_hat.z);
       qhat_np1.z = t1*q_hat.z   + t2*(r*q_hat.w + q*q_hat.x - p*q_hat.y);
@@ -208,10 +209,11 @@ void run_estimator(int32_t now)
     {
       // Euler Integration
       // (Eq. 47a Mahoney Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5 * (          - p*q_hat.x - q*q_hat.y - r*q_hat.z),
+      quaternion_t qdot = {0.5 * (- p*q_hat.x - q*q_hat.y - r*q_hat.z),
                            0.5 * (p*q_hat.w             + r*q_hat.y - q*q_hat.z),
                            0.5 * (q*q_hat.w - r*q_hat.x             + p*q_hat.z),
-                           0.5 * (r*q_hat.w + q*q_hat.x - p*q_hat.y            )};
+                           0.5 * (r*q_hat.w + q*q_hat.x - p*q_hat.y)
+                          };
       q_hat.w = q_hat.w + qdot.w*(float)dt/1000000.0f;
       q_hat.x = q_hat.x + qdot.x*(float)dt/1000000.0f;
       q_hat.y = q_hat.y + qdot.y*(float)dt/1000000.0f;

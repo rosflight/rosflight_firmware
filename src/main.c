@@ -22,18 +22,18 @@ extern void SetSysClock(bool overclock);
 
 int main(void)
 {
-    // Configure clock, this figures out HSE for hardware autodetect
-    SetSysClock(0);
-    systemInit();
+  // Configure clock, this figures out HSE for hardware autodetect
+  SetSysClock(0);
+  systemInit();
 
-    // Perform Setup Operations
-    setup();
+  // Perform Setup Operations
+  setup();
 
-    while (1)
-    {
-      // Main loop
-      loop();
-    }
+  while (1)
+  {
+    // Main loop
+    loop();
+  }
 }
 
 
@@ -59,7 +59,7 @@ void setup(void)
   init_rc();
 
   // Initialize MAVlink Communication
- init_mavlink();
+  init_mavlink();
 
   // Initialize Sensors
   init_sensors();
