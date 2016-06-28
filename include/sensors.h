@@ -13,6 +13,13 @@ extern bool _diff_pressure_present;
 extern int16_t _diff_pressure;
 extern int16_t _temperature;
 
+extern bool _baro_present;
+extern int16_t _baro_pressure;
+extern int16_t _baro_temperature;
+
+extern bool _sonar_present;
+extern int16_t _sonar_range;
+
 // function declarations
 void init_sensors(void);
 bool update_sensors(uint32_t time_us);

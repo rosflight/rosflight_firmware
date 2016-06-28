@@ -20,14 +20,30 @@
 
 extern void SetSysClock(bool overclock);
 
+serialPort_t * Serial1;
+
+static void _putc(void *p, char c)
+{
+  (void)p; // avoid compiler warning about unused variable
+  serialWrite(Serial1, c);
+
+  while (!isSerialTransmitBufferEmpty(Serial1));
+}
+
+
 int main(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
   systemInit();
 
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, 921600, MODE_RXTX);
+
   // Perform Setup Operations
   setup();
+
+  init_printf( NULL, _putc);
 
   while (1)
   {
@@ -37,13 +53,12 @@ int main(void)
 }
 
 
-
+static bool available;
 void setup(void)
 {
   // Make sure all the perhipherals are done booting up before starting
   delay(500);
 
-  // Load Default Params
   // Read EEPROM to get initial params
   init_params();
 
@@ -51,7 +66,7 @@ void setup(void)
   /***  Hardware Setup ***/
   /***********************/
 
-  // Initialize I2c
+  //  // Initialize I2c
   i2cInit(I2CDEV_2);
 
   // Initialize PWM and RC
