@@ -212,11 +212,11 @@ int32_t turbosin(int32_t x)
 
 int32_t turboasin(int32_t x)
 {
-  if(x < 0)
+  if (x < 0)
   {
     return -1*turboasin(-1*x);
   }
-  else if(x > 999)
+  else if (x > 999)
   {
     return 1ul;
   }

@@ -24,32 +24,32 @@ serialPort_t * Serial1;
 
 static void _putc(void *p, char c)
 {
-    (void)p; // avoid compiler warning about unused variable
-    serialWrite(Serial1, c);
+  (void)p; // avoid compiler warning about unused variable
+  serialWrite(Serial1, c);
 
-    while (!isSerialTransmitBufferEmpty(Serial1));
+  while (!isSerialTransmitBufferEmpty(Serial1));
 }
 
 
 int main(void)
 {
-    // Configure clock, this figures out HSE for hardware autodetect
-    SetSysClock(0);
-    systemInit();
+  // Configure clock, this figures out HSE for hardware autodetect
+  SetSysClock(0);
+  systemInit();
 
-    // Initialize Serial ports
-    Serial1 = uartOpen(USART1, NULL, 921600, MODE_RXTX);
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, 921600, MODE_RXTX);
 
-    // Perform Setup Operations
-    setup();
+  // Perform Setup Operations
+  setup();
 
-    init_printf( NULL, _putc);
+  init_printf( NULL, _putc);
 
-    while (1)
-    {
-      // Main loop
-      loop();
-    }
+  while (1)
+  {
+    // Main loop
+    loop();
+  }
 }
 
 
@@ -66,7 +66,7 @@ void setup(void)
   /***  Hardware Setup ***/
   /***********************/
 
-//  // Initialize I2c
+  //  // Initialize I2c
   i2cInit(I2CDEV_2);
 
   // Initialize PWM and RC
@@ -90,7 +90,6 @@ void setup(void)
   // Initialize Estimator
   init_estimator(false, true, true);
   init_mode();
-  _armed_state = ARMED;
 }
 
 
@@ -119,17 +118,12 @@ void loop(void)
     average_time+=dt;
     counter++;
 
-    //    // If I have new IMU data, then perform control
+    // If I have new IMU data, then perform control
     run_estimator(now); // 234 us (acc and gyro, float-based quad integration, euler propagation)
     run_controller(now); // 6us
     mix_output();
   }
 
-  //  if(counter > 1000){
-  //    printf("average time = %d\n", average_time/counter);
-  //    counter = 0;
-  //    average_time = 0;
-  //  }
   prev_time = now;
 
 
