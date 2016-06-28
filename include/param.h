@@ -13,6 +13,7 @@ typedef enum
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BOARD_REVISION,
+  PARAM_BAUD_RATE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -67,7 +68,6 @@ typedef enum
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/
-
   PARAM_MOTOR_PWM_SEND_RATE,
   PARAM_MOTOR_IDLE_PWM,
   PARAM_SPIN_MOTORS_WHEN_ARMED,
@@ -75,10 +75,9 @@ typedef enum
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
-
-  PARAM_ESTIMATOR_LPF_ALPHA,
-  PARAM_GYRO_LPF_ALPHA,
-  PARAM_ACC_LPF_ALPHA,
+  PARAM_INIT_TIME,
+  PARAM_FILTER_KP,
+  PARAM_FILTER_KI,
   PARAM_GYRO_X_BIAS,
   PARAM_GYRO_Y_BIAS,
   PARAM_GYRO_Z_BIAS,
@@ -89,7 +88,6 @@ typedef enum
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-
   PARAM_RC_TYPE,
   PARAM_RC_X_CHANNEL,
   PARAM_RC_Y_CHANNEL,

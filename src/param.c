@@ -43,17 +43,19 @@ void set_param_defaults(void)
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
     init_param(id, temp_name, id);
   }
-  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 5);
+  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 4);
+
+  init_param(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
-  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 100);
+  init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
   init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
   init_param(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
-  init_param(PARAM_GYRO_LPF_ALPHA, "GYRO_LPF_ALPHA", 100);
-  init_param(PARAM_ACC_LPF_ALPHA, "GYRO_LPF_ALPHA", 500);
-
+  init_param(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
+  init_param(PARAM_FILTER_KP, "FILTER_KP", 10000); // munits
+  init_param(PARAM_FILTER_KI, "FILTER_KI", 1000);  // munits
   init_param(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0);
   init_param(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0);
   init_param(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0);

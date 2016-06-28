@@ -9,8 +9,8 @@
 *.files
 *.orig
 *.user.*
-
-/build/
+*.o
+/build/*
 
 *.aux
 *.fdb_latexmk
@@ -19,3 +19,5 @@
 *.pdf
 *.autosave
 *.synctex.gz
+*.bbl
+*.blg

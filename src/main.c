@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <breezystm32/breezystm32.h>
+#include <turbotrig/turbovec.h>
 
 #include "estimator.h"
 #include "mavlink.h"
@@ -16,6 +17,26 @@
 #include "controller.h"
 #include "mixer.h"
 #include "rc.h"
+
+extern void SetSysClock(bool overclock);
+
+int main(void)
+{
+  // Configure clock, this figures out HSE for hardware autodetect
+  SetSysClock(0);
+  systemInit();
+
+  // Perform Setup Operations
+  setup();
+
+  while (1)
+  {
+    // Main loop
+    loop();
+  }
+}
+
+
 
 void setup(void)
 {
@@ -52,13 +73,14 @@ void setup(void)
   init_mixing();
 
   // Initialize Estimator
-  init_estimator();
+  init_estimator(false, true, true);
   init_mode();
-  _armed_state = ARMED;
 }
+
 
 uint32_t counter = 0;
 uint32_t average_time = 0;
+
 
 void loop(void)
 {
@@ -76,16 +98,19 @@ void loop(void)
   // update sensors - an internal timer runs this at a fixed rate
   if (update_sensors(now)) // 434 us
   {
-    // loop time calculation
+    //    // loop time calculation
     dt = now - prev_time;
-    prev_time = now;
     average_time+=dt;
+    counter++;
 
     // If I have new IMU data, then perform control
-    run_estimator(now);
+    run_estimator(now); // 234 us (acc and gyro, float-based quad integration, euler propagation)
     run_controller(now); // 6us
     mix_output();
   }
+
+  prev_time = now;
+
 
   /*********************/
   /***  Post-Process ***/
@@ -104,8 +129,4 @@ void loop(void)
 
   // update commands (internal logic tells whether or not we should do anything or not)
   mux_inputs(); // 3 us
-
 }
-
-
-

@@ -15,5 +15,5 @@ typedef struct
 
 extern state_t _current_state;
 
-void init_estimator();
+void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer);
 void run_estimator(int32_t dt);

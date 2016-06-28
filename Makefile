@@ -50,8 +50,7 @@ STDPERIPH_DIR	 = $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
 OBJECT_DIR	 = $(ROOT)/build
 BIN_DIR		 = $(ROOT)/build
 
-rosflight2_SRC = $(BREEZY_DIR)/main.c \
-		   $(BREEZY_DIR)/drv_gpio.c \
+rosflight2_SRC =$(BREEZY_DIR)/drv_gpio.c \
 		   $(BREEZY_DIR)/drv_i2c.c \
 		   $(BREEZY_DIR)/drv_adc.c \
 		   $(BREEZY_DIR)/drv_spi.c \
@@ -66,6 +65,7 @@ rosflight2_SRC = $(BREEZY_DIR)/main.c \
 		   $(BREEZY_DIR)/printf.c \
 		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
 		   $(TURBOTRIG_DIR)/turbotrig.c \
+			 $(TURBOTRIG_DIR)/turbovec.c \
 		   $(PROJECT_SRC) \
 		   $(CMSIS_SRC) \
 		   $(STDPERIPH_SRC)
