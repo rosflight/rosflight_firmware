@@ -28,6 +28,7 @@ static void mavlink_send_heartbeat(void)
 static void mavlink_send_imu(void)
 {
   mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                             mpuMeasurementTime,
                              _accel_data[0],
                              _accel_data[1],
                              _accel_data[2],
@@ -54,7 +55,7 @@ static void mavlink_send_servo_output_raw(void)
 static void mavlink_send_rc_raw(void)
 {
   mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
-                               micros(),
+                               millis(),
                                0,
                                pwmRead(0),
                                pwmRead(1),
