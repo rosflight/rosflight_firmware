@@ -64,6 +64,19 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
   }
 }
 
+static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
+{
+  uint32_t now_us = micros();
+
+  mavlink_timesync_t tsync;
+  mavlink_msg_timesync_decode(msg, &tsync);
+
+  if (tsync.tc1 == 0) // check that this is a request, not a response
+  {
+    mavlink_msg_timesync_send(MAVLINK_COMM_0, (int64_t) now_us*1000, tsync.ts1);
+  }
+}
+
 static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   _offboard_control_time = micros();
@@ -135,6 +148,9 @@ static void handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_COMMAND_INT:
     mavlink_handle_msg_command_int(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_TIMESYNC:
+    mavlink_handle_msg_timesync(&in_buf);
     break;
   default:
     break;
