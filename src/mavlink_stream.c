@@ -29,13 +29,13 @@ static void mavlink_send_imu(void)
 {
   mavlink_msg_small_imu_send(MAVLINK_COMM_0,
                              _imu_time,
-                             _imu_temperature,
                              _accel_data[0],
                              _accel_data[1],
                              _accel_data[2],
                              _gyro_data[0],
                              _gyro_data[1],
-                             _gyro_data[2]);
+                             _gyro_data[2],
+                             _imu_temperature);
 }
 
 static void mavlink_send_servo_output_raw(void)
@@ -56,7 +56,7 @@ static void mavlink_send_servo_output_raw(void)
 static void mavlink_send_rc_raw(void)
 {
   mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
-                               micros(),
+                               millis(),
                                0,
                                pwmRead(0),
                                pwmRead(1),
