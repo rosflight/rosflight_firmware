@@ -22,15 +22,6 @@ extern void SetSysClock(bool overclock);
 
 serialPort_t *Serial1;
 
-static void _putc(void *p, char c)
-{
-  (void)p; // avoid compiler warning about unused variable
-  serialWrite(Serial1, c);
-
-  while (!isSerialTransmitBufferEmpty(Serial1));
-}
-
-
 int main(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
@@ -43,8 +34,6 @@ int main(void)
   // Perform Setup Operations
   setup();
 
-  init_printf(NULL, _putc);
-
   while (1)
   {
     // Main loop
@@ -53,7 +42,6 @@ int main(void)
 }
 
 
-static bool available;
 void setup(void)
 {
   // Make sure all the perhipherals are done booting up before starting

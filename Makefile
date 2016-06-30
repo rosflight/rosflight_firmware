@@ -40,7 +40,7 @@ OPTIONS		?=
 DEBUG ?=
 
 # Serial port/device for flashing
-SERIAL_DEVICE	?= /dev/ttyUSB0
+SERIAL_DEVICE	?= /dev/ttyUSB1
 
 # Working directories
 ROOT		 = $(dir $(lastword $(MAKEFILE_LIST)))
