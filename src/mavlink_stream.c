@@ -34,7 +34,8 @@ static void mavlink_send_imu(void)
                              _accel_data[2],
                              _gyro_data[0],
                              _gyro_data[1],
-                             _gyro_data[2]);
+                             _gyro_data[2],
+                             0.0);
 }
 
 static void mavlink_send_servo_output_raw(void)
