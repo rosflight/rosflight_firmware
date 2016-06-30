@@ -28,6 +28,8 @@ static void mavlink_send_heartbeat(void)
 static void mavlink_send_imu(void)
 {
   mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                             _imu_time,
+                             _imu_temperature,
                              _accel_data[0],
                              _accel_data[1],
                              _accel_data[2],

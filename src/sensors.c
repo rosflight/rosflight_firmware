@@ -12,6 +12,9 @@ int16_t _accel_data[3];
 int16_t _gyro_data[3];
 int32_t _accel_scale;
 int32_t _gyro_scale;
+int16_t _imu_temperature;
+uint32_t _imu_time;
+bool _imu_ready;
 
 bool _diff_pressure_present;
 int16_t _diff_pressure;
@@ -24,24 +27,32 @@ int16_t _baro_temperature;
 bool _sonar_present;
 int16_t _sonar_range;
 
-
 // local variable definitions
 static uint32_t imu_last_us;
 static uint32_t diff_press_next_us;
 static uint32_t baro_next_us;
 
+void imu_ISR(void)
+{
+  _imu_time = micros();
+  _imu_ready = true;
+}
+
 
 // local function definitions
 static bool update_imu(void)
 {
-  if (mpuDataReady)
+  if (_imu_ready)
   {
+    _imu_ready = false;
     mpu6050_read_accel(_accel_data);
     mpu6050_read_gyro(_gyro_data);
-    // correct according to known biases
-    _accel_data[0] += _params.values[PARAM_ACC_X_BIAS];
-    _accel_data[1] += _params.values[PARAM_ACC_Y_BIAS];
-    _accel_data[2] += _params.values[PARAM_ACC_Z_BIAS];
+    mpu6050_read_temperature(&_imu_temperature);
+
+    // correct according to known biases and temperature compensation
+    _accel_data[0] -= (_params.values[PARAM_ACC_X_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
+    _accel_data[1] -= (_params.values[PARAM_ACC_Y_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_Y_BIAS];
+    _accel_data[2] -= (_params.values[PARAM_ACC_Z_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
     _gyro_data[0] += _params.values[PARAM_GYRO_X_BIAS];
     _gyro_data[1] += _params.values[PARAM_GYRO_Y_BIAS];
     _gyro_data[2] += _params.values[PARAM_GYRO_Z_BIAS];
@@ -56,15 +67,17 @@ static bool update_imu(void)
 // function definitions
 void init_sensors(void)
 {
-  // BAROMETER <-- for some reason, this has to come before diff pressure
+  // BAROMETER <-- for some reason, this has to come first
   i2cWrite(0,0,0);
   _baro_present = ms5611_init();
   baro_next_us = 0;
 
   // IMU
+  _imu_ready = false;
   uint16_t acc1G;
   float gyro_scale;
-  mpu6050_init(true, &acc1G, &gyro_scale, 5);
+  mpu6050_register_interrupt_cb(&imu_ISR);
+  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
   _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
   _gyro_scale = (int32_t)(gyro_scale*1000000000.0f); // convert to mrad/s
   imu_last_us = 0;

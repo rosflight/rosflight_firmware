@@ -43,7 +43,7 @@ void set_param_defaults(void)
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
     init_param(id, temp_name, id);
   }
-  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 5);
+  init_param(PARAM_BOARD_REVISION, "BOARD_REV", 4);
 
   init_param(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
@@ -62,6 +62,10 @@ void set_param_defaults(void)
   init_param(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0);
   init_param(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0);
   init_param(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0);
+  init_param(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0);
+  init_param(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0);
+  init_param(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0);
+
 
   init_param(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
   init_param(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);

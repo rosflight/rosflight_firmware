@@ -88,6 +88,9 @@ typedef enum
   PARAM_ACC_X_BIAS,
   PARAM_ACC_Y_BIAS,
   PARAM_ACC_Z_BIAS,
+  PARAM_ACC_X_TEMP_COMP,
+  PARAM_ACC_Y_TEMP_COMP,
+  PARAM_ACC_Z_TEMP_COMP,
 
   /************************/
   /*** RC CONFIGURATION ***/
