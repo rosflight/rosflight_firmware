@@ -20,7 +20,7 @@
 
 extern void SetSysClock(bool overclock);
 
-serialPort_t * Serial1;
+serialPort_t *Serial1;
 
 static void _putc(void *p, char c)
 {
@@ -43,7 +43,7 @@ int main(void)
   // Perform Setup Operations
   setup();
 
-  init_printf( NULL, _putc);
+  init_printf(NULL, _putc);
 
   while (1)
   {

@@ -90,7 +90,7 @@ void init_sensors(void)
 bool update_sensors(uint32_t time_us)
 {
   // using else so that we don't do all sensor updates on the same loop
-  if (_diff_pressure_present && time_us >= diff_press_next_us )
+  if (_diff_pressure_present && time_us >= diff_press_next_us)
   {
     diff_press_next_us += _params.values[PARAM_DIFF_PRESS_UPDATE];
     ms4525_read(&_diff_pressure, &_temperature);
