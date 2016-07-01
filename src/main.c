@@ -28,11 +28,11 @@ int main(void)
   SetSysClock(0);
   systemInit();
 
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, 921600, MODE_RXTX);
-
   // Perform Setup Operations
   setup();
+
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, _params.values[PARAM_BAUD_RATE], MODE_RXTX);
 
   while (1)
   {
