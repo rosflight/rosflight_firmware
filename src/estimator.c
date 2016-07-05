@@ -36,16 +36,6 @@ static float kp_;
 static float ki_;
 static uint32_t init_time;
 
-static void pfvec(vector_t v)
-{
-  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
-}
-
-static void pfquat(quaternion_t v)
-{
-  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
-}
-
 
 void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
 {
@@ -98,9 +88,8 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
 }
 
 
-void run_estimator(int32_t now)
+void run_estimator(uint32_t now)
 {
-  static bool initializing;
   static float kp, ki;
   if (last_time == 0)
   {
@@ -114,7 +103,7 @@ void run_estimator(int32_t now)
   if (now < init_time)
   {
     kp = kp_*10.f;
-    ki = kp_*10.f;
+    ki = ki_*10.f;
   }
   else
   {
@@ -144,11 +133,6 @@ void run_estimator(int32_t now)
     w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
     w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
     w_acc.z = -2.0f*q_tilde.w*q_tilde.z;
-//    printf("using acc, kp = %d, ki = %d", PF(kp), PF(ki));
-  }
-  else
-  {
-//    printf("not using acc, %d\t%d", PF(a_sqrd_norm), use_acc);
   }
 
   // integrate biases from accelerometer feedback
@@ -156,7 +140,6 @@ void run_estimator(int32_t now)
   b.x -= ki*w_acc.x*(float)dt/1000000.0f;
   b.y -= ki*w_acc.y*(float)dt/1000000.0f;
   b.z -= ki*w_acc.z*(float)dt/1000000.0f;
-//  printf("b = "); pfvec(scalar_multiply(1000.0,b));
 
   // Pull out Gyro measurements
   w.x = ((float)(_gyro_data[0]*_gyro_scale))/1000.0f;
@@ -224,5 +207,13 @@ void run_estimator(int32_t now)
 
   // Extract Euler Angles for controller
   euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
+
+  // Save gyro biases for streaming to computer
+  if(_params.values[PARAM_STREAM_ADJUSTED_GYRO])
+  {
+    _params.values[PARAM_GYRO_X_BIAS] = (int16_t)(b.x*1000)/_gyro_scale;
+    _params.values[PARAM_GYRO_Y_BIAS] = (int16_t)(b.y*1000)/_gyro_scale;
+    _params.values[PARAM_GYRO_Z_BIAS] = (int16_t)(b.z*1000)/_gyro_scale;
+  }
 }
 

@@ -53,9 +53,6 @@ static bool update_imu(void)
     _accel_data[0] -= (_params.values[PARAM_ACC_X_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
     _accel_data[1] -= (_params.values[PARAM_ACC_Y_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_Y_BIAS];
     _accel_data[2] -= (_params.values[PARAM_ACC_Z_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
-    _gyro_data[0] -= _params.values[PARAM_GYRO_X_BIAS];
-    _gyro_data[1] -= _params.values[PARAM_GYRO_Y_BIAS];
-    _gyro_data[2] -= _params.values[PARAM_GYRO_Z_BIAS];
     return true;
   }
   else

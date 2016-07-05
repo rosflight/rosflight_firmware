@@ -6,6 +6,7 @@
 #include "mavlink_param.h"
 #include "mixer.h"
 #include "sensors.h"
+#include "param.h"
 
 #include "mavlink_stream.h"
 #include "mavlink_util.h"
@@ -27,15 +28,30 @@ static void mavlink_send_heartbeat(void)
 
 static void mavlink_send_imu(void)
 {
-  mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                             _imu_time,
-                             _accel_data[0],
-                             _accel_data[1],
-                             _accel_data[2],
-                             _gyro_data[0],
-                             _gyro_data[1],
-                             _gyro_data[2],
-                             _imu_temperature);
+  if(_params.values[PARAM_STREAM_ADJUSTED_GYRO])
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel_data[0],
+                               _accel_data[1],
+                               _accel_data[2],
+                               _gyro_data[0] - _params.values[PARAM_GYRO_X_BIAS],
+                               _gyro_data[1] - _params.values[PARAM_GYRO_Y_BIAS],
+                               _gyro_data[2] - _params.values[PARAM_GYRO_Z_BIAS],
+                               _imu_temperature);
+  }
+  else
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel_data[0],
+                               _accel_data[1],
+                               _accel_data[2],
+                               _gyro_data[0],
+                               _gyro_data[1],
+                               _gyro_data[2],
+                               _imu_temperature);
+  }
 }
 
 static void mavlink_send_servo_output_raw(void)
