@@ -15,6 +15,8 @@ int32_t _gyro_scale;
 int16_t _imu_temperature;
 uint32_t _imu_time;
 bool _imu_ready;
+bool calib_gyro;
+bool calib_acc;
 
 bool _diff_pressure_present;
 int16_t _diff_pressure;
@@ -38,6 +40,18 @@ void imu_ISR(void)
   _imu_ready = true;
 }
 
+bool calibrate_acc(void)
+{
+  calib_acc = true;
+  return true;
+}
+
+bool calibrate_gyro(void)
+{
+  calib_gyro = true;
+  return true;
+}
+
 
 // local function definitions
 static bool update_imu(void)
@@ -48,6 +62,48 @@ static bool update_imu(void)
     mpu6050_read_accel(_accel_data);
     mpu6050_read_gyro(_gyro_data);
     mpu6050_read_temperature(&_imu_temperature);
+
+    if(calib_acc)
+    {
+      static int16_t acc_count = 0;
+      static int32_t acc_sum[3] = {0, 0, 0};
+      acc_sum[0] += _accel_data[0];
+      acc_sum[1] += _accel_data[1];
+      acc_sum[2] += ((_accel_data[2]*_accel_scale)-9807000)/_accel_scale;
+      acc_count++;
+      if(acc_count > 100)
+      {
+        _params.values[PARAM_ACC_X_BIAS] = acc_sum[0]/acc_count;
+        _params.values[PARAM_ACC_Y_BIAS] = acc_sum[1]/acc_count;
+        _params.values[PARAM_ACC_Z_BIAS] = acc_sum[2]/acc_count;
+        acc_count = 0;
+        acc_sum[0] = 0; acc_sum[1] = 0; acc_sum[2] = 0;
+        calib_acc = false;
+        // we could do some sanity checking here if we wanted to.
+      }
+
+      if(calib_gyro)
+      {
+        static int16_t gyro_count = 0;
+        static int32_t gyro_sum[3] = {0, 0, 0};
+        gyro_sum[0] += _gyro_data[0];
+        gyro_sum[1] += _gyro_data[1];
+        gyro_sum[2] += _gyro_data[2];
+        gyro_count++;
+        if(gyro_count > 100)
+        {
+          _params.values[PARAM_GYRO_X_BIAS] = gyro_sum[0]/gyro_count;
+          _params.values[PARAM_GYRO_Y_BIAS] = gyro_sum[1]/gyro_count;
+          _params.values[PARAM_GYRO_Z_BIAS] = gyro_sum[2]/gyro_count;
+          gyro_count = 0;
+          gyro_sum[0] = 0; gyro_sum[1] = 0; gyro_sum[2] = 0;
+          calib_gyro = false;
+          // we could do some sanity checking here if we wanted to.
+        }
+      }
+    }
+
+
 
     // correct according to known biases and temperature compensation
     _accel_data[0] -= (_params.values[PARAM_ACC_X_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
