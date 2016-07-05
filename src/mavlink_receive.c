@@ -30,7 +30,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
     switch (cmd.command)
     {
     case MAV_CMD_PREFLIGHT_STORAGE:
-      if(_armed_state == ARMED)
+      if (_armed_state == ARMED)
       {
         result = MAV_RESULT_TEMPORARILY_REJECTED;
       }
@@ -59,18 +59,18 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
 
     // Perform an IMU calibration (static offset calculation)
     case MAV_CMD_PREFLIGHT_CALIBRATION:
-      if(_armed_state == ARMED)
+      if (_armed_state == ARMED)
       {
         result = MAV_RESULT_TEMPORARILY_REJECTED;
       }
       else
       {
         bool success = false;
-        if(cmd.param1)
+        if (cmd.param1)
         {
           success &= calibrate_gyro();
         }
-        if(cmd.x) // x is PARAM5
+        if (cmd.x) // x is PARAM5
         {
           success &= calibrate_acc();
         }

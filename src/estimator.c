@@ -214,7 +214,7 @@ void run_estimator(uint32_t now)
   euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
 
   // Save gyro biases for streaming to computer
-  if(_params.values[PARAM_STREAM_ADJUSTED_GYRO])
+  if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
   {
     _adaptive_gyro_bias[0] = (int16_t)(b.x*1000)/_gyro_scale;
     _adaptive_gyro_bias[1] = (int16_t)(b.y*1000)/_gyro_scale;

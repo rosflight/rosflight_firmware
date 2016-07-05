@@ -29,7 +29,7 @@ static void mavlink_send_heartbeat(void)
 
 static void mavlink_send_imu(void)
 {
-  if(_params.values[PARAM_STREAM_ADJUSTED_GYRO])
+  if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
   {
     mavlink_msg_small_imu_send(MAVLINK_COMM_0,
                                _imu_time,
