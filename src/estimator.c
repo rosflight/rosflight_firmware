@@ -14,6 +14,7 @@
 #define PF(a) ((int32_t)(a*1000.0))
 
 state_t _current_state;
+int16_t _adaptive_gyro_bias[3];
 
 static vector_t w1;
 static vector_t w2;
@@ -83,6 +84,10 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   mat_exp = use_matrix_exponential;
   quad_int = use_quadratic_integration;
   use_acc = use_accelerometer;
+
+  _adaptive_gyro_bias[0] = 0;
+  _adaptive_gyro_bias[1] = 0;
+  _adaptive_gyro_bias[2] = 0;
 
   last_time = 0;
 }
@@ -211,9 +216,9 @@ void run_estimator(uint32_t now)
   // Save gyro biases for streaming to computer
   if(_params.values[PARAM_STREAM_ADJUSTED_GYRO])
   {
-    _params.values[PARAM_GYRO_X_BIAS] = (int16_t)(b.x*1000)/_gyro_scale;
-    _params.values[PARAM_GYRO_Y_BIAS] = (int16_t)(b.y*1000)/_gyro_scale;
-    _params.values[PARAM_GYRO_Z_BIAS] = (int16_t)(b.z*1000)/_gyro_scale;
+    _adaptive_gyro_bias[0] = (int16_t)(b.x*1000)/_gyro_scale;
+    _adaptive_gyro_bias[1] = (int16_t)(b.y*1000)/_gyro_scale;
+    _adaptive_gyro_bias[2] = (int16_t)(b.z*1000)/_gyro_scale;
   }
 }
 

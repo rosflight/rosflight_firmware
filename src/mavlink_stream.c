@@ -6,6 +6,7 @@
 #include "mavlink_param.h"
 #include "mixer.h"
 #include "sensors.h"
+#include "estimator.h"
 #include "param.h"
 
 #include "mavlink_stream.h"
@@ -35,9 +36,9 @@ static void mavlink_send_imu(void)
                                _accel_data[0],
                                _accel_data[1],
                                _accel_data[2],
-                               _gyro_data[0] - _params.values[PARAM_GYRO_X_BIAS],
-                               _gyro_data[1] - _params.values[PARAM_GYRO_Y_BIAS],
-                               _gyro_data[2] - _params.values[PARAM_GYRO_Z_BIAS],
+                               _gyro_data[0] - _adaptive_gyro_bias[0],
+                               _gyro_data[1] - _adaptive_gyro_bias[1],
+                               _gyro_data[2] - _adaptive_gyro_bias[2],
                                _imu_temperature);
   }
   else
