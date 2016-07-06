@@ -33,24 +33,24 @@ static void mavlink_send_imu(void)
   {
     mavlink_msg_small_imu_send(MAVLINK_COMM_0,
                                _imu_time,
-                               _accel_data[0],
-                               _accel_data[1],
-                               _accel_data[2],
-                               _gyro_data[0] - _adaptive_gyro_bias[0],
-                               _gyro_data[1] - _adaptive_gyro_bias[1],
-                               _gyro_data[2] - _adaptive_gyro_bias[2],
+                               _accel.x,
+                               _accel.y,
+                               _accel.z,
+                               _gyro.x - _adaptive_gyro_bias.x,
+                               _gyro.y - _adaptive_gyro_bias.y,
+                               _gyro.z - _adaptive_gyro_bias.z,
                                _imu_temperature);
   }
   else
   {
     mavlink_msg_small_imu_send(MAVLINK_COMM_0,
                                _imu_time,
-                               _accel_data[0],
-                               _accel_data[1],
-                               _accel_data[2],
-                               _gyro_data[0],
-                               _gyro_data[1],
-                               _gyro_data[2],
+                               _accel.x,
+                               _accel.y,
+                               _accel.z,
+                               _gyro.x,
+                               _gyro.y,
+                               _gyro.z,
                                _imu_temperature);
   }
 }
