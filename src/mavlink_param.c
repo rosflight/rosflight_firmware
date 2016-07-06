@@ -7,6 +7,27 @@
 // local variable definitions
 static uint8_t send_params_index = PARAMS_COUNT; // current param to send when sending parameter list with low priority
 
+// local function definitions
+static void mavlink_send_param(param_id_t id)
+{
+  if (id < PARAMS_COUNT)
+  {
+    MAV_PARAM_TYPE type;
+    switch (_params.types[id])
+    {
+    case PARAM_TYPE_INT32:
+      type = MAV_PARAM_TYPE_INT32;
+      break;
+    case PARAM_TYPE_FLOAT:
+      type = MAV_PARAM_TYPE_REAL32;
+      break;
+    }
+
+    mavlink_msg_param_value_send(MAVLINK_COMM_0,
+                                 _params.names[id], get_param_float(id), type, PARAMS_COUNT, id);
+  }
+}
+
 // function definitions
 void mavlink_handle_msg_param_request_list(void)
 {
@@ -23,10 +44,7 @@ void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
     param_id_t id = (read.param_index < 0) ? lookup_param_id(read.param_id) : read.param_index;
 
     if (id < PARAMS_COUNT)
-    {
-      mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                   _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
-    }
+      mavlink_send_param(id);
   }
 }
 
@@ -37,12 +55,40 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
 
   if (set.target_system == (uint8_t) _params.values[PARAM_SYSTEM_ID]) // TODO check if component id matches?
   {
-    if (set.param_type == MAV_PARAM_TYPE_INT32) // TODO support other param types? (uint32 at least?)
+    param_id_t id = lookup_param_id(set.param_id);
+
+    if (id < PARAMS_COUNT)
     {
-      param_id_t id = lookup_param_id(set.param_id);
-      if (set_param_by_id(id, *(int32_t *) &set.param_value))
-        mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                     _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
+      param_type_t candidate_type;
+      switch (set.param_type)
+      {
+      case MAV_PARAM_TYPE_INT32:
+        candidate_type = PARAM_TYPE_INT32;
+        break;
+      case MAV_PARAM_TYPE_REAL32:
+        candidate_type = PARAM_TYPE_FLOAT;
+        break;
+      default:
+        candidate_type = PARAM_TYPE_INVALID;
+        break;
+      }
+
+      if (candidate_type == _params.types[id])
+      {
+        bool success;
+        switch (candidate_type)
+        {
+        case PARAM_TYPE_INT32:
+          success = set_param_by_id(id, *(int32_t *) &set.param_value);
+          break;
+        case PARAM_TYPE_FLOAT:
+          success = set_param_by_id_float(id, set.param_value);
+          break;
+        }
+
+        if (success)
+          mavlink_send_param(id);
+      }
     }
   }
 }
@@ -51,13 +97,7 @@ void mavlink_send_next_param(void)
 {
   if (send_params_index < PARAMS_COUNT)
   {
-    mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                 _params.names[send_params_index],
-                                 *(float *) &_params.values[send_params_index],
-                                 MAV_PARAM_TYPE_INT32,
-                                 PARAMS_COUNT,
-                                 send_params_index);
-
+    mavlink_send_param(send_params_index);
     send_params_index++;
   }
 }
