@@ -246,7 +246,7 @@ inline bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float v
   return set_param_by_name(name, *(int32_t*) &value);
 }
 
-inline bool get_param_float(param_id_t id)
+inline float get_param_float(param_id_t id)
 {
   return *(float*) &_params.values[id];
 }
