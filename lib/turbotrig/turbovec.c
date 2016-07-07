@@ -99,6 +99,7 @@ intquat_t int_quaternion_multiply(intquat_t q1, intquat_t q2)
 
 intquat_t int_quaternion_inverse(intquat_t q)
 {
+
   intquat_t out = {q.w, -1*q.x, -1*q.y, -1*q.z};
   return out;
 }
@@ -129,7 +130,7 @@ vector_t cross(vector_t u, vector_t v)
 {
   vector_t out = {u.y *v.z - u.z*v.y,
                   u.z *v.x - u.x*v.z,
-                  u.x *v.y - u.y*v.x
+                  u.x *v.y - u.y *v.x
                  };
   return out;
 }
@@ -138,7 +139,7 @@ vector_t scalar_multiply(float s, vector_t v)
 {
   vector_t out = {s*v.x,
                   s*v.y,
-                  s*v.z
+                  s *v.z
                  };
   return out;
 }
@@ -178,7 +179,7 @@ vector_t vector_normalize(vector_t v)
   float recipNorm = turboInvSqrt(v.x*v.x + v.y*v.y + v.z*v.z);
   vector_t out = {recipNorm*v.x,
                   recipNorm*v.y,
-                  recipNorm*v.z
+                  recipNorm *v.z
                  };
   return out;
 }
@@ -189,7 +190,7 @@ quaternion_t quaternion_normalize(quaternion_t q)
   quaternion_t out = {recipNorm*q.w,
                       recipNorm*q.x,
                       recipNorm*q.y,
-                      recipNorm*q.z
+                      recipNorm *q.z
                      };
   return out;
 }
@@ -199,7 +200,7 @@ quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
   quaternion_t q = {q1.w *q2.w - q1.x *q2.x - q1.y *q2.y - q1.z*q2.z,
                     q1.w *q2.x + q1.x *q2.w - q1.y *q2.z + q1.z*q2.y,
                     q1.w *q2.y + q1.x *q2.z + q1.y *q2.w - q1.z*q2.x,
-                    q1.w *q2.z - q1.x *q2.y + q1.y *q2.x + q1.z*q2.w
+                    q1.w *q2.z - q1.x *q2.y + q1.y *q2.x + q1.z *q2.w
                    };
   return q;
 }

@@ -6,6 +6,8 @@
 #include "mavlink_param.h"
 #include "mixer.h"
 #include "sensors.h"
+#include "estimator.h"
+#include "param.h"
 
 #include "mavlink_stream.h"
 #include "mavlink_util.h"
@@ -27,15 +29,30 @@ static void mavlink_send_heartbeat(void)
 
 static void mavlink_send_imu(void)
 {
-  mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                             mpuMeasurementTime,
-                             _accel_data[0],
-                             _accel_data[1],
-                             _accel_data[2],
-                             _gyro_data[0],
-                             _gyro_data[1],
-                             _gyro_data[2],
-                             0.0);
+  if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel_data[0],
+                               _accel_data[1],
+                               _accel_data[2],
+                               _gyro_data[0] - _adaptive_gyro_bias[0],
+                               _gyro_data[1] - _adaptive_gyro_bias[1],
+                               _gyro_data[2] - _adaptive_gyro_bias[2],
+                               _imu_temperature);
+  }
+  else
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel_data[0],
+                               _accel_data[1],
+                               _accel_data[2],
+                               _gyro_data[0],
+                               _gyro_data[1],
+                               _gyro_data[2],
+                               _imu_temperature);
+  }
 }
 
 static void mavlink_send_servo_output_raw(void)
@@ -71,9 +88,18 @@ static void mavlink_send_rc_raw(void)
 
 static void mavlink_send_diff_pressure(void)
 {
-  mavlink_msg_diff_pressure_send(MAVLINK_COMM_0,
-                                 _diff_pressure,
-                                 _temperature);
+  if (_diff_pressure_present)
+  {
+    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure, _temperature);
+  }
+}
+
+static void mavlink_send_baro(void)
+{
+  if (_baro_present)
+  {
+    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_pressure, _temperature);
+  }
 }
 
 static void mavlink_send_low_priority(void)
@@ -89,6 +115,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
   { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
   { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
+  { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_baro },
   { .period_us = 1e5, .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 

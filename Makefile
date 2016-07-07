@@ -62,10 +62,11 @@ rosflight2_SRC =$(BREEZY_DIR)/drv_gpio.c \
 		   $(BREEZY_DIR)/drv_mpu6050.c \
 		   $(BREEZY_DIR)/drv_ms4525.c \
 		   $(BREEZY_DIR)/drv_mb1242.c \
+		   $(BREEZY_DIR)/drv_ms5611.c \
 		   $(BREEZY_DIR)/printf.c \
 		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
 		   $(TURBOTRIG_DIR)/turbotrig.c \
-			 $(TURBOTRIG_DIR)/turbovec.c \
+		   $(TURBOTRIG_DIR)/turbovec.c \
 		   $(PROJECT_SRC) \
 		   $(CMSIS_SRC) \
 		   $(STDPERIPH_SRC)

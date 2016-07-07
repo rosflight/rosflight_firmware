@@ -56,12 +56,22 @@ void set_param_defaults(void)
   init_param(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param(PARAM_FILTER_KP, "FILTER_KP", 10000); // munits
   init_param(PARAM_FILTER_KI, "FILTER_KI", 1000);  // munits
+  init_param(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 1);
   init_param(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0);
   init_param(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0);
   init_param(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0);
   init_param(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0);
   init_param(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0);
   init_param(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0);
+  init_param(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0);
+  init_param(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0);
+  init_param(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0);
+
+
+  init_param(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
+  init_param(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
+  init_param(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 1000000);
+  init_param(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);

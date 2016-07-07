@@ -20,6 +20,8 @@
 
 extern void SetSysClock(bool overclock);
 
+serialPort_t *Serial1;
+
 int main(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
@@ -29,6 +31,9 @@ int main(void)
   // Perform Setup Operations
   setup();
 
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, _params.values[PARAM_BAUD_RATE], MODE_RXTX);
+
   while (1)
   {
     // Main loop
@@ -37,13 +42,11 @@ int main(void)
 }
 
 
-
 void setup(void)
 {
   // Make sure all the perhipherals are done booting up before starting
   delay(500);
 
-  // Load Default Params
   // Read EEPROM to get initial params
   init_params();
 
@@ -51,7 +54,7 @@ void setup(void)
   /***  Hardware Setup ***/
   /***********************/
 
-  // Initialize I2c
+  //  // Initialize I2c
   i2cInit(I2CDEV_2);
 
   // Initialize PWM and RC

@@ -35,6 +35,10 @@ typedef enum
   /****************************/
 
   PARAM_LOOPTIME,
+  PARAM_DIFF_PRESS_UPDATE,
+  PARAM_BARO_UPDATE,
+  PARAM_SONAR_UPDATE,
+  PARAM_MAG_UPDATE,
 
   /*****************/
   /*** PID GAINS ***/
@@ -78,12 +82,16 @@ typedef enum
   PARAM_INIT_TIME,
   PARAM_FILTER_KP,
   PARAM_FILTER_KI,
+  PARAM_STREAM_ADJUSTED_GYRO,
   PARAM_GYRO_X_BIAS,
   PARAM_GYRO_Y_BIAS,
   PARAM_GYRO_Z_BIAS,
   PARAM_ACC_X_BIAS,
   PARAM_ACC_Y_BIAS,
   PARAM_ACC_Z_BIAS,
+  PARAM_ACC_X_TEMP_COMP,
+  PARAM_ACC_Y_TEMP_COMP,
+  PARAM_ACC_Z_TEMP_COMP,
 
   /************************/
   /*** RC CONFIGURATION ***/
