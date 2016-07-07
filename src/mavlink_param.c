@@ -21,6 +21,8 @@ static void mavlink_send_param(param_id_t id)
     case PARAM_TYPE_FLOAT:
       type = MAV_PARAM_TYPE_REAL32;
       break;
+    default:
+      return;
     }
 
     mavlink_msg_param_value_send(MAVLINK_COMM_0,
@@ -79,10 +81,13 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
         switch (candidate_type)
         {
         case PARAM_TYPE_INT32:
-          success = set_param_by_id(id, *(int32_t *) &set.param_value);
+          success = set_param_by_id(id, *(int32_t*) &set.param_value);
           break;
         case PARAM_TYPE_FLOAT:
           success = set_param_by_id_float(id, set.param_value);
+          break;
+        default:
+          success = false;
           break;
         }
 
