@@ -69,7 +69,7 @@ static bool update_imu(void)
       static int32_t acc_sum[3] = {0, 0, 0};
       acc_sum[0] += _accel_data[0];
       acc_sum[1] += _accel_data[1];
-      acc_sum[2] += ((_accel_data[2]*_accel_scale)-9807000)/_accel_scale;
+      acc_sum[2] += ((_accel_data[2]*_accel_scale)-9806650)/_accel_scale;
       acc_count++;
       if (acc_count > 100)
       {
@@ -110,7 +110,7 @@ static bool update_imu(void)
     // correct according to known biases and temperature compensation
     _accel_data[0] -= (_params.values[PARAM_ACC_X_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
     _accel_data[1] -= (_params.values[PARAM_ACC_Y_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_Y_BIAS];
-    _accel_data[2] -= (_params.values[PARAM_ACC_Z_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
+    _accel_data[2] -= (_params.values[PARAM_ACC_Z_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_Z_BIAS];
     _gyro_data[0] -= _params.values[PARAM_GYRO_X_BIAS];
     _gyro_data[1] -= _params.values[PARAM_GYRO_Y_BIAS];
     _gyro_data[2] -= _params.values[PARAM_GYRO_Z_BIAS];
