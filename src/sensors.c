@@ -35,9 +35,6 @@ static float gyro_scale;
 static bool calib_gyro;
 static bool calib_acc;
 
-static vector_t acc_bias = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
-static vector_t gyro_bias = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
-
 // local function definitions
 void imu_ISR(void)
 {
@@ -74,26 +71,25 @@ static bool update_imu(void)
     {
       static uint16_t acc_count = 0;
       static vector_t acc_sum  = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+      static float acc_temp_sum = 0.0f;
 
       acc_sum.x += _accel.x;
       acc_sum.y += _accel.y;
       acc_sum.z += _accel.z - 9.80665f;
+      acc_temp_sum += _imu_temperature;
       acc_count++;
 
       if (acc_count > 100)
       {
-        acc_bias.x = acc_sum.x / acc_count;
-        acc_bias.y = acc_sum.y / acc_count;
-        acc_bias.z = acc_sum.z / acc_count;
-
-        set_param_by_id_float(PARAM_ACC_X_BIAS, acc_sum.x / acc_count);
-        set_param_by_id_float(PARAM_ACC_Y_BIAS, acc_sum.y / acc_count);
-        set_param_by_id_float(PARAM_ACC_Z_BIAS, acc_sum.z / acc_count);
+        set_param_by_id_float(PARAM_ACC_X_BIAS, (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_Y_BIAS, (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_Z_BIAS, (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / acc_count);
 
         acc_count = 0;
         acc_sum.x = 0.0f;
         acc_sum.y = 0.0f;
         acc_sum.z = 0.0f;
+        acc_temp_sum = 0.0f;
         calib_acc = false;
         // we could do some sanity checking here if we wanted to.
       }
@@ -111,10 +107,6 @@ static bool update_imu(void)
 
       if (gyro_count > 100)
       {
-        gyro_bias.x = gyro_sum.x / gyro_count;
-        gyro_bias.y = gyro_sum.y / gyro_count;
-        gyro_bias.z = gyro_sum.z / gyro_count;
-
         set_param_by_id_float(PARAM_GYRO_X_BIAS, gyro_sum.x / gyro_count);
         set_param_by_id_float(PARAM_GYRO_Y_BIAS, gyro_sum.y / gyro_count);
         set_param_by_id_float(PARAM_GYRO_Z_BIAS, gyro_sum.z / gyro_count);
@@ -129,21 +121,13 @@ static bool update_imu(void)
     }
 
     // correct according to known biases and temperature compensation
-//    _accel.x -= get_param_float(PARAM_ACC_X_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_X_BIAS);
-//    _accel.y -= get_param_float(PARAM_ACC_Y_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_Y_BIAS);
-//    _accel.z -= get_param_float(PARAM_ACC_Z_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_Z_BIAS);
+    _accel.x -= get_param_float(PARAM_ACC_X_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_X_BIAS);
+    _accel.y -= get_param_float(PARAM_ACC_Y_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_Y_BIAS);
+    _accel.z -= get_param_float(PARAM_ACC_Z_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_Z_BIAS);
 
-//    _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
-//    _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
-//    _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
-
-    _accel.x -= acc_bias.x;
-    _accel.y -= acc_bias.y;
-    _accel.z -= acc_bias.z;
-
-    _gyro.x -= gyro_bias.x;
-    _gyro.y -= gyro_bias.y;
-    _gyro.z -= gyro_bias.z;
+    _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
+    _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
+    _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
 
     return true;
   }
