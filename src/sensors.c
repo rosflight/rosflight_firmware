@@ -67,19 +67,22 @@ static bool update_imu(void)
     {
       static int16_t acc_count = 0;
       static int32_t acc_sum[3] = {0, 0, 0};
+      static int32_t acc_temp_sum = 0;
       acc_sum[0] += _accel_data[0];
       acc_sum[1] += _accel_data[1];
       acc_sum[2] += ((_accel_data[2]*_accel_scale)-9806650)/_accel_scale;
+      acc_temp_sum += _imu_temperature;
       acc_count++;
       if (acc_count > 100)
       {
-        _params.values[PARAM_ACC_X_BIAS] = acc_sum[0]/acc_count;
-        _params.values[PARAM_ACC_Y_BIAS] = acc_sum[1]/acc_count;
-        _params.values[PARAM_ACC_Z_BIAS] = acc_sum[2]/acc_count;
+        _params.values[PARAM_ACC_X_BIAS] = (acc_sum[0] - _params.values[PARAM_ACC_X_TEMP_COMP]*acc_temp_sum/1000)/acc_count;
+        _params.values[PARAM_ACC_Y_BIAS] = (acc_sum[1] - _params.values[PARAM_ACC_Y_TEMP_COMP]*acc_temp_sum/1000)/acc_count;
+        _params.values[PARAM_ACC_Z_BIAS] = (acc_sum[2] - _params.values[PARAM_ACC_Z_TEMP_COMP]*acc_temp_sum/1000)/acc_count;
         acc_count = 0;
         acc_sum[0] = 0;
         acc_sum[1] = 0;
         acc_sum[2] = 0;
+        acc_temp_sum = 0;
         calib_acc = false;
         // we could do some sanity checking here if we wanted to.
       }
