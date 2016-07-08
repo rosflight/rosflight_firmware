@@ -3,6 +3,7 @@
 
 #include "flash.h"
 #include "mavlink.h"
+#include "mavlink_param.h"
 #include "mavlink_stream.h"
 
 #include "param.h"
@@ -202,4 +203,22 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
   }
 
   return PARAMS_COUNT;
+}
+
+bool set_param_by_id(param_id_t id, int32_t value)
+{
+  if (id < PARAMS_COUNT && value != _params.values[id])
+  {
+    _params.values[id] = value;
+    param_change_callback(id);
+    mavlink_send_param(id);
+    return true;
+  }
+  return false;
+}
+
+bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
+{
+  uint8_t id = lookup_param_id(name);
+  return set_param_by_id(id, value);
 }

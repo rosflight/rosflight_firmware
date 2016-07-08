@@ -8,6 +8,12 @@
 static uint8_t send_params_index = PARAMS_COUNT; // current param to send when sending parameter list with low priority
 
 // function definitions
+void mavlink_send_param(param_id_t id)
+{
+  mavlink_msg_param_value_send(MAVLINK_COMM_0,
+                               _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
+}
+
 void mavlink_handle_msg_param_request_list(void)
 {
   send_params_index = 0;
@@ -24,8 +30,7 @@ void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
 
     if (id < PARAMS_COUNT)
     {
-      mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                   _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
+      mavlink_send_param(id);
     }
   }
 }
@@ -40,9 +45,7 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
     if (set.param_type == MAV_PARAM_TYPE_INT32) // TODO support other param types? (uint32 at least?)
     {
       param_id_t id = lookup_param_id(set.param_id);
-      if (set_param_by_id(id, *(int32_t *) &set.param_value))
-        mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                     _params.names[id], *(float *) &_params.values[id], MAV_PARAM_TYPE_INT32, PARAMS_COUNT, id);
+      set_param_by_id(id, *(int32_t*) &set.param_value);
     }
   }
 }
@@ -51,13 +54,7 @@ void mavlink_send_next_param(void)
 {
   if (send_params_index < PARAMS_COUNT)
   {
-    mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                 _params.names[send_params_index],
-                                 *(float *) &_params.values[send_params_index],
-                                 MAV_PARAM_TYPE_INT32,
-                                 PARAMS_COUNT,
-                                 send_params_index);
-
+    mavlink_send_param(send_params_index);
     send_params_index++;
   }
 }
