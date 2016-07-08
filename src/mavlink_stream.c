@@ -111,7 +111,7 @@ static void mavlink_send_sonar(void)
                                      24,
                                      822,
                                      _sonar_range,
-                                      MAV_DISTANCE_SENSOR_ULTRASOUND,
+                                     MAV_DISTANCE_SENSOR_ULTRASOUND,
                                      1,
                                      MAV_SENSOR_ROTATION_PITCH_180,
                                      1);

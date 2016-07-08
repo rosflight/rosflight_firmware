@@ -57,7 +57,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
       }
       break;
 
-    // Perform an IMU calibration (static offset calculation)
+      // Perform an IMU calibration (static offset calculation)
     case MAV_CMD_PREFLIGHT_CALIBRATION:
       if (_armed_state == ARMED)
       {
