@@ -75,9 +75,10 @@ static bool update_imu(void)
       acc_count++;
       if (acc_count > 100)
       {
-        _params.values[PARAM_ACC_X_BIAS] = (acc_sum[0] - _params.values[PARAM_ACC_X_TEMP_COMP]*acc_temp_sum/1000)/acc_count;
-        _params.values[PARAM_ACC_Y_BIAS] = (acc_sum[1] - _params.values[PARAM_ACC_Y_TEMP_COMP]*acc_temp_sum/1000)/acc_count;
-        _params.values[PARAM_ACC_Z_BIAS] = (acc_sum[2] - _params.values[PARAM_ACC_Z_TEMP_COMP]*acc_temp_sum/1000)/acc_count;
+        set_param_by_id(PARAM_ACC_X_BIAS, (acc_sum[0] - _params.values[PARAM_ACC_X_TEMP_COMP]*acc_temp_sum/1000)/acc_count);
+        set_param_by_id(PARAM_ACC_Y_BIAS, (acc_sum[1] - _params.values[PARAM_ACC_Y_TEMP_COMP]*acc_temp_sum/1000)/acc_count);
+        set_param_by_id(PARAM_ACC_Z_BIAS, (acc_sum[2] - _params.values[PARAM_ACC_Z_TEMP_COMP]*acc_temp_sum/1000)/acc_count);
+
         acc_count = 0;
         acc_sum[0] = 0;
         acc_sum[1] = 0;
@@ -97,9 +98,10 @@ static bool update_imu(void)
         gyro_count++;
         if (gyro_count > 100)
         {
-          _params.values[PARAM_GYRO_X_BIAS] = gyro_sum[0]/gyro_count;
-          _params.values[PARAM_GYRO_Y_BIAS] = gyro_sum[1]/gyro_count;
-          _params.values[PARAM_GYRO_Z_BIAS] = gyro_sum[2]/gyro_count;
+          set_param_by_id(PARAM_GYRO_X_BIAS, gyro_sum[0]/gyro_count);
+          set_param_by_id(PARAM_GYRO_Y_BIAS, gyro_sum[1]/gyro_count);
+          set_param_by_id(PARAM_GYRO_Z_BIAS, gyro_sum[2]/gyro_count);
+
           gyro_count = 0;
           gyro_sum[0] = 0;
           gyro_sum[1] = 0;
