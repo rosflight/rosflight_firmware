@@ -205,16 +205,7 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
  * @param value The new value
  * @returns True if a parameter value was changed, false otherwise
  */
-inline bool set_param_by_id(param_id_t id, int32_t value)
-{
-  if (id < PARAMS_COUNT && value != _params.values[id])
-  {
-    _params.values[id] = value;
-    param_change_callback(id);
-    return true;
-  }
-  return false;
-}
+bool set_param_by_id(param_id_t id, int32_t value);
 
 /**
  * @brief Sets the value of a parameter by name and calls the parameter change callback
@@ -222,8 +213,4 @@ inline bool set_param_by_id(param_id_t id, int32_t value)
  * @param value The new value
  * @returns True if a parameter value was changed, false otherwise
  */
-inline bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
-{
-  uint8_t id = lookup_param_id(name);
-  return set_param_by_id(id, value);
-}
+bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value);
