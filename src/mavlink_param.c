@@ -79,7 +79,7 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
         switch (candidate_type)
         {
         case PARAM_TYPE_INT32:
-          set_param_by_id(id, *(int32_t*) &set.param_value);
+          set_param_by_id(id, *(int32_t *) &set.param_value);
           break;
         case PARAM_TYPE_FLOAT:
           set_param_by_id_float(id, set.param_value);

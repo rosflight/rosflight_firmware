@@ -83,9 +83,12 @@ static bool update_imu(void)
 
       if (acc_count > 100)
       {
-        set_param_by_id_float(PARAM_ACC_X_BIAS, (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / acc_count);
-        set_param_by_id_float(PARAM_ACC_Y_BIAS, (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / acc_count);
-        set_param_by_id_float(PARAM_ACC_Z_BIAS, (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_X_BIAS,
+                              (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_Y_BIAS,
+                              (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_Z_BIAS,
+                              (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / acc_count);
 
         acc_count = 0;
         acc_sum.x = 0.0f;

@@ -25,7 +25,7 @@ static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t
 static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
 {
   memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = *((int32_t*) &value);
+  _params.values[id] = *((int32_t *) &value);
   _params.types[id] = PARAM_TYPE_FLOAT;
 }
 
@@ -252,15 +252,15 @@ bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
 
 bool set_param_by_id_float(param_id_t id, float value)
 {
-  return set_param_by_id(id, *(int32_t*) &value);
+  return set_param_by_id(id, *(int32_t *) &value);
 }
 
 bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
 {
-  return set_param_by_name(name, *(int32_t*) &value);
+  return set_param_by_name(name, *(int32_t *) &value);
 }
 
 float get_param_float(param_id_t id)
 {
-  return *(float*) &_params.values[id];
+  return *(float *) &_params.values[id];
 }
