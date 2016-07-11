@@ -8,15 +8,11 @@
 #include "sensors.h"
 
 // global variable definitions
-int16_t _accel_data[3];
-int16_t _gyro_data[3];
-int32_t _accel_scale;
-int32_t _gyro_scale;
-int16_t _imu_temperature;
-uint32_t _imu_time;
 bool _imu_ready;
-bool calib_gyro;
-bool calib_acc;
+vector_t _accel;
+vector_t _gyro;
+float _imu_temperature;
+uint32_t _imu_time;
 
 bool _diff_pressure_present;
 int16_t _diff_pressure;
@@ -31,96 +27,113 @@ int16_t _sonar_range;
 uint32_t _sonar_time;
 
 // local variable definitions
-static uint32_t imu_last_us;
 static uint32_t diff_press_next_us;
 static uint32_t baro_next_us;
 static uint32_t sonar_next_us;
 
+static float accel_scale;
+static float gyro_scale;
+
+static bool calib_gyro;
+static bool calib_acc;
+
+// local function definitions
 void imu_ISR(void)
 {
   _imu_time = micros();
   _imu_ready = true;
 }
 
-bool calibrate_acc(void)
-{
-  calib_acc = true;
-  return true;
-}
-
-bool calibrate_gyro(void)
-{
-  calib_gyro = true;
-  return true;
-}
-
-
-// local function definitions
 static bool update_imu(void)
 {
   if (_imu_ready)
   {
     _imu_ready = false;
-    mpu6050_read_accel(_accel_data);
-    mpu6050_read_gyro(_gyro_data);
-    mpu6050_read_temperature(&_imu_temperature);
+
+    int16_t accel_raw[3];
+    int16_t gyro_raw[3];
+    int16_t imu_temp_raw;
+
+    mpu6050_read_accel(accel_raw);
+    mpu6050_read_gyro(gyro_raw);
+    mpu6050_read_temperature(&imu_temp_raw);
+
+    // convert temperature SI units (degC, m/s^2, rad/s)
+    _imu_temperature = imu_temp_raw/340.0f + 36.53f;
+
+    _accel.x = accel_raw[0] * accel_scale;
+    _accel.y = accel_raw[1] * accel_scale;
+    _accel.z = accel_raw[2] * accel_scale;
+
+    _gyro.x = gyro_raw[0] * gyro_scale;
+    _gyro.y = gyro_raw[1] * gyro_scale;
+    _gyro.z = gyro_raw[2] * gyro_scale;
 
     if (calib_acc)
     {
-      static int16_t acc_count = 0;
-      static int32_t acc_sum[3] = {0, 0, 0};
-      static int32_t acc_temp_sum = 0;
-      acc_sum[0] += _accel_data[0];
-      acc_sum[1] += _accel_data[1];
-      acc_sum[2] += ((_accel_data[2]*_accel_scale)-9806650)/_accel_scale;
+      static uint16_t acc_count = 0;
+      static vector_t acc_sum  = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+      static float acc_temp_sum = 0.0f;
+
+      acc_sum.x += _accel.x;
+      acc_sum.y += _accel.y;
+      acc_sum.z += _accel.z - 9.80665f;
       acc_temp_sum += _imu_temperature;
       acc_count++;
+
       if (acc_count > 100)
       {
-        set_param_by_id(PARAM_ACC_X_BIAS, (acc_sum[0] - _params.values[PARAM_ACC_X_TEMP_COMP]*acc_temp_sum/1000)/acc_count);
-        set_param_by_id(PARAM_ACC_Y_BIAS, (acc_sum[1] - _params.values[PARAM_ACC_Y_TEMP_COMP]*acc_temp_sum/1000)/acc_count);
-        set_param_by_id(PARAM_ACC_Z_BIAS, (acc_sum[2] - _params.values[PARAM_ACC_Z_TEMP_COMP]*acc_temp_sum/1000)/acc_count);
+        set_param_by_id_float(PARAM_ACC_X_BIAS,
+                              (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_Y_BIAS,
+                              (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / acc_count);
+        set_param_by_id_float(PARAM_ACC_Z_BIAS,
+                              (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / acc_count);
 
         acc_count = 0;
-        acc_sum[0] = 0;
-        acc_sum[1] = 0;
-        acc_sum[2] = 0;
-        acc_temp_sum = 0;
+        acc_sum.x = 0.0f;
+        acc_sum.y = 0.0f;
+        acc_sum.z = 0.0f;
+        acc_temp_sum = 0.0f;
         calib_acc = false;
         // we could do some sanity checking here if we wanted to.
       }
+    }
 
-      if (calib_gyro)
+    if (calib_gyro)
+    {
+      static uint16_t gyro_count = 0;
+      static vector_t gyro_sum = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+
+      gyro_sum.x += _gyro.x;
+      gyro_sum.y += _gyro.y;
+      gyro_sum.z += _gyro.z;
+      gyro_count++;
+
+      if (gyro_count > 100)
       {
-        static int16_t gyro_count = 0;
-        static int32_t gyro_sum[3] = {0, 0, 0};
-        gyro_sum[0] += _gyro_data[0];
-        gyro_sum[1] += _gyro_data[1];
-        gyro_sum[2] += _gyro_data[2];
-        gyro_count++;
-        if (gyro_count > 100)
-        {
-          set_param_by_id(PARAM_GYRO_X_BIAS, gyro_sum[0]/gyro_count);
-          set_param_by_id(PARAM_GYRO_Y_BIAS, gyro_sum[1]/gyro_count);
-          set_param_by_id(PARAM_GYRO_Z_BIAS, gyro_sum[2]/gyro_count);
+        set_param_by_id_float(PARAM_GYRO_X_BIAS, gyro_sum.x / gyro_count);
+        set_param_by_id_float(PARAM_GYRO_Y_BIAS, gyro_sum.y / gyro_count);
+        set_param_by_id_float(PARAM_GYRO_Z_BIAS, gyro_sum.z / gyro_count);
 
-          gyro_count = 0;
-          gyro_sum[0] = 0;
-          gyro_sum[1] = 0;
-          gyro_sum[2] = 0;
-          calib_gyro = false;
-          // we could do some sanity checking here if we wanted to.
-        }
+        gyro_count = 0;
+        gyro_sum.x = 0.0f;
+        gyro_sum.y = 0.0f;
+        gyro_sum.z = 0.0f;
+        calib_gyro = false;
+        // we could do some sanity checking here if we wanted to.
       }
     }
 
     // correct according to known biases and temperature compensation
-    _accel_data[0] -= (_params.values[PARAM_ACC_X_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_X_BIAS];
-    _accel_data[1] -= (_params.values[PARAM_ACC_Y_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_Y_BIAS];
-    _accel_data[2] -= (_params.values[PARAM_ACC_Z_TEMP_COMP]*_imu_temperature)/1000 + _params.values[PARAM_ACC_Z_BIAS];
-    _gyro_data[0] -= _params.values[PARAM_GYRO_X_BIAS];
-    _gyro_data[1] -= _params.values[PARAM_GYRO_Y_BIAS];
-    _gyro_data[2] -= _params.values[PARAM_GYRO_Z_BIAS];
+    _accel.x -= get_param_float(PARAM_ACC_X_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_X_BIAS);
+    _accel.y -= get_param_float(PARAM_ACC_Y_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_Y_BIAS);
+    _accel.z -= get_param_float(PARAM_ACC_Z_TEMP_COMP)*_imu_temperature + get_param_float(PARAM_ACC_Z_BIAS);
+
+    _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
+    _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
+    _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
+
     return true;
   }
   else
@@ -139,13 +152,11 @@ void init_sensors(void)
 
   // IMU
   _imu_ready = false;
-  uint16_t acc1G;
-  float gyro_scale;
   mpu6050_register_interrupt_cb(&imu_ISR);
+
+  uint16_t acc1G;
   mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
-  _accel_scale = (1000*9807)/acc1G; // convert to um/s^2
-  _gyro_scale = (int32_t)(gyro_scale*1000000000.0f); // convert to mrad/s
-  imu_last_us = 0;
+  accel_scale = 9.80665f/acc1G;
 
   // DIFF PRESSURE
   _diff_pressure_present = ms4525_detect();
@@ -179,3 +190,14 @@ bool update_sensors(uint32_t time_us)
   return update_imu();
 }
 
+bool calibrate_acc(void)
+{
+  calib_acc = true;
+  return true;
+}
+
+bool calibrate_gyro(void)
+{
+  calib_gyro = true;
+  return true;
+}

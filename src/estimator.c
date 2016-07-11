@@ -14,15 +14,13 @@
 #define PF(a) ((int32_t)(a*1000.0))
 
 state_t _current_state;
-int16_t _adaptive_gyro_bias[3];
+vector_t _adaptive_gyro_bias;
 
 static vector_t w1;
 static vector_t w2;
-static vector_t w;
 static vector_t wbar;
 static vector_t wfinal;
 static vector_t w_acc;
-static vector_t a;
 static vector_t g;
 static vector_t b;
 static quaternion_t q_tilde;
@@ -85,9 +83,9 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   quad_int = use_quadratic_integration;
   use_acc = use_accelerometer;
 
-  _adaptive_gyro_bias[0] = 0;
-  _adaptive_gyro_bias[1] = 0;
-  _adaptive_gyro_bias[2] = 0;
+  _adaptive_gyro_bias.x = 0;
+  _adaptive_gyro_bias.y = 0;
+  _adaptive_gyro_bias.z = 0;
 
   last_time = 0;
 }
@@ -118,15 +116,12 @@ void run_estimator(uint32_t now)
 
 
   // add in accelerometer
-  a.x = ((float)(_accel_data[0]*_accel_scale))/1000000.0f;
-  a.y = ((float)(_accel_data[1]*_accel_scale))/1000000.0f;
-  a.z = ((float)(_accel_data[2]*_accel_scale))/1000000.0f;
-  float a_sqrd_norm = a.x*a.x + a.y*a.y + a.z*a.z;
+  float a_sqrd_norm = _accel.x*_accel.x + _accel.y*_accel.y + _accel.z*_accel.z;
 
   if (use_acc && a_sqrd_norm < 1.15*1.15*9.80665*9.80665 && a_sqrd_norm > 0.85*0.85*9.80665*9.80665)
   {
     // Get error estimated by accelerometer measurement
-    a = vector_normalize(a);
+    vector_t a = vector_normalize(_accel);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
     quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g));
@@ -147,22 +142,18 @@ void run_estimator(uint32_t now)
   b.z -= ki*w_acc.z*(float)dt/1000000.0f;
 
   // Pull out Gyro measurements
-  w.x = ((float)(_gyro_data[0]*_gyro_scale))/1000.0f;
-  w.y = ((float)(_gyro_data[1]*_gyro_scale))/1000.0f;
-  w.z = ((float)(_gyro_data[2]*_gyro_scale))/1000.0f;
-
   if (quad_int)
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
     wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)),
-                      scalar_multiply(5.0f/12.0f,w));
+                      scalar_multiply(5.0f/12.0f,_gyro));
     w2 = w1;
-    w1 = w;
+    w1 = _gyro;
   }
   else
   {
-    wbar = w;
+    wbar = _gyro;
   }
 
   // Build the composite omega vector for kinematic propagation
@@ -216,9 +207,9 @@ void run_estimator(uint32_t now)
   // Save gyro biases for streaming to computer
   if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
   {
-    _adaptive_gyro_bias[0] = (int16_t)(b.x*1000)/_gyro_scale;
-    _adaptive_gyro_bias[1] = (int16_t)(b.y*1000)/_gyro_scale;
-    _adaptive_gyro_bias[2] = (int16_t)(b.z*1000)/_gyro_scale;
+    _adaptive_gyro_bias.x = b.x;
+    _adaptive_gyro_bias.y = b.y;
+    _adaptive_gyro_bias.z = b.z;
   }
 }
 

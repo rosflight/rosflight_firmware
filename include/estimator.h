@@ -1,5 +1,7 @@
 #pragma once
 
+#include <turbotrig/turbovec.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -13,7 +15,7 @@ typedef struct
   int32_t psi;
 } state_t;
 
-extern int16_t _adaptive_gyro_bias[3];
+extern vector_t _adaptive_gyro_bias;
 
 extern state_t _current_state;
 
