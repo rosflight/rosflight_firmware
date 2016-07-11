@@ -85,9 +85,9 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0.0f);
   init_param_float(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0.0f);
   init_param_float(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0.0f);
-  init_param_float(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0.031f);
-  init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", -0.055f);
-  init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", -0.215f);
+  init_param_float(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0.0f);
+  init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
+  init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
 
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
