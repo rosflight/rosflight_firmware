@@ -7,8 +7,8 @@
 // local variable definitions
 static uint8_t send_params_index = PARAMS_COUNT; // current param to send when sending parameter list with low priority
 
-// local function definitions
-static void mavlink_send_param(param_id_t id)
+// function definitions
+void mavlink_send_param(param_id_t id)
 {
   if (id < PARAMS_COUNT)
   {
@@ -30,7 +30,6 @@ static void mavlink_send_param(param_id_t id)
   }
 }
 
-// function definitions
 void mavlink_handle_msg_param_request_list(void)
 {
   send_params_index = 0;
@@ -77,22 +76,15 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
 
       if (candidate_type == _params.types[id])
       {
-        bool success;
         switch (candidate_type)
         {
         case PARAM_TYPE_INT32:
-          success = set_param_by_id(id, *(int32_t*) &set.param_value);
+          set_param_by_id(id, *(int32_t*) &set.param_value);
           break;
         case PARAM_TYPE_FLOAT:
-          success = set_param_by_id_float(id, set.param_value);
-          break;
-        default:
-          success = false;
+          set_param_by_id_float(id, set.param_value);
           break;
         }
-
-        if (success)
-          mavlink_send_param(id);
       }
     }
   }

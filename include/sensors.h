@@ -22,6 +22,7 @@ extern int16_t _baro_temperature;
 
 extern bool _sonar_present;
 extern int16_t _sonar_range;
+extern uint32_t _sonar_time;
 
 // function declarations
 void init_sensors(void);

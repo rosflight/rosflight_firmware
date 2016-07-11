@@ -24,10 +24,12 @@ int16_t _baro_temperature;
 
 bool _sonar_present;
 int16_t _sonar_range;
+uint32_t _sonar_time;
 
 // local variable definitions
 static uint32_t diff_press_next_us;
 static uint32_t baro_next_us;
+static uint32_t sonar_next_us;
 
 static float accel_scale;
 static float gyro_scale;
@@ -156,6 +158,10 @@ void init_sensors(void)
   // DIFF PRESSURE
   _diff_pressure_present = ms4525_detect();
   diff_press_next_us = 0;
+
+  // SONAR
+  _sonar_present = mb1242_init();
+  sonar_next_us = 0;
 }
 
 bool update_sensors(uint32_t time_us)
@@ -169,9 +175,14 @@ bool update_sensors(uint32_t time_us)
   else if (_baro_present && time_us > baro_next_us)
   {
     baro_next_us += _params.values[PARAM_BARO_UPDATE];
-    ms5611_update();
     _baro_pressure = ms5611_read_pressure();
     _baro_temperature = ms5611_read_temperature();
+  }
+  else if (_sonar_present && time_us > sonar_next_us)
+  {
+    sonar_next_us += _params.values[PARAM_SONAR_UPDATE];
+    _sonar_time = micros();
+    _sonar_range = mb1242_poll();
   }
   return update_imu();
 }

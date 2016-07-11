@@ -3,6 +3,7 @@
 
 #include "flash.h"
 #include "mavlink.h"
+#include "mavlink_param.h"
 #include "mavlink_stream.h"
 
 #include "param.h"
@@ -51,15 +52,28 @@ void set_param_defaults(void)
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
     init_param_int(id, temp_name, id);
   }
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 5);
+
+  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 4);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
+
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
-  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50);
+  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50);
+  init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
+  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 25);
+
+  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
+
+  init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
+  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
+  init_param_int(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 25000);
+  init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param_int(PARAM_FILTER_KP, "FILTER_KP", 10000); // munits
@@ -71,14 +85,9 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0.0f);
   init_param_float(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0.0f);
   init_param_float(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0.0f);
-  init_param_float(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0.0f);
-  init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
-  init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
-
-  init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
-  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
-  init_param_int(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 1000000);
-  init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
+  init_param_float(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0.031f);
+  init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", -0.055f);
+  init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", -0.215f);
 
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
@@ -171,14 +180,26 @@ void param_change_callback(param_id_t id)
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
+
   case PARAM_STREAM_IMU_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, _params.values[PARAM_STREAM_IMU_RATE]);
     break;
+  case PARAM_STREAM_AIRSPEED_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, _params.values[PARAM_STREAM_AIRSPEED_RATE]);
+    break;
+  case PARAM_STREAM_SONAR_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, _params.values[PARAM_STREAM_SONAR_RATE]);
+    break;
+  case  PARAM_STREAM_BARO_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, _params.values[PARAM_STREAM_BARO_RATE]);
+    break;
+
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, _params.values[PARAM_STREAM_SERVO_OUTPUT_RAW_RATE]);
     break;
   case PARAM_STREAM_RC_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, _params.values[PARAM_STREAM_RC_RAW_RATE]);
+    break;
   default:
     // no action needed for this parameter
     break;
@@ -209,4 +230,37 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
   }
 
   return PARAMS_COUNT;
+}
+
+bool set_param_by_id(param_id_t id, int32_t value)
+{
+  if (id < PARAMS_COUNT && value != _params.values[id])
+  {
+    _params.values[id] = value;
+    param_change_callback(id);
+    mavlink_send_param(id);
+    return true;
+  }
+  return false;
+}
+
+bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
+{
+  uint8_t id = lookup_param_id(name);
+  return set_param_by_id(id, value);
+}
+
+bool set_param_by_id_float(param_id_t id, float value)
+{
+  return set_param_by_id(id, *(int32_t*) &value);
+}
+
+bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
+{
+  return set_param_by_name(name, *(int32_t*) &value);
+}
+
+float get_param_float(param_id_t id)
+{
+  return *(float*) &_params.values[id];
 }
