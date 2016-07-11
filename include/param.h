@@ -24,6 +24,7 @@ typedef enum
   PARAM_STREAM_IMU_RATE,
   PARAM_STREAM_MAG_RATE,
   PARAM_STREAM_AIRSPEED_RATE,
+  PARAM_STREAM_BARO_RATE,
   PARAM_STREAM_GPS_RATE,
   PARAM_STREAM_SONAR_RATE,
 
@@ -33,7 +34,6 @@ typedef enum
   /****************************/
   /*** SYSTEM CONFIGURATION ***/
   /****************************/
-
   PARAM_LOOPTIME,
   PARAM_DIFF_PRESS_UPDATE,
   PARAM_BARO_UPDATE,

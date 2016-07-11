@@ -102,6 +102,22 @@ static void mavlink_send_baro(void)
   }
 }
 
+static void mavlink_send_sonar(void)
+{
+  if (_sonar_present)
+  {
+    mavlink_msg_distance_sensor_send(MAVLINK_COMM_0,
+                                     _sonar_time,
+                                     24,
+                                     822,
+                                     _sonar_range,
+                                     MAV_DISTANCE_SENSOR_ULTRASOUND,
+                                     1,
+                                     MAV_SENSOR_ROTATION_PITCH_180,
+                                     1);
+  }
+}
+
 static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
@@ -111,11 +127,14 @@ static void mavlink_send_low_priority(void)
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 {
   { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
+
   { .period_us = 1e3, .last_time_us = 0, .send_function = mavlink_send_imu },
-  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
-  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
   { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
   { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_baro },
+  { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_sonar },
+
+  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
+  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
   { .period_us = 1e5, .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 

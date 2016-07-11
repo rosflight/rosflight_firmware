@@ -50,9 +50,21 @@ void set_param_defaults(void)
 
   init_param(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
+
   init_param(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
-  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
-  init_param(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
+  init_param(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
+  init_param(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50);
+  init_param(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50);
+  init_param(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
+  init_param(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 25);
+
+  init_param(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
+
+  init_param(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
+  init_param(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
+  init_param(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 25000);
+  init_param(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param(PARAM_FILTER_KP, "FILTER_KP", 10000); // munits
@@ -64,15 +76,9 @@ void set_param_defaults(void)
   init_param(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0);
   init_param(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0);
   init_param(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0);
-  init_param(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0);
-  init_param(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0);
-  init_param(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0);
-
-
-  init_param(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
-  init_param(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
-  init_param(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 1000000);
-  init_param(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
+  init_param(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 31);
+  init_param(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", -55);
+  init_param(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", -215);
 
   init_param(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
   init_param(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
@@ -165,14 +171,26 @@ void param_change_callback(param_id_t id)
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
     break;
+
   case PARAM_STREAM_IMU_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, _params.values[PARAM_STREAM_IMU_RATE]);
     break;
+  case PARAM_STREAM_AIRSPEED_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, _params.values[PARAM_STREAM_AIRSPEED_RATE]);
+    break;
+  case PARAM_STREAM_SONAR_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, _params.values[PARAM_STREAM_SONAR_RATE]);
+    break;
+  case  PARAM_STREAM_BARO_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, _params.values[PARAM_STREAM_BARO_RATE]);
+    break;
+
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, _params.values[PARAM_STREAM_SERVO_OUTPUT_RAW_RATE]);
     break;
   case PARAM_STREAM_RC_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, _params.values[PARAM_STREAM_RC_RAW_RATE]);
+    break;
   default:
     // no action needed for this parameter
     break;
