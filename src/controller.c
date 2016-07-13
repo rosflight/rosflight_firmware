@@ -116,14 +116,14 @@ control_t rate_controller(control_t rate_command, uint32_t now)
   if (rate_command.x.active && rate_command.x.type == RATE)
   {
     int32_t error = (rate_command.x.value - _current_state.p); // mrad/s
-    motor_command.x.value = sat((error *_params.values[PARAM_PID_ROLL_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
+    motor_command.x.value = sat((error *_params.values[PARAM_PID_ROLL_RATE_P])/1000000, _params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
   }
 
   if (rate_command.y.active && rate_command.y.type == RATE)
   {
     int32_t error = rate_command.y.value - _current_state.q;
-    motor_command.y.value = sat((error*_params.values[PARAM_PID_PITCH_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
+    motor_command.y.value = sat((error*_params.values[PARAM_PID_PITCH_RATE_P])/1000000, _params.values[PARAM_MAX_COMMAND]);
     motor_command.y.type = PASSTHROUGH;
   }
 
@@ -132,19 +132,23 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     bool used_anti_windup = false;
     int32_t error = rate_command.z.value*1000 - _current_state.r; // urad
     z_integrator += (error*dt)/1000; // urad
-    motor_command.z.value = (error*_params.values[PARAM_PID_YAW_RATE_P])/1000
+    motor_command.z.value = (error*_params.values[PARAM_PID_YAW_RATE_P])/1000000
                             +(z_integrator/1000*_params.values[PARAM_PID_YAW_RATE_I])/1000;
     // anti-windup
-    if (abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
-    {
-      int32_t space = _params.values[PARAM_MAX_COMMAND]
-                      - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
-      z_integrator = (space*1000)/_params.values[PARAM_PID_YAW_RATE_I];
-      z_integrator = (z_integrator > 0) ? z_integrator : 0;
-      motor_command.z.value = sat(motor_command.z.value, _params.values[PARAM_MAX_COMMAND]);
-      used_anti_windup = true;
-    }
+//    if (abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
+//    {
+//      int32_t space = _params.values[PARAM_MAX_COMMAND]
+//                      - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
+//      z_integrator = (space*1000)/_params.values[PARAM_PID_YAW_RATE_I];
+//      z_integrator = (z_integrator > 0) ? z_integrator : 0;
+//      motor_command.z.value = sat(motor_command.z.value, _params.values[PARAM_MAX_COMMAND]);
+//      used_anti_windup = true;
+//    }
     motor_command.z.type = PASSTHROUGH;
+    mavlink_log_info_throttle(10, "xc = %d\tx = %d\tout = %d",
+                              rate_command.z.value,
+                              _current_state.r,
+                              motor_command.z.value);
   }
 
   //  counter++;

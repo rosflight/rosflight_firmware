@@ -210,7 +210,6 @@ void run_estimator(uint32_t now)
   _current_state.p = (int32_t)(1000.0*wbar.x);
   _current_state.q = (int32_t)(1000.0*wbar.y);
   _current_state.r = (int32_t)(1000.0*wbar.z);
-  mavlink_log_info_throttle(10, "xdot = %d\n", _current_state.p);
 
   // Save gyro biases for streaming to computer
   if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
