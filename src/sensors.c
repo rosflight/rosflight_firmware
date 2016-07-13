@@ -46,7 +46,19 @@ void imu_ISR(void)
 
 static bool update_imu(void)
 {
-  if (_imu_ready)
+  if (_params.values[PARAM_HIL_ON])
+  {
+    // don't update normally, use HIL values
+    if(_imu_ready)
+    {
+      _imu_ready = false;
+      return true;
+    }
+    else
+      return false;
+
+  }
+  else if (_imu_ready)
   {
     _imu_ready = false;
 
