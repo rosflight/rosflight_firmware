@@ -7,6 +7,7 @@
 #include "mavlink_stream.h"
 
 #include "param.h"
+#include "mixer.h"
 
 //TODO temporary
 #include <stdio.h>
@@ -68,7 +69,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 25);
 
   init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 200);
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
   init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
   init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
@@ -153,11 +154,11 @@ void set_param_defaults(void)
   init_param_int(PARAM_PID_ALT_D, "PID_ALT_D", 0);
 
 
-  init_param_int(PARAM_MIXER, "MIXER", 0);
-  init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 1);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X);
+  init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
-  init_param_int(PARAM_FIXED_WING, "FIXED_WING", true);
+  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
 
   init_param_int(PARAM_HIL_ON, "HIL_ON", 1);
 }
