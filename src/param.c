@@ -101,8 +101,8 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
-  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 6);
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 6);
+  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5);
+  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 5);
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500);
   init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500);
@@ -123,9 +123,9 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12566); // 720 deg/s
   init_param_int(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6283); // 360 deg/s
 
-  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", false);
+  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
   init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 400);
+  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150);
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
