@@ -141,6 +141,11 @@ typedef enum
   PARAM_ARM_CHANNEL,
   PARAM_ARM_THRESHOLD,
 
+  /*****************/
+  /*** HIL SETUP ***/
+  /*****************/
+  PARAM_HIL_ON,
+
   // keep track of size of params array
   PARAMS_COUNT
 } param_id_t;

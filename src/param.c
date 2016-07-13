@@ -158,6 +158,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", true);
+
+  init_param_int(PARAM_HIL_ON, "HIL_ON", 1);
 }
 
 bool read_params(void)

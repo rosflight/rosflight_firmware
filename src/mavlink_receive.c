@@ -175,6 +175,9 @@ static void handle_mavlink_message(void)
   case MAVLINK_MSG_ID_TIMESYNC:
     mavlink_handle_msg_timesync(&in_buf);
     break;
+  case MAVLINK_MSG_ID_SMALL_IMU_HIL:
+    mavlink_handle_msg_imu_hil(&in_buf);
+    break;
   default:
     break;
   }
