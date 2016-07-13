@@ -9,6 +9,9 @@
 #include "mux.h"
 #include "estimator.h"
 
+#include "mavlink_util.h"
+#include "mavlink_log.h"
+
 #include "controller.h"
 
 int32_t sat(int32_t value, int32_t max)
@@ -22,7 +25,7 @@ int32_t sat(int32_t value, int32_t max)
 
 void run_controller(uint32_t now)
 {
-  control_t outgoing_command = rate_controller(attitude_controller(_combined_control, now), now);
+  control_t outgoing_command = rate_controller(_combined_control, now);
   _command.F = outgoing_command.F.value;
   _command.x = outgoing_command.x.value;
   _command.y = outgoing_command.y.value;

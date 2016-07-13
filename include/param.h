@@ -31,6 +31,11 @@ typedef enum
   PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
 
+  /*****************/
+  /*** HIL SETUP ***/
+  /*****************/
+  PARAM_HIL_ON,
+
   /****************************/
   /*** SYSTEM CONFIGURATION ***/
   /****************************/
@@ -140,11 +145,6 @@ typedef enum
   PARAM_ARM_STICKS,
   PARAM_ARM_CHANNEL,
   PARAM_ARM_THRESHOLD,
-
-  /*****************/
-  /*** HIL SETUP ***/
-  /*****************/
-  PARAM_HIL_ON,
 
   // keep track of size of params array
   PARAMS_COUNT

@@ -55,6 +55,7 @@ void set_param_defaults(void)
   }
 
   init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 4);
+  init_param_int(PARAM_HIL_ON, "HIL_ON", 1);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
@@ -159,8 +160,6 @@ void set_param_defaults(void)
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
-
-  init_param_int(PARAM_HIL_ON, "HIL_ON", 1);
 }
 
 bool read_params(void)

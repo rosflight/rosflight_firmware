@@ -10,6 +10,7 @@
 #include "param.h"
 
 #include "estimator.h"
+#include "mavlink_log.h"
 
 #define PF(a) ((int32_t)(a*1000.0))
 
@@ -203,6 +204,13 @@ void run_estimator(uint32_t now)
 
   // Extract Euler Angles for controller
   euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
+
+  // Save off gyro
+  wbar = vector_sub(wbar, b);
+  _current_state.p = (int32_t)(1000.0*wbar.x);
+  _current_state.q = (int32_t)(1000.0*wbar.y);
+  _current_state.r = (int32_t)(1000.0*wbar.z);
+  mavlink_log_info_throttle(10, "xdot = %d\n", _current_state.p);
 
   // Save gyro biases for streaming to computer
   if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
