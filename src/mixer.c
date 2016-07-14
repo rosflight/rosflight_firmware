@@ -79,7 +79,7 @@ static mixer_t *array_of_mixers[5] =
 void init_mixing()
 {
   // We need a better way to choosing the mixer
-  mixer_to_use = *array_of_mixers[FIXEDWING];
+  mixer_to_use = *array_of_mixers[_params.values[PARAM_MIXER]];
 
   for (int8_t i=0; i<8; i++)
   {
@@ -125,7 +125,8 @@ void write_motor(uint8_t index, int32_t value)
     value = 0;
   }
   _outputs[index] = value +1000;
-  pwmWriteMotor(index, _outputs[index]);
+  if(!_params.values[PARAM_HIL_ON])
+    pwmWriteMotor(index, _outputs[index]);
 }
 
 

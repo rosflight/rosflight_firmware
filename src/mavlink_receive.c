@@ -100,6 +100,27 @@ static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
   }
 }
 
+static void mavlink_handle_msg_small_imu_hil(const mavlink_message_t * const msg)
+{
+  if (_params.values[PARAM_HIL_ON])
+  {
+    mavlink_small_imu_hil_t hil_msg;
+    mavlink_msg_small_imu_hil_decode(msg, &hil_msg);
+
+    _imu_ready = true;
+
+    _imu_time = hil_msg.time_boot_us;
+
+    _accel.x = hil_msg.xacc;
+    _accel.y = hil_msg.yacc;
+    _accel.z = hil_msg.zacc;
+
+    _gyro.x = hil_msg.xgyro;
+    _gyro.y = hil_msg.ygyro;
+    _gyro.z = hil_msg.zgyro;
+  }
+}
+
 static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   _offboard_control_time = micros();
@@ -174,6 +195,9 @@ static void handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
     mavlink_handle_msg_timesync(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_SMALL_IMU_HIL:
+    mavlink_handle_msg_small_imu_hil(&in_buf);
     break;
   default:
     break;

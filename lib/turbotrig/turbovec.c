@@ -3,18 +3,19 @@
 #include <breezystm32/breezystm32.h>
 
 #include "turbovec.h"
+#include "turbotrig.h"
 
 static void pfvec(vector_t v)
 {
   printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
 }
+void pfvec() __attribute__ ((unused));
 
 static void pfquat(quaternion_t v)
 {
   printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
 }
-
-
+void pfquat() __attribute__ ((unused));
 
 int32_t int_dot(intvec_t v1, intvec_t v2)
 {
@@ -207,9 +208,7 @@ quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
 
 quaternion_t quaternion_inverse(quaternion_t q)
 {
-  q.x *= -1.0f;
-  q.y *= -1.0f;
-  q.z *= -1.0f;
+  q.w *= -1.0f;
   return q;
 }
 

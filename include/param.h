@@ -21,6 +21,7 @@ typedef enum
   PARAM_SYSTEM_ID,
   PARAM_STREAM_HEARTBEAT_RATE,
 
+  PARAM_STREAM_ATTITUDE_RATE,
   PARAM_STREAM_IMU_RATE,
   PARAM_STREAM_MAG_RATE,
   PARAM_STREAM_AIRSPEED_RATE,
@@ -30,6 +31,11 @@ typedef enum
 
   PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
+
+  /*****************/
+  /*** HIL SETUP ***/
+  /*****************/
+  PARAM_HIL_ON,
 
   /****************************/
   /*** SYSTEM CONFIGURATION ***/
