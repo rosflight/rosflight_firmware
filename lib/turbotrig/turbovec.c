@@ -208,9 +208,7 @@ quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
 
 quaternion_t quaternion_inverse(quaternion_t q)
 {
-  q.x *= -1.0f;
-  q.y *= -1.0f;
-  q.z *= -1.0f;
+  q.w *= -1.0f;
   return q;
 }
 

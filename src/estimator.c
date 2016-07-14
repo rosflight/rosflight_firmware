@@ -11,6 +11,7 @@
 
 #include "estimator.h"
 #include "mavlink_log.h"
+#include "mavlink_util.h"
 
 #define PF(a) ((int32_t)(a*1000.0))
 
@@ -65,7 +66,7 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
 
   g.x = 0.0f;
   g.y = 0.0f;
-  g.z = 1.0f;
+  g.z = -1.0f;
 
   kp_ = ((float)_params.values[PARAM_FILTER_KP])/1000.0f;
   ki_ = ((float)_params.values[PARAM_FILTER_KI])/1000.0f;
@@ -106,8 +107,8 @@ void run_estimator(uint32_t now)
   // Crank up the gains for the first few seconds for quick convergence
   if (now < init_time)
   {
-    kp = kp_*10.f;
-    ki = ki_*10.f;
+    kp = kp_*2.f;
+    ki = ki_*2.f;
   }
   else
   {
@@ -115,6 +116,8 @@ void run_estimator(uint32_t now)
     ki = ki_;
   }
 
+  mavlink_send_named_value_float("kp", kp_);
+  mavlink_send_named_value_float("ki", ki_);
 
   // add in accelerometer
   float a_sqrd_norm = _accel.x*_accel.x + _accel.y*_accel.y + _accel.z*_accel.z;

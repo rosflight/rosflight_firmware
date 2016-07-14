@@ -11,6 +11,7 @@
 
 #include "mavlink_stream.h"
 #include "mavlink_util.h"
+#include "mavlink_log.h"
 
 // typedefs
 typedef struct
@@ -25,6 +26,18 @@ static void mavlink_send_heartbeat(void)
 {
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_GENERIC, MAV_MODE_MANUAL_DISARMED, 0,
                              MAV_STATE_STANDBY);
+}
+
+static void mavlink_send_attitude(void)
+{
+  mavlink_msg_attitude_send(MAVLINK_COMM_0,
+                            millis(),
+                            (float)(_current_state.phi)/1000.0f,
+                            (float)(_current_state.theta)/1000.0f,
+                            (float)(_current_state.psi)/1000.0f,
+                            (float)(_current_state.p)/1000.0f,
+                            (float)(_current_state.q)/1000.0f,
+                            (float)(_current_state.r)/1000.0f);
 }
 
 static void mavlink_send_imu(void)
@@ -132,6 +145,8 @@ static void mavlink_send_low_priority(void)
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 {
   { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
+
+  { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_attitude },
 
   { .period_us = 1e3, .last_time_us = 0, .send_function = mavlink_send_imu },
   { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_diff_pressure },

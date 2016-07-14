@@ -118,10 +118,6 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     int32_t error = (rate_command.x.value - _current_state.p); // mrad/s
     motor_command.x.value = sat((error *_params.values[PARAM_PID_ROLL_RATE_P])/1000000, _params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
-    mavlink_log_info_throttle(10, "xc = %d\tx = %d\tout = %d",
-                              rate_command.x.value,
-                              _current_state.p,
-                              motor_command.x.value);
   }
 
   if (rate_command.y.active && rate_command.y.type == RATE)

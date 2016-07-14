@@ -62,6 +62,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
 
+  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 50);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50);
@@ -69,8 +70,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 25);
 
-  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 200);
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
+  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
 
   init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
   init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
@@ -78,8 +79,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
-  init_param_int(PARAM_FILTER_KP, "FILTER_KP", 10000); // munits
-  init_param_int(PARAM_FILTER_KI, "FILTER_KI", 1000);  // munits
+  init_param_int(PARAM_FILTER_KP, "FILTER_KP", 1000); // munits
+  init_param_int(PARAM_FILTER_KI, "FILTER_KI", 100);  // munits
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 1);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
@@ -181,6 +182,10 @@ void param_change_callback(param_id_t id)
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    break;
+
+  case PARAM_STREAM_ATTITUDE_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, _params.values[PARAM_STREAM_ATTITUDE_RATE]);
     break;
 
   case PARAM_STREAM_IMU_RATE:
