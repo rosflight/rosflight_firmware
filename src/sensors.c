@@ -158,7 +158,7 @@ void init_sensors(void)
   uint16_t acc1G;
   float gyro_scale_to_mrad;
   mpu6050_init(true, &acc1G, &gyro_scale_to_mrad, _params.values[PARAM_BOARD_REVISION]);
-  gyro_scale = 1000000.0*gyro_scale_to_mrad;
+  gyro_scale = 1000000.0*gyro_scale_to_urad;
   accel_scale = 9.80665f/acc1G;
 
   // DIFF PRESSURE
