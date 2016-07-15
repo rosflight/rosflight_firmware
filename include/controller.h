@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -11,3 +16,6 @@ control_t attitude_controller(control_t attitude_command, uint32_t now);
 control_t rate_controller(control_t rate_command, uint32_t now);
 
 
+#ifdef __cplusplus
+}
+#endif

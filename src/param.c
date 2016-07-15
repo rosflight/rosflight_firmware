@@ -131,13 +131,13 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 10000);
+  init_param_int(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 50);
   init_param_int(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 12566);
 
-  init_param_int(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 10000);
+  init_param_int(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 50);
   init_param_int(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 12566);
 
-  init_param_int(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 100);
+  init_param_int(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 50);
   init_param_int(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0);
   init_param_int(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6283);
 

@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
@@ -10,8 +14,6 @@
 #include "param.h"
 
 #include "estimator.h"
-#include "mavlink_log.h"
-#include "mavlink_util.h"
 
 #define PF(a) ((int32_t)(a*1000.0))
 
@@ -116,9 +118,6 @@ void run_estimator(uint32_t now)
     ki = ki_;
   }
 
-  mavlink_send_named_value_float("kp", kp_);
-  mavlink_send_named_value_float("ki", ki_);
-
   // add in accelerometer
   float a_sqrd_norm = _accel.x*_accel.x + _accel.y*_accel.y + _accel.z*_accel.z;
 
@@ -210,9 +209,10 @@ void run_estimator(uint32_t now)
 
   // Save off gyro
   wbar = vector_sub(wbar, b);
-  _current_state.p = (int32_t)(1000.0*wbar.x);
-  _current_state.q = (int32_t)(1000.0*wbar.y);
-  _current_state.r = (int32_t)(1000.0*wbar.z);
+  double alpha = 0.8;
+  _current_state.p = (int32_t)(1000.0*((1.0-alpha)*wbar.x + alpha*(float)_current_state.p/1000.0f));
+  _current_state.q = (int32_t)(1000.0*((1.0-alpha)*wbar.y + alpha*(float)_current_state.q/1000.0f));
+  _current_state.r = (int32_t)(1000.0*((1.0-alpha)*wbar.z + alpha*(float)_current_state.r/1000.0f));
 
   // Save gyro biases for streaming to computer
   if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
@@ -222,4 +222,8 @@ void run_estimator(uint32_t now)
     _adaptive_gyro_bias.z = b.z;
   }
 }
+
+#ifdef __cplusplus
+}
+#endif
 

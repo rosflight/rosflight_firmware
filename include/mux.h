@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #pragma once
 
 #include <stdbool.h>
@@ -34,4 +39,8 @@ extern control_t _combined_control;
 extern bool _new_command;
 
 bool mux_inputs();
+
+#ifdef __cplusplus
+}
+#endif
 

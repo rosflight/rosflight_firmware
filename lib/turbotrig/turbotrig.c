@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <turbotrig/turbotrig.h>
 
 int16_t atan_lookup_table[1001] =
@@ -222,3 +225,6 @@ int32_t turboasin(int32_t x)
   }
   return asin_lookup_table[x];
 }
+#ifdef __cplusplus
+}
+#endif

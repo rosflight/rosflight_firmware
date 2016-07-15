@@ -1,4 +1,7 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -251,3 +254,7 @@ bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
  * @return The value of the parameter
  */
 float get_param_float(param_id_t id);
+
+#ifdef __cplusplus
+}
+#endif

@@ -1,20 +1,25 @@
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <breezystm32/breezystm32.h>
 
 #include "turbovec.h"
 #include "turbotrig.h"
 
-static void pfvec(vector_t v)
-{
-  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
-}
-void pfvec() __attribute__ ((unused));
+//static void pfvec(vector_t v)
+//{
+//  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
+//}
+//void pfvec() __attribute__ ((unused));
 
-static void pfquat(quaternion_t v)
-{
-  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
-}
+//static void pfquat(quaternion_t v)
+//{
+//  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
+//}
+
 void pfquat() __attribute__ ((unused));
 
 int32_t int_dot(intvec_t v1, intvec_t v2)
@@ -246,3 +251,6 @@ float turboInvSqrt(float x)
 
   return y;
 }
+#ifdef __cplusplus
+}
+#endif

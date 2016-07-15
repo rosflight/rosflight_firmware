@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -46,3 +50,6 @@ extern int32_t _outputs[8];
 void init_PWM();
 void init_mixing();
 void mix_output();
+#ifdef __cplusplus
+}
+#endif
