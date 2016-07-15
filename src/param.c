@@ -55,7 +55,6 @@ void set_param_defaults(void)
   }
 
   init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 4);
-  init_param_int(PARAM_HIL_ON, "HIL_ON", 1);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 

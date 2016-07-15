@@ -127,8 +127,7 @@ void write_motor(uint8_t index, int32_t value)
     value = 0;
   }
   _outputs[index] = value + 1000;
-  if(!_params.values[PARAM_HIL_ON])
-    pwmWriteMotor(index, _outputs[index]);
+  pwmWriteMotor(index, _outputs[index]);
 }
 
 

@@ -47,19 +47,7 @@ void imu_ISR(void)
 
 static bool update_imu(void)
 {
-  if (_params.values[PARAM_HIL_ON])
-  {
-    // don't update normally, use HIL values
-    // if HIL is on, then _imu_ready is set in mavlink_receieve rather than in the ISR
-    if(_imu_ready)
-    {
-      _imu_ready = false;
-      return true;
-    }
-    else
-      return false;
-  }
-  else if (_imu_ready)
+  if (_imu_ready)
   {
     _imu_ready = false;
 
@@ -165,8 +153,7 @@ void init_sensors(void)
 
   // IMU
   _imu_ready = false;
-  if(!_params.values[PARAM_HIL_ON])
-    mpu6050_register_interrupt_cb(&imu_ISR);
+  mpu6050_register_interrupt_cb(&imu_ISR);
 
   uint16_t acc1G;
   float gyro_scale_to_mrad;
