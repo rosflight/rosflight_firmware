@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C"
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -156,8 +160,8 @@ void init_sensors(void)
   mpu6050_register_interrupt_cb(&imu_ISR);
 
   uint16_t acc1G;
-  float gyro_scale_to_mrad;
-  mpu6050_init(true, &acc1G, &gyro_scale_to_mrad, _params.values[PARAM_BOARD_REVISION]);
+  float gyro_scale_to_urad;
+  mpu6050_init(true, &acc1G, &gyro_scale_to_urad, _params.values[PARAM_BOARD_REVISION]);
   gyro_scale = 1000000.0*gyro_scale_to_urad;
   accel_scale = 9.80665f/acc1G;
 
@@ -204,3 +208,7 @@ bool calibrate_gyro(void)
   calib_gyro = true;
   return true;
 }
+
+#ifdef __cplusplus
+}
+#endif
