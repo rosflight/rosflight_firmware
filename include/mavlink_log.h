@@ -19,47 +19,48 @@
 #define mavlink_log_critical_throttle(delay, format, ...) \
   do\
   {\
-    static int16_t last_hit = 0.0; \
-    uint32_t now = micros(); \
-    if( now - last_hit > delay*1000) \
+    static uint32_t last_hit = 0; \
+    uint32_t now = millis(); \
+    if (now - last_hit > delay) \
     {\
-      last_hit = now;\
-      mavlink_log(MAV_SEVERITY_CRITICAL, format, ##__VA_ARGS__);\
+      last_hit = now; \
+      mavlink_log_critical(format, ##__VA_ARGS__); \
     }\
-  }while(0)
+  } while(0)
 
 #define mavlink_log_error_throttle(delay, format, ...) \
   do\
   {\
-    static int16_t last_hit = 0.0; \
-    uint32_t now = micros(); \
-    if( now - last_hit > delay*1000) \
+    static uint32_t last_hit = 0; \
+    uint32_t now = millis(); \
+    if (now - last_hit > delay) \
     {\
-      last_hit = now;\
-      mavlink_log(MAV_SEVERITY_ERROR, format, ##__VA_ARGS__);\
+      last_hit = now; \
+      mavlink_log_error(format, ##__VA_ARGS__); \
     }\
-  }while(0)
+  } while(0)
 
-#define mavlink_log_warning_throttle(delay, format, ...); \
+#define mavlink_log_warning_throttle(delay, format, ...) \
   do\
   {\
-    static int16_t last_hit = 0.0; \
-    uint32_t now = micros(); \
-    if( now - last_hit > delay*1000) \
+    static uint32_t last_hit = 0; \
+    uint32_t now = millis(); \
+    if (now - last_hit > delay) \
     {\
-      last_hit = now;\
-      mavlink_log(MAV_SEVERITY_WARNING, format, ##__VA_ARGS__);\
+      last_hit = now; \
+      mavlink_log_warning(format, ##__VA_ARGS__); \
     }\
-  }while(0)
+  } while(0)
 
 #define mavlink_log_info_throttle(delay, format, ...) \
   do\
   {\
-    static int16_t last_hit = 0.0; \
-    uint32_t now = micros(); \
-    if( now - last_hit > delay*1000) \
+    static uint32_t last_hit = 0; \
+    uint32_t now = millis(); \
+    if (now - last_hit > delay) \
     {\
-      last_hit = now;\
-      mavlink_log(MAV_SEVERITY_INFO, format, ##__VA_ARGS__);\
+      last_hit = now; \
+      mavlink_log_info(format, ##__VA_ARGS__); \
     }\
-  }while(0)
+  } while(0)
+
