@@ -9,6 +9,7 @@ extern "C" {
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 #include <turbotrig/turbovec.h>
+#include "mavlink_util.h"
 
 #include "sensors.h"
 #include "param.h"
@@ -25,7 +26,7 @@ static vector_t w2;
 static vector_t wbar;
 static vector_t wfinal;
 static vector_t w_acc;
-static vector_t g;
+static const vector_t g = {0.0f, 0.0f, 1.0f};
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
@@ -42,12 +43,12 @@ static uint32_t init_time;
 
 void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
 {
-  _current_state.p = 0;
-  _current_state.q = 0;
-  _current_state.r = 0;
-  _current_state.phi = 0;
-  _current_state.theta = 0;
-  _current_state.psi = 0;
+  _current_state.p = 0.0f;
+  _current_state.q = 0.0f;
+  _current_state.r = 0.0f;
+  _current_state.phi = 0.0f;
+  _current_state.theta = 0.0f;
+  _current_state.psi = 0.0f;
 
   q_hat.w = 1.0f;
   q_hat.x = 0.0f;
@@ -65,10 +66,6 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   b.x = 0.0f;
   b.y = 0.0f;
   b.z = 0.0f;
-
-  g.x = 0.0f;
-  g.y = 0.0f;
-  g.z = -1.0f;
 
   kp_ = ((float)_params.values[PARAM_FILTER_KP])/1000.0f;
   ki_ = ((float)_params.values[PARAM_FILTER_KI])/1000.0f;
@@ -109,8 +106,8 @@ void run_estimator(uint32_t now)
   // Crank up the gains for the first few seconds for quick convergence
   if (now < init_time)
   {
-    kp = kp_*2.f;
-    ki = ki_*2.f;
+    kp = kp_*10.0f;
+    ki = ki_*10.0f;
   }
   else
   {
@@ -136,13 +133,19 @@ void run_estimator(uint32_t now)
     w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
     w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
     w_acc.z = -2.0f*q_tilde.w*q_tilde.z;
-  }
 
-  // integrate biases from accelerometer feedback
-  // (eq 47b Mahoney Paper, using correction term w_acc found above)
-  b.x -= ki*w_acc.x*(float)dt/1000000.0f;
-  b.y -= ki*w_acc.y*(float)dt/1000000.0f;
-  b.z -= ki*w_acc.z*(float)dt/1000000.0f;
+    // integrate biases from accelerometer feedback
+    // (eq 47b Mahoney Paper, using correction term w_acc found above)
+    b.x -= ki*w_acc.x*(float)dt*1e-6;
+    b.y -= ki*w_acc.y*(float)dt*1e-6;
+    b.z -= ki*w_acc.z*(float)dt*1e-6;
+  }
+  else
+  {
+    w_acc.x = 0.0f;
+    w_acc.y = 0.0f;
+    w_acc.z = 0.0f;
+  }
 
   // Pull out Gyro measurements
   if (quad_int)
@@ -179,11 +182,11 @@ void run_estimator(uint32_t now)
       // This adds 66 us on STM32F10x chips
       float norm_w = sqrt(sqrd_norm_w);
       quaternion_t qhat_np1;
-      float t1 = cos((norm_w*dt)/(2000000.0f));
-      float t2 = 1.0/norm_w * sin((norm_w*dt)/(2000000.0f));
-      qhat_np1.w = t1*q_hat.w   - t2*(p*q_hat.x - q*q_hat.y - r*q_hat.z);
-      qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w +             r*q_hat.y - q*q_hat.z);
-      qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x +             p*q_hat.z);
+      float t1 = cos((norm_w*dt*1e-6)/2.0f);
+      float t2 = 1.0/norm_w * sin((norm_w*dt*1e-6)/2.0f);
+      qhat_np1.w = t1*q_hat.w   + t2*(          - p*q_hat.x - q*q_hat.y - r*q_hat.z);
+      qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w             + r*q_hat.y - q*q_hat.z);
+      qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x             + p*q_hat.z);
       qhat_np1.z = t1*q_hat.z   + t2*(r*q_hat.w + q*q_hat.x - p*q_hat.y);
       q_hat = quaternion_normalize(qhat_np1);
     }
@@ -191,15 +194,15 @@ void run_estimator(uint32_t now)
     {
       // Euler Integration
       // (Eq. 47a Mahoney Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5 * (- p*q_hat.x - q*q_hat.y - r*q_hat.z),
-                           0.5 * (p*q_hat.w             + r*q_hat.y - q*q_hat.z),
-                           0.5 * (q*q_hat.w - r*q_hat.x             + p*q_hat.z),
-                           0.5 * (r*q_hat.w + q*q_hat.x - p*q_hat.y)
+      quaternion_t qdot = {0.5 * (           - p*q_hat.x - q*q_hat.y - r*q_hat.z),
+                           0.5 * ( p*q_hat.w             + r*q_hat.y - q*q_hat.z),
+                           0.5 * ( q*q_hat.w - r*q_hat.x             + p*q_hat.z),
+                           0.5 * ( r*q_hat.w + q*q_hat.x - p*q_hat.y)
                           };
-      q_hat.w = q_hat.w + qdot.w*(float)dt/1000000.0f;
-      q_hat.x = q_hat.x + qdot.x*(float)dt/1000000.0f;
-      q_hat.y = q_hat.y + qdot.y*(float)dt/1000000.0f;
-      q_hat.z = q_hat.z + qdot.z*(float)dt/1000000.0f;
+      q_hat.w += qdot.w*(float)dt*1e-6;
+      q_hat.x += qdot.x*(float)dt*1e-6;
+      q_hat.y += qdot.y*(float)dt*1e-6;
+      q_hat.z += qdot.z*(float)dt*1e-6;
       q_hat = quaternion_normalize(q_hat);
     }
   }
@@ -209,10 +212,14 @@ void run_estimator(uint32_t now)
 
   // Save off gyro
   wbar = vector_sub(wbar, b);
-  double alpha = 0.8;
-  _current_state.p = (int32_t)(1000.0*((1.0-alpha)*wbar.x + alpha*(float)_current_state.p/1000.0f));
-  _current_state.q = (int32_t)(1000.0*((1.0-alpha)*wbar.y + alpha*(float)_current_state.q/1000.0f));
-  _current_state.r = (int32_t)(1000.0*((1.0-alpha)*wbar.z + alpha*(float)_current_state.r/1000.0f));
+  float alpha = 0.8;
+  _current_state.p = (1.0-alpha)*wbar.x + alpha*_current_state.p;
+  _current_state.q = (1.0-alpha)*wbar.y + alpha*_current_state.q;
+  _current_state.r = (1.0-alpha)*wbar.z + alpha*_current_state.r;
+
+  mavlink_send_named_value_float("phi", _current_state.phi);
+  mavlink_send_named_value_float("theta", _current_state.theta);
+  mavlink_send_named_value_float("psi", _current_state.psi);
 
   // Save gyro biases for streaming to computer
   if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])

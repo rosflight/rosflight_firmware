@@ -116,6 +116,22 @@ int32_t sign(int32_t y)
   return (0 < y) - (y < 0);
 }
 
+float atan2_approx(float y, float x)
+{
+  int32_t x_int, y_int;
+  x_int = (int32_t)(1000*x);
+  y_int = (int32_t)(1000*y);
+  float out = ((float)turboatan2(y_int, x_int))/1000.0f;
+  return out;
+}
+
+float asin_approx(float x)
+{
+  int32_t x_int = (int32_t)(1000*x);
+  float out = ((float)turboasin(x_int))/1000.0f;
+  return out;
+}
+
 
 int32_t turboatan(int32_t x)
 {

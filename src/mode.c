@@ -55,17 +55,14 @@ bool check_mode(uint32_t now)
           && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) > (_params.values[PARAM_RC_Z_CENTER] + _params.values[PARAM_RC_Z_RANGE]/2)
           - _params.values[PARAM_ARM_THRESHOLD])
       {
-        mavlink_send_named_value_int("check", 1);
         time_sticks_have_been_in_arming_position += dt;
       }
       else
       {
-        mavlink_send_named_value_int("check", 2);
         time_sticks_have_been_in_arming_position = 0;
       }
       if (time_sticks_have_been_in_arming_position > 500000)
       {
-        mavlink_send_named_value_int("check", 3);
         arm();
         time_sticks_have_been_in_arming_position = 0;
       }
