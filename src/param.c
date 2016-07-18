@@ -54,7 +54,7 @@ void set_param_defaults(void)
     init_param_int(id, temp_name, id);
   }
 
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 4);
+  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 5);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
@@ -155,7 +155,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_PID_ALT_D, "PID_ALT_D", 0);
 
 
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
