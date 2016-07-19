@@ -217,10 +217,6 @@ void run_estimator(uint32_t now)
   _current_state.q = (1.0-alpha)*wbar.y + alpha*_current_state.q;
   _current_state.r = (1.0-alpha)*wbar.z + alpha*_current_state.r;
 
-  mavlink_send_named_value_float("phi", _current_state.phi);
-  mavlink_send_named_value_float("theta", _current_state.theta);
-  mavlink_send_named_value_float("psi", _current_state.psi);
-
   // Save gyro biases for streaming to computer
   if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
   {

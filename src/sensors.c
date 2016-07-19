@@ -138,10 +138,6 @@ static bool update_imu(void)
     _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
     _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
     _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
-
-    mavlink_send_named_value_float("x_gyro", _gyro.x);
-    mavlink_send_named_value_float("y_gyro", _gyro.y);
-
     return true;
   }
   else
