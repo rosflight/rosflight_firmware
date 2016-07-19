@@ -218,12 +218,9 @@ void run_estimator(uint32_t now)
   _current_state.r = (1.0-alpha)*wbar.z + alpha*_current_state.r;
 
   // Save gyro biases for streaming to computer
-  if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
-  {
-    _adaptive_gyro_bias.x = b.x;
-    _adaptive_gyro_bias.y = b.y;
-    _adaptive_gyro_bias.z = b.z;
-  }
+  _adaptive_gyro_bias.x = b.x;
+  _adaptive_gyro_bias.y = b.y;
+  _adaptive_gyro_bias.z = b.z;
 }
 
 #ifdef __cplusplus
