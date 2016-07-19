@@ -16,8 +16,6 @@ extern "C" {
 
 #include "estimator.h"
 
-#define PF(a) ((int32_t)(a*1000.0f))
-
 state_t _current_state;
 vector_t _adaptive_gyro_bias;
 
