@@ -76,7 +76,7 @@ void setup(void)
   init_mixing();
 
   // Initialize Estimator
-  init_estimator(false, true, true);
+  init_estimator(true, true, true);
   init_mode();
 }
 

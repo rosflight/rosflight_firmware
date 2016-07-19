@@ -10,12 +10,12 @@ extern "C" {
 
 typedef struct
 {
-  int32_t p;
-  int32_t q;
-  int32_t r;
-  int32_t phi;
-  int32_t theta;
-  int32_t psi;
+  float p;
+  float q;
+  float r;
+  float phi;
+  float theta;
+  float psi;
 } state_t;
 
 extern vector_t _adaptive_gyro_bias;

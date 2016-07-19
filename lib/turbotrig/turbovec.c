@@ -213,7 +213,9 @@ quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2)
 
 quaternion_t quaternion_inverse(quaternion_t q)
 {
-  q.w *= -1.0f;
+  q.x *= -1.0f;
+  q.y *= -1.0f;
+  q.z *= -1.0f;
   return q;
 }
 
@@ -225,13 +227,13 @@ quaternion_t quat_from_two_vectors(vector_t u, vector_t v)
   return quaternion_normalize(q);
 }
 
-void euler_from_quat(quaternion_t q, int32_t *phi, int32_t *theta, int32_t *psi)
+void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
 {
-  *phi = turboatan2((int32_t)(2000*(q.w*q.x + q.y*q.z)),
-                    (int32_t)(1000 - 2000*(q.x*q.x + q.y*q.y)));
-  *theta = turboasin((int32_t)(2000*(q.w*q.y - q.z*q.x)));
-  *psi = turboatan2((int32_t)(2000*(q.w*q.z + q.x*q.y)),
-                    (int32_t)(1000-2000*(q.y*q.y + q.z*q.z)));
+  *phi = atan2_approx(2.0f * (q.w*q.x + q.y*q.z),
+                      1.0f - 2.0f * (q.x*q.x + q.y*q.y));
+  *theta = asin_approx(2.0f*(q.w*q.y - q.z*q.x));
+  *psi = atan2_approx(2.0f * (q.w*q.z + q.x*q.y),
+                     1.0f - 2.0f * (q.y*q.y + q.z*q.z));
 }
 
 

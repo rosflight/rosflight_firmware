@@ -32,12 +32,12 @@ static void mavlink_send_attitude(void)
 {
   mavlink_msg_attitude_send(MAVLINK_COMM_0,
                             millis(),
-                            (float)(_current_state.phi)/1000.0f,
-                            (float)(_current_state.theta)/1000.0f,
-                            (float)(_current_state.psi)/1000.0f,
-                            (float)(_current_state.p)/1000.0f,
-                            (float)(_current_state.q)/1000.0f,
-                            (float)(_current_state.r)/1000.0f);
+                            _current_state.phi,
+                            _current_state.theta,
+                            _current_state.psi,
+                            _current_state.p,
+                            _current_state.q,
+                            _current_state.r);
 }
 
 static void mavlink_send_imu(void)

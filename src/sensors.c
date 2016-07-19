@@ -1,5 +1,5 @@
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 
 #include <stdbool.h>
@@ -77,7 +77,7 @@ static bool update_imu(void)
     if (calib_acc)
     {
       static uint16_t acc_count = 0;
-      static vector_t acc_sum  = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+      static vector_t acc_sum  = { 0.0f, 0.0f, 0.0f };
       static float acc_temp_sum = 0.0f;
 
       acc_sum.x += _accel.x;
@@ -86,14 +86,14 @@ static bool update_imu(void)
       acc_temp_sum += _imu_temperature;
       acc_count++;
 
-      if (acc_count > 100)
+      if (acc_count > 1000)
       {
         set_param_by_id_float(PARAM_ACC_X_BIAS,
-                              (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / acc_count);
+                              (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / (float)acc_count);
         set_param_by_id_float(PARAM_ACC_Y_BIAS,
-                              (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / acc_count);
+                              (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / (float)acc_count);
         set_param_by_id_float(PARAM_ACC_Z_BIAS,
-                              (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / acc_count);
+                              (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / (float)acc_count);
 
         acc_count = 0;
         acc_sum.x = 0.0f;
@@ -108,18 +108,18 @@ static bool update_imu(void)
     if (calib_gyro)
     {
       static uint16_t gyro_count = 0;
-      static vector_t gyro_sum = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+      static vector_t gyro_sum = { 0.0f, 0.0f, 0.0f };
 
       gyro_sum.x += _gyro.x;
       gyro_sum.y += _gyro.y;
       gyro_sum.z += _gyro.z;
       gyro_count++;
 
-      if (gyro_count > 100)
+      if (gyro_count > 1000)
       {
-        set_param_by_id_float(PARAM_GYRO_X_BIAS, gyro_sum.x / gyro_count);
-        set_param_by_id_float(PARAM_GYRO_Y_BIAS, gyro_sum.y / gyro_count);
-        set_param_by_id_float(PARAM_GYRO_Z_BIAS, gyro_sum.z / gyro_count);
+        set_param_by_id_float(PARAM_GYRO_X_BIAS, gyro_sum.x / (float)gyro_count);
+        set_param_by_id_float(PARAM_GYRO_Y_BIAS, gyro_sum.y / (float)gyro_count);
+        set_param_by_id_float(PARAM_GYRO_Z_BIAS, gyro_sum.z / (float)gyro_count);
 
         gyro_count = 0;
         gyro_sum.x = 0.0f;
@@ -138,7 +138,6 @@ static bool update_imu(void)
     _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
     _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
     _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
-
     return true;
   }
   else
@@ -158,12 +157,13 @@ void init_sensors(void)
   // IMU
   _imu_ready = false;
   mpu6050_register_interrupt_cb(&imu_ISR);
-
   uint16_t acc1G;
-  float gyro_scale_to_urad;
-  mpu6050_init(true, &acc1G, &gyro_scale_to_urad, _params.values[PARAM_BOARD_REVISION]);
-  gyro_scale = 1000000.0*gyro_scale_to_urad;
+  float gyro_scale_to_Mrad;
+  mpu6050_init(true, &acc1G, &gyro_scale_to_Mrad, _params.values[PARAM_BOARD_REVISION]);
+  gyro_scale = gyro_scale_to_Mrad*1e6;
   accel_scale = 9.80665f/acc1G;
+  calib_gyro = true;
+  calib_acc = true;
 
   // DIFF PRESSURE
   _diff_pressure_present = ms4525_detect();
@@ -200,12 +200,18 @@ bool update_sensors(uint32_t time_us)
 bool calibrate_acc(void)
 {
   calib_acc = true;
+  set_param_by_id_float(PARAM_ACC_X_BIAS, 0.0);
+  set_param_by_id_float(PARAM_ACC_Y_BIAS, 0.0);
+  set_param_by_id_float(PARAM_ACC_Z_BIAS, 0.0);
   return true;
 }
 
 bool calibrate_gyro(void)
 {
   calib_gyro = true;
+  set_param_by_id_float(PARAM_GYRO_X_BIAS, 0.0);
+  set_param_by_id_float(PARAM_GYRO_Y_BIAS, 0.0);
+  set_param_by_id_float(PARAM_GYRO_Z_BIAS, 0.0);
   return true;
 }
 
