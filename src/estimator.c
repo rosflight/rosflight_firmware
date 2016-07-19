@@ -9,7 +9,6 @@ extern "C" {
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 #include <turbotrig/turbovec.h>
-#include "mavlink_util.h"
 
 #include "sensors.h"
 #include "param.h"
@@ -210,7 +209,7 @@ void run_estimator(uint32_t now)
 
   // Save off gyro
   wbar = vector_sub(wbar, b);
-  float alpha = 0.8f;
+  float alpha = 0.98f;
   _current_state.p = (1.0f-alpha)*wbar.x + alpha*_current_state.p;
   _current_state.q = (1.0f-alpha)*wbar.y + alpha*_current_state.q;
   _current_state.r = (1.0f-alpha)*wbar.z + alpha*_current_state.r;
