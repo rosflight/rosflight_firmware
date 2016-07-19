@@ -67,8 +67,8 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   b.y = 0.0f;
   b.z = 0.0f;
 
-  kp_ = ((float)_params.values[PARAM_FILTER_KP])/1000.0f;
-  ki_ = ((float)_params.values[PARAM_FILTER_KI])/1000.0f;
+  kp_ = get_param_float(PARAM_FILTER_KP);
+  ki_ = get_param_float(PARAM_FILTER_KI);
   init_time = _params.values[PARAM_INIT_TIME]*1000; // microseconds
 
   w_acc.x = 0.0f;

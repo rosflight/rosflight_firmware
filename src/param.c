@@ -78,8 +78,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
-  init_param_int(PARAM_FILTER_KP, "FILTER_KP", 1000); // munits
-  init_param_int(PARAM_FILTER_KI, "FILTER_KI", 100);  // munits
+  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f);
+  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f);
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 0);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
