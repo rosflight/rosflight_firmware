@@ -1,6 +1,9 @@
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-pedantic"
 #include <mavlink/v1.0/mavlink_types.h>
+#pragma GCC diagnostic pop
 
 #define MAVLINK_USE_CONVENIENCE_FUNCTIONS
 extern mavlink_system_t mavlink_system;
