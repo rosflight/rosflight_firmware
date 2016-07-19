@@ -100,7 +100,7 @@ void run_estimator(uint32_t now)
     last_time = now;
     return;
   }
-  int32_t dt = now - last_time;
+  float dt = (now - last_time) * 1e-6f;
   last_time = now;
 
   // Crank up the gains for the first few seconds for quick convergence
@@ -136,9 +136,9 @@ void run_estimator(uint32_t now)
 
     // integrate biases from accelerometer feedback
     // (eq 47b Mahoney Paper, using correction term w_acc found above)
-    b.x -= ki*w_acc.x*(float)dt*1e-6;
-    b.y -= ki*w_acc.y*(float)dt*1e-6;
-    b.z -= ki*w_acc.z*(float)dt*1e-6;
+    b.x -= ki*w_acc.x*dt;
+    b.y -= ki*w_acc.y*dt;
+    b.z -= ki*w_acc.z*dt;
   }
   else
   {
@@ -182,8 +182,8 @@ void run_estimator(uint32_t now)
       // This adds 66 us on STM32F10x chips
       float norm_w = sqrt(sqrd_norm_w);
       quaternion_t qhat_np1;
-      float t1 = cos((norm_w*dt*1e-6)/2.0f);
-      float t2 = 1.0/norm_w * sin((norm_w*dt*1e-6)/2.0f);
+      float t1 = cos((norm_w*dt)/2.0f);
+      float t2 = 1.0/norm_w * sin((norm_w*dt)/2.0f);
       qhat_np1.w = t1*q_hat.w   + t2*(          - p*q_hat.x - q*q_hat.y - r*q_hat.z);
       qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w             + r*q_hat.y - q*q_hat.z);
       qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x             + p*q_hat.z);
@@ -199,10 +199,10 @@ void run_estimator(uint32_t now)
                            0.5 * ( q*q_hat.w - r*q_hat.x             + p*q_hat.z),
                            0.5 * ( r*q_hat.w + q*q_hat.x - p*q_hat.y)
                           };
-      q_hat.w += qdot.w*(float)dt*1e-6;
-      q_hat.x += qdot.x*(float)dt*1e-6;
-      q_hat.y += qdot.y*(float)dt*1e-6;
-      q_hat.z += qdot.z*(float)dt*1e-6;
+      q_hat.w += qdot.w*dt;
+      q_hat.x += qdot.x*dt;
+      q_hat.y += qdot.y*dt;
+      q_hat.z += qdot.z*dt;
       q_hat = quaternion_normalize(q_hat);
     }
   }
