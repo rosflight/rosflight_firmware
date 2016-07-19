@@ -46,12 +46,12 @@ static void convertPWMtoRad()
   // Get Pitch control command out of RC - note that pitch channels are usually reversed
   if (_rc_control.y.type == ANGLE)
   {
-    _rc_control.y.value = -1*((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
                               *2*_params.values[PARAM_RC_MAX_PITCH_MRAD])/_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == RATE)
   {
-    _rc_control.y.value = -1*((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
                               *2*_params.values[PARAM_RC_MAX_PITCHRATE_MRAD_S])/_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == PASSTHROUGH)
@@ -99,8 +99,8 @@ bool receive_rc(uint32_t now)
   }
   else
   {
-    _rc_control.x.type = _rc_control.y.type = (pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500) ? ANGLE :
-                         RATE;
+    _rc_control.x.type = _rc_control.y.type = RATE;//(pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500) ? ANGLE :
+//                         RATE;
     _rc_control.z.type = RATE;
     _rc_control.F.type = (pwmRead(_params.values[PARAM_RC_F_CONTROL_TYPE_CHANNEL]) > 1500) ? ALTITUDE : THROTTLE;
   }

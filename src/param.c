@@ -7,6 +7,7 @@
 #include "mavlink_stream.h"
 
 #include "param.h"
+#include "mixer.h"
 
 //TODO temporary
 #include <stdio.h>
@@ -53,13 +54,14 @@ void set_param_defaults(void)
     init_param_int(id, temp_name, id);
   }
 
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 4);
+  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 5);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
 
+  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 50);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50);
@@ -76,8 +78,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
-  init_param_int(PARAM_FILTER_KP, "FILTER_KP", 10000); // munits
-  init_param_int(PARAM_FILTER_KI, "FILTER_KI", 1000);  // munits
+  init_param_int(PARAM_FILTER_KP, "FILTER_KP", 1000); // munits
+  init_param_int(PARAM_FILTER_KI, "FILTER_KI", 100);  // munits
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 1);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
@@ -100,8 +102,8 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
-  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 6);
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 6);
+  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5);
+  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 5);
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500);
   init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500);
@@ -122,19 +124,19 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12566); // 720 deg/s
   init_param_int(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6283); // 360 deg/s
 
-  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", false);
+  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
   init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 400);
+  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150);
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 400);
+  init_param_int(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 50);
   init_param_int(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 12566);
 
-  init_param_int(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 400);
+  init_param_int(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 50);
   init_param_int(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 12566);
 
-  init_param_int(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0);
+  init_param_int(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 50);
   init_param_int(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0);
   init_param_int(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6283);
 
@@ -153,11 +155,11 @@ void set_param_defaults(void)
   init_param_int(PARAM_PID_ALT_D, "PID_ALT_D", 0);
 
 
-  init_param_int(PARAM_MIXER, "MIXER", 0);
-  init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 1);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
+  init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
-  init_param_int(PARAM_FIXED_WING, "FIXED_WING", true);
+  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
 }
 
 bool read_params(void)
@@ -179,6 +181,10 @@ void param_change_callback(param_id_t id)
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    break;
+
+  case PARAM_STREAM_ATTITUDE_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, _params.values[PARAM_STREAM_ATTITUDE_RATE]);
     break;
 
   case PARAM_STREAM_IMU_RATE:

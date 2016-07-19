@@ -1,4 +1,7 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <turbotrig/turbovec.h>
 
@@ -30,3 +33,6 @@ bool update_sensors(uint32_t time_us);
 
 bool calibrate_acc(void);
 bool calibrate_gyro(void);
+#ifdef __cplusplus
+}
+#endif

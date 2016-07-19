@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -11,6 +15,20 @@
 
 #include "controller.h"
 
+int fsign(float y)
+{
+  return (0 < y) - (y < 0);
+}
+
+float fsat(float value, float max)
+{
+  if (abs(value) > abs(max))
+  {
+    value = max*sign(value);
+  }
+  return value;
+}
+
 int32_t sat(int32_t value, int32_t max)
 {
   if (abs(value) > abs(max))
@@ -22,7 +40,7 @@ int32_t sat(int32_t value, int32_t max)
 
 void run_controller(uint32_t now)
 {
-  control_t outgoing_command = rate_controller(attitude_controller(_combined_control, now), now);
+  control_t outgoing_command = rate_controller(_combined_control, now);
   _command.F = outgoing_command.F.value;
   _command.x = outgoing_command.x.value;
   _command.y = outgoing_command.y.value;
@@ -101,7 +119,7 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
 control_t rate_controller(control_t rate_command, uint32_t now)
 {
   static uint32_t counter = 0;
-  static int32_t z_integrator = 0;
+  static float z_integrator = 0.0;
   static int32_t prev_time = 0;
 
   control_t motor_command = rate_command;
@@ -112,35 +130,35 @@ control_t rate_controller(control_t rate_command, uint32_t now)
   // Set values
   if (rate_command.x.active && rate_command.x.type == RATE)
   {
-    int32_t error = (rate_command.x.value - _current_state.p); // mrad/s
-    motor_command.x.value = sat((error *_params.values[PARAM_PID_ROLL_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
+    float error = (float)(rate_command.x.value - _current_state.p); // mrad/s
+    motor_command.x.value = (int32_t)fsat(error * (float)_params.values[PARAM_PID_ROLL_RATE_P]/1000.0f, (float)_params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
   }
 
   if (rate_command.y.active && rate_command.y.type == RATE)
   {
-    int32_t error = rate_command.y.value - _current_state.q;
-    motor_command.y.value = sat((error*_params.values[PARAM_PID_PITCH_RATE_P])/1000, _params.values[PARAM_MAX_COMMAND]);
+    float error = (float)(rate_command.y.value - _current_state.q);
+    motor_command.y.value = (int32_t)fsat(error * (float)_params.values[PARAM_PID_PITCH_RATE_P]/1000.0f, (float)_params.values[PARAM_MAX_COMMAND]);
     motor_command.y.type = PASSTHROUGH;
   }
 
   if (rate_command.z.active && rate_command.z.type == RATE)
   {
     bool used_anti_windup = false;
-    int32_t error = rate_command.z.value*1000 - _current_state.r; // urad
-    z_integrator += (error*dt)/1000; // urad
-    motor_command.z.value = (error*_params.values[PARAM_PID_YAW_RATE_P])/1000
-                            +(z_integrator/1000*_params.values[PARAM_PID_YAW_RATE_I])/1000;
+    float error = (float)(rate_command.z.value - _current_state.r); // urad
+    z_integrator += 0;//(error*dt)/1000.0f; // urad
+    motor_command.z.value = (int32_t)fsat(error * (float)_params.values[PARAM_PID_YAW_RATE_P]/1000.0f, (float)_params.values[PARAM_MAX_COMMAND]);
+//                            + z_integrator/1000 * (float)_params.values[PARAM_PID_YAW_RATE_I]/1000.0f;
     // anti-windup
-    if (abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
-    {
-      int32_t space = _params.values[PARAM_MAX_COMMAND]
-                      - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
-      z_integrator = (space*1000)/_params.values[PARAM_PID_YAW_RATE_I];
-      z_integrator = (z_integrator > 0) ? z_integrator : 0;
-      motor_command.z.value = sat(motor_command.z.value, _params.values[PARAM_MAX_COMMAND]);
-      used_anti_windup = true;
-    }
+//    if (abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
+//    {
+//      int32_t space = _params.values[PARAM_MAX_COMMAND]
+//                      - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
+//      z_integrator = (space*1000)/_params.values[PARAM_PID_YAW_RATE_I];
+//      z_integrator = (z_integrator > 0) ? z_integrator : 0;
+//      motor_command.z.value = sat(motor_command.z.value, _params.values[PARAM_MAX_COMMAND]);
+//      used_anti_windup = true;
+//    }
     motor_command.z.type = PASSTHROUGH;
   }
 
@@ -148,3 +166,7 @@ control_t rate_controller(control_t rate_command, uint32_t now)
 
   return motor_command;
 }
+#ifdef __cplusplus
+}
+#endif
+

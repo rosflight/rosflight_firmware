@@ -1,8 +1,10 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdint.h>
 
-#include <breezystm32.h>
+#include <breezystm32/breezystm32.h>
 
-#include "mavlink_util.h"
 #include "mixer.h"
 #include "param.h"
 #include "mode.h"
@@ -17,10 +19,10 @@ static mixer_t quadcopter_plus_mixing =
 {
   {M, M, M, M, 0, 0, 0, 0}, // output_type
 
-  { 1000, 1000,  1000, 1000, 0, 0, 0, 0}, // F Mix
-  { 0,   -1000,  1000, 0,    0, 0, 0, 0}, // X Mix
-  {-1000, 0,     0,    1000, 0, 0, 0, 0}, // Y Mix
-  {-1000, 1000,  1000,-1000, 0, 0, 0, 0}  // Z Mix
+  { 1000,  1000,  1000,  1000, 0, 0, 0, 0}, // F Mix
+  { 0,    -1000,  1000,  0,    0, 0, 0, 0}, // X Mix
+  { 1000,  0,     0,    -1000, 0, 0, 0, 0}, // Y Mix
+  { 1000, -1000, -1000,  1000, 0, 0, 0, 0}  // Z Mix
 };
 
 
@@ -79,7 +81,7 @@ static mixer_t *array_of_mixers[5] =
 void init_mixing()
 {
   // We need a better way to choosing the mixer
-  mixer_to_use = *array_of_mixers[FIXEDWING];
+  mixer_to_use = *array_of_mixers[_params.values[PARAM_MIXER]];
 
   for (int8_t i=0; i<8; i++)
   {
@@ -124,7 +126,7 @@ void write_motor(uint8_t index, int32_t value)
   {
     value = 0;
   }
-  _outputs[index] = value +1000;
+  _outputs[index] = value + 1000;
   pwmWriteMotor(index, _outputs[index]);
 }
 
@@ -208,3 +210,6 @@ void mix_output()
     // If we need to configure another type of output, do it here
   }
 }
+#ifdef __cplusplus
+}
+#endif

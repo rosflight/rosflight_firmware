@@ -1,9 +1,14 @@
+#ifdef __cplusplus
+extern "C"
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 
 #include <breezystm32/breezystm32.h>
 
 #include "mavlink_util.h"
+#include "mavlink_log.h"
 #include "param.h"
 #include "sensors.h"
 
@@ -155,7 +160,9 @@ void init_sensors(void)
   mpu6050_register_interrupt_cb(&imu_ISR);
 
   uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+  float gyro_scale_to_urad;
+  mpu6050_init(true, &acc1G, &gyro_scale_to_urad, _params.values[PARAM_BOARD_REVISION]);
+  gyro_scale = 1000000.0*gyro_scale_to_urad;
   accel_scale = 9.80665f/acc1G;
 
   // DIFF PRESSURE
@@ -201,3 +208,7 @@ bool calibrate_gyro(void)
   calib_gyro = true;
   return true;
 }
+
+#ifdef __cplusplus
+}
+#endif
