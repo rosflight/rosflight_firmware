@@ -117,7 +117,7 @@ CFLAGS		 = $(ARCH_FLAGS) \
 		   $(addprefix -D,$(OPTIONS)) \
 		   $(addprefix -I,$(INCLUDE_DIRS)) \
 		   $(DEBUG_FLAGS) \
-		   -Wall -Wno-pedantic -Wextra -Wshadow -Wunsafe-loop-optimizations \
+		   -Wall -pedantic -Wextra -Wshadow -Wunsafe-loop-optimizations \
 		   -ffunction-sections \
 		   -fdata-sections \
 		   -DSTM32F10X_MD \
