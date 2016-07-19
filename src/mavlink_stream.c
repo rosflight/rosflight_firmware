@@ -139,18 +139,18 @@ static void mavlink_send_low_priority(void)
 // local variable definitions
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 {
-  { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
+  { .period_us = 1000000, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
 
-  { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_attitude },
+  { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_attitude },
 
-  { .period_us = 1e3, .last_time_us = 0, .send_function = mavlink_send_imu },
-  { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
-  { .period_us = 2e5, .last_time_us = 0, .send_function = mavlink_send_baro },
-  { .period_us = 1e6, .last_time_us = 0, .send_function = mavlink_send_sonar },
+  { .period_us = 1000,    .last_time_us = 0, .send_function = mavlink_send_imu },
+  { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
+  { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_baro },
+  { .period_us = 100000,  .last_time_us = 0, .send_function = mavlink_send_sonar },
 
-  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
-  { .period_us = 0,   .last_time_us = 0, .send_function = mavlink_send_rc_raw },
-  { .period_us = 1e4, .last_time_us = 0, .send_function = mavlink_send_low_priority }
+  { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
+  { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_rc_raw },
+  { .period_us = 10000,   .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 
 // function definitions

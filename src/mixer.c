@@ -17,7 +17,7 @@ output_type_t _GPIO_output_type[8];
 
 static mixer_t quadcopter_plus_mixing =
 {
-  {M, M, M, M, 0, 0, 0, 0}, // output_type
+  {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
   { 1000,  1000,  1000,  1000, 0, 0, 0, 0}, // F Mix
   { 0,    -1000,  1000,  0,    0, 0, 0, 0}, // X Mix
@@ -28,7 +28,7 @@ static mixer_t quadcopter_plus_mixing =
 
 static mixer_t quadcopter_x_mixing =
 {
-  {M, M, M, M, 0, 0, 0, 0}, // output_type
+  {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
   { 1000, 1000, 1000, 1000,  0, 0, 0, 0}, // F Mix
   {-1000,-1000, 1000, 1000,  0, 0, 0, 0}, // X Mix
@@ -38,7 +38,7 @@ static mixer_t quadcopter_x_mixing =
 
 static mixer_t fixedwing_mixing =
 {
-  {S, S, M, S, 0, 0, 0, 0},
+  {S, S, M, S, NONE, NONE, NONE, NONE},
 
   {0,    0,    1000, 0,    0, 0, 0, 0}, // F Mix
   {1000, 0,    0,    0,    0, 0, 0, 0}, // X Mix
@@ -48,7 +48,7 @@ static mixer_t fixedwing_mixing =
 
 static mixer_t tricopter_mixing =
 {
-  {M, M, M, S, 0, 0, 0, 0},
+  {M, M, M, S, NONE, NONE, NONE, NONE},
 
   {1000,  1000, 1000, 0,    0, 0, 0, 0}, // F Mix
   {-1000, 1000, 0,    0,    0, 0, 0, 0}, // X Mix
@@ -58,7 +58,7 @@ static mixer_t tricopter_mixing =
 
 static mixer_t Y6_mixing =
 {
-  {M, M, M, M, M, M, 0, 0},
+  {M, M, M, M, M, M, NONE, NONE},
   { 1000, 1000, 1000, 1000, 1000, 1000, 0, 0}, // F Mix
   { 0,   -1000, 1000, 0,   -1000, 1000, 0, 0}, // X Mix
   {-1300,  667,  667,-1300,  667,  667, 0, 0}, // Y Mix
