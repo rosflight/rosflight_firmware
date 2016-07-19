@@ -16,7 +16,7 @@ extern "C" {
 
 #include "estimator.h"
 
-#define PF(a) ((int32_t)(a*1000.0))
+#define PF(a) ((int32_t)(a*1000.0f))
 
 state_t _current_state;
 vector_t _adaptive_gyro_bias;
@@ -118,7 +118,7 @@ void run_estimator(uint32_t now)
   // add in accelerometer
   float a_sqrd_norm = _accel.x*_accel.x + _accel.y*_accel.y + _accel.z*_accel.z;
 
-  if (use_acc && a_sqrd_norm < 1.15*1.15*9.80665*9.80665 && a_sqrd_norm > 0.85*0.85*9.80665*9.80665)
+  if (use_acc && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(_accel);
@@ -183,7 +183,7 @@ void run_estimator(uint32_t now)
       float norm_w = sqrt(sqrd_norm_w);
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);
-      float t2 = 1.0/norm_w * sin((norm_w*dt)/2.0f);
+      float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
       qhat_np1.w = t1*q_hat.w   + t2*(          - p*q_hat.x - q*q_hat.y - r*q_hat.z);
       qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w             + r*q_hat.y - q*q_hat.z);
       qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x             + p*q_hat.z);
@@ -194,10 +194,10 @@ void run_estimator(uint32_t now)
     {
       // Euler Integration
       // (Eq. 47a Mahoney Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5 * (           - p*q_hat.x - q*q_hat.y - r*q_hat.z),
-                           0.5 * ( p*q_hat.w             + r*q_hat.y - q*q_hat.z),
-                           0.5 * ( q*q_hat.w - r*q_hat.x             + p*q_hat.z),
-                           0.5 * ( r*q_hat.w + q*q_hat.x - p*q_hat.y)
+      quaternion_t qdot = {0.5f * (           - p*q_hat.x - q*q_hat.y - r*q_hat.z),
+                           0.5f * ( p*q_hat.w             + r*q_hat.y - q*q_hat.z),
+                           0.5f * ( q*q_hat.w - r*q_hat.x             + p*q_hat.z),
+                           0.5f * ( r*q_hat.w + q*q_hat.x - p*q_hat.y)
                           };
       q_hat.w += qdot.w*dt;
       q_hat.x += qdot.x*dt;
@@ -212,10 +212,10 @@ void run_estimator(uint32_t now)
 
   // Save off gyro
   wbar = vector_sub(wbar, b);
-  float alpha = 0.8;
-  _current_state.p = (1.0-alpha)*wbar.x + alpha*_current_state.p;
-  _current_state.q = (1.0-alpha)*wbar.y + alpha*_current_state.q;
-  _current_state.r = (1.0-alpha)*wbar.z + alpha*_current_state.r;
+  float alpha = 0.8f;
+  _current_state.p = (1.0f-alpha)*wbar.x + alpha*_current_state.p;
+  _current_state.q = (1.0f-alpha)*wbar.y + alpha*_current_state.q;
+  _current_state.r = (1.0f-alpha)*wbar.z + alpha*_current_state.r;
 
   // Save gyro biases for streaming to computer
   _adaptive_gyro_bias.x = b.x;
