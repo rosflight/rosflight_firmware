@@ -42,18 +42,18 @@ void init_params(void)
     write_params();
   }
 
-  for (param_id_t id = 0; id < PARAMS_COUNT; id++)
-    param_change_callback(id);
+  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
+    param_change_callback((param_id_t) id);
 }
 
 void set_param_defaults(void)
 {
   // temporary: replace with actual initialisation of rest of params
   char temp_name[PARAMS_NAME_LENGTH];
-  for (param_id_t id = 0; id < PARAMS_COUNT; id++)
+  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
   {
     sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
-    init_param_int(id, temp_name, id);
+    init_param_int((param_id_t) id, temp_name, id);
   }
 
   init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2);
@@ -216,7 +216,7 @@ void param_change_callback(param_id_t id)
 
 param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 {
-  for (param_id_t id = 0; id < PARAMS_COUNT; id++)
+  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
   {
     bool match = true;
     for (uint8_t i = 0; i < PARAMS_NAME_LENGTH; i++)
@@ -234,7 +234,7 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
     }
 
     if (match)
-      return id;
+      return (param_id_t) id;
   }
 
   return PARAMS_COUNT;
@@ -254,7 +254,7 @@ bool set_param_by_id(param_id_t id, int32_t value)
 
 bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  uint8_t id = lookup_param_id(name);
+  param_id_t id = lookup_param_id(name);
   return set_param_by_id(id, value);
 }
 
