@@ -21,7 +21,7 @@ typedef struct
 {
   bool active; // Whether or not the channel is active
   control_type_t type;  // What type the channel is
-  int32_t value; // The value of the channel
+  float value; // The value of the channel
 } control_channel_t;
 
 typedef struct

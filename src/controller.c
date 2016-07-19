@@ -58,7 +58,6 @@ control_t altitude_controller(control_t altitude_command)
 
 control_t attitude_controller(control_t attitude_command, uint32_t now)
 {
-  static uint32_t counter = 0;
   static int32_t x_integrator = 0;
   static int32_t y_integrator = 0;
   static int32_t prev_time = 0;
@@ -118,7 +117,6 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
 
 control_t rate_controller(control_t rate_command, uint32_t now)
 {
-  static uint32_t counter = 0;
   static float z_integrator = 0.0;
   static int32_t prev_time = 0;
 

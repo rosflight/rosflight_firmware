@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+
 #include <stdbool.h>
 #include <stdint.h>
 
