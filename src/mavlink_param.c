@@ -1,3 +1,6 @@
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#pragma GCC diagnostic ignored "-Wswitch"
+
 #include <stdint.h>
 
 #include "param.h"
