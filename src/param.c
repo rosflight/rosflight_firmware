@@ -140,14 +140,14 @@ void set_param_defaults(void)
   init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
   init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
 
-  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 2.000f);
+    init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 40.0f);
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 50.0f);
   init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
 
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 2.000f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 40.0f);
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 14.0f);
   init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
 
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 12.00f);
