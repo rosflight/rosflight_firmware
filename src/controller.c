@@ -41,7 +41,8 @@ int32_t sat(int32_t value, int32_t max)
 
 void run_controller(uint32_t now)
 {
-  control_t outgoing_command = rate_controller(_combined_control, now);
+  control_t rate_command = rate_controller(_combined_control, now);
+  control_t outgoing_command = attitude_controller(rate_command, now);
   _command.x = (int32_t)outgoing_command.x.value;
   _command.y = (int32_t)outgoing_command.y.value;
   _command.z = (int32_t)outgoing_command.z.value;
@@ -69,12 +70,6 @@ control_t rate_controller(control_t rate_command, uint32_t now)
                                  + integrator * get_param_float(PARAM_PID_ROLL_RATE_I),
                                  _params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
-//    printf("x_c = %f, x = %f, e = %f, out = %f, kp = %f\n",
-//           rate_command.x.value,
-//           _current_state.p,
-//           error,
-//           motor_command.x.value,
-//           get_param_float(PARAM_PID_PITCH_RATE_P));
   }
 
   if (rate_command.y.active && rate_command.y.type == RATE)
@@ -87,60 +82,36 @@ control_t rate_controller(control_t rate_command, uint32_t now)
                                  + integrator * get_param_float(PARAM_PID_PITCH_RATE_I),
                                  _params.values[PARAM_MAX_COMMAND]);
     motor_command.y.type = PASSTHROUGH;
-//    printf("y_c = %f, y = %f, e = %f, i = %f, out = %f dt = %f, kp = %f\n\n",
-//           rate_command.y.value,
-//           _current_state.q,
-//           error,
-//           integrator,
-//           motor_command.y.value,
-//           dt,
-//           get_param_float(PARAM_PID_PITCH_RATE_P));
   }
 
   if (rate_command.z.active && rate_command.z.type == RATE)
   {
-    static float integrator;
-    bool used_anti_windup = false;
     float error = rate_command.z.value - _current_state.r;
-    integrator += 0.0;
     motor_command.z.value = error * get_param_float(PARAM_PID_YAW_RATE_P);
-    // anti-windup
-//    if (abs(motor_command.z.value) > _params.values[PARAM_MAX_COMMAND])
-//    {
-//      int32_t space = _params.values[PARAM_MAX_COMMAND]
-//                      - (error*_params.values[PARAM_PID_YAW_RATE_P])/1000;
-//      integrator = (space*1000)/_params.values[PARAM_PID_YAW_RATE_I];
-//      integrator = (integrator > 0) ? integrator : 0;
-//      motor_command.z.value = sat(motor_command.z.value, _params.values[PARAM_MAX_COMMAND]);
-//      used_anti_windup = true;
-//    }
     motor_command.z.type = PASSTHROUGH;
+    /// TODO Add integrator to controller (with anti-windup)
   }
-
-  //  counter++;
   return motor_command;
 }
 
+control_t attitude_controller(control_t attitude_command, uint32_t now)
+{
+  static int32_t prev_time = 0;
 
-//control_t attitude_controller(control_t attitude_command, uint32_t now)
-//{
-//  static int32_t x_integrator = 0;
-//  static int32_t y_integrator = 0;
-//  static int32_t prev_time = 0;
+  control_t rate_command = attitude_command;
 
-//  control_t rate_command = attitude_command;
+  float dt = (float)(now - prev_time)*1e-6;
+  prev_time = now;
 
-//  int32_t dt = (int32_t) now - prev_time;
-//  prev_time = now;
-
-//  if (attitude_command.x.type == ANGLE)
-//  {
-//    int32_t error = (attitude_command.x.value - _current_state.phi/1000);
-//    x_integrator += (error*dt)/1000;
-//    rate_command.x.value = (error*_params.values[PARAM_PID_ROLL_ANGLE_P])/1000
-//                           + (x_integrator/1000*_params.values[PARAM_PID_ROLL_ANGLE_I])/1000
-//                           - (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);
-//    // integrator anti-windup <-- Check this before fielding
+  if (attitude_command.x.type == ANGLE)
+  {
+    static float integrator = 0.0f;
+    float error = attitude_command.x.value - _current_state.phi;
+    integrator += error*dt;
+    rate_command.x.value = error*get_param_float(PARAM_PID_ROLL_ANGLE_P)
+                           + integrator*get_param_float(PARAM_PID_ROLL_ANGLE_I)
+                           - _current_state.p*get_param_float(PARAM_PID_ROLL_ANGLE_D);
+    // integrator anti-windup <-- Check this before fielding
 //    if (abs(rate_command.x.value) > _params.values[PARAM_MAX_ROLL_RATE])
 //    {
 //      // find the remaining space after the P and D terms to saturate
@@ -154,17 +125,18 @@ control_t rate_controller(control_t rate_command, uint32_t now)
 //      // Saturate the signal
 //      rate_command.x.value = sat(rate_command.x.value, (int32_t)_params.values[PARAM_MAX_ROLL_RATE]);
 //    }
-//    rate_command.x.type = RATE;
-//  }
+    rate_command.x.type = PASSTHROUGH;
+  }
 
-//  if (attitude_command.y.type == ANGLE)
-//  {
-//    int32_t error = (attitude_command.y.value - _current_state.theta/1000);
-//    y_integrator += (error*dt)/1000;
-//    rate_command.y.value = (error*_params.values[PARAM_PID_PITCH_ANGLE_P])/1000
-//                           + (y_integrator*_params.values[PARAM_PID_PITCH_ANGLE_I])/1000
-//                           - (_current_state.q/1000 *_params.values[PARAM_PID_PITCH_ANGLE_D]);
-//    // integrator anti-windup
+  if (attitude_command.y.type == ANGLE)
+  {
+    static float integrator = 0.0f;
+    float error = attitude_command.y.value - _current_state.theta;
+    integrator += error*dt;
+    rate_command.y.value = error * get_param_float(PARAM_PID_PITCH_ANGLE_P);
+                           + integrator * get_param_float(PARAM_PID_PITCH_ANGLE_I)
+                           - _current_state.q * get_param_float(PARAM_PID_PITCH_ANGLE_D);
+    // integrator anti-windup
 //    if (abs(rate_command.y.value) > _params.values[PARAM_MAX_PITCH_RATE])
 //    {
 //      int32_t space = _params.values[PARAM_MAX_PITCH_RATE]
@@ -174,11 +146,11 @@ control_t rate_controller(control_t rate_command, uint32_t now)
 //      y_integrator = (y_integrator > 0) ? y_integrator : 0;
 //      rate_command.y.value = sat(rate_command.y.value, (int32_t)_params.values[PARAM_MAX_PITCH_RATE]);
 //    }
-//    rate_command.y.type = RATE;
-//  }
+    rate_command.y.type = PASSTHROUGH;
+  }
 
-//  return rate_command;
-//}
+  return rate_command;
+}
 
 
 //control_t altitude_controller(control_t altitude_command)
