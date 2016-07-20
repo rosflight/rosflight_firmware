@@ -158,9 +158,7 @@ void init_sensors(void)
   _imu_ready = false;
   mpu6050_register_interrupt_cb(&imu_ISR);
   uint16_t acc1G;
-  float gyro_scale_to_Mrad;
-  mpu6050_init(true, &acc1G, &gyro_scale_to_Mrad, _params.values[PARAM_BOARD_REVISION]);
-  gyro_scale = gyro_scale_to_Mrad*1e6;
+  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
   accel_scale = 9.80665f/acc1G;
   calib_gyro = true;
   calib_acc = true;
