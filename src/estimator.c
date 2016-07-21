@@ -207,7 +207,7 @@ void run_estimator(uint32_t now)
   // Extract Euler Angles for controller
   euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
 
-  // Save off gyro
+  // Save off adjust gyro measurements with estimated biases for control
   wbar = vector_sub(wbar, b);
   float alpha = 0.98f;
   _current_state.p = (1.0f-alpha)*wbar.x + alpha*_current_state.p;
