@@ -56,7 +56,7 @@ void set_param_defaults(void)
     init_param_int((param_id_t) id, temp_name, id);
   }
 
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2);
+  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 5);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
@@ -71,12 +71,12 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 25);
 
-  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
+  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
-  init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 20000); // us
-  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 20000);
-  init_param_int(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 25000);
+  init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 0); // us
+  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 0);
+  init_param_int(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 0);
   init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
@@ -93,7 +93,7 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
   init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
 
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 50);
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
   init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
   init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1);
@@ -140,14 +140,14 @@ void set_param_defaults(void)
   init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
   init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
 
-    init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 40.0f);
+    init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 500.0f);
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 50.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.0f);
   init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
 
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 40.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 500.0f);
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 14.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.0f);
   init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
 
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 12.00f);

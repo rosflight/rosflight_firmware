@@ -14,7 +14,9 @@ extern "C" {
 #include "estimator.h"
 
 #include "controller.h"
-#include <stdio.h>
+
+#include "mavlink_log.h"
+#include "mavlink_util.h"
 
 int fsign(float y)
 {
@@ -41,12 +43,12 @@ int32_t sat(int32_t value, int32_t max)
 
 void run_controller(uint32_t now)
 {
-  control_t rate_command = rate_controller(_combined_control, now);
-  control_t outgoing_command = attitude_controller(rate_command, now);
-  _command.x = (int32_t)outgoing_command.x.value;
-  _command.y = (int32_t)outgoing_command.y.value;
-  _command.z = (int32_t)outgoing_command.z.value;
-  _command.F = (int32_t)outgoing_command.F.value;
+  control_t rate_command = attitude_controller(_combined_control, now);
+  control_t outgoing_command = rate_controller(rate_command, now);
+  _command.x = (int32_t)(outgoing_command.x.value);
+  _command.y = (int32_t)(outgoing_command.y.value);
+  _command.z = (int32_t)(outgoing_command.z.value);
+  _command.F = (int32_t)(outgoing_command.F.value);
 }
 
 
@@ -66,8 +68,7 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     float error = rate_command.x.value - _current_state.p;
     if(get_param_float(PARAM_PID_ROLL_RATE_I) > 0)
       integrator += error*dt;
-    motor_command.x.value = fsat(error * get_param_float(PARAM_PID_ROLL_RATE_P)
-                                 + integrator * get_param_float(PARAM_PID_ROLL_RATE_I),
+    motor_command.x.value = fsat(error * get_param_float(PARAM_PID_ROLL_RATE_P) + integrator * get_param_float(PARAM_PID_ROLL_RATE_I),
                                  _params.values[PARAM_MAX_COMMAND]);
     motor_command.x.type = PASSTHROUGH;
   }
@@ -78,8 +79,7 @@ control_t rate_controller(control_t rate_command, uint32_t now)
     float error = rate_command.y.value - _current_state.q;
     if(get_param_float(PARAM_PID_PITCH_RATE_I) > 0)
       integrator += error*dt;
-    motor_command.y.value = fsat(error * get_param_float(PARAM_PID_PITCH_RATE_P)
-                                 + integrator * get_param_float(PARAM_PID_PITCH_RATE_I),
+    motor_command.y.value = fsat(error * get_param_float(PARAM_PID_PITCH_RATE_P) + integrator * get_param_float(PARAM_PID_PITCH_RATE_I),
                                  _params.values[PARAM_MAX_COMMAND]);
     motor_command.y.type = PASSTHROUGH;
   }
@@ -133,7 +133,7 @@ control_t attitude_controller(control_t attitude_command, uint32_t now)
     static float integrator = 0.0f;
     float error = attitude_command.y.value - _current_state.theta;
     integrator += error*dt;
-    rate_command.y.value = error * get_param_float(PARAM_PID_PITCH_ANGLE_P);
+    rate_command.y.value = error * get_param_float(PARAM_PID_PITCH_ANGLE_P)
                            + integrator * get_param_float(PARAM_PID_PITCH_ANGLE_I)
                            - _current_state.q * get_param_float(PARAM_PID_PITCH_ANGLE_D);
     // integrator anti-windup

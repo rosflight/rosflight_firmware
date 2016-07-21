@@ -176,7 +176,7 @@ void run_estimator(uint32_t now)
       // Matrix Exponential Approximation (From Attitude Representation and Kinematic
       // Propagation for Low-Cost UAVs by Robert T. Casey)
       // (Eq. 12 Casey Paper)
-      // This adds 66 us on STM32F10x chips
+      // This adds 90 us on STM32F10x chips
       float norm_w = sqrt(sqrd_norm_w);
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);

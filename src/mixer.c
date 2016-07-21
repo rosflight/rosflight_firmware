@@ -77,7 +77,7 @@ static mixer_t Y6_mixing =
 
 static mixer_t mixer_to_use;
 
-static mixer_t *array_of_mixers[5] =
+static mixer_t *array_of_mixers[NUM_MIXERS] =
 {
   &quadcopter_plus_mixing,
   &quadcopter_x_mixing,
@@ -218,7 +218,6 @@ void mix_output()
     {
       write_motor(i, prescaled_outputs[i]);
     }
-    // If we need to configure another type of output, do it here
   }
 }
 #ifdef __cplusplus
