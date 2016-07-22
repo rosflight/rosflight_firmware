@@ -94,7 +94,7 @@ bool check_mode(uint32_t now)
   }
   else
   {
-    if (pwmRead(_params.values[PARAM_ARM_CHANNEL]) > 1500)
+    if (rc_switch(_params.values[PARAM_ARM_CHANNEL]))
     {
       arm();
     }
