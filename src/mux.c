@@ -88,6 +88,7 @@ bool mux_inputs()
   }
   else // no min throttle check
   {
+    mavlink_send_named_value_int("min_throttle", 0);
     if (_rc_control.F.active)
     {
       _combined_control.F = _rc_control.F;
@@ -102,6 +103,10 @@ bool mux_inputs()
       _combined_control.F.active = true;
     }
   }
+  mavlink_send_named_value_float("F_value", _combined_control.F.value);
+  mavlink_send_named_value_float("x_value", _combined_control.x.value);
+  mavlink_send_named_value_float("y_value", _combined_control.y.value);
+  mavlink_send_named_value_float("z_value", _combined_control.z.value);
 
   // Light to indicate override
   if (_rc_control.x.active || _rc_control.y.active || _rc_control.z.active || _rc_control.F.active)

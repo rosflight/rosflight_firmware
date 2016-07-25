@@ -16,7 +16,7 @@ armed_state_t _armed_state;
 
 void init_mode(void)
 {
-  _armed_state = DISARMED;
+  _armed_state = ARMED;
 }
 
 void arm(void)

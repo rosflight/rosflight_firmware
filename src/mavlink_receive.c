@@ -9,6 +9,8 @@
 
 #include "mavlink_receive.h"
 
+#include "mavlink_util.h"
+
 // global variable definitions
 mavlink_offboard_control_t mavlink_offboard_control;
 uint32_t _offboard_control_time;
@@ -105,12 +107,6 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
   _offboard_control_time = micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
-  // put values into standard message
-  _offboard_control.x.value = mavlink_offboard_control.x;
-  _offboard_control.y.value = mavlink_offboard_control.y;
-  _offboard_control.z.value = mavlink_offboard_control.z;
-  _offboard_control.F.value = mavlink_offboard_control.F;
-
   // Move flags into standard message
   _offboard_control.x.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE1);
   _offboard_control.y.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE2);
@@ -135,18 +131,31 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.type = RATE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
+    _offboard_control.x.value = mavlink_offboard_control.x;
+    _offboard_control.y.value = mavlink_offboard_control.y;
+    _offboard_control.z.value = mavlink_offboard_control.z;
+    _offboard_control.F.value = mavlink_offboard_control.F;
     break;
   case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
     _offboard_control.x.type = ANGLE;
     _offboard_control.y.type = ANGLE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
+    _offboard_control.x.value = mavlink_offboard_control.x;
+    _offboard_control.y.value = mavlink_offboard_control.y;
+    _offboard_control.z.value = mavlink_offboard_control.z;
+    _offboard_control.F.value = mavlink_offboard_control.F;
     break;
   case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
     _offboard_control.x.type = ANGLE;
     _offboard_control.y.type = ANGLE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = ALTITUDE;
+    _offboard_control.x.value = mavlink_offboard_control.x;
+    _offboard_control.y.value = mavlink_offboard_control.y;
+    _offboard_control.z.value = mavlink_offboard_control.z;
+    _offboard_control.F.value = mavlink_offboard_control.F;
+
     break;
     // Handle error state
   }
