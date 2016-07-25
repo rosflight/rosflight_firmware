@@ -135,12 +135,14 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.type = RATE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
+    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     break;
   case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
     _offboard_control.x.type = ANGLE;
     _offboard_control.y.type = ANGLE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
+    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     break;
   case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
     _offboard_control.x.type = ANGLE;
