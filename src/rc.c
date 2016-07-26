@@ -6,12 +6,17 @@
 #include "param.h"
 #include "rc.h"
 #include "mux.h"
+#include "mode.h"
 
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
+bool _calibrate_rc;
+void calibrate_rc();
+
 void init_rc()
 {
+  _calibrate_rc = false;
   _rc_control.x.type = ANGLE;
   _rc_control.y.type = ANGLE;
   _rc_control.z.type = RATE;
@@ -81,6 +86,10 @@ static void convertPWMtoRad()
 
 bool receive_rc(uint32_t now)
 {
+  if(_calibrate_rc)
+  {
+    calibrate_rc();
+  }
   // if it has been more than 20ms then look for new RC values and parse them
   static uint32_t last_rc_receive_time = 0;
   static uint32_t time_of_last_stick_deviation = 0;
@@ -153,4 +162,66 @@ bool receive_rc(uint32_t now)
   return true;
 }
 
+void calibrate_rc()
+{
+  if(_armed_state == ARMED)
+  {
+    mavlink_log_error("Cannot calibrate RC when FCU is armed");
+  }
+  else
+  {
+    // Calibrate Extents of RC Transmitter
+    mavlink_log_warning("Calibrating RC, move sticks to full extents");
+    mavlink_log_warning("in the next 10s");
+    uint32_t now = micros();
+    static int32_t max[4] = {0, 0, 0, 0};
+    static int32_t min[4] = {10000, 10000, 10000, 10000};
+    while(micros() - now < 1e7)
+    {
+      for(int16_t i = 0; i < 4; i++)
+      {
+        int32_t read_value = (int32_t)pwmRead(i);
+        if(read_value > max[i])
+        {
+          max[i] = read_value;
+        }
+        if(read_value < min[i])
+        {
+          min[i] = read_value;
+        }
+      }
+      delay(10);
+    }
+    _params.values[PARAM_RC_X_RANGE] = max[_params.values[PARAM_RC_X_CHANNEL]] - min[_params.values[PARAM_RC_X_CHANNEL]];
+    _params.values[PARAM_RC_Y_RANGE] = max[_params.values[PARAM_RC_Y_CHANNEL]] - min[_params.values[PARAM_RC_Y_CHANNEL]];
+    _params.values[PARAM_RC_Z_RANGE] = max[_params.values[PARAM_RC_Z_CHANNEL]] - min[_params.values[PARAM_RC_Z_CHANNEL]];
+    _params.values[PARAM_RC_F_RANGE] = max[_params.values[PARAM_RC_F_CHANNEL]] - min[_params.values[PARAM_RC_F_CHANNEL]];
+
+    // Calibrate Trimmed Centers
+    mavlink_log_warning("Calibrating RC, leave sticks at center");
+    mavlink_log_warning("and throttle low for next 10 seconds");
+    delay(5000);
+    now = micros();
+    static int32_t sum[4] = {0, 0, 0, 0};
+    static int32_t count[4] = {0, 0, 0, 0};
+
+    while(micros() - now < 5e6)
+    {
+      for(int16_t i = 0; i < 4; i++)
+      {
+        int32_t read_value = (int32_t)pwmRead(i);
+        sum[i] = sum[i] + read_value;
+        count[i] = count[i] + 1;
+      }
+      delay(20); // RC is updated at 50 Hz
+    }
+
+    _params.values[PARAM_RC_X_CENTER] = sum[_params.values[PARAM_RC_X_CHANNEL]]/count[_params.values[PARAM_RC_X_CHANNEL]];
+    _params.values[PARAM_RC_Y_CENTER] = sum[_params.values[PARAM_RC_Y_CHANNEL]]/count[_params.values[PARAM_RC_Y_CHANNEL]];
+    _params.values[PARAM_RC_Z_CENTER] = sum[_params.values[PARAM_RC_Z_CHANNEL]]/count[_params.values[PARAM_RC_Z_CHANNEL]];
+    _params.values[PARAM_RC_F_BOTTOM] = sum[_params.values[PARAM_RC_F_CHANNEL]]/count[_params.values[PARAM_RC_F_CHANNEL]];
+  }
+  mavlink_log_warning("Completed RC calibration");
+  _calibrate_rc = false;
+}
 

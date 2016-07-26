@@ -6,6 +6,7 @@
 #include "param.h"
 #include "mux.h"
 #include "sensors.h"
+#include "rc.h"
 
 #include "mavlink_receive.h"
 
@@ -77,6 +78,15 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
         result = MAV_RESULT_ACCEPTED;
       }
       break;
+    case MAV_CMD_DO_RC_CALIBRATION:
+      if (_armed_state == ARMED)
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        _calibrate_rc = true;
+      }
 
     default:
       result = MAV_RESULT_UNSUPPORTED;
@@ -105,10 +115,10 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
   _offboard_control_time = micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
-  // put values into standard message
+  // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
   _offboard_control.x.value = mavlink_offboard_control.x;
-  _offboard_control.y.value = mavlink_offboard_control.y;
-  _offboard_control.z.value = mavlink_offboard_control.z;
+  _offboard_control.y.value = -mavlink_offboard_control.y;
+  _offboard_control.z.value = -mavlink_offboard_control.z;
   _offboard_control.F.value = mavlink_offboard_control.F;
 
   // Move flags into standard message
