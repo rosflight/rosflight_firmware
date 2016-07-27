@@ -39,12 +39,12 @@ static void convertPWMtoRad()
   if (_rc_control.x.type == ANGLE)
   {
     _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
-                           *2.0f*get_param_float(PARAM_RC_MAX_ROLL_MRAD))/(float)_params.values[PARAM_RC_X_RANGE];
+                           *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)_params.values[PARAM_RC_X_RANGE];
   }
   else if (_rc_control.x.type == RATE)
   {
     _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
-                            *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE_MRAD_S))/(float)_params.values[PARAM_RC_X_RANGE];
+                            *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)_params.values[PARAM_RC_X_RANGE];
   }
   else if (_rc_control.x.type == PASSTHROUGH)
   {
@@ -55,12 +55,12 @@ static void convertPWMtoRad()
   if (_rc_control.y.type == ANGLE)
   {
     _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
-                            *2.0f*get_param_float(PARAM_RC_MAX_PITCH_MRAD))/(float)_params.values[PARAM_RC_Y_RANGE];
+                            *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == RATE)
   {
     _rc_control.y.value = (float)((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
-                            *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE_MRAD_S))/(float)_params.values[PARAM_RC_Y_RANGE];
+                            *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == PASSTHROUGH)
   {
@@ -71,7 +71,7 @@ static void convertPWMtoRad()
   if (_rc_control.z.type == RATE)
   {
     _rc_control.z.value = ((pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER])
-                           *2.0f*get_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S))/(float)_params.values[PARAM_RC_Z_RANGE];
+                           *2.0f*get_param_float(PARAM_RC_MAX_YAWRATE))/(float)_params.values[PARAM_RC_Z_RANGE];
   }
   else if (_rc_control.z.type == PASSTHROUGH)
   {
@@ -221,6 +221,27 @@ void calibrate_rc()
     _params.values[PARAM_RC_Z_CENTER] = sum[_params.values[PARAM_RC_Z_CHANNEL]]/count[_params.values[PARAM_RC_Z_CHANNEL]];
     _params.values[PARAM_RC_F_BOTTOM] = sum[_params.values[PARAM_RC_F_CHANNEL]]/count[_params.values[PARAM_RC_F_CHANNEL]];
   }
+
+  // calculate Trim values (in terms of SI units)
+  if(pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500)
+  {
+    // in angle mode
+    set_param_by_id_float(PARAM_ROLL_TRIM, (float)(_params.values[PARAM_RC_X_CENTER] - 1500)*get_param_float(PARAM_RC_MAX_ROLL)
+                          /(float)_params.values[PARAM_RC_X_RANGE]);
+    set_param_by_id_float(PARAM_PITCH_TRIM, (float)(_params.values[PARAM_RC_Y_CENTER] - 1500)*get_param_float(PARAM_RC_MAX_PITCH)
+                          /(float)_params.values[PARAM_RC_Y_RANGE]);
+  }
+  else
+  {
+    // in rate mode
+    set_param_by_id_float(PARAM_ROLLRATE_TRIM, (float)(_params.values[PARAM_RC_X_CENTER] - 1500)*get_param_float(PARAM_RC_MAX_ROLLRATE)
+                          /(float)_params.values[PARAM_RC_X_RANGE]);
+    set_param_by_id_float(PARAM_PITCHRATE_TRIM, (float)(_params.values[PARAM_RC_Y_CENTER] - 1500)*get_param_float(PARAM_RC_MAX_PITCHRATE)
+                          /(float)_params.values[PARAM_RC_Y_RANGE]);
+  }
+  set_param_by_id_float(PARAM_YAWRATE_TRIM, (float)(_params.values[PARAM_RC_Z_CENTER] - 1500)*get_param_float(PARAM_RC_MAX_YAWRATE)
+                        /(float)_params.values[PARAM_RC_Z_RANGE]);
+
   mavlink_log_warning("Completed RC calibration");
   _calibrate_rc = false;
 }
