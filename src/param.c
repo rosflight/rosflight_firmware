@@ -127,11 +127,11 @@ void set_param_defaults(void)
   init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 12.566f);
   init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 6.283f);
 
-  init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", 0.0f);
-  init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", 0.0f);
+  init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", -0.0465203f);
+  init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", -0.0764034f);
   init_param_float(PARAM_ROLLRATE_TRIM, "ROLLRATE_TRIM", 0.0f);
   init_param_float(PARAM_PITCHRATE_TRIM, "PITCHRATE_TRIM", 0.0f);
-  init_param_float(PARAM_YAWRATE_TRIM, "YAWRATE_TRIM", 0.0f);
+  init_param_float(PARAM_YAWRATE_TRIM, "YAWRATE_TRIM", 0.456523f);
 
   init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
   init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);

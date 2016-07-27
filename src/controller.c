@@ -45,6 +45,10 @@ void run_controller(uint32_t now)
 {
   control_t rate_command = attitude_controller(_combined_control, now);
   control_t outgoing_command = rate_controller(rate_command, now);
+  mavlink_send_named_command_struct("rc", _rc_control);
+  mavlink_send_named_command_struct("offboard", _offboard_control);
+  mavlink_send_named_command_struct("combined", _combined_control);
+  mavlink_send_named_command_struct("outgoing", outgoing_command);
   _command.x = (int32_t)(outgoing_command.x.value);
   _command.y = (int32_t)(outgoing_command.y.value);
   _command.z = (int32_t)(outgoing_command.z.value);
