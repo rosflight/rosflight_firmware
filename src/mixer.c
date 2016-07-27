@@ -111,7 +111,7 @@ void init_mixing()
 void init_PWM()
 {
   bool useCPPM = false;
-  if(_params.values[PARAM_RC_TYPE] == CPPM)
+  if(_params.values[PARAM_RC_TYPE] == 1)
   {
     useCPPM = true;
   }

@@ -38,12 +38,12 @@ static void convertPWMtoRad()
   // Get Roll control command out of RC
   if (_rc_control.x.type == ANGLE)
   {
-    _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
+    _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - 1500)
                            *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)_params.values[PARAM_RC_X_RANGE];
   }
   else if (_rc_control.x.type == RATE)
   {
-    _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
+    _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - 1500)
                             *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)_params.values[PARAM_RC_X_RANGE];
   }
   else if (_rc_control.x.type == PASSTHROUGH)
@@ -54,28 +54,28 @@ static void convertPWMtoRad()
   // Get Pitch control command out of RC
   if (_rc_control.y.type == ANGLE)
   {
-    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - 1500)
                             *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == RATE)
   {
-    _rc_control.y.value = (float)((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+    _rc_control.y.value = (float)((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - 1500)
                             *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == PASSTHROUGH)
   {
-    _rc_control.y.value = pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER];
+    _rc_control.y.value = pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - 1500;
   }
 
   // Get the Yaw control command type out of RC
   if (_rc_control.z.type == RATE)
   {
-    _rc_control.z.value = ((pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER])
+    _rc_control.z.value = ((pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - 1500)
                            *2.0f*get_param_float(PARAM_RC_MAX_YAWRATE))/(float)_params.values[PARAM_RC_Z_RANGE];
   }
   else if (_rc_control.z.type == PASSTHROUGH)
   {
-    _rc_control.z.value = pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER];
+    _rc_control.z.value = pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - 1500;
   }
 
   // Finally, the throttle command
