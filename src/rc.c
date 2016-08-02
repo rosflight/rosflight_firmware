@@ -41,7 +41,7 @@ void init_rc()
 
 bool rc_switch(int16_t channel)
 {
-  if(channel < 4)
+  if(channel < 4 || channel > 8)
   {
     return false;
   }
