@@ -4,6 +4,7 @@
 #include "rc.h"
 #include "param.h"
 #include "mavlink_util.h"
+#include "mavlink_log.h"
 
 #include <breezystm32/breezystm32.h>
 
@@ -27,6 +28,7 @@ void disarm(void)
 {
   _armed_state = DISARMED;
   LED1_OFF;
+  mavlink_log_warning("DISARMED");
 }
 
 bool check_mode(uint32_t now)

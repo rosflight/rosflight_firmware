@@ -120,15 +120,15 @@ void set_param_defaults(void)
   init_param_int(PARAM_OVERRIDE_LAG_TIME, "OVRD_LAG_TIME", 1000);
   init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "MIN_THROTTLE", false);
 
-  init_param_int(PARAM_RC_MAX_ROLL_MRAD, "RC_MAX_ROLL", 786); // 45 deg
-  init_param_int(PARAM_RC_MAX_PITCH_MRAD, "RC_MAX_PITCH", 786);
-  init_param_int(PARAM_RC_MAX_ROLLRATE_MRAD_S, "RC_MAX_ROLLRATE", 12566); // 720 deg/s
-  init_param_int(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12566); // 720 deg/s
-  init_param_int(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6283); // 360 deg/s
-
   init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
   init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);
   init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150);
+
+  init_param_float(PARAM_RC_MAX_ROLL, "RC_MAX_ROLL", 0.786f); // 45 deg
+  init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f);
+  init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f);
+  init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 3.14159f);
+  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 6.28f);
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
@@ -155,7 +155,6 @@ void set_param_defaults(void)
   init_param_int(PARAM_PID_ALT_P, "PID_ALT_P", 10);
   init_param_int(PARAM_PID_ALT_I, "PID_ALT_I", 0);
   init_param_int(PARAM_PID_ALT_D, "PID_ALT_D", 0);
-
 
   init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);

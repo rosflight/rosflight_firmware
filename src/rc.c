@@ -30,13 +30,13 @@ static void convertPWMtoRad()
   // Get Roll control command out of RC
   if (_rc_control.x.type == ANGLE)
   {
-    _rc_control.x.value = ((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
-                           *2*_params.values[PARAM_RC_MAX_ROLL_MRAD])/_params.values[PARAM_RC_X_RANGE];
+    _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
+                           *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)_params.values[PARAM_RC_X_RANGE];
   }
   else if (_rc_control.x.type == RATE)
   {
-    _rc_control.x.value = ((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
-                           *2*_params.values[PARAM_RC_MAX_ROLLRATE_MRAD_S])/_params.values[PARAM_RC_X_RANGE];
+    _rc_control.x.value = (float)((pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER])
+                            *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)_params.values[PARAM_RC_X_RANGE];
   }
   else if (_rc_control.x.type == PASSTHROUGH)
   {
@@ -47,12 +47,12 @@ static void convertPWMtoRad()
   if (_rc_control.y.type == ANGLE)
   {
     _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
-                              *2*_params.values[PARAM_RC_MAX_PITCH_MRAD])/_params.values[PARAM_RC_Y_RANGE];
+                            *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == RATE)
   {
-    _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
-                              *2*_params.values[PARAM_RC_MAX_PITCHRATE_MRAD_S])/_params.values[PARAM_RC_Y_RANGE];
+    _rc_control.y.value = (float)((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
+                            *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)_params.values[PARAM_RC_Y_RANGE];
   }
   else if (_rc_control.y.type == PASSTHROUGH)
   {
@@ -63,7 +63,7 @@ static void convertPWMtoRad()
   if (_rc_control.z.type == RATE)
   {
     _rc_control.z.value = ((pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) - _params.values[PARAM_RC_Z_CENTER])
-                           *2*_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S])/_params.values[PARAM_RC_Z_RANGE];
+                           *2.0f*get_param_float(PARAM_RC_MAX_YAWRATE))/(float)_params.values[PARAM_RC_Z_RANGE];
   }
   else if (_rc_control.z.type == PASSTHROUGH)
   {
