@@ -9,6 +9,7 @@ extern "C" {
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 #include <turbotrig/turbovec.h>
+#include "mavlink_util.h"
 
 #include "sensors.h"
 #include "param.h"
@@ -176,7 +177,7 @@ void run_estimator(uint32_t now)
       // Matrix Exponential Approximation (From Attitude Representation and Kinematic
       // Propagation for Low-Cost UAVs by Robert T. Casey)
       // (Eq. 12 Casey Paper)
-      // This adds 90 us on STM32F10x chips
+      // This adds 66 us on STM32F10x chips
       float norm_w = sqrt(sqrd_norm_w);
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);
@@ -207,9 +208,9 @@ void run_estimator(uint32_t now)
   // Extract Euler Angles for controller
   euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
 
-  // Save off adjust gyro measurements with estimated biases for control
+  // Save off gyro
   wbar = vector_sub(wbar, b);
-  float alpha = 0.98f;
+  float alpha = 0.8f;
   _current_state.p = (1.0f-alpha)*wbar.x + alpha*_current_state.p;
   _current_state.q = (1.0f-alpha)*wbar.y + alpha*_current_state.q;
   _current_state.r = (1.0f-alpha)*wbar.z + alpha*_current_state.r;

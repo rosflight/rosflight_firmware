@@ -7,9 +7,6 @@
 #include "rc.h"
 #include "mux.h"
 
-#include "mavlink_util.h"
-#include "mavlink_log.h"
-
 void init_rc()
 {
   _rc_control.x.type = ANGLE;
@@ -43,10 +40,10 @@ static void convertPWMtoRad()
   }
   else if (_rc_control.x.type == PASSTHROUGH)
   {
-    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_X_CHANNEL]) - _params.values[PARAM_RC_X_CENTER];
+    _rc_control.x.value = pwmRead(_params.values[PARAM_RC_X_CHANNEL])-_params.values[PARAM_RC_X_CENTER];
   }
 
-  // Get Pitch control command out of RC
+  // Get Pitch control command out of RC - note that pitch channels are usually reversed
   if (_rc_control.y.type == ANGLE)
   {
     _rc_control.y.value = ((pwmRead(_params.values[PARAM_RC_Y_CHANNEL]) - _params.values[PARAM_RC_Y_CENTER])
@@ -74,8 +71,8 @@ static void convertPWMtoRad()
   }
 
   // Finally, the throttle command
-  _rc_control.F.value = (float)((pwmRead(_params.values[PARAM_RC_F_CHANNEL]) - _params.values[PARAM_RC_F_BOTTOM]) * 1000.0f)
-                        / (float)_params.values[PARAM_RC_F_RANGE];
+  _rc_control.F.value = (pwmRead(_params.values[PARAM_RC_F_CHANNEL]) - _params.values[PARAM_RC_F_BOTTOM])
+                        * 1000 / _params.values[PARAM_RC_F_RANGE];
 }
 
 
@@ -102,10 +99,12 @@ bool receive_rc(uint32_t now)
   }
   else
   {
-    _rc_control.x.type = _rc_control.y.type = (pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500) ? ANGLE : RATE;
+    _rc_control.x.type = _rc_control.y.type = RATE;//(pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500) ? ANGLE :
+//                         RATE;
     _rc_control.z.type = RATE;
     _rc_control.F.type = (pwmRead(_params.values[PARAM_RC_F_CONTROL_TYPE_CHANNEL]) > 1500) ? ALTITUDE : THROTTLE;
   }
+
 
   // Interpret PWM Values from RC
   convertPWMtoRad();
@@ -151,6 +150,8 @@ bool receive_rc(uint32_t now)
 
   _new_command = true;
   return true;
+
+  // Convert PWM inputs to rad or rads/
 }
 
 
