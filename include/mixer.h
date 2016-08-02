@@ -10,9 +10,11 @@ typedef enum
 {
   QUADCOPTER_PLUS,
   QUADCOPTER_X,
+  QUADCOPTER_H,
   TRICOPTER,
   Y6,
-  FIXEDWING
+  FIXEDWING,
+  NUM_MIXERS
 } mixer_type_t;
 
 typedef enum

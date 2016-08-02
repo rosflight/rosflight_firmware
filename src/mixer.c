@@ -36,6 +36,16 @@ static mixer_t quadcopter_x_mixing =
   { 1000,-1000,-1000, 1000,  0, 0, 0, 0}  // Z Mix
 };
 
+static mixer_t quadcopter_h_mixing =
+{
+  {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
+
+  { 1000, 1000, 1000, 1000,  0, 0, 0, 0}, // F Mix
+  {-1057, -943, 1057,  943,  0, 0, 0, 0}, // X Mix
+  {-1005,  995,-1005,  995,  0, 0, 0, 0}, // Y Mix
+  { 1000,-1000,-1000, 1000,  0, 0, 0, 0}  // Z Mix
+};
+
 static mixer_t fixedwing_mixing =
 {
   {S, S, M, S, NONE, NONE, NONE, NONE},
@@ -67,10 +77,11 @@ static mixer_t Y6_mixing =
 
 static mixer_t mixer_to_use;
 
-static mixer_t *array_of_mixers[5] =
+static mixer_t *array_of_mixers[NUM_MIXERS] =
 {
   &quadcopter_plus_mixing,
   &quadcopter_x_mixing,
+  &quadcopter_h_mixing,
   &tricopter_mixing,
   &Y6_mixing,
   &fixedwing_mixing
@@ -207,7 +218,6 @@ void mix_output()
     {
       write_motor(i, prescaled_outputs[i]);
     }
-    // If we need to configure another type of output, do it here
   }
 }
 #ifdef __cplusplus

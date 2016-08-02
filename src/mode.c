@@ -9,6 +9,8 @@
 
 #include "mode.h"
 
+#include "mavlink_log.h"
+
 
 armed_state_t _armed_state;
 
@@ -21,12 +23,14 @@ void arm(void)
 {
   _armed_state = ARMED;
   LED1_ON;
+  mavlink_log_warning("ARMED");
 }
 
 void disarm(void)
 {
   _armed_state = DISARMED;
   LED1_OFF;
+  mavlink_log_warning("DISRMED");
 }
 
 bool check_mode(uint32_t now)
@@ -52,8 +56,8 @@ bool check_mode(uint32_t now)
       // if left stick is down and to the right
       if (pwmRead(_params.values[PARAM_RC_F_CHANNEL]) < _params.values[PARAM_RC_F_BOTTOM] +
           _params.values[PARAM_ARM_THRESHOLD]
-          && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) > (_params.values[PARAM_RC_Z_CENTER] + _params.values[PARAM_RC_Z_RANGE]/2)
-          - _params.values[PARAM_ARM_THRESHOLD])
+          && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) < (_params.values[PARAM_RC_Z_CENTER] - _params.values[PARAM_RC_Z_RANGE]/2)
+          + _params.values[PARAM_ARM_THRESHOLD])
       {
         time_sticks_have_been_in_arming_position += dt;
       }
@@ -72,8 +76,8 @@ bool check_mode(uint32_t now)
       // if left stick is down and to the left
       if (pwmRead(_params.values[PARAM_RC_F_CHANNEL]) < _params.values[PARAM_RC_F_BOTTOM] +
           _params.values[PARAM_ARM_THRESHOLD]
-          && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) < (_params.values[PARAM_RC_Z_CENTER]-_params.values[PARAM_RC_Z_RANGE]/2)
-          + _params.values[PARAM_ARM_THRESHOLD])
+          && pwmRead(_params.values[PARAM_RC_Z_CHANNEL]) > (_params.values[PARAM_RC_Z_CENTER] + _params.values[PARAM_RC_Z_RANGE]/2)
+          - _params.values[PARAM_ARM_THRESHOLD])
       {
         time_sticks_have_been_in_arming_position += dt;
       }
