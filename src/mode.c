@@ -30,7 +30,7 @@ void disarm(void)
 {
   _armed_state = DISARMED;
   LED1_OFF;
-  mavlink_log_warning("DISRMED");
+  mavlink_log_warning("DISARMED");
 }
 
 bool check_mode(uint32_t now)
