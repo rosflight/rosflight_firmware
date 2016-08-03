@@ -1,4 +1,4 @@
-# ROSflight 2 #
+# ROSflight 2
 
 This is the firmware required for STM32F10x-based flight controllers (naze32, flip32 etc...) to run ROSflight.  ROSflight is a software architecture which uses a simple, inexpensive flight controller in tandem with a much more capable onboard computer running ROS.  The onboard computer is given a high-bandwidth connection to the flight controller to access sensor information and perform actuator commands at high rates.  This architectures provides direct control of lower-level functions via the embedded processor while also enabling more complicated functionality such as vision processing and optimization via the ROS middleware.  
 
@@ -14,6 +14,14 @@ These objectives will allow researchers to more easily develop, test and field U
 ## How to Use ##
 
 This repository is the firmware for the STM32F10x.  The ROS driver for the flashed flight controller can be found at BYU-MAGICC/fcu_io2.  To flash the firmware to a flight controller, simply follow the directions in the wiki. To get access to senors and actuators, simply install and run the ROS driver.
+
+Parameters can be retrived, set, and saved to the EEPROM in real-time using the rosservice API in fcu_io2.  They may also be set by changing the default values in param.c, then re-building and flashing the firmware which is likely the easiest method until the ROSflight Configurator is completed.
+
+Sensors are published on ROS topics after they are received from the flight controller.  To change the rate at which sensors are published, change the corresponding parameter on the FCU.
+
+Commands are accepted via the extended_command ROS topic.  
+
+See the documentation in fcu_io2 for more information regarding ExtendedCommands, accelerometer calibration, sensor publications and other ROS-specific details.
 
 ## Implementation Details ##
 
@@ -53,3 +61,8 @@ Tasks are prioritized according to the following scheme:
 7. Registering commands from onboard computer.
 
 Control and estimation are performed on the heartbeat of an IMU update (1000Hz), and it takes approximately 840us from this update to when control is written to motors.  Most of this (590us) is taken up in I2C communication, while the rest is actual estimation and control. Serial write and read tasks are performed asynchronously by hardware units and consist of less than 1% of total CPU time.  A detailed analysis of timing has been performed, and a summary of each function can be found in main.c.
+
+## FAQ
+
+##### 1. My flight controller doesn't seem to be responding - I don't get any IMU messages
+This is likely to be because the BOARD_REV parameter is incorrect.  The estimation and control is run on the heartbeat of the accelerometer interrupt, which is attached to different pins on different revisions of the naze32.
