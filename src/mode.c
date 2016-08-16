@@ -16,7 +16,7 @@ armed_state_t _armed_state;
 
 void init_mode(void)
 {
-  _armed_state = DISARMED;
+  _armed_state = ARMED;
 }
 
 void arm(void)
@@ -94,7 +94,7 @@ bool check_mode(uint32_t now)
   }
   else
   {
-    if (pwmRead(_params.values[PARAM_ARM_CHANNEL]) > 1500)
+    if (rc_switch(_params.values[PARAM_ARM_CHANNEL]))
     {
       arm();
     }

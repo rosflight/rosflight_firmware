@@ -10,6 +10,8 @@
 
 #include "mavlink_receive.h"
 
+#include "mavlink_util.h"
+
 // global variable definitions
 mavlink_offboard_control_t mavlink_offboard_control;
 uint32_t _offboard_control_time;

@@ -11,6 +11,7 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
+static rc_switch_t switches[4];
 bool _calibrate_rc;
 void calibrate_rc();
 
@@ -31,6 +32,31 @@ void init_rc()
   _offboard_control.y.active = false;
   _offboard_control.z.active = false;
   _offboard_control.F.active = false;
+
+  switches[0].channel = 4;
+  switches[0].direction = _params.values[PARAM_RC_SWITCH_5_DIRECTION];
+  switches[1].channel = 5;
+  switches[1].direction = _params.values[PARAM_RC_SWITCH_6_DIRECTION];
+  switches[2].channel = 6;
+  switches[2].direction = _params.values[PARAM_RC_SWITCH_7_DIRECTION];
+  switches[3].channel = 7;
+  switches[3].direction = _params.values[PARAM_RC_SWITCH_8_DIRECTION];
+}
+
+bool rc_switch(int16_t channel)
+{
+  if(channel < 4 || channel > 8)
+  {
+    return false;
+  }
+  if(switches[channel - 4].direction < 0)
+  {
+    return pwmRead(channel) < 1500;
+  }
+  else
+  {
+    return pwmRead(channel) > 1500;
+  }
 }
 
 static void convertPWMtoRad()
@@ -111,16 +137,16 @@ bool receive_rc(uint32_t now)
   }
   else
   {
-    _rc_control.x.type = _rc_control.y.type = (pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500) ? ANGLE : RATE;
+    _rc_control.x.type = _rc_control.y.type = rc_switch(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) ? ANGLE : RATE;
     _rc_control.z.type = RATE;
-    _rc_control.F.type = (pwmRead(_params.values[PARAM_RC_F_CONTROL_TYPE_CHANNEL]) > 1500) ? ALTITUDE : THROTTLE;
+    _rc_control.F.type = rc_switch(_params.values[PARAM_RC_F_CONTROL_TYPE_CHANNEL]) ? ALTITUDE : THROTTLE;
   }
 
   // Interpret PWM Values from RC
   convertPWMtoRad();
 
   // Set flags for attitude channels
-  if (pwmRead(_params.values[PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL]) > 1500
+  if (rc_switch(_params.values[PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL])
       || now - time_of_last_stick_deviation < (uint32_t)(_params.values[PARAM_OVERRIDE_LAG_TIME])*1000)
   {
     // Pilot is in full control
@@ -147,7 +173,7 @@ bool receive_rc(uint32_t now)
 
 
   // Set flags for throttle channel
-  if (pwmRead(_params.values[PARAM_RC_THROTTLE_OVERRIDE_CHANNEL]) > 1500)
+  if (rc_switch(_params.values[PARAM_RC_THROTTLE_OVERRIDE_CHANNEL]))
   {
     // RC Pilot is in full control
     _rc_control.F.active = true;
@@ -223,8 +249,7 @@ void calibrate_rc()
   }
 
   // calculate Trim values (in terms of SI units)
-  /// TODO: change this to a switch check, as opposed to looking at PWM directly
-  if(pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500)
+  if(rc_switch(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]))
   {
     // in angle mode
     set_param_by_id_float(PARAM_ROLL_TRIM, (float)(_params.values[PARAM_RC_X_CENTER] - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
