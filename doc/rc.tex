@@ -73,7 +73,7 @@
 
 \section{Introduction}
 
-A very important feature for ROSflight is the tight integration of an RC safety pilot.  The safety pilot is usually a highly experienced RC operator who is capable of knowing when the computer is doing something unsafe and taking over fast enough to land the MAV safely where researchers can fix the bugs and try again.  ROSflight can be used independently of an onboard computer similar to more fully-developed codes such as cleanflight and baseflight, however it is primarily designed to quickly test research code developed in ROS on hardware.  This means that we can assume that the controls coming from the onboard computer may be suspect, and may at any time try to make the MAV do something drastic, (such as full-throttle into the ceiling or full-power front flips).  While this may be exciting, it is often expensive and dangerous unless there is some safety pilot intervention.  The RC controls are designed to be first interpreted, then mixed with the onboard controls in a way that the safety pilot has quick access to correct dangerous maneuvers commanded by the onboard computer but is primarily on stand-by while the computer does it's thing with the hardware.
+A very important feature for ROSflight is the tight integration of an RC safety pilot.  The safety pilot is usually a highly experienced RC operator who is capable of knowing when the computer is doing something unsafe and taking over fast enough to land the MAV safely so researchers can fix problems and try again.  ROSflight can be used independently of an onboard computer similar to more fully-developed codes such as cleanflight and baseflight, however it is primarily designed to quickly test research code developed in ROS on hardware.  This means that we can assume that the controls coming from the onboard computer may be suspect, and may at any time try to make the MAV do something drastic, (such as full-throttle into the ceiling or full-power front flips).  While this may be exciting, it is often expensive and dangerous unless there is some safety pilot intervention.  The RC controls are designed to be first interpreted, then mixed with the onboard controls in a way that the safety pilot has quick access to correct dangerous maneuvers commanded by the onboard computer but is primarily on stand-by while the computer has uninhibited access to the hardware.
 
 \begin{figure}
 	\centering
@@ -130,9 +130,9 @@ To accomplish this task, a command structure is created from both the incoming r
   \end{tabular}
 \end{table}
 
-Each channel has three fields as shown in table~\ref{command_structure}.  The flag field refers to whether or not that particular channel is being controlled in this message.  If true, then the channel is active, and should be listened to.  If false, then it should be ignored.  If the message from both the offboard control and the RC are both inactive, then the RC signal is taken by default.  The type field indicates the type of information being carried by this channel.  For the $x$ and $y$ channels, this could be an angular rate in mrad/s, or an angle in mrad, the $z$ channel can carry only an angular rate in mrad/s and the $F$ channel can carry a throttle from 0-1000 or an altitude command in cm.  Each channel can also act in ``passthrough'' mode which means that the received PWM signal is forwarded directly to the mixer.  The value field is simply the data being carried in the channel.  This is interpreted according to the type field.
+Each channel has three fields as shown in table~\ref{command_structure}.  The flag field refers to whether or not that particular channel is being controlled in this message.  If true, then the channel is active, and should be listened to.  If false, then it should be ignored.  If the message from both the offboard control and the RC are both inactive, then the RC signal is taken by default.  The type field indicates the type of information being carried by this channel.  For the $x$ and $y$ channels, this could be an angular rate in rad/s, or an angle in rad, or simply a servo command in $\upmu$s. the $z$ channel can carry only an angular rate in rad/s or servo command in $\upmu$s and the $F$ channel can carry a throttle from 0-1000$\upmu$s or an altitude command in m.  The value field is simply the data being carried in the channel.  This is interpreted according to the type field.
 
-The logic required to construct the rc command structure is shown in figure~\ref{fig:rc_flow}.  The MAVLink structure is converted to its final form upon receiving the message, but the logic to do so is trivial, and is ommitted here for brevity.
+The logic required to construct the rc command structure is shown in figure~\ref{fig:rc_flow}.  The MAVLink structure is converted to its final form upon receiving the command, but the logic to do so is trivial, and is ommitted here for brevity.
 
 \begin{figure}[!htb]
 \centering
@@ -228,7 +228,7 @@ The logic required to construct the rc command structure is shown in figure~\ref
 
 \section{Combinining the MAVLink and RC Command Structures}
 
-Once both the RC and offboard MAVlink command structures have been created from thier respective sources, they must be combined into the composite command structure, which is then passed to the controller to be converted into primitive torques, then mixed into motor outputs.  The three attitude channels $x$, $y$, and $z$ are all interpreted in the same way, as shown in Figure~\ref{fig:attitude_mux}, however, to handle minimum throttle cases, the logic to combined the $F$ channel is a bit more complex, as shown in Figure~\ref{fig:throttle_mux}.  In order to mux throttles with the MIN\_THROTTLE param set true, altitude commands must be first converted into throttles using the altitude controller.  They are then compared with one another and the lower of the two is taken.
+Once both the RC and offboard MAVlink command structures have been created from their respective sources, they must be combined into the composite command structure, which is then passed to the controller to be converted into desired torques, which is mixed into motor outputs.  The three attitude channels $x$, $y$, and $z$ are all interpreted in the same way, as shown in Figure~\ref{fig:attitude_mux}, however, to handle minimum throttle cases, the logic to combined the $F$ channel is a bit more complex, as shown in Figure~\ref{fig:throttle_mux}.  In order to mux throttles with the MIN\_THROTTLE param set true, altitude commands must be first converted into throttles using the altitude controller.  They are then compared with one another and the lower of the two is taken.
 
 \begin{figure}[h]
 \centering
@@ -244,13 +244,16 @@ Once both the RC and offboard MAVlink command structures have been created from 
   \begin{tikzpicture}
 
   \node[node] (start) {start};
-  \node[dec, below=2em of start] (off_active) {Offboard Active?};
+  \node[dec, below=2em of start] (rc_active) {RC Active?};
+  \node[dec, below=2em of rc_active] (off_active) {Offboard Active?};
   \node[block, below left=2em and 2em of off_active] (comb_rc) {Combined=RC};
   \node[block, below right=2em and 2em of off_active] (comb_off) {Combined=Offboard};
   \node[block, below=5em of off_active] (comb_active) {Combined=Active};
   \node[node, below=2em of comb_active] (done) {done};
 
-  \draw[a] (start) -- (off_active);
+  \draw[a] (start) -- (rc_active);
+  \draw[a] (rc_active) -- node[right, pos=0.5] {no} (off_active);
+  \draw[a] (rc_active) -| node[above, pos=0.25] {yes} (comb_rc);
   \draw[a] (off_active) -| node[above, pos=0.25] {no} (comb_rc);
   \draw[a] (off_active) -| node[above, pos=0.25] {yes} (comb_off);
   \draw[a] (comb_rc) |- (comb_active);
@@ -278,13 +281,16 @@ Once both the RC and offboard MAVlink command structures have been created from 
   \begin{tikzpicture}
 
   \node[node] (start) {start};
-  \node[dec, below=2em of start] (off_active) {Offboard Active?};
+  \node[dec, below=2em of start] (rc_active) {RC Active?};
+  \node[dec, below=2em of rc_active] (off_active) {Offboard Active?};
   \node[dec, below right=2em and 6em of off_active] (rc_thr) {RC=THROTTLE?};
   \node[block, below left=2em and 1em of rc_thr] (comb_rc) {Combined=RC};
   \node[block, below right=2em and 1em of rc_thr] (rc_alt) {RC=altCtrl(RC)};
   \node[node, below=2em of comb_rc] (done1) {done};
 
-  \draw[a] (start) -- (off_active);
+  \draw[a] (start) -- (rc_active);
+  \draw[a] (rc_active) -- node[right, pos=0.5] {no} (off_active);
+  \draw[a] (rc_active) -| node[above, pos=0.25] {yes} (rc_thr);
   \draw[a] (off_active) -| node[above, pos=0.25] {no} (rc_thr);
   \draw[a] (rc_thr) -| node[above, pos=0.25] {no} (rc_alt);
   \draw[a] (rc_thr) -| node[above, pos=0.25] {yes} (comb_rc);

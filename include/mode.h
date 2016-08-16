@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#pragma once
+
 typedef enum
 {
   ARMED,

@@ -76,7 +76,7 @@
 
 The mixer is a mechanism by which abstract roll rate, pitch rate, yaw rate and throttle commands are mapped to the actuators of the MAV.  In it's simplest form, the mixer is simply a matrix multiplication which maps these inputs onto motor outputs.
 
-In addition to the mixer, there is some saturation functionality baked into ROSflight2.  This functionality is insipired by that implemented in cleanflight, and serves to ensure that the MAV is always capable of responding to inputs, even during the most aggressive maneuvers.
+In addition to the mixer, there is some saturation functionality baked into ROSflight.  This functionality is insipired by that implemented in cleanflight, and serves to ensure that the MAV is always capable of responding to inputs, even during the most aggressive maneuvers.
 
 The flow of information through the firmware can be visualized in Figure~\ref{fig:mixer_flow}
 
@@ -100,22 +100,22 @@ The flow of information through the firmware can be visualized in Figure~\ref{fi
 
 \section{Mixer}
 
-As mentioned before, the mixer is essentially a matrix multiply.  There are a number of mixers pre-programmed into ROSflight2, and they are published in [CITE].  They are designed to match the original mixers programmed into cleanflight, and they match the corresponding motor output diagrams, shown in Figure~\ref{fig:motor_layout}. First, an abstract command is calculated by the rate controller, or passed directly into the mixer (see controller paper), in the form of a four-tuple.  $(F, x, y, z)$.  In general, these are the actuatable degrees of freedom in the MAV, but specifically, in the case of a multirotor, this is interpreted as Force, Roll Torque, Pitch Torque, and Yaw Torque, $(F, \tau_x, \tau_y \tau_z)$, and in the case of a fixed-wing MAV, this is interpreted as throttle, aileron deflection, elevator deflection and rudder deflection $(T, \delta_a, \delta_e, \delta_r)$.  The mixer then maps these commands to the 8 outputs available on the naze and executes the command.
+As mentioned before, the mixer is essentially a matrix multiplication.  There are a number of mixers pre-programmed into ROSflight2, and they are published in [CITE].  They are designed to match the original mixers programmed into cleanflight, and they match the corresponding motor output diagrams, shown in Figure~\ref{fig:motor_layout}. First, an abstract command is calculated by the rate controller, or passed directly into the mixer (see controller paper), in the form of a four-tuple.  $(F, x, y, z)$.  In general, these are the actuatable degrees of freedom in the MAV, but specifically, in the case of a multirotor, this is interpreted as Force, Roll Torque, Pitch Torque, and Yaw Torque, $(F, \tau_x, \tau_y \tau_z)$, and in the case of a fixed-wing MAV, this is interpreted as throttle, aileron deflection, elevator deflection and rudder deflection $(T, \delta_a, \delta_e, \delta_r)$.  The mixer then maps these commands to the 8 outputs available on the flight controller and executes the command.
 
-As an example we will analyze the quadcopter-X mixing to show how it works.  The rate controller, based on some higher-level input, calculates some command, $\bm{\omega}$.  This is passed into the mixer, which is essentially the following 4x4 matrix:
+As an example, we will analyze the quadcopter-X mixing to show how it works.  The rate controller, based on some higher-level input, calculates some command, $\bm{\omega}$.  This is passed into the mixer, which is essentially the following 4x4 matrix:
 
 \begin{equation}
 	\begin{pmatrix}
-		 1000 & 1000 & 1000 & 1000 \\
-	  -1000 &-1000 & 1000 & 1000 \\
-	  -1000 & 1000 &-1000 & 1000 \\
-	   1000 &-1000 &-1000 & 1000 \\
+		 1 & 1 & 1 & 1 \\
+	  -1 &-1 & 1 & 1 \\
+	  -1 & 1 &-1 & 1 \\
+	   1 &-1 &-1 & 1 \\
 	\end{pmatrix}
 \end{equation}
 
-Where, to avoid doing floating point calculations, it defined with a nominal value of 1000.  After multiplication, the result needs to be divided by 1000 to remain in the same units as the command.  The remaining outputs are made available to modification by the GPIO inputs to the FC via MAVlink.  It is assumed that PID gains in higher-level functions perform the scaling between the different channels to acheive the desired output.
+The remaining outputs are made available to modification by the GPIO inputs to the FC via MAVlink.  It is assumed that PID gains in higher-level functions perform the scaling between the different channels to acheive the desired output.
 
-In addition, each mixer contains information about what kind of output each output channel is.  For example, in the case of a fixed-wing.  The output of the mixer for the first channel is attached to a motor while the other three are attached to servos.  The output of a mixer to a servo must lie between -500 and 500, after which it is shifted up to the center of the servo output.  Motor commands, on the other hand, are restricted to lie between 0 and 1000, and mapped to the full PWM range for standard ESC operation.
+In addition, each mixer contains information about what kind of output each output channel is.  For example, in the case of a fixed-wing.  The output of the mixer for the first channel is attached to a motor while the other three are attached to servos.  The output of a mixer to a servo must lie between -500 and 500, after which it is shifted up to the center of the servo output, or 1500$\upmu$s.  Motor commands, on the other hand, are restricted to lie between 0 and 1000, and mapped to the full PWM range for standard ESC operation.
 
 
 \begin{figure}[h]
@@ -127,7 +127,7 @@ In addition, each mixer contains information about what kind of output each outp
 
 \section{Saturation}
 
-There are often agressive maneuvers which may cause all of the motor outputs to become saturated.  This is of particular concern in multirotors, and can be illustrated in the example of the command of maximum roll while at full throttle in a quadcopter.  Full throttle, with no other command, would normally cause all four motors to saturate at a maximum PWM command of 2000$\upmu$s.  Mixing in a maximum roll command would cause two of the motors to reduce to 1500$\upmu$s, while the other two would go to 2500$\upmu$s.  Because 2500$\upmu$s is beyond the maximum limit, the maximum roll command would actually be interpreted as a half-roll command as the difference between the motors on opposite sides of the MAV would be halved.  To increase controllability in these sorts of situations, we take the motor control value from the mixer, before it is shifted up 1000$\upmu$s to the standard PWM range, and find the scaling factor which would reduce the maximum motor command to 1000$\upmu$s.  We then apply this scaling factor to all other motors, and then shift them up to the standard PWM range of 1000$\upmu$s to 2000$\upmu$s.  This does not completely solve the problem, because the maximum roll command is still reduced somewhat, but it trades off maximum thrust for some additional controllability.  The problem is really caused by a limit in how much acceleration is really possible in the MAV, not so much the way in which these commands are interpreted.  In the case of a simultaneous maximum roll and maximum throttle, two of the motors will receive a command of 2000$\upmu$s, while the other two will receive a command of 1333$\upmu$s, as opposed to the 1500$\upmu$s without the saturation, and maintains controllability even at high levels of throttle.
+There are often agressive maneuvers which may cause multiple motor outputs to become saturated.  This is of particular concern in multirotors, and can be illustrated in the example of the command of maximum roll while at full throttle in a quadcopter.  Full throttle, with no other command, would normally cause all four motors to saturate at a maximum PWM command of 2000$\upmu$s.  Mixing in a maximum roll command would cause two of the motors to reduce to 1500$\upmu$s, while the other two would go to 2500$\upmu$s.  Because 2500$\upmu$s is beyond the maximum limit, the maximum roll command would actually be interpreted as a half-roll command as the difference between the motors on opposite sides of the MAV would be halved.  To increase controllability in these sorts of situations, we take the motor control value from the mixer, before it is shifted up 1000$\upmu$s to the standard PWM range, and find the scaling factor which would reduce the maximum motor command to 1000$\upmu$s.  We then apply this scaling factor to all other motors, and then shift them up to the standard PWM range of 1000$\upmu$s to 2000$\upmu$s.  This does not completely solve the problem, because the maximum roll command is still reduced somewhat, but it trades off maximum thrust for some additional controllability. In the case of a simultaneous maximum roll and maximum throttle, two of the motors will receive a command of 2000$\upmu$s, while the other two will receive a command of 1333$\upmu$s, as opposed to the 1500$\upmu$s without the saturation, and maintains controllability even at high levels of throttle.
 
 
 

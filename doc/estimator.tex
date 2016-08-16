@@ -32,6 +32,7 @@
 
 \usepackage{fancyhdr} % Custom headers and footers
 \usepackage{bm}
+\usepackage{upgreek}
 \pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
 \fancyhead{} % No page header - if you want one, create it in the same way as the footers below
 \fancyfoot[L]{} % Empty left footer
@@ -82,22 +83,24 @@ There are a variety of sensors available on most flight control units, but we wi
 
 \subsection{Accelerometers}
 
-Accelerometers measure all the forces acting on the aircraft.  We can assume that these forces consist primarily of forces from the propellers, but it often also consists of vibrations from unbalanced motors and propellers, wind, ground effect, and a variety of other sources. One thing accelerometers do \textit{not} measure is acceleration due to gravity.  As a result, if you hold an accelerometer still and look at it's measurements, you'll notice it measures the forces required to hold it in place.  For example, if you set an accelerometer on a table, it will measure the normal force the table exerts on the accelerometer.  If we assume that the accelerometer is at rest (albeit a rather significant assumption for a MAV), then we can assume that the forces acting on the accelerometer must be directly opposite gravity.  If we know the direction of gravity (read, inertial frame) relative to the body-fixed frame of the MAV, then we can back out the attitude of the MAV.  
+Accelerometers measure all the forces acting on the aircraft.  We can assume that these forces consist primarily of forces from the propellers, but it often also consists of vibrations from unbalanced motors and propellers, wind, ground effect, and a variety of other sources. One thing accelerometers do \textit{not} measure is acceleration due to gravity.  As a result, if you hold an accelerometer still and look at it's measurements, you'll notice it measures the forces required to hold it in place.  For example, if you set an accelerometer on a table, it will measure the normal force the table exerts on the accelerometer.  If we assume that the accelerometer is at rest (albeit a rather significant assumption for a MAV), then we can assume that the forces acting on the accelerometer must be directly opposite gravity.  Knowing then the direction of gravity with respect to the body-fixed axes of the MAV allows us to back out the MAV's attitude.  
 
 As you might expect, a MAV is not always at rest, so accelerometer measurements tend to bounce around as the MAV accelerates.  There are often also a lot of high-frequency external forces (such as vibrations induced by imbalanced propellers and motors) on a MAV in flight which adds noise to the accelerometer measurement.  We can assume, however, that these accelerations are short-lived, and the accelerometer measurement remains stable over time.
 
+Modern MEMS accelerometers suffer from a significant degree of temperature-dependent bias.  This can be compensated for by recording the value of the stationary bias for all axes of the accelerometer vs temperature, and performing a least-squares approximation.  In ROSflight, this approximation is first-order, and takes place on the onboard computer to take advantage of the superior computing power and ability to handle large amounts of data.  Biases and compensation coefficients are then sent and applied on the flight controller.
+
 \subsection{Rate Gyrocopes}
 
-Rate Gyroscopes, or gyros, on the other hand, directly measure the angular velocity of the IMU.  gyros are not susceptible to external forces like accelerometers, and instead measure angular velocity directly, but integrating gyroscopes over time to calculate attitude would lead to large amounts of drift.  Common MEMS rate gyros also often have some non-zero bias which must be corrected in order for their use on MAVs.
+Rate Gyroscopes, or gyros, on the other hand, directly measure the angular velocity of the IMU.  Gyros are not susceptible to external forces like accelerometers, and instead measure angular velocity directly, but integrating gyroscopes over time to calculate attitude would lead to large amounts of drift.  Common MEMS rate gyros also often have some non-zero bias which must be corrected in order for their use on MAVs. This bias wanders in a stochastic manner, and cannot be corrected through temperature compensation.  It can, however, be estimated using certain filters.
 
 \subsection{Magnetometers}
 
-Magnetometers are often included on many flight control units, and in theory, act like a compass by measuring earth's magnetic field.  Using both the magnetometer and the accelerometer allows you to solve for both the attitude and heading of the vehicle.  Without a magnetometer, the MAV's attitude roll and pitch angles can be estimated, but yaw is unobservable, because yaw is defined to be a rotation about the z-axis, the axis upon which gravity acts.
+Magnetometers are often included on many flight control units, and in theory, act like a compass by measuring earth's magnetic field.  Using both the magnetometer and the accelerometer allows you to solve for both the attitude and heading of the vehicle.  Without a magnetometer, the MAV's attitude roll and pitch angles can be estimated, but yaw is unobservable.
 
-However, because most MAV's now use electric motors, the magnetic field created by these motors, and high-current electricity flowing throughout the MAV, the magnetic field is subject to wander significantly during flight.  As a result, magnetometers are not very reliable in practice, and should be supplanted instead with GPS.  In this derivation, we will assume that we are not using a magnetometer.
+However, because most MAVs now use electric motors, the magnetic field created by these motors, and high-current electricity flowing throughout the MAV, the magnetic field is subject to wander significantly during flight.  As a result, magnetometers are not very reliable in practice, and should be supplanted instead with GPS.  In this derivation, we will assume that we are not using a magnetometer.
 
-\subsection{Complementary Filtering}
-The idea behind complementary filtering is to try to get the ``best of both worlds'' of gyros and accelerometers.  Gyros are very accurate in short spaces of time, but they are subject to drift.  Accelerometers don't drift in the long scheme of things, but they are noisy as the MAV moves about.  So, to solve these problems, the complementary filter primarily propagates states using gyroscope measurements, but then corrects drift by using the accelerometer.  In a general sense, it is like taking a high-pass filtered version of gyroscope measurements, and a low-pass filtered version of accelerometers, and fusing the two together, such that you get an estimate that is stable over time, but also able to handle quick transient motions.
+\section{Complementary Filtering}
+The idea behind complementary filtering is to try to get the ``best of both worlds'' of gyros and accelerometers.  Gyros are very accurate in short spaces of time, but they are subject to drift.  Accelerometers don't drift in the long scheme of things, but they are noisy as the MAV moves about.  So, to solve these problems, the complementary filter primarily propagates states using gyroscope measurements, but then corrects drift by using the accelerometer.  In a general sense, it is like taking a high-pass filtered version of gyroscope measurements, and a low-pass filtered version of accelerometers, and fusing the two together in a manner that results in an estimate that is stable over time, but also able to handle quick transient motions.
 
 \section{Attitude Representation}
 There are a number of ways to represent the attitude of a MAV.  Most commonly, attitude is represented in terms of the euler angles yaw, pitch and roll, but it can also be represented in other ways, such as rotation matrices, and quaternions.
@@ -168,7 +171,7 @@ and converting back to euler angles is done via the following;
 
 \subsection{Quaternions}
 
-Quaternions are a number system which extends complex numbers.  They have four elements, commonly known as $w$, $x$, $y$, and $z$.  The last three elements can be though of as describing an axis, $\beta$ about which a rotation occurred, while the first element, $w$ can be though of as describing the amount of rotation $\alpha$ about that axis (see eq~\ref{eq:euler_to_axis_angle}).  While this may seem straight-forward, quaternions are normalized so that they can form a group.  (That is, a quaternion multiplied by a quaternion is a quaternion), so they end up being really difficult for a human being to interpret just by looking at the values.  However, they provide some amazing computational efficiencies, most of which comes from the follwing special mathematics associated with quaternions.  
+Quaternions are a number system which extends complex numbers.  They have four elements, commonly known as $w$, $x$, $y$, and $z$.  The last three elements can be though of as describing an axis, $\beta$ about which a rotation occurred, while the first element, $w$ can be though of as describing the amount of rotation $\alpha$ about that axis. (see eq~\ref{eq:euler_to_axis_angle}). While this may seem straight-forward, quaternions are normalized so that they can form a group.  (That is, a quaternion multiplied by a quaternion is a quaternion), so they end up being really difficult for a human being to interpret just by looking at the values.  However, they provide some amazing computational efficiencies, most of which comes from the following special mathematics associated with quaternions.  
 
 First, just the definition of a quaternion:
 
@@ -185,10 +188,17 @@ First, just the definition of a quaternion:
 				\sin(\alpha/2)\cos(\beta_y) \\
 				\sin(\alpha/2)\cos(\beta_y) 
 			 \end{bmatrix}
+			 = \begin{bmatrix}
+			   s \\
+			   \bm{v}_x \\ 
+			   \bm{v}_y \\
+			   \bm{v}_z
+			 \end{bmatrix}
 	\label{eq:euler_to_axis_angle}
 \end{equation}
 
 Second, formulas to convert to and from euler angles
+
 
 \begin{equation}
 	\bm{q} = 
@@ -212,18 +222,19 @@ Second, formulas to convert to and from euler angles
 		\textrm{sin}^{-1}\left( 2 \left( q_wq_y - q_zq_x \right)  \right) \\
 		\textrm{atan2}\left( 2 \left( q_wq_z + q_xq_y \right), 1 - 2 \left( q_y^2 q_z^2 \right)  \right) 
 	\end{bmatrix}
+	\label{eq:euler_from_quat}
 \end{equation}
 
 Quaternions are ``closed'' under the following operation, termed quaternion multiplication.
 
 \begin{equation}
 	\bm{q_1} \otimes \bm{q_2} = \begin{bmatrix}
-									\alpha_1\alpha_2 - \bm{\beta_1}^\top\bm{\beta_2} \\
-									\alpha_1\bm{\beta_2} + \alpha_2\bm{\beta_1} + \bm{\beta_1} \times \bm{\beta_2}
+									s_1s_2 - \bm{v_1}^\top\bm{v_2} \\
+									s_1\bm{v_2} + s_2\bm{v_1} + \bm{v_1} \times \bm{v_2}
 								\end{bmatrix}
 \end{equation}
 
-To take the ``inverse'' of a quaternion is simply to multiply $\alpha$ or $\bm{\beta}$ by $-1$
+To take the ``inverse'' of a quaternion is simply to multiply $s$ or $\bm{v}$ by $-1$
 
 \begin{equation}
 	\bm{q}^{-1} = \begin{bmatrix}
@@ -268,10 +279,10 @@ What this means is that, like rotation matrices, quaternion dynamics are \textit
 
 \section{Derivation}
 
-ROSflight2 implements the quaternion-based Passive Filter as described in~\cite{Mahony2007}.  In particular, we implement equation 47 from that paper, which also estimates gyroscope biases.  A Lyuapanov stability analysis is performed in that paper, in which it is shown that all states and biases, except heading, are globally asymptotically stable given an accelerometer measurement and gyroscope.  In that paper, it also describes how a magnetometer can be integrated in a similar method to the accelerometer.  That portion of the filter is ommitted here due to the unreliable nature of magnetometers onboard modern small UAS.
+ROSflight implements the quaternion-based passive ``Mahoney'' filter as described in~\cite{Mahony2007}.  In particular, we implement equation 47 from that paper, which also estimates gyroscope biases.  A Lyuapanov stability analysis is performed in that paper, in which it is shown that all states and biases, except heading, are globally asymptotically stable given an accelerometer measurement and gyroscope.  The above reference also describes how a magnetometer can be integrated in a similar method to the accelerometer.  That portion of the filter is ommitted here due to the unreliable nature of magnetometers onboard modern small UAS.
 
 \subsection{Modifications to Original Passive Filter}
-There have been a few modifications to the passive filter described in~\cite{Mahony2007}, consisting primarily of contributions from~\cite{Casey2013}.  Firstly, rather than simply taking gyroscope measurements as an estimate of $\bm{\omega}$, a quadratic polynomial is used to approximate the true angular rate from gyroscope measurements to reduce error.  In~\cite{Casey2013}, this process was shown to reduce RMS error by more than 1,000 times.  There are additional steps associated with performing this calculation, but the benefit in accuracy more than compensates for the extra calculation time.  The equation to perform this calculation is shown in Eq.~\ref{eq:quad_approx}.
+There have been a few modifications to the passive filter described in~\cite{Mahony2007}, consisting primarily of contributions from~\cite{Casey2013}.  Firstly, rather than simply taking gyroscope measurements directly as an estimate of $\bm{\omega}$, a quadratic polynomial is used to approximate the true angular rate from gyroscope measurements to reduce error.  In~\cite{Casey2013}, this process was shown to reduce RMS error by more than 1,000 times.  There are additional steps associated with performing this calculation, but the benefit in accuracy more than compensates for the extra calculation time.  The equation to perform this calculation is shown in Eq.~\ref{eq:quad_approx}.
 
 \begin{equation}
 	\bar{\bm{\omega}} = \frac{1}{12}\left(-\bm{\omega}\left(t_{n-2}\right) + 8\bm{\omega}\left(t_{n-1}\right) + 5\bm{\omega}\left(t_n\right) \right)
@@ -322,11 +333,13 @@ The original filter propagates per the following dynamics:
 \end{equation}
 
 
-
-where $\bm{q}_{\omega}$ is the pure quaternion formed from estimated angular rates $\bar{\bm{\omega}}$, estimated gyroscope biases, $\hat{\bm{b}}$, and an adjustment calculated from accelerometer measurements, $\bm{\omega}_{acc}$.
+where $\bm{q}_{\omega}$ is the pure quaternion formed from a composite $\bm{\omega}_{comp}$ which consists of the estimated angular rates, $\bar{\bm{\omega}}$, the estimated gyroscope biases, $\hat{\bm{b}}$, and an adjustment calculated from accelerometer measurements, $\bm{\omega}_{acc}$. $k_p$ and $k_I$ are constant gains used in determining the dynamics of the filter.
 \begin{equation}
-	\bm{q}_{\omega} = \textrm{p}\left(\bar{\bm{\omega}} - \hat{\bm{b}} + k_P\wacc\right)
+\begin{aligned}
+	\bm{q}_{\omega} &= \textrm{p}\left(\bar{\bm{\omega}} - \hat{\bm{b}} + k_P\wacc\right) \\
+	&= \textrm{p}\left( \bm{\omega}_{comp} \right) 
 	\label{eq:q_omega}
+\end{aligned}
 \end{equation}
 
 \newcommand{\avec}{\bm{a}}
@@ -360,33 +373,30 @@ $\wacc$ can be described as the error in the attitude as predicted by the accele
 \end{equation}
 
 \newcommand{\qtilde}{\tilde{\bm{q}}}
-\newcommand{\betatilde}{\tilde{\bm{\beta}}}
+\newcommand{\vtilde}{\tilde{\bm{v}}}
 Next, the quaternion error between the estimate $\qhat$ and the accelerometer measure $\qmeas$ is calculated.
 \begin{equation}
 	\qtilde = \qmeas^{-1} \otimes \qhat = 
 		\begin{bmatrix}
-			\tilde{\alpha}\\
-			\betatilde
+			\tilde{s}\\
+			\vtilde
 		\end{bmatrix}
 \end{equation}
 
 \newcommand{\wmeas}{\bm{\omega}_{acc}}
 Finally, $\qmeas$ is converted back into a 3-vector per the method described in eq. 47a of~\cite{Mahony2007}.
 \begin{equation}
-	\wmeas = 2\tilde{\alpha}\betatilde
+	\wmeas = 2\tilde{s}\vtilde
 \end{equation}
 
-Although the formulation in Eq.~\ref{eq:traditional_prop} is more concise, in implementation, $\bm{q}_{\omega}$ is never actually formed, instead the composite $\bm{\omega}$ vector of Eq.~\ref{eq:q_omega} is directly substituted into equation~\ref{eq:mat_exponential}.  Gyroscope bias propagation is performed using standard euler integration, because they are assumed to be nearly constant.
+Although the formulation in Eq.~\ref{eq:traditional_prop} is more concise, in implementation, $\bm{q}_{\omega}$ is never actually formed, instead the composite $\bm{\omega}_{comp}$ vector of Eq.~\ref{eq:q_omega} is directly substituted into equation~\ref{eq:mat_exponential}.  Gyroscope bias propagation is performed using standard euler integration, because they are assumed to be nearly constant.
 
 \subsection{Tuning}
 The filter can be tuned with the two gains $k_P$ and $k_I$.  Upon initialization, $k_P$ and $k_i$ are set very high, so as to quickly cause the filter to converge upon approprate values.  After a few seconds, they are both reduced by a factor of 10, to a value chosen through manual tuning.  A high $k_P$ will cause sensitivity to transient accelerometer errors, while a small $k_P$ will cause sensitivity to gyroscope drift.  A high $k_I$ will cause biases to wander unnecessarily, while a low $k_I$ will result in slow convergence upon accurate gyroscope bias estimates.  These parameters generally do not need to be modified from the default values.
 
-\section{Implementation}
-Because the STM32F10x lacks a floating-point unit, and to reduce the amount of time between receiving sensor measurements and writing motor commands, estimation is performed entirely with integers.  A custom atan2 fuction, called turboatan2, performs atan2 via a lookup table (leveraging the identity $\textrm{atan2}(x) = \tfrac{\pi}{2} - \textrm{atan2}\left(\tfrac{1}{x}\right)$ to reduce the memory footprint of the lookup table).  The accelerometer is scaled to return mm/s$^2$, and the gyro is scaled to return $\mu$rad/s$^2$ so as to utilize the scale of 32-bit integers as fully as possible.  The return of turboatan2 is in mrad.  The complementary filter is implemented in estimator.c, and is relatively straight-forward except the need for scaling multiples of these different units to remain in the range of 32-bit integers.
-
-\subsection{Accuracy}
-
-The Invensense MPU6050 has a 16-bit ADC and an accelerometer and gyro onboard.  The accelerometer, when scaled to $\pm$4g, has a resolution of 0.002394 m/s$^2$.  Scaled up to mm/s$^2$ accuracy of the 32-bit integer is capable of representing the full resolution of the accelerometer.  The gyroscope has a range of 500$^\circ$/s, or a resolution of 0.000532632 rad/s.  Scaled up to $\mu$rad/s, the 32-bit integer is more than able to represent the full resolution of the gyroscope.  The lookup table method used by turboatan2 is accurate to $\pm$ 0.001 rad, which means that the scaled measurements provided to the complementary filter are the same resolution of the original measurements by the accelerometer, and any error in the filter is caused by noise in the measurement, not in the numerical conversion to 32-bit integers rather than floating-point.  However, an enourmous boost in speed is available through using an entirely integer-based estimator.
+\subsection{Implementation}
+The entire filter is implemented in float-based quaternion calculations.  Even though the STM32F10x microprocessor does not contain a floating-point unit, the entire filter has been timed to take about 370$\upmu$s.  The extra steps of quadratic integration and matrix exponential propagation can be ommited for a 20$\upmu$s and 90$\upmu$s reduction in speed, respectively.  Even with these functions, however, this is sufficiently short to run at well over 1000Hz, which is the update rate of the MPU6050 on the naze32.
+Control is performed according to euler angle estimates, and to reduce the computational load of converting from quaternion to euler angles (See Equation \ref{eq:euler_from_quat}), a lookup table approximation of atan2 and asin are used.  The Invensense MPU6050 has a 16-bit ADC and an accelerometer and gyro onboard.  The accelerometer, when scaled to $\pm$4g, has a resolution of 0.002394 m/s$^2$.  The lookup table method used to approximate atan2 and asin in the actual implementation is accurate to $\pm$ 0.001 rad.  Given the accuracy of the accelerometer, use of this lookup table implementation is justfied.
 
 \bibliographystyle{plain}
 \bibliography{./library}
