@@ -166,13 +166,13 @@ void calibrate_rc()
 {
   if(_armed_state == ARMED)
   {
-    mavlink_log_error("Cannot calibrate RC when FCU is armed");
+    mavlink_log_error("Cannot calibrate RC when FCU is armed", NULL);
   }
   else
   {
     // Calibrate Extents of RC Transmitter
-    mavlink_log_warning("Calibrating RC, move sticks to full extents");
-    mavlink_log_warning("in the next 10s");
+    mavlink_log_warning("Calibrating RC, move sticks to full extents", NULL);
+    mavlink_log_warning("in the next 10s", NULL);
     uint32_t now = micros();
     static int32_t max[4] = {0, 0, 0, 0};
     static int32_t min[4] = {10000, 10000, 10000, 10000};
@@ -198,8 +198,8 @@ void calibrate_rc()
     _params.values[PARAM_RC_F_RANGE] = max[_params.values[PARAM_RC_F_CHANNEL]] - min[_params.values[PARAM_RC_F_CHANNEL]];
 
     // Calibrate Trimmed Centers
-    mavlink_log_warning("Calibrating RC, leave sticks at center");
-    mavlink_log_warning("and throttle low for next 10 seconds");
+    mavlink_log_warning("Calibrating RC, leave sticks at center", NULL);
+    mavlink_log_warning("and throttle low for next 10 seconds", NULL);
     delay(5000);
     now = micros();
     static int32_t sum[4] = {0, 0, 0, 0};
@@ -243,7 +243,7 @@ void calibrate_rc()
   set_param_by_id_float(PARAM_YAWRATE_TRIM, (float)(_params.values[PARAM_RC_Z_CENTER] - 1500)*2.0f*get_param_float(PARAM_RC_MAX_YAWRATE)
                         /(float)_params.values[PARAM_RC_Z_RANGE]);
 
-  mavlink_log_warning("Completed RC calibration");
+  mavlink_log_warning("Completed RC calibration", NULL);
   _calibrate_rc = false;
 }
 
