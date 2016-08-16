@@ -8,6 +8,7 @@ extern "C" {
 #include "mixer.h"
 #include "param.h"
 #include "mode.h"
+#include "rc.h"
 
 int32_t _GPIO_outputs[8];
 static int32_t prescaled_outputs[8];
@@ -109,7 +110,11 @@ void init_mixing()
 
 void init_PWM()
 {
-  bool useCPPM = _params.values[PARAM_RC_TYPE];
+  bool useCPPM = false;
+  if(_params.values[PARAM_RC_TYPE] == 1)
+  {
+    useCPPM = true;
+  }
   int16_t motor_refresh_rate = _params.values[PARAM_MOTOR_PWM_SEND_RATE];
   int16_t idle_pwm = _params.values[PARAM_MOTOR_IDLE_PWM];
   pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);

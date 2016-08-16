@@ -115,7 +115,6 @@ bool mux_inputs()
 
   // reset the new command flag
   _new_command = false;
-
   return true;
 }
 

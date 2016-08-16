@@ -5,6 +5,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "param.h"
 
 #include "mavlink.h"
 
@@ -130,6 +131,15 @@ typedef enum
   PARAM_RC_MAX_ROLLRATE,
   PARAM_RC_MAX_PITCHRATE,
   PARAM_RC_MAX_YAWRATE,
+
+  /*******************/
+  /*** TRIM VALUES ***/
+  /*******************/
+  PARAM_ROLL_TRIM,
+  PARAM_PITCH_TRIM,
+  PARAM_ROLLRATE_TRIM,
+  PARAM_PITCHRATE_TRIM,
+  PARAM_YAWRATE_TRIM,
 
   /***************************/
   /*** FRAME CONFIGURATION ***/
