@@ -249,8 +249,7 @@ void calibrate_rc()
   }
 
   // calculate Trim values (in terms of SI units)
-  /// TODO: change this to a switch check, as opposed to looking at PWM directly
-  if(pwmRead(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) > 1500)
+  if(rc_switch(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]))
   {
     // in angle mode
     set_param_by_id_float(PARAM_ROLL_TRIM, (float)(_params.values[PARAM_RC_X_CENTER] - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
