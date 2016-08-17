@@ -40,6 +40,15 @@ void run_pid(pid_t *pid)
   float now = micros()*1e-6;
   float dt = now - pid->prev_time;
   pid->prev_time = now;
+  if(dt > 0.010)
+  {
+    // This means that this is a ''stale'' controller and needs to be reset
+    // This would happen if we have been operating in a different mode for a while
+    // and will result in some enormous integrator
+    // Setting dt for this loop will mean that the integrator doesn't do anything this time
+    // but will keep it from exploding
+    dt = 0.0;
+  }
 
   // Calculate Error (make sure to de-reference pointers)
   float error = (*pid->commanded_x) - (*pid->current_x);
