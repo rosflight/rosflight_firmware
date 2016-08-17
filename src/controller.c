@@ -134,29 +134,29 @@ void run_controller(pid_t pid)
 {
   // ROLL
   if(_combined_control.x.type == RATE)
-    run_pid(pid_roll_rate);
+    run_pid(&pid_roll_rate);
   else if(_combined_control.x.type == ANGLE)
-    run_pid(pid_roll);
+    run_pid(&pid_roll);
   else // PASSTHROUGH
     _command.x = _combined_control.x.value;
 
   // PITCH
   if(_combined_control.y.type == RATE)
-    run_pid(pid_pitch_rate);
-  else if(_combined_control.x.type == ANGLE)
-    run_pid(pid_pitch_rate);
+    run_pid(&pid_pitch_rate);
+  else if(_combined_control.y.type == ANGLE)
+    run_pid(&pid_pitch_rate);
   else // PASSTHROUGH
     _command.y = _combined_control.y.value;
 
   // YAW
   if(_combined_control.z.type == RATE)
-    run_pid(pid_yaw_rate);
+    run_pid(&pid_yaw_rate);
   else// PASSTHROUGH
     _command.z = _combined_control.z.value;
 
   // THROTTLE
   if(_combined_control.F.type == ALTITUDE)
-    run_pid(pid_altitude);
+    run_pid(&pid_altitude);
   else // PASSTHROUGH
     _command.F = _combined_control.F.value;
 }
