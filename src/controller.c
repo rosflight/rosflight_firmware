@@ -73,6 +73,7 @@ void run_pid(pid_t *pid)
   {
     // calculate D term (be sure to de-reference pointer)
     d_term = (*pid->kd) * (*pid->current_xdot);
+    /// TODO: Dirty Derivative for D term without xdot measurement
   }
 
   // sum three term
