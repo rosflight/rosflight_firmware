@@ -64,6 +64,11 @@ void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi);
 void euler_from_int_quat(intquat_t q, int32_t phi, int32_t theta, int32_t psi);
 
 float turboInvSqrt(float x);
+
+float fsat(float value, float max);
+int32_t sat(int32_t value, int32_t max);
+float fsign(float y);
+
 #ifdef __cplusplus
 }
 #endif

@@ -253,6 +253,31 @@ float turboInvSqrt(float x)
 
   return y;
 }
+
+float fsign(float y)
+{
+  return (0 < y) - (y < 0);
+}
+
+
+float fsat(float value, float max)
+{
+  if (abs(value) > abs(max))
+  {
+    value = max*sign(value);
+  }
+  return value;
+}
+
+
+int32_t sat(int32_t value, int32_t max)
+{
+  if (abs(value) > abs(max))
+  {
+    value = max*sign(value);
+  }
+  return value;
+}
 #ifdef __cplusplus
 }
 #endif
