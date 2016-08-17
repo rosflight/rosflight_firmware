@@ -31,6 +31,9 @@ void init_pid(pid_t* pid, float *kp, float *ki, float *kd, float *current_x, flo
   pid->max = (float*)&_params.values[PARAM_MAX_COMMAND];
   pid->integrator = 0.0;
   pid->prev_time = micros()*1e-6;
+  pid->differentiator = 0.0;
+  pid->prev_x = 0.0;
+  pid->tau = 0.05;
 }
 
 
@@ -42,12 +45,13 @@ void run_pid(pid_t *pid)
   pid->prev_time = now;
   if(dt > 0.010)
   {
-    // This means that this is a ''stale'' controller and needs to be reset
+    // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
-    // and will result in some enormous integrator
-    // Setting dt for this loop will mean that the integrator doesn't do anything this time
-    // but will keep it from exploding
+    // and will result in some enormous integrator.
+    // Setting dt for this loop will mean that the integrator and dirty derivative
+    // doesn't do anything this time but will keep it from exploding.
     dt = 0.0;
+    pid->differentiator = 0.0;
   }
 
   // Calculate Error (make sure to de-reference pointers)
@@ -65,18 +69,28 @@ void run_pid(pid_t *pid)
     pid->integrator += error*dt;
     // calculate I term (be sure to de-reference pointer)
     i_term = (*pid->ki) * pid->integrator;
-    /// TODO Anti-windup here
+
   }
 
   // If there is a derivative term
   if(pid->kd != NULL)
   {
-    // calculate D term (be sure to de-reference pointer)
-    d_term = (*pid->kd) * (*pid->current_xdot);
-    /// TODO: Dirty Derivative for D term without xdot measurement
+    // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
+    // The dirty derivative is a sort of low-pass filtered version of the derivative.
+    // (Be sure to de-refernce pointers)
+    if(pid->current_xdot == NULL && dt > 0.0f)
+    {
+      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+      pid->prev_x = *pid->current_x;
+      d_term = (*pid->cd)*pid->differentiator;
+    }
+    else
+    {
+      d_term = (*pid->kd) * (*pid->current_xdot);
+    }
   }
 
-  // sum three term
+  // sum three terms
   (*pid->output) = p_term + i_term - d_term;
   return;
 }

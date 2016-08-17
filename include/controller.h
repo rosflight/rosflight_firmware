@@ -26,6 +26,9 @@ typedef struct
 
   float integrator;
   float prev_time;
+  float prev_x;
+  float differentiator;
+  float tau;
 } pid_t;
 
 pid_t pid_roll;
