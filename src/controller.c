@@ -139,7 +139,7 @@ void init_controller()
 }
 
 
-void run_controller(pid_t pid)
+void run_controller()
 {
   // ROLL
   if(_combined_control.x.type == RATE)
