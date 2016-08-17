@@ -19,7 +19,7 @@ extern "C" {
 #include "mavlink_util.h"
 
 
-void init_pid(pid_t* pid, float *kp, float *ki, float *kd, float *current_x, float *current_xdot, float *commanded_x, float *output)
+void init_pid(pid_t* pid, float *kp, float *ki, float *kd, float *current_x, float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
   pid->kp = kp;
   pid->ki = ki;
@@ -28,12 +28,13 @@ void init_pid(pid_t* pid, float *kp, float *ki, float *kd, float *current_x, flo
   pid->current_xdot = current_xdot;
   pid->commanded_x = commanded_x;
   pid->output = output;
-  pid->max = (float*)&_params.values[PARAM_MAX_COMMAND];
+  pid->max = max;
+  pid->min = min;
   pid->integrator = 0.0;
   pid->prev_time = micros()*1e-6;
   pid->differentiator = 0.0;
   pid->prev_x = 0.0;
-  pid->tau = 0.05;
+  pid->tau = get_param_float(PARAM_PID_TAU);
 }
 
 
@@ -62,16 +63,6 @@ void run_pid(pid_t *pid)
   float i_term = 0.0;
   float d_term = 0.0;
 
-  // If there is an integrator
-  if(pid->ki != NULL)
-  {
-    // integrate
-    pid->integrator += error*dt;
-    // calculate I term (be sure to de-reference pointer)
-    i_term = (*pid->ki) * pid->integrator;
-
-  }
-
   // If there is a derivative term
   if(pid->kd != NULL)
   {
@@ -82,7 +73,7 @@ void run_pid(pid_t *pid)
     {
       pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
       pid->prev_x = *pid->current_x;
-      d_term = (*pid->cd)*pid->differentiator;
+      d_term = (*pid->kd)*pid->differentiator;
     }
     else
     {
@@ -90,8 +81,26 @@ void run_pid(pid_t *pid)
     }
   }
 
+  // If there is an integrator
+  if(pid->ki != NULL)
+  {
+    // integrate
+    pid->integrator += error*dt;
+    // calculate I term (be sure to de-reference pointer)
+    i_term = (*pid->ki) * pid->integrator;
+  }
+
   // sum three terms
-  (*pid->output) = p_term + i_term - d_term;
+  float u = p_term + i_term - d_term;
+
+  // Integrator anti-windup
+  float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
+  if(u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
+    pid->integrator = (u - p_term + d_term)/(*pid->ki);
+
+  // Set output
+  (*pid->output) = u_sat;
+
   return;
 }
 
@@ -105,7 +114,9 @@ void init_controller()
            &_current_state.phi,
            &_current_state.p,
            &_combined_control.x.value,
-           &_command.x);
+           &_command.x,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
 
   init_pid(&pid_pitch,
            (float*)&_params.values[PARAM_PID_PITCH_ANGLE_P],
@@ -114,7 +125,9 @@ void init_controller()
            &_current_state.theta,
            &_current_state.q,
            &_combined_control.y.value,
-           &_command.y);
+           &_command.y,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
 
   init_pid(&pid_roll_rate,
            (float*)&_params.values[PARAM_PID_ROLL_RATE_P],
@@ -123,7 +136,9 @@ void init_controller()
            &_current_state.p,
            NULL,
            &_combined_control.x.value,
-           &_command.x);
+           &_command.x,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
 
   init_pid(&pid_pitch_rate,
            (float*)&_params.values[PARAM_PID_PITCH_RATE_P],
@@ -132,7 +147,9 @@ void init_controller()
            &_current_state.p,
            NULL,
            &_combined_control.x.value,
-           &_command.x);
+           &_command.x,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
 
   init_pid(&pid_yaw_rate,
            (float*)&_params.values[PARAM_PID_YAW_RATE_P],
@@ -141,7 +158,9 @@ void init_controller()
            &_current_state.r,
            NULL,
            &_combined_control.z.value,
-           &_command.z);
+           &_command.z,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
 
   init_pid(&pid_altitude,
            (float*)&_params.values[PARAM_PID_ALT_P],
@@ -150,7 +169,9 @@ void init_controller()
            &_current_state.altitude,
            NULL,
            &_combined_control.F.value,
-           &_command.F);
+           &_command.F,
+           _params.values[PARAM_MAX_COMMAND],
+           0.0f);
 }
 
 

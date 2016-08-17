@@ -76,6 +76,8 @@ typedef enum
   PARAM_PID_ALT_I,
   PARAM_PID_ALT_D,
 
+  PARAM_PID_TAU,
+
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/

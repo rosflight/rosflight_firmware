@@ -167,6 +167,8 @@ void set_param_defaults(void)
   init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);
   init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);
 
+  init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f);
+
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
   init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
