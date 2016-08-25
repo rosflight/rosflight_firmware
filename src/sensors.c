@@ -59,6 +59,7 @@ static bool update_imu(void)
     int16_t gyro_raw[3];
     int16_t imu_temp_raw;
 
+    // THESE REALLY REALLY NEED TO BE ASYNCHRONOUS
     mpu6050_read_accel(accel_raw);
     mpu6050_read_gyro(gyro_raw);
     mpu6050_read_temperature(&imu_temp_raw);

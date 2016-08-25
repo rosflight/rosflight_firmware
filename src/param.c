@@ -64,16 +64,16 @@ void set_param_defaults(void)
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
 
-  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 50);
+  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
-  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50);
-  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50);
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 0);
+  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 0);
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
-  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 25);
+  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 0);
 
-  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
+  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
 
   init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 0); // us
   init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 0);
@@ -95,13 +95,13 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
 
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
-  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
+  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1150);
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1);
-  init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0);
-  init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1);
+  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 0);
+  init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 1);
+  init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 2);
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3);
-  init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2);
+  init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 0);
 
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
@@ -131,11 +131,11 @@ void set_param_defaults(void)
   init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 12.566f);
   init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 6.283f);
 
-  init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", -0.0465203f);
-  init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", -0.0764034f);
+  init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", 0.0f);
+  init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", 0.0f);
   init_param_float(PARAM_ROLLRATE_TRIM, "ROLLRATE_TRIM", 0.0f);
   init_param_float(PARAM_PITCHRATE_TRIM, "PITCHRATE_TRIM", 0.0f);
-  init_param_float(PARAM_YAWRATE_TRIM, "YAWRATE_TRIM", 0.456523f);
+  init_param_float(PARAM_YAWRATE_TRIM, "YAWRATE_TRIM", 0.0f);
 
   init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
   init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);
@@ -169,7 +169,7 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
