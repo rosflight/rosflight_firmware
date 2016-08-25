@@ -94,51 +94,68 @@ void loop(void)
   /***  Pre-Process ***/
   /*********************/
   // get loop time
-//  static uint32_t prev_time = 0;
-//  static int32_t dt = 0;
+  static uint32_t prev_time = 0;
+  static int32_t dt = 0;
+  static uint32_t counter = 0;
+  static uint32_t average_time = 0;
+  static uint32_t start = 0;
+  static uint32_t end = 0;
+  static uint32_t max = 0;
+  static uint32_t min = 1000;
+
   uint32_t now = micros();
 
   /*********************/
   /***  Control Loop ***/
   /*********************/
   // update sensors - an internal timer runs this at a fixed rate
-  if (update_sensors(now)) // 589 us
+
+  if (update_sensors(now)) // 595 | 591 | 590 us
   {
+
     // If I have new IMU data, then perform control
-    run_estimator(now); // 310 us (acc and gyro, float-based quad integration, mat exp propagation) - 121 us if in gryo-only mode and extra steps disabled
-    run_controller(now); // 30us (angle mode) 29 us (rate mode)
-    mix_output(); // 11 us
+    run_estimator(now); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
+    run_controller(now); // 278 | 271
+
+    start = micros();
+    mix_output(); // 16 | 13 us
+    end = micros();
 
     // loop time calculation
-//    dt = end - start;
-//    average_time+=dt;
-//    counter++;
-
-//    if(counter > 1000)
-//    {
-//      mavlink_send_named_value_int("debug", average_time/counter);
-//      counter = 0;
-//      average_time = 0;
-//    }
+    dt = end - start;
+    average_time+=dt;
+    counter++;
+    max = (dt > max) ? dt : max;
+    min = (dt < min) ? dt : min;
+    if(counter > 1000)
+     {
+       mavlink_send_named_value_int("average", average_time/counter);
+       mavlink_send_named_value_int("max", max);
+       counter = 0;
+       average_time = 0;
+       max = 0;
+       min = 1000;
+     }
   }
-//  prev_time = now;
 
 
   /*********************/
   /***  Post-Process ***/
   /*********************/
   // internal timers figure out what to send
-  mavlink_stream(now); // 3 us at 500 Hz IMU, 50 Hz Baro, named_value_int
+
+  mavlink_stream(now); // 165 | 27 | 2
 
   // receive mavlink messages
-  mavlink_receive(); // 1 us (2 us if commands are published at 1000 Hz)
+  mavlink_receive(); // 159 | 1 | 1
 
   // update the armed_states, an internal timer runs this at a fixed rate
-  check_mode(now); // 0 us
+  check_mode(now); // 108 | 1 | 1
+
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(now); // 1 us
+  receive_rc(now); // 42 | 2 | 1
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  mux_inputs(); // 1 us (if both offboard and rc are publishing)
+  mux_inputs(); // 6 | 1 | 1
 }
