@@ -7,7 +7,9 @@ extern "C" {
 typedef enum
 {
   ARMED,
-  DISARMED
+  DISARMED,
+  FAILSAFE_ARMED,
+  FAILSAFE_DISARMED
 } armed_state_t;
 extern armed_state_t _armed_state;
 

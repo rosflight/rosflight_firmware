@@ -23,7 +23,7 @@ static vector_t w2;
 static vector_t wbar;
 static vector_t wfinal;
 static vector_t w_acc;
-static const vector_t g = {0.0f, 0.0f, 1.0f};
+static const vector_t g = {0.0f, 0.0f, -1.0f};
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;

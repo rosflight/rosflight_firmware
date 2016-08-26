@@ -73,7 +73,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 0);
 
   init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
   init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 0); // us
   init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 0);
@@ -102,11 +102,12 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 2);
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3);
   init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 0);
+  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 8);
 
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5);
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 8);
+  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 7);
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500);
   init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500);
@@ -130,6 +131,7 @@ void set_param_defaults(void)
   init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f);
   init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 3.14159f);
   init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 3.14159f);
+  init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.5);
 
   init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", 0.0f);
   init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", 0.0f);

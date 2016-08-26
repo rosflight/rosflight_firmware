@@ -123,7 +123,7 @@ void init_PWM()
 
 void write_motor(uint8_t index, int32_t value)
 {
-  if (_armed_state == ARMED)
+  if (_armed_state == ARMED || _armed_state == FAILSAFE_ARMED)
   {
     if (value > 1000)
     {

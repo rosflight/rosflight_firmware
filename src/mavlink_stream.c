@@ -26,7 +26,11 @@ typedef struct
 // local function definitions
 static void mavlink_send_heartbeat(void)
 {
-  MAV_MODE armed_mode = _armed_state == ARMED ? MAV_MODE_MANUAL_ARMED : MAV_MODE_MANUAL_DISARMED;
+  MAV_MODE armed_mode = MAV_MODE_ENUM_END; // used for failsafe
+  if(_armed_state == ARMED)
+    armed_mode = MAV_MODE_MANUAL_ARMED;
+  else if(_armed_state == DISARMED) 
+    armed_mode = MAV_MODE_MANUAL_DISARMED;
 
   uint8_t control_mode = 0;
   if(_params.values[PARAM_FIXED_WING])
