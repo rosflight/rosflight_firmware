@@ -191,7 +191,7 @@ void run_controller()
   if(_combined_control.y.type == RATE)
     run_pid(&pid_pitch_rate);
   else if(_combined_control.y.type == ANGLE)
-    run_pid(&pid_pitch_rate);
+    run_pid(&pid_pitch);
   else // PASSTHROUGH
     _command.y = _combined_control.y.value;
 
