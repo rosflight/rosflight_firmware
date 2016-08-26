@@ -72,7 +72,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 0);
 
-  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 0);
+  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0);
 
   init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 0); // us
@@ -106,7 +106,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5);
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 5);
+  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 8);
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500);
   init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500);
@@ -127,9 +127,9 @@ void set_param_defaults(void)
 
   init_param_float(PARAM_RC_MAX_ROLL, "RC_MAX_ROLL", 0.786f);
   init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f);
-  init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 12.566f);
-  init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 12.566f);
-  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 6.283f);
+  init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f);
+  init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 3.14159f);
+  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 3.14159f);
 
   init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", 0.0f);
   init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", 0.0f);
@@ -145,25 +145,25 @@ void set_param_defaults(void)
   init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
   init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
 
-  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 150.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.0);
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 70.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.0f);
   init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
 
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 150.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.0f);
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 70.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.0f);
   init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
 
-  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 70.00f);
-  init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.00f);
-  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 12.566f);
+  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f);
+  init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.00001f);
+  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 3.14159f);
 
-  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 70.00f);
-  init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.00f);
-  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 12.566f);
+  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);
+  init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.00001f);
+  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 3.14159f);
 
-  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 25.0f);
+  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.00f);
   init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);
   init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);
 

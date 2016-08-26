@@ -12,6 +12,7 @@ extern "C" {
 #include "mixer.h"
 #include "mux.h"
 #include "estimator.h"
+#include "mode.h"
 
 #include "controller.h"
 
@@ -44,11 +45,12 @@ void run_pid(pid_t *pid)
   float now = micros()*1e-6;
   float dt = now - pid->prev_time;
   pid->prev_time = now;
-  if(dt > 0.010)
+  if(dt > 0.010 || _armed_state == DISARMED)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
     // and will result in some enormous integrator.
+    // Or, it means we are disarmed and shouldn't integrate
     // Setting dt for this loop will mean that the integrator and dirty derivative
     // doesn't do anything this time but will keep it from exploding.
     dt = 0.0;
@@ -144,10 +146,10 @@ void init_controller()
            (float*)&_params.values[PARAM_PID_PITCH_RATE_P],
            (float*)&_params.values[PARAM_PID_PITCH_RATE_I],
            NULL,
-           &_current_state.p,
+           &_current_state.q,
            NULL,
-           &_combined_control.x.value,
-           &_command.x,
+           &_combined_control.y.value,
+           &_command.y,
            _params.values[PARAM_MAX_COMMAND]/2.0f,
            -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
 
@@ -204,4 +206,18 @@ void run_controller()
     run_pid(&pid_altitude);
   else // PASSTHROUGH
     _command.F = _combined_control.F.value;
+
+  static uint32_t counter = 0;
+  if(counter > 100)
+  {
+    mavlink_send_named_command_struct("RC", _rc_control);
+    mavlink_send_named_command_struct("offboard", _offboard_control);
+    mavlink_send_named_command_struct("combined", _combined_control);
+    mavlink_send_named_value_float("command_F", _command.F);
+    mavlink_send_named_value_float("command_x", _command.x);
+    mavlink_send_named_value_float("command_y", _command.y);
+    mavlink_send_named_value_float("command_z", _command.z);
+    counter = 0;
+  }
+  counter++;
 }
