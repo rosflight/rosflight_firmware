@@ -1,4 +1,5 @@
-# ROSflight 2
+# ROSflight
+[![Build Status](https://travis-ci.org/byu-magicc/ROSflight.svg?branch=master)](https://travis-ci.org/byu-magicc/ROSflight) [![Documentation](https://codedocs.xyz/byu-magicc/ROSflight.svg)](https://codedocs.xyz/byu-magicc/ROSflight/)
 
 This is the firmware required for STM32F10x-based flight controllers (naze32, flip32 etc...) to run ROSflight.  ROSflight is a software architecture which uses a simple, inexpensive flight controller in tandem with a much more capable onboard computer running ROS.  The onboard computer is given a high-bandwidth connection to the flight controller to access sensor information and perform actuator commands at high rates.  This architectures provides direct control of lower-level functions via the embedded processor while also enabling more complicated functionality such as vision processing and optimization via the ROS middleware.  
 
