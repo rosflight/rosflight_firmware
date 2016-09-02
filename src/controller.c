@@ -83,13 +83,16 @@ void run_pid(pid_t *pid)
     }
   }
 
-  // If there is an integrator
-  if(pid->ki != NULL)
+  // If there is an integrator, we are armed, and throttle is high
+  /// TODO: better way to figure out if throttle is high
+  if (pid->ki != NULL && _armed_state == ARMED && pwmRead(_params.values[PARAM_RC_F_CHANNEL] > 1200))
   {
-    // integrate
-    pid->integrator += error*dt;
-    // calculate I term (be sure to de-reference pointer)
-    i_term = (*pid->ki) * pid->integrator;
+    if ( (*pid->ki) > 0.0 ) {
+      // integrate
+      pid->integrator += error*dt;
+      // calculate I term (be sure to de-reference pointer to gain)
+      i_term = (*pid->ki) * pid->integrator;
+    }
   }
 
   // sum three terms

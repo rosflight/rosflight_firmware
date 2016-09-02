@@ -83,6 +83,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f);
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f);
+  init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.6f);
+  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.6f);
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 0);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
@@ -97,12 +99,12 @@ void set_param_defaults(void)
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
   init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1150);
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 0);
-  init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 1);
-  init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 2);
+  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1);
+  init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0);
+  init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1);
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3);
-  init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 0);
-  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 8);
+  init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2);
+  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6);
 
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
@@ -173,7 +175,7 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);

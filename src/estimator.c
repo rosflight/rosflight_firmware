@@ -37,6 +37,8 @@ static float kp_;
 static float ki_;
 static uint32_t init_time;
 
+static vector_t _accel_LPF;
+static vector_t _gyro_LPF;
 
 void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
 {
@@ -85,7 +87,28 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   _adaptive_gyro_bias.y = 0;
   _adaptive_gyro_bias.z = 0;
 
+  _accel_LPF.x = 0;
+  _accel_LPF.y = 0;
+  _accel_LPF.z = -9.80665;
+
+  _gyro_LPF.x = 0;
+  _gyro_LPF.y = 0;
+  _gyro_LPF.z = 0;
+
   last_time = 0;
+}
+
+void run_LPF()
+{
+  float alpha_acc = get_param_float(PARAM_ACC_ALPHA);
+  _accel_LPF.x = (1.0f-alpha_acc)*_accel.x + alpha_acc*_accel_LPF.x;
+  _accel_LPF.y = (1.0f-alpha_acc)*_accel.y + alpha_acc*_accel_LPF.y;
+  _accel_LPF.z = (1.0f-alpha_acc)*_accel.z + alpha_acc*_accel_LPF.z;
+
+  float alpha_gyro = get_param_float(PARAM_GYRO_ALPHA);
+  _gyro_LPF.x = (1.0f-alpha_gyro)*_gyro.x + alpha_gyro*_gyro_LPF.x;
+  _gyro_LPF.y = (1.0f-alpha_gyro)*_gyro.y + alpha_gyro*_gyro_LPF.y;
+  _gyro_LPF.z = (1.0f-alpha_gyro)*_gyro.z + alpha_gyro*_gyro_LPF.z;
 }
 
 
@@ -112,13 +135,16 @@ void run_estimator(uint32_t now)
     ki = ki_;
   }
 
+  // Run LPF to reject a lot of noise
+  run_LPF();
+
   // add in accelerometer
-  float a_sqrd_norm = _accel.x*_accel.x + _accel.y*_accel.y + _accel.z*_accel.z;
+  float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
   if (use_acc && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     // Get error estimated by accelerometer measurement
-    vector_t a = vector_normalize(_accel);
+    vector_t a = vector_normalize(_accel_LPF);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
     quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g));
@@ -135,7 +161,7 @@ void run_estimator(uint32_t now)
     // (eq 47b Mahoney Paper, using correction term w_acc found above)
     b.x -= ki*w_acc.x*dt;
     b.y -= ki*w_acc.y*dt;
-    b.z -= ki*w_acc.z*dt;
+    //    b.z -= ki*w_acc.z*dt;  // Don't integrate z bias, because it's unobservable
   }
   else
   {
@@ -150,13 +176,13 @@ void run_estimator(uint32_t now)
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
     wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2), scalar_multiply(8.0f/12.0f,w1)),
-                      scalar_multiply(5.0f/12.0f,_gyro));
+                      scalar_multiply(5.0f/12.0f,_gyro_LPF));
     w2 = w1;
-    w1 = _gyro;
+    w1 = _gyro_LPF;
   }
   else
   {
-    wbar = _gyro;
+    wbar = _gyro_LPF;
   }
 
   // Build the composite omega vector for kinematic propagation
@@ -209,15 +235,14 @@ void run_estimator(uint32_t now)
 
   // Save off adjust gyro measurements with estimated biases for control
   wbar = vector_sub(wbar, b);
-  float alpha = 0.98f;
-  _current_state.p = (1.0f-alpha)*wbar.x + alpha*_current_state.p;
-  _current_state.q = (1.0f-alpha)*wbar.y + alpha*_current_state.q;
-  _current_state.r = (1.0f-alpha)*wbar.z + alpha*_current_state.r;
+  _current_state.p = _gyro_LPF.x - _adaptive_gyro_bias.x;
+  _current_state.q = _gyro_LPF.y - _adaptive_gyro_bias.y;
+  _current_state.r = _gyro_LPF.z;
 
   // Save gyro biases for streaming to computer
   _adaptive_gyro_bias.x = b.x;
   _adaptive_gyro_bias.y = b.y;
-  _adaptive_gyro_bias.z = b.z;
+  _adaptive_gyro_bias.z = 0.0; // Until we have MAG support, the z-bias is totally meaningless
 }
 
 #ifdef __cplusplus

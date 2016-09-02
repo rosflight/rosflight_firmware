@@ -22,8 +22,8 @@ static mixer_t quadcopter_plus_mixing =
 
   { 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   { 0.0f, -1.0f,  1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-  { 1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  { 1.0f, -1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  {-1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  {-1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 
@@ -51,20 +51,20 @@ static mixer_t fixedwing_mixing =
 {
   {S, S, M, S, NONE, NONE, NONE, NONE},
 
-  {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-  {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-  {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t tricopter_mixing =
 {
   {M, M, M, S, NONE, NONE, NONE, NONE},
 
-  {1.0f,      1.0f,   1.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  { 1.0f,     1.0f,   1.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   {-1.0f,     1.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
   {-0.667f,  -0.667f, 1.333f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  {0.0f,      0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  { 0.0f,     0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t Y6_mixing =
@@ -123,26 +123,27 @@ void init_PWM()
 
 void write_motor(uint8_t index, int32_t value)
 {
-  if (_armed_state == ARMED || _armed_state == FAILSAFE_ARMED)
+  value += 1000;
+  if (_armed_state == ARMED)
   {
-    if (value > 1000)
+    if (value > 2000)
+    {
+      value = 2000;
+    }
+    else if (value < _params.values[PARAM_MOTOR_IDLE_PWM] && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
+    {
+      value = _params.values[PARAM_MOTOR_IDLE_PWM];
+    }
+    else if (value < 1000)
     {
       value = 1000;
-    }
-    else if (value < 150 && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
-    {
-      value = 150;
-    }
-    else if (value < 0)
-    {
-      value = 0;
     }
   }
   else
   {
-    value = 0;
+    value = 1000;
   }
-  _outputs[index] = value + 1000;
+  _outputs[index] = value;
   pwmWriteMotor(index, _outputs[index]);
 }
 

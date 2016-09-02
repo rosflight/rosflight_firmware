@@ -17,7 +17,7 @@ armed_state_t _armed_state;
 
 void init_mode(void)
 {
-  _armed_state = ARMED;
+  _armed_state = DISARMED;
 }
 
 void arm(void)
@@ -32,21 +32,17 @@ void disarm(void)
   LED1_OFF;
 }
 
+/// TODO: Be able to tell if the RC has become disconnected during flight
 bool check_failsafe(void)
 {
-  static uint32_t failsafe_start_time = 0;
   for(int8_t i = 0; i<_params.values[PARAM_RC_NUM_CHANNELS]; i++)
   {
     if(pwmRead(i) < 900 || pwmRead(i) > 2100)
     {
       if(_armed_state == ARMED || _armed_state == DISARMED)
       {
-        // we just entered failsafe mode
-        failsafe_start_time = millis();
-        _armed_state = (_armed_state == ARMED) ? FAILSAFE_ARMED : FAILSAFE_DISARMED;
+        _armed_state = FAILSAFE_DISARMED;
       }
-
-      uint32_t now = millis();
 
       // blink LED
       static uint8_t count = 0;
@@ -56,15 +52,6 @@ bool check_failsafe(void)
         count = 0;
       }
       count++;
-
-      // if it has been more than 10 seconds without RC, just disarm for safety
-      if(now - failsafe_start_time > 10000)
-      {
-        _armed_state = FAILSAFE_DISARMED;
-      }
-
-      // set the failsafe throttle value
-      _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
       return true;
     }
   }
