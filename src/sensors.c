@@ -65,15 +65,16 @@ static bool update_imu(void)
     mpu6050_read_temperature(&imu_temp_raw);
 
     // convert temperature SI units (degC, m/s^2, rad/s)
+    // convert to NED
     _imu_temperature = imu_temp_raw/340.0f + 36.53f;
 
     _accel.x = accel_raw[0] * accel_scale;
-    _accel.y = accel_raw[1] * accel_scale;
-    _accel.z = accel_raw[2] * accel_scale;
+    _accel.y = -accel_raw[1] * accel_scale;
+    _accel.z = -accel_raw[2] * accel_scale;
 
     _gyro.x = gyro_raw[0] * gyro_scale;
-    _gyro.y = gyro_raw[1] * gyro_scale;
-    _gyro.z = gyro_raw[2] * gyro_scale;
+    _gyro.y = -gyro_raw[1] * gyro_scale;
+    _gyro.z = -gyro_raw[2] * gyro_scale;
 
     if (calib_acc)
     {
@@ -83,7 +84,7 @@ static bool update_imu(void)
 
       acc_sum.x += _accel.x;
       acc_sum.y += _accel.y;
-      acc_sum.z += _accel.z - 9.80665f;
+      acc_sum.z += _accel.z + 9.80665f;
       acc_temp_sum += _imu_temperature;
       acc_count++;
 

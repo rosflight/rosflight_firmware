@@ -16,6 +16,7 @@ typedef struct
   float phi;
   float theta;
   float psi;
+  float altitude;
 } state_t;
 
 extern state_t _current_state;

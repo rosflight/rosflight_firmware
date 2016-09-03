@@ -35,6 +35,7 @@ typedef struct
 extern control_t _rc_control;
 extern control_t _offboard_control;
 extern control_t _combined_control;
+extern control_t _failsafe_control;
 
 extern bool _new_command;
 

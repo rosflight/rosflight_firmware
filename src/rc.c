@@ -105,7 +105,7 @@ static void convertPWMtoRad()
   }
 
   // Finally, the throttle command
-  _rc_control.F.value = (float)((pwmRead(_params.values[PARAM_RC_F_CHANNEL]) - _params.values[PARAM_RC_F_BOTTOM]) * 1000.0f)
+  _rc_control.F.value = (float)((pwmRead(_params.values[PARAM_RC_F_CHANNEL]) - _params.values[PARAM_RC_F_BOTTOM]))
                         / (float)_params.values[PARAM_RC_F_RANGE];
 }
 

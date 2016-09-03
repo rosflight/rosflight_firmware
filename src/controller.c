@@ -12,161 +12,215 @@ extern "C" {
 #include "mixer.h"
 #include "mux.h"
 #include "estimator.h"
+#include "mode.h"
 
 #include "controller.h"
 
 #include "mavlink_log.h"
 #include "mavlink_util.h"
 
-int fsign(float y)
+
+void init_pid(pid_t* pid, float *kp, float *ki, float *kd, float *current_x, float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
-  return (0 < y) - (y < 0);
+  pid->kp = kp;
+  pid->ki = ki;
+  pid->kd = kd;
+  pid->current_x = current_x;
+  pid->current_xdot = current_xdot;
+  pid->commanded_x = commanded_x;
+  pid->output = output;
+  pid->max = max;
+  pid->min = min;
+  pid->integrator = 0.0;
+  pid->prev_time = micros()*1e-6;
+  pid->differentiator = 0.0;
+  pid->prev_x = 0.0;
+  pid->tau = get_param_float(PARAM_PID_TAU);
 }
 
-float fsat(float value, float max)
+
+void run_pid(pid_t *pid)
 {
-  if (abs(value) > abs(max))
+  // Time calculation
+  float now = micros()*1e-6;
+  float dt = now - pid->prev_time;
+  pid->prev_time = now;
+  if(dt > 0.010 || _armed_state == DISARMED)
   {
-    value = max*sign(value);
+    // This means that this is a ''stale'' controller and needs to be reset.
+    // This would happen if we have been operating in a different mode for a while
+    // and will result in some enormous integrator.
+    // Or, it means we are disarmed and shouldn't integrate
+    // Setting dt for this loop will mean that the integrator and dirty derivative
+    // doesn't do anything this time but will keep it from exploding.
+    dt = 0.0;
+    pid->differentiator = 0.0;
   }
-  return value;
+
+  // Calculate Error (make sure to de-reference pointers)
+  float error = (*pid->commanded_x) - (*pid->current_x);
+
+  // Initialize Terms
+  float p_term = error * (*pid->kp);
+  float i_term = 0.0;
+  float d_term = 0.0;
+
+  // If there is a derivative term
+  if(pid->kd != NULL)
+  {
+    // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
+    // The dirty derivative is a sort of low-pass filtered version of the derivative.
+    // (Be sure to de-refernce pointers)
+    if(pid->current_xdot == NULL && dt > 0.0f)
+    {
+      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+      pid->prev_x = *pid->current_x;
+      d_term = (*pid->kd)*pid->differentiator;
+    }
+    else
+    {
+      d_term = (*pid->kd) * (*pid->current_xdot);
+    }
+  }
+
+  // If there is an integrator, we are armed, and throttle is high
+  /// TODO: better way to figure out if throttle is high
+  if (pid->ki != NULL && _armed_state == ARMED && pwmRead(_params.values[PARAM_RC_F_CHANNEL] > 1200))
+  {
+    if ( (*pid->ki) > 0.0 ) {
+      // integrate
+      pid->integrator += error*dt;
+      // calculate I term (be sure to de-reference pointer to gain)
+      i_term = (*pid->ki) * pid->integrator;
+    }
+  }
+
+  // sum three terms
+  float u = p_term + i_term - d_term;
+
+  // Integrator anti-windup
+  float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
+  if(u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
+    pid->integrator = (u - p_term + d_term)/(*pid->ki);
+
+  // Set output
+  (*pid->output) = u_sat;
+
+  return;
 }
 
-int32_t sat(int32_t value, int32_t max)
+
+void init_controller()
 {
-  if (abs(value) > abs(max))
-  {
-    value = max*sign(value);
-  }
-  return value;
+  init_pid(&pid_roll,
+           (float*)&_params.values[PARAM_PID_ROLL_ANGLE_P],
+           (float*)&_params.values[PARAM_PID_ROLL_ANGLE_I],
+           (float*)&_params.values[PARAM_PID_ROLL_ANGLE_D],
+           &_current_state.phi,
+           &_current_state.p,
+           &_combined_control.x.value,
+           &_command.x,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+
+  init_pid(&pid_pitch,
+           (float*)&_params.values[PARAM_PID_PITCH_ANGLE_P],
+           (float*)&_params.values[PARAM_PID_PITCH_ANGLE_I],
+           (float*)&_params.values[PARAM_PID_PITCH_ANGLE_D],
+           &_current_state.theta,
+           &_current_state.q,
+           &_combined_control.y.value,
+           &_command.y,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+
+  init_pid(&pid_roll_rate,
+           (float*)&_params.values[PARAM_PID_ROLL_RATE_P],
+           (float*)&_params.values[PARAM_PID_ROLL_RATE_I],
+           NULL,
+           &_current_state.p,
+           NULL,
+           &_combined_control.x.value,
+           &_command.x,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+
+  init_pid(&pid_pitch_rate,
+           (float*)&_params.values[PARAM_PID_PITCH_RATE_P],
+           (float*)&_params.values[PARAM_PID_PITCH_RATE_I],
+           NULL,
+           &_current_state.q,
+           NULL,
+           &_combined_control.y.value,
+           &_command.y,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+
+  init_pid(&pid_yaw_rate,
+           (float*)&_params.values[PARAM_PID_YAW_RATE_P],
+           (float*)&_params.values[PARAM_PID_YAW_RATE_I],
+           NULL,
+           &_current_state.r,
+           NULL,
+           &_combined_control.z.value,
+           &_command.z,
+           _params.values[PARAM_MAX_COMMAND]/2.0f,
+           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+
+  init_pid(&pid_altitude,
+           (float*)&_params.values[PARAM_PID_ALT_P],
+           (float*)&_params.values[PARAM_PID_ALT_I],
+           (float*)&_params.values[PARAM_PID_ALT_D],
+           &_current_state.altitude,
+           NULL,
+           &_combined_control.F.value,
+           &_command.F,
+           _params.values[PARAM_MAX_COMMAND],
+           0.0f);
 }
 
-void run_controller(uint32_t now)
+
+void run_controller()
 {
-  control_t rate_command = attitude_controller(_combined_control, now);
-  control_t outgoing_command = rate_controller(rate_command, now);
-  mavlink_send_named_command_struct("rc", _rc_control);
-  mavlink_send_named_command_struct("offboard", _offboard_control);
-  mavlink_send_named_command_struct("combined", _combined_control);
-  mavlink_send_named_command_struct("outgoing", outgoing_command);
-  _command.x = (int32_t)(outgoing_command.x.value);
-  _command.y = (int32_t)(outgoing_command.y.value);
-  _command.z = (int32_t)(outgoing_command.z.value);
-  _command.F = (int32_t)(outgoing_command.F.value);
+  // ROLL
+  if(_combined_control.x.type == RATE)
+    run_pid(&pid_roll_rate);
+  else if(_combined_control.x.type == ANGLE)
+    run_pid(&pid_roll);
+  else // PASSTHROUGH
+    _command.x = _combined_control.x.value;
+
+  // PITCH
+  if(_combined_control.y.type == RATE)
+    run_pid(&pid_pitch_rate);
+  else if(_combined_control.y.type == ANGLE)
+    run_pid(&pid_pitch);
+  else // PASSTHROUGH
+    _command.y = _combined_control.y.value;
+
+  // YAW
+  if(_combined_control.z.type == RATE)
+    run_pid(&pid_yaw_rate);
+  else// PASSTHROUGH
+    _command.z = _combined_control.z.value;
+
+  // THROTTLE
+  if(_combined_control.F.type == ALTITUDE)
+    run_pid(&pid_altitude);
+  else // PASSTHROUGH
+    _command.F = _combined_control.F.value;
+
+  static uint32_t counter = 0;
+  if(counter > 100)
+  {
+    mavlink_send_named_command_struct("RC", _rc_control);
+    mavlink_send_named_command_struct("offboard", _offboard_control);
+    mavlink_send_named_command_struct("combined", _combined_control);
+    mavlink_send_named_value_float("command_F", _command.F);
+    mavlink_send_named_value_float("command_x", _command.x);
+    mavlink_send_named_value_float("command_y", _command.y);
+    mavlink_send_named_value_float("command_z", _command.z);
+    counter = 0;
+  }
+  counter++;
 }
-
-
-control_t rate_controller(control_t rate_command, uint32_t now)
-{
-  static int32_t prev_time = 0;
-
-  control_t motor_command = rate_command;
-
-  float dt = (float)(now - prev_time)*1e-6;
-  prev_time = now;
-
-  // Set values
-  if (rate_command.x.active && rate_command.x.type == RATE)
-  {
-    static float integrator = 0.0;
-    float error = rate_command.x.value - _current_state.p;
-    if(get_param_float(PARAM_PID_ROLL_RATE_I) > 0)
-      integrator += error*dt;
-    motor_command.x.value = fsat(error * get_param_float(PARAM_PID_ROLL_RATE_P) + integrator * get_param_float(PARAM_PID_ROLL_RATE_I),
-                                 _params.values[PARAM_MAX_COMMAND]);
-    motor_command.x.type = PASSTHROUGH;
-  }
-
-  if (rate_command.y.active && rate_command.y.type == RATE)
-  {
-    static float integrator = 0.0;
-    float error = rate_command.y.value - _current_state.q;
-    if(get_param_float(PARAM_PID_PITCH_RATE_I) > 0)
-      integrator += error*dt;
-    motor_command.y.value = fsat(error * get_param_float(PARAM_PID_PITCH_RATE_P) + integrator * get_param_float(PARAM_PID_PITCH_RATE_I),
-                                 _params.values[PARAM_MAX_COMMAND]);
-    motor_command.y.type = PASSTHROUGH;
-  }
-
-  if (rate_command.z.active && rate_command.z.type == RATE)
-  {
-    float error = rate_command.z.value - _current_state.r;
-    motor_command.z.value = error * get_param_float(PARAM_PID_YAW_RATE_P);
-    motor_command.z.type = PASSTHROUGH;
-    /// TODO Add integrator to controller (with anti-windup)
-  }
-  return motor_command;
-}
-
-control_t attitude_controller(control_t attitude_command, uint32_t now)
-{
-  static int32_t prev_time = 0;
-
-  control_t rate_command = attitude_command;
-
-  float dt = (float)(now - prev_time)*1e-6;
-  prev_time = now;
-
-  if (attitude_command.x.type == ANGLE)
-  {
-    static float integrator = 0.0f;
-    float error = attitude_command.x.value - _current_state.phi;
-    integrator += error*dt;
-    rate_command.x.value = error*get_param_float(PARAM_PID_ROLL_ANGLE_P)
-                           + integrator*get_param_float(PARAM_PID_ROLL_ANGLE_I)
-                           - _current_state.p*get_param_float(PARAM_PID_ROLL_ANGLE_D);
-    // integrator anti-windup <-- Check this before fielding
-//    if (abs(rate_command.x.value) > _params.values[PARAM_MAX_ROLL_RATE])
-//    {
-//      // find the remaining space after the P and D terms to saturate
-//      int32_t space = _params.values[PARAM_MAX_ROLL_RATE]
-//                      - (error*_params.values[PARAM_PID_ROLL_ANGLE_P])/1000
-//                      + (_current_state.p/1000 *_params.values[PARAM_PID_ROLL_ANGLE_D]);;
-//      // Make the integrator fill that space
-//      x_integrator = (space*1000)/_params.values[PARAM_PID_ROLL_ANGLE_I];
-//      // Make sure the integrator never goes negative
-//      x_integrator = (x_integrator > 0) ? x_integrator : 0;
-//      // Saturate the signal
-//      rate_command.x.value = sat(rate_command.x.value, (int32_t)_params.values[PARAM_MAX_ROLL_RATE]);
-//    }
-    rate_command.x.type = PASSTHROUGH;
-  }
-
-  if (attitude_command.y.type == ANGLE)
-  {
-    static float integrator = 0.0f;
-    float error = attitude_command.y.value - _current_state.theta;
-    integrator += error*dt;
-    rate_command.y.value = error * get_param_float(PARAM_PID_PITCH_ANGLE_P)
-                           + integrator * get_param_float(PARAM_PID_PITCH_ANGLE_I)
-                           - _current_state.q * get_param_float(PARAM_PID_PITCH_ANGLE_D);
-    // integrator anti-windup
-//    if (abs(rate_command.y.value) > _params.values[PARAM_MAX_PITCH_RATE])
-//    {
-//      int32_t space = _params.values[PARAM_MAX_PITCH_RATE]
-//                      - (error*_params.values[PARAM_PID_PITCH_ANGLE_P])/1000
-//                      + (_current_state.p/1000 *_params.values[PARAM_PID_PITCH_ANGLE_D]);;
-//      y_integrator = (space*1000)/_params.values[PARAM_PID_PITCH_ANGLE_I];
-//      y_integrator = (y_integrator > 0) ? y_integrator : 0;
-//      rate_command.y.value = sat(rate_command.y.value, (int32_t)_params.values[PARAM_MAX_PITCH_RATE]);
-//    }
-    rate_command.y.type = PASSTHROUGH;
-  }
-
-  return rate_command;
-}
-
-
-//control_t altitude_controller(control_t altitude_command)
-//{
-//  // right now, this doesn't do anything, because I don't have an estimate of altitude
-//  control_t attitude_command = altitude_command;
-//  attitude_command.F.type = THROTTLE;
-//  return attitude_command;
-//}
-
-
-#ifdef __cplusplus
-}
-#endif
-

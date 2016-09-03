@@ -9,16 +9,6 @@ extern "C" {
 #include "turbovec.h"
 #include "turbotrig.h"
 
-//static void pfvec(vector_t v)
-//{
-//  printf("[%d, %d, %d]\n", (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
-//}
-//void pfvec() __attribute__ ((unused));
-
-//static void pfquat(quaternion_t v)
-//{
-//  printf("[%d, %d, %d, %d]\n", (int32_t)(v.w*1000), (int32_t)(v.x*1000), (int32_t)(v.y*1000), (int32_t)(v.z*1000));
-//}
 
 void pfquat() __attribute__ ((unused));
 
@@ -252,6 +242,31 @@ float turboInvSqrt(float x)
   y  = y * (threehalfs - (x2 * y * y));       // 2nd iteration, this can be removed
 
   return y;
+}
+
+float fsign(float y)
+{
+  return (0 < y) - (y < 0);
+}
+
+
+float fsat(float value, float max)
+{
+  if (abs(value) > abs(max))
+  {
+    value = max*sign(value);
+  }
+  return value;
+}
+
+
+int32_t sat(int32_t value, int32_t max)
+{
+  if (abs(value) > abs(max))
+  {
+    value = max*sign(value);
+  }
+  return value;
 }
 #ifdef __cplusplus
 }

@@ -20,10 +20,10 @@ static mixer_t quadcopter_plus_mixing =
 {
   {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
-  { 1000,  1000,  1000,  1000, 0, 0, 0, 0}, // F Mix
-  { 0,    -1000,  1000,  0,    0, 0, 0, 0}, // X Mix
-  { 1000,  0,     0,    -1000, 0, 0, 0, 0}, // Y Mix
-  { 1000, -1000, -1000,  1000, 0, 0, 0, 0}  // Z Mix
+  { 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  { 0.0f, -1.0f,  1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  {-1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  {-1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 
@@ -31,49 +31,49 @@ static mixer_t quadcopter_x_mixing =
 {
   {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
-  { 1000, 1000, 1000, 1000,  0, 0, 0, 0}, // F Mix
-  {-1000,-1000, 1000, 1000,  0, 0, 0, 0}, // X Mix
-  {-1000, 1000,-1000, 1000,  0, 0, 0, 0}, // Y Mix
-  { 1000,-1000,-1000, 1000,  0, 0, 0, 0}  // Z Mix
+  { 1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  {-1.0f,-1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  {-1.0f, 1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  { 1.0f,-1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t quadcopter_h_mixing =
 {
   {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
-  { 1000, 1000, 1000, 1000,  0, 0, 0, 0}, // F Mix
-  {-1057, -943, 1057,  943,  0, 0, 0, 0}, // X Mix
-  {-1005,  995,-1005,  995,  0, 0, 0, 0}, // Y Mix
-  { 1000,-1000,-1000, 1000,  0, 0, 0, 0}  // Z Mix
+  { 1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  {-1057, -943, 1057,  943,  0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  {-1005,  995,-1005,  995,  0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  { 1.0f,-1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t fixedwing_mixing =
 {
   {S, S, M, S, NONE, NONE, NONE, NONE},
 
-  {0,    0,    1000, 0,    0, 0, 0, 0}, // F Mix
-  {1000, 0,    0,    0,    0, 0, 0, 0}, // X Mix
-  {0,    1000, 0,    0,    0, 0, 0, 0}, // Y Mix
-  {0,    0,    0,    1000, 0, 0, 0, 0}  // Z Mix
+  { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t tricopter_mixing =
 {
   {M, M, M, S, NONE, NONE, NONE, NONE},
 
-  {1000,  1000, 1000, 0,    0, 0, 0, 0}, // F Mix
-  {-1000, 1000, 0,    0,    0, 0, 0, 0}, // X Mix
-  {-667,  -667, 1333, 0,    0, 0, 0, 0}, // Y Mix
-  {0,     0,    0,    1000, 0, 0, 0, 0}  // Z Mix
+  { 1.0f,     1.0f,   1.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  {-1.0f,     1.0f,   0.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  {-0.667f,  -0.667f, 1.333f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  { 0.0f,     0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t Y6_mixing =
 {
   {M, M, M, M, M, M, NONE, NONE},
-  { 1000, 1000, 1000, 1000, 1000, 1000, 0, 0}, // F Mix
-  { 0,   -1000, 1000, 0,   -1000, 1000, 0, 0}, // X Mix
-  {-1300,  667,  667,-1300,  667,  667, 0, 0}, // Y Mix
-  {-1000, 1000, 1000, 1000,-1000,-1000, 0, 0}  // Z Mix
+  { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   0.0f, 0.0f}, // F Mix
+  { 0.0f,  -1.0f,    1.0f,    0.0f,   -1.0f,    1.0f,   0.0f, 0.0f}, // X Mix
+  {-1.333f, 0.667f,  0.667f, -1.333f,  0.667f,  0.667f, 0.0f, 0.0f}, // Y Mix
+  {-1.0f,   1.0f,    1.0f,    1.0f,   -1.0f,   -1.0f,   0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t mixer_to_use;
@@ -123,26 +123,27 @@ void init_PWM()
 
 void write_motor(uint8_t index, int32_t value)
 {
+  value += 1000;
   if (_armed_state == ARMED)
   {
-    if (value > 1000)
+    if (value > 2000)
+    {
+      value = 2000;
+    }
+    else if (value < _params.values[PARAM_MOTOR_IDLE_PWM] && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
+    {
+      value = _params.values[PARAM_MOTOR_IDLE_PWM];
+    }
+    else if (value < 1000)
     {
       value = 1000;
-    }
-    else if (value < 150 && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
-    {
-      value = 150;
-    }
-    else if (value < 0)
-    {
-      value = 0;
     }
   }
   else
   {
-    value = 0;
+    value = 1000;
   }
-  _outputs[index] = value + 1000;
+  _outputs[index] = value;
   pwmWriteMotor(index, _outputs[index]);
 }
 
@@ -170,8 +171,8 @@ void mix_output()
     if (mixer_to_use.output_type[i] != NONE)
     {
       // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
-      prescaled_outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                              _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])/1000;
+      prescaled_outputs[i] = (int32_t)((_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
+                                        _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])*1000.0f);
       if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
       {
         max_output = prescaled_outputs[i];
