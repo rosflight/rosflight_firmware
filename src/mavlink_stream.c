@@ -129,7 +129,7 @@ static void mavlink_send_diff_pressure(void)
 {
   if (_diff_pressure_present)
   {
-    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure, _temperature);
+    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure, _diff_pressure_temperature);
   }
 }
 
@@ -137,7 +137,7 @@ static void mavlink_send_baro(void)
 {
   if (_baro_present)
   {
-    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_pressure, _temperature);
+    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_pressure, _diff_pressure_temperature);
   }
 }
 

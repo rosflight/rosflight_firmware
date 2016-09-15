@@ -87,10 +87,6 @@ void setup(void)
 }
 
 
-//uint32_t counter = 0;
-//uint32_t average_time = 0;
-
-
 void loop(void)
 {
   /*********************/
@@ -118,31 +114,13 @@ void loop(void)
     run_estimator(micros()); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
     run_controller(); // 278 | 271
     mix_output(); // 16 | 13 us
-
-    // loop time calculation
-    end = micros();
-    dt = end - start;
-    average_time+=dt;
-    counter++;
-    max = (dt > max) ? dt : max;
-    min = (dt < min) ? dt : min;
-    if(counter > 1000)
-     {
-       // mavlink_send_named_value_int("average", average_time/counter);
-       // mavlink_send_named_value_int("max", max);
-       counter = 0;
-       average_time = 0;
-       max = 0;
-       min = 1000;
-     }
   }
 
 
   /*********************/
   /***  Post-Process ***/
   /*********************/
-  // internal timers figure out what to send
-
+  // internal timers figure out what and when to send
   mavlink_stream(micros()); // 165 | 27 | 2
 
   // receive mavlink messages

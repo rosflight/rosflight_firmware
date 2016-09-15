@@ -57,7 +57,7 @@ void set_param_defaults(void)
     init_param_int((param_id_t) id, temp_name, id);
   }
 
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 5);
+  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
