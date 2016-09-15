@@ -109,6 +109,23 @@ void loop(void)
   start = micros();
   if (update_sensors(micros())) // 595 | 591 | 590 us
   {
+    end = micros();
+    dt = start - end;
+    average_time += dt;
+    max = (dt > max) ? dt : max;
+    min = (dt < min) ? dt : min;
+    counter++;
+
+    if(counter > 100)
+    {
+      mavlink_send_named_value_float("avg", average_time/(float)counter);
+      mavlink_send_named_value_int("max", max);
+      mavlink_send_named_value_int("min", min);
+      max = 0;
+      min = 1000;
+      average_time = 0;
+      counter = 0;
+    }
 
     // If I have new IMU data, then perform control
     run_estimator(micros()); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)

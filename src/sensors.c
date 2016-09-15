@@ -67,9 +67,9 @@ static bool update_imu(void);
 void init_sensors(void)
 {
   // BAROMETER <-- for some reason, this has to come first
-  i2cWrite(0,0,0);
-  _baro_present = ms5611_init();
-  baro_next_us = 0;
+//  i2cWrite(0,0,0);
+//  _baro_present = ms5611_init();
+//  baro_next_us = 0;
 
   // IMU
   mpu6050_register_interrupt_cb(&imu_ISR);
@@ -78,12 +78,12 @@ void init_sensors(void)
   accel_scale = 9.80665f/acc1G;
 
   // DIFF PRESSURE
-  _diff_pressure_present = ms4525_detect();
-  diff_press_next_us = 0;
+//  _diff_pressure_present = ms4525_detect();
+//  diff_press_next_us = 0;
 
-  // SONAR
-  _sonar_present = mb1242_init();
-  sonar_next_us = 0;
+  // SONAR -- Not working yet
+//  _sonar_present = mb1242_init();
+//  sonar_next_us = 0;
 }
 
 
