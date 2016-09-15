@@ -110,7 +110,7 @@ void loop(void)
   if (update_sensors(micros())) // 595 | 591 | 590 us
   {
     end = micros();
-    dt = start - end;
+    dt = end - start;
     average_time += dt;
     max = (dt > max) ? dt : max;
     min = (dt < min) ? dt : min;
