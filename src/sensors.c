@@ -30,8 +30,8 @@ int16_t _diff_pressure_temperature;
 
 // Barometer
 bool _baro_present;
-int16_t _baro_pressure;
-int16_t _baro_temperature;
+int32_t _baro_pressure;
+int32_t _baro_temperature;
 
 // Sonar
 bool _sonar_present;
@@ -67,15 +67,15 @@ static bool update_imu(void);
 void init_sensors(void)
 {
   // BAROMETER <-- for some reason, this has to come first
-//  i2cWrite(0,0,0);
-//  _baro_present = ms5611_init();
-//  baro_next_us = 0;
+  i2cWrite(0,0,0);
+  _baro_present = ms5611_init();
+  baro_next_us = 0;
 
   // IMU
-  mpu6050_register_interrupt_cb(&imu_ISR);
-  uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
-  accel_scale = 9.80665f/acc1G;
+//  mpu6050_register_interrupt_cb(&imu_ISR);
+//  uint16_t acc1G;
+//  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+//  accel_scale = 9.80665f/acc1G;
 
   // DIFF PRESSURE
 //  _diff_pressure_present = ms4525_detect();
@@ -90,24 +90,27 @@ void init_sensors(void)
 bool update_sensors(uint32_t time_us)
 {
   // using else so that we don't do all sensor updates on the same loop
-  if (_diff_pressure_present && time_us >= diff_press_next_us && _params.values[PARAM_DIFF_PRESS_UPDATE] > 0)
-  {
-    diff_press_next_us += _params.values[PARAM_DIFF_PRESS_UPDATE];
-    ms4525_read(&_diff_pressure, &_diff_pressure_temperature);
-  }
-  else if (_baro_present && time_us > baro_next_us && _params.values[PARAM_BARO_UPDATE] > 0)
+//  if (_diff_pressure_present && time_us >= diff_press_next_us && _params.values[PARAM_DIFF_PRESS_UPDATE] > 0)
+//  {
+//    diff_press_next_us += _params.values[PARAM_DIFF_PRESS_UPDATE];
+//    ms4525_read(&_diff_pressure, &_diff_pressure_temperature);
+//  }
+  if (_baro_present && time_us > baro_next_us && _params.values[PARAM_BARO_UPDATE] > 0)
   {
     baro_next_us += _params.values[PARAM_BARO_UPDATE];
+    ms5611_request_async_update();
     _baro_pressure = ms5611_read_pressure();
     _baro_temperature = ms5611_read_temperature();
+    mavlink_send_named_value_int("pressure", ms5611_read_pressure());
   }
-  else if (_sonar_present && time_us > sonar_next_us && _params.values[PARAM_SONAR_UPDATE] > 0)
-  {
-    sonar_next_us += _params.values[PARAM_SONAR_UPDATE];
-    _sonar_time = micros();
-    _sonar_range = mb1242_poll();
-  }
-  return update_imu();
+//  else if (_sonar_present && time_us > sonar_next_us && _params.values[PARAM_SONAR_UPDATE] > 0)
+//  {
+//    sonar_next_us += _params.values[PARAM_SONAR_UPDATE];
+//    _sonar_time = micros();
+//    _sonar_range = mb1242_poll();
+//  }
+    return false;
+//  return update_imu();
 }
 
 

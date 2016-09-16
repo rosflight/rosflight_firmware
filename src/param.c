@@ -67,7 +67,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
-  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 0);
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 10);
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 0);
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 0);
@@ -76,7 +76,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
   init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 0); // us
-  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 0);
+  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 100000);
   init_param_int(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 0);
   init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 

@@ -19,8 +19,8 @@ extern int16_t _diff_pressure;
 extern int16_t _diff_pressure_temperature;
 
 extern bool _baro_present;
-extern int16_t _baro_pressure;
-extern int16_t _baro_temperature;
+extern int32_t _baro_pressure;
+extern int32_t _baro_temperature;
 
 extern bool _sonar_present;
 extern int16_t _sonar_range;

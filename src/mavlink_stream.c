@@ -137,7 +137,7 @@ static void mavlink_send_baro(void)
 {
   if (_baro_present)
   {
-    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_pressure, _diff_pressure_temperature);
+    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_pressure, _baro_temperature);
   }
 }
 
