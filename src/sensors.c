@@ -72,10 +72,10 @@ void init_sensors(void)
   baro_next_us = 0;
 
   // IMU
-//  mpu6050_register_interrupt_cb(&imu_ISR);
-//  uint16_t acc1G;
-//  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
-//  accel_scale = 9.80665f/acc1G;
+  mpu6050_register_interrupt_cb(&imu_ISR);
+  uint16_t acc1G;
+  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+  accel_scale = 9.80665f/acc1G;
 
   // DIFF PRESSURE
 //  _diff_pressure_present = ms4525_detect();
@@ -109,8 +109,7 @@ bool update_sensors(uint32_t time_us)
 //    _sonar_time = micros();
 //    _sonar_range = mb1242_poll();
 //  }
-    return false;
-//  return update_imu();
+  return update_imu();
 }
 
 
