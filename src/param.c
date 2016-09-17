@@ -12,9 +12,6 @@
 #include "mixer.h"
 //#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
 
-//TODO temporary
-#include <stdio.h>
-
 // global variable definitions
 params_t _params;
 
