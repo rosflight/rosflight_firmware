@@ -90,11 +90,11 @@ static bool update_imu(void)
 
       if (acc_count > 1000)
       {
-        set_param_by_id_float(PARAM_ACC_X_BIAS,
+        set_param_float(PARAM_ACC_X_BIAS,
                               (acc_sum.x - get_param_float(PARAM_ACC_X_TEMP_COMP) * acc_temp_sum) / (float)acc_count);
-        set_param_by_id_float(PARAM_ACC_Y_BIAS,
+        set_param_float(PARAM_ACC_Y_BIAS,
                               (acc_sum.y - get_param_float(PARAM_ACC_Y_TEMP_COMP) * acc_temp_sum) / (float)acc_count);
-        set_param_by_id_float(PARAM_ACC_Z_BIAS,
+        set_param_float(PARAM_ACC_Z_BIAS,
                               (acc_sum.z - get_param_float(PARAM_ACC_Z_TEMP_COMP) * acc_temp_sum) / (float)acc_count);
 
         acc_count = 0;
@@ -119,9 +119,9 @@ static bool update_imu(void)
 
       if (gyro_count > 1000)
       {
-        set_param_by_id_float(PARAM_GYRO_X_BIAS, gyro_sum.x / (float)gyro_count);
-        set_param_by_id_float(PARAM_GYRO_Y_BIAS, gyro_sum.y / (float)gyro_count);
-        set_param_by_id_float(PARAM_GYRO_Z_BIAS, gyro_sum.z / (float)gyro_count);
+        set_param_float(PARAM_GYRO_X_BIAS, gyro_sum.x / (float)gyro_count);
+        set_param_float(PARAM_GYRO_Y_BIAS, gyro_sum.y / (float)gyro_count);
+        set_param_float(PARAM_GYRO_Z_BIAS, gyro_sum.z / (float)gyro_count);
 
         gyro_count = 0;
         gyro_sum.x = 0.0f;
@@ -200,18 +200,18 @@ bool update_sensors(uint32_t time_us)
 bool calibrate_acc(void)
 {
   calib_acc = true;
-  set_param_by_id_float(PARAM_ACC_X_BIAS, 0.0);
-  set_param_by_id_float(PARAM_ACC_Y_BIAS, 0.0);
-  set_param_by_id_float(PARAM_ACC_Z_BIAS, 0.0);
+  set_param_float(PARAM_ACC_X_BIAS, 0.0);
+  set_param_float(PARAM_ACC_Y_BIAS, 0.0);
+  set_param_float(PARAM_ACC_Z_BIAS, 0.0);
   return true;
 }
 
 bool calibrate_gyro(void)
 {
   calib_gyro = true;
-  set_param_by_id_float(PARAM_GYRO_X_BIAS, 0.0);
-  set_param_by_id_float(PARAM_GYRO_Y_BIAS, 0.0);
-  set_param_by_id_float(PARAM_GYRO_Z_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_X_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
   return true;
 }
 
