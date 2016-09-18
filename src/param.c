@@ -12,9 +12,6 @@
 #include "mixer.h"
 //#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
 
-//TODO temporary
-#include <stdio.h>
-
 // global variable definitions
 params_t _params;
 
@@ -49,14 +46,6 @@ void init_params(void)
 
 void set_param_defaults(void)
 {
-  // temporary: replace with actual initialisation of rest of params
-  char temp_name[PARAMS_NAME_LENGTH];
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-  {
-    sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
-    init_param_int((param_id_t) id, temp_name, id);
-  }
-
   init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 5);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
