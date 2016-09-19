@@ -160,7 +160,7 @@ void init_sensors(void)
   _imu_ready = false;
   mpu6050_register_interrupt_cb(&imu_ISR);
   uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+  mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
   accel_scale = 9.80665f/acc1G;
   calib_gyro = true;
   calib_acc = true;
@@ -177,20 +177,20 @@ void init_sensors(void)
 bool update_sensors(uint32_t time_us)
 {
   // using else so that we don't do all sensor updates on the same loop
-  if (_diff_pressure_present && time_us >= diff_press_next_us && _params.values[PARAM_DIFF_PRESS_UPDATE] > 0)
+  if (_diff_pressure_present && time_us >= diff_press_next_us && get_param_int(PARAM_DIFF_PRESS_UPDATE) > 0)
   {
-    diff_press_next_us += _params.values[PARAM_DIFF_PRESS_UPDATE];
+    diff_press_next_us += get_param_int(PARAM_DIFF_PRESS_UPDATE);
     ms4525_read(&_diff_pressure, &_temperature);
   }
-  else if (_baro_present && time_us > baro_next_us && _params.values[PARAM_BARO_UPDATE] > 0)
+  else if (_baro_present && time_us > baro_next_us && get_param_int(PARAM_BARO_UPDATE) > 0)
   {
-    baro_next_us += _params.values[PARAM_BARO_UPDATE];
+    baro_next_us += get_param_int(PARAM_BARO_UPDATE);
     _baro_pressure = ms5611_read_pressure();
     _baro_temperature = ms5611_read_temperature();
   }
-  else if (_sonar_present && time_us > sonar_next_us && _params.values[PARAM_SONAR_UPDATE] > 0)
+  else if (_sonar_present && time_us > sonar_next_us && get_param_int(PARAM_SONAR_UPDATE) > 0)
   {
-    sonar_next_us += _params.values[PARAM_SONAR_UPDATE];
+    sonar_next_us += get_param_int(PARAM_SONAR_UPDATE);
     _sonar_time = micros();
     _sonar_range = mb1242_poll();
   }

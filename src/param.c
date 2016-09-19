@@ -186,34 +186,34 @@ void param_change_callback(param_id_t id)
   switch (id)
   {
   case PARAM_SYSTEM_ID:
-    mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
+    mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
     break;
 
   case PARAM_STREAM_ATTITUDE_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, _params.values[PARAM_STREAM_ATTITUDE_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, get_param_int(PARAM_STREAM_ATTITUDE_RATE));
     break;
 
   case PARAM_STREAM_IMU_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, _params.values[PARAM_STREAM_IMU_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, get_param_int(PARAM_STREAM_IMU_RATE));
     break;
   case PARAM_STREAM_AIRSPEED_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, _params.values[PARAM_STREAM_AIRSPEED_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, get_param_int(PARAM_STREAM_AIRSPEED_RATE));
     break;
   case PARAM_STREAM_SONAR_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, _params.values[PARAM_STREAM_SONAR_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, get_param_int(PARAM_STREAM_SONAR_RATE));
     break;
   case  PARAM_STREAM_BARO_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, _params.values[PARAM_STREAM_BARO_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
     break;
 
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, _params.values[PARAM_STREAM_SERVO_OUTPUT_RAW_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, get_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE));
     break;
   case PARAM_STREAM_RC_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, _params.values[PARAM_STREAM_RC_RAW_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
     break;
   default:
     // no action needed for this parameter

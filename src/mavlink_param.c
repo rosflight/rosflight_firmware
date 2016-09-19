@@ -16,7 +16,7 @@ void mavlink_send_param(param_id_t id)
   if (id < PARAMS_COUNT)
   {
     MAV_PARAM_TYPE type;
-    switch (_params.types[id])
+    switch (get_param_type(id))
     {
     case PARAM_TYPE_INT32:
       type = MAV_PARAM_TYPE_INT32;
@@ -29,7 +29,7 @@ void mavlink_send_param(param_id_t id)
     }
 
     mavlink_msg_param_value_send(MAVLINK_COMM_0,
-                                 _params.names[id], get_param_float(id), type, PARAMS_COUNT, id);
+                                 get_param_name(id), get_param_float(id), type, PARAMS_COUNT, id);
   }
 }
 
@@ -43,7 +43,7 @@ void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
   mavlink_param_request_read_t read;
   mavlink_msg_param_request_read_decode(msg, &read);
 
-  if (read.target_system == (uint8_t) _params.values[PARAM_SYSTEM_ID]) // TODO check if component id matches?
+  if (read.target_system == (uint8_t) get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
   {
     param_id_t id = (read.param_index < 0) ? lookup_param_id(read.param_id) : (param_id_t) read.param_index;
 
@@ -57,7 +57,7 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
   mavlink_param_set_t set;
   mavlink_msg_param_set_decode(msg, &set);
 
-  if (set.target_system == (uint8_t) _params.values[PARAM_SYSTEM_ID]) // TODO check if component id matches?
+  if (set.target_system == (uint8_t) get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
   {
     param_id_t id = lookup_param_id(set.param_id);
 
@@ -77,7 +77,7 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
         break;
       }
 
-      if (candidate_type == _params.types[id])
+      if (candidate_type == get_param_type(id))
       {
         switch (candidate_type)
         {

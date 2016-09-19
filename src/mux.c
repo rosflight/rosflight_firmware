@@ -80,7 +80,7 @@ bool mux_inputs()
       _combined_control.z.active = true;
     }
 
-    if (_params.values[PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE])
+    if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
     {
       if (_offboard_control.F.active)
       {
