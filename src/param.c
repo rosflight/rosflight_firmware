@@ -257,6 +257,16 @@ float get_param_float(param_id_t id)
   return *(float *) &_params.values[id];
 }
 
+char *get_param_name(param_id_t id)
+{
+  return _params.names[id];
+}
+
+param_type_t get_param_type(param_id_t id)
+{
+  return _params.types[id];
+}
+
 bool set_param_int(param_id_t id, int32_t value)
 {
   if (id < PARAMS_COUNT && value != _params.values[id])

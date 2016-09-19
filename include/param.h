@@ -247,6 +247,20 @@ int get_param_int(param_id_t id);
 float get_param_float(param_id_t id);
 
 /**
+ * @brief Get the name of a parameter
+ * @param id The ID of the parameter
+ * @return The name of the parameter
+ */
+char * get_param_name(param_id_t id);
+
+/**
+ * @brief Get the type of a parameter
+ * @param id The ID of the parameter
+ * @return The type of the parameter
+ */
+param_type_t get_param_type(param_id_t id);
+
+/**
  * @brief Sets the value of a parameter by ID and calls the parameter change callback
  * @param id The ID of the parameter
  * @param value The new value
