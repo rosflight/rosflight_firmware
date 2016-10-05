@@ -32,7 +32,7 @@ int main(void)
   setup();
 
   // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, _params.values[PARAM_BAUD_RATE], MODE_RXTX);
+  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
 
   while (1)
   {

@@ -20,11 +20,11 @@ extern "C" {
 #include "mavlink_util.h"
 
 
-void init_pid(pid_t* pid, float *kp, float *ki, float *kd, float *current_x, float *current_xdot, float *commanded_x, float *output, float max, float min)
+void init_pid(pid_t* pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x, float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
-  pid->kp = kp;
-  pid->ki = ki;
-  pid->kd = kd;
+  pid->kp_param_id = kp_param_id;
+  pid->ki_param_id = ki_param_id;
+  pid->kd_param_id = kd_param_id;
   pid->current_x = current_x;
   pid->current_xdot = current_xdot;
   pid->commanded_x = commanded_x;
@@ -61,12 +61,12 @@ void run_pid(pid_t *pid)
   float error = (*pid->commanded_x) - (*pid->current_x);
 
   // Initialize Terms
-  float p_term = error * (*pid->kp);
+  float p_term = error * get_param_float(pid->kp_param_id);
   float i_term = 0.0;
   float d_term = 0.0;
 
   // If there is a derivative term
-  if(pid->kd != NULL)
+  if(pid->kd_param_id < PARAMS_COUNT)
   {
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
@@ -75,23 +75,24 @@ void run_pid(pid_t *pid)
     {
       pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
       pid->prev_x = *pid->current_x;
-      d_term = (*pid->kd)*pid->differentiator;
+      d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
     }
     else
     {
-      d_term = (*pid->kd) * (*pid->current_xdot);
+      d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
     }
   }
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if (pid->ki != NULL && _armed_state == ARMED && pwmRead(_params.values[PARAM_RC_F_CHANNEL] > 1200))
+  if (pid->ki_param_id < PARAMS_COUNT && _armed_state == ARMED && pwmRead(get_param_int(PARAM_RC_F_CHANNEL) > 1200))
   {
-    if ( (*pid->ki) > 0.0 ) {
+    if ( get_param_float(pid->ki_param_id) > 0.0 )
+    {
       // integrate
       pid->integrator += error*dt;
       // calculate I term (be sure to de-reference pointer to gain)
-      i_term = (*pid->ki) * pid->integrator;
+      i_term = get_param_float(pid->ki_param_id) * pid->integrator;
     }
   }
 
@@ -101,7 +102,7 @@ void run_pid(pid_t *pid)
   // Integrator anti-windup
   float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
   if(u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
-    pid->integrator = (u - p_term + d_term)/(*pid->ki);
+    pid->integrator = (u - p_term + d_term)/get_param_float(pid->ki_param_id);
 
   // Set output
   (*pid->output) = u_sat;
@@ -113,69 +114,69 @@ void run_pid(pid_t *pid)
 void init_controller()
 {
   init_pid(&pid_roll,
-           (float*)&_params.values[PARAM_PID_ROLL_ANGLE_P],
-           (float*)&_params.values[PARAM_PID_ROLL_ANGLE_I],
-           (float*)&_params.values[PARAM_PID_ROLL_ANGLE_D],
+           PARAM_PID_ROLL_ANGLE_P,
+           PARAM_PID_ROLL_ANGLE_I,
+           PARAM_PID_ROLL_ANGLE_D,
            &_current_state.phi,
            &_current_state.p,
            &_combined_control.x.value,
            &_command.x,
-           _params.values[PARAM_MAX_COMMAND]/2.0f,
-           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+           get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_pitch,
-           (float*)&_params.values[PARAM_PID_PITCH_ANGLE_P],
-           (float*)&_params.values[PARAM_PID_PITCH_ANGLE_I],
-           (float*)&_params.values[PARAM_PID_PITCH_ANGLE_D],
+           PARAM_PID_PITCH_ANGLE_P,
+           PARAM_PID_PITCH_ANGLE_I,
+           PARAM_PID_PITCH_ANGLE_D,
            &_current_state.theta,
            &_current_state.q,
            &_combined_control.y.value,
            &_command.y,
-           _params.values[PARAM_MAX_COMMAND]/2.0f,
-           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+           get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_roll_rate,
-           (float*)&_params.values[PARAM_PID_ROLL_RATE_P],
-           (float*)&_params.values[PARAM_PID_ROLL_RATE_I],
-           NULL,
+           PARAM_PID_ROLL_RATE_P,
+           PARAM_PID_ROLL_RATE_I,
+           PARAMS_COUNT,
            &_current_state.p,
            NULL,
            &_combined_control.x.value,
            &_command.x,
-           _params.values[PARAM_MAX_COMMAND]/2.0f,
-           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+           get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_pitch_rate,
-           (float*)&_params.values[PARAM_PID_PITCH_RATE_P],
-           (float*)&_params.values[PARAM_PID_PITCH_RATE_I],
-           NULL,
+           PARAM_PID_PITCH_RATE_P,
+           PARAM_PID_PITCH_RATE_I,
+           PARAMS_COUNT,
            &_current_state.q,
            NULL,
            &_combined_control.y.value,
            &_command.y,
-           _params.values[PARAM_MAX_COMMAND]/2.0f,
-           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+           get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_yaw_rate,
-           (float*)&_params.values[PARAM_PID_YAW_RATE_P],
-           (float*)&_params.values[PARAM_PID_YAW_RATE_I],
-           NULL,
+           PARAM_PID_YAW_RATE_P,
+           PARAM_PID_YAW_RATE_I,
+           PARAMS_COUNT,
            &_current_state.r,
            NULL,
            &_combined_control.z.value,
            &_command.z,
-           _params.values[PARAM_MAX_COMMAND]/2.0f,
-           -1.0f*_params.values[PARAM_MAX_COMMAND]/2.0f);
+           get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_altitude,
-           (float*)&_params.values[PARAM_PID_ALT_P],
-           (float*)&_params.values[PARAM_PID_ALT_I],
-           (float*)&_params.values[PARAM_PID_ALT_D],
+           PARAM_PID_ALT_P,
+           PARAM_PID_ALT_I,
+           PARAM_PID_ALT_D,
            &_current_state.altitude,
            NULL,
            &_combined_control.F.value,
            &_command.F,
-           _params.values[PARAM_MAX_COMMAND],
+           get_param_int(PARAM_MAX_COMMAND),
            0.0f);
 }
 

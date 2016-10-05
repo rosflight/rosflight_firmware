@@ -33,21 +33,21 @@ static void mavlink_send_heartbeat(void)
     armed_mode = MAV_MODE_MANUAL_DISARMED;
 
   uint8_t control_mode = 0;
-  if(_params.values[PARAM_FIXED_WING])
+  if(get_param_int(PARAM_FIXED_WING))
   {
     control_mode = MODE_PASS_THROUGH;
   }
-  else if(rc_switch(_params.values[PARAM_RC_F_CONTROL_TYPE_CHANNEL]))
+  else if(rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)))
   {
     control_mode = MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
   }
   else
   {
-    control_mode = rc_switch(_params.values[PARAM_RC_ATT_CONTROL_TYPE_CHANNEL]) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE : MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
+    control_mode = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE : MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
   }
 
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0, 
-                             _params.values[PARAM_FIXED_WING] ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR, 
+                             get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
                              MAV_AUTOPILOT_GENERIC, 
                              armed_mode, 
                              control_mode,
@@ -68,7 +68,7 @@ static void mavlink_send_attitude(void)
 
 static void mavlink_send_imu(void)
 {
-  if (_params.values[PARAM_STREAM_ADJUSTED_GYRO])
+  if (get_param_int(PARAM_STREAM_ADJUSTED_GYRO))
   {
     mavlink_msg_small_imu_send(MAVLINK_COMM_0,
                                _imu_time,

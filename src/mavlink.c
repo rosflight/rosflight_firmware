@@ -14,7 +14,7 @@ mavlink_system_t mavlink_system;
 void init_mavlink(void)
 {
   // Initialize Serial ports
-  mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
+  mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
   mavlink_system.compid = 250;
 
   _offboard_control_time = 0;
