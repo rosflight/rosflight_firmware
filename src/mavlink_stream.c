@@ -157,6 +157,17 @@ static void mavlink_send_sonar(void)
   }
 }
 
+static void mavlink_send_mag(void)
+{
+  if (_mag_present)
+  {
+    mavlink_msg_small_mag_send(MAVLINK_COMM_0,
+                               _mag.x,
+                               _mag.y,
+                               _mag.z);
+  }
+}
+
 static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
@@ -173,6 +184,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
   { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_baro },
   { .period_us = 100000,  .last_time_us = 0, .send_function = mavlink_send_sonar },
+  { .period_us = 6250,    .last_time_us = 0, .send_function = mavlink_send_mag },
 
   { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
   { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_rc_raw },

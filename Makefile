@@ -63,6 +63,7 @@ rosflight2_SRC =$(BREEZY_DIR)/drv_gpio.c \
 		   $(BREEZY_DIR)/drv_ms4525.c \
 		   $(BREEZY_DIR)/drv_mb1242.c \
 		   $(BREEZY_DIR)/drv_ms5611.c \
+		   $(BREEZY_DIR)/drv_hmc5883l.c \
 		   $(BREEZY_DIR)/printf.c \
 		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
 		   $(TURBOTRIG_DIR)/turbotrig.c \

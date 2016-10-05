@@ -66,19 +66,14 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
-  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0);
-  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 10);
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 160);
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 100);
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 0);
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
-  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 0);
+  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40);
 
   init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
-
-  init_param_int(PARAM_DIFF_PRESS_UPDATE, "DIFF_PRESS_UP", 0); // us
-  init_param_int(PARAM_BARO_UPDATE, "BARO_UPDATE", 100000);
-  init_param_int(PARAM_SONAR_UPDATE, "SONAR_UPDATE", 0);
-  init_param_int(PARAM_MAG_UPDATE, "MAG_UPDATE", 20000);
 
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f);
@@ -218,6 +213,9 @@ void param_change_callback(param_id_t id)
     break;
   case  PARAM_STREAM_BARO_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, _params.values[PARAM_STREAM_BARO_RATE]);
+    break;
+  case  PARAM_STREAM_MAG_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, _params.values[PARAM_STREAM_MAG_RATE]);
     break;
 
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:

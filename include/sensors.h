@@ -26,9 +26,13 @@ extern bool _sonar_present;
 extern int16_t _sonar_range;
 extern uint32_t _sonar_time;
 
+extern bool _mag_present;
+extern vector_t _mag;
+extern uint32_t _mag_time;
+
 // function declarations
 void init_sensors(void);
-bool update_sensors(uint32_t time_us);
+bool update_sensors();
 
 bool start_imu_calibration(void);
 

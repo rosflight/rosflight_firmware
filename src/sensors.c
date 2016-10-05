@@ -24,29 +24,28 @@ float _imu_temperature;
 uint32_t _imu_time;
 
 // Airspeed
-bool _diff_pressure_present;
+bool _diff_pressure_present = false;
 int16_t _diff_pressure;
 int16_t _diff_pressure_temperature;
 
 // Barometer
-bool _baro_present;
+bool _baro_present = false;
 int32_t _baro_pressure;
 int32_t _baro_temperature;
 
 // Sonar
-bool _sonar_present;
+bool _sonar_present = false;
 int16_t _sonar_range;
 uint32_t _sonar_time;
 
+// Magnetometer
+bool _mag_present = false;
+vector_t _mag;
+uint32_t _mag_time;
 
 
 //==================================================================
 // local variable definitions
-
-// sensor updates
-static uint32_t diff_press_next_us;
-static uint32_t baro_next_us;
-static uint32_t sonar_next_us;
 
 // IMU stuff
 int16_t accel_raw[3];
@@ -69,46 +68,59 @@ void init_sensors(void)
   // BAROMETER <-- for some reason, this has to come first
   i2cWrite(0,0,0);
   _baro_present = ms5611_init();
-  baro_next_us = 0;
 
-  // IMU
-  mpu6050_register_interrupt_cb(&imu_ISR);
-  uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
-  accel_scale = 9.80665f/acc1G;
-
-  // DIFF PRESSURE
-//  _diff_pressure_present = ms4525_detect();
-//  diff_press_next_us = 0;
+  // MAGNETOMETER
+  _mag_present = hmc5883lInit(2);
 
   // SONAR -- Not working yet
-//  _sonar_present = mb1242_init();
-//  sonar_next_us = 0;
+  _sonar_present = mb1242_init();
+
+  // DIFF PRESSURE
+//  _diff_pressure_present = ms4525_detect(); ///<-This breaks the IMU.  I don't know why
+//  diff_press_next_us = 0;
+
+  // IMU
+  uint16_t acc1G;
+  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+  mpu6050_register_interrupt_cb(&imu_ISR);
+  accel_scale = 9.80665f/acc1G;
 }
 
 
-bool update_sensors(uint32_t time_us)
+bool update_sensors()
 {
-  // using else so that we don't do all sensor updates on the same loop
-//  if (_diff_pressure_present && time_us >= diff_press_next_us && _params.values[PARAM_DIFF_PRESS_UPDATE] > 0)
-//  {
-//    diff_press_next_us += _params.values[PARAM_DIFF_PRESS_UPDATE];
-//    ms4525_read(&_diff_pressure, &_diff_pressure_temperature);
-//  }
-  if (_baro_present && time_us > baro_next_us && _params.values[PARAM_BARO_UPDATE] > 0)
+  if(_baro_present)
   {
-    baro_next_us += _params.values[PARAM_BARO_UPDATE];
     ms5611_request_async_update();
     _baro_pressure = ms5611_read_pressure();
     _baro_temperature = ms5611_read_temperature();
-    mavlink_send_named_value_int("pressure", ms5611_read_pressure());
   }
-//  else if (_sonar_present && time_us > sonar_next_us && _params.values[PARAM_SONAR_UPDATE] > 0)
-//  {
-//    sonar_next_us += _params.values[PARAM_SONAR_UPDATE];
-//    _sonar_time = micros();
-//    _sonar_range = mb1242_poll();
-//  }
+
+  if(_diff_pressure_present)
+  {
+//    ms4525_request_async_update();
+//    _diff_pressure = ms4525_read_velocity();
+//    _diff_pressure_temperature = ms4525_read_temperature();
+  }
+
+  if (_sonar_present)
+  {
+    _sonar_time = micros();
+    _sonar_range = mb1242_poll();
+  }
+
+  if (_mag_present)
+  {
+    int16_t raw_mag[3] = {0,0,0};
+    hmc5883l_request_async_update();
+    hmc5883l_read_magnetometer(raw_mag);
+    _mag.x = (float)raw_mag[0];
+    _mag.y = (float)raw_mag[1];
+    _mag.z = (float)raw_mag[2];
+    _mag = vector_normalize(_mag);
+  }
+
+  // Return whether or not we got new IMU data
   return update_imu();
 }
 
@@ -127,6 +139,8 @@ bool start_imu_calibration(void)
 }
 
 
+
+
 //==================================================================
 // local function definitions
 void imu_ISR(void)
@@ -136,7 +150,6 @@ void imu_ISR(void)
   mpu6050_request_async_accel_read(accel_raw, &accel_status);
   mpu6050_request_async_gyro_read(gyro_raw, &gyro_status);
   mpu6050_request_async_temp_read(&temp_raw, &temp_status);
-
 }
 
 
@@ -167,7 +180,6 @@ static bool update_imu(void)
       calibrate_imu();
 
     correct_imu();
-
     return true;
   }
   else

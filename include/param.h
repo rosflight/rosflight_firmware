@@ -36,14 +36,6 @@ typedef enum
   PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
 
-  /****************************/
-  /*** SYSTEM CONFIGURATION ***/
-  /****************************/
-  PARAM_LOOPTIME,
-  PARAM_DIFF_PRESS_UPDATE,
-  PARAM_BARO_UPDATE,
-  PARAM_SONAR_UPDATE,
-  PARAM_MAG_UPDATE,
 
   /*****************/
   /*** PID GAINS ***/
