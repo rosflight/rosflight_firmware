@@ -72,12 +72,12 @@ void init_sensors(void)
   // MAGNETOMETER
   _mag_present = hmc5883lInit(2);
 
-  // SONAR -- Not working yet
+  // SONAR
   _sonar_present = mb1242_init();
 
   // DIFF PRESSURE
-//  _diff_pressure_present = ms4525_detect(); ///<-This breaks the IMU.  I don't know why
-//  diff_press_next_us = 0;
+  //  _diff_pressure_present = ms4525_detect(); ///<-This breaks the IMU.  I don't know why
+  //  diff_press_next_us = 0;
 
   // IMU
   uint16_t acc1G;
@@ -91,16 +91,16 @@ bool update_sensors()
 {
   if(_baro_present)
   {
-    ms5611_request_async_update();
     _baro_pressure = ms5611_read_pressure();
     _baro_temperature = ms5611_read_temperature();
+    ms5611_request_async_update();
   }
 
   if(_diff_pressure_present)
   {
-//    ms4525_request_async_update();
-//    _diff_pressure = ms4525_read_velocity();
-//    _diff_pressure_temperature = ms4525_read_temperature();
+    //    ms4525_request_async_update();
+    //    _diff_pressure = ms4525_read_velocity();
+    //    _diff_pressure_temperature = ms4525_read_temperature();
   }
 
   if (_sonar_present)
@@ -145,11 +145,18 @@ bool start_imu_calibration(void)
 // local function definitions
 void imu_ISR(void)
 {
-  _imu_time = micros();
+  static int throttle = 0;
+  throttle++;
 
-  mpu6050_request_async_accel_read(accel_raw, &accel_status);
-  mpu6050_request_async_gyro_read(gyro_raw, &gyro_status);
-  mpu6050_request_async_temp_read(&temp_raw, &temp_status);
+  if(throttle == 1)
+  {
+    _imu_time = micros();
+
+    mpu6050_request_async_accel_read(accel_raw, &accel_status);
+    mpu6050_request_async_gyro_read(gyro_raw, &gyro_status);
+    mpu6050_request_async_temp_read(&temp_raw, &temp_status);
+    throttle = 0;
+  }
 }
 
 

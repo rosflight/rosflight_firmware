@@ -92,47 +92,17 @@ void loop(void)
   /*********************/
   /***  Pre-Process ***/
   /*********************/
-  // get loop time
-//  static uint32_t prev_time = 0;
-//  static int32_t dt = 0;
-  static uint32_t counter = 0;
-//  static uint32_t average_time = 0;
-//  static uint32_t start = 0;
-//  static uint32_t end = 0;
-//  static uint32_t max = 0;
-//  static uint32_t min = 1000;
+
 
   /*********************/
   /***  Control Loop ***/
   /*********************/
-  // update sensors - an internal timer runs this at a fixed rate
-
-//  start = micros();
   if (update_sensors()) // 595 | 591 | 590 us
   {
-//    end = micros();
-//    dt = end - start;
-//    average_time += dt;
-//    max = (dt > max) ? dt : max;
-//    min = (dt < min) ? dt : min;
-    counter++;
-
-    if(counter > 100)
-    {
-      LED1_TOGGLE;
-//      mavlink_send_named_value_float("avg", average_time/(float)counter);
-//      mavlink_send_named_value_int("max", max);
-//      mavlink_send_named_value_int("min", min);
-//      max = 0;
-//      min = 1000;
-//      average_time = 0;
-      counter = 0;
-    }
-
     // If I have new IMU data, then perform control
     run_estimator(micros()); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
-//    run_controller(); // 278 | 271
-//    mix_output(); // 16 | 13 us
+    run_controller(); // 278 | 271
+    mix_output(); // 16 | 13 us
   }
 
 
@@ -146,11 +116,11 @@ void loop(void)
   mavlink_receive(); // 159 | 1 | 1
 
   // update the armed_states, an internal timer runs this at a fixed rate
-//  check_mode(micros()); // 108 | 1 | 1
+  check_mode(micros()); // 108 | 1 | 1
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-//  receive_rc(micros()); // 42 | 2 | 1
+  receive_rc(micros()); // 42 | 2 | 1
 
   // update commands (internal logic tells whether or not we should do anything or not)
-//  mux_inputs(); // 6 | 1 | 1
+  mux_inputs(); // 6 | 1 | 1
 }
