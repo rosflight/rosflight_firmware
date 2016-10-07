@@ -76,8 +76,7 @@ void init_sensors(void)
   _sonar_present = mb1242_init();
 
   // DIFF PRESSURE
-  //  _diff_pressure_present = ms4525_detect(); ///<-This breaks the IMU.  I don't know why
-  //  diff_press_next_us = 0;
+  _diff_pressure_present = ms4525_detect();
 
   // IMU
   uint16_t acc1G;
@@ -98,9 +97,9 @@ bool update_sensors()
 
   if(_diff_pressure_present)
   {
-    //    ms4525_request_async_update();
-    //    _diff_pressure = ms4525_read_velocity();
-    //    _diff_pressure_temperature = ms4525_read_temperature();
+    ms4525_request_async_update();
+    _diff_pressure = ms4525_read_velocity();
+    _diff_pressure_temperature = ms4525_read_temperature();
   }
 
   if (_sonar_present)
