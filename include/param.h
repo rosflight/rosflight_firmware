@@ -36,7 +36,6 @@ typedef enum
   PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
 
-
   /*****************/
   /*** PID GAINS ***/
   /*****************/
@@ -189,7 +188,6 @@ typedef struct
 extern params_t _params;
 
 // function declarations
-
 /**
  * @brief Initialize parameter values
  */
@@ -226,20 +224,43 @@ void param_change_callback(param_id_t id);
 param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
 
 /**
+ * @brief Get the value of an integer parameter by id
+ * @param id The ID of the parameter
+ * @return The value of the parameter
+ */
+int get_param_int(param_id_t id);
+
+/**
+ * @brief Get the value of a floating point parameter by id
+ * @param id The ID of the parameter
+ * @return The value of the parameter
+ */
+float get_param_float(param_id_t id);
+
+/**
+ * @brief Get the name of a parameter
+ * @param id The ID of the parameter
+ * @return The name of the parameter
+ */
+char * get_param_name(param_id_t id);
+
+/**
+ * @brief Get the type of a parameter
+ * @param id The ID of the parameter
+ * @return The type of the parameter
+ * This returns one of three possible types
+ * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
+ * See line 165
+ */
+param_type_t get_param_type(param_id_t id);
+
+/**
  * @brief Sets the value of a parameter by ID and calls the parameter change callback
  * @param id The ID of the parameter
  * @param value The new value
  * @return True if a parameter value was changed, false otherwise
  */
-bool set_param_by_id(param_id_t id, int32_t value);
-
-/**
- * @brief Sets the value of a parameter by name and calls the parameter change callback
- * @param name The name of the parameter
- * @param value The new value
- * @return True if a parameter value was changed, false otherwise
- */
-bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value);
+bool set_param_int(param_id_t id, int32_t value);
 
 /**
  * @brief Sets the value of a floating point parameter by ID and calls the parameter callback
@@ -247,7 +268,15 @@ bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value);
  * @param value The new value
  * @return  True if a parameter was changed, false otherwise
  */
-bool set_param_by_id_float(param_id_t id, float value);
+bool set_param_float(param_id_t id, float value);
+
+/**
+ * @brief Sets the value of a parameter by name and calls the parameter change callback
+ * @param name The name of the parameter
+ * @param value The new value
+ * @return True if a parameter value was changed, false otherwise
+ */
+bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value);
 
 /**
  * @brief Sets the value of a floating point parameter by name and calls the parameter change callback
@@ -256,13 +285,6 @@ bool set_param_by_id_float(param_id_t id, float value);
  * @return True if a parameter value was changed, false otherwise
  */
 bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
-
-/**
- * @brief Get the value of a floating point parameter by id
- * @param id The ID of the parameter
- * @return The value of the parameter
- */
-float get_param_float(param_id_t id);
 
 #ifdef __cplusplus
 }

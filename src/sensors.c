@@ -70,7 +70,7 @@ void init_sensors(void)
   _baro_present = ms5611_init();
 
   // MAGNETOMETER
-  _mag_present = hmc5883lInit(2);
+  _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
 
   // SONAR
   _sonar_present = mb1242_init();
@@ -80,7 +80,7 @@ void init_sensors(void)
 
   // IMU
   uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &gyro_scale, _params.values[PARAM_BOARD_REVISION]);
+  mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
   mpu6050_register_interrupt_cb(&imu_ISR);
   accel_scale = 9.80665f/acc1G;
 }
@@ -127,13 +127,13 @@ bool update_sensors()
 bool start_imu_calibration(void)
 {
   calibrating_imu_flag = true;
-  set_param_by_id_float(PARAM_ACC_X_BIAS, 0.0);
-  set_param_by_id_float(PARAM_ACC_Y_BIAS, 0.0);
-  set_param_by_id_float(PARAM_ACC_Z_BIAS, 0.0);
+  set_param_float(PARAM_ACC_X_BIAS, 0.0);
+  set_param_float(PARAM_ACC_Y_BIAS, 0.0);
+  set_param_float(PARAM_ACC_Z_BIAS, 0.0);
 
-  set_param_by_id_float(PARAM_GYRO_X_BIAS, 0.0);
-  set_param_by_id_float(PARAM_GYRO_Y_BIAS, 0.0);
-  set_param_by_id_float(PARAM_GYRO_Z_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_X_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
   return true;
 }
 
@@ -161,13 +161,12 @@ void imu_ISR(void)
 
 static bool update_imu(void)
 {
-  if (accel_status == I2C_JOB_COMPLETE
-      && gyro_status == I2C_JOB_COMPLETE
-      && temp_status == I2C_JOB_COMPLETE)
+  // temp status is last, so we just need to check
+  // if it has been read.  If it has, then the
+  // accel data is new.
+  if (temp_status == I2C_JOB_COMPLETE)
   {
     // reset flags
-    accel_status = I2C_JOB_DEFAULT;
-    gyro_status = I2C_JOB_DEFAULT;
     temp_status = I2C_JOB_DEFAULT;
 
     // convert temperature SI units (degC, m/s^2, rad/s)
@@ -234,13 +233,13 @@ static void calibrate_imu(void)
     // then don't do anything
     if(sqrd_norm(accel_bias) < 1.5*1.5 && sqrd_norm(gyro_bias) < 0.1*0.1)
     {
-      set_param_by_id_float(PARAM_ACC_X_BIAS, accel_bias.x);
-      set_param_by_id_float(PARAM_ACC_Y_BIAS, accel_bias.y);
-      set_param_by_id_float(PARAM_ACC_Z_BIAS, accel_bias.z);
+      set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
+      set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
+      set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
 
-      set_param_by_id_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
-      set_param_by_id_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
-      set_param_by_id_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
+      set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
+      set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
+      set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
     }
 
     // reset calibration in case we do it again

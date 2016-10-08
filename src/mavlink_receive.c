@@ -26,7 +26,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
   mavlink_command_int_t cmd;
   mavlink_msg_command_int_decode(msg, &cmd);
 
-  if (cmd.target_system == _params.values[PARAM_SYSTEM_ID])
+  if (cmd.target_system == get_param_int(PARAM_SYSTEM_ID))
   {
     uint8_t result;
 
@@ -133,9 +133,9 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
       _offboard_control.y.type = PASSTHROUGH;
       _offboard_control.z.type = PASSTHROUGH;
       _offboard_control.F.type = THROTTLE;
-      _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)_params.values[PARAM_RC_X_CENTER] - 1500.0f;
-      _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)_params.values[PARAM_RC_Y_CENTER] - 1500.0f;
-      _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)_params.values[PARAM_RC_Z_CENTER] - 1500.0f;
+      _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
+      _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
+      _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
       _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
       break;
     case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:

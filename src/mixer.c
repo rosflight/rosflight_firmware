@@ -93,7 +93,7 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
 void init_mixing()
 {
   // We need a better way to choosing the mixer
-  mixer_to_use = *array_of_mixers[_params.values[PARAM_MIXER]];
+  mixer_to_use = *array_of_mixers[get_param_int(PARAM_MIXER)];
 
   for (int8_t i=0; i<8; i++)
   {
@@ -111,12 +111,12 @@ void init_mixing()
 void init_PWM()
 {
   bool useCPPM = false;
-  if(_params.values[PARAM_RC_TYPE] == 1)
+  if(get_param_int(PARAM_RC_TYPE) == 1)
   {
     useCPPM = true;
   }
-  int16_t motor_refresh_rate = _params.values[PARAM_MOTOR_PWM_SEND_RATE];
-  int16_t idle_pwm = _params.values[PARAM_MOTOR_IDLE_PWM];
+  int16_t motor_refresh_rate = get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
+  int16_t idle_pwm = get_param_int(PARAM_MOTOR_IDLE_PWM);
   pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);
 }
 
@@ -130,9 +130,9 @@ void write_motor(uint8_t index, int32_t value)
     {
       value = 2000;
     }
-    else if (value < _params.values[PARAM_MOTOR_IDLE_PWM] && _params.values[PARAM_SPIN_MOTORS_WHEN_ARMED])
+    else if (value < get_param_int(PARAM_MOTOR_IDLE_PWM) && get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
     {
-      value = _params.values[PARAM_MOTOR_IDLE_PWM];
+      value = get_param_int(PARAM_MOTOR_IDLE_PWM);
     }
     else if (value < 1000)
     {
@@ -197,11 +197,11 @@ void mix_output()
   }
 
   // Reverse Fixedwing channels
-  if (_params.values[PARAM_FIXED_WING])
+  if (get_param_int(PARAM_FIXED_WING))
   {
-    prescaled_outputs[0] *= _params.values[PARAM_AILERON_REVERSE] ? -1 : 1;
-    prescaled_outputs[1] *= _params.values[PARAM_ELEVATOR_REVERSE] ? -1 : 1;
-    prescaled_outputs[3] *= _params.values[PARAM_RUDDER_REVERSE] ? -1 : 1;
+    prescaled_outputs[0] *= get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    prescaled_outputs[1] *= get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    prescaled_outputs[3] *= get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
 
   // Add in GPIO inputs from Onboard Computer

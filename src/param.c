@@ -12,9 +12,6 @@
 #include "mixer.h"
 //#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
 
-//TODO temporary
-#include <stdio.h>
-
 // global variable definitions
 params_t _params;
 
@@ -49,14 +46,6 @@ void init_params(void)
 
 void set_param_defaults(void)
 {
-  // temporary: replace with actual initialisation of rest of params
-  char temp_name[PARAMS_NAME_LENGTH];
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-  {
-    sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
-    init_param_int((param_id_t) id, temp_name, id);
-  }
-
   init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2);
 
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
@@ -192,37 +181,37 @@ void param_change_callback(param_id_t id)
   switch (id)
   {
   case PARAM_SYSTEM_ID:
-    mavlink_system.sysid = _params.values[PARAM_SYSTEM_ID];
+    mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, _params.values[PARAM_STREAM_HEARTBEAT_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
     break;
 
   case PARAM_STREAM_ATTITUDE_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, _params.values[PARAM_STREAM_ATTITUDE_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, get_param_int(PARAM_STREAM_ATTITUDE_RATE));
     break;
 
   case PARAM_STREAM_IMU_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, _params.values[PARAM_STREAM_IMU_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, get_param_int(PARAM_STREAM_IMU_RATE));
     break;
   case PARAM_STREAM_AIRSPEED_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, _params.values[PARAM_STREAM_AIRSPEED_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, get_param_int(PARAM_STREAM_AIRSPEED_RATE));
     break;
   case PARAM_STREAM_SONAR_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, _params.values[PARAM_STREAM_SONAR_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, get_param_int(PARAM_STREAM_SONAR_RATE));
     break;
   case  PARAM_STREAM_BARO_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, _params.values[PARAM_STREAM_BARO_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
     break;
   case  PARAM_STREAM_MAG_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, _params.values[PARAM_STREAM_MAG_RATE]);
     break;
 
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, _params.values[PARAM_STREAM_SERVO_OUTPUT_RAW_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, get_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE));
     break;
   case PARAM_STREAM_RC_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, _params.values[PARAM_STREAM_RC_RAW_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
     break;
   default:
     // no action needed for this parameter
@@ -256,7 +245,27 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
   return PARAMS_COUNT;
 }
 
-bool set_param_by_id(param_id_t id, int32_t value)
+int get_param_int(param_id_t id)
+{
+  return _params.values[id];
+}
+
+float get_param_float(param_id_t id)
+{
+  return *(float *) &_params.values[id];
+}
+
+char *get_param_name(param_id_t id)
+{
+  return _params.names[id];
+}
+
+param_type_t get_param_type(param_id_t id)
+{
+  return _params.types[id];
+}
+
+bool set_param_int(param_id_t id, int32_t value)
 {
   if (id < PARAMS_COUNT && value != _params.values[id])
   {
@@ -268,23 +277,18 @@ bool set_param_by_id(param_id_t id, int32_t value)
   return false;
 }
 
-bool set_param_by_name(const char name[PARAMS_NAME_LENGTH], int32_t value)
+bool set_param_float(param_id_t id, float value)
 {
-  param_id_t id = lookup_param_id(name);
-  return set_param_by_id(id, value);
+  return set_param_int(id, *(int32_t *) &value);
 }
 
-bool set_param_by_id_float(param_id_t id, float value)
+bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  return set_param_by_id(id, *(int32_t *) &value);
+  param_id_t id = lookup_param_id(name);
+  return set_param_int(id, value);
 }
 
 bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
 {
-  return set_param_by_name(name, *(int32_t *) &value);
-}
-
-float get_param_float(param_id_t id)
-{
-  return *(float *) &_params.values[id];
+  return set_param_by_name_int(name, *(int32_t *) &value);
 }
