@@ -5,7 +5,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "param.h"
 
 #include "mavlink.h"
 
