@@ -33,6 +33,10 @@ static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float
 // function definitions
 void init_params(void)
 {
+  for(uint8_t i = 0; i < PARAMS_COUNT; i++)
+  {
+    init_param_int(i, "DEFAULT", 0);
+  }
   initEEPROM();
   if (!read_params())
   {
@@ -204,7 +208,7 @@ void param_change_callback(param_id_t id)
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
     break;
   case  PARAM_STREAM_MAG_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, _params.values[PARAM_STREAM_MAG_RATE]);
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, get_param_int(PARAM_STREAM_MAG_RATE));
     break;
 
   case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
