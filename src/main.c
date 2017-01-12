@@ -29,21 +29,6 @@ int main(void)
   systemInit();
 
   // Perform Setup Operations
-  setup();
-
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
-
-  while (1)
-  {
-    // Main loop
-    loop();
-  }
-}
-
-
-void setup(void)
-{
   // Make sure all the perhipherals are done booting up before starting
   delay(500);
 
@@ -84,6 +69,21 @@ void setup(void)
   // accelerometer correction <- if using angle mode, this is required, adds ~70 us
   init_estimator(false, false, true);
   init_mode();
+
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
+
+  while (1)
+  {
+    // Main loop
+    loop();
+  }
+}
+
+
+void setup(void)
+{
+
 }
 
 

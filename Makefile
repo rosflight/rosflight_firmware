@@ -31,13 +31,13 @@ PROJECT_SRC = src/main.c \
 
 # You probably shouldn't modify anything below here!
 
-TARGET		?= rosflight2
+TARGET		?= rosflight
 
 # Compile-time options
 OPTIONS		?=
 
 # Debugger options, must be empty or GDB
-DEBUG ?=
+DEBUG ?= GDB
 
 # Serial port/device for flashing
 SERIAL_DEVICE	?= /dev/ttyUSB0
@@ -50,27 +50,27 @@ STDPERIPH_DIR	 = $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
 OBJECT_DIR	 = $(ROOT)/build
 BIN_DIR		 = $(ROOT)/build
 
-rosflight2_SRC =$(BREEZY_DIR)/drv_gpio.c \
-		   $(BREEZY_DIR)/drv_i2c.c \
-		   $(BREEZY_DIR)/drv_adc.c \
-		   $(BREEZY_DIR)/drv_spi.c \
-		   $(BREEZY_DIR)/drv_pwm.c \
-		   $(BREEZY_DIR)/drv_system.c \
-		   $(BREEZY_DIR)/drv_serial.c \
-		   $(BREEZY_DIR)/drv_uart.c \
-		   $(BREEZY_DIR)/drv_timer.c \
-		   $(BREEZY_DIR)/drv_mpu6050.c \
-		   $(BREEZY_DIR)/drv_ms4525.c \
-		   $(BREEZY_DIR)/drv_mb1242.c \
-		   $(BREEZY_DIR)/drv_ms5611.c \
-		   $(BREEZY_DIR)/drv_hmc5883l.c \
-		   $(BREEZY_DIR)/printf.c \
-		   $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
-		   $(TURBOTRIG_DIR)/turbotrig.c \
-		   $(TURBOTRIG_DIR)/turbovec.c \
-		   $(PROJECT_SRC) \
-		   $(CMSIS_SRC) \
-		   $(STDPERIPH_SRC)
+rosflight_SRC =$(BREEZY_DIR)/drv_gpio.c \
+               $(BREEZY_DIR)/drv_i2c.c \
+               $(BREEZY_DIR)/drv_adc.c \
+               $(BREEZY_DIR)/drv_spi.c \
+               $(BREEZY_DIR)/drv_pwm.c \
+               $(BREEZY_DIR)/drv_system.c \
+               $(BREEZY_DIR)/drv_serial.c \
+               $(BREEZY_DIR)/drv_uart.c \
+               $(BREEZY_DIR)/drv_timer.c \
+               $(BREEZY_DIR)/drv_mpu6050.c \
+               $(BREEZY_DIR)/drv_ms4525.c \
+               $(BREEZY_DIR)/drv_mb1242.c \
+               $(BREEZY_DIR)/drv_ms5611.c \
+               $(BREEZY_DIR)/drv_hmc5883l.c \
+               $(BREEZY_DIR)/printf.c \
+               $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
+               $(TURBOTRIG_DIR)/turbotrig.c \
+               $(TURBOTRIG_DIR)/turbovec.c \
+               $(PROJECT_SRC) \
+               $(CMSIS_SRC) \
+               $(STDPERIPH_SRC)
 
 VPATH		:= $(SRC_DIR):$(SRC_DIR)/startups
 

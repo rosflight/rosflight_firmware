@@ -55,7 +55,7 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
-  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 160);
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 100);
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 100);
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20);
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
