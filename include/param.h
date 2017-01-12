@@ -5,7 +5,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "param.h"
 
 #include "mavlink.h"
 
@@ -35,14 +34,6 @@ typedef enum
 
   PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
-
-  /****************************/
-  /*** SYSTEM CONFIGURATION ***/
-  /****************************/
-  PARAM_DIFF_PRESS_UPDATE,
-  PARAM_BARO_UPDATE,
-  PARAM_SONAR_UPDATE,
-  PARAM_MAG_UPDATE,
 
   /*****************/
   /*** PID GAINS ***/
@@ -196,7 +187,6 @@ typedef struct
 extern params_t _params;
 
 // function declarations
-
 /**
  * @brief Initialize parameter values
  */
@@ -257,6 +247,9 @@ char * get_param_name(param_id_t id);
  * @brief Get the type of a parameter
  * @param id The ID of the parameter
  * @return The type of the parameter
+ * This returns one of three possible types
+ * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
+ * See line 165
  */
 param_type_t get_param_type(param_id_t id);
 

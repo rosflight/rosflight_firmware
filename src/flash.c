@@ -98,6 +98,5 @@ bool writeEEPROM(bool blink)
       delay(50);
     }
   }
-
   return true;
 }

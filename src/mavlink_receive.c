@@ -69,13 +69,9 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
         else
         {
           bool success = false;
-          if (cmd.param1)
+          if (cmd.param1 || cmd.x)
           {
-            success &= calibrate_gyro();
-          }
-          if (cmd.x) // x is PARAM5
-          {
-            success &= calibrate_acc();
+            success &= start_imu_calibration();
           }
           result = MAV_RESULT_ACCEPTED;
         }
