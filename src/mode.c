@@ -7,6 +7,7 @@
 #include "param.h"
 #include "mavlink_util.h"
 #include "mux.h"
+#include "sensors.h"
 
 #include "mode.h"
 

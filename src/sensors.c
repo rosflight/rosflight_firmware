@@ -22,6 +22,7 @@ vector_t _accel;
 vector_t _gyro;
 float _imu_temperature;
 uint32_t _imu_time;
+bool new_imu_data;
 
 // Airspeed
 bool _diff_pressure_present = false;
@@ -55,7 +56,8 @@ static volatile uint8_t accel_status, gyro_status, temp_status;
 static float accel_scale;
 static float gyro_scale;
 static bool calibrating_imu_flag;
-static void calibrate_imu(void);
+static void calibrate_accel(void);
+static void calibrate_gyro(void);
 static void correct_imu(void);
 static void imu_ISR(void);
 static bool update_imu(void);
@@ -83,6 +85,10 @@ void init_sensors(void)
   mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
   mpu6050_register_interrupt_cb(&imu_ISR);
   accel_scale = 9.80665f/acc1G;
+  if(get_param_int(PARAM_WEIRD_ACCEL))
+  {
+    accel_scale *= 0.5;
+  }
 }
 
 
@@ -92,27 +98,27 @@ bool update_sensors()
   {
     _baro_pressure = ms5611_read_pressure();
     _baro_temperature = ms5611_read_temperature();
-    ms5611_request_async_update();
+    ms5611_update();
   }
 
-  if(_diff_pressure_present)
-  {
-    ms4525_request_async_update();
-    _diff_pressure = ms4525_read_velocity();
-    _diff_pressure_temperature = ms4525_read_temperature();
-  }
+//  if(_diff_pressure_present)
+//  {
+//    ms4525_request_async_update();
+//    _diff_pressure = ms4525_read_velocity();
+//    _diff_pressure_temperature = ms4525_read_temperature();
+//  }
 
-  if (_sonar_present)
-  {
-    _sonar_time = micros();
-    _sonar_range = mb1242_poll();
-  }
+//  if (_sonar_present)
+//  {
+//    _sonar_time = micros();
+//    _sonar_range = mb1242_poll();
+//  }
 
   if (_mag_present)
   {
     int16_t raw_mag[3] = {0,0,0};
-    hmc5883l_request_async_update();
-    hmc5883l_read_magnetometer(raw_mag);
+    hmc5883l_update();
+    hmc5883l_read(raw_mag);
     _mag.x = (float)raw_mag[0];
     _mag.y = (float)raw_mag[1];
     _mag.z = (float)raw_mag[2];
@@ -144,30 +150,18 @@ bool start_imu_calibration(void)
 // local function definitions
 void imu_ISR(void)
 {
-  static int throttle = 0;
-  throttle++;
-
-  if(throttle == 1)
-  {
-    _imu_time = micros();
-
-    mpu6050_request_async_accel_read(accel_raw, &accel_status);
-    mpu6050_request_async_gyro_read(gyro_raw, &gyro_status);
-    mpu6050_request_async_temp_read(&temp_raw, &temp_status);
-    throttle = 0;
-  }
+  _imu_time = micros();
+  new_imu_data = true;
 }
 
 
 static bool update_imu(void)
 {
-  // temp status is last, so we just need to check
-  // if it has been read.  If it has, then the
-  // accel data is new.
-  if (temp_status == I2C_JOB_COMPLETE)
+  if(new_imu_data)
   {
-    // reset flags
-    temp_status = I2C_JOB_DEFAULT;
+    mpu6050_read_accel(accel_raw);
+    mpu6050_read_gyro(gyro_raw);
+    mpu6050_read_temperature(&temp_raw);
 
     // convert temperature SI units (degC, m/s^2, rad/s)
     _imu_temperature = temp_raw/340.0f + 36.53f;
@@ -182,7 +176,7 @@ static bool update_imu(void)
     _gyro.z = -gyro_raw[2] * gyro_scale;
 
     if (calibrating_imu_flag == true)
-      calibrate_imu();
+      calibrate_accel();
 
     correct_imu();
     return true;
@@ -194,7 +188,7 @@ static bool update_imu(void)
 }
 
 
-static void calibrate_imu(void)
+static void calibrate_accel(void)
 {
   static uint16_t count = 0;
   static vector_t acc_sum  = { 0.0f, 0.0f, 0.0f };
@@ -231,7 +225,7 @@ static void calibrate_imu(void)
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if(sqrd_norm(accel_bias) < 1.5*1.5 && sqrd_norm(gyro_bias) < 0.1*0.1)
+    if(sqrd_norm(accel_bias) < 3.0 && sqrd_norm(gyro_bias) < 1.0)
     {
       set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
       set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
@@ -240,7 +234,13 @@ static void calibrate_imu(void)
       set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
       set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
+      mavlink_log_info("IMU offsets captured", NULL);
     }
+    else
+    {
+      mavlink_log_error("Too much movement for IMU cal", NULL);
+    }
+
 
     // reset calibration in case we do it again
     count = 0;

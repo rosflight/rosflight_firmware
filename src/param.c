@@ -38,11 +38,11 @@ void init_params(void)
     init_param_int(i, "DEFAULT", 0);
   }
   initEEPROM();
-  if (!read_params())
-  {
+//  if (!read_params())
+//  {
     set_param_defaults();
     write_params();
-  }
+//  }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback((param_id_t) id);
@@ -74,6 +74,7 @@ void set_param_defaults(void)
   init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.6f);
   init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.6f);
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 0);
+  init_param_int(PARAM_WEIRD_ACCEL, "WEIRD_ACCEL", 0);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0.0f);
@@ -84,10 +85,10 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
   init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
 
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
-  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1150);
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 50);
+  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1050);
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1);
+  init_param_int(PARAM_RC_TYPE, "RC_TYPE",1);
   init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0);
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1);
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3);
@@ -163,11 +164,11 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
+  init_param_int(PARAM_MIXER, "MIXER", FIXEDWING);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
-  init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
-  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
+  init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 1);
+  init_param_int(PARAM_FIXED_WING, "FIXED_WING", true);
 }
 
 bool read_params(void)

@@ -184,8 +184,8 @@ flash_$(TARGET): $(TARGET_HEX)
 flash: flash_$(TARGET)
 
 unbrick: $(TARGET_HEX)
-	stty -F $(SERIAL_DEVICE) raw speed 115200 -crtscts cs8 -parenb -cstopb -ixon
-	stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 115200 $(SERIAL_DEVICE)
+	stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
+	stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
 
 listen:
 	miniterm.py $(SERIAL_DEVICE) 115200

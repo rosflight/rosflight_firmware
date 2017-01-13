@@ -206,9 +206,9 @@ void run_controller()
     _command.z = _combined_control.z.value;
 
   // THROTTLE
-  if(_combined_control.F.type == ALTITUDE)
-    run_pid(&pid_altitude);
-  else // PASSTHROUGH
+//  if(_combined_control.F.type == ALTITUDE)
+//    run_pid(&pid_altitude);
+//  else // PASSTHROUGH
     _command.F = _combined_control.F.value;
 
   static uint32_t counter = 0;
