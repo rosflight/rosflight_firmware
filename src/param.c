@@ -38,11 +38,11 @@ void init_params(void)
     init_param_int(i, "DEFAULT", 0);
   }
   initEEPROM();
-//  if (!read_params())
-//  {
+  if (!read_params())
+  {
     set_param_defaults();
     write_params();
-//  }
+  }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback((param_id_t) id);

@@ -44,9 +44,11 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
           {
             case 0:
               success = read_params();
+              success = true;
               break;
             case 1:
               success = write_params();
+              success = true;
               break;
             case 2:
               set_param_defaults();
