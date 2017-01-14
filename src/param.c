@@ -59,7 +59,7 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100);
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500);
-  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 100);
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 75);
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 100);
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20);
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0);
@@ -85,7 +85,7 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
   init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
 
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 50);
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
   init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1050);
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
   init_param_int(PARAM_RC_TYPE, "RC_TYPE",1);
@@ -164,11 +164,11 @@ void set_param_defaults(void)
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_MIXER, "MIXER", FIXEDWING);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
-  init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 1);
-  init_param_int(PARAM_FIXED_WING, "FIXED_WING", true);
+  init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
+  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
 }
 
 bool read_params(void)
