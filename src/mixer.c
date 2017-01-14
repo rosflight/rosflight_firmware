@@ -34,7 +34,7 @@ static mixer_t quadcopter_x_mixing =
   { 1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   {-1.0f,-1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
   {-1.0f, 1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  { 1.0f,-1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  {-1.0f, 1.0f, 1.0f,-1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t quadcopter_h_mixing =
@@ -44,7 +44,7 @@ static mixer_t quadcopter_h_mixing =
   { 1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   {-1057, -943, 1057,  943,  0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
   {-1005,  995,-1005,  995,  0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  { 1.0f,-1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  {-1.0f, 1.0f, 1.0f,-1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t fixedwing_mixing =
