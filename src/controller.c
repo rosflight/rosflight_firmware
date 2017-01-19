@@ -102,7 +102,7 @@ void run_pid(pid_t *pid)
   // Integrator anti-windup
   float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
   if(u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
-    pid->integrator = (u - p_term + d_term)/get_param_float(pid->ki_param_id);
+    pid->integrator = (u_sat - p_term + d_term)/get_param_float(pid->ki_param_id);
 
   // Set output
   (*pid->output) = u_sat;
@@ -215,12 +215,13 @@ void run_controller()
   if(counter > 100)
   {
     mavlink_send_named_command_struct("RC", _rc_control);
-    mavlink_send_named_command_struct("offboard", _offboard_control);
-    mavlink_send_named_command_struct("combined", _combined_control);
+//    mavlink_send_named_command_struct("offboard", _offboard_control);
+//    mavlink_send_named_command_struct("combined", _combined_control);
     mavlink_send_named_value_float("command_F", _command.F);
     mavlink_send_named_value_float("command_x", _command.x);
     mavlink_send_named_value_float("command_y", _command.y);
     mavlink_send_named_value_float("command_z", _command.z);
+    mavlink_send_named_value_float("yaw_int", pid_yaw_rate.integrator);
     counter = 0;
   }
   counter++;
