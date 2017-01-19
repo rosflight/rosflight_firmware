@@ -74,7 +74,7 @@ void set_param_defaults(void)
   init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.6f);
   init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.6f);
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 0);
-  init_param_int(PARAM_WEIRD_ACCEL, "WEIRD_ACCEL", 0);
+  init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0.0f);

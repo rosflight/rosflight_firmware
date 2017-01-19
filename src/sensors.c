@@ -84,11 +84,7 @@ void init_sensors(void)
   uint16_t acc1G;
   mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
   mpu6050_register_interrupt_cb(&imu_ISR);
-  accel_scale = 9.80665f/acc1G;
-  if(get_param_int(PARAM_WEIRD_ACCEL))
-  {
-    accel_scale *= 0.5;
-  }
+  accel_scale = 9.80665f/acc1G * get_param_float(PARAM_ACCEL_SCALE);
 }
 
 
@@ -122,7 +118,7 @@ bool update_sensors()
     _mag.x = (float)raw_mag[0];
     _mag.y = (float)raw_mag[1];
     _mag.z = (float)raw_mag[2];
-    _mag = vector_normalize(_mag);
+//    _mag = vector_normalize(_mag);
   }
 
   // Return whether or not we got new IMU data
@@ -187,6 +183,9 @@ static bool update_imu(void)
   }
 }
 
+// we should eventually split the calibration, so gyro calibration can be done before taking off
+static void calibrate_gyro(){}
+
 
 static void calibrate_accel(void)
 {
@@ -235,10 +234,30 @@ static void calibrate_accel(void)
       set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
       set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
       mavlink_log_info("IMU offsets captured", NULL);
+      calibrating_imu_flag = false;
     }
     else
     {
-      mavlink_log_error("Too much movement for IMU cal", NULL);
+      // check for bad _accel_scale
+      if(sqrd_norm(accel_bias) > 3.5*3.5 && sqrd_norm(accel_bias) < 5.5*5.5)
+      {
+        mavlink_log_error("Detected bad IMU accel scale value", 0);
+        set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
+        accel_scale *= get_param_float(PARAM_ACCEL_SCALE);
+        write_params();
+      }
+      else if (sqrd_norm(accel_bias) > 9.0*9.0 && sqrd_norm(accel_bias) < 11.0*11.0)
+      {
+        mavlink_log_error("Detected bad IMU accel scale value", 0);
+        set_param_float(PARAM_ACCEL_SCALE, 0.5 * get_param_float(PARAM_ACCEL_SCALE));
+        accel_scale *= get_param_float(PARAM_ACCEL_SCALE);
+        write_params();
+      }
+      else
+      {
+        mavlink_log_error("Too much movement for IMU cal", NULL);
+        calibrating_imu_flag = false;
+      }
     }
 
 
@@ -251,7 +270,6 @@ static void calibrate_accel(void)
     gyro_sum.y = 0.0f;
     gyro_sum.z = 0.0f;
     acc_temp_sum = 0.0f;
-    calibrating_imu_flag = false;
   }
 }
 
