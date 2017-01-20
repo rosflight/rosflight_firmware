@@ -14,7 +14,7 @@
 
 // global variable definitions
 mavlink_offboard_control_t mavlink_offboard_control;
-uint32_t _offboard_control_time;
+uint64_t _offboard_control_time;
 
 // local variable definitions
 static mavlink_message_t in_buf;
@@ -97,7 +97,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
 
 static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint32_t now_us = micros();
+  uint64_t now_us = micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);

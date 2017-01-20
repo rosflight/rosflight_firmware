@@ -21,6 +21,6 @@ typedef enum
 extern bool _calibrate_rc;
 void init_rc(void);
 bool rc_switch(int16_t channel);
-bool receive_rc(uint32_t now);
+bool receive_rc(uint64_t now);
 
 #endif

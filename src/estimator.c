@@ -27,7 +27,7 @@ static const vector_t g = {0.0f, 0.0f, -1.0f};
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
-static int32_t last_time;
+static int64_t last_time;
 
 static bool mat_exp;
 static bool quad_int;
@@ -112,7 +112,7 @@ void run_LPF()
 }
 
 
-void run_estimator(uint32_t now)
+void run_estimator(uint64_t now)
 {
   static float kp, ki;
   if (last_time == 0)

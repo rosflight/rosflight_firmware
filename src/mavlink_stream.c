@@ -192,7 +192,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 };
 
 // function definitions
-void mavlink_stream(uint32_t time_us)
+void mavlink_stream(uint64_t time_us)
 {
   for (int i = 0; i < MAVLINK_STREAM_COUNT; i++)
   {
