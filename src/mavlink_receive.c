@@ -85,6 +85,16 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
         {
           _calibrate_rc = true;
         }
+      case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
+        if(_armed_state == ARMED)
+        {
+          result = MAV_RESULT_TEMPORARILY_REJECTED;
+        }
+        else
+        {
+          // could use this to reboot into bootloader (and flash new firmware from within ROS)
+          systemReset(false);
+        }
 
       default:
         result = MAV_RESULT_UNSUPPORTED;
