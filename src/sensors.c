@@ -150,8 +150,11 @@ void imu_ISR(void)
 
 static bool update_imu(void)
 {
+  static uint64_t last_imu_update_us = 0;
+
   if(new_imu_data)
   {
+    last_imu_update_us = micros();
     mpu6050_read_accel(accel_raw);
     mpu6050_read_gyro(gyro_raw);
     mpu6050_read_temperature(&temp_raw);
@@ -176,6 +179,15 @@ static bool update_imu(void)
   }
   else
   {
+    // if we have lost 1000 IMU messages something is wrong
+    if(micros() > last_imu_update_us + 1000000)
+    {
+      // change board revision and reset IMU
+      set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
+      uint16_t acc1G;
+      mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
+      accel_scale = 9.80665f/acc1G * get_param_float(PARAM_ACCEL_SCALE);
+    }
     return false;
   }
 }
