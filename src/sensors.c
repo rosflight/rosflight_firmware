@@ -68,11 +68,11 @@ static bool update_imu(void);
 void init_sensors(void)
 {
   // BAROMETER <-- for some reason, this has to come first
-//  i2cWrite(0,0,0);
-//  _baro_present = ms5611_init();
+  i2cWrite(0,0,0);
+  _baro_present = ms5611_init();
 
   // MAGNETOMETER
-//  _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+  _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
 
   // SONAR
   _sonar_present = mb1242_init();
@@ -93,7 +93,7 @@ bool update_sensors()
   if(_baro_present)
   {
     ms5611_update();
-
+    ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
   }
 
   if(_diff_pressure_present)

@@ -149,7 +149,7 @@ static void mavlink_send_sonar(void)
     mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
                                  _sonar_range,
                                  30.0,
-                                 0.1);
+                                 0.25);
   }
 }
 
