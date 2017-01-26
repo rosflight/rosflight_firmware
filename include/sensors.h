@@ -13,26 +13,29 @@ extern vector_t _accel;
 extern vector_t _gyro;
 extern float _imu_temperature;
 extern uint32_t _imu_time;
-extern bool _imu_ready;
 
 extern bool _diff_pressure_present;
-extern int16_t _diff_pressure;
-extern int16_t _temperature;
+extern float _pitot_velocity, _pitot_diff_pressure, _pitot_temp;
 
 extern bool _baro_present;
-extern int16_t _baro_pressure;
-extern int16_t _baro_temperature;
+extern float _baro_altitude;
+extern float _baro_pressure;
+extern float _baro_temperature;
 
 extern bool _sonar_present;
-extern int16_t _sonar_range;
+extern float _sonar_range;
 extern uint32_t _sonar_time;
+
+extern bool _mag_present;
+extern vector_t _mag;
+extern uint32_t _mag_time;
 
 // function declarations
 void init_sensors(void);
-bool update_sensors(uint32_t time_us);
+bool update_sensors();
 
-bool calibrate_acc(void);
-bool calibrate_gyro(void);
+bool start_imu_calibration(void);
+
 #ifdef __cplusplus
 }
 #endif

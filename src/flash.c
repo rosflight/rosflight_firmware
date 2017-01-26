@@ -73,11 +73,18 @@ bool writeEEPROM(bool blink)
   {
     FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);
 
-    FLASH_ErasePage(FLASH_WRITE_ADDR);
-    status = FLASH_ErasePage(FLASH_WRITE_ADDR + FLASH_PAGE_SIZE);
+    for(int i = 0; i < NUM_PAGES; i++)
+      status = FLASH_ErasePage(FLASH_WRITE_ADDR + i * FLASH_PAGE_SIZE);
     for (unsigned int i = 0; i < sizeof(params_t) && status == FLASH_COMPLETE; i += 4)
+    {
       status = FLASH_ProgramWord(FLASH_WRITE_ADDR + i, *(uint32_t *)((char *)&_params + i));
-    if (status == FLASH_COMPLETE)
+      if (status != FLASH_COMPLETE)
+      {
+        volatile int debug = 0;
+        continue;
+      }
+    }
+    if(status == FLASH_COMPLETE)
       break;
   }
   FLASH_Lock();
@@ -98,6 +105,5 @@ bool writeEEPROM(bool blink)
       delay(50);
     }
   }
-
   return true;
 }

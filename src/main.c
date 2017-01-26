@@ -29,21 +29,6 @@ int main(void)
   systemInit();
 
   // Perform Setup Operations
-  setup();
-
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
-
-  while (1)
-  {
-    // Main loop
-    loop();
-  }
-}
-
-
-void setup(void)
-{
   // Make sure all the perhipherals are done booting up before starting
   delay(500);
 
@@ -84,11 +69,22 @@ void setup(void)
   // accelerometer correction <- if using angle mode, this is required, adds ~70 us
   init_estimator(false, false, true);
   init_mode();
+
+  // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
+
+  while (1)
+  {
+    // Main loop
+    loop();
+  }
 }
 
 
-//uint32_t counter = 0;
-//uint32_t average_time = 0;
+void setup(void)
+{
+
+}
 
 
 void loop(void)
@@ -96,53 +92,24 @@ void loop(void)
   /*********************/
   /***  Pre-Process ***/
   /*********************/
-  // get loop time
-  static uint32_t prev_time = 0;
-  static int32_t dt = 0;
-  static uint32_t counter = 0;
-  static uint32_t average_time = 0;
-  static uint32_t start = 0;
-  static uint32_t end = 0;
-  static uint32_t max = 0;
-  static uint32_t min = 1000;
+
+
   /*********************/
   /***  Control Loop ***/
   /*********************/
-  // update sensors - an internal timer runs this at a fixed rate
-
-  start = micros();
-  if (update_sensors(micros())) // 595 | 591 | 590 us
+  if (update_sensors()) // 595 | 591 | 590 us
   {
-
     // If I have new IMU data, then perform control
     run_estimator(micros()); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
     run_controller(); // 278 | 271
     mix_output(); // 16 | 13 us
-
-    // loop time calculation
-    end = micros();
-    dt = end - start;
-    average_time+=dt;
-    counter++;
-    max = (dt > max) ? dt : max;
-    min = (dt < min) ? dt : min;
-    if(counter > 1000)
-     {
-       // mavlink_send_named_value_int("average", average_time/counter);
-       // mavlink_send_named_value_int("max", max);
-       counter = 0;
-       average_time = 0;
-       max = 0;
-       min = 1000;
-     }
   }
 
 
   /*********************/
   /***  Post-Process ***/
   /*********************/
-  // internal timers figure out what to send
-
+  // internal timers figure out what and when to send
   mavlink_stream(micros()); // 165 | 27 | 2
 
   // receive mavlink messages

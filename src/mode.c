@@ -7,6 +7,7 @@
 #include "param.h"
 #include "mavlink_util.h"
 #include "mux.h"
+#include "sensors.h"
 
 #include "mode.h"
 
@@ -66,9 +67,9 @@ bool check_failsafe(void)
 }
 
 
-bool check_mode(uint32_t now)
+bool check_mode(uint64_t now)
 {
-  static uint32_t prev_time = 0;
+  static uint64_t prev_time = 0;
   static uint32_t time_sticks_have_been_in_arming_position = 0;
 
   // see it has been at least 20 ms

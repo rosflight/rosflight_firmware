@@ -27,7 +27,7 @@ static const vector_t g = {0.0f, 0.0f, -1.0f};
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
-static int32_t last_time;
+static int64_t last_time;
 
 static bool mat_exp;
 static bool quad_int;
@@ -42,12 +42,17 @@ static vector_t _gyro_LPF;
 
 void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
 {
-  _current_state.p = 0.0f;
-  _current_state.q = 0.0f;
-  _current_state.r = 0.0f;
-  _current_state.phi = 0.0f;
-  _current_state.theta = 0.0f;
-  _current_state.psi = 0.0f;
+  _current_state.q.w = 0.0f;
+  _current_state.q.x = 0.0f;
+  _current_state.q.y = 0.0f;
+  _current_state.q.z = 0.0f;
+  _current_state.omega.x = 0.0f;
+  _current_state.omega.y = 0.0f;
+  _current_state.omega.z = 0.0f;
+  _current_state.euler.x = 0.0f;
+  _current_state.euler.y = 0.0f;
+  _current_state.euler.z = 0.0f;
+
 
   q_hat.w = 1.0f;
   q_hat.x = 0.0f;
@@ -112,7 +117,7 @@ void run_LPF()
 }
 
 
-void run_estimator(uint32_t now)
+void run_estimator(uint64_t now)
 {
   static float kp, ki;
   if (last_time == 0)
@@ -230,19 +235,17 @@ void run_estimator(uint32_t now)
     }
   }
 
+  // Save attitude estimate
+  _current_state.q = q_hat;
+
   // Extract Euler Angles for controller
-  euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
+  euler_from_quat(_current_state.q, &_current_state.euler.x, &_current_state.euler.y, &_current_state.euler.z);
 
   // Save off adjust gyro measurements with estimated biases for control
-  wbar = vector_sub(wbar, b);
-  _current_state.p = _gyro_LPF.x - _adaptive_gyro_bias.x;
-  _current_state.q = _gyro_LPF.y - _adaptive_gyro_bias.y;
-  _current_state.r = _gyro_LPF.z;
+  _current_state.omega = vector_sub(_gyro_LPF, b);
 
   // Save gyro biases for streaming to computer
-  _adaptive_gyro_bias.x = b.x;
-  _adaptive_gyro_bias.y = b.y;
-  _adaptive_gyro_bias.z = 0.0; // Until we have MAG support, the z-bias is totally meaningless
+  _adaptive_gyro_bias = b;
 }
 
 #ifdef __cplusplus

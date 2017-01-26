@@ -85,7 +85,7 @@ void run_pid(pid_t *pid)
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if (pid->ki_param_id < PARAMS_COUNT && _armed_state == ARMED && pwmRead(get_param_int(PARAM_RC_F_CHANNEL) > 1200))
+  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwmRead(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
   {
     if ( get_param_float(pid->ki_param_id) > 0.0 )
     {
@@ -102,7 +102,7 @@ void run_pid(pid_t *pid)
   // Integrator anti-windup
   float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
   if(u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
-    pid->integrator = (u - p_term + d_term)/get_param_float(pid->ki_param_id);
+    pid->integrator = (u_sat - p_term + d_term)/get_param_float(pid->ki_param_id);
 
   // Set output
   (*pid->output) = u_sat;
@@ -117,8 +117,8 @@ void init_controller()
            PARAM_PID_ROLL_ANGLE_P,
            PARAM_PID_ROLL_ANGLE_I,
            PARAM_PID_ROLL_ANGLE_D,
-           &_current_state.phi,
-           &_current_state.p,
+           &_current_state.euler.x,
+           &_current_state.omega.x,
            &_combined_control.x.value,
            &_command.x,
            get_param_int(PARAM_MAX_COMMAND)/2.0f,
@@ -128,8 +128,8 @@ void init_controller()
            PARAM_PID_PITCH_ANGLE_P,
            PARAM_PID_PITCH_ANGLE_I,
            PARAM_PID_PITCH_ANGLE_D,
-           &_current_state.theta,
-           &_current_state.q,
+           &_current_state.euler.y,
+           &_current_state.omega.y,
            &_combined_control.y.value,
            &_command.y,
            get_param_int(PARAM_MAX_COMMAND)/2.0f,
@@ -139,7 +139,7 @@ void init_controller()
            PARAM_PID_ROLL_RATE_P,
            PARAM_PID_ROLL_RATE_I,
            PARAMS_COUNT,
-           &_current_state.p,
+           &_current_state.omega.x,
            NULL,
            &_combined_control.x.value,
            &_command.x,
@@ -150,7 +150,7 @@ void init_controller()
            PARAM_PID_PITCH_RATE_P,
            PARAM_PID_PITCH_RATE_I,
            PARAMS_COUNT,
-           &_current_state.q,
+           &_current_state.omega.y,
            NULL,
            &_combined_control.y.value,
            &_command.y,
@@ -161,7 +161,7 @@ void init_controller()
            PARAM_PID_YAW_RATE_P,
            PARAM_PID_YAW_RATE_I,
            PARAMS_COUNT,
-           &_current_state.r,
+           &_current_state.omega.z,
            NULL,
            &_combined_control.z.value,
            &_command.z,
@@ -206,21 +206,22 @@ void run_controller()
     _command.z = _combined_control.z.value;
 
   // THROTTLE
-  if(_combined_control.F.type == ALTITUDE)
-    run_pid(&pid_altitude);
-  else // PASSTHROUGH
+//  if(_combined_control.F.type == ALTITUDE)
+//    run_pid(&pid_altitude);
+//  else // PASSTHROUGH
     _command.F = _combined_control.F.value;
 
   static uint32_t counter = 0;
   if(counter > 100)
   {
     mavlink_send_named_command_struct("RC", _rc_control);
-    mavlink_send_named_command_struct("offboard", _offboard_control);
-    mavlink_send_named_command_struct("combined", _combined_control);
+//    mavlink_send_named_command_struct("offboard", _offboard_control);
+//    mavlink_send_named_command_struct("combined", _combined_control);
     mavlink_send_named_value_float("command_F", _command.F);
     mavlink_send_named_value_float("command_x", _command.x);
     mavlink_send_named_value_float("command_y", _command.y);
     mavlink_send_named_value_float("command_z", _command.z);
+    mavlink_send_named_value_float("yaw_int", pid_yaw_rate.integrator);
     counter = 0;
   }
   counter++;

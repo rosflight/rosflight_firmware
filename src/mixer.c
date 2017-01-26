@@ -34,7 +34,7 @@ static mixer_t quadcopter_x_mixing =
   { 1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   {-1.0f,-1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
   {-1.0f, 1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  { 1.0f,-1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  {-1.0f, 1.0f, 1.0f,-1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t quadcopter_h_mixing =
@@ -44,7 +44,7 @@ static mixer_t quadcopter_h_mixing =
   { 1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   {-1057, -943, 1057,  943,  0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
   {-1005,  995,-1005,  995,  0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-  { 1.0f,-1.0f,-1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+  {-1.0f, 1.0f, 1.0f,-1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
 };
 
 static mixer_t fixedwing_mixing =
@@ -166,32 +166,46 @@ void write_servo(uint8_t index, int32_t value)
 void mix_output()
 {
   int32_t max_output = 0;
-  for (int8_t i=0; i<8; i++)
-  {
-    if (mixer_to_use.output_type[i] != NONE)
-    {
-      // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
-      prescaled_outputs[i] = (int32_t)((_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                                        _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])*1000.0f);
-      if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
-      {
-        max_output = prescaled_outputs[i];
-      }
-      // negative motor outputs are set to zero when writing to the motor,
-      // but they have to be allowed here because the same logic is used for
-      // servo commands, which may be negative
-    }
-  }
 
-  // saturate outputs to maintain controllability even during aggressive maneuvers
-  if (max_output > 1000)
+  // For now, we aren't supporting mixing with fixed wings.  This is a total hack, and should be re-thought
+  if(get_param_int(PARAM_FIXED_WING))
   {
-    int32_t scale_factor = 1000*1000/max_output;
+    // AETR
+    prescaled_outputs[0] = _command.x;
+    prescaled_outputs[1] = _command.y;
+    prescaled_outputs[2] = _command.F * 1000; // Throttle comes in scaled from 0.0 to 1.0
+    prescaled_outputs[3] = _command.z;
+  }
+  else // For multirotors, domixing the same way (in fixed point for now);
+  {
+
     for (int8_t i=0; i<8; i++)
     {
-      if (mixer_to_use.output_type[i] == M)
+      if (mixer_to_use.output_type[i] != NONE)
       {
-        prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
+        // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
+        prescaled_outputs[i] = (int32_t)((_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
+                                 _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])*1000.0f);
+        if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
+        {
+          max_output = prescaled_outputs[i];
+        }
+        // negative motor outputs are set to zero when writing to the motor,
+        // but they have to be allowed here because the same logic is used for
+        // servo commands, which may be negative
+      }
+    }
+
+    // saturate outputs to maintain controllability even during aggressive maneuvers
+    if (max_output > 1000)
+    {
+      int32_t scale_factor = 1000*1000/max_output;
+      for (int8_t i=0; i<8; i++)
+      {
+        if (mixer_to_use.output_type[i] == M)
+        {
+          prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
+        }
       }
     }
   }

@@ -110,15 +110,15 @@ static void convertPWMtoRad()
 }
 
 
-bool receive_rc(uint32_t now)
+bool receive_rc(uint64_t now)
 {
   if(_calibrate_rc)
   {
     calibrate_rc();
   }
   // if it has been more than 20ms then look for new RC values and parse them
-  static uint32_t last_rc_receive_time = 0;
-  static uint32_t time_of_last_stick_deviation = 0;
+  static uint64_t last_rc_receive_time = 0;
+  static uint64_t time_of_last_stick_deviation = 0;
 
   if (now - last_rc_receive_time < 20000)
   {
