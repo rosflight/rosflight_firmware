@@ -26,17 +26,17 @@ bool new_imu_data;
 
 // Airspeed
 bool _diff_pressure_present = false;
-int16_t _diff_pressure;
-int16_t _diff_pressure_temperature;
+float _pitot_velocity, _pitot_diff_pressure, _pitot_temp;
 
 // Barometer
 bool _baro_present = false;
-int32_t _baro_pressure;
-int32_t _baro_temperature;
+float _baro_altitude;
+float _baro_pressure;
+float _baro_temperature;
 
 // Sonar
 bool _sonar_present = false;
-int16_t _sonar_range;
+float _sonar_range;
 uint32_t _sonar_time;
 
 // Magnetometer
@@ -68,17 +68,17 @@ static bool update_imu(void);
 void init_sensors(void)
 {
   // BAROMETER <-- for some reason, this has to come first
-  i2cWrite(0,0,0);
-  _baro_present = ms5611_init();
+//  i2cWrite(0,0,0);
+//  _baro_present = ms5611_init();
 
   // MAGNETOMETER
-  _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+//  _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
 
   // SONAR
   _sonar_present = mb1242_init();
 
   // DIFF PRESSURE
-  _diff_pressure_present = ms4525_detect();
+  _diff_pressure_present = ms4525_init();
 
   // IMU
   uint16_t acc1G;
@@ -92,23 +92,21 @@ bool update_sensors()
 {
   if(_baro_present)
   {
-    _baro_pressure = ms5611_read_pressure();
-    _baro_temperature = ms5611_read_temperature();
     ms5611_update();
+
   }
 
-//  if(_diff_pressure_present)
-//  {
-//    ms4525_request_async_update();
-//    _diff_pressure = ms4525_read_velocity();
-//    _diff_pressure_temperature = ms4525_read_temperature();
-//  }
+  if(_diff_pressure_present)
+  {
+    ms4525_update();
+    ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
+  }
 
-//  if (_sonar_present)
-//  {
-//    _sonar_time = micros();
-//    _sonar_range = mb1242_poll();
-//  }
+  if (_sonar_present)
+  {
+    mb1242_update();
+    _sonar_range = mb1242_read();
+  }
 
   if (_mag_present)
   {
@@ -118,7 +116,6 @@ bool update_sensors()
     _mag.x = (float)raw_mag[0];
     _mag.y = (float)raw_mag[1];
     _mag.z = (float)raw_mag[2];
-//    _mag = vector_normalize(_mag);
   }
 
   // Return whether or not we got new IMU data

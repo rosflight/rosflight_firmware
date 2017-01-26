@@ -56,14 +56,15 @@ static void mavlink_send_heartbeat(void)
 
 static void mavlink_send_attitude(void)
 {
-  mavlink_msg_attitude_send(MAVLINK_COMM_0,
-                            millis(),
-                            _current_state.phi,
-                            _current_state.theta,
-                            _current_state.psi,
-                            _current_state.p,
-                            _current_state.q,
-                            _current_state.r);
+  mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
+                                        millis(),
+                                        _current_state.q.w,
+                                        _current_state.q.x,
+                                        _current_state.q.y,
+                                        _current_state.q.z,
+                                        _current_state.omega.x,
+                                        _current_state.omega.y,
+                                        _current_state.omega.z);
 }
 
 static void mavlink_send_imu(void)
@@ -129,7 +130,7 @@ static void mavlink_send_diff_pressure(void)
 {
   if (_diff_pressure_present)
   {
-    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure, _diff_pressure_temperature);
+    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _pitot_velocity, _pitot_diff_pressure, _pitot_temp);
   }
 }
 
@@ -137,7 +138,7 @@ static void mavlink_send_baro(void)
 {
   if (_baro_present)
   {
-    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_pressure, _baro_temperature);
+    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_altitude, _baro_pressure, _baro_temperature);
   }
 }
 
@@ -145,15 +146,10 @@ static void mavlink_send_sonar(void)
 {
   if (_sonar_present)
   {
-    mavlink_msg_distance_sensor_send(MAVLINK_COMM_0,
-                                     _sonar_time,
-                                     24,
-                                     822,
-                                     _sonar_range,
-                                     MAV_DISTANCE_SENSOR_ULTRASOUND,
-                                     1,
-                                     MAV_SENSOR_ROTATION_PITCH_180,
-                                     1);
+    mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
+                                 _sonar_range,
+                                 30.0,
+                                 0.1);
   }
 }
 

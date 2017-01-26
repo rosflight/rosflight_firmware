@@ -10,13 +10,20 @@ extern "C" {
 
 typedef struct
 {
-  float p;
-  float q;
-  float r;
-  float phi;
-  float theta;
-  float psi;
+  quaternion_t q;
+  vector_t euler;
+  vector_t omega;
+
+//  float p;
+//  float q;
+//  float r;
+
+//  float phi;
+//  float theta;
+//  float psi;
+
   float altitude;
+
 } state_t;
 
 extern state_t _current_state;
