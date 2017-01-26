@@ -160,13 +160,13 @@ void run_estimator(uint64_t now)
     // w_acc = 2*s_tilde*v_tilde
     w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
     w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
-    w_acc.z = -2.0f*q_tilde.w*q_tilde.z;
+    w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
     // integrate biases from accelerometer feedback
     // (eq 47b Mahoney Paper, using correction term w_acc found above)
     b.x -= ki*w_acc.x*dt;
     b.y -= ki*w_acc.y*dt;
-    //    b.z -= ki*w_acc.z*dt;  // Don't integrate z bias, because it's unobservable
+    b.z = 0.0;  // Don't integrate z bias, because it's unobservable
   }
   else
   {
