@@ -90,17 +90,17 @@ void init_sensors(void)
 
 bool update_sensors()
 {
-  if(_baro_present)
-  {
-    ms5611_update();
-    ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
-  }
+//  if(_baro_present)
+//  {
+//    ms5611_update();
+//    ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
+//  }
 
-  if(_diff_pressure_present)
-  {
-    ms4525_update();
-    ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
-  }
+//  if(_diff_pressure_present)
+//  {
+//    ms4525_update();
+//    ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
+//  }
 
   if (_sonar_present)
   {
@@ -108,15 +108,15 @@ bool update_sensors()
     _sonar_range = mb1242_read();
   }
 
-  if (_mag_present)
-  {
-    int16_t raw_mag[3] = {0,0,0};
-    hmc5883l_update();
-    hmc5883l_read(raw_mag);
-    _mag.x = (float)raw_mag[0];
-    _mag.y = (float)raw_mag[1];
-    _mag.z = (float)raw_mag[2];
-  }
+//  if (_mag_present)
+//  {
+//    int16_t raw_mag[3] = {0,0,0};
+//    hmc5883l_update();
+//    hmc5883l_read(raw_mag);
+//    _mag.x = (float)raw_mag[0];
+//    _mag.y = (float)raw_mag[1];
+//    _mag.z = (float)raw_mag[2];
+//  }
 
   // Return whether or not we got new IMU data
   return update_imu();
