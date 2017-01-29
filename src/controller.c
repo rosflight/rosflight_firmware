@@ -12,6 +12,7 @@ extern "C" {
 #include "mixer.h"
 #include "mux.h"
 #include "estimator.h"
+#include "sensors.h"
 #include "mode.h"
 
 #include "controller.h"
@@ -42,7 +43,7 @@ void init_pid(pid_t* pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
 void run_pid(pid_t *pid)
 {
   // Time calculation
-  float now = micros()*1e-6;
+  float now = _imu_time * 1e-6;
   float dt = now - pid->prev_time;
   pid->prev_time = now;
   if(dt > 0.010 || _armed_state == DISARMED)

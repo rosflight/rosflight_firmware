@@ -71,8 +71,8 @@ void set_param_defaults(void)
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f);
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f);
-  init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.6f);
-  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.6f);
+  init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.888f);
+  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.888f);
   init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 0);
   init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f);
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);

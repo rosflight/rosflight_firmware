@@ -22,7 +22,7 @@ vector_t _accel;
 vector_t _gyro;
 float _imu_temperature;
 uint32_t _imu_time;
-bool new_imu_data;
+bool new_imu_data = false;
 
 // Airspeed
 bool _diff_pressure_present = false;
@@ -158,6 +158,7 @@ static bool update_imu(void)
     mpu6050_read_accel(accel_raw);
     mpu6050_read_gyro(gyro_raw);
     mpu6050_read_temperature(&temp_raw);
+    new_imu_data = false;
 
     // convert temperature SI units (degC, m/s^2, rad/s)
     _imu_temperature = temp_raw/340.0f + 36.53f;

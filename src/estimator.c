@@ -117,19 +117,19 @@ void run_LPF()
 }
 
 
-void run_estimator(uint64_t now)
+void run_estimator()
 {
   static float kp, ki;
   if (last_time == 0)
   {
-    last_time = now;
+    last_time = _imu_time;
     return;
   }
-  float dt = (now - last_time) * 1e-6f;
-  last_time = now;
+  float dt = (_imu_time - last_time) * 1e-6f;
+  last_time = _imu_time;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now < init_time)
+  if (_imu_time < init_time)
   {
     kp = kp_*10.0f;
     ki = ki_*10.0f;
