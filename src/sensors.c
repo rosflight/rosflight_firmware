@@ -55,7 +55,8 @@ int16_t temp_raw;
 static volatile uint8_t accel_status, gyro_status, temp_status;
 static float accel_scale;
 static float gyro_scale;
-static bool calibrating_imu_flag;
+static bool calibrating_acc_flag;
+static bool calibrating_gyro_flag;
 static void calibrate_accel(void);
 static void calibrate_gyro(void);
 static void correct_imu(void);
@@ -125,7 +126,8 @@ bool update_sensors()
 
 bool start_imu_calibration(void)
 {
-  calibrating_imu_flag = true;
+  calibrating_acc_flag = true;
+  calibrating_gyro_flag = true;
   set_param_float(PARAM_ACC_X_BIAS, 0.0);
   set_param_float(PARAM_ACC_Y_BIAS, 0.0);
   set_param_float(PARAM_ACC_Z_BIAS, 0.0);
@@ -134,6 +136,20 @@ bool start_imu_calibration(void)
   set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
   set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
   return true;
+}
+
+bool start_gyro_calibration(void)
+{
+  calibrating_gyro_flag = true;
+  set_param_float(PARAM_GYRO_X_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
+  set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
+  return true;
+}
+
+bool gyro_calibration_complete(void)
+{
+  return !calibrating_gyro_flag;
 }
 
 
@@ -172,8 +188,10 @@ static bool update_imu(void)
     _gyro.y = -gyro_raw[1] * gyro_scale;
     _gyro.z = -gyro_raw[2] * gyro_scale;
 
-    if (calibrating_imu_flag == true)
+    if (calibrating_acc_flag == true)
       calibrate_accel();
+    if (calibrating_gyro_flag)
+      calibrate_gyro();
 
     correct_imu();
     return true;
@@ -193,20 +211,48 @@ static bool update_imu(void)
   }
 }
 
-// we should eventually split the calibration, so gyro calibration can be done before taking off
-static void calibrate_gyro(){}
+
+static void calibrate_gyro()
+{
+  static uint16_t count = 0;
+  static vector_t gyro_sum  = { 0.0f, 0.0f, 0.0f };
+  gyro_sum = vector_add(gyro_sum, _gyro);
+  count++;
+
+  if(count > 100)
+  {
+    // Gyros are simple.  Just find the average during the calibration
+    vector_t gyro_bias = scalar_multiply(1.0/(float)count, gyro_sum);
+
+    if(sqrd_norm(gyro_bias) < 1.0)
+    {
+      set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
+      set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
+      set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
+    }
+    else
+    {
+      mavlink_log_error("Too much movement for gyro cal", NULL);
+    }
+
+    // reset calibration in case we do it again
+    calibrating_gyro_flag = false;
+    count = 0;
+    gyro_sum.x = 0.0f;
+    gyro_sum.y = 0.0f;
+    gyro_sum.z = 0.0f;
+  }
+}
 
 
 static void calibrate_accel(void)
 {
   static uint16_t count = 0;
   static vector_t acc_sum  = { 0.0f, 0.0f, 0.0f };
-  static vector_t gyro_sum  = { 0.0f, 0.0f, 0.0f };
   static const vector_t gravity = {0.0f, 0.0f, 9.80665f};
   static float acc_temp_sum = 0.0f;
 
   acc_sum = vector_add(vector_add(acc_sum, _accel), gravity);
-  gyro_sum = vector_add(gyro_sum, _gyro);
   acc_temp_sum += _imu_temperature;
   count++;
 
@@ -228,23 +274,16 @@ static void calibrate_accel(void)
     // Then we are dividing by the number of measurements.
     vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
-    // Gyros are simple.  Just find the average during the calibration
-    vector_t gyro_bias = scalar_multiply(1.0/(float)count, gyro_sum);
-
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if(sqrd_norm(accel_bias) < 3.0 && sqrd_norm(gyro_bias) < 1.0)
+    if(sqrd_norm(accel_bias) < 3.0)
     {
       set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
       set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
       set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
-
-      set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
-      set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
-      set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
       mavlink_log_info("IMU offsets captured", NULL);
-      calibrating_imu_flag = false;
+      calibrating_acc_flag = false;
     }
     else
     {
@@ -266,7 +305,7 @@ static void calibrate_accel(void)
       else
       {
         mavlink_log_error("Too much movement for IMU cal", NULL);
-        calibrating_imu_flag = false;
+        calibrating_acc_flag = false;
       }
     }
 
@@ -276,9 +315,6 @@ static void calibrate_accel(void)
     acc_sum.x = 0.0f;
     acc_sum.y = 0.0f;
     acc_sum.z = 0.0f;
-    gyro_sum.x = 0.0f;
-    gyro_sum.y = 0.0f;
-    gyro_sum.z = 0.0f;
     acc_temp_sum = 0.0f;
   }
 }

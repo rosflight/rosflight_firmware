@@ -116,8 +116,8 @@ void init_PWM()
     useCPPM = true;
   }
   int16_t motor_refresh_rate = get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
-  int16_t idle_pwm = get_param_int(PARAM_MOTOR_IDLE_PWM);
-  pwmInit(useCPPM, false, false, motor_refresh_rate, idle_pwm);
+  int16_t off_pwm = 1000;
+  pwmInit(useCPPM, false, false, motor_refresh_rate, off_pwm);
 }
 
 

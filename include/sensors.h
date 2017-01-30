@@ -35,6 +35,8 @@ void init_sensors(void);
 bool update_sensors();
 
 bool start_imu_calibration(void);
+bool start_gyro_calibration(void);
+bool gyro_calibration_complete(void);
 
 #ifdef __cplusplus
 }

@@ -21,10 +21,23 @@ void init_mode(void)
   _armed_state = DISARMED;
 }
 
-void arm(void)
+bool arm(void)
 {
-  _armed_state = ARMED;
-  LED1_ON;
+  static bool started_gyro_calibration = false;
+  if (!started_gyro_calibration && _armed_state == DISARMED)
+  {
+    start_gyro_calibration();
+    started_gyro_calibration = true;
+    return false;
+  }
+  else if (gyro_calibration_complete())
+  {
+    started_gyro_calibration = false;
+    _armed_state = ARMED;
+    LED1_ON;
+    return true;
+  }
+  return false;
 }
 
 void disarm(void)
@@ -107,8 +120,8 @@ bool check_mode(uint64_t now)
         }
         if (time_sticks_have_been_in_arming_position > 500000)
         {
-          arm();
-          time_sticks_have_been_in_arming_position = 0;
+          if(arm())
+            time_sticks_have_been_in_arming_position = 0;
         }
       }
       else // _armed_state is ARMED

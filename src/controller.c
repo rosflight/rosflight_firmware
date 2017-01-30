@@ -71,7 +71,7 @@ void run_pid(pid_t *pid)
   {
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
-    // (Be sure to de-refernce pointers)
+    // (Be sure to de-reference pointers)
     if(pid->current_xdot == NULL && dt > 0.0f)
     {
       pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
@@ -139,7 +139,7 @@ void init_controller()
   init_pid(&pid_roll_rate,
            PARAM_PID_ROLL_RATE_P,
            PARAM_PID_ROLL_RATE_I,
-           PARAMS_COUNT,
+           PARAM_PID_ROLL_RATE_D,
            &_current_state.omega.x,
            NULL,
            &_combined_control.x.value,
@@ -150,7 +150,7 @@ void init_controller()
   init_pid(&pid_pitch_rate,
            PARAM_PID_PITCH_RATE_P,
            PARAM_PID_PITCH_RATE_I,
-           PARAMS_COUNT,
+           PARAM_PID_PITCH_RATE_D,
            &_current_state.omega.y,
            NULL,
            &_combined_control.y.value,
@@ -161,7 +161,7 @@ void init_controller()
   init_pid(&pid_yaw_rate,
            PARAM_PID_YAW_RATE_P,
            PARAM_PID_YAW_RATE_I,
-           PARAMS_COUNT,
+           PARAM_PID_YAW_RATE_D,
            &_current_state.omega.z,
            NULL,
            &_combined_control.z.value,

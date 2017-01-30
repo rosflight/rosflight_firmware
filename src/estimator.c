@@ -33,10 +33,6 @@ static bool mat_exp;
 static bool quad_int;
 static bool use_acc;
 
-static float kp_;
-static float ki_;
-static uint32_t init_time;
-
 static vector_t _accel_LPF;
 static vector_t _gyro_LPF;
 
@@ -71,10 +67,6 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   b.y = 0.0f;
   b.z = 0.0f;
 
-  kp_ = get_param_float(PARAM_FILTER_KP);
-  ki_ = get_param_float(PARAM_FILTER_KI);
-  init_time = get_param_int(PARAM_INIT_TIME)*1000; // microseconds
-
   w_acc.x = 0.0f;
   w_acc.y = 0.0f;
   w_acc.z = 0.0f;
@@ -87,10 +79,6 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   mat_exp = use_matrix_exponential;
   quad_int = use_quadratic_integration;
   use_acc = use_accelerometer;
-
-  _adaptive_gyro_bias.x = 0;
-  _adaptive_gyro_bias.y = 0;
-  _adaptive_gyro_bias.z = 0;
 
   _accel_LPF.x = 0;
   _accel_LPF.y = 0;
@@ -129,15 +117,15 @@ void run_estimator()
   last_time = _imu_time;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (_imu_time < init_time)
+  if (_imu_time < (uint64_t)get_param_int(PARAM_INIT_TIME)*1000)
   {
-    kp = kp_*10.0f;
-    ki = ki_*10.0f;
+    kp = get_param_float(PARAM_FILTER_KP)*10.0f;
+    ki = get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = kp_;
-    ki = ki_;
+    kp = get_param_float(PARAM_FILTER_KP);
+    ki = get_param_float(PARAM_FILTER_KI);
   }
 
   // Run LPF to reject a lot of noise
@@ -243,9 +231,6 @@ void run_estimator()
 
   // Save off adjust gyro measurements with estimated biases for control
   _current_state.omega = vector_sub(_gyro_LPF, b);
-
-  // Save gyro biases for streaming to computer
-  _adaptive_gyro_bias = b;
 }
 
 #ifdef __cplusplus

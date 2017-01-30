@@ -80,7 +80,6 @@ bool writeEEPROM(bool blink)
       status = FLASH_ProgramWord(FLASH_WRITE_ADDR + i, *(uint32_t *)((char *)&_params + i));
       if (status != FLASH_COMPLETE)
       {
-        volatile int debug = 0;
         continue;
       }
     }

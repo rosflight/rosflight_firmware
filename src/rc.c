@@ -252,21 +252,23 @@ void calibrate_rc()
   if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
   {
     // in angle mode
-    set_param_float(PARAM_ROLL_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
+    set_param_float(PARAM_ROLL_ANGLE_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
                           /(float)get_param_int(PARAM_RC_X_RANGE));
-    set_param_float(PARAM_PITCH_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCH)
+    set_param_float(PARAM_PITCH_ANGLE_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCH)
                           /(float)get_param_int(PARAM_RC_Y_RANGE));
   }
   else
   {
     // in rate mode
-    set_param_float(PARAM_ROLLRATE_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE)
+    set_param_float(PARAM_ROLL_RATE_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE)
                           /(float)get_param_int(PARAM_RC_X_RANGE));
-    set_param_float(PARAM_PITCHRATE_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE)
+    set_param_float(PARAM_PITCH_RATE_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE)
                           /(float)get_param_int(PARAM_RC_Y_RANGE));
   }
-  set_param_float(PARAM_YAWRATE_TRIM, (float)(get_param_int(PARAM_RC_Z_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_YAWRATE)
+  set_param_float(PARAM_YAW_RATE_TRIM, (float)(get_param_int(PARAM_RC_Z_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_YAWRATE)
                         /(float)get_param_int(PARAM_RC_Z_RANGE));
+
+  write_params();
 
   mavlink_log_warning("Completed RC calibration", NULL);
   _calibrate_rc = false;

@@ -154,9 +154,9 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
       _offboard_control.z.type = RATE;
       _offboard_control.F.type = THROTTLE;
       _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-      _offboard_control.x.value += get_param_float(PARAM_ROLLRATE_TRIM);
-      _offboard_control.y.value += get_param_float(PARAM_PITCHRATE_TRIM);
-      _offboard_control.z.value += get_param_float(PARAM_YAWRATE_TRIM);
+      _offboard_control.x.value += get_param_float(PARAM_ROLL_RATE_TRIM);
+      _offboard_control.y.value += get_param_float(PARAM_PITCH_RATE_TRIM);
+      _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
       break;
     case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
       _offboard_control.x.type = ANGLE;
@@ -164,18 +164,18 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
       _offboard_control.z.type = RATE;
       _offboard_control.F.type = THROTTLE;
       _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-      _offboard_control.x.value += get_param_float(PARAM_ROLL_TRIM);
-      _offboard_control.y.value += get_param_float(PARAM_PITCH_TRIM);
-      _offboard_control.z.value += get_param_float(PARAM_YAWRATE_TRIM);
+      _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
+      _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
+      _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
       break;
     case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
       _offboard_control.x.type = ANGLE;
       _offboard_control.y.type = ANGLE;
       _offboard_control.z.type = RATE;
       _offboard_control.F.type = ALTITUDE;
-      _offboard_control.x.value += get_param_float(PARAM_ROLL_TRIM);
-      _offboard_control.y.value += get_param_float(PARAM_PITCH_TRIM);
-      _offboard_control.z.value += get_param_float(PARAM_YAWRATE_TRIM);
+      _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
+      _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
+      _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
       break;
       // Handle error state
   }

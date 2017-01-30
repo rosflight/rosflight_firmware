@@ -50,10 +50,15 @@ void init_params(void)
 
 void set_param_defaults(void)
 {
+  /******************************/
+  /*** HARDWARE CONFIGURATION ***/
+  /******************************/
   init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2);
-
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600);
 
+  /*****************************/
+  /*** MAVLINK CONFIGURATION ***/
+  /*****************************/
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1);
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1);
 
@@ -68,13 +73,68 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50);
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50);
 
+  /********************************/
+  /*** CONTROLLER CONFIGURATION ***/
+  /********************************/
+  init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
+
+  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f);
+  init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f);
+  init_param_float(PARAM_PID_ROLL_RATE_D, "PID_ROLL_RATE_D", 0.000f);
+  init_param_float(PARAM_ROLL_RATE_TRIM, "ROLLRATE_TRIM", 0.0f);
+  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 3.14159f);
+
+  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);
+  init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.0000f);
+  init_param_float(PARAM_PID_PITCH_RATE_D, "PID_PITCH_RATE_D", 0.0000f);
+  init_param_float(PARAM_PITCH_RATE_TRIM, "PITCHRATE_TRIM", 0.0f);
+  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 3.14159f);
+
+  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.25f);
+  init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);
+  init_param_float(PARAM_PID_YAW_RATE_D, "PID_YAW_RATE_I", 0.0f);
+  init_param_float(PARAM_YAW_RATE_TRIM, "YAWRATE_TRIM", 0.0f);
+  init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);
+
+  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);
+  init_param_float(PARAM_ROLL_ANGLE_TRIM, "ROLL_TRIM", 0.0f);
+  init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
+
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f);
+  init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);
+  init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
+
+  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 0.0f);
+  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
+  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
+  init_param_float(PARAM_HOVER_THROTTLE, "FAILSAFE_THR", 0.5);
+
+  init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f);
+
+
+  /*************************/
+  /*** PWM CONFIGURATION ***/
+  /*************************/
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
+  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1050);
+  init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
+
+  /*******************************/
+  /*** ESTIMATOR CONFIGURATION ***/
+  /*******************************/
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f);
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f);
+
   init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.888f);
   init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.888f);
-  init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 0);
+
   init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f);
+
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
   init_param_float(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0.0f);
@@ -85,20 +145,19 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
   init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
 
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 400);
-  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1050);
-  init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
+  /************************/
+  /*** RC CONFIGURATION ***/
+  /************************/
   init_param_int(PARAM_RC_TYPE, "RC_TYPE",1);
   init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0);
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1);
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3);
   init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2);
-  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6);
-
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4);
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4);
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5);
   init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN", 7);
+  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6);
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500);
   init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500);
@@ -121,54 +180,24 @@ void set_param_defaults(void)
   init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f);
   init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f);
   init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 3.14159f);
-  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 3.14159f);
-  init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.5);
+  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 0.786f);
 
-  init_param_float(PARAM_ROLL_TRIM, "ROLL_TRIM", 0.0f);
-  init_param_float(PARAM_PITCH_TRIM, "PITCH_TRIM", 0.0f);
-  init_param_float(PARAM_ROLLRATE_TRIM, "ROLLRATE_TRIM", 0.0f);
-  init_param_float(PARAM_PITCHRATE_TRIM, "PITCHRATE_TRIM", 0.0f);
-  init_param_float(PARAM_YAWRATE_TRIM, "YAWRATE_TRIM", 0.0f);
+  /***************************/
+  /*** FRAME CONFIGURATION ***/
+  /***************************/
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X);
 
-  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
-  init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150);
-
-  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 10.0f);
-  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
-  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
-
-  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);
-  init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
-
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f);
-  init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
-
-  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f);
-  init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.00001f);
-  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 3.14159f);
-
-  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);
-  init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.00001f);
-  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 3.14159f);
-
-  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.025f);
-  init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);
-  init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);
-
-  init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f);
-
-  init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
-
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_PLUS);
+  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
-  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
+
+  /********************/
+  /*** ARMING SETUP ***/
+  /********************/
+  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true);
+  init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5);
+  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150);
 }
 
 bool read_params(void)
@@ -218,6 +247,17 @@ void param_change_callback(param_id_t id)
   case PARAM_STREAM_RC_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
     break;
+
+  case PARAM_RC_TYPE:
+    init_PWM();
+    break;
+  case PARAM_MOTOR_PWM_SEND_RATE:
+    init_PWM();
+    break;
+  case PARAM_MIXER:
+    init_mixing();
+    break;
+
   default:
     // no action needed for this parameter
     break;
