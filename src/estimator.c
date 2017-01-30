@@ -27,7 +27,7 @@ static const vector_t g = {0.0f, 0.0f, -1.0f};
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
-static int64_t last_time;
+static uint64_t last_time;
 
 static bool mat_exp;
 static bool quad_int;
@@ -36,59 +36,70 @@ static bool use_acc;
 static vector_t _accel_LPF;
 static vector_t _gyro_LPF;
 
+void reset_state()
+{
+    _current_state.q.w = 1.0f;
+    _current_state.q.x = 0.0f;
+    _current_state.q.y = 0.0f;
+    _current_state.q.z = 0.0f;
+    _current_state.omega.x = 0.0f;
+    _current_state.omega.y = 0.0f;
+    _current_state.omega.z = 0.0f;
+    _current_state.euler.x = 0.0f;
+    _current_state.euler.y = 0.0f;
+    _current_state.euler.z = 0.0f;
+
+    q_hat.w = 1.0f;
+    q_hat.x = 0.0f;
+    q_hat.y = 0.0f;
+    q_hat.z = 0.0f;
+
+    w1.x = 0.0f;
+    w1.y = 0.0f;
+    w1.z = 0.0f;
+
+    w2.x = 0.0f;
+    w2.y = 0.0f;
+    w2.z = 0.0f;
+
+    b.x = 0.0f;
+    b.y = 0.0f;
+    b.z = 0.0f;
+
+    w_acc.x = 0.0f;
+    w_acc.y = 0.0f;
+    w_acc.z = 0.0f;
+
+    q_tilde.w = 1.0f;
+    q_tilde.x = 0.0f;
+    q_tilde.y = 0.0f;
+    q_tilde.z = 0.0f;
+
+    _accel_LPF.x = 0;
+    _accel_LPF.y = 0;
+    _accel_LPF.z = -9.80665;
+
+    _gyro_LPF.x = 0;
+    _gyro_LPF.y = 0;
+    _gyro_LPF.z = 0;
+}
+
+void reset_adaptive_bias()
+{
+  b.x = 0;
+  b.y = 0;
+  b.z = 0;
+}
+
 void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
 {
-  _current_state.q.w = 0.0f;
-  _current_state.q.x = 0.0f;
-  _current_state.q.y = 0.0f;
-  _current_state.q.z = 0.0f;
-  _current_state.omega.x = 0.0f;
-  _current_state.omega.y = 0.0f;
-  _current_state.omega.z = 0.0f;
-  _current_state.euler.x = 0.0f;
-  _current_state.euler.y = 0.0f;
-  _current_state.euler.z = 0.0f;
-
-
-  q_hat.w = 1.0f;
-  q_hat.x = 0.0f;
-  q_hat.y = 0.0f;
-  q_hat.z = 0.0f;
-
-  w1.x = 0.0f;
-  w1.y = 0.0f;
-  w1.z = 0.0f;
-
-  w2.x = 0.0f;
-  w2.y = 0.0f;
-  w2.z = 0.0f;
-
-  b.x = 0.0f;
-  b.y = 0.0f;
-  b.z = 0.0f;
-
-  w_acc.x = 0.0f;
-  w_acc.y = 0.0f;
-  w_acc.z = 0.0f;
-
-  q_tilde.w = 1.0f;
-  q_tilde.x = 0.0f;
-  q_tilde.y = 0.0f;
-  q_tilde.z = 0.0f;
-
   mat_exp = use_matrix_exponential;
   quad_int = use_quadratic_integration;
   use_acc = use_accelerometer;
 
-  _accel_LPF.x = 0;
-  _accel_LPF.y = 0;
-  _accel_LPF.z = -9.80665;
-
-  _gyro_LPF.x = 0;
-  _gyro_LPF.y = 0;
-  _gyro_LPF.z = 0;
-
   last_time = 0;
+
+  reset_state();
 }
 
 void run_LPF()
@@ -109,11 +120,12 @@ void run_estimator()
 {
   static float kp, ki;
   _current_state.now_us = _imu_time;
-  if (last_time == 0)
+  if (last_time == 0 || _current_state.now_us <= last_time)
   {
     last_time = _current_state.now_us;
     return;
   }
+
   float dt = (_current_state.now_us - last_time) * 1e-6f;
   last_time = _current_state.now_us;
 

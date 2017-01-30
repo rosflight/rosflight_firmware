@@ -11,6 +11,7 @@ extern "C" {
 #include "mavlink_log.h"
 #include "param.h"
 #include "sensors.h"
+#include "estimator.h"
 #include "mode.h"
 
 #include "turbotrig/turbovec.h"
@@ -80,7 +81,7 @@ void init_sensors(void)
   _sonar_present = mb1242_init();
 
   // DIFF PRESSURE
-  _diff_pressure_present = ms4525_init();
+//  _diff_pressure_present = ms4525_init();
 
   // IMU
   uint16_t acc1G;
@@ -97,15 +98,15 @@ bool update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if (_armed_state == DISARMED && (!_sonar_present || !_diff_pressure_present))
+  if (_armed_state == DISARMED && (!_sonar_present ))//|| !_diff_pressure_present))
   {
     uint32_t now = millis();
     if (now > last_time_look_for_disarmed_sensors + 10000)
     {
       if(!_sonar_present)
         _sonar_present = mb1242_init();
-      if(!_diff_pressure_present)
-        _diff_pressure_present = ms4525_init();
+//      if(!_diff_pressure_present)
+//        _diff_pressure_present = ms4525_init();
     }
   }
 
@@ -144,15 +145,12 @@ bool update_sensors()
 
 bool start_imu_calibration(void)
 {
+  start_gyro_calibration();
+
   calibrating_acc_flag = true;
-  calibrating_gyro_flag = true;
   set_param_float(PARAM_ACC_X_BIAS, 0.0);
   set_param_float(PARAM_ACC_Y_BIAS, 0.0);
   set_param_float(PARAM_ACC_Z_BIAS, 0.0);
-
-  set_param_float(PARAM_GYRO_X_BIAS, 0.0);
-  set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
-  set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
   return true;
 }
 
@@ -247,6 +245,9 @@ static void calibrate_gyro()
       set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
       set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
+
+      // Tell the estimator to reset it's bias estimate, because it should be zero now
+      reset_adaptive_bias();
     }
     else
     {
@@ -301,6 +302,9 @@ static void calibrate_accel(void)
       set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
       set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
       mavlink_log_info("IMU offsets captured", NULL);
+
+      // reset the estimated state
+      reset_state();
       calibrating_acc_flag = false;
     }
     else
