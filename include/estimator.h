@@ -23,6 +23,7 @@ typedef struct
 //  float psi;
 
   float altitude;
+  uint64_t now_us;
 
 } state_t;
 

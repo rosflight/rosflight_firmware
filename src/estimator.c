@@ -108,13 +108,14 @@ void run_LPF()
 void run_estimator()
 {
   static float kp, ki;
+  _current_state.now_us = _imu_time;
   if (last_time == 0)
   {
-    last_time = _imu_time;
+    last_time = _current_state.now_us;
     return;
   }
-  float dt = (_imu_time - last_time) * 1e-6f;
-  last_time = _imu_time;
+  float dt = (_current_state.now_us - last_time) * 1e-6f;
+  last_time = _current_state.now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
   if (_imu_time < (uint64_t)get_param_int(PARAM_INIT_TIME)*1000)

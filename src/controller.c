@@ -40,12 +40,8 @@ void init_pid(pid_t* pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
 }
 
 
-void run_pid(pid_t *pid)
+void run_pid(pid_t *pid, float dt)
 {
-  // Time calculation
-  float now = _imu_time * 1e-6;
-  float dt = now - pid->prev_time;
-  pid->prev_time = now;
   if(dt > 0.010 || _armed_state == DISARMED)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
@@ -184,25 +180,38 @@ void init_controller()
 
 void run_controller()
 {
+  // Time calculation
+  static float prev_time = 0.0f;
+
+  if(prev_time < 0.0001)
+  {
+    prev_time = _current_state.now_us;
+    return;
+  }
+
+  float now = _current_state.now_us * 1e-6;
+  float dt = now - prev_time;
+  prev_time = now;
+
   // ROLL
   if(_combined_control.x.type == RATE)
-    run_pid(&pid_roll_rate);
+    run_pid(&pid_roll_rate, dt);
   else if(_combined_control.x.type == ANGLE)
-    run_pid(&pid_roll);
+    run_pid(&pid_roll, dt);
   else // PASSTHROUGH
     _command.x = _combined_control.x.value;
 
   // PITCH
   if(_combined_control.y.type == RATE)
-    run_pid(&pid_pitch_rate);
+    run_pid(&pid_pitch_rate, dt);
   else if(_combined_control.y.type == ANGLE)
-    run_pid(&pid_pitch);
+    run_pid(&pid_pitch, dt);
   else // PASSTHROUGH
     _command.y = _combined_control.y.value;
 
   // YAW
   if(_combined_control.z.type == RATE)
-    run_pid(&pid_yaw_rate);
+    run_pid(&pid_yaw_rate, dt);
   else// PASSTHROUGH
     _command.z = _combined_control.z.value;
 

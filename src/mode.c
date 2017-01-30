@@ -75,12 +75,6 @@ bool check_failsafe(void)
   {
     // return to appropriate mode
     _armed_state = (_armed_state == FAILSAFE_ARMED) ? ARMED : DISARMED;
-
-    // If we are disarmed, then take a second and see if we have new I2C sensors
-    // (This probably means that we have a powered 5V rail now, so we can check
-    // if we had a sonar or airspeed sensor that wasn't powered before)
-    _sonar_present = mb1242_init();
-    _diff_pressure_present = ms4525_init();
   }
   return false;
 }
@@ -155,7 +149,8 @@ bool check_mode(uint64_t now)
     {
       if (rc_switch(get_param_int(PARAM_ARM_CHANNEL)))
       {
-        arm();
+        if(_armed_state == DISARMED)
+          arm();
       }
       else
       {
