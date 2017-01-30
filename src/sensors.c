@@ -70,18 +70,11 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
-  // BAROMETER <-- for some reason, this has to come first
-  i2cWrite(0,0,0);
+  while(millis() < 500);
   _baro_present = ms5611_init();
-
-  // MAGNETOMETER
   _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
-
-  // SONAR
   _sonar_present = mb1242_init();
-
-  // DIFF PRESSURE
-//  _diff_pressure_present = ms4525_init();
+  _diff_pressure_present = ms4525_init();
 
   // IMU
   uint16_t acc1G;
@@ -101,10 +94,14 @@ bool update_sensors()
   if (_armed_state == DISARMED && (!_sonar_present ))//|| !_diff_pressure_present))
   {
     uint32_t now = millis();
-    if (now > last_time_look_for_disarmed_sensors + 10000)
+    if (now > (last_time_look_for_disarmed_sensors + 500))
     {
+      last_time_look_for_disarmed_sensors = now;
       if(!_sonar_present)
-        _sonar_present = mb1242_init();
+      {
+        mb1242_update();
+        _sonar_present = (mb1242_read() > 0.2);
+      }
 //      if(!_diff_pressure_present)
 //        _diff_pressure_present = ms4525_init();
     }
@@ -116,11 +113,11 @@ bool update_sensors()
     ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
   }
 
-  //  if(_diff_pressure_present)
-  //  {
-  //    ms4525_update();
-  //    ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
-  //  }
+    if(_diff_pressure_present)
+    {
+      ms4525_update();
+      ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
+    }
 
   if (_sonar_present)
   {

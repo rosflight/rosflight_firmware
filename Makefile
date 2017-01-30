@@ -37,7 +37,7 @@ TARGET		?= rosflight
 OPTIONS		?=
 
 # Debugger options, must be empty or GDB
-DEBUG ?= GDB
+DEBUG ?=
 
 # Serial port/device for flashing
 SERIAL_DEVICE	?= /dev/ttyUSB0
@@ -105,13 +105,11 @@ ARCH_FLAGS	 = -mthumb -mcpu=cortex-m3
 
 ifeq ($(DEBUG),GDB)
 OPTIMIZE	 = -Og
-
+DEBUG_FLAGS	 = -ggdb3
 else
 OPTIMIZE	 = -Os
 LTO_FLAGS	 = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
-
-DEBUG_FLAGS	 = -ggdb3
 
 CFLAGS		 = $(ARCH_FLAGS) \
 		   $(LTO_FLAGS) \
