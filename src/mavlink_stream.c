@@ -134,7 +134,7 @@ static void mavlink_send_sonar(void)
   {
     mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
                                  _sonar_range,
-                                 30.0,
+                                 8.0,
                                  0.25);
   }
 }
