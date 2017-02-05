@@ -4,3 +4,6 @@
 [submodule "lib/mavlink/v1.0"]
 	path = lib/mavlink/v1.0
 	url = https://github.com/BYU-MAGICC/mavlink_c_library.git
+[submodule "doc/ROSflight.wiki"]
+	path = doc/ROSflight.wiki
+	url = https://github.com/byu-magicc/ROSflight.wiki.git
