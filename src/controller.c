@@ -225,13 +225,13 @@ void run_controller()
   if(counter > 100)
   {
     mavlink_send_named_command_struct("RC", _rc_control);
-//    mavlink_send_named_command_struct("offboard", _offboard_control);
-//    mavlink_send_named_command_struct("combined", _combined_control);
-    mavlink_send_named_value_float("command_F", _command.F);
-    mavlink_send_named_value_float("command_x", _command.x);
-    mavlink_send_named_value_float("command_y", _command.y);
-    mavlink_send_named_value_float("command_z", _command.z);
-    mavlink_send_named_value_float("yaw_int", pid_yaw_rate.integrator);
+    mavlink_send_named_command_struct("offboard", _offboard_control);
+    mavlink_send_named_command_struct("combined", _combined_control);
+//    mavlink_send_named_value_float("command_F", _command.F);
+//    mavlink_send_named_value_float("command_x", _command.x);
+//    mavlink_send_named_value_float("command_y", _command.y);
+//    mavlink_send_named_value_float("command_z", _command.z);
+//    mavlink_send_named_value_float("yaw_int", pid_yaw_rate.integrator);
     counter = 0;
   }
   counter++;

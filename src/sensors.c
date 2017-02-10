@@ -71,6 +71,7 @@ static bool update_imu(void);
 void init_sensors(void)
 {
   while(millis() < 500);
+  i2cWrite(0,0,0);
   _baro_present = ms5611_init();
   _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
   _sonar_present = mb1242_init();
@@ -101,9 +102,19 @@ bool update_sensors()
       {
         mb1242_update();
         _sonar_present = (mb1242_read() > 0.2);
+        if(_sonar_present)
+        {
+          mavlink_log_info("FOUND SONAR", NULL);
+        }
       }
-//      if(!_diff_pressure_present)
-//        _diff_pressure_present = ms4525_init();
+      if(!_diff_pressure_present)
+      {
+        _diff_pressure_present = ms4525_init();
+        if(_diff_pressure_present)
+        {
+          mavlink_log_info("FOUND DIFF PRESS", NULL);
+        }
+      }
     }
   }
 
@@ -115,6 +126,7 @@ bool update_sensors()
 
     if(_diff_pressure_present)
     {
+
       ms4525_update();
       ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
     }
