@@ -19,7 +19,7 @@
 typedef struct
 {
   uint32_t period_us;
-  uint32_t last_time_us;
+  uint64_t last_time_us;
   void (*send_function)(void);
 } mavlink_stream_t;
 

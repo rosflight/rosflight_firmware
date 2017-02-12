@@ -22,14 +22,6 @@ extern void SetSysClock(bool overclock);
 
 serialPort_t *Serial1;
 
-static void _putc(void *p, char c)
-{
-    (void)p; // avoid compiler warning about unused variable
-    serialWrite(Serial1, c);
-
-    while (!isSerialTransmitBufferEmpty(Serial1));
-}
-
 int main(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
@@ -73,12 +65,6 @@ int main(void)
   init_estimator(false, false, true);
   init_mode();
 
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
-
-  init_printf(NULL, _putc);
-
-
   // Main loop
   while (1)
   {
@@ -93,7 +79,6 @@ int main(void)
       mix_output(); // 16 | 13 us
     }
 
-
     /*********************/
     /***  Post-Process ***/
     /*********************/
@@ -102,15 +87,6 @@ int main(void)
 
     // receive mavlink messages
     mavlink_receive(); // 159 | 1 | 1
-//    if(_sonar_present)
-//    {
-//          mb1242_update();
-//          float distance = mb1242_read();
-//          printf("distance = %d.%dm\n", (uint32_t)distance, (uint32_t)(mb1242_read()*1000));
-//    }
-//    else
-//          printf("no sonar\n");
-//    LED1_TOGGLE;
 
     // update the armed_states, an internal timer runs this at a fixed rate
     check_mode(micros()); // 108 | 1 | 1

@@ -14,6 +14,8 @@ mavlink_system_t mavlink_system;
 void init_mavlink(void)
 {
   // Initialize Serial ports
+  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
+
   mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
   mavlink_system.compid = 250;
 

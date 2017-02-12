@@ -70,7 +70,7 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
-  while(millis() < 500);
+  while(millis() < 50);
   i2cWrite(0,0,0);
   _baro_present = ms5611_init();
   _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
