@@ -23,7 +23,7 @@ extern "C" {
 vector_t _accel;
 vector_t _gyro;
 float _imu_temperature;
-uint32_t _imu_time;
+uint64_t _imu_time;
 bool new_imu_data = false;
 
 // Airspeed
@@ -39,12 +39,10 @@ float _baro_temperature;
 // Sonar
 bool _sonar_present = false;
 float _sonar_range;
-uint32_t _sonar_time;
 
 // Magnetometer
 bool _mag_present = false;
 vector_t _mag;
-uint32_t _mag_time;
 
 
 //==================================================================
@@ -191,11 +189,11 @@ void imu_ISR(void)
 
 static bool update_imu(void)
 {
-  static uint64_t last_imu_update_us = 0;
+  static uint32_t last_imu_update_ms = 0;
 
   if(new_imu_data)
   {
-    last_imu_update_us = micros();
+    last_imu_update_ms = millis();
     mpu6050_read_accel(accel_raw);
     mpu6050_read_gyro(gyro_raw);
     mpu6050_read_temperature(&temp_raw);
@@ -224,7 +222,7 @@ static bool update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages something is wrong
-    if(micros() > last_imu_update_us + 1000000)
+    if(micros() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
       set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);

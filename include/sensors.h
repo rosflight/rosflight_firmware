@@ -12,7 +12,7 @@ extern "C" {
 extern vector_t _accel;
 extern vector_t _gyro;
 extern float _imu_temperature;
-extern uint32_t _imu_time;
+extern uint64_t _imu_time;
 
 extern bool _diff_pressure_present;
 extern float _pitot_velocity, _pitot_diff_pressure, _pitot_temp;
@@ -24,11 +24,9 @@ extern float _baro_temperature;
 
 extern bool _sonar_present;
 extern float _sonar_range;
-extern uint32_t _sonar_time;
 
 extern bool _mag_present;
 extern vector_t _mag;
-extern uint32_t _mag_time;
 
 // function declarations
 void init_sensors(void);
