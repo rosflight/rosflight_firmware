@@ -222,7 +222,7 @@ static bool update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages something is wrong
-    if(micros() > last_imu_update_ms + 1000)
+    if(millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
       set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
@@ -303,7 +303,7 @@ static void calibrate_accel(void)
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if(sqrd_norm(accel_bias) < 3.0)
+    if(sqrd_norm(accel_bias) < 4.5)
     {
       set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
       set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
@@ -317,7 +317,7 @@ static void calibrate_accel(void)
     else
     {
       // check for bad _accel_scale
-      if(sqrd_norm(accel_bias) > 3.5*3.5 && sqrd_norm(accel_bias) < 5.5*5.5)
+      if(sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
       {
         mavlink_log_error("Detected bad IMU accel scale value", 0);
         set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
@@ -333,7 +333,9 @@ static void calibrate_accel(void)
       }
       else
       {
-        mavlink_log_error("Too much movement for IMU cal", NULL);
+        mavlink_log_error("Too much movement for IMU cal %d.%d",
+                          (uint32_t)sqrd_norm(accel_bias),
+                          (uint32_t)(sqrd_norm(accel_bias) * 1000) % 1000);
         calibrating_acc_flag = false;
       }
     }
