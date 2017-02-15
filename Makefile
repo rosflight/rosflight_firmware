@@ -37,7 +37,7 @@ TARGET		?= rosflight
 OPTIONS		?=
 
 # Debugger options, must be empty or GDB
-DEBUG ?=
+DEBUG ?= gdb
 
 # Serial port/device for flashing
 SERIAL_DEVICE	?= /dev/ttyUSB0
