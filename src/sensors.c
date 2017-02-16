@@ -225,6 +225,7 @@ static bool update_imu(void)
     if(millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
+      last_imu_update_ms = millis();
       set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
       uint16_t acc1G;
       mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
@@ -333,13 +334,10 @@ static void calibrate_accel(void)
       }
       else
       {
-        mavlink_log_error("Too much movement for IMU cal %d.%d",
-                          (uint32_t)sqrd_norm(accel_bias),
-                          (uint32_t)(sqrd_norm(accel_bias) * 1000) % 1000);
+        mavlink_log_error("Too much movement for IMU cal", NULL);
         calibrating_acc_flag = false;
       }
     }
-
 
     // reset calibration in case we do it again
     count = 0;
