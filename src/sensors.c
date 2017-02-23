@@ -90,7 +90,7 @@ bool update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if (_armed_state == DISARMED && (!_sonar_present ))//|| !_diff_pressure_present))
+  if ((_armed_state == DISARMED && (!_sonar_present )) || (!_diff_pressure_present))
   {
     uint32_t now = millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
@@ -111,6 +111,14 @@ bool update_sensors()
         if(_diff_pressure_present)
         {
           mavlink_log_info("FOUND DIFF PRESS", NULL);
+        }
+      }
+      if(!_mag_present)
+      {
+        _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+        if(_mag_present)
+        {
+          mavlink_log_info("FOUND MAG", NULL);
         }
       }
     }
