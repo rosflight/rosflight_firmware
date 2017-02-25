@@ -261,9 +261,9 @@ bool write_params(void)
   // blink green LED to indicate successful write
   for (uint8_t i = 0; i < 3; i++)
   {
-    LED0_TOGGLE;
+    led0_toggle();
     delay(100);
-    LED0_TOGGLE;
+    led0_toggle();
     delay(50);
   }
   return true;

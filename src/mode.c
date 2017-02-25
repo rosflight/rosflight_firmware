@@ -1,8 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "rc.h"
 #include "param.h"
 #include "mavlink_util.h"
@@ -34,7 +33,7 @@ bool arm(void)
   {
     started_gyro_calibration = false;
     _armed_state = ARMED;
-    LED1_ON;
+    led1_on();
     return true;
   }
   return false;
@@ -43,7 +42,7 @@ bool arm(void)
 void disarm(void)
 {
   _armed_state = DISARMED;
-  LED1_OFF;
+  led1_off();
 }
 
 /// TODO: Be able to tell if the RC has become disconnected during flight
@@ -62,7 +61,7 @@ bool check_failsafe(void)
       static uint8_t count = 0;
       if(count > 25)
       {
-        LED1_TOGGLE;
+        led1_toggle();
         count = 0;
       }
       count++;

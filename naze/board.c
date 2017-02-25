@@ -67,3 +67,13 @@ bool memory_write(const void * src, size_t len)
 {
   return writeEEPROM(src, len);
 }
+
+// LED
+
+void led0_on(void) { LED0_ON; }
+void led0_off(void) { LED0_OFF; }
+void led0_toggle(void) { LED0_TOGGLE; }
+
+void led1_on(void) { LED1_ON; }
+void led1_off(void) { LED1_OFF; }
+void led1_toggle(void) { LED1_TOGGLE; }

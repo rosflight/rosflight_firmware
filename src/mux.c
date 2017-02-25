@@ -2,6 +2,7 @@
 
 #include "mavlink_util.h"
 
+#include "board.h"
 #include "rc.h"
 #include "mux.h"
 #include "param.h"
@@ -30,7 +31,7 @@ bool mux_inputs()
 
   if(_armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
   {
-    _combined_control = _failsafe_control;  
+    _combined_control = _failsafe_control;
   }
   else
   {
@@ -120,11 +121,11 @@ bool mux_inputs()
     // Light to indicate override
     if (_rc_control.x.active || _rc_control.y.active || _rc_control.z.active || _rc_control.F.active)
     {
-      LED0_ON;
+      led0_on();
     }
     else
     {
-      LED0_OFF;
+      led0_off();
     }
   }
 
@@ -132,4 +133,3 @@ bool mux_inputs()
   _new_command = false;
   return true;
 }
-
