@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -38,8 +39,9 @@ float rc_read(uint8_t channel); // return between -1 and 1 (or 0 and 1?)
 void motor_write(uint8_t channel, float value); // send between 0 and 1
 
 // non-volatile memory
-bool memory_read(void * dest, uint16_t len);
-bool memory_read(void * src, uint16_t len);
+void memory_init(void);
+bool memory_read(void * dest, size_t len);
+bool memory_write(const void * src, size_t len);
 
 // LEDs
 void led0_on(void);

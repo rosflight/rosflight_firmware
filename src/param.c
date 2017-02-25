@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "board.h"
 #include "flash.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
@@ -14,6 +15,9 @@
 
 // global variable definitions
 params_t _params;
+
+// local variable definitions
+static const uint8_t PARAM_CONF_VERSION = 76;
 
 // local function definitions
 static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -30,6 +34,17 @@ static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float
   _params.types[id] = PARAM_TYPE_FLOAT;
 }
 
+static uint8_t compute_checksum(void)
+{
+  uint8_t chk = 0;
+  const uint8_t * p;
+
+  for (p = (const uint8_t *)&_params; p < ((const uint8_t *)&_params + sizeof(params_t)); p++)
+    chk ^= *p;
+
+  return chk;
+}
+
 // function definitions
 void init_params(void)
 {
@@ -37,7 +52,7 @@ void init_params(void)
   {
     init_param_int(i, "DEFAULT", 0);
   }
-  initEEPROM();
+  memory_init();
   if (!read_params())
   {
     set_param_defaults();
@@ -102,15 +117,15 @@ void set_param_defaults(void)
   init_param_float(PARAM_ROLL_ANGLE_TRIM, "ROLL_TRIM", 0.0f);  // Roll Angle Trim - See RC calibration | -1000.0 | 1000.0
   init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);   // Maximum Roll Angle command accepted into PID controllers | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0 
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0 
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
   init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);   // Maximum Pitch Angle command accepted into PID controllers | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 0.0f); // Altitude Proporitional Gain | 0.0 | 1000.0 
-  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f); // Altitude Integral Gain | 0.0 | 1000.0 
-  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f); // Altitude Derivative Gain | 0.0 | 1000.0 
+  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 0.0f); // Altitude Proporitional Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f); // Altitude Integral Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f); // Altitude Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_HOVER_THROTTLE, "HOVER_THR", 0.5); // Hover Throttle - See RC calibration | 0.0 | 1.0
 
   init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f); // Dirty Derivative time constant - See controller documentation | 0.0 | 1.0
@@ -149,7 +164,7 @@ void set_param_defaults(void)
   /*** RC CONFIGURATION ***/
   /************************/
   init_param_int(PARAM_RC_TYPE, "RC_TYPE",1); // Type of RC input 0 - Parallel PWM (PWM), 1 - Pulse-Position Modulation (PPM) | 0 | 1
-  init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0); // RC input channel mapped to x-axis commands [0 - indexed] | 0 | 3 
+  init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0); // RC input channel mapped to x-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1); // RC input channel mapped to y-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3); // RC input channel mapped to z-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2); // RC input channel mapped to F-axis commands [0 - indexed] | 0 | 3
@@ -202,12 +217,41 @@ void set_param_defaults(void)
 
 bool read_params(void)
 {
-  return readEEPROM();
+  if (!memory_read(&_params, sizeof(params_t)))
+    return false;
+
+  if (_params.version != PARAM_CONF_VERSION)
+    return false;
+
+  if (_params.size != sizeof(params_t) || _params.magic_be != 0xBE || _params.magic_ef != 0xEF)
+    return false;
+
+  if (compute_checksum() != 0)
+    return false;
+
+  return true;
 }
 
 bool write_params(void)
 {
-  return writeEEPROM(true);
+  _params.version = PARAM_CONF_VERSION;
+  _params.size = sizeof(params_t);
+  _params.magic_be = 0xBE;
+  _params.magic_ef = 0xEF;
+  _params.chk = compute_checksum();
+
+  if (!memory_write(&_params, sizeof(params_t)))
+    return false;
+
+  // blink green LED to indicate successful write
+  for (uint8_t i = 0; i < 3; i++)
+  {
+    LED0_TOGGLE;
+    delay(100);
+    LED0_TOGGLE;
+    delay(50);
+  }
+  return true;
 }
 
 void param_change_callback(param_id_t id)

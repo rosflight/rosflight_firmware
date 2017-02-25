@@ -1,5 +1,7 @@
 #include "board.h"
 
+#include "flash.h"
+
 #include <breezystm32/breezystm32.h>
 
 extern void SetSysClock(bool overclock);
@@ -30,4 +32,21 @@ uint16_t serial_bytes_available(void)
 uint8_t serial_read(void)
 {
   return serialRead(Serial1);
+}
+
+// non-volatile memory
+
+void memory_init(void)
+{
+  initEEPROM();
+}
+
+bool memory_read(void * dest, size_t len)
+{
+  return readEEPROM(dest, len);
+}
+
+bool memory_write(const void * src, size_t len)
+{
+  return writeEEPROM(src, len);
 }
