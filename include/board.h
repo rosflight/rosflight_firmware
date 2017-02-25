@@ -10,6 +10,7 @@ uint32_t millis();
 uint64_t micros();
 
 // serial
+void serial_init(uint32_t baud_rate);
 void serial_write(uint8_t byte);
 uint16_t serial_bytes_available(void);
 uint8_t serial_read(void);

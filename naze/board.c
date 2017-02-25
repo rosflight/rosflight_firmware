@@ -12,12 +12,14 @@ void init_board(void)
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
   systemInit();
-
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
 }
 
 // serial
+
+void init_serial(uint32_t baud_rate)
+{
+  Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
+}
 
 void serial_write(uint8_t byte)
 {

@@ -12,6 +12,8 @@ mavlink_system_t mavlink_system;
 // function definitions
 void init_mavlink(void)
 {
+  serial_init(get_param_int(PARAM_BAUD_RATE));
+
   mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
   mavlink_system.compid = 250;
 
