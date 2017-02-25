@@ -171,25 +171,8 @@ typedef enum
   PARAM_TYPE_INVALID
 } param_type_t;
 
-// type definitions
-typedef struct
-{
-  uint8_t version;
-  uint16_t size;
-  uint8_t magic_be;                       // magic number, should be 0xBE
-
-  int32_t values[PARAMS_COUNT];
-  char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
-  param_type_t types[PARAMS_COUNT];
-
-  uint8_t magic_ef;                       // magic number, should be 0xEF
-  uint8_t chk;                            // XOR checksum
-} params_t;
-
-// global variable declarations
-extern params_t _params;
-
 // function declarations
+
 /**
  * @brief Initialize parameter values
  */

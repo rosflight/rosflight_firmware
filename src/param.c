@@ -13,8 +13,23 @@
 #include "mixer.h"
 //#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
 
+// type definitions
+typedef struct
+{
+  uint8_t version;
+  uint16_t size;
+  uint8_t magic_be;                       // magic number, should be 0xBE
+
+  int32_t values[PARAMS_COUNT];
+  char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
+  param_type_t types[PARAMS_COUNT];
+
+  uint8_t magic_ef;                       // magic number, should be 0xEF
+  uint8_t chk;                            // XOR checksum
+} params_t;
+
 // global variable definitions
-params_t _params;
+static params_t params;
 
 // local variable definitions
 static const uint8_t PARAM_CONF_VERSION = 76;
@@ -22,16 +37,16 @@ static const uint8_t PARAM_CONF_VERSION = 76;
 // local function definitions
 static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = value;
-  _params.types[id] = PARAM_TYPE_INT32;
+  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  params.values[id] = value;
+  params.types[id] = PARAM_TYPE_INT32;
 }
 
 static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
 {
-  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = *((int32_t *) &value);
-  _params.types[id] = PARAM_TYPE_FLOAT;
+  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  params.values[id] = *((int32_t *) &value);
+  params.types[id] = PARAM_TYPE_FLOAT;
 }
 
 static uint8_t compute_checksum(void)
@@ -39,7 +54,7 @@ static uint8_t compute_checksum(void)
   uint8_t chk = 0;
   const uint8_t * p;
 
-  for (p = (const uint8_t *)&_params; p < ((const uint8_t *)&_params + sizeof(params_t)); p++)
+  for (p = (const uint8_t *)&params; p < ((const uint8_t *)&params + sizeof(params_t)); p++)
     chk ^= *p;
 
   return chk;
@@ -217,13 +232,13 @@ void set_param_defaults(void)
 
 bool read_params(void)
 {
-  if (!memory_read(&_params, sizeof(params_t)))
+  if (!memory_read(&params, sizeof(params_t)))
     return false;
 
-  if (_params.version != PARAM_CONF_VERSION)
+  if (params.version != PARAM_CONF_VERSION)
     return false;
 
-  if (_params.size != sizeof(params_t) || _params.magic_be != 0xBE || _params.magic_ef != 0xEF)
+  if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
     return false;
 
   if (compute_checksum() != 0)
@@ -234,13 +249,13 @@ bool read_params(void)
 
 bool write_params(void)
 {
-  _params.version = PARAM_CONF_VERSION;
-  _params.size = sizeof(params_t);
-  _params.magic_be = 0xBE;
-  _params.magic_ef = 0xEF;
-  _params.chk = compute_checksum();
+  params.version = PARAM_CONF_VERSION;
+  params.size = sizeof(params_t);
+  params.magic_be = 0xBE;
+  params.magic_ef = 0xEF;
+  params.chk = compute_checksum();
 
-  if (!memory_write(&_params, sizeof(params_t)))
+  if (!memory_write(&params, sizeof(params_t)))
     return false;
 
   // blink green LED to indicate successful write
@@ -316,14 +331,14 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
     for (uint8_t i = 0; i < PARAMS_NAME_LENGTH; i++)
     {
       // compare each character
-      if (name[i] != _params.names[id][i])
+      if (name[i] != params.names[id][i])
       {
         match = false;
         break;
       }
 
       // stop comparing if end of string is reached
-      if (_params.names[id][i] == '\0')
+      if (params.names[id][i] == '\0')
         break;
     }
 
@@ -336,29 +351,29 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 
 int get_param_int(param_id_t id)
 {
-  return _params.values[id];
+  return params.values[id];
 }
 
 float get_param_float(param_id_t id)
 {
-  return *(float *) &_params.values[id];
+  return *(float *) &params.values[id];
 }
 
 char *get_param_name(param_id_t id)
 {
-  return _params.names[id];
+  return params.names[id];
 }
 
 param_type_t get_param_type(param_id_t id)
 {
-  return _params.types[id];
+  return params.types[id];
 }
 
 bool set_param_int(param_id_t id, int32_t value)
 {
-  if (id < PARAMS_COUNT && value != _params.values[id])
+  if (id < PARAMS_COUNT && value != params.values[id])
   {
-    _params.values[id] = value;
+    params.values[id] = value;
     param_change_callback(id);
     mavlink_send_param(id);
     return true;
