@@ -18,16 +18,8 @@
 #include "mixer.h"
 #include "rc.h"
 
-extern void SetSysClock(bool overclock);
-
-serialPort_t *Serial1;
-
 int main(void)
 {
-  // Configure clock, this figures out HSE for hardware autodetect
-  SetSysClock(0);
-  systemInit();
-
   // Read EEPROM to get initial params
   init_params();
 

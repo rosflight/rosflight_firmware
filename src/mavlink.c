@@ -1,7 +1,6 @@
 #include <stdint.h>
 
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "mavlink_receive.h"
 #include "param.h"
 
@@ -13,9 +12,6 @@ mavlink_system_t mavlink_system;
 // function definitions
 void init_mavlink(void)
 {
-  // Initialize Serial ports
-  Serial1 = uartOpen(USART1, NULL, get_param_int(PARAM_BAUD_RATE), MODE_RXTX);
-
   mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
   mavlink_system.compid = 250;
 
@@ -27,6 +23,6 @@ inline void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 {
   if (chan == MAVLINK_COMM_0)
   {
-    serialWrite(Serial1, ch);
+    serial_write(ch);
   }
 }

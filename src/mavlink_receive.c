@@ -1,5 +1,6 @@
 #include <breezystm32/breezystm32.h>
 
+#include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mode.h"
@@ -212,10 +213,9 @@ static void handle_mavlink_message(void)
 // function definitions
 void mavlink_receive(void)
 {
-  while (serialTotalBytesWaiting(Serial1))
+  while (serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, serialRead(Serial1), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, serial_read(), &in_buf, &status))
       handle_mavlink_message();
   }
 }
-
