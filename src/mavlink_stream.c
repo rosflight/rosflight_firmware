@@ -29,7 +29,7 @@ static void mavlink_send_heartbeat(void)
   MAV_MODE armed_mode = MAV_MODE_ENUM_END; // used for failsafe
   if(_armed_state == ARMED)
     armed_mode = MAV_MODE_MANUAL_ARMED;
-  else if(_armed_state == DISARMED) 
+  else if(_armed_state == DISARMED)
     armed_mode = MAV_MODE_MANUAL_DISARMED;
 
   uint8_t control_mode = 0;
@@ -46,10 +46,10 @@ static void mavlink_send_heartbeat(void)
     control_mode = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE : MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
   }
 
-  mavlink_msg_heartbeat_send(MAVLINK_COMM_0, 
+  mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
                              get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
-                             MAV_AUTOPILOT_GENERIC, 
-                             armed_mode, 
+                             MAV_AUTOPILOT_GENERIC,
+                             armed_mode,
                              control_mode,
                              MAV_STATE_STANDBY);
 }
@@ -101,14 +101,14 @@ static void mavlink_send_rc_raw(void)
   mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
                                millis(),
                                0,
-                               pwmRead(0),
-                               pwmRead(1),
-                               pwmRead(2),
-                               pwmRead(3),
-                               pwmRead(4),
-                               pwmRead(5),
-                               pwmRead(6),
-                               pwmRead(7),
+                               pwm_read(0),
+                               pwm_read(1),
+                               pwm_read(2),
+                               pwm_read(3),
+                               pwm_read(4),
+                               pwm_read(5),
+                               pwm_read(6),
+                               pwm_read(7),
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
 }
 

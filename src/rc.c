@@ -1,8 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <breezystm32/breezystm32.h>
-
 #include "param.h"
 #include "rc.h"
 #include "mux.h"
@@ -51,11 +49,11 @@ bool rc_switch(int16_t channel)
   }
   if(switches[channel - 4].direction < 0)
   {
-    return pwmRead(channel) < 1500;
+    return pwm_read(channel) < 1500;
   }
   else
   {
-    return pwmRead(channel) > 1500;
+    return pwm_read(channel) > 1500;
   }
 }
 
@@ -64,48 +62,48 @@ static void convertPWMtoRad()
   // Get Roll control command out of RC
   if (_rc_control.x.type == ANGLE)
   {
-    _rc_control.x.value = (float)((pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
+    _rc_control.x.value = (float)((pwm_read(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
                            *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)get_param_int(PARAM_RC_X_RANGE);
   }
   else if (_rc_control.x.type == RATE)
   {
-    _rc_control.x.value = (float)((pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
+    _rc_control.x.value = (float)((pwm_read(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
                             *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)get_param_int(PARAM_RC_X_RANGE);
   }
   else if (_rc_control.x.type == PASSTHROUGH)
   {
-    _rc_control.x.value = pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - get_param_int(PARAM_RC_X_CENTER);
+    _rc_control.x.value = pwm_read(get_param_int(PARAM_RC_X_CHANNEL)) - get_param_int(PARAM_RC_X_CENTER);
   }
 
   // Get Pitch control command out of RC
   if (_rc_control.y.type == ANGLE)
   {
-    _rc_control.y.value = ((pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
+    _rc_control.y.value = ((pwm_read(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
                             *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)get_param_int(PARAM_RC_Y_RANGE);
   }
   else if (_rc_control.y.type == RATE)
   {
-    _rc_control.y.value = (float)((pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
+    _rc_control.y.value = (float)((pwm_read(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
                             *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)get_param_int(PARAM_RC_Y_RANGE);
   }
   else if (_rc_control.y.type == PASSTHROUGH)
   {
-    _rc_control.y.value = pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500;
+    _rc_control.y.value = pwm_read(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500;
   }
 
   // Get the Yaw control command type out of RC
   if (_rc_control.z.type == RATE)
   {
-    _rc_control.z.value = ((pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) - 1500)
+    _rc_control.z.value = ((pwm_read(get_param_int(PARAM_RC_Z_CHANNEL)) - 1500)
                            *2.0f*get_param_float(PARAM_RC_MAX_YAWRATE))/(float)get_param_int(PARAM_RC_Z_RANGE);
   }
   else if (_rc_control.z.type == PASSTHROUGH)
   {
-    _rc_control.z.value = pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) - 1500;
+    _rc_control.z.value = pwm_read(get_param_int(PARAM_RC_Z_CHANNEL)) - 1500;
   }
 
   // Finally, the throttle command
-  _rc_control.F.value = (float)((pwmRead(get_param_int(PARAM_RC_F_CHANNEL)) - get_param_int(PARAM_RC_F_BOTTOM)))
+  _rc_control.F.value = (float)((pwm_read(get_param_int(PARAM_RC_F_CHANNEL)) - get_param_int(PARAM_RC_F_BOTTOM)))
                         / (float)get_param_int(PARAM_RC_F_RANGE);
 }
 
@@ -158,11 +156,11 @@ bool receive_rc(uint64_t now)
   {
     // Check for stick deviation - if so, then the channel is active
     _rc_control.x.active = _rc_control.y.active  = _rc_control.z.active =
-                             abs(pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - get_param_int(PARAM_RC_X_CENTER)) >
+                             abs(pwm_read(get_param_int(PARAM_RC_X_CHANNEL)) - get_param_int(PARAM_RC_X_CENTER)) >
                              get_param_int(PARAM_RC_OVERRIDE_DEVIATION)
-                             || abs(pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - get_param_int(PARAM_RC_Y_CENTER)) >
+                             || abs(pwm_read(get_param_int(PARAM_RC_Y_CHANNEL)) - get_param_int(PARAM_RC_Y_CENTER)) >
                              get_param_int(PARAM_RC_OVERRIDE_DEVIATION)
-                             || abs(pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) - get_param_int(PARAM_RC_Z_CENTER)) >
+                             || abs(pwm_read(get_param_int(PARAM_RC_Z_CHANNEL)) - get_param_int(PARAM_RC_Z_CENTER)) >
                              get_param_int(PARAM_RC_OVERRIDE_DEVIATION);
     if (_rc_control.x.active)
     {
@@ -206,7 +204,7 @@ void calibrate_rc()
     {
       for(int16_t i = 0; i < 4; i++)
       {
-        int32_t read_value = (int32_t)pwmRead(i);
+        int32_t read_value = (int32_t)pwm_read(i);
         if(read_value > max[i])
         {
           max[i] = read_value;
@@ -235,7 +233,7 @@ void calibrate_rc()
     {
       for(int16_t i = 0; i < 4; i++)
       {
-        int32_t read_value = (int32_t)pwmRead(i);
+        int32_t read_value = (int32_t)pwm_read(i);
         sum[i] = sum[i] + read_value;
         count[i] = count[i] + 1;
       }
@@ -273,4 +271,3 @@ void calibrate_rc()
   mavlink_log_warning("Completed RC calibration", NULL);
   _calibrate_rc = false;
 }
-

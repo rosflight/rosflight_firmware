@@ -32,11 +32,11 @@ bool diff_pressure_read(float *diff_pressure, float *temperature);
 bool sonar_present(void);
 float sonar_read(void);
 
-// RC
-float rc_read(uint8_t channel); // return between -1 and 1 (or 0 and 1?)
-
-// motors
-void motor_write(uint8_t channel, float value); // send between 0 and 1
+// PWM
+// TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
+void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
+uint16_t pwm_read(uint8_t channel);
+void pwm_write(uint8_t channel, uint16_t value);
 
 // non-volatile memory
 void memory_init(void);

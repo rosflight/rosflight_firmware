@@ -82,7 +82,7 @@ void run_pid(pid_t *pid, float dt)
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwmRead(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
+  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwm_read(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
   {
     if ( get_param_float(pid->ki_param_id) > 0.0 )
     {

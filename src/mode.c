@@ -51,7 +51,7 @@ bool check_failsafe(void)
 {
   for(int8_t i = 0; i<get_param_int(PARAM_RC_NUM_CHANNELS); i++)
   {
-    if(pwmRead(i) < 900 || pwmRead(i) > 2100)
+    if(pwm_read(i) < 900 || pwm_read(i) > 2100)
     {
       if(_armed_state == ARMED || _armed_state == DISARMED)
       {
@@ -108,8 +108,8 @@ bool check_mode(uint64_t now)
       if (_armed_state == DISARMED)
       {
         // if left stick is down and to the right
-        if (pwmRead(get_param_int(PARAM_RC_F_CHANNEL)) < get_param_int(PARAM_RC_F_BOTTOM) + get_param_int(PARAM_ARM_THRESHOLD)
-            && pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) > (get_param_int(PARAM_RC_Z_CENTER) + get_param_int(PARAM_RC_Z_RANGE)/2)
+        if (pwm_read(get_param_int(PARAM_RC_F_CHANNEL)) < get_param_int(PARAM_RC_F_BOTTOM) + get_param_int(PARAM_ARM_THRESHOLD)
+            && pwm_read(get_param_int(PARAM_RC_Z_CHANNEL)) > (get_param_int(PARAM_RC_Z_CENTER) + get_param_int(PARAM_RC_Z_RANGE)/2)
             - get_param_int(PARAM_ARM_THRESHOLD))
         {
           time_sticks_have_been_in_arming_position += dt;
@@ -127,9 +127,9 @@ bool check_mode(uint64_t now)
       else // _armed_state is ARMED
       {
         // if left stick is down and to the left
-        if (pwmRead(get_param_int(PARAM_RC_F_CHANNEL)) < get_param_int(PARAM_RC_F_BOTTOM) +
+        if (pwm_read(get_param_int(PARAM_RC_F_CHANNEL)) < get_param_int(PARAM_RC_F_BOTTOM) +
             get_param_int(PARAM_ARM_THRESHOLD)
-            && pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) < (get_param_int(PARAM_RC_Z_CENTER) - get_param_int(PARAM_RC_Z_RANGE)/2)
+            && pwm_read(get_param_int(PARAM_RC_Z_CHANNEL)) < (get_param_int(PARAM_RC_Z_CENTER) - get_param_int(PARAM_RC_Z_RANGE)/2)
             + get_param_int(PARAM_ARM_THRESHOLD))
         {
           time_sticks_have_been_in_arming_position += dt;

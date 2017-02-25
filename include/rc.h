@@ -1,9 +1,8 @@
 #ifndef RC_H_
 #define RC_H_
 
-#include <breezystm32/breezystm32.h>
-
-#include "mux.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef struct
 {

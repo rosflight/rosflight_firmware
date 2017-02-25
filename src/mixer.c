@@ -3,8 +3,7 @@ extern "C" {
 #endif
 #include <stdint.h>
 
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "mixer.h"
 #include "param.h"
 #include "mode.h"
@@ -117,7 +116,7 @@ void init_PWM()
   }
   int16_t motor_refresh_rate = get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
   int16_t off_pwm = 1000;
-  pwmInit(useCPPM, false, false, motor_refresh_rate, off_pwm);
+  pwm_init(useCPPM, motor_refresh_rate, off_pwm);
 }
 
 
@@ -144,7 +143,7 @@ void write_motor(uint8_t index, int32_t value)
     value = 1000;
   }
   _outputs[index] = value;
-  pwmWriteMotor(index, _outputs[index]);
+  pwm_write(index, _outputs[index]);
 }
 
 
@@ -159,7 +158,7 @@ void write_servo(uint8_t index, int32_t value)
     value = -500;
   }
   _outputs[index] = value+1500;
-  pwmWriteMotor(index, _outputs[index]);
+  pwm_write(index, _outputs[index]);
 }
 
 

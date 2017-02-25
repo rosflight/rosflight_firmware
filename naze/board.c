@@ -34,6 +34,23 @@ uint8_t serial_read(void)
   return serialRead(Serial1);
 }
 
+// PWM
+
+void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
+{
+  pwmInit(cppm, false, false, refresh_rate, idle_pwm);
+}
+
+uint16_t pwm_read(uint8_t channel);
+{
+  return pwmRead(channel);
+}
+
+void pwm_write(uint8_t channel, uint16_t value)
+{
+  pwmWriteMotor(channel, value);
+}
+
 // non-volatile memory
 
 void memory_init(void)
