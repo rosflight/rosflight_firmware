@@ -113,7 +113,7 @@ static void mavlink_send_rc_raw(void)
 
 static void mavlink_send_diff_pressure(void)
 {
-  if (_diff_pressure_present)
+  if (diff_pressure_present())
   {
     mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _pitot_velocity, _pitot_diff_pressure, _pitot_temp);
   }
@@ -121,7 +121,7 @@ static void mavlink_send_diff_pressure(void)
 
 static void mavlink_send_baro(void)
 {
-  if (_baro_present)
+  if (baro_present())
   {
     mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_altitude, _baro_pressure, _baro_temperature);
   }
@@ -129,7 +129,7 @@ static void mavlink_send_baro(void)
 
 static void mavlink_send_sonar(void)
 {
-  if (_sonar_present)
+  if (sonar_present())
   {
     mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
                                  _sonar_range,
@@ -140,7 +140,7 @@ static void mavlink_send_sonar(void)
 
 static void mavlink_send_mag(void)
 {
-  if (_mag_present)
+  if (mag_present())
   {
     mavlink_msg_small_mag_send(MAVLINK_COMM_0,
                                _mag.x,

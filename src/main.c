@@ -5,6 +5,7 @@
 #include <breezystm32/breezystm32.h>
 #include <turbotrig/turbovec.h>
 
+#include "board.h"
 #include "estimator.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
@@ -20,6 +21,8 @@
 
 int main(void)
 {
+  init_board();
+
   // Read EEPROM to get initial params
   init_params();
 
@@ -33,9 +36,6 @@ int main(void)
 
   // Initialize MAVlink Communication
   init_mavlink();
-
-  // Initialize I2c
-  i2cInit(I2CDEV_2);
 
   // Initialize Sensors
   init_sensors();
