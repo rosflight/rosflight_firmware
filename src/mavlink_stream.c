@@ -56,7 +56,7 @@ static void mavlink_send_heartbeat(void)
 static void mavlink_send_attitude(void)
 {
   mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
-                                        millis(),
+                                        clock_millis(),
                                         _current_state.q.w,
                                         _current_state.q.x,
                                         _current_state.q.y,
@@ -83,7 +83,7 @@ static void mavlink_send_imu(void)
 static void mavlink_send_servo_output_raw(void)
 {
   mavlink_msg_servo_output_raw_send(MAVLINK_COMM_0,
-                                    micros(),
+                                    clock_micros(),
                                     0,
                                     _outputs[0],
                                     _outputs[1],
@@ -98,7 +98,7 @@ static void mavlink_send_servo_output_raw(void)
 static void mavlink_send_rc_raw(void)
 {
   mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
-                               millis(),
+                               clock_millis(),
                                0,
                                pwm_read(0),
                                pwm_read(1),

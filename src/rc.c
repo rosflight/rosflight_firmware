@@ -198,10 +198,10 @@ void calibrate_rc()
     // Calibrate Extents of RC Transmitter
     mavlink_log_warning("Calibrating RC, move sticks to full extents", NULL);
     mavlink_log_warning("in the next 10s", NULL);
-    uint32_t now = micros();
+    uint32_t now = clock_micros();
     static int32_t max[4] = {0, 0, 0, 0};
     static int32_t min[4] = {10000, 10000, 10000, 10000};
-    while(micros() - now < 1e7)
+    while(clock_micros() - now < 1e7)
     {
       for(int16_t i = 0; i < 4; i++)
       {
@@ -226,11 +226,11 @@ void calibrate_rc()
     mavlink_log_warning("Calibrating RC, leave sticks at center", NULL);
     mavlink_log_warning("and throttle low for next 10 seconds", NULL);
     delay(5000);
-    now = micros();
+    now = clock_micros();
     static int32_t sum[4] = {0, 0, 0, 0};
     static int32_t count[4] = {0, 0, 0, 0};
 
-    while(micros() - now < 5e6)
+    while(clock_micros() - now < 5e6)
     {
       for(int16_t i = 0; i < 4; i++)
       {

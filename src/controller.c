@@ -32,7 +32,7 @@ void init_pid(pid_t* pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
   pid->max = max;
   pid->min = min;
   pid->integrator = 0.0;
-  pid->prev_time = micros()*1e-6;
+  pid->prev_time = clock_micros()*1e-6;
   pid->differentiator = 0.0;
   pid->prev_x = 0.0;
   pid->tau = get_param_float(PARAM_PID_TAU);

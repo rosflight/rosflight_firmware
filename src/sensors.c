@@ -77,7 +77,7 @@ bool update_sensors()
   static uint32_t last_time_look_for_disarmed_sensors = 0;
   if (_armed_state == DISARMED)
   {
-    uint32_t now = millis();
+    uint32_t now = clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
     {
       last_time_look_for_disarmed_sensors = now;
@@ -159,7 +159,7 @@ bool gyro_calibration_complete(void)
 // local function definitions
 void imu_ISR(void)
 {
-  _imu_time = micros();
+  _imu_time = clock_micros();
   new_imu_data = true;
 }
 
@@ -170,7 +170,7 @@ static bool update_imu(void)
 
   if(new_imu_data)
   {
-    last_imu_update_ms = millis();
+    last_imu_update_ms = clock_millis();
     imu_read_accel(accel);
     imu_read_gyro(gyro);
     _imu_temperature = imu_read_temperature();
@@ -195,10 +195,10 @@ static bool update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages something is wrong
-    if(millis() > last_imu_update_ms + 1000)
+    if(clock_millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
-      last_imu_update_ms = millis();
+      last_imu_update_ms = clock_millis();
       set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
       sensors_init(get_param_int(PARAM_BOARD_REVISION))
     }

@@ -75,16 +75,16 @@ int main(void)
     /***  Post-Process ***/
     /*********************/
     // internal timers figure out what and when to send
-    mavlink_stream(micros()); // 165 | 27 | 2
+    mavlink_stream(clock_micros()); // 165 | 27 | 2
 
     // receive mavlink messages
     mavlink_receive(); // 159 | 1 | 1
 
     // update the armed_states, an internal timer runs this at a fixed rate
-    check_mode(micros()); // 108 | 1 | 1
+    check_mode(clock_micros()); // 108 | 1 | 1
 
     // get RC, an internal timer runs this every 20 ms (50 Hz)
-    receive_rc(micros()); // 42 | 2 | 1
+    receive_rc(clock_micros()); // 42 | 2 | 1
 
     // update commands (internal logic tells whether or not we should do anything or not)
     mux_inputs(); // 6 | 1 | 1

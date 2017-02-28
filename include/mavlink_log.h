@@ -21,7 +21,7 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
@@ -33,7 +33,7 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
@@ -45,7 +45,7 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
@@ -57,11 +57,10 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
       mavlink_log_info(format, ##__VA_ARGS__); \
     }\
   } while(0)
-

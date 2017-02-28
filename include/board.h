@@ -6,8 +6,8 @@
 void init_board(void);
 
 // clock
-uint32_t millis();
-uint64_t micros();
+uint32_t clock_millis();
+uint64_t clock_micros();
 
 // serial
 void serial_init(uint32_t baud_rate);

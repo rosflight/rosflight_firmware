@@ -5,12 +5,12 @@
 
 void mavlink_send_named_value_int(const char *const name, int32_t value)
 {
-  mavlink_msg_named_value_int_send(MAVLINK_COMM_0, millis(), name, value);
+  mavlink_msg_named_value_int_send(MAVLINK_COMM_0, clock_millis(), name, value);
 }
 
 void mavlink_send_named_value_float(const char *const name, float value)
 {
-  mavlink_msg_named_value_float_send(MAVLINK_COMM_0, millis(), name, value);
+  mavlink_msg_named_value_float_send(MAVLINK_COMM_0, clock_millis(), name, value);
 }
 
 void mavlink_send_named_command_struct(const char *const name, control_t command_struct)

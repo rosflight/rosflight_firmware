@@ -14,6 +14,17 @@ void init_board(void)
   systemInit();
 }
 
+// clock
+uint32_t clock_millis()
+{
+  return millis();
+}
+
+uint64_t clock_micros()
+{
+  return micros();
+}
+
 // serial
 
 void init_serial(uint32_t baud_rate)

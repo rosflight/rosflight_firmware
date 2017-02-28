@@ -108,7 +108,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
 
 static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint64_t now_us = micros();
+  uint64_t now_us = clock_micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
@@ -121,7 +121,7 @@ static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 
 static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
-  _offboard_control_time = micros();
+  _offboard_control_time = clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
   // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
