@@ -3,10 +3,11 @@
 #include "board.h"
 
 #include "mavlink.h"
+#include "printf.h"
 
 #define mavlink_log(severity, format, ...) do { \
   char text[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN]; \
-  sprintf(text, format, ##__VA_ARGS__); \
+  tfp_sprintf(text, format, ##__VA_ARGS__); \
   mavlink_msg_statustext_send(MAVLINK_COMM_0, severity, text); \
   } while (0)
 

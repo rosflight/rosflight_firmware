@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "board.h"
 #include "param.h"
@@ -215,7 +216,7 @@ void calibrate_rc()
           min[i] = read_value;
         }
       }
-      delay(10);
+      clock_delay(10);
     }
     set_param_int(PARAM_RC_X_RANGE, max[get_param_int(PARAM_RC_X_CHANNEL)] - min[get_param_int(PARAM_RC_X_CHANNEL)]);
     set_param_int(PARAM_RC_Y_RANGE, max[get_param_int(PARAM_RC_Y_CHANNEL)] - min[get_param_int(PARAM_RC_Y_CHANNEL)]);
@@ -225,7 +226,7 @@ void calibrate_rc()
     // Calibrate Trimmed Centers
     mavlink_log_warning("Calibrating RC, leave sticks at center", NULL);
     mavlink_log_warning("and throttle low for next 10 seconds", NULL);
-    delay(5000);
+    clock_delay(5000);
     now = clock_micros();
     static int32_t sum[4] = {0, 0, 0, 0};
     static int32_t count[4] = {0, 0, 0, 0};
@@ -238,7 +239,7 @@ void calibrate_rc()
         sum[i] = sum[i] + read_value;
         count[i] = count[i] + 1;
       }
-      delay(20); // RC is updated at 50 Hz
+      clock_delay(20); // RC is updated at 50 Hz
     }
 
     set_param_int(PARAM_RC_X_CENTER, sum[get_param_int(PARAM_RC_X_CHANNEL)]/count[get_param_int(PARAM_RC_X_CHANNEL)]);

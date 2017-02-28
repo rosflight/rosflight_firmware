@@ -1,8 +1,8 @@
-#include "board.h"
+#include <breezystm32/breezystm32.h>
 
 #include "flash.h"
 
-#include <breezystm32/breezystm32.h>
+#include "board.h"
 
 extern void SetSysClock(bool overclock);
 serialPort_t *Serial1;
@@ -12,6 +12,11 @@ void init_board(void)
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
   systemInit();
+}
+
+void board_reset(bool bootloader)
+{
+  systemReset(bootloader);
 }
 
 // clock
@@ -25,9 +30,14 @@ uint64_t clock_micros()
   return micros();
 }
 
+void clock_delay(uint32_t milliseconds)
+{
+  delay(milliseconds);
+}
+
 // serial
 
-void init_serial(uint32_t baud_rate)
+void serial_init(uint32_t baud_rate)
 {
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
@@ -83,23 +93,25 @@ void imu_register_callback(void (*callback)(void))
 
 void imu_read_accel(float accel[3])
 {
-  mpu6050_read_accel(accel);
-  accel[0] *= _accel_scale;
-  accel[1] *= -_accel_scale;
-  accel[2] *= -_accel_scale;
+  int16_t accel_raw[3];
+  mpu6050_read_accel(accel_raw);
+  accel[0] = accel_raw[0] * _accel_scale;
+  accel[1] = accel_raw[1] * _accel_scale;
+  accel[2] = accel_raw[2] * _accel_scale;
 }
 
 void imu_read_gyro(float gyro[3])
 {
-  mpu_6050_read_gyro(gyro);
-  gyro[0] *= _gyro_scale;
-  gyro[1] *= -_gyro_scale;
-  gyro[2] *= -_gyro_scale;
+  int16_t gyro_raw[3];
+  mpu6050_read_gyro(gyro_raw);
+  gyro[0] = gyro_raw[0] * _gyro_scale;
+  gyro[1] = gyro_raw[1] * _gyro_scale;
+  gyro[2] = gyro_raw[2] * _gyro_scale;
 }
 
 float imu_read_temperature(void)
 {
-  float temperature_raw;
+  int16_t temperature_raw;
   mpu6050_read_temperature(&temperature_raw);
   return temperature_raw/340.0f + 36.53f;
 }
@@ -172,7 +184,7 @@ void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
   pwmInit(cppm, false, false, refresh_rate, idle_pwm);
 }
 
-uint16_t pwm_read(uint8_t channel);
+uint16_t pwm_read(uint8_t channel)
 {
   return pwmRead(channel);
 }

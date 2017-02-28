@@ -92,7 +92,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
         else
         {
           // could use this to reboot into bootloader (and flash new firmware from within ROS)
-          systemReset(false);
+          board_reset(false);
         }
 
       default:

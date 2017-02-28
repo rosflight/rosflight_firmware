@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <breezystm32/breezystm32.h>
 
 #include "flash.h"
@@ -8,13 +10,13 @@ void initEEPROM(void)
   // ct_assert(sizeof(_params) < CONFIG_SIZE);
 }
 
-static uint8_t compute_checksum(void * addr, size_t len)
+static uint8_t compute_checksum(const void * addr, size_t len)
 {
   const uint8_t *p;
   uint8_t chk = 0;
 
-  for (p = (const uint8_t *)src; p < ((const uint8_t *)src + len); p++)
-    chk ^= p;
+  for (p = (const uint8_t *)addr; p < ((const uint8_t *)addr + len); p++)
+    chk ^= *p;
 
   return chk;
 }

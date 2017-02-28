@@ -2,9 +2,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "board.h"
-#include "flash.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mavlink_stream.h"
@@ -262,9 +262,9 @@ bool write_params(void)
   for (uint8_t i = 0; i < 3; i++)
   {
     led0_toggle();
-    delay(100);
+    clock_delay(100);
     led0_toggle();
-    delay(50);
+    clock_delay(50);
   }
   return true;
 }
