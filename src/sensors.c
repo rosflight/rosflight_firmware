@@ -90,35 +90,38 @@ bool update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if ((_armed_state == DISARMED && (!_sonar_present )) || (!_diff_pressure_present))
+  if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
   {
-    uint32_t now = millis();
-    if (now > (last_time_look_for_disarmed_sensors + 500))
+    if (!_sonar_present || !_mag_present || !_diff_pressure_present)
     {
-      last_time_look_for_disarmed_sensors = now;
-      if(!_sonar_present)
+      uint32_t now = millis();
+      if (now > (last_time_look_for_disarmed_sensors + 500))
       {
-        mb1242_update();
-        _sonar_present = (mb1242_read() > 0.2);
-        if(_sonar_present)
+        last_time_look_for_disarmed_sensors = now;
+        if(!_sonar_present)
         {
-          mavlink_log_info("FOUND SONAR", NULL);
+          mb1242_update();
+          _sonar_present = (mb1242_read() > 0.2);
+          if(_sonar_present)
+          {
+            mavlink_log_info("FOUND SONAR", NULL);
+          }
         }
-      }
-      if(!_diff_pressure_present)
-      {
-        _diff_pressure_present = ms4525_init();
-        if(_diff_pressure_present)
+        if(!_diff_pressure_present)
         {
-          mavlink_log_info("FOUND DIFF PRESS", NULL);
+          _diff_pressure_present = ms4525_init();
+          if(_diff_pressure_present)
+          {
+            mavlink_log_info("FOUND DIFF PRESS", NULL);
+          }
         }
-      }
-      if(!_mag_present)
-      {
-        _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
-        if(_mag_present)
+        if(!_mag_present)
         {
-          mavlink_log_info("FOUND MAG", NULL);
+          _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+          if(_mag_present)
+          {
+            mavlink_log_info("FOUND MAG", NULL);
+          }
         }
       }
     }
