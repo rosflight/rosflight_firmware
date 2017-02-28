@@ -1,5 +1,3 @@
-#include <breezystm32/breezystm32.h>
-
 #include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"

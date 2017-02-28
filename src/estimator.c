@@ -6,10 +6,10 @@ extern "C" {
 #include <stdbool.h>
 #include <math.h>
 
-#include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 #include <turbotrig/turbovec.h>
 
+#include "board.h"
 #include "sensors.h"
 #include "param.h"
 
@@ -249,4 +249,3 @@ void run_estimator()
 #ifdef __cplusplus
 }
 #endif
-
