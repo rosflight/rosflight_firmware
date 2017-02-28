@@ -18,7 +18,9 @@
 #include "mixer.h"
 #include "rc.h"
 
-int main(void)
+#include "rosflight.h"
+
+void rosflight_run(void)
 {
   init_board();
 
