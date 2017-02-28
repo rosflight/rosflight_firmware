@@ -7,25 +7,31 @@
 ###############################################################################
 
 # external libraries
+ROSFLIGHT_DIR = ..
 BREEZY_DIR = lib/breezystm32
-TURBOTRIG_DIR = lib/turbotrig
+TURBOTRIG_DIR = ../lib/turbotrig
 
-# project source files
-PROJECT_SRC = src/main.c \
-              src/estimator.c \
-              src/flash.c \
-              src/mavlink.c \
-              src/mavlink_param.c \
-              src/mavlink_receive.c \
-              src/mavlink_stream.c \
-              src/mavlink_util.c \
-              src/mixer.c \
-              src/param.c \
-              src/rc.c \
-              src/sensors.c \
-              src/mux.c \
-              src/controller.c \
-              src/mode.c \
+# board-specific source files
+BOARD_SRC = main.c \
+            board.c \
+            flash.c
+
+# ROSflight source files
+PROJECT_SRC = rosflight.c \
+              controller.c \
+              estimator.c \
+              mavlink.c \
+              mavlink_param.c \
+              mavlink_receive.c \
+              mavlink_stream.c \
+              mavlink_util.c \
+              mode.c \
+              mux.c \
+              mixer.c \
+              param.c \
+              printf.c \
+              rc.c \
+              sensors.c
 
 ###############################################################################
 
@@ -37,7 +43,7 @@ TARGET		?= rosflight
 OPTIONS		?=
 
 # Debugger options, must be empty or GDB
-DEBUG ?= 
+DEBUG ?=
 
 # Serial port/device for flashing
 SERIAL_DEVICE	?= /dev/ttyUSB0
@@ -49,6 +55,7 @@ CMSIS_DIR	 = $(BREEZY_DIR)/lib/CMSIS
 STDPERIPH_DIR	 = $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
 OBJECT_DIR	 = $(ROOT)/build
 BIN_DIR		 = $(ROOT)/build
+
 
 rosflight_SRC =$(BREEZY_DIR)/drv_gpio.c \
                $(BREEZY_DIR)/drv_i2c.c \
@@ -64,11 +71,11 @@ rosflight_SRC =$(BREEZY_DIR)/drv_gpio.c \
                $(BREEZY_DIR)/drv_mb1242.c \
                $(BREEZY_DIR)/drv_ms5611.c \
                $(BREEZY_DIR)/drv_hmc5883l.c \
-               $(BREEZY_DIR)/printf.c \
                $(BREEZY_DIR)/startup_stm32f10x_md_gcc.S \
                $(TURBOTRIG_DIR)/turbotrig.c \
                $(TURBOTRIG_DIR)/turbovec.c \
-               $(PROJECT_SRC) \
+               $(addprefix $(ROSFLIGHT_DIR)/src/, $(PROJECT_SRC)) \
+               $(BOARD_SRC) \
                $(CMSIS_SRC) \
                $(STDPERIPH_SRC)
 
@@ -94,12 +101,13 @@ OBJCOPY	 = arm-none-eabi-objcopy
 #
 # Tool options.
 #
-INCLUDE_DIRS	 = include \
-		   lib \
-		   $(BREEZY_DIR) \
-		   $(STDPERIPH_DIR)/inc \
-		   $(CMSIS_DIR)/CM3/CoreSupport \
-		   $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x \
+INCLUDE_DIRS	 = $(ROSFLIGHT_DIR)/include \
+							   $(ROSFLIGHT_DIR)/lib \
+							   lib \
+							   $(BREEZY_DIR) \
+							   $(STDPERIPH_DIR)/inc \
+							   $(CMSIS_DIR)/CM3/CoreSupport \
+							   $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x \
 
 ARCH_FLAGS	 = -mthumb -mcpu=cortex-m3
 
