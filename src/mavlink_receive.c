@@ -73,6 +73,14 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
           {
             success &= start_imu_calibration();
           }
+          if(cmd.param2)
+          {
+            start_baro_calibration();
+          }
+          if(cmd.param3)
+          {
+            start_airspeed_calibration();
+          }
           result = MAV_RESULT_ACCEPTED;
         }
         break;

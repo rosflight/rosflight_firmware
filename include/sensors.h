@@ -34,6 +34,8 @@ bool update_sensors();
 
 bool start_imu_calibration(void);
 bool start_gyro_calibration(void);
+void start_baro_calibration(void);
+void start_airspeed_calibration(void);
 bool gyro_calibration_complete(void);
 
 #ifdef __cplusplus

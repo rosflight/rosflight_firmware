@@ -90,7 +90,7 @@ bool update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if (_armed_state == DISARMED && (!_sonar_present ))//|| !_diff_pressure_present))
+  if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
   {
     uint32_t now = millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
@@ -120,11 +120,15 @@ bool update_sensors()
   {
     ms5611_update();
     ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
+    _baro_altitude *= -1.0; // convert to NED1
   }
 
     if(_diff_pressure_present)
     {
-
+      if(_baro_present)
+      {
+        ms4525_set_atm((uint32_t) _baro_pressure);
+      }
       ms4525_update();
       ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
     }
@@ -233,6 +237,16 @@ static bool update_imu(void)
     }
     return false;
   }
+}
+
+void start_baro_calibration()
+{
+  ms5611_start_calibration();
+}
+
+void start_airspeed_calibration()
+{
+  ms4525_start_calibration();
 }
 
 
