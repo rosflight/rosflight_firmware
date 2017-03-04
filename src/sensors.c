@@ -129,11 +129,15 @@ bool update_sensors()
   {
     ms5611_update();
     ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
+    _baro_altitude *= -1.0; // convert to NED
   }
 
-  if (_diff_pressure_present)
+  if(_diff_pressure_present)
   {
-
+    if(_baro_present)
+    {
+      ms4525_set_atm((uint32_t) _baro_pressure);
+    }
     ms4525_update();
     ms4525_read(&_diff_pressure, &_diff_pressure_temp, &_diff_pressure_velocity);
   }
@@ -245,6 +249,16 @@ static bool update_imu(void)
   }
 }
 
+void start_baro_calibration()
+{
+  ms5611_start_calibration();
+}
+
+void start_airspeed_calibration()
+{
+  ms4525_start_calibration();
+}
+
 
 static void calibrate_gyro()
 {
@@ -311,7 +325,7 @@ static void calibrate_accel(void)
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
     vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum,
-                                          accel_temp_bias)));
+                                                                                                accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
@@ -382,11 +396,11 @@ static void correct_mag(void)
 
   // correct according to known soft iron bias - converts to nT
   _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y +
-           get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+      get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
   _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y +
-           get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+      get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
   _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y +
-           get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
+      get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 
