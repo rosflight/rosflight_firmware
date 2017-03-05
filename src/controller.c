@@ -46,9 +46,9 @@ void run_pid(pid_t *pid, float dt)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
-    // and will result in some enormous integrator.
-    // Or, it means we are disarmed and shouldn't integrate
-    // Setting dt for this loop will mean that the integrator and dirty derivative
+    // and will result in some enormous integrator, and weird behavior on the derivative term.
+    // Obiously, it could also mean we are disarmed and shouldn't integrate
+    // Setting dt to zero for this loop will mean that the integrator and dirty derivative
     // doesn't do anything this time but will keep it from exploding.
     dt = 0.0;
     pid->differentiator = 0.0;
@@ -183,9 +183,9 @@ void run_controller()
   // Time calculation
   static float prev_time = 0.0f;
 
-  if(prev_time < 0.0001)
+  if(prev_time < 0.0000001)
   {
-    prev_time = _current_state.now_us;
+    prev_time = _current_state.now_us * 1e-6;
     return;
   }
 
@@ -227,11 +227,6 @@ void run_controller()
     mavlink_send_named_command_struct("RC", _rc_control);
     mavlink_send_named_command_struct("offboard", _offboard_control);
     mavlink_send_named_command_struct("combined", _combined_control);
-//    mavlink_send_named_value_float("command_F", _command.F);
-//    mavlink_send_named_value_float("command_x", _command.x);
-//    mavlink_send_named_value_float("command_y", _command.y);
-//    mavlink_send_named_value_float("command_z", _command.z);
-//    mavlink_send_named_value_float("yaw_int", pid_yaw_rate.integrator);
     counter = 0;
   }
   counter++;
