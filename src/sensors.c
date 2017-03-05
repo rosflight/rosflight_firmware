@@ -60,6 +60,7 @@ static bool calibrating_gyro_flag;
 static void calibrate_accel(void);
 static void calibrate_gyro(void);
 static void correct_imu(void);
+static void correct_mag(void);
 static void imu_ISR(void);
 static bool update_imu(void);
 
@@ -90,27 +91,38 @@ bool update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if (_armed_state == DISARMED && (!_sonar_present ))//|| !_diff_pressure_present))
+  if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
   {
-    uint32_t now = millis();
-    if (now > (last_time_look_for_disarmed_sensors + 500))
+    if (!_sonar_present || !_mag_present || !_diff_pressure_present)
     {
-      last_time_look_for_disarmed_sensors = now;
-      if(!_sonar_present)
+      uint32_t now = millis();
+      if (now > (last_time_look_for_disarmed_sensors + 500))
       {
-        mb1242_update();
-        _sonar_present = (mb1242_read() > 0.2);
-        if(_sonar_present)
+        last_time_look_for_disarmed_sensors = now;
+        if(!_sonar_present)
         {
-          mavlink_log_info("FOUND SONAR", NULL);
+          mb1242_update();
+          _sonar_present = (mb1242_read() > 0.2);
+          if(_sonar_present)
+          {
+            mavlink_log_info("FOUND SONAR", NULL);
+          }
         }
-      }
-      if(!_diff_pressure_present)
-      {
-        _diff_pressure_present = ms4525_init();
-        if(_diff_pressure_present)
+        if(!_diff_pressure_present)
         {
-          mavlink_log_info("FOUND DIFF PRESS", NULL);
+          _diff_pressure_present = ms4525_init();
+          if(_diff_pressure_present)
+          {
+            mavlink_log_info("FOUND DIFF PRESS", NULL);
+          }
+        }
+        if(!_mag_present)
+        {
+          _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+          if(_mag_present)
+          {
+            mavlink_log_info("FOUND MAG", NULL);
+          }
         }
       }
     }
@@ -143,6 +155,7 @@ bool update_sensors()
     _mag.x = (float)raw_mag[0];
     _mag.y = (float)raw_mag[1];
     _mag.z = (float)raw_mag[2];
+    correct_mag();
   }
 
   // Return whether or not we got new IMU data
@@ -359,6 +372,19 @@ static void correct_imu(void)
   _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
   _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
   _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
+}
+
+static void correct_mag(void)
+{
+  // correct according to known hard iron bias
+  float mag_hard_x = _mag.x - get_param_float(PARAM_MAG_X_BIAS);
+  float mag_hard_y = _mag.y - get_param_float(PARAM_MAG_Y_BIAS);
+  float mag_hard_z = _mag.z - get_param_float(PARAM_MAG_Z_BIAS);
+
+  // correct according to known soft iron bias
+  _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y + get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+  _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y + get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+  _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y + get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 
