@@ -20,7 +20,8 @@ extern "C" {
 #include "mavlink_util.h"
 
 
-void init_pid(pid_t* pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x, float *current_xdot, float *commanded_x, float *output, float max, float min)
+void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
+              float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
   pid->kp_param_id = kp_param_id;
   pid->ki_param_id = ki_param_id;
@@ -41,13 +42,13 @@ void init_pid(pid_t* pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
 
 void run_pid(pid_t *pid, float dt)
 {
-  if(dt > 0.010 || _armed_state == DISARMED)
+  if (dt > 0.010 || _armed_state == DISARMED)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
-    // and will result in some enormous integrator.
-    // Or, it means we are disarmed and shouldn't integrate
-    // Setting dt for this loop will mean that the integrator and dirty derivative
+    // and will result in some enormous integrator, and weird behavior on the derivative term.
+    // Obiously, it could also mean we are disarmed and shouldn't integrate
+    // Setting dt to zero for this loop will mean that the integrator and dirty derivative
     // doesn't do anything this time but will keep it from exploding.
     dt = 0.0;
     pid->differentiator = 0.0;
@@ -62,14 +63,15 @@ void run_pid(pid_t *pid, float dt)
   float d_term = 0.0;
 
   // If there is a derivative term
-  if(pid->kd_param_id < PARAMS_COUNT)
+  if (pid->kd_param_id < PARAMS_COUNT)
   {
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     // (Be sure to de-reference pointers)
-    if(pid->current_xdot == NULL && dt > 0.0f)
+    if (pid->current_xdot == NULL && dt > 0.0f)
     {
-      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((
+                              *pid->current_x) - pid->prev_x);
       pid->prev_x = *pid->current_x;
       d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
     }
@@ -83,7 +85,7 @@ void run_pid(pid_t *pid, float dt)
   /// TODO: better way to figure out if throttle is high
   if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwm_read(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
   {
-    if ( get_param_float(pid->ki_param_id) > 0.0 )
+    if (get_param_float(pid->ki_param_id) > 0.0)
     {
       // integrate
       pid->integrator += error*dt;
@@ -97,7 +99,7 @@ void run_pid(pid_t *pid, float dt)
 
   // Integrator anti-windup
   float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
-  if(u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
+  if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
     pid->integrator = (u_sat - p_term + d_term)/get_param_float(pid->ki_param_id);
 
   // Set output
@@ -113,7 +115,7 @@ void init_controller()
            PARAM_PID_ROLL_ANGLE_P,
            PARAM_PID_ROLL_ANGLE_I,
            PARAM_PID_ROLL_ANGLE_D,
-           &_current_state.euler.x,
+           &_current_state.roll,
            &_current_state.omega.x,
            &_combined_control.x.value,
            &_command.x,
@@ -124,7 +126,7 @@ void init_controller()
            PARAM_PID_PITCH_ANGLE_P,
            PARAM_PID_PITCH_ANGLE_I,
            PARAM_PID_PITCH_ANGLE_D,
-           &_current_state.euler.y,
+           &_current_state.pitch,
            &_current_state.omega.y,
            &_combined_control.y.value,
            &_command.y,
@@ -182,9 +184,9 @@ void run_controller()
   // Time calculation
   static float prev_time = 0.0f;
 
-  if(prev_time < 0.0001)
+  if (prev_time < 0.0000001)
   {
-    prev_time = _current_state.now_us;
+    prev_time = _current_state.now_us * 1e-6;
     return;
   }
 
@@ -193,23 +195,23 @@ void run_controller()
   prev_time = now;
 
   // ROLL
-  if(_combined_control.x.type == RATE)
+  if (_combined_control.x.type == RATE)
     run_pid(&pid_roll_rate, dt);
-  else if(_combined_control.x.type == ANGLE)
+  else if (_combined_control.x.type == ANGLE)
     run_pid(&pid_roll, dt);
   else // PASSTHROUGH
     _command.x = _combined_control.x.value;
 
   // PITCH
-  if(_combined_control.y.type == RATE)
+  if (_combined_control.y.type == RATE)
     run_pid(&pid_pitch_rate, dt);
-  else if(_combined_control.y.type == ANGLE)
+  else if (_combined_control.y.type == ANGLE)
     run_pid(&pid_pitch, dt);
   else // PASSTHROUGH
     _command.y = _combined_control.y.value;
 
   // YAW
-  if(_combined_control.z.type == RATE)
+  if (_combined_control.z.type == RATE)
     run_pid(&pid_yaw_rate, dt);
   else// PASSTHROUGH
     _command.z = _combined_control.z.value;
@@ -218,19 +220,14 @@ void run_controller()
 //  if(_combined_control.F.type == ALTITUDE)
 //    run_pid(&pid_altitude);
 //  else // PASSTHROUGH
-    _command.F = _combined_control.F.value;
+  _command.F = _combined_control.F.value;
 
   static uint32_t counter = 0;
-  if(counter > 100)
+  if (counter > 100)
   {
     mavlink_send_named_command_struct("RC", _rc_control);
     mavlink_send_named_command_struct("offboard", _offboard_control);
     mavlink_send_named_command_struct("combined", _combined_control);
-//    mavlink_send_named_value_float("command_F", _command.F);
-//    mavlink_send_named_value_float("command_x", _command.x);
-//    mavlink_send_named_value_float("command_y", _command.y);
-//    mavlink_send_named_value_float("command_z", _command.z);
-//    mavlink_send_named_value_float("yaw_int", pid_yaw_rate.integrator);
     counter = 0;
   }
   counter++;

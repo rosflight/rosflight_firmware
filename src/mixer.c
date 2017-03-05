@@ -110,7 +110,7 @@ void init_mixing()
 void init_PWM()
 {
   bool useCPPM = false;
-  if(get_param_int(PARAM_RC_TYPE) == 1)
+  if (get_param_int(PARAM_RC_TYPE) == 1)
   {
     useCPPM = true;
   }
@@ -167,7 +167,7 @@ void mix_output()
   int32_t max_output = 0;
 
   // For now, we aren't supporting mixing with fixed wings.  This is a total hack, and should be re-thought
-  if(get_param_int(PARAM_FIXED_WING))
+  if (get_param_int(PARAM_FIXED_WING))
   {
     // AETR
     prescaled_outputs[0] = _command.x;
@@ -184,7 +184,7 @@ void mix_output()
       {
         // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
         prescaled_outputs[i] = (int32_t)((_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                                 _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])*1000.0f);
+                                          _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])*1000.0f);
         if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
         {
           max_output = prescaled_outputs[i];

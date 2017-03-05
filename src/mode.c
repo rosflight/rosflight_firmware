@@ -48,18 +48,18 @@ void disarm(void)
 /// TODO: Be able to tell if the RC has become disconnected during flight
 bool check_failsafe(void)
 {
-  for(int8_t i = 0; i<get_param_int(PARAM_RC_NUM_CHANNELS); i++)
+  for (int8_t i = 0; i<get_param_int(PARAM_RC_NUM_CHANNELS); i++)
   {
     if(pwm_read(i) < 900 || pwm_read(i) > 2100)
     {
-      if(_armed_state == ARMED || _armed_state == DISARMED)
+      if (_armed_state == ARMED || _armed_state == DISARMED)
       {
         _armed_state = FAILSAFE_DISARMED;
       }
 
       // blink LED
       static uint8_t count = 0;
-      if(count > 25)
+      if (count > 25)
       {
         led1_toggle();
         count = 0;
@@ -70,7 +70,7 @@ bool check_failsafe(void)
   }
 
   // we got a valid RC measurement for all channels
-  if(_armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
+  if (_armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
   {
     // return to appropriate mode
     _armed_state = (_armed_state == FAILSAFE_ARMED) ? ARMED : DISARMED;
@@ -95,7 +95,7 @@ bool check_mode(uint64_t now)
   prev_time = now;
 
   // check for failsafe mode
-  if(check_failsafe())
+  if (check_failsafe())
   {
     return true;
   }
@@ -119,7 +119,7 @@ bool check_mode(uint64_t now)
         }
         if (time_sticks_have_been_in_arming_position > 500000)
         {
-          if(arm())
+          if (arm())
             time_sticks_have_been_in_arming_position = 0;
         }
       }
@@ -148,7 +148,7 @@ bool check_mode(uint64_t now)
     {
       if (rc_switch(get_param_int(PARAM_ARM_CHANNEL)))
       {
-        if(_armed_state == DISARMED)
+        if (_armed_state == DISARMED)
           arm();
       }
       else

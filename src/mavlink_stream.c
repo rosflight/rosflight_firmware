@@ -26,23 +26,24 @@ typedef struct
 static void mavlink_send_heartbeat(void)
 {
   MAV_MODE armed_mode = MAV_MODE_ENUM_END; // used for failsafe
-  if(_armed_state == ARMED)
+  if (_armed_state == ARMED)
     armed_mode = MAV_MODE_MANUAL_ARMED;
-  else if(_armed_state == DISARMED)
+  else if (_armed_state == DISARMED)
     armed_mode = MAV_MODE_MANUAL_DISARMED;
 
   uint8_t control_mode = 0;
-  if(get_param_int(PARAM_FIXED_WING))
+  if (get_param_int(PARAM_FIXED_WING))
   {
     control_mode = MODE_PASS_THROUGH;
   }
-  else if(rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)))
+  else if (rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)))
   {
     control_mode = MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
   }
   else
   {
-    control_mode = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE : MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
+    control_mode = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE :
+                   MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
   }
 
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
@@ -69,14 +70,14 @@ static void mavlink_send_attitude(void)
 static void mavlink_send_imu(void)
 {
   mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                               _imu_time,
-                               _accel.x,
-                               _accel.y,
-                               _accel.z,
-                               _gyro.x,
-                               _gyro.y,
-                               _gyro.z,
-                               _imu_temperature);
+                             _imu_time,
+                             _accel.x,
+                             _accel.y,
+                             _accel.z,
+                             _gyro.x,
+                             _gyro.y,
+                             _gyro.z,
+                             _imu_temperature);
 
 }
 
@@ -115,7 +116,7 @@ static void mavlink_send_diff_pressure(void)
 {
   if (diff_pressure_present())
   {
-    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _pitot_velocity, _pitot_diff_pressure, _pitot_temp);
+    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp);
   }
 }
 

@@ -106,6 +106,19 @@ typedef enum
   PARAM_ACC_Y_TEMP_COMP,
   PARAM_ACC_Z_TEMP_COMP,
 
+  PARAM_MAG_A11_COMP,
+  PARAM_MAG_A12_COMP,
+  PARAM_MAG_A13_COMP,
+  PARAM_MAG_A21_COMP,
+  PARAM_MAG_A22_COMP,
+  PARAM_MAG_A23_COMP,
+  PARAM_MAG_A31_COMP,
+  PARAM_MAG_A32_COMP,
+  PARAM_MAG_A33_COMP,
+  PARAM_MAG_X_BIAS,
+  PARAM_MAG_Y_BIAS,
+  PARAM_MAG_Z_BIAS,
+
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
@@ -227,7 +240,7 @@ float get_param_float(param_id_t id);
  * @param id The ID of the parameter
  * @return The name of the parameter
  */
-char * get_param_name(param_id_t id);
+char *get_param_name(param_id_t id);
 
 /**
  * @brief Get the type of a parameter

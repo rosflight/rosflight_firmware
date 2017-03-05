@@ -53,8 +53,7 @@ bool writeEEPROM(const void * src, size_t len)
   FLASH_Lock();
 
   // Flash write failed - just die now
-  if (status != FLASH_COMPLETE
-    || compute_checksum(src, len) != compute_checksum(FLASH_WRITE_ADDR, len))
+  if (status != FLASH_COMPLETE || compute_checksum(src, len) != compute_checksum((uint32_t*)FLASH_WRITE_ADDR, len))
   {
     return false;
   }

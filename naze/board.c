@@ -142,6 +142,11 @@ void baro_read(float *altitude, float *pressure, float *temperature)
   ms5611_read(altitude, pressure, temperature);
 }
 
+void baro_calibrate()
+{
+  ms5611_start_calibration();
+}
+
 bool diff_pressure_present(void)
 {
   return _diff_pressure_present;
@@ -151,6 +156,16 @@ bool diff_pressure_check(void)
 {
   _diff_pressure_present = ms4525_init();
   return _diff_pressure_present;
+}
+
+void diff_pressure_calibrate()
+{
+  ms4525_start_calibration();
+}
+
+void diff_pressure_set_atm(float barometric_pressure)
+{
+  ms4525_set_atm((uint32_t) barometric_pressure);
 }
 
 void diff_pressure_read(float *diff_pressure, float *temperature, float *velocity)

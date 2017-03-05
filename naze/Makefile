@@ -183,11 +183,11 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.S
 clean:
 	rm -rf $(TARGET_HEX) $(TARGET_ELF) $(TARGET_OBJS) $(TARGET_MAP) $(BIN_DIR) $(OBJECT_DIR)
 
+flash: flash_$(TARGET)
+
 flash_$(TARGET): $(TARGET_HEX)
 	stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
 	stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
-
-flash: flash_$(TARGET)
 
 unbrick: $(TARGET_HEX)
 	stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon

@@ -27,7 +27,7 @@ bool new_imu_data = false;
 
 // Airspeed
 bool _diff_pressure_present = false;
-float _pitot_velocity, _pitot_diff_pressure, _pitot_temp;
+float _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp;
 
 // Barometer
 bool _baro_present = false;
@@ -55,6 +55,7 @@ static bool calibrating_gyro_flag;
 static void calibrate_accel(void);
 static void calibrate_gyro(void);
 static void correct_imu(void);
+static void correct_mag(void);
 static void imu_ISR(void);
 static bool update_imu(void);
 
@@ -70,12 +71,12 @@ void init_sensors(void)
 
 bool update_sensors()
 {
-  // Look for disabled sensors while disarmed (poll every 10 seconds)
+  // Look for disabled sensors while disarmed (poll every 0.5 seconds)
   // These sensors need power to respond, so they might not have been
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if (_armed_state == DISARMED)
+  if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
   {
     uint32_t now = clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
@@ -95,6 +96,14 @@ bool update_sensors()
           mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
       }
+      if (!_mag_present)
+      {
+//        _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+        if (_mag_present)
+        {
+          mavlink_log_info("FOUND MAG", NULL);
+        }
+      }
     }
   }
 
@@ -105,7 +114,11 @@ bool update_sensors()
 
   if(diff_pressure_present())
   {
-    diff_pressure_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
+    if(baro_present())
+    {
+      diff_pressure_set_atm(_baro_pressure);
+    }
+    diff_pressure_read(&_diff_pressure, &_diff_pressure_temp, &_diff_pressure_velocity);
   }
 
   if (sonar_present())
@@ -120,6 +133,7 @@ bool update_sensors()
     _mag.x = mag[0];
     _mag.y = mag[1];
     _mag.z = mag[2];
+    correct_mag();
   }
 
   // Return whether or not we got new IMU data
@@ -168,7 +182,7 @@ static bool update_imu(void)
 {
   static uint32_t last_imu_update_ms = 0;
 
-  if(new_imu_data)
+  if (new_imu_data)
   {
     last_imu_update_ms = clock_millis();
     imu_read_accel(accel);
@@ -214,12 +228,12 @@ static void calibrate_gyro()
   gyro_sum = vector_add(gyro_sum, _gyro);
   count++;
 
-  if(count > 100)
+  if (count > 100)
   {
     // Gyros are simple.  Just find the average during the calibration
     vector_t gyro_bias = scalar_multiply(1.0/(float)count, gyro_sum);
 
-    if(sqrd_norm(gyro_bias) < 1.0)
+    if (sqrd_norm(gyro_bias) < 1.0)
     {
       set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
@@ -259,7 +273,8 @@ static void calibrate_accel(void)
     // The temperature bias is calculated using a least-squares regression.
     // This is computationally intensive, so it is done by the onboard computer in
     // fcu_io and shipped over to the flight controller.
-    vector_t accel_temp_bias = {
+    vector_t accel_temp_bias =
+    {
       get_param_float(PARAM_ACC_X_TEMP_COMP),
       get_param_float(PARAM_ACC_Y_TEMP_COMP),
       get_param_float(PARAM_ACC_Z_TEMP_COMP)
@@ -270,12 +285,13 @@ static void calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum,
+                                          accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if(sqrd_norm(accel_bias) < 4.5)
+    if (sqrd_norm(accel_bias) < 4.5)
     {
       set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
       set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
@@ -289,7 +305,7 @@ static void calibrate_accel(void)
     else
     {
       // check for bad _accel_scale
-      if(sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
+      if (sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
       {
         mavlink_log_error("Detected bad IMU accel scale value", 0);
         set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
@@ -303,7 +319,7 @@ static void calibrate_accel(void)
       }
       else
       {
-        mavlink_log_error("Too much movement for IMU cal", NULL);
+        mavlink_log_error("Too much movement: %d", (int32_t)(sqrd_norm(accel_bias)*1000));
         calibrating_acc_flag = false;
       }
     }
@@ -328,6 +344,22 @@ static void correct_imu(void)
   _gyro.x -= get_param_float(PARAM_GYRO_X_BIAS);
   _gyro.y -= get_param_float(PARAM_GYRO_Y_BIAS);
   _gyro.z -= get_param_float(PARAM_GYRO_Z_BIAS);
+}
+
+static void correct_mag(void)
+{
+  // correct according to known hard iron bias
+  float mag_hard_x = _mag.x - get_param_float(PARAM_MAG_X_BIAS);
+  float mag_hard_y = _mag.y - get_param_float(PARAM_MAG_Y_BIAS);
+  float mag_hard_z = _mag.z - get_param_float(PARAM_MAG_Z_BIAS);
+
+  // correct according to known soft iron bias - converts to nT
+  _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y +
+           get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+  _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y +
+           get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+  _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y +
+           get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 
