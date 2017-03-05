@@ -285,8 +285,7 @@ static void calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum,
-                                          accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
@@ -319,7 +318,7 @@ static void calibrate_accel(void)
       }
       else
       {
-        mavlink_log_error("Too much movement: %d", (int32_t)(sqrd_norm(accel_bias)*1000));
+        mavlink_log_error("Too much movement for IMU cal", NULL);
         calibrating_acc_flag = false;
       }
     }

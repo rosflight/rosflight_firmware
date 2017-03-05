@@ -20,6 +20,7 @@ void board_reset(bool bootloader)
 }
 
 // clock
+
 uint32_t clock_millis()
 {
   return millis();
@@ -93,20 +94,22 @@ void imu_register_callback(void (*callback)(void))
 
 void imu_read_accel(float accel[3])
 {
+  // Convert to NED
   int16_t accel_raw[3];
   mpu6050_read_accel(accel_raw);
   accel[0] = accel_raw[0] * _accel_scale;
-  accel[1] = accel_raw[1] * _accel_scale;
-  accel[2] = accel_raw[2] * _accel_scale;
+  accel[1] = -accel_raw[1] * _accel_scale;
+  accel[2] = -accel_raw[2] * _accel_scale;
 }
 
 void imu_read_gyro(float gyro[3])
 {
+  //  Convert to NED
   int16_t gyro_raw[3];
   mpu6050_read_gyro(gyro_raw);
   gyro[0] = gyro_raw[0] * _gyro_scale;
-  gyro[1] = gyro_raw[1] * _gyro_scale;
-  gyro[2] = gyro_raw[2] * _gyro_scale;
+  gyro[1] = -gyro_raw[1] * _gyro_scale;
+  gyro[2] = -gyro_raw[2] * _gyro_scale;
 }
 
 float imu_read_temperature(void)
@@ -123,12 +126,13 @@ bool mag_present(void)
 
 void mag_read(float mag[3])
 {
+  // Convert to NED
   int16_t raw_mag[3];
   hmc5883l_update();
   hmc5883l_read(raw_mag);
   mag[0] = (float)raw_mag[0];
-  mag[1] = (float)raw_mag[1];
-  mag[2] = (float)raw_mag[2];
+  mag[1] = -(float)raw_mag[1];
+  mag[2] = -(float)raw_mag[2];
 }
 
 bool baro_present(void)
@@ -140,6 +144,7 @@ void baro_read(float *altitude, float *pressure, float *temperature)
 {
   ms5611_update();
   ms5611_read(altitude, pressure, temperature);
+  (*altitude) *= -1.0; // Convert to NED
 }
 
 void baro_calibrate()
