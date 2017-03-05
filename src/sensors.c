@@ -96,10 +96,9 @@ bool update_sensors()
           mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
       }
-      if (!_mag_present)
+      if (mag_present())
       {
-//        _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
-        if (_mag_present)
+        if (mag_check())
         {
           mavlink_log_info("FOUND MAG", NULL);
         }

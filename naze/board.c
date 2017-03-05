@@ -64,12 +64,14 @@ static bool _baro_present;
 static bool _mag_present;
 static bool _sonar_present;
 static bool _diff_pressure_present;
+static int _board_revision;
 
 static float _accel_scale;
 static float _gyro_scale;
 
 void sensors_init(int board_revision)
 {
+    _board_revision = board_revision;
     // Initialize I2c
     i2cInit(I2CDEV_2);
 
@@ -133,6 +135,11 @@ void mag_read(float mag[3])
   mag[0] = (float)raw_mag[0];
   mag[1] = -(float)raw_mag[1];
   mag[2] = -(float)raw_mag[2];
+}
+
+bool mag_check(void)
+{
+  return hmc5883lInit(_board_revision);
 }
 
 bool baro_present(void)

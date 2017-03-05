@@ -25,6 +25,7 @@ void imu_read_accel(float accel[3]);
 void imu_read_gyro(float gyro[3]);
 float imu_read_temperature(void);
 
+bool mag_check(void);
 bool mag_present(void);
 void mag_read(float mag[3]);
 
