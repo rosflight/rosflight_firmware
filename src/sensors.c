@@ -28,7 +28,7 @@ bool new_imu_data = false;
 
 // Airspeed
 bool _diff_pressure_present = false;
-float _pitot_velocity, _pitot_diff_pressure, _pitot_temp;
+float _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp;
 
 // Barometer
 bool _baro_present = false;
@@ -69,7 +69,7 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
-  while(millis() < 50);
+  while (millis() < 50);
   i2cWrite(0,0,0);
   _baro_present = ms5611_init();
   _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
@@ -86,60 +86,57 @@ void init_sensors(void)
 
 bool update_sensors()
 {
-  // Look for disabled sensors while disarmed (poll every 10 seconds)
+  // Look for disabled sensors while disarmed (poll every 0.5 seconds)
   // These sensors need power to respond, so they might not have been
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
   if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
   {
-    if (!_sonar_present || !_mag_present || !_diff_pressure_present)
+    uint32_t now = millis();
+    if (now > (last_time_look_for_disarmed_sensors + 500))
     {
-      uint32_t now = millis();
-      if (now > (last_time_look_for_disarmed_sensors + 500))
+      last_time_look_for_disarmed_sensors = now;
+      if (!_sonar_present)
       {
-        last_time_look_for_disarmed_sensors = now;
-        if(!_sonar_present)
+        mb1242_update();
+        _sonar_present = (mb1242_read() > 0.2);
+        if (_sonar_present)
         {
-          mb1242_update();
-          _sonar_present = (mb1242_read() > 0.2);
-          if(_sonar_present)
-          {
-            mavlink_log_info("FOUND SONAR", NULL);
-          }
+          mavlink_log_info("FOUND SONAR", NULL);
         }
-        if(!_diff_pressure_present)
+      }
+      if (!_diff_pressure_present)
+      {
+        _diff_pressure_present = ms4525_init();
+        if (_diff_pressure_present)
         {
-          _diff_pressure_present = ms4525_init();
-          if(_diff_pressure_present)
-          {
-            mavlink_log_info("FOUND DIFF PRESS", NULL);
-          }
+          mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
-        if(!_mag_present)
+      }
+      if (!_mag_present)
+      {
+        _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
+        if (_mag_present)
         {
-          _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
-          if(_mag_present)
-          {
-            mavlink_log_info("FOUND MAG", NULL);
-          }
+          mavlink_log_info("FOUND MAG", NULL);
         }
       }
     }
   }
 
-  if(_baro_present)
+  if (_baro_present)
   {
     ms5611_update();
     ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
   }
 
-    if(_diff_pressure_present)
-    {
+  if (_diff_pressure_present)
+  {
 
-      ms4525_update();
-      ms4525_read(&_pitot_diff_pressure, &_pitot_temp, &_pitot_velocity);
-    }
+    ms4525_update();
+    ms4525_read(&_diff_pressure, &_diff_pressure_temp, &_diff_pressure_velocity);
+  }
 
   if (_sonar_present)
   {
@@ -204,7 +201,7 @@ static bool update_imu(void)
 {
   static uint32_t last_imu_update_ms = 0;
 
-  if(new_imu_data)
+  if (new_imu_data)
   {
     last_imu_update_ms = millis();
     mpu6050_read_accel(accel_raw);
@@ -235,7 +232,7 @@ static bool update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages something is wrong
-    if(millis() > last_imu_update_ms + 1000)
+    if (millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
       last_imu_update_ms = millis();
@@ -256,12 +253,12 @@ static void calibrate_gyro()
   gyro_sum = vector_add(gyro_sum, _gyro);
   count++;
 
-  if(count > 100)
+  if (count > 100)
   {
     // Gyros are simple.  Just find the average during the calibration
     vector_t gyro_bias = scalar_multiply(1.0/(float)count, gyro_sum);
 
-    if(sqrd_norm(gyro_bias) < 1.0)
+    if (sqrd_norm(gyro_bias) < 1.0)
     {
       set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
@@ -301,7 +298,8 @@ static void calibrate_accel(void)
     // The temperature bias is calculated using a least-squares regression.
     // This is computationally intensive, so it is done by the onboard computer in
     // fcu_io and shipped over to the flight controller.
-    vector_t accel_temp_bias = {
+    vector_t accel_temp_bias =
+    {
       get_param_float(PARAM_ACC_X_TEMP_COMP),
       get_param_float(PARAM_ACC_Y_TEMP_COMP),
       get_param_float(PARAM_ACC_Z_TEMP_COMP)
@@ -312,12 +310,13 @@ static void calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum,
+                                          accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if(sqrd_norm(accel_bias) < 4.5)
+    if (sqrd_norm(accel_bias) < 4.5)
     {
       set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
       set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
@@ -331,7 +330,7 @@ static void calibrate_accel(void)
     else
     {
       // check for bad _accel_scale
-      if(sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
+      if (sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
       {
         mavlink_log_error("Detected bad IMU accel scale value", 0);
         set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
@@ -381,10 +380,13 @@ static void correct_mag(void)
   float mag_hard_y = _mag.y - get_param_float(PARAM_MAG_Y_BIAS);
   float mag_hard_z = _mag.z - get_param_float(PARAM_MAG_Z_BIAS);
 
-  // correct according to known soft iron bias
-  _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y + get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
-  _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y + get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
-  _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y + get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
+  // correct according to known soft iron bias - converts to nT
+  _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y +
+           get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+  _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y +
+           get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+  _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y +
+           get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 

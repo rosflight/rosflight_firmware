@@ -257,7 +257,7 @@ float get_param_float(param_id_t id);
  * @param id The ID of the parameter
  * @return The name of the parameter
  */
-char * get_param_name(param_id_t id);
+char *get_param_name(param_id_t id);
 
 /**
  * @brief Get the type of a parameter

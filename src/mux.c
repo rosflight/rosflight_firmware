@@ -11,11 +11,13 @@ control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
 
-control_t _failsafe_control = {
+control_t _failsafe_control =
+{
   {true, ANGLE, 0.0},
   {true, ANGLE, 0.0},
   {true, RATE, 0.0},
-  {true, THROTTLE, 0.0}};
+  {true, THROTTLE, 0.0}
+};
 
 bool _new_command;
 
@@ -28,9 +30,9 @@ bool mux_inputs()
   }
   // otherwise combine the new commands
 
-  if(_armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
+  if (_armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
   {
-    _combined_control = _failsafe_control;  
+    _combined_control = _failsafe_control;
   }
   else
   {

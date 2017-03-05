@@ -45,11 +45,11 @@ void init_rc()
 
 bool rc_switch(int16_t channel)
 {
-  if(channel < 4 || channel > 8)
+  if (channel < 4 || channel > 8)
   {
     return false;
   }
-  if(switches[channel - 4].direction < 0)
+  if (switches[channel - 4].direction < 0)
   {
     return pwmRead(channel) < 1500;
   }
@@ -65,12 +65,12 @@ static void convertPWMtoRad()
   if (_rc_control.x.type == ANGLE)
   {
     _rc_control.x.value = (float)((pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
-                           *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)get_param_int(PARAM_RC_X_RANGE);
+                                  *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)get_param_int(PARAM_RC_X_RANGE);
   }
   else if (_rc_control.x.type == RATE)
   {
     _rc_control.x.value = (float)((pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
-                            *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)get_param_int(PARAM_RC_X_RANGE);
+                                  *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)get_param_int(PARAM_RC_X_RANGE);
   }
   else if (_rc_control.x.type == PASSTHROUGH)
   {
@@ -81,12 +81,12 @@ static void convertPWMtoRad()
   if (_rc_control.y.type == ANGLE)
   {
     _rc_control.y.value = ((pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
-                            *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)get_param_int(PARAM_RC_Y_RANGE);
+                           *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)get_param_int(PARAM_RC_Y_RANGE);
   }
   else if (_rc_control.y.type == RATE)
   {
     _rc_control.y.value = (float)((pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
-                            *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)get_param_int(PARAM_RC_Y_RANGE);
+                                  *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)get_param_int(PARAM_RC_Y_RANGE);
   }
   else if (_rc_control.y.type == PASSTHROUGH)
   {
@@ -112,7 +112,7 @@ static void convertPWMtoRad()
 
 bool receive_rc(uint64_t now)
 {
-  if(_calibrate_rc)
+  if (_calibrate_rc)
   {
     calibrate_rc();
   }
@@ -190,7 +190,7 @@ bool receive_rc(uint64_t now)
 
 void calibrate_rc()
 {
-  if(_armed_state == ARMED)
+  if (_armed_state == ARMED)
   {
     mavlink_log_error("Cannot calibrate RC when FCU is armed", NULL);
   }
@@ -202,16 +202,16 @@ void calibrate_rc()
     uint32_t now = micros();
     static int32_t max[4] = {0, 0, 0, 0};
     static int32_t min[4] = {10000, 10000, 10000, 10000};
-    while(micros() - now < 1e7)
+    while (micros() - now < 1e7)
     {
-      for(int16_t i = 0; i < 4; i++)
+      for (int16_t i = 0; i < 4; i++)
       {
         int32_t read_value = (int32_t)pwmRead(i);
-        if(read_value > max[i])
+        if (read_value > max[i])
         {
           max[i] = read_value;
         }
-        if(read_value < min[i])
+        if (read_value < min[i])
         {
           min[i] = read_value;
         }
@@ -231,9 +231,9 @@ void calibrate_rc()
     static int32_t sum[4] = {0, 0, 0, 0};
     static int32_t count[4] = {0, 0, 0, 0};
 
-    while(micros() - now < 5e6)
+    while (micros() - now < 5e6)
     {
-      for(int16_t i = 0; i < 4; i++)
+      for (int16_t i = 0; i < 4; i++)
       {
         int32_t read_value = (int32_t)pwmRead(i);
         sum[i] = sum[i] + read_value;
@@ -249,24 +249,29 @@ void calibrate_rc()
   }
 
   // calculate Trim values (in terms of SI units)
-  if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
+  if (rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
   {
     // in angle mode
-    set_param_float(PARAM_ROLL_ANGLE_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
-                          /(float)get_param_int(PARAM_RC_X_RANGE));
-    set_param_float(PARAM_PITCH_ANGLE_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCH)
-                          /(float)get_param_int(PARAM_RC_Y_RANGE));
+    set_param_float(PARAM_ROLL_ANGLE_TRIM,
+                    (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
+                    /(float)get_param_int(PARAM_RC_X_RANGE));
+    set_param_float(PARAM_PITCH_ANGLE_TRIM,
+                    (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCH)
+                    /(float)get_param_int(PARAM_RC_Y_RANGE));
   }
   else
   {
     // in rate mode
-    set_param_float(PARAM_ROLL_RATE_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE)
-                          /(float)get_param_int(PARAM_RC_X_RANGE));
-    set_param_float(PARAM_PITCH_RATE_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE)
-                          /(float)get_param_int(PARAM_RC_Y_RANGE));
+    set_param_float(PARAM_ROLL_RATE_TRIM,
+                    (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE)
+                    /(float)get_param_int(PARAM_RC_X_RANGE));
+    set_param_float(PARAM_PITCH_RATE_TRIM,
+                    (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE)
+                    /(float)get_param_int(PARAM_RC_Y_RANGE));
   }
-  set_param_float(PARAM_YAW_RATE_TRIM, (float)(get_param_int(PARAM_RC_Z_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_YAWRATE)
-                        /(float)get_param_int(PARAM_RC_Z_RANGE));
+  set_param_float(PARAM_YAW_RATE_TRIM,
+                  (float)(get_param_int(PARAM_RC_Z_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_YAWRATE)
+                  /(float)get_param_int(PARAM_RC_Z_RANGE));
 
   write_params();
 

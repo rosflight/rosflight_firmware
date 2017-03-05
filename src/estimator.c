@@ -38,50 +38,50 @@ static vector_t _gyro_LPF;
 
 void reset_state()
 {
-    _current_state.q.w = 1.0f;
-    _current_state.q.x = 0.0f;
-    _current_state.q.y = 0.0f;
-    _current_state.q.z = 0.0f;
-    _current_state.omega.x = 0.0f;
-    _current_state.omega.y = 0.0f;
-    _current_state.omega.z = 0.0f;
-    _current_state.euler.x = 0.0f;
-    _current_state.euler.y = 0.0f;
-    _current_state.euler.z = 0.0f;
+  _current_state.q.w = 1.0f;
+  _current_state.q.x = 0.0f;
+  _current_state.q.y = 0.0f;
+  _current_state.q.z = 0.0f;
+  _current_state.omega.x = 0.0f;
+  _current_state.omega.y = 0.0f;
+  _current_state.omega.z = 0.0f;
+  _current_state.roll = 0.0f;
+  _current_state.pitch = 0.0f;
+  _current_state.yaw = 0.0f;
 
-    q_hat.w = 1.0f;
-    q_hat.x = 0.0f;
-    q_hat.y = 0.0f;
-    q_hat.z = 0.0f;
+  q_hat.w = 1.0f;
+  q_hat.x = 0.0f;
+  q_hat.y = 0.0f;
+  q_hat.z = 0.0f;
 
-    w1.x = 0.0f;
-    w1.y = 0.0f;
-    w1.z = 0.0f;
+  w1.x = 0.0f;
+  w1.y = 0.0f;
+  w1.z = 0.0f;
 
-    w2.x = 0.0f;
-    w2.y = 0.0f;
-    w2.z = 0.0f;
+  w2.x = 0.0f;
+  w2.y = 0.0f;
+  w2.z = 0.0f;
 
-    b.x = 0.0f;
-    b.y = 0.0f;
-    b.z = 0.0f;
+  b.x = 0.0f;
+  b.y = 0.0f;
+  b.z = 0.0f;
 
-    w_acc.x = 0.0f;
-    w_acc.y = 0.0f;
-    w_acc.z = 0.0f;
+  w_acc.x = 0.0f;
+  w_acc.y = 0.0f;
+  w_acc.z = 0.0f;
 
-    q_tilde.w = 1.0f;
-    q_tilde.x = 0.0f;
-    q_tilde.y = 0.0f;
-    q_tilde.z = 0.0f;
+  q_tilde.w = 1.0f;
+  q_tilde.x = 0.0f;
+  q_tilde.y = 0.0f;
+  q_tilde.z = 0.0f;
 
-    _accel_LPF.x = 0;
-    _accel_LPF.y = 0;
-    _accel_LPF.z = -9.80665;
+  _accel_LPF.x = 0;
+  _accel_LPF.y = 0;
+  _accel_LPF.z = -9.80665;
 
-    _gyro_LPF.x = 0;
-    _gyro_LPF.y = 0;
-    _gyro_LPF.z = 0;
+  _gyro_LPF.x = 0;
+  _gyro_LPF.y = 0;
+  _gyro_LPF.z = 0;
 }
 
 void reset_adaptive_bias()
@@ -213,7 +213,7 @@ void run_estimator()
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);
       float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
-      qhat_np1.w = t1*q_hat.w   + t2*(          - p*q_hat.x - q*q_hat.y - r*q_hat.z);
+      qhat_np1.w = t1*q_hat.w   + t2*(- p*q_hat.x - q*q_hat.y - r*q_hat.z);
       qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w             + r*q_hat.y - q*q_hat.z);
       qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x             + p*q_hat.z);
       qhat_np1.z = t1*q_hat.z   + t2*(r*q_hat.w + q*q_hat.x - p*q_hat.y);
@@ -223,10 +223,10 @@ void run_estimator()
     {
       // Euler Integration
       // (Eq. 47a Mahoney Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5f * (           - p*q_hat.x - q*q_hat.y - r*q_hat.z),
-                           0.5f * ( p*q_hat.w             + r*q_hat.y - q*q_hat.z),
-                           0.5f * ( q*q_hat.w - r*q_hat.x             + p*q_hat.z),
-                           0.5f * ( r*q_hat.w + q*q_hat.x - p*q_hat.y)
+      quaternion_t qdot = {0.5f * (- p*q_hat.x - q*q_hat.y - r*q_hat.z),
+                           0.5f * (p*q_hat.w             + r*q_hat.y - q*q_hat.z),
+                           0.5f * (q*q_hat.w - r*q_hat.x             + p*q_hat.z),
+                           0.5f * (r*q_hat.w + q*q_hat.x - p*q_hat.y)
                           };
       q_hat.w += qdot.w*dt;
       q_hat.x += qdot.x*dt;
@@ -240,7 +240,7 @@ void run_estimator()
   _current_state.q = q_hat;
 
   // Extract Euler Angles for controller
-  euler_from_quat(_current_state.q, &_current_state.euler.x, &_current_state.euler.y, &_current_state.euler.z);
+  euler_from_quat(_current_state.q, &_current_state.roll, &_current_state.pitch, &_current_state.yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
   _current_state.omega = vector_sub(_gyro_LPF, b);

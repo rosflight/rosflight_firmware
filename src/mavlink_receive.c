@@ -32,73 +32,73 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
 
     switch (cmd.command)
     {
-      case MAV_CMD_PREFLIGHT_STORAGE:
-        if (_armed_state == ARMED)
+    case MAV_CMD_PREFLIGHT_STORAGE:
+      if (_armed_state == ARMED)
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        bool success;
+        switch ((uint8_t) cmd.param1)
         {
-          result = MAV_RESULT_TEMPORARILY_REJECTED;
+        case 0:
+          success = read_params();
+          break;
+        case 1:
+          success = write_params();
+          break;
+        case 2:
+          set_param_defaults();
+          success = true;
+          break;
+        default:
+          success = false;
+          break;
         }
-        else
-        {
-          bool success;
-          switch ((uint8_t) cmd.param1)
-          {
-            case 0:
-              success = read_params();
-              break;
-            case 1:
-              success = write_params();
-              break;
-            case 2:
-              set_param_defaults();
-              success = true;
-              break;
-            default:
-              success = false;
-              break;
-          }
-          result = success ? MAV_RESULT_ACCEPTED : MAV_RESULT_FAILED;
-        }
-        break;
+        result = success ? MAV_RESULT_ACCEPTED : MAV_RESULT_FAILED;
+      }
+      break;
 
-        // Perform an IMU calibration (static offset calculation)
-      case MAV_CMD_PREFLIGHT_CALIBRATION:
-        if (_armed_state == ARMED)
+    // Perform an IMU calibration (static offset calculation)
+    case MAV_CMD_PREFLIGHT_CALIBRATION:
+      if (_armed_state == ARMED)
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        bool success = false;
+        if (cmd.param1 || cmd.x)
         {
-          result = MAV_RESULT_TEMPORARILY_REJECTED;
+          success &= start_imu_calibration();
         }
-        else
-        {
-          bool success = false;
-          if (cmd.param1 || cmd.x)
-          {
-            success &= start_imu_calibration();
-          }
-          result = MAV_RESULT_ACCEPTED;
-        }
-        break;
-      case MAV_CMD_DO_RC_CALIBRATION:
-        if (_armed_state == ARMED)
-        {
-          result = MAV_RESULT_TEMPORARILY_REJECTED;
-        }
-        else
-        {
-          _calibrate_rc = true;
-        }
-      case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
-        if(_armed_state == ARMED)
-        {
-          result = MAV_RESULT_TEMPORARILY_REJECTED;
-        }
-        else
-        {
-          // could use this to reboot into bootloader (and flash new firmware from within ROS)
-          systemReset(false);
-        }
+        result = MAV_RESULT_ACCEPTED;
+      }
+      break;
+    case MAV_CMD_DO_RC_CALIBRATION:
+      if (_armed_state == ARMED)
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        _calibrate_rc = true;
+      }
+    case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
+      if (_armed_state == ARMED)
+      {
+        result = MAV_RESULT_TEMPORARILY_REJECTED;
+      }
+      else
+      {
+        // could use this to reboot into bootloader (and flash new firmware from within ROS)
+        systemReset(false);
+      }
 
-      default:
-        result = MAV_RESULT_UNSUPPORTED;
-        break;
+    default:
+      result = MAV_RESULT_UNSUPPORTED;
+      break;
     }
 
     mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, result);
@@ -138,46 +138,46 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
   // translate modes into standard message
   switch (mavlink_offboard_control.mode)
   {
-    case MODE_PASS_THROUGH:
-      _offboard_control.x.type = PASSTHROUGH;
-      _offboard_control.y.type = PASSTHROUGH;
-      _offboard_control.z.type = PASSTHROUGH;
-      _offboard_control.F.type = THROTTLE;
-      _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
-      _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
-      _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
-      _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-      break;
-    case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-      _offboard_control.x.type = RATE;
-      _offboard_control.y.type = RATE;
-      _offboard_control.z.type = RATE;
-      _offboard_control.F.type = THROTTLE;
-      _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-      _offboard_control.x.value += get_param_float(PARAM_ROLL_RATE_TRIM);
-      _offboard_control.y.value += get_param_float(PARAM_PITCH_RATE_TRIM);
-      _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
-      break;
-    case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
-      _offboard_control.x.type = ANGLE;
-      _offboard_control.y.type = ANGLE;
-      _offboard_control.z.type = RATE;
-      _offboard_control.F.type = THROTTLE;
-      _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-      _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
-      _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
-      _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
-      break;
-    case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
-      _offboard_control.x.type = ANGLE;
-      _offboard_control.y.type = ANGLE;
-      _offboard_control.z.type = RATE;
-      _offboard_control.F.type = ALTITUDE;
-      _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
-      _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
-      _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
-      break;
-      // Handle error state
+  case MODE_PASS_THROUGH:
+    _offboard_control.x.type = PASSTHROUGH;
+    _offboard_control.y.type = PASSTHROUGH;
+    _offboard_control.z.type = PASSTHROUGH;
+    _offboard_control.F.type = THROTTLE;
+    _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
+    _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
+    _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
+    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
+    break;
+  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+    _offboard_control.x.type = RATE;
+    _offboard_control.y.type = RATE;
+    _offboard_control.z.type = RATE;
+    _offboard_control.F.type = THROTTLE;
+    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
+    _offboard_control.x.value += get_param_float(PARAM_ROLL_RATE_TRIM);
+    _offboard_control.y.value += get_param_float(PARAM_PITCH_RATE_TRIM);
+    _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
+    break;
+  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
+    _offboard_control.x.type = ANGLE;
+    _offboard_control.y.type = ANGLE;
+    _offboard_control.z.type = RATE;
+    _offboard_control.F.type = THROTTLE;
+    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
+    _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
+    _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
+    _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
+    break;
+  case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
+    _offboard_control.x.type = ANGLE;
+    _offboard_control.y.type = ANGLE;
+    _offboard_control.z.type = RATE;
+    _offboard_control.F.type = ALTITUDE;
+    _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
+    _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
+    _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
+    break;
+    // Handle error state
   }
   _new_command = true;
 }
@@ -186,26 +186,26 @@ static void handle_mavlink_message(void)
 {
   switch (in_buf.msgid)
   {
-    case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
-      mavlink_handle_msg_offboard_control(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-      mavlink_handle_msg_param_request_list();
-      break;
-    case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-      mavlink_handle_msg_param_request_read(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_PARAM_SET:
-      mavlink_handle_msg_param_set(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_COMMAND_INT:
-      mavlink_handle_msg_command_int(&in_buf);
-      break;
-    case MAVLINK_MSG_ID_TIMESYNC:
-      mavlink_handle_msg_timesync(&in_buf);
-      break;
-    default:
-      break;
+  case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
+    mavlink_handle_msg_offboard_control(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
+    mavlink_handle_msg_param_request_list();
+    break;
+  case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+    mavlink_handle_msg_param_request_read(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_PARAM_SET:
+    mavlink_handle_msg_param_set(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_COMMAND_INT:
+    mavlink_handle_msg_command_int(&in_buf);
+    break;
+  case MAVLINK_MSG_ID_TIMESYNC:
+    mavlink_handle_msg_timesync(&in_buf);
+    break;
+  default:
+    break;
   }
 }
 

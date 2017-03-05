@@ -10,7 +10,7 @@ extern "C" {
 #include "turbotrig.h"
 
 
-void pfquat() __attribute__ ((unused));
+void pfquat() __attribute__((unused));
 
 int32_t int_dot(intvec_t v1, intvec_t v2)
 {
@@ -223,7 +223,7 @@ void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
                       1.0f - 2.0f * (q.x*q.x + q.y*q.y));
   *theta = asin_approx(2.0f*(q.w*q.y - q.z*q.x));
   *psi = atan2_approx(2.0f * (q.w*q.z + q.x*q.y),
-                     1.0f - 2.0f * (q.y*q.y + q.z*q.z));
+                      1.0f - 2.0f * (q.y*q.y + q.z*q.z));
 }
 
 

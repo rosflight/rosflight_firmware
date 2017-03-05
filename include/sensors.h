@@ -15,7 +15,7 @@ extern float _imu_temperature;
 extern uint64_t _imu_time;
 
 extern bool _diff_pressure_present;
-extern float _pitot_velocity, _pitot_diff_pressure, _pitot_temp;
+extern float _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp;
 
 extern bool _baro_present;
 extern float _baro_altitude;
