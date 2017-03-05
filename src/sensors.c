@@ -129,11 +129,15 @@ bool update_sensors()
   {
     ms5611_update();
     ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
+    _baro_altitude *= -1.0; // convert to NED
   }
 
   if (_diff_pressure_present)
   {
-
+    if (_baro_present)
+    {
+      ms4525_set_atm((uint32_t) _baro_pressure);
+    }
     ms4525_update();
     ms4525_read(&_diff_pressure, &_diff_pressure_temp, &_diff_pressure_velocity);
   }
@@ -243,6 +247,16 @@ static bool update_imu(void)
     }
     return false;
   }
+}
+
+void start_baro_calibration()
+{
+  ms5611_start_calibration();
+}
+
+void start_airspeed_calibration()
+{
+  ms4525_start_calibration();
 }
 
 

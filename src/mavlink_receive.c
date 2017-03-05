@@ -60,7 +60,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
       }
       break;
 
-    // Perform an IMU calibration (static offset calculation)
+    // Perform sensor calibration
     case MAV_CMD_PREFLIGHT_CALIBRATION:
       if (_armed_state == ARMED)
       {
@@ -73,9 +73,18 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
         {
           success &= start_imu_calibration();
         }
+        if (cmd.param2)
+        {
+          start_baro_calibration();
+        }
+        if (cmd.param3)
+        {
+          start_airspeed_calibration();
+        }
         result = MAV_RESULT_ACCEPTED;
       }
       break;
+
     case MAV_CMD_DO_RC_CALIBRATION:
       if (_armed_state == ARMED)
       {
@@ -85,6 +94,7 @@ static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
       {
         _calibrate_rc = true;
       }
+
     case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
       if (_armed_state == ARMED)
       {
