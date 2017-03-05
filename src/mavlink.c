@@ -9,6 +9,7 @@
 
 // global variable definitions
 mavlink_system_t mavlink_system;
+serialPort_t *Serial1;
 
 // function definitions
 void init_mavlink(void)

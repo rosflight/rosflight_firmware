@@ -20,8 +20,6 @@
 
 extern void SetSysClock(bool overclock);
 
-serialPort_t *Serial1;
-
 int main(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
