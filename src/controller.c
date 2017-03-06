@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <turbotrig/turbotrig.h>
+#include <turbotrig.h>
 
 #include "param.h"
 #include "mixer.h"

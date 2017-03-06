@@ -1,4 +1,4 @@
-#include <breezystm32/breezystm32.h>
+#include <breezystm32.h>
 
 #include "flash.h"
 
@@ -139,7 +139,8 @@ void mag_read(float mag[3])
 
 bool mag_check(void)
 {
-  return hmc5883lInit(_board_revision);
+  _mag_present = hmc5883lInit(_board_revision);
+  return _mag_present;
 }
 
 bool baro_present(void)

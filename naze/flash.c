@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include <breezystm32/breezystm32.h>
+#include <breezystm32.h>
 
 #include "flash.h"
 

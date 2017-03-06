@@ -13,7 +13,7 @@ extern "C" {
 #include "estimator.h"
 #include "mode.h"
 
-#include "turbotrig/turbovec.h"
+#include "turbovec.h"
 
 //==================================================================
 // global variable definitions
@@ -96,7 +96,7 @@ bool update_sensors()
           mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
       }
-      if (mag_present())
+      if (!mag_present())
       {
         if (mag_check())
         {

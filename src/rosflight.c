@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <turbotrig/turbovec.h>
+#include <turbovec.h>
 
 #include "board.h"
 #include "estimator.h"

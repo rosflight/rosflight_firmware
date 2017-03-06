@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <breezystm32/breezystm32.h>
+#include <breezystm32.h>
 
 // #define ASSERT_CONCAT_(a, b) a##b
 // #define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)

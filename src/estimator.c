@@ -6,8 +6,8 @@ extern "C" {
 #include <stdbool.h>
 #include <math.h>
 
-#include <turbotrig/turbotrig.h>
-#include <turbotrig/turbovec.h>
+#include <turbotrig.h>
+#include <turbovec.h>
 
 #include "board.h"
 #include "sensors.h"
