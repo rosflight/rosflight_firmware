@@ -207,7 +207,7 @@ static bool update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages something is wrong
+    // if we have lost 1000 IMU messages then something is wrong
     if(clock_millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU

@@ -46,10 +46,10 @@ typedef struct
 
 extern command_t _command;
 
-extern int32_t _GPIO_outputs[8];
+extern float _GPIO_outputs[8];
 extern output_type_t _GPIO_output_type[8];
 
-extern int32_t _outputs[8];
+extern float _outputs[8];
 
 void init_PWM();
 void init_mixing();
