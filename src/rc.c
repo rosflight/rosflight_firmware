@@ -17,6 +17,37 @@ void calibrate_rc();
 
 static rc_channel_t channels[4];
 
+static void init_switches()
+{
+    // Make sure that parameters for switch channels are correct
+    uint32_t channel_parameters[3] = {PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
+                                      PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
+                                      PARAM_RC_ATT_CONTROL_TYPE_CHANNEL};
+
+    // Make sure that channel numbers are specified correctly (between 4 and 8)
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        uint8_t channel_index = get_param_int(channel_parameters[i]);
+        if (channel_index > 8 || channel_index < 4)
+        {
+            mavlink_log_error("incorrect channel specification for");
+            mavlink_log_error("switch parameter %s", get_param_name(channel_parameters[i]));
+            mavlink_log_error("setting to channel 8");
+            set_param_int(channel_parameters[i], 8);
+        }
+    }
+
+    // Set up the switch structs
+    switches[0].channel = 4;
+    switches[0].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
+    switches[1].channel = 5;
+    switches[1].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
+    switches[2].channel = 6;
+    switches[2].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
+    switches[3].channel = 7;
+    switches[3].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
+}
+
 void init_rc()
 {
     _calibrate_rc = false;
@@ -34,15 +65,6 @@ void init_rc()
     _offboard_control.y.active = false;
     _offboard_control.z.active = false;
     _offboard_control.F.active = false;
-
-    switches[0].channel = 4;
-    switches[0].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
-    switches[1].channel = 5;
-    switches[1].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
-    switches[2].channel = 6;
-    switches[2].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
-    switches[3].channel = 7;
-    switches[3].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
 
     channels[RC_X].channel_param = PARAM_RC_X_CHANNEL;
     channels[RC_X].max_angle_param = PARAM_MAX_ROLL_ANGLE;
@@ -91,6 +113,11 @@ bool rc_switch(int16_t channel)
     {
         return pwm_read(channel) > 1500;
     }
+}
+
+bool rc_low(int16_t channel)
+{
+    if(pwm_read(channel) < channels[] )
 }
 
 static void convertPWMtoRad()
@@ -173,6 +200,8 @@ bool sticks_deviated(uint32_t now_ms)
 
 bool receive_rc()
 {
+    static uint32_t last_rc_receive_time = 0;
+    // If the calibrate_rc flag is set, perform a calibration (blocking)
     if (_calibrate_rc)
     {
         calibrate_rc();
@@ -181,47 +210,43 @@ bool receive_rc()
     uint32_t now = clock_millis();
 
     // if it has been more than 20ms then look for new RC values and parse them
-    static uint32_t last_rc_receive_time = 0;
-
     if (now - last_rc_receive_time < 20)
+    {
         return false;
-
+    }
     last_rc_receive_time = now;
 
+    // Determine whether we are in ANGLE, PASSTHROUGH, ALTIIUDE or RATE mode
     interpret_command_type();
 
     // Interpret PWM Values from RC
     convertPWMtoRad();
 
-    sticks_deviated(now);
-
     // Set flags for attitude channels
     if (rc_switch(get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL)) || sticks_deviated(now))
     {
         // Pilot is in full control
-        _rc_control.x.active = true;
-        _rc_control.y.active = true;
-        _rc_control.z.active = true;
+        _rc_control.x.active = _rc_control.y.active = _rc_control.z.active = true;
     }
     else
     {
-        _rc_control.x.active = false;
-        _rc_control.x.active = false;
-        _rc_control.x.active = false;
+        // Give computer control
+        _rc_control.x.active = _rc_control.x.active = _rc_control.x.active = false;
     }
 
     // Set flags for throttle channel
     if (rc_switch(get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL)))
     {
-        // RC Pilot is in full control
+        // RC Pilot is in control
         _rc_control.F.active = true;
     }
     else
     {
-        // Onboard Control - min throttle Checking will be done in mux and in the controller.
+        // Onboard computer has control - min throttle Checking will be done in mux and in the controller.
         _rc_control.F.active = false;
     }
 
+    // Signal to the mux that we need to compute a new combined command
     _new_command = true;
     return true;
 }
