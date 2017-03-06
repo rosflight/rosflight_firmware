@@ -222,6 +222,11 @@ void pwm_write(uint8_t channel, uint16_t value)
   pwmWriteMotor(channel, value);
 }
 
+bool pwm_lost()
+{
+    return ((millis() - pwmLastUpdate()) > 40);
+}
+
 // non-volatile memory
 
 void memory_init(void)
