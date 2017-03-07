@@ -6,6 +6,7 @@
 #include "param.h"
 
 #include "mavlink.h"
+#include "mavlink_log.h"
 
 // global variable definitions
 mavlink_system_t mavlink_system;
@@ -21,6 +22,8 @@ void init_mavlink(void)
   mavlink_system.compid = 250;
 
   _offboard_control_time = 0;
+
+  mavlink_log_warning("rebooting");
 }
 
 // implement for mavlink convenience functions

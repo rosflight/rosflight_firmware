@@ -3,6 +3,7 @@
 #include "param.h"
 
 #include "flash.h"
+#include "mavlink_log.h"
 
 void initEEPROM(void)
 {
@@ -74,10 +75,10 @@ bool writeEEPROM()
     FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);
 
     for (int i = 0; i < NUM_PAGES; i++)
-      FLASH_ErasePage(FLASH_WRITE_ADDR + i * FLASH_PAGE_SIZE);
+      status = FLASH_ErasePage(FLASH_WRITE_ADDR + i * FLASH_PAGE_SIZE);
     for (unsigned int i = 0; i < sizeof(params_t) && status == FLASH_COMPLETE; i += 4)
     {
-      status = FLASH_ProgramWord(FLASH_WRITE_ADDR + i, *(uint32_t *)((char *)&_params + i));
+      status |= FLASH_ProgramWord(FLASH_WRITE_ADDR + i, *(uint32_t *)((char *)&_params + i));
       if (status != FLASH_COMPLETE)
       {
         continue;
