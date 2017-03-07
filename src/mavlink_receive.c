@@ -9,6 +9,7 @@
 #include "rc.h"
 
 #include "mavlink_receive.h"
+#include "mavlink_log.h"
 
 #include "mavlink_util.h"
 
@@ -21,97 +22,70 @@ static mavlink_message_t in_buf;
 static mavlink_status_t status;
 
 // local function definitions
-static void mavlink_handle_msg_command_int(const mavlink_message_t *const msg)
+static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 {
-  mavlink_command_int_t cmd;
-  mavlink_msg_command_int_decode(msg, &cmd);
+  mavlink_rosflight_cmd_t cmd;
+  mavlink_msg_rosflight_cmd_decode(msg, &cmd);
 
-  if (cmd.target_system == get_param_int(PARAM_SYSTEM_ID))
+  uint8_t result;
+  bool reboot_flag = false;
+  bool reboot_to_bootloader_flag = false;
+
+  // None of these actions can be performed if we are armed
+  if (_armed_state == ARMED)
   {
-    uint8_t result;
-
+    result = false;
+  }
+  else
+  {
+    result = true;
     switch (cmd.command)
     {
-    case MAV_CMD_PREFLIGHT_STORAGE:
-      if (_armed_state == ARMED)
-      {
-        result = MAV_RESULT_TEMPORARILY_REJECTED;
-      }
-      else
-      {
-        bool success;
-        switch ((uint8_t) cmd.param1)
-        {
-        case 0:
-          success = read_params();
-          break;
-        case 1:
-          success = write_params();
-          break;
-        case 2:
-          set_param_defaults();
-          success = true;
-          break;
-        default:
-          success = false;
-          break;
-        }
-        result = success ? MAV_RESULT_ACCEPTED : MAV_RESULT_FAILED;
-      }
+    case ROSFLIGHT_CMD_READ_PARAMS:
+      result = read_params();
       break;
-
-    // Perform sensor calibration
-    case MAV_CMD_PREFLIGHT_CALIBRATION:
-      if (_armed_state == ARMED)
-      {
-        result = MAV_RESULT_TEMPORARILY_REJECTED;
-      }
-      else
-      {
-        bool success = false;
-        if (cmd.param1 || cmd.x)
-        {
-          success &= start_imu_calibration();
-        }
-        if (cmd.param2)
-        {
-          start_baro_calibration();
-        }
-        if (cmd.param3)
-        {
-          start_airspeed_calibration();
-        }
-        result = MAV_RESULT_ACCEPTED;
-      }
+    case ROSFLIGHT_CMD_WRITE_PARAMS:
+      result = write_params();
       break;
-
-    case MAV_CMD_DO_RC_CALIBRATION:
-      if (_armed_state == ARMED)
-      {
-        result = MAV_RESULT_TEMPORARILY_REJECTED;
-      }
-      else
-      {
-        _calibrate_rc = true;
-      }
-
-    case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN:
-      if (_armed_state == ARMED)
-      {
-        result = MAV_RESULT_TEMPORARILY_REJECTED;
-      }
-      else
-      {
-        // could use this to reboot into bootloader (and flash new firmware from within ROS)
-        systemReset(false);
-      }
-
+    case ROSFLIGHT_CMD_SET_PARAM_DEFAULTS:
+      set_param_defaults();
+      break;
+    case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
+      result = start_imu_calibration();
+      break;
+    case ROSFLIGHT_CMD_GYRO_CALIBRATION:
+      result = start_gyro_calibration();
+      break;
+    case ROSFLIGHT_CMD_BARO_CALIBRATION:
+      start_baro_calibration();
+      break;
+    case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
+      start_airspeed_calibration();
+      break;
+    case ROSFLIGHT_CMD_RC_CALIBRATION:
+      _calibrate_rc = true;
+      break;
+    case ROSFLIGHT_CMD_REBOOT:
+      reboot_flag = true;
+      break;
+    case ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER:
+      reboot_to_bootloader_flag = true;
+      break;
     default:
-      result = MAV_RESULT_UNSUPPORTED;
+      mavlink_log_error("unsupported ROSFLIGHT CMD", NULL);
+      result = false;
       break;
     }
+  }
 
-    mavlink_msg_command_ack_send(MAVLINK_COMM_0, cmd.command, result);
+  uint8_t response = (result) ? ROSFLIGHT_CMD_SUCCESS : ROSFLIGHT_CMD_FAILED;
+
+  mavlink_msg_rosflight_cmd_ack_send(MAVLINK_COMM_0, cmd.command, response);
+
+  if (reboot_flag || reboot_to_bootloader_flag)
+  {
+    delay(20);
+    systemReset(reboot_to_bootloader_flag);
   }
 }
 
@@ -208,8 +182,8 @@ static void handle_mavlink_message(void)
   case MAVLINK_MSG_ID_PARAM_SET:
     mavlink_handle_msg_param_set(&in_buf);
     break;
-  case MAVLINK_MSG_ID_COMMAND_INT:
-    mavlink_handle_msg_command_int(&in_buf);
+  case MAVLINK_MSG_ID_ROSFLIGHT_CMD:
+    mavlink_handle_msg_rosflight_cmd(&in_buf);
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
     mavlink_handle_msg_timesync(&in_buf);
