@@ -56,10 +56,10 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       result = start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      start_baro_calibration();
+      baro_calibrate();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      start_airspeed_calibration();
+      diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       _calibrate_rc = true;
@@ -83,8 +83,8 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
-    delay(20);
-    systemReset(reboot_to_bootloader_flag);
+    clock_delay(20);
+    board_reset(reboot_to_bootloader_flag);
   }
 }
 
