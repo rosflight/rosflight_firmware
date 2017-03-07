@@ -20,8 +20,8 @@
 
 #include "rosflight.h"
 
-
-void rosflight_run(void)
+// Initialization Routine
+void rosflight_init(void)
 {
   init_board();
 
@@ -58,37 +58,39 @@ void rosflight_run(void)
   // accelerometer correction <- if using angle mode, this is required, adds ~70 us
   init_estimator(false, false, true);
   init_mode();
-
-  // Main loop
-  while (1)
-  {
-    /*********************/
-    /***  Control Loop ***/
-    /*********************/
-    if (update_sensors()) // 595 | 591 | 590 us
-    {
-      // If I have new IMU data, then perform control
-      run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
-      run_controller(); // 278 | 271
-      mix_output(); // 16 | 13 us
-    }
-
-    /*********************/
-    /***  Post-Process ***/
-    /*********************/
-    // internal timers figure out what and when to send
-    mavlink_stream(clock_micros()); // 165 | 27 | 2
-
-    // receive mavlink messages
-    mavlink_receive(); // 159 | 1 | 1
-
-    // update the armed_states, an internal timer runs this at a fixed rate
-    check_mode(clock_micros()); // 108 | 1 | 1
-
-    // get RC, an internal timer runs this every 20 ms (50 Hz)
-    receive_rc(clock_micros()); // 42 | 2 | 1
-
-    // update commands (internal logic tells whether or not we should do anything or not)
-    mux_inputs(); // 6 | 1 | 1
-  }
 }
+
+
+// Main loop
+void rosflight_run()
+{
+  /*********************/
+  /***  Control Loop ***/
+  /*********************/
+  if (update_sensors()) // 595 | 591 | 590 us
+  {
+    // If I have new IMU data, then perform control
+    run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
+    run_controller(); // 278 | 271
+    mix_output(); // 16 | 13 us
+  }
+
+  /*********************/
+  /***  Post-Process ***/
+  /*********************/
+  // internal timers figure out what and when to send
+  mavlink_stream(clock_micros()); // 165 | 27 | 2
+
+  // receive mavlink messages
+  mavlink_receive(); // 159 | 1 | 1
+
+  // update the armed_states, an internal timer runs this at a fixed rate
+  check_mode(clock_micros()); // 108 | 1 | 1
+
+  // get RC, an internal timer runs this every 20 ms (50 Hz)
+  receive_rc(clock_micros()); // 42 | 2 | 1
+
+  // update commands (internal logic tells whether or not we should do anything or not)
+  mux_inputs(); // 6 | 1 | 1
+}
+
