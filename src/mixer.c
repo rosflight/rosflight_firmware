@@ -215,12 +215,9 @@ void mix_output()
   for (int8_t i=0; i<8; i++)
   {
     output_type_t output_type = mixer_to_use.output_type[i];
-    for (int8_t i=0; i<8; i++)
+    if (output_type == M)
     {
-      if (output_type == M)
-      {
-        prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
-      }
+      prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
     }
     if (output_type == NONE)
     {
