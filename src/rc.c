@@ -66,6 +66,8 @@ void init_rc()
     _offboard_control.z.active = false;
     _offboard_control.F.active = false;
 
+    init_switches();
+
     channels[RC_X].channel_param = PARAM_RC_X_CHANNEL;
     channels[RC_X].max_angle_param = PARAM_MAX_ROLL_ANGLE;
     channels[RC_X].max_rate_param = PARAM_MAX_ROLL_RATE;
@@ -143,7 +145,7 @@ bool rc_high(int16_t channel)
   return false;
 }
 
-static void convertPWMtoRad()
+static void interpret_command_values()
 {
     for (uint8_t i = 0; i < 4; i++)
     {
@@ -243,7 +245,7 @@ bool receive_rc()
     interpret_command_type();
 
     // Interpret PWM Values from RC
-    convertPWMtoRad();
+    interpret_command_values();
 
     // Set flags for attitude channels
     if (rc_switch(get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL)) || sticks_deviated(now))
