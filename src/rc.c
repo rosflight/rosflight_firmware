@@ -117,7 +117,30 @@ bool rc_switch(int16_t channel)
 
 bool rc_low(int16_t channel)
 {
-    if(pwm_read(channel) < channels[] )
+  if (channel < 4)
+  {
+    rc_channel_t* rc_ptr = &(channels[channel]);
+    int16_t pwm = pwm_read(get_param_int(rc_ptr->channel_param));
+    if(channel != RC_F)
+      return pwm < get_param_int(rc_ptr->center_param) - get_param_int(rc_ptr->range_param)/2 +get_param_int(PARAM_ARM_THRESHOLD);
+    else
+      return pwm < get_param_int(rc_ptr->bottom_param) + get_param_int(PARAM_ARM_THRESHOLD);
+  }
+  return false;
+}
+
+bool rc_high(int16_t channel)
+{
+  if(channel < 4)
+  {
+    rc_channel_t* rc_ptr = &(channels[channel]);
+    int16_t pwm = pwm_read(get_param_int(rc_ptr->channel_param));
+    if(channel != RC_F)
+      return pwm > get_param_int(rc_ptr->center_param) + get_param_int(rc_ptr->range_param)/2 - get_param_int(PARAM_ARM_THRESHOLD);
+    else
+      return pwm > get_param_int(rc_ptr->bottom_param) + get_param_int(rc_ptr->range_param) - get_param_int(PARAM_ARM_THRESHOLD);
+  }
+  return false;
 }
 
 static void convertPWMtoRad()
@@ -253,7 +276,7 @@ bool receive_rc()
 
 void calibrate_rc()
 {
-    if (_armed_state == ARMED || _armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
+    if (_armed_state & ARMED || _armed_state & FAILSAFE)
     {
         mavlink_log_error("Cannot calibrate RC when FCU is armed or in failsafe", NULL);
     }

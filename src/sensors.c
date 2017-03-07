@@ -76,7 +76,7 @@ bool update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   static uint32_t last_time_look_for_disarmed_sensors = 0;
-  if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
+  if ((_armed_state & ARMED) == 0)
   {
     uint32_t now = clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
