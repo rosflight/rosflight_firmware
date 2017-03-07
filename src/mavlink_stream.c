@@ -1,7 +1,6 @@
 #include <stdbool.h>
 
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mixer.h"
@@ -58,14 +57,14 @@ static void mavlink_send_heartbeat(void)
 static void mavlink_send_attitude(void)
 {
   mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
-                                       millis(),
-                                       _current_state.q.w,
-                                       _current_state.q.x,
-                                       _current_state.q.y,
-                                       _current_state.q.z,
-                                       _current_state.omega.x,
-                                       _current_state.omega.y,
-                                       _current_state.omega.z);
+                                        clock_millis(),
+                                        _current_state.q.w,
+                                        _current_state.q.x,
+                                        _current_state.q.y,
+                                        _current_state.q.z,
+                                        _current_state.omega.x,
+                                        _current_state.omega.y,
+                                        _current_state.omega.z);
 }
 
 static void mavlink_send_imu(void)
@@ -85,7 +84,7 @@ static void mavlink_send_imu(void)
 static void mavlink_send_servo_output_raw(void)
 {
   mavlink_msg_servo_output_raw_send(MAVLINK_COMM_0,
-                                    micros(),
+                                    clock_micros(),
                                     0,
                                     _outputs[0],
                                     _outputs[1],
@@ -100,22 +99,22 @@ static void mavlink_send_servo_output_raw(void)
 static void mavlink_send_rc_raw(void)
 {
   mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
-                               millis(),
+                               clock_millis(),
                                0,
-                               pwmRead(0),
-                               pwmRead(1),
-                               pwmRead(2),
-                               pwmRead(3),
-                               pwmRead(4),
-                               pwmRead(5),
-                               pwmRead(6),
-                               pwmRead(7),
+                               pwm_read(0),
+                               pwm_read(1),
+                               pwm_read(2),
+                               pwm_read(3),
+                               pwm_read(4),
+                               pwm_read(5),
+                               pwm_read(6),
+                               pwm_read(7),
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
 }
 
 static void mavlink_send_diff_pressure(void)
 {
-  if (_diff_pressure_present)
+  if (diff_pressure_present())
   {
     mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp);
   }
@@ -123,7 +122,7 @@ static void mavlink_send_diff_pressure(void)
 
 static void mavlink_send_baro(void)
 {
-  if (_baro_present)
+  if (baro_present())
   {
     mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_altitude, _baro_pressure, _baro_temperature);
   }
@@ -131,7 +130,7 @@ static void mavlink_send_baro(void)
 
 static void mavlink_send_sonar(void)
 {
-  if (_sonar_present)
+  if (sonar_present())
   {
     mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
                                  _sonar_range,
@@ -142,7 +141,7 @@ static void mavlink_send_sonar(void)
 
 static void mavlink_send_mag(void)
 {
-  if (_mag_present)
+  if (mag_present())
   {
     mavlink_msg_small_mag_send(MAVLINK_COMM_0,
                                _mag.x,

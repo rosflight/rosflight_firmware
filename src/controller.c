@@ -5,8 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <turbotrig/turbotrig.h>
-#include <breezystm32/breezystm32.h>
+#include <turbotrig.h>
 
 #include "param.h"
 #include "mixer.h"
@@ -34,7 +33,7 @@ void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
   pid->max = max;
   pid->min = min;
   pid->integrator = 0.0;
-  pid->prev_time = micros()*1e-6;
+  pid->prev_time = clock_micros()*1e-6;
   pid->differentiator = 0.0;
   pid->prev_x = 0.0;
   pid->tau = get_param_float(PARAM_PID_TAU);
@@ -84,7 +83,7 @@ void run_pid(pid_t *pid, float dt)
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ((pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwmRead(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
+  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwm_read(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
   {
     if (get_param_float(pid->ki_param_id) > 0.0)
     {

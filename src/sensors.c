@@ -5,8 +5,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 #include "param.h"
@@ -14,7 +13,7 @@ extern "C" {
 #include "estimator.h"
 #include "mode.h"
 
-#include "turbotrig/turbovec.h"
+#include "turbovec.h"
 
 //==================================================================
 // global variable definitions
@@ -49,12 +48,8 @@ vector_t _mag;
 // local variable definitions
 
 // IMU stuff
-int16_t accel_raw[3];
-int16_t gyro_raw[3];
-int16_t temp_raw;
-static volatile uint8_t accel_status, gyro_status, temp_status;
-static float accel_scale;
-static float gyro_scale;
+float accel[3];
+float gyro[3];
 static bool calibrating_acc_flag;
 static bool calibrating_gyro_flag;
 static void calibrate_accel(void);
@@ -69,18 +64,8 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
-  while (millis() < 50);
-  i2cWrite(0,0,0);
-  _baro_present = ms5611_init();
-  _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
-  _sonar_present = mb1242_init();
-  _diff_pressure_present = ms4525_init();
-
-  // IMU
-  uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
-  mpu6050_register_interrupt_cb(&imu_ISR);
-  accel_scale = 9.80665f/acc1G * get_param_float(PARAM_ACCEL_SCALE);
+  sensors_init(get_param_int(PARAM_BOARD_REVISION));
+  imu_register_callback(&imu_ISR);
 }
 
 
@@ -93,31 +78,27 @@ bool update_sensors()
   static uint32_t last_time_look_for_disarmed_sensors = 0;
   if (_armed_state == DISARMED || _armed_state == FAILSAFE_DISARMED)
   {
-    uint32_t now = millis();
+    uint32_t now = clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
     {
       last_time_look_for_disarmed_sensors = now;
-      if (!_sonar_present)
+      if(!sonar_present())
       {
-        mb1242_update();
-        _sonar_present = (mb1242_read() > 0.2);
-        if (_sonar_present)
+        if(sonar_check())
         {
           mavlink_log_info("FOUND SONAR", NULL);
         }
       }
-      if (!_diff_pressure_present)
+      if(!diff_pressure_present())
       {
-        _diff_pressure_present = ms4525_init();
-        if (_diff_pressure_present)
+        if(diff_pressure_check())
         {
           mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
       }
-      if (!_mag_present)
+      if (!mag_present())
       {
-        _mag_present = hmc5883lInit(get_param_int(PARAM_BOARD_REVISION));
-        if (_mag_present)
+        if (mag_check())
         {
           mavlink_log_info("FOUND MAG", NULL);
         }
@@ -125,37 +106,32 @@ bool update_sensors()
     }
   }
 
-  if (_baro_present)
+  if(baro_present())
   {
-    ms5611_update();
-    ms5611_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
-    _baro_altitude *= -1.0; // convert to NED
+    baro_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
   }
 
-  if (_diff_pressure_present)
+  if(diff_pressure_present())
   {
-    if (_baro_present)
+    if(baro_present())
     {
-      ms4525_set_atm((uint32_t) _baro_pressure);
+      diff_pressure_set_atm(_baro_pressure);
     }
-    ms4525_update();
-    ms4525_read(&_diff_pressure, &_diff_pressure_temp, &_diff_pressure_velocity);
+    diff_pressure_read(&_diff_pressure, &_diff_pressure_temp, &_diff_pressure_velocity);
   }
 
-  if (_sonar_present)
+  if (sonar_present())
   {
-    mb1242_update();
-    _sonar_range = mb1242_read();
+    _sonar_range = sonar_read();
   }
 
-  if (_mag_present)
+  if (mag_present())
   {
-    int16_t raw_mag[3] = {0,0,0};
-    hmc5883l_update();
-    hmc5883l_read(raw_mag);
-    _mag.x = (float)raw_mag[0];
-    _mag.y = (float)raw_mag[1];
-    _mag.z = (float)raw_mag[2];
+    float mag[3];
+    mag_read(mag);
+    _mag.x = mag[0];
+    _mag.y = mag[1];
+    _mag.z = mag[2];
     correct_mag();
   }
 
@@ -196,7 +172,7 @@ bool gyro_calibration_complete(void)
 // local function definitions
 void imu_ISR(void)
 {
-  _imu_time = micros();
+  _imu_time = clock_micros();
   new_imu_data = true;
 }
 
@@ -207,23 +183,19 @@ static bool update_imu(void)
 
   if (new_imu_data)
   {
-    last_imu_update_ms = millis();
-    mpu6050_read_accel(accel_raw);
-    mpu6050_read_gyro(gyro_raw);
-    mpu6050_read_temperature(&temp_raw);
+    last_imu_update_ms = clock_millis();
+    imu_read_accel(accel);
+    imu_read_gyro(gyro);
+    _imu_temperature = imu_read_temperature();
     new_imu_data = false;
 
-    // convert temperature SI units (degC, m/s^2, rad/s)
-    _imu_temperature = temp_raw/340.0f + 36.53f;
+    _accel.x = accel[0] * get_param_float(PARAM_ACCEL_SCALE);
+    _accel.y = accel[1] * get_param_float(PARAM_ACCEL_SCALE);
+    _accel.z = accel[2] * get_param_float(PARAM_ACCEL_SCALE);
 
-    // convert to NED and SI units
-    _accel.x = accel_raw[0] * accel_scale;
-    _accel.y = -accel_raw[1] * accel_scale;
-    _accel.z = -accel_raw[2] * accel_scale;
-
-    _gyro.x = gyro_raw[0] * gyro_scale;
-    _gyro.y = -gyro_raw[1] * gyro_scale;
-    _gyro.z = -gyro_raw[2] * gyro_scale;
+    _gyro.x = gyro[0];
+    _gyro.y = gyro[1];
+    _gyro.z = gyro[2];
 
     if (calibrating_acc_flag == true)
       calibrate_accel();
@@ -236,27 +208,15 @@ static bool update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages something is wrong
-    if (millis() > last_imu_update_ms + 1000)
+    if(clock_millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
-      last_imu_update_ms = millis();
+      last_imu_update_ms = clock_millis();
       set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
-      uint16_t acc1G;
-      mpu6050_init(true, &acc1G, &gyro_scale, get_param_int(PARAM_BOARD_REVISION));
-      accel_scale = 9.80665f/acc1G * get_param_float(PARAM_ACCEL_SCALE);
+      sensors_init(get_param_int(PARAM_BOARD_REVISION));
     }
     return false;
   }
-}
-
-void start_baro_calibration()
-{
-  ms5611_start_calibration();
-}
-
-void start_airspeed_calibration()
-{
-  ms4525_start_calibration();
 }
 
 
@@ -324,8 +284,7 @@ static void calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum,
-                                          accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
@@ -348,14 +307,12 @@ static void calibrate_accel(void)
       {
         mavlink_log_error("Detected bad IMU accel scale value", 0);
         set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
-        accel_scale *= get_param_float(PARAM_ACCEL_SCALE);
         write_params();
       }
       else if (sqrd_norm(accel_bias) > 9.0*9.0 && sqrd_norm(accel_bias) < 11.0*11.0)
       {
         mavlink_log_error("Detected bad IMU accel scale value", 0);
         set_param_float(PARAM_ACCEL_SCALE, 0.5 * get_param_float(PARAM_ACCEL_SCALE));
-        accel_scale *= get_param_float(PARAM_ACCEL_SCALE);
         write_params();
       }
       else

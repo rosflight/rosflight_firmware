@@ -2,9 +2,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <breezystm32/breezystm32.h>
-#include <turbotrig/turbovec.h>
+#include <turbovec.h>
 
+#include "board.h"
 #include "estimator.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
@@ -18,13 +18,12 @@
 #include "mixer.h"
 #include "rc.h"
 
-extern void SetSysClock(bool overclock);
+#include "rosflight.h"
 
-int main(void)
+
+void rosflight_run(void)
 {
-  // Configure clock, this figures out HSE for hardware autodetect
-  SetSysClock(0);
-  systemInit();
+  init_board();
 
   // Read EEPROM to get initial params
   init_params();
@@ -39,9 +38,6 @@ int main(void)
 
   // Initialize MAVlink Communication
   init_mavlink();
-
-  // Initialize I2c
-  i2cInit(I2CDEV_2);
 
   // Initialize Sensors
   init_sensors();
@@ -81,16 +77,16 @@ int main(void)
     /***  Post-Process ***/
     /*********************/
     // internal timers figure out what and when to send
-    mavlink_stream(micros()); // 165 | 27 | 2
+    mavlink_stream(clock_micros()); // 165 | 27 | 2
 
     // receive mavlink messages
     mavlink_receive(); // 159 | 1 | 1
 
     // update the armed_states, an internal timer runs this at a fixed rate
-    check_mode(micros()); // 108 | 1 | 1
+    check_mode(clock_micros()); // 108 | 1 | 1
 
     // get RC, an internal timer runs this every 20 ms (50 Hz)
-    receive_rc(micros()); // 42 | 2 | 1
+    receive_rc(clock_micros()); // 42 | 2 | 1
 
     // update commands (internal logic tells whether or not we should do anything or not)
     mux_inputs(); // 6 | 1 | 1

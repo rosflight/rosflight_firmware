@@ -1,5 +1,4 @@
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mode.h"
@@ -91,7 +90,7 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 
 static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint64_t now_us = micros();
+  uint64_t now_us = clock_micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
@@ -104,7 +103,7 @@ static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 
 static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
-  _offboard_control_time = micros();
+  _offboard_control_time = clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
   // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
@@ -196,10 +195,9 @@ static void handle_mavlink_message(void)
 // function definitions
 void mavlink_receive(void)
 {
-  while (serialTotalBytesWaiting(Serial1))
+  while (serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, serialRead(Serial1), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, serial_read(), &in_buf, &status))
       handle_mavlink_message();
   }
 }
-

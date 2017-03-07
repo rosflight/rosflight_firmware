@@ -1,6 +1,6 @@
-[submodule "lib/breezystm32"]
-	path = lib/breezystm32
-	url = https://github.com/byu-magicc/BreezySTM32.git
 [submodule "lib/mavlink/v1.0"]
 	path = lib/mavlink/v1.0
 	url = https://github.com/BYU-MAGICC/mavlink_c_library.git
+[submodule "naze/lib/breezystm32"]
+	path = naze/lib/breezystm32
+	url = https://github.com/byu-magicc/BreezySTM32.git
