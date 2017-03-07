@@ -195,19 +195,12 @@ void mix_output()
         // servo commands, which may be negative
       }
     }
-
-    // saturate outputs to maintain controllability even during aggressive maneuvers
-    if (max_output > 1000)
-    {
-      int32_t scale_factor = 1000*1000/max_output;
-      for (int8_t i=0; i<8; i++)
-      {
-        if (mixer_to_use.output_type[i] == M)
-        {
-          prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
-        }
-      }
-    }
+  }
+  // saturate outputs to maintain controllability even during aggressive maneuvers
+  int32_t scale_factor = 1000;
+  if (max_output > 1000)
+  {
+    scale_factor = 1000*1000/max_output;
   }
 
   // Reverse Fixedwing channels
@@ -222,6 +215,13 @@ void mix_output()
   for (int8_t i=0; i<8; i++)
   {
     output_type_t output_type = mixer_to_use.output_type[i];
+    for (int8_t i=0; i<8; i++)
+    {
+      if (output_type == M)
+      {
+        prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
+      }
+    }
     if (output_type == NONE)
     {
       // Incorporate GPIO on not already reserved outputs
