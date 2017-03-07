@@ -3,5 +3,5 @@
 CMD="astyle --options=.astylerc"
 
 $CMD include/*
-$CMD src/*
+$CMD --exclude="param.c" src/*
 $CMD lib/turbotrig/*
