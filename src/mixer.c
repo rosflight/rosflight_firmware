@@ -9,9 +9,9 @@ extern "C" {
 #include "mode.h"
 #include "rc.h"
 
-int32_t _GPIO_outputs[8];
-static int32_t prescaled_outputs[8];
-int32_t _outputs[8];
+float _GPIO_outputs[8];
+static float prescaled_outputs[8];
+float _outputs[8];
 command_t _command;
 output_type_t _GPIO_output_type[8];
 
@@ -96,9 +96,9 @@ void init_mixing()
 
   for (int8_t i=0; i<8; i++)
   {
-    _outputs[i] = 0;
-    prescaled_outputs[i] = 0;
-    _GPIO_outputs[i] = 0;
+    _outputs[i] = 0.0f;
+    prescaled_outputs[i] = 0.0f;
+    _GPIO_outputs[i] = 0.0f;
     _GPIO_output_type[i] = NONE;
   }
   _command.F = 0;
@@ -115,98 +115,81 @@ void init_PWM()
     useCPPM = true;
   }
   int16_t motor_refresh_rate = get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
-  int16_t off_pwm = 1000;
+  int16_t off_pwm = get_param_int(PARAM_MOTOR_MIN_PWM);
   pwm_init(useCPPM, motor_refresh_rate, off_pwm);
 }
 
 
-void write_motor(uint8_t index, int32_t value)
+void write_motor(uint8_t index, float value)
 {
-  value += 1000;
   if (_armed_state == ARMED)
   {
-    if (value > 2000)
+    if (value > 1.0)
     {
-      value = 2000;
+      value = 1.0;
     }
-    else if (value < get_param_int(PARAM_MOTOR_IDLE_PWM) && get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
+    else if (value < get_param_float(PARAM_MOTOR_IDLE_THROTTLE) && get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
     {
-      value = get_param_int(PARAM_MOTOR_IDLE_PWM);
+      value = get_param_int(PARAM_MOTOR_IDLE_THROTTLE);
     }
-    else if (value < 1000)
+    else if (value < 0.0)
     {
-      value = 1000;
+      value = 0.0;
     }
   }
   else
   {
-    value = 1000;
+    value = 0.0;
   }
   _outputs[index] = value;
-  pwm_write(index, _outputs[index]);
+  int32_t pwm_us = value * (get_param_int(PARAM_MOTOR_MAX_PWM) - get_param_int(PARAM_MOTOR_MIN_PWM)) + get_param_int(PARAM_MOTOR_MIN_PWM);
+  pwm_write(index, pwm_us);
 }
 
 
-void write_servo(uint8_t index, int32_t value)
+void write_servo(uint8_t index, float value)
 {
-  if (value > 500)
+  if (value > 0.5)
   {
-    value = 500;
+    value = 0.5;
   }
-  else if (value < -500)
+  else if (value < -0.5)
   {
-    value = -500;
+    value = -0.5;
   }
-  _outputs[index] = value+1500;
-  pwm_write(index, _outputs[index]);
+  _outputs[index] = value;
+  pwm_write(index, _outputs[index] * 1000 + 1500);
 }
 
 
 void mix_output()
 {
-  int32_t max_output = 0;
+  float max_output = 1.0f;
 
-  // For now, we aren't supporting mixing with fixed wings.  This is a total hack, and should be re-thought
-  if (get_param_int(PARAM_FIXED_WING))
+  for (int8_t i=0; i<8; i++)
   {
-    // AETR
-    prescaled_outputs[0] = _command.x;
-    prescaled_outputs[1] = _command.y;
-    prescaled_outputs[2] = _command.F * 1000; // Throttle comes in scaled from 0.0 to 1.0
-    prescaled_outputs[3] = _command.z;
+    if (mixer_to_use.output_type[i] != NONE)
+    {
+      // Matrix multiply to mix outputs
+      prescaled_outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
+                              _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i]);
+
+      // Save off the largest control output if it is greater than 1.0
+      if (prescaled_outputs[i] > max_output)
+      {
+        max_output = prescaled_outputs[i];
+      }
+      // negative motor outputs are set to zero when writing to the motor,
+      // but they have to be allowed here because the same logic is used for
+      // servo commands, which may be negative
+    }
   }
-  else // For multirotors, domixing the same way (in fixed point for now);
+
+  // saturate outputs to maintain controllability even during aggressive maneuvers
+  float scale_factor = 1.0;
+  if (max_output > 1.0)
   {
-
-    for (int8_t i=0; i<8; i++)
-    {
-      if (mixer_to_use.output_type[i] != NONE)
-      {
-        // Matrix multiply (in so many words) -- done in integer, hence the /1000 at the end
-        prescaled_outputs[i] = (int32_t)((_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                                          _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i])*1000.0f);
-        if (prescaled_outputs[i] > 1000 && prescaled_outputs[i] > max_output)
-        {
-          max_output = prescaled_outputs[i];
-        }
-        // negative motor outputs are set to zero when writing to the motor,
-        // but they have to be allowed here because the same logic is used for
-        // servo commands, which may be negative
-      }
-    }
-
-    // saturate outputs to maintain controllability even during aggressive maneuvers
-    if (max_output > 1000)
-    {
-      int32_t scale_factor = 1000*1000/max_output;
-      for (int8_t i=0; i<8; i++)
-      {
-        if (mixer_to_use.output_type[i] == M)
-        {
-          prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor/1000; // divide by scale factor
-        }
-      }
-    }
+    scale_factor = 1.0/max_output;
   }
 
   // Reverse Fixedwing channels
@@ -221,6 +204,11 @@ void mix_output()
   for (int8_t i=0; i<8; i++)
   {
     output_type_t output_type = mixer_to_use.output_type[i];
+    if (mixer_to_use.output_type[i] == M)
+    {
+      prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor; // scale all outputs by scale factor
+    }
+
     if (output_type == NONE)
     {
       // Incorporate GPIO on not already reserved outputs

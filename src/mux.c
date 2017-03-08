@@ -20,6 +20,54 @@ control_t _failsafe_control =
   {true, THROTTLE, 0.0}
 };
 
+mux_t muxes[4] =
+{
+  {&_rc_control.x, &_offboard_control.x, &_combined_control.x},
+  {&_rc_control.y, &_offboard_control.y, &_combined_control.y},
+  {&_rc_control.z, &_offboard_control.z, &_combined_control.z},
+  {&_rc_control.F, &_offboard_control.F, &_combined_control.F}
+};
+
+void do_muxing(uint8_t mux_channel)
+{
+  mux_t* mux_ptr = &(muxes[mux_channel]);
+  if(mux_ptr->rc->active)
+  {
+    (*mux_ptr->combined) = (*mux_ptr->rc);
+  }
+  else if (mux_ptr->onboard->active)
+  {
+    (*mux_ptr->combined) = (*mux_ptr->onboard);
+  }
+  else
+  {
+    // Default to RC if neither is active
+    (*mux_ptr->combined) = (*mux_ptr->rc);
+    mux_ptr->combined->active = true;
+  }
+}
+
+void do_min_throttle_muxing()
+{
+  if (_offboard_control.F.active)
+  {
+    if (_rc_control.F.type == THROTTLE && _offboard_control.F.type == THROTTLE)
+    {
+      _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?
+                                  _offboard_control.F.value : _rc_control.F.value;
+      _combined_control.F.type = THROTTLE;
+      _combined_control.F.active = true;
+    }
+    else
+    {
+      // I'm still not quite sure how to handle the mixed altitude/throttle cases
+      // for now, just pass the rc along.  I expect that what we really need to do
+      // is run the altitude controller here so we can compare throttle to throttle
+      _combined_control.F = _rc_control.F;
+    }
+  }
+}
+
 bool _new_command;
 
 bool mux_inputs()
@@ -31,92 +79,22 @@ bool mux_inputs()
   }
   // otherwise combine the new commands
 
-  if (_armed_state == FAILSAFE_ARMED || _armed_state == FAILSAFE_DISARMED)
+  if (_armed_state & FAILSAFE)
   {
     _combined_control = _failsafe_control;
   }
+
   else
   {
-    if (_rc_control.x.active)
+    for (uint8_t i = 0; i < 4; i++)
     {
-      _combined_control.x = _rc_control.x;
-    }
-    else if (_offboard_control.x.active)
-    {
-      _combined_control.x = _offboard_control.x;
-    }
-    else
-    {
-      // default to taking RC if neither is publishing
-      _combined_control.x = _rc_control.x;
-      _combined_control.x.active = true;
-    }
-
-
-    if (_rc_control.y.active)
-    {
-      _combined_control.y = _rc_control.y;
-    }
-    else if (_offboard_control.y.active)
-    {
-      _combined_control.y = _offboard_control.y;
-    }
-    else
-    {
-      // default to taking RC if neither is publishing
-      _combined_control.y = _rc_control.y;
-      _combined_control.y.active = true;
-    }
-
-
-    if (_rc_control.z.active)
-    {
-      _combined_control.z = _rc_control.z;
-    }
-    else if (_offboard_control.z.active)
-    {
-      _combined_control.z = _offboard_control.z;
-    }
-    else
-    {
-      _combined_control.z = _rc_control.z;
-      _combined_control.z.active = true;
-    }
-
-    if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
-    {
-      if (_offboard_control.F.active)
+      if (i == MUX_F && get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
       {
-        if (_rc_control.F.type == THROTTLE && _offboard_control.F.type == THROTTLE)
-        {
-          _combined_control.F.value = (_rc_control.F.value > _offboard_control.F.value) ?
-                                      _offboard_control.F.value : _rc_control.F.value;
-          _combined_control.F.type = THROTTLE;
-          _combined_control.F.active = true;
-        }
-        else
-        {
-          // I'm still not quite sure how to handle the mixed altitude/throttle cases
-          // for now, just pass the rc along.  I expect that what we really need to do
-          // is run the altitude controller here so we can compare throttle to throttle
-          _combined_control.F = _rc_control.F;
-        }
-      }
-    }
-    else // no min throttle check
-    {
-      if (_rc_control.F.active)
-      {
-        _combined_control.F = _rc_control.F;
-      }
-      else if (_offboard_control.F.active)
-      {
-        _combined_control.F = _offboard_control.F;
+        do_min_throttle_muxing();
       }
       else
       {
-        _combined_control.F = _rc_control.F;
-        _combined_control.F.active = true;
+        do_muxing(i);
       }
     }
 

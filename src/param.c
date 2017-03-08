@@ -150,7 +150,9 @@ void set_param_defaults(void)
   /*** PWM CONFIGURATION ***/
   /*************************/
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
-  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_int(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 1100); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_PWM | 0 | 1
 
   /*******************************/
@@ -316,6 +318,9 @@ void param_change_callback(param_id_t id)
     init_PWM();
     break;
   case PARAM_MOTOR_PWM_SEND_RATE:
+    init_PWM();
+    break;
+  case PARAM_MOTOR_MIN_PWM:
     init_PWM();
     break;
   case PARAM_MIXER:
