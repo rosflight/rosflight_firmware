@@ -244,11 +244,7 @@ bool offboard_control_active()
   return false;
 }
 
-
-bool mux_inputs()
-{
-  // Check for and apply failsafe command
-  if (_armed_state & FAILSAFE)
+  if (_armed_state == DISARMED_FAILSAFE || _armed_state == ARMED_FAILSAFE)
   {
     _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;

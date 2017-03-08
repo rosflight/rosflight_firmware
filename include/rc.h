@@ -34,18 +34,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "mux.h"
 #include "param.h"
 
 #include "mux.h"
 
 typedef enum
 {
-  RC_STICK_X,
-  RC_STICK_Y,
-  RC_STICK_Z,
-  RC_STICK_F,
-  RC_STICKS_COUNT
-} rc_stick_t;
+    param_id_t channel_param;
+    param_id_t max_angle_param;
+    param_id_t max_rate_param;
+    param_id_t center_param;
+    param_id_t bottom_param;
+    param_id_t range_param;
+    control_channel_t* control_channel_ptr;
+} rc_channel_t;
 
 typedef enum
 {

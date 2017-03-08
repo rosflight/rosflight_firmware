@@ -111,61 +111,68 @@ static void mavlink_send_status(void)
     // TODO - Support rate mode
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
 
-
-
-  mavlink_msg_rosflight_status_send(MAVLINK_COMM_0,
-                                    status,
-                                    _error_state,
-                                    control_mode,
-                                    num_sensor_errors(),
-                                    _loop_time_us);
+  mavlink_message_t msg;
+  mavlink_msg_heartbeat_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
+                             get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
+                             MAV_AUTOPILOT_GENERIC,
+                             armed_mode,
+                             control_mode,
+                             MAV_STATE_STANDBY);
+  send_message(msg);
 }
 
 static void mavlink_send_attitude(void)
 {
-  mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
-                                       clock_millis(),
-                                       _current_state.q.w,
-                                       _current_state.q.x,
-                                       _current_state.q.y,
-                                       _current_state.q.z,
-                                       _current_state.omega.x,
-                                       _current_state.omega.y,
-                                       _current_state.omega.z);
+  mavlink_message_t msg;
+  mavlink_msg_attitude_quaternion_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
+                                        clock_millis(),
+                                        _current_state.q.w,
+                                        _current_state.q.x,
+                                        _current_state.q.y,
+                                        _current_state.q.z,
+                                        _current_state.omega.x,
+                                        _current_state.omega.y,
+                                        _current_state.omega.z);
+  send_message(msg);
 }
 
 static void mavlink_send_imu(void)
 {
-  // If we haven't sent this IMU measurement yet, send it
-  if (!_imu_sent)
-  {
-    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                               _imu_time,
-                               _accel.x,
-                               _accel.y,
-                               _accel.z,
-                               _gyro.x,
-                               _gyro.y,
-                               _gyro.z,
-                               _imu_temperature);
-  }
-  else
-  {
-    // Otherwise, wait and signal that we still need to send IMU
-    mavlink_streams[MAVLINK_STREAM_ID_IMU].next_time_us -= mavlink_streams[MAVLINK_STREAM_ID_IMU].period_us;
-  }
+  mavlink_message_t msg;
+  mavlink_msg_small_imu_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
+                             _imu_time,
+                             _accel.x,
+                             _accel.y,
+                             _accel.z,
+                             _gyro.x,
+                             _gyro.y,
+                             _gyro.z,
+                             _imu_temperature);
+  send_message(msg);
+
 }
 
-static void mavlink_send_rosflight_output_raw(void)
+static void mavlink_send_servo_output_raw(void)
 {
-  mavlink_msg_rosflight_output_raw_send(MAVLINK_COMM_0,
-                                        clock_millis(),
-                                        _outputs);
+  mavlink_message_t msg;
+  mavlink_msg_servo_output_raw_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
+                                    clock_micros(),
+                                    0,
+                                    _outputs[0],
+                                    _outputs[1],
+                                    _outputs[2],
+                                    _outputs[3],
+                                    _outputs[4],
+                                    _outputs[5],
+                                    _outputs[6],
+                                    _outputs[7]);
+  send_message(msg);
 }
 
 static void mavlink_send_rc_raw(void)
 {
-  mavlink_msg_rc_channels_send(MAVLINK_COMM_0,
+  mavlink_message_t msg;
+  mavlink_msg_rc_channels_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                                clock_millis(),
                                0,
                                pwm_read(0),
@@ -177,13 +184,16 @@ static void mavlink_send_rc_raw(void)
                                pwm_read(6),
                                pwm_read(7),
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
+  send_message(msg);
 }
 
 static void mavlink_send_diff_pressure(void)
 {
   if (diff_pressure_present())
   {
-    mavlink_msg_diff_pressure_send(MAVLINK_COMM_0, _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp);
+    mavlink_message_t msg;
+    mavlink_msg_diff_pressure_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg, _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp);
+    send_message(msg);
   }
 }
 
@@ -191,7 +201,9 @@ static void mavlink_send_baro(void)
 {
   if (baro_present())
   {
-    mavlink_msg_small_baro_send(MAVLINK_COMM_0, _baro_altitude, _baro_pressure, _baro_temperature);
+    mavlink_message_t msg;
+    mavlink_msg_small_baro_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg, _baro_altitude, _baro_pressure, _baro_temperature);
+    send_message(msg);
   }
 }
 
@@ -199,10 +211,12 @@ static void mavlink_send_sonar(void)
 {
   if (sonar_present())
   {
-    mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
+    mavlink_message_t msg;
+    mavlink_msg_small_sonar_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                                  _sonar_range,
                                  8.0,
                                  0.25);
+    send_message(msg);
   }
 }
 
@@ -210,10 +224,12 @@ static void mavlink_send_mag(void)
 {
   if (mag_present())
   {
-    mavlink_msg_small_mag_send(MAVLINK_COMM_0,
+    mavlink_message_t msg;
+    mavlink_msg_small_mag_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                                _mag.x,
                                _mag.y,
                                _mag.z);
+    send_message(msg);
   }
 }
 

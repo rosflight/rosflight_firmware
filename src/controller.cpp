@@ -1,38 +1,3 @@
-/* 
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * 
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- * 
- * * Neither the name of the copyright holder nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -50,34 +15,15 @@ extern "C" {
 #include "mavlink_log.h"
 #include "mavlink_util.h"
 
-typedef struct
-{
-  param_id_t kp_param_id;
-  param_id_t ki_param_id;
-  param_id_t kd_param_id;
+pid_t pid_roll;
+pid_t pid_roll_rate;
+pid_t pid_pitch;
+pid_t pid_pitch_rate;
+pid_t pid_yaw_rate;
+pid_t pid_altitude;
 
-  float *current_x;
-  float *current_xdot;
-  float *commanded_x;
-  float *output;
 
-  float max;
-  float min;
-
-  float integrator;
-  float prev_time;
-  float prev_x;
-  float differentiator;
-  float tau;
-} pid_t;
-
-static pid_t pid_roll;
-static pid_t pid_roll_rate;
-static pid_t pid_pitch;
-static pid_t pid_pitch_rate;
-static pid_t pid_yaw_rate;
-
-static void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
+void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
               float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
   pid->kp_param_id = kp_param_id;
@@ -127,13 +73,10 @@ static void run_pid(pid_t *pid, float dt)
     // (Be sure to de-reference pointers)
     if (pid->current_xdot == NULL)
     {
-      if (dt > 0.0f)
-      {
-        pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((
-                                                                                                                     *pid->current_x) - pid->prev_x);
-        pid->prev_x = *pid->current_x;
-        d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
-      }
+      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
+                              + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+      pid->prev_x = *pid->current_x;
+      d_term = get_param_float(pid->kd_param_id) * pid->differentiator;
     }
     else
     {
@@ -270,48 +213,4 @@ void run_controller()
   _command.y += get_param_float(PARAM_Y_EQ_TORQUE);
   _command.z += get_param_float(PARAM_Z_EQ_TORQUE);
   _command.F = _combined_control.F.value;
-}
-
-void calculate_equilbrium_torque_from_rc()
-{
-  // Make sure we are disarmed
-  if (!(_armed_state & ARMED))
-  {
-    // Tell the user that we are doing a equilibrium torque calibration
-    mavlink_log_warning("Capturing equilbrium offsets from RC");
-
-    // Prepare for calibration
-    // artificially tell the flight controller it is leveled
-    // and zero out previously calculate offset torques
-    _current_state.omega.x = 0.0;
-    _current_state.omega.y = 0.0;
-    _current_state.omega.z = 0.0;
-    _current_state.q.w = 1.0;
-    _current_state.q.x = 0.0;
-    _current_state.q.y = 0.0;
-    _current_state.q.z = 0.0;
-
-    set_param_float(PARAM_X_EQ_TORQUE, 0.0);
-    set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
-    set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
-
-    // pass the rc_control through the controller
-    _combined_control.x = _rc_control.x;
-    _combined_control.y = _rc_control.y;
-    _combined_control.z = _rc_control.z;
-
-    run_controller();
-
-    // the output from the controller is going to be the static offsets
-    set_param_float(PARAM_X_EQ_TORQUE, _command.x);
-    set_param_float(PARAM_Y_EQ_TORQUE, _command.y);
-    set_param_float(PARAM_Z_EQ_TORQUE, _command.z);
-
-    mavlink_log_warning("Equilibrium torques found and applied.");
-    mavlink_log_warning("Please zero out trims on your transmitter");
-  }
-  else
-  {
-    mavlink_log_warning("Cannot perform equilbirum offset calibration while armed");
-  }
 }

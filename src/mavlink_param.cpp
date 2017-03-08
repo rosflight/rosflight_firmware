@@ -34,8 +34,11 @@
 
 #include <stdint.h>
 
+#include "board.h"
+#include "mavlink_stream.h"
+#include "mavlink_log.h"
 #include "param.h"
-
+#include "mavlink.h"
 #include "mavlink_param.h"
 
 // local variable definitions
@@ -59,8 +62,10 @@ void mavlink_send_param(param_id_t id)
       return;
     }
 
-    mavlink_msg_param_value_send(MAVLINK_COMM_0,
+    mavlink_message_t msg;
+    mavlink_msg_param_value_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                                  get_param_name(id), get_param_float(id), type, PARAMS_COUNT, id);
+    send_message(msg);
   }
 }
 

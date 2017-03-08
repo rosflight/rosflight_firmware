@@ -63,14 +63,14 @@ typedef struct
 static params_t params;
 
 // local function definitions
-static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
+static void init_param_int(param_id_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
   params.values[id] = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
-static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
+static void init_param_float(param_id_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
   params.values[id] = *((int32_t *) &value);
@@ -95,6 +95,10 @@ static uint8_t compute_checksum(void)
 // function definitions
 void init_params(void)
 {
+  for(uint32_t i = 0; i < static_cast<uint32_t>(PARAMS_COUNT); i++)
+  {
+    init_param_int(static_cast<param_id_t>(i), "DEFAULT", 0);
+  }
   memory_init();
   if (!read_params())
   {
@@ -295,9 +299,6 @@ void param_change_callback(param_id_t id)
 {
   switch (id)
   {
-  case PARAM_SYSTEM_ID:
-    mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
-    break;
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
     break;

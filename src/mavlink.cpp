@@ -29,44 +29,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
+
 #include "board.h"
+#include "mavlink_receive.h"
+#include "param.h"
+
 #include "mavlink.h"
-#include "mavlink_util.h"
+#include "mavlink_log.h"
 
-void mavlink_send_named_value_int(const char *const name, int32_t value)
+// global variable definitions
+mavlink_system_t mavlink_system;
+
+// function definitions
+void init_mavlink(void)
 {
-  mavlink_msg_named_value_int_send(MAVLINK_COMM_0, clock_millis(), name, value);
+  serial_init(get_param_int(PARAM_BAUD_RATE));
+
+  mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
+  mavlink_system.compid = 250;
+
+  _offboard_control_time = 0;
+
+  mavlink_log_warning("rebooting", NULL);
 }
 
-void mavlink_send_named_value_float(const char *const name, float value)
+void send_message(const mavlink_message_t &msg)
 {
-  mavlink_msg_named_value_float_send(MAVLINK_COMM_0, clock_millis(), name, value);
+  uint8_t data[MAVLINK_MAX_PACKET_LEN];
+  uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
+  for (int i = 0; i < len; i++)
+  {
+    serial_write(data[i]);
+  }
 }
 
-void mavlink_send_named_command_struct(const char *const name, control_t command_struct)
-{
-  uint8_t control_mode;
-  if (command_struct.x.type == RATE && command_struct.y.type == RATE)
-  {
-    control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-  }
-  else if (command_struct.x.type == ANGLE && command_struct.y.type == ANGLE)
-  {
-    control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-  }
-  else
-  {
-    control_mode = MODE_PASS_THROUGH;
-  }
-  uint8_t ignore = !(command_struct.x.active) ||
-                   !(command_struct.y.active) << 1 ||
-                   !(command_struct.z.active) << 2 ||
-                   !(command_struct.F.active) << 3;
-  mavlink_msg_named_command_struct_send(MAVLINK_COMM_0, name,
-                                        control_mode,
-                                        ignore,
-                                        command_struct.x.value,
-                                        command_struct.y.value,
-                                        command_struct.z.value,
-                                        command_struct.F.value);
-}

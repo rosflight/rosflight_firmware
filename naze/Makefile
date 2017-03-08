@@ -66,56 +66,56 @@ BIN_DIR		= $(ROOT)/build
 
 # board-specific source files
 VPATH		:= $(BOARD_DIR)
-BOARD_SRC =	main.c \
-			board.c \
-			flash.c
+BOARD_C_SRC = flash.c
+BOARD_CXX_SRC =	naze32.cpp \
+                main.cpp
 
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
-ROSFLIGHT_SRC =	rosflight.c \
-				controller.c \
-				estimator.c \
-				mavlink.c \
-				mavlink_param.c \
-				mavlink_receive.c \
-				mavlink_stream.c \
-				mavlink_util.c \
-				mode.c \
-				mux.c \
-				mixer.c \
-				param.c \
-				printf.c \
-				rc.c \
-				sensors.c
+ROSFLIGHT_SRC =	rosflight.cpp \
+                controller.cpp \
+                estimator.cpp \
+                mavlink.cpp \
+                mavlink_param.cpp \
+                mavlink_receive.cpp \
+                mavlink_stream.cpp \
+                mavlink_util.cpp \
+                mode.cpp \
+                mux.cpp \
+                mixer.cpp \
+                param.cpp \
+                printf.cpp \
+                rc.cpp \
+                sensors.cpp
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
 MATH_SRC =	turbotrig.c \
-			turbovec.c
+                        turbovec.c
 
 
 # Hardware Driver Source Files
 VPATH :=	$(VPATH):$(BREEZY_DIR)
 BREEZY_SRC = drv_gpio.c \
-			 drv_i2c.c \
-			 drv_adc.c \
-			 drv_spi.c \
-			 drv_pwm.c \
-			 drv_system.c \
-			 drv_serial.c \
-			 drv_uart.c \
-			 drv_timer.c \
-			 drv_mpu6050.c \
-			 drv_ms4525.c \
-			 drv_mb1242.c \
-			 drv_ms5611.c \
-			 drv_hmc5883l.c \
-			 startup_stm32f10x_md_gcc.S
+                         drv_i2c.c \
+                         drv_adc.c \
+                         drv_spi.c \
+                         drv_pwm.c \
+                         drv_system.c \
+                         drv_serial.c \
+                         drv_uart.c \
+                         drv_timer.c \
+                         drv_mpu6050.c \
+                         drv_ms4525.c \
+                         drv_mb1242.c \
+                         drv_ms5611.c \
+                         drv_hmc5883l.c \
+                         startup_stm32f10x_md_gcc.S
 
 # Search path and source files for the CMSIS sources
 VPATH		:= $(VPATH):$(CMSIS_DIR)/CM3/CoreSupport:$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
 CMSIS_SRC	 = $(notdir $(wildcard $(CMSIS_DIR)/CM3/CoreSupport/*.c \
-				       $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x/*.c))
+                                       $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x/*.c))
 
 # Search path and source files for the ST stdperiph library
 VPATH		:= $(VPATH):$(STDPERIPH_DIR)/src
@@ -124,23 +124,23 @@ STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 
 # Compile a list of C source files
 CSOURCES =  $(CMSIS_SRC) \
-			$(STDPERIPH_SRC) \
-			$(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
-			$(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
-			$(addprefix $(BOARD_DIR)/, $(BOARD_SRC)) \
-			$(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) 
+                        $(STDPERIPH_SRC) \
+                        $(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
+                        $(addprefix $(BOARD_DIR)/, $(BOARD_C_SRC)) \
+                        $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC))
 
 # Compile a list of C++ Source Files
-CXXSOURCES = 
+CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
+                $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
-				$(TURBOTRIG_DIR) \
-				$(ROSFLIGHT_DIR)/include \
-				$(ROSFLIGHT_DIR)/lib \
-				$(STDPERIPH_DIR)/inc \
-				$(CMSIS_DIR)/CM3/CoreSupport \
-				$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
+                                $(TURBOTRIG_DIR) \
+                                $(ROSFLIGHT_DIR)/include \
+                                $(ROSFLIGHT_DIR)/lib \
+                                $(STDPERIPH_DIR)/inc \
+                                $(CMSIS_DIR)/CM3/CoreSupport \
+                                $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
 
 
 #################################
@@ -192,26 +192,26 @@ LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -nostartfiles -lc --specs=rdimon.specs $(
 # Build
 #################################
 $(TARGET_HEX): $(TARGET_ELF)
-	$(CP) -O ihex --set-start 0x8000000 $< $@
+		$(CP) -O ihex --set-start 0x8000000 $< $@
 
 $(TARGET_ELF): $(OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS)
-	$(SIZE) $(TARGET_ELF)
+		$(CXX) -o $@ $^ $(LDFLAGS)
+		$(SIZE) $(TARGET_ELF)
 
 $(OBJECT_DIR)/$(TARGET)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	@echo %% $(notdir $<)
-	@$(CXX) -c -o $@ $(CXXFLAGS) $<
+		@mkdir -p $(dir $@)
+		@echo %% $(notdir $<)
+		@$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 $(OBJECT_DIR)/$(TARGET)/%.o: %.c
-	@mkdir -p $(dir $@)
-	@echo %% $(notdir $<)
-	@$(CC) -c -o $@ $(CFLAGS) $<
+		@mkdir -p $(dir $@)
+		@echo %% $(notdir $<)
+		@$(CC) -c -o $@ $(CFLAGS) $<
 
 $(OBJECT_DIR)/$(TARGET)/%.o: %.s
-	@mkdir -p $(dir $@)
-	@echo %% $(notdir $<)
-	@$(CC) -c -o $@ $(CFLAGS) $<
+		@mkdir -p $(dir $@)
+		@echo %% $(notdir $<)
+		@$(CC) -c -o $@ $(CFLAGS) $<
 
 
 #################################
@@ -220,9 +220,9 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.s
 .PHONY: all flash clean
 
 clean:
-	rm -f $(OBJECTS) $(TARGET_ELF) $(TARGET_HEX) $(BIN_DIR)/output.map
+		rm -f $(OBJECTS) $(TARGET_ELF) $(TARGET_HEX) $(BIN_DIR)/output.map
 
 flash: $(TARGET_HEX)
-	stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
-	stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
+		stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
+		stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
 

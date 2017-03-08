@@ -44,9 +44,34 @@
 
 typedef struct
 {
-  uint8_t channel;
-  bool one_sided;
-} rc_stick_config_t;
+    // Make sure that parameters for switch channels are correct
+    param_id_t channel_parameters[3] = {PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
+                                      PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
+                                      PARAM_RC_ATT_CONTROL_TYPE_CHANNEL};
+
+    // Make sure that channel numbers are specified correctly (between 4 and 8)
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        uint32_t channel_index = static_cast<uint32_t>(get_param_int(channel_parameters[i]));
+        if (channel_index > 8 || channel_index < 4)
+        {
+            mavlink_log_error("incorrect channel specification for");
+//            mavlink_log_error("switch parameter s", get_param_name((param_id_t)channel_parameters[i]));
+            mavlink_log_error("setting to channel 8");
+            set_param_int(channel_parameters[i], 8);
+        }
+    }
+
+    // Set up the switch structs
+    switches[0].channel = 4;
+    switches[0].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
+    switches[1].channel = 5;
+    switches[1].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
+    switches[2].channel = 6;
+    switches[2].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
+    switches[3].channel = 7;
+    switches[3].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
+}
 
 typedef struct
 {
@@ -61,19 +86,37 @@ static rc_switch_config_t switches[RC_SWITCHES_COUNT];
 static float stick_values[RC_STICKS_COUNT];
 static bool switch_values[RC_SWITCHES_COUNT];
 
-void init_sticks(void)
-{
-  sticks[RC_STICK_X].channel = get_param_int(PARAM_RC_X_CHANNEL);
-  sticks[RC_STICK_X].one_sided = false;
+    channels[RC_X].channel_param = PARAM_RC_X_CHANNEL;
+    channels[RC_X].max_angle_param = PARAM_MAX_ROLL_ANGLE;
+    channels[RC_X].max_rate_param = PARAM_MAX_ROLL_RATE;
+    channels[RC_X].bottom_param = PARAMS_COUNT;
+    channels[RC_X].center_param = PARAM_RC_X_CENTER;
+    channels[RC_X].range_param = PARAM_RC_X_RANGE;
+    channels[RC_X].control_channel_ptr = &(_rc_control.x);
 
-  sticks[RC_STICK_Y].channel = get_param_int(PARAM_RC_Y_CHANNEL);
-  sticks[RC_STICK_Y].one_sided = false;
+    channels[RC_Y].channel_param = PARAM_RC_Y_CHANNEL;
+    channels[RC_Y].max_angle_param = PARAM_MAX_PITCH_ANGLE;
+    channels[RC_Y].max_rate_param = PARAM_MAX_PITCH_RATE;
+    channels[RC_Y].bottom_param = PARAMS_COUNT;
+    channels[RC_Y].center_param = PARAM_RC_Y_CENTER;
+    channels[RC_Y].range_param = PARAM_RC_Y_RANGE;
+    channels[RC_Y].control_channel_ptr = &(_rc_control.y);
 
-  sticks[RC_STICK_Z].channel = get_param_int(PARAM_RC_Z_CHANNEL);
-  sticks[RC_STICK_Z].one_sided = false;
+    channels[RC_Z].channel_param = PARAM_RC_Z_CHANNEL;
+    channels[RC_Z].max_angle_param = PARAMS_COUNT;
+    channels[RC_Z].max_rate_param = PARAM_MAX_YAW_RATE;
+    channels[RC_Z].bottom_param = PARAMS_COUNT;
+    channels[RC_Z].center_param = PARAM_RC_Z_CENTER;
+    channels[RC_Z].range_param = PARAM_RC_Z_RANGE;
+    channels[RC_Z].control_channel_ptr = &(_rc_control.z);
 
-  sticks[RC_STICK_F].channel = get_param_int(PARAM_RC_F_CHANNEL);
-  sticks[RC_STICK_F].one_sided = true;
+    channels[RC_F].channel_param = PARAM_RC_F_CHANNEL;
+    channels[RC_F].max_angle_param = PARAMS_COUNT;
+    channels[RC_F].max_rate_param = PARAM_MAX_ROLL_RATE;
+    channels[RC_F].bottom_param = PARAM_RC_F_BOTTOM;
+    channels[RC_F].center_param = PARAMS_COUNT;
+    channels[RC_F].range_param = PARAM_RC_F_RANGE;
+    channels[RC_F].control_channel_ptr = &(_rc_control.F);
 }
 
 static void init_switches()
@@ -160,8 +203,9 @@ bool receive_rc()
       }
     }
 
-    // read and interpret switch values
-    for (rc_switch_t channel = 0; channel < RC_SWITCHES_COUNT; channel++)
+void calibrate_rc()
+{
+    if (_armed_state == ARMED || _armed_state == DISARMED_FAILSAFE || _armed_state == ARMED_FAILSAFE)
     {
       if (switches[channel].mapped)
       {
