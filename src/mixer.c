@@ -76,6 +76,15 @@ static mixer_t Y6_mixing =
   {-1.0f,   1.0f,   -1.0f,    1.0f,   -1.0f,    1.0f,   0.0f, 0.0f}  // Z Mix
 };
 
+static mixer_t X8_mixing =
+{
+  {M, M, M, M, M, M, M, M},
+  { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   1.0f,  1.0f}, // F Mix
+  {-1.0f,   1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,  -1.0f,  1.0f}, // X Mix
+  { 1.0f,   1.0f,   -1.0f,   -1.0f,    1.0f,    1.0f,  -1.0f, -1.0f}, // Y Mix
+  { 1.0f,  -1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,   1.0f, -1.0f}  // Z Mix
+};
+
 static mixer_t mixer_to_use;
 
 static mixer_t *array_of_mixers[NUM_MIXERS] =
@@ -85,6 +94,7 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
   &quadcopter_h_mixing,
   &tricopter_mixing,
   &Y6_mixing,
+  &X8_mixing,
   &fixedwing_mixing
 };
 

@@ -15,6 +15,7 @@ typedef enum
   QUADCOPTER_H,
   TRICOPTER,
   Y6,
+  X8,
   FIXEDWING,
   NUM_MIXERS
 } mixer_type_t;
