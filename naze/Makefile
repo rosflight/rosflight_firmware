@@ -151,6 +151,7 @@ INCLUDE_DIRS =	$(BREEZY_DIR) \
 OBJECTS=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(ASOURCES))))
 OBJECTS+=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(CSOURCES))))
 OBJECTS+=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(CXXSOURCES))))
+LDSCRIPT=$(BREEZY_DIR)/stm32_flash.ld
 
 #$(info $$OBJECTS is [${OBJECTS}])
 
@@ -169,6 +170,8 @@ OPTIMIZE = -Og
 $(info ***** Building with Debug Symbols *****)
 else
 OPTIMIZE = -Os
+COMPILE_FLAGS = -flto
+LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
 
 #################################
@@ -181,14 +184,11 @@ GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GI
 #################################
 # Flags
 #################################
-LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
-MCFLAGS=-mcpu=cortex-m3 -mthumb -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -flto
-OPTIMIZE =
+COMPILE_FLAGS+=-ffunction-sections -fdata-sections -fno-rtti -fno-exceptions
+MCFLAGS=-mcpu=cortex-m3 -mthumb
 DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
-CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
-CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
-CXXFLAGS+=-U__STRICT_ANSI__
-LDSCRIPT=$(BREEZY_DIR)/stm32_flash.ld
+CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
+CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 -U__STRICT_ANSI__
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -nostartfiles -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 #################################
