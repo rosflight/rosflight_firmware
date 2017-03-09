@@ -46,28 +46,8 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
-uint32_t _loop_time_us;
-
-// Declarations of local function definitions
-static void mavlink_send_heartbeat(void);
-static void mavlink_send_status(void);
-static void mavlink_send_attitude(void);
-static void mavlink_send_imu(void);
-static void mavlink_send_rosflight_output_raw(void);
-static void mavlink_send_rc_raw(void);
-static void mavlink_send_diff_pressure(void);
-static void mavlink_send_baro(void);
-static void mavlink_send_sonar(void);
-static void mavlink_send_mag(void);
-static void mavlink_send_low_priority(void);
-
-// typedefs
-typedef struct
+namespace rosflight
 {
-  uint32_t period_us;
-  uint64_t next_time_us;
-  void (*send_function)(void);
-} mavlink_stream_t;
 
 // local variable definitions
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
@@ -88,7 +68,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 };
 
 // local function definitions
-static void mavlink_send_heartbeat(void)
+ void Mavlink::mavlink_send_heartbeat(void)
 {
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
                              get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
@@ -121,7 +101,7 @@ static void mavlink_send_status(void)
   send_message(msg);
 }
 
-static void mavlink_send_attitude(void)
+ void Mavlink::mavlink_send_attitude(void)
 {
   mavlink_message_t msg;
   mavlink_msg_attitude_quaternion_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
@@ -136,7 +116,7 @@ static void mavlink_send_attitude(void)
   send_message(msg);
 }
 
-static void mavlink_send_imu(void)
+void Mavlink::mavlink_send_imu(void)
 {
   mavlink_message_t msg;
   mavlink_msg_small_imu_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
@@ -152,7 +132,7 @@ static void mavlink_send_imu(void)
 
 }
 
-static void mavlink_send_servo_output_raw(void)
+void Mavlink::mavlink_send_servo_output_raw(void)
 {
   mavlink_message_t msg;
   mavlink_msg_servo_output_raw_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
@@ -169,7 +149,7 @@ static void mavlink_send_servo_output_raw(void)
   send_message(msg);
 }
 
-static void mavlink_send_rc_raw(void)
+ void Mavlink::mavlink_send_rc_raw(void)
 {
   mavlink_message_t msg;
   mavlink_msg_rc_channels_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
@@ -187,7 +167,7 @@ static void mavlink_send_rc_raw(void)
   send_message(msg);
 }
 
-static void mavlink_send_diff_pressure(void)
+void Mavlink::mavlink_send_diff_pressure(void)
 {
   if (diff_pressure_present())
   {
@@ -197,7 +177,7 @@ static void mavlink_send_diff_pressure(void)
   }
 }
 
-static void mavlink_send_baro(void)
+void Mavlink::mavlink_send_baro(void)
 {
   if (baro_present())
   {
@@ -207,7 +187,7 @@ static void mavlink_send_baro(void)
   }
 }
 
-static void mavlink_send_sonar(void)
+void Mavlink::mavlink_send_sonar(void)
 {
   if (sonar_present())
   {
@@ -220,7 +200,7 @@ static void mavlink_send_sonar(void)
   }
 }
 
-static void mavlink_send_mag(void)
+void Mavlink::mavlink_send_mag(void)
 {
   if (mag_present())
   {
@@ -233,30 +213,33 @@ static void mavlink_send_mag(void)
   }
 }
 
-static void mavlink_send_low_priority(void)
+void Mavlink::mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
 }
 
 // function definitions
-void mavlink_stream(uint64_t time_us)
+void Mavlink::mavlink_stream(uint64_t time_us)
 {
   for (int i = 0; i < MAVLINK_STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams[i].next_time_us)
     {
-      mavlink_streams[i].next_time_us += mavlink_streams[i].period_us;
-      mavlink_streams[i].send_function();
+      // if we took too long, set the last_time_us to be where it should have been
+      mavlink_streams[i].last_time_us += mavlink_streams[i].period_us;
+      this->*mavlink_streams[i].send_function;
     }
   }
 }
 
-void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate)
+void Mavlink::mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate)
 {
   mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/rate);
 }
 
-void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us)
+void Mavlink::mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us)
 {
   mavlink_streams[stream_id].period_us = period_us;
+}
+
 }

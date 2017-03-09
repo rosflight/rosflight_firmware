@@ -49,7 +49,9 @@ typedef enum
   Y6,
   X8,
   FIXEDWING,
+  MYTWINDREAM_MIXER,
   NUM_MIXERS
+
 } mixer_type_t;
 
 typedef enum

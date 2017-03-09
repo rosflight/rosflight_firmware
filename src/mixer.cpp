@@ -46,7 +46,17 @@ static mixer_t quadcopter_h_mixing =
 
 static mixer_t fixedwing_mixing =
 {
-  {S, S, M, S, NONE, NONE, NONE, NONE},
+  {S, S, M, S, S, M, NONE, NONE},
+
+  { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+  { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+  { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+  { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+};
+
+static mixer_t mytwindream_mixing =
+{
+  {S, S, M, S, S, M, NONE, NONE},
 
   { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
   { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
@@ -91,8 +101,8 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
   &quadcopter_h_mixing,
   &tricopter_mixing,
   &Y6_mixing,
-  &X8_mixing,
-  &fixedwing_mixing
+  &fixedwing_mixing,
+  &mytwindream_mixing
 };
 
 
