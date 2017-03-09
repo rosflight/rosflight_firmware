@@ -36,7 +36,6 @@
 int main(void)
 {
   rosflight::Naze32 board;
-
   rosflight::Params params(&board);
   rosflight::ROSflight firmware(&board, &params);
   firmware.rosflight_init();
