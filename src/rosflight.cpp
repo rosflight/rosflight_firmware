@@ -51,77 +51,86 @@
 
 #include "rosflight.h"
 
-// Initialization Routine
-void rosflight_init(void)
+namespace rosflight {
+
+ROSflight::ROSflight(Board *_board, Params *_params)
 {
-  init_board();
+  board_ = _board;
+  params_ = _params;
+}
 
-  // Read EEPROM to get initial params
-  init_params();
+// Initialization Routine
+void ROSflight::rosflight_init(void)
+{
+  board_->init_board();
 
-  // Initialize MAVlink Communication
-  init_mavlink();
+//  // Read EEPROM to get initial params
+  params_->init_params();
 
-  /***********************/
-  /***  Hardware Setup ***/
-  /***********************/
+//  /***********************/
+//  /***  Hardware Setup ***/
+//  /***********************/
 
-  // Initialize PWM and RC
-  init_PWM();
-  init_rc();
+//  // Initialize PWM and RC
+//  init_PWM();
+//  init_rc();
 
-  // Initialize Sensors
-  init_sensors();
+//  // Initialize MAVlink Communication
+//  init_mavlink();
 
-  /***********************/
-  /***  Software Setup ***/
-  /***********************/
+//  // Initialize Sensors
+//  init_sensors();
 
-  // Initialize Motor Mixing
-  init_mixing();
+//  /***********************/
+//  /***  Software Setup ***/
+//  /***********************/
 
-  // Initizlie Controller
-  init_controller();
+//  // Initialize Motor Mixing
+//  init_mixing();
 
-  // Initialize Estimator
-  init_estimator();
-  init_mode();
+//  // Initizlie Controller
+//  init_controller();
+
+//  // Initialize Estimator
+//  // mat_exp <- greater accuracy, but adds ~90 us
+//  // quadratic_integration <- some additional accuracy, adds ~20 us
+//  // accelerometer correction <- if using angle mode, this is required, adds ~70 us
+//  init_estimator(false, false, true);
+//  init_mode();
 }
 
 
 // Main loop
-void rosflight_run()
+void ROSflight::rosflight_run()
 {
-  /*********************/
-  /***  Control Loop ***/
-  /*********************/
-  if (update_sensors()) // 595 | 591 | 590 us
-  {
-    // If I have new IMU data, then perform control
-    run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
-    run_controller(); // 278 | 271
-    mix_output(); // 16 | 13 us
+//  /*********************/
+//  /***  Control Loop ***/
+//  /*********************/
+//  if (update_sensors()) // 595 | 591 | 590 us
+//  {
+//    // If I have new IMU data, then perform control
+//    run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
+//    run_controller(); // 278 | 271
+//    mix_output(); // 16 | 13 us
+//  }
 
-    // Calculate loop time (from when IMU was captured to now)
-    _loop_time_us = clock_micros() - _current_state.now_us;
-  }
+//  /*********************/
+//  /***  Post-Process ***/
+//  /*********************/
+//  // internal timers figure out what and when to send
+//  mavlink_stream(board_->clock_micros()); // 165 | 27 | 2
 
-  /*********************/
-  /***  Post-Process ***/
-  /*********************/
-  // internal timers figure out what and when to send
-  mavlink_stream(clock_micros()); // 165 | 27 | 2
+//  // receive mavlink messages
+//  mavlink_receive(); // 159 | 1 | 1
 
-  // receive mavlink messages
-  mavlink_receive(); // 159 | 1 | 1
+//  // update the armed_states, an internal timer runs this at a fixed rate
+//  check_mode(board_->clock_micros()); // 108 | 1 | 1
 
-  // update the armed_states, an internal timer runs this at a fixed rate
-  check_mode(); // 108 | 1 | 1
+//  // get RC, an internal timer runs this every 20 ms (50 Hz)
+//  receive_rc(); // 42 | 2 | 1
 
-  // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(); // 42 | 2 | 1
-
-  // update commands (internal logic tells whether or not we should do anything or not)
-  mux_inputs(); // 6 | 1 | 1
+//  // update commands (internal logic tells whether or not we should do anything or not)
+//  mux_inputs(); // 6 | 1 | 1
 }
 
+}

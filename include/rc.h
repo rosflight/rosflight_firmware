@@ -37,7 +37,13 @@
 #include "mux.h"
 #include "param.h"
 
-#include "mux.h"
+namespace rosflight {
+
+typedef struct
+{
+  int16_t channel;
+  int16_t direction;
+} rc_switch_t;
 
 typedef enum
 {
@@ -102,5 +108,7 @@ bool rc_switch_mapped(rc_switch_t channel);
  * @return False if it hasn't been 20ms since the last update, otherwise true.
  */
 bool receive_rc();
+
+}
 
 #endif

@@ -30,16 +30,17 @@
  */
 
 #pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "mavlink.h"
+#include "board.h"
 
 #define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
+
+namespace rosflight
+{
 
 typedef enum
 {
@@ -199,12 +200,48 @@ typedef enum
     PARAMS_COUNT
 } param_id_t;
 
-typedef enum uint8_t
+class Params
 {
-    PARAM_TYPE_INT32,
-    PARAM_TYPE_FLOAT,
-    PARAM_TYPE_INVALID
-} param_type_t;
+
+public:
+
+  typedef enum
+  {
+      PARAM_TYPE_INT32,
+      PARAM_TYPE_FLOAT,
+      PARAM_TYPE_INVALID
+  } param_type_t;
+
+private:
+  typedef struct
+  {
+    uint8_t version;
+    uint16_t size;
+    uint8_t magic_be;                       // magic number, should be 0xBE
+
+    int32_t values[PARAMS_COUNT];
+    char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
+    param_type_t types[PARAMS_COUNT];
+
+    uint8_t magic_ef;                       // magic number, should be 0xEF
+    uint8_t chk;                            // XOR checksum
+  } params_t;
+
+  params_t params;
+
+  Board* board_;
+
+  const uint8_t PARAM_CONF_VERSION = 76;
+
+  void init_param_int(param_id_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
+  void init_param_float(param_id_t id, const char name[PARAMS_NAME_LENGTH], float value);
+  uint8_t compute_checksum(void);
+
+
+public:
+  Params(Board* _board);
+
+
 
 // function declarations
 
@@ -306,6 +343,6 @@ bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value);
  */
 bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
 
-#ifdef __cplusplus
+};
+
 }
-#endif

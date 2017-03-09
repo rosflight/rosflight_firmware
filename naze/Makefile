@@ -28,7 +28,7 @@
 
 TARGET	?= rosflight
 
-DEBUG ?= GDB
+DEBUG ?=
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
@@ -73,20 +73,22 @@ BOARD_CXX_SRC =	naze32.cpp \
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC =	rosflight.cpp \
-                controller.cpp \
-                estimator.cpp \
-                mavlink.cpp \
-                mavlink_param.cpp \
-                mavlink_receive.cpp \
-                mavlink_stream.cpp \
-                mavlink_util.cpp \
-                mode.cpp \
-                mux.cpp \
-                mixer.cpp \
-                param.cpp \
-                printf.cpp \
-                rc.cpp \
-                sensors.cpp
+                param.cpp
+
+
+#                controller.cpp \
+#                estimator.cpp \
+#                mavlink.cpp \
+#                mavlink_param.cpp \
+#                mavlink_receive.cpp \
+#                mavlink_stream.cpp \
+#                mavlink_util.cpp \
+#                mode.cpp \
+#                mux.cpp \
+#                mixer.cpp \
+#                printf.cpp \
+#                rc.cpp \
+#                sensors.cpp
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
@@ -181,7 +183,8 @@ GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GI
 # Flags
 #################################
 MCFLAGS=-mcpu=cortex-m3 -mthumb
-DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER $(GIT_VARS)
+OPTIMIZE =
+DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
 CXXFLAGS+=-U__STRICT_ANSI__
