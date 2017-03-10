@@ -48,10 +48,10 @@ Arming_FSM::Arming_FSM()
 
 void Arming_FSM::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
 {
-   rc_ = _rc;
-   board_ = _board;
-   sensors_ = _sensors;
-   params_ = _params;
+  rc_ = _rc;
+  board_ = _board;
+  sensors_ = _sensors;
+  params_ = _params;
   _armed_state = DISARMED;
 }
 
@@ -96,7 +96,7 @@ bool Arming_FSM::check_failsafe(void)
   {
     for (int8_t i = 0; i<params_->get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if(board_->pwm_read(i) < 900 || board_->pwm_read(i) > 2100)
+      if (board_->pwm_read(i) < 900 || board_->pwm_read(i) > 2100)
       {
         _armed_state = (ARMED) ? ARMED_FAILSAFE : DISARMED_FAILSAFE;
 

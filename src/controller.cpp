@@ -36,7 +36,8 @@
 
 #include "controller.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 
 void Controller::init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id,
@@ -90,7 +91,7 @@ void Controller::run_pid(pid_t *pid, float dt)
     if (pid->current_xdot == NULL)
     {
       pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
-                              + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+                            + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
       pid->prev_x = *pid->current_x;
       d_term = params->get_param_float(pid->kd_param_id) * pid->differentiator;
     }
@@ -102,8 +103,8 @@ void Controller::run_pid(pid_t *pid, float dt)
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ( (pid->ki_param_id < PARAMS_COUNT) && (fsm->_armed_state == ARMED) &&
-       (board->pwm_read(params->get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
+  if ((pid->ki_param_id < PARAMS_COUNT) && (fsm->_armed_state == ARMED) &&
+      (board->pwm_read(params->get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
   {
     if (params->get_param_float(pid->ki_param_id) > 0.0)
     {
@@ -129,8 +130,8 @@ void Controller::run_pid(pid_t *pid, float dt)
 }
 
 
-void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mixer* _mixer,
-                                 Estimator* _estimator, Params* _params)
+void Controller::init_controller(Arming_FSM *_fsm, Board *_board, //Mux* _mux, Mixer* _mixer,
+                                 Estimator *_estimator, Params *_params)
 {
   fsm = _fsm;
   board = _board;

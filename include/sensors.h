@@ -51,9 +51,9 @@ class Sensors
 {
 
 private:
-  Board* board_;
-  Params* params_;
-  Estimator* estimator_;
+  Board *board_;
+  Params *params_;
+  Estimator *estimator_;
   float accel[3];
   float gyro[3];
 
@@ -101,7 +101,7 @@ public:
   vector_t _mag;
 
   // function declarations
-  void init_sensors(Board* _board, Params* _params, Estimator* _estimator);
+  void init_sensors(Board *_board, Params *_params, Estimator *_estimator);
   bool update_sensors();
   void IMU_ISR(void);
 

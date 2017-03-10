@@ -39,7 +39,7 @@
 
 #include <turbovec.h>
 
-rosflight::Sensors* IMU_ptr;
+rosflight::Sensors *IMU_ptr;
 void IMU_ISR_wrapper(void)
 {
   IMU_ptr->IMU_ISR();
@@ -48,7 +48,7 @@ void IMU_ISR_wrapper(void)
 namespace rosflight
 {
 
-Sensors::Sensors(){}
+Sensors::Sensors() {}
 
 void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator)
 {
@@ -72,22 +72,22 @@ bool Sensors::update_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   //  if ((_armed_state & ARMED) == 0)
-  if(0)
+  if (0)
   {
     uint32_t now = board_->clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
     {
       last_time_look_for_disarmed_sensors = now;
-      if(!board_->sonar_present())
+      if (!board_->sonar_present())
       {
-        if(board_->sonar_check())
+        if (board_->sonar_check())
         {
           //          mavlink_log_info("FOUND SONAR", NULL);
         }
       }
-      if(!board_->diff_pressure_present())
+      if (!board_->diff_pressure_present())
       {
-        if(board_->diff_pressure_check())
+        if (board_->diff_pressure_check())
         {
           //          mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
@@ -102,14 +102,14 @@ bool Sensors::update_sensors()
     }
   }
 
-  if(board_->baro_present())
+  if (board_->baro_present())
   {
     board_->baro_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
   }
 
-  if(board_->diff_pressure_present())
+  if (board_->diff_pressure_present())
   {
-    if(board_->baro_present())
+    if (board_->baro_present())
     {
       board_->diff_pressure_set_atm(_baro_pressure);
     }
@@ -203,7 +203,7 @@ bool Sensors::update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages then something is wrong
-    if(board_->clock_millis() > last_imu_update_ms + 1000)
+    if (board_->clock_millis() > last_imu_update_ms + 1000)
     {
       // change board revision and reset IMU
       last_imu_update_ms = board_->clock_millis();
@@ -296,7 +296,8 @@ void Sensors::calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum,
+                                          scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
@@ -352,9 +353,12 @@ void Sensors::calibrate_accel(void)
 void Sensors::correct_imu(void)
 {
   // correct according to known biases and temperature compensation
-  _accel.x -= params_->get_param_float(PARAM_ACC_X_TEMP_COMP)*_imu_temperature + params_->get_param_float(PARAM_ACC_X_BIAS);
-  _accel.y -= params_->get_param_float(PARAM_ACC_Y_TEMP_COMP)*_imu_temperature + params_->get_param_float(PARAM_ACC_Y_BIAS);
-  _accel.z -= params_->get_param_float(PARAM_ACC_Z_TEMP_COMP)*_imu_temperature + params_->get_param_float(PARAM_ACC_Z_BIAS);
+  _accel.x -= params_->get_param_float(PARAM_ACC_X_TEMP_COMP)*_imu_temperature + params_->get_param_float(
+                PARAM_ACC_X_BIAS);
+  _accel.y -= params_->get_param_float(PARAM_ACC_Y_TEMP_COMP)*_imu_temperature + params_->get_param_float(
+                PARAM_ACC_Y_BIAS);
+  _accel.z -= params_->get_param_float(PARAM_ACC_Z_TEMP_COMP)*_imu_temperature + params_->get_param_float(
+                PARAM_ACC_Z_BIAS);
 
   _gyro.x -= params_->get_param_float(PARAM_GYRO_X_BIAS);
   _gyro.y -= params_->get_param_float(PARAM_GYRO_Y_BIAS);
@@ -369,12 +373,15 @@ void Sensors::correct_mag(void)
   float mag_hard_z = _mag.z - params_->get_param_float(PARAM_MAG_Z_BIAS);
 
   // correct according to known soft iron bias - converts to nT
-  _mag.x = params_->get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + params_->get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y +
-      params_->get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
-  _mag.y = params_->get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + params_->get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y +
-      params_->get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
-  _mag.z = params_->get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + params_->get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y +
-      params_->get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
+  _mag.x = params_->get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + params_->get_param_float(
+             PARAM_MAG_A12_COMP)*mag_hard_y +
+           params_->get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+  _mag.y = params_->get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + params_->get_param_float(
+             PARAM_MAG_A22_COMP)*mag_hard_y +
+           params_->get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+  _mag.z = params_->get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + params_->get_param_float(
+             PARAM_MAG_A32_COMP)*mag_hard_y +
+           params_->get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 }

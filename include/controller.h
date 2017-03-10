@@ -41,7 +41,8 @@
 #include "estimator.h"
 #include "arming_fsm.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 class Arming_FSM;
 class CommLink;
@@ -51,8 +52,8 @@ class Controller
 {
 public:
   void run_controller();
-  void init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mixer* _mixer,
-                       Estimator* _estimator, Params* _params);
+  void init_controller(Arming_FSM *_fsm, Board *_board, //Mux* _mux, Mixer* _mixer,
+                       Estimator *_estimator, Params *_params);
 private:
   typedef struct
   {
@@ -81,13 +82,13 @@ private:
   pid_t pid_yaw_rate;
   pid_t pid_altitude;
 
-  Estimator* estimator;
-  Arming_FSM* fsm;
-  Mux* mux;
-  Mixer* mixer;
-  Params* params;
-  Board* board;
-  CommLink* comm_link;
+  Estimator *estimator;
+  Arming_FSM *fsm;
+  Mux *mux;
+  Mixer *mixer;
+  Params *params;
+  Board *board;
+  CommLink *comm_link;
 
   void init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, float *current_x,
                 float *current_xdot, float *commanded_x, float *output, float max, float min);

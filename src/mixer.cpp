@@ -35,7 +35,8 @@
 
 #include "mixer.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 void Mixer::init(Board *_board, Mux *_mux, Params *_params, Arming_FSM *_fsm)
 {
@@ -83,7 +84,8 @@ void Mixer::write_motor(uint8_t index, float value)
     {
       value = 1.0;
     }
-    else if (value < params->get_param_float(PARAM_MOTOR_IDLE_THROTTLE) && params->get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
+    else if (value < params->get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
+             && params->get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
     {
       value = params->get_param_int(PARAM_MOTOR_IDLE_THROTTLE);
     }
@@ -97,7 +99,8 @@ void Mixer::write_motor(uint8_t index, float value)
     value = 0.0;
   }
   _outputs[index] = value;
-  int32_t pwm_us = value * (params->get_param_int(PARAM_MOTOR_MAX_PWM) - params->get_param_int(PARAM_MOTOR_MIN_PWM)) + params->get_param_int(PARAM_MOTOR_MIN_PWM);
+  int32_t pwm_us = value * (params->get_param_int(PARAM_MOTOR_MAX_PWM) - params->get_param_int(
+                              PARAM_MOTOR_MIN_PWM)) + params->get_param_int(PARAM_MOTOR_MIN_PWM);
   board->pwm_write(index, pwm_us);
 }
 

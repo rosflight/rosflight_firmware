@@ -69,9 +69,9 @@ typedef enum
 
 typedef struct
 {
-  control_channel_t* rc;
-  control_channel_t* onboard;
-  control_channel_t* combined;
+  control_channel_t *rc;
+  control_channel_t *onboard;
+  control_channel_t *combined;
 } mux_t;
 
 #endif // COMMON_H

@@ -33,7 +33,8 @@
 
 #include "estimator.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 void Estimator::reset_state()
 {
@@ -93,7 +94,7 @@ void Estimator::reset_adaptive_bias()
   b.z = 0;
 }
 
-void Estimator::init_estimator(Params* _params, Sensors* _sensors)
+void Estimator::init_estimator(Params *_params, Sensors *_sensors)
 {
   params_ = _params;
   sensors_ = _sensors;

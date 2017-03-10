@@ -33,9 +33,10 @@
 
 #include "rc.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
-void RC::init_rc(Arming_FSM* _fsm, Board* _board, Params* _params, Mux* _mux)
+void RC::init_rc(Arming_FSM *_fsm, Board *_board, Params *_params, Mux *_mux)
 {
   fsm = _fsm;
   board = _board;
@@ -99,7 +100,8 @@ void RC::init_switches()
   // Make sure that parameters for switch channels are correct
   uint16_t channel_parameters[3] = {PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
                                     PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
-                                    PARAM_RC_ATT_CONTROL_TYPE_CHANNEL};
+                                    PARAM_RC_ATT_CONTROL_TYPE_CHANNEL
+                                   };
 
   // Make sure that channel numbers are specified correctly (between 4 and 8)
   for (uint8_t i = 0; i < 3; i++)
@@ -145,10 +147,11 @@ bool RC::rc_low(int16_t channel)
 {
   if (channel < 4)
   {
-    rc_channel_t* rc_ptr = &(channels[channel]);
+    rc_channel_t *rc_ptr = &(channels[channel]);
     int16_t pwm = board->pwm_read(params->get_param_int(rc_ptr->channel_param));
-    if(channel != RC_F)
-      return pwm < params->get_param_int(rc_ptr->center_param) - params->get_param_int(rc_ptr->range_param)/2 +params->get_param_int(PARAM_ARM_THRESHOLD);
+    if (channel != RC_F)
+      return pwm < params->get_param_int(rc_ptr->center_param) - params->get_param_int(rc_ptr->range_param)/2
+             +params->get_param_int(PARAM_ARM_THRESHOLD);
     else
       return pwm < params->get_param_int(rc_ptr->bottom_param) + params->get_param_int(PARAM_ARM_THRESHOLD);
   }
@@ -156,14 +159,16 @@ bool RC::rc_low(int16_t channel)
 
 bool RC::rc_high(int16_t channel)
 {
-  if(channel < 4)
+  if (channel < 4)
   {
-    rc_channel_t* rc_ptr = &(channels[channel]);
+    rc_channel_t *rc_ptr = &(channels[channel]);
     int16_t pwm = board->pwm_read(params->get_param_int(rc_ptr->channel_param));
-    if(channel != RC_F)
-      return pwm > params->get_param_int(rc_ptr->center_param) + params->get_param_int(rc_ptr->range_param)/2 - params->get_param_int(PARAM_ARM_THRESHOLD);
+    if (channel != RC_F)
+      return pwm > params->get_param_int(rc_ptr->center_param) + params->get_param_int(rc_ptr->range_param)/2 -
+             params->get_param_int(PARAM_ARM_THRESHOLD);
     else
-      return pwm > params->get_param_int(rc_ptr->bottom_param) + params->get_param_int(rc_ptr->range_param) - params->get_param_int(PARAM_ARM_THRESHOLD);
+      return pwm > params->get_param_int(rc_ptr->bottom_param) + params->get_param_int(rc_ptr->range_param) -
+             params->get_param_int(PARAM_ARM_THRESHOLD);
   }
   return false;
 }
@@ -172,24 +177,24 @@ void RC::interpret_command_values()
 {
   for (uint8_t i = 0; i < 4; i++)
   {
-    rc_channel_t* chan = &(channels[i]);
+    rc_channel_t *chan = &(channels[i]);
     int16_t pwm = board->pwm_read(params->get_param_int(chan->channel_param));
 
     // If this is the throttle channel, we need to go from 0.0 to 1.0
     // Otherwise, we need to go from -1.0 to 1.0
-    if(i == RC_F)
+    if (i == RC_F)
     {
       chan->control_channel_ptr->value = (float)(pwm - params->get_param_int(chan->bottom_param)) /
-          (float)(params->get_param_int(chan->range_param));
+                                         (float)(params->get_param_int(chan->range_param));
     }
     else
     {
       chan->control_channel_ptr->value = 2.0*(float)(pwm - params->get_param_int(chan->center_param))/
-          (float)(params->get_param_int(chan->range_param));
+                                         (float)(params->get_param_int(chan->range_param));
     }
 
     // Now, check the mode and convert the normalized value to the appropriate units
-    switch(chan->control_channel_ptr->type)
+    switch (chan->control_channel_ptr->type)
     {
     case RATE:
       chan->control_channel_ptr->value *= params->get_param_float(chan->max_rate_param);
@@ -214,7 +219,8 @@ void RC::interpret_command_type()
   }
   else
   {
-    mux->_rc_control.x.type = mux->_rc_control.y.type = rc_switch(params->get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? ANGLE : RATE;
+    mux->_rc_control.x.type = mux->_rc_control.y.type = rc_switch(params->get_param_int(
+                                PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? ANGLE : RATE;
     mux->_rc_control.z.type = RATE;
     mux->_rc_control.F.type = rc_switch(params->get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)) ? ALTITUDE : THROTTLE;
   }
@@ -223,7 +229,7 @@ void RC::interpret_command_type()
 bool RC::sticks_deviated(uint32_t now_ms)
 {
   // If we are in the lag time, return true;
-  if(now_ms - time_of_last_stick_deviation < (uint64_t)(params->get_param_int(PARAM_OVERRIDE_LAG_TIME)))
+  if (now_ms - time_of_last_stick_deviation < (uint64_t)(params->get_param_int(PARAM_OVERRIDE_LAG_TIME)))
   {
     return true;
   }
@@ -231,7 +237,8 @@ bool RC::sticks_deviated(uint32_t now_ms)
   {
     for (uint8_t i = 0; i < 3; i++)
     {
-      int16_t deviation = board->pwm_read(params->get_param_int(channels[i].channel_param)) - params->get_param_int(channels[i].center_param);
+      int16_t deviation = board->pwm_read(params->get_param_int(channels[i].channel_param)) - params->get_param_int(
+                            channels[i].center_param);
       if (abs(deviation) > params->get_param_int(PARAM_RC_OVERRIDE_DEVIATION))
       {
         time_of_last_stick_deviation = now_ms;
@@ -310,12 +317,12 @@ void RC::calibrate_rc()
     uint32_t start = board->clock_millis();
     static int32_t max[4] = {0, 0, 0, 0};
     static int32_t min[4] = {10000, 10000, 10000, 10000};
-    while(board->clock_millis() - start < 1e4)
+    while (board->clock_millis() - start < 1e4)
     {
       for (int16_t i = 0; i < 4; i++)
       {
         int32_t read_value = (int32_t)board->pwm_read(i);
-        if(read_value > max[i])
+        if (read_value > max[i])
         {
           max[i] = read_value;
         }
@@ -326,10 +333,14 @@ void RC::calibrate_rc()
       }
       board->clock_delay(10);
     }
-    params->set_param_int(PARAM_RC_X_RANGE, max[params->get_param_int(PARAM_RC_X_CHANNEL)] - min[params->get_param_int(PARAM_RC_X_CHANNEL)]);
-    params->set_param_int(PARAM_RC_Y_RANGE, max[params->get_param_int(PARAM_RC_Y_CHANNEL)] - min[params->get_param_int(PARAM_RC_Y_CHANNEL)]);
-    params->set_param_int(PARAM_RC_Z_RANGE, max[params->get_param_int(PARAM_RC_Z_CHANNEL)] - min[params->get_param_int(PARAM_RC_Z_CHANNEL)]);
-    params->set_param_int(PARAM_RC_F_RANGE, max[params->get_param_int(PARAM_RC_F_CHANNEL)] - min[params->get_param_int(PARAM_RC_F_CHANNEL)]);
+    params->set_param_int(PARAM_RC_X_RANGE,
+                          max[params->get_param_int(PARAM_RC_X_CHANNEL)] - min[params->get_param_int(PARAM_RC_X_CHANNEL)]);
+    params->set_param_int(PARAM_RC_Y_RANGE,
+                          max[params->get_param_int(PARAM_RC_Y_CHANNEL)] - min[params->get_param_int(PARAM_RC_Y_CHANNEL)]);
+    params->set_param_int(PARAM_RC_Z_RANGE,
+                          max[params->get_param_int(PARAM_RC_Z_CHANNEL)] - min[params->get_param_int(PARAM_RC_Z_CHANNEL)]);
+    params->set_param_int(PARAM_RC_F_RANGE,
+                          max[params->get_param_int(PARAM_RC_F_CHANNEL)] - min[params->get_param_int(PARAM_RC_F_CHANNEL)]);
 
     // Calibrate Trimmed Centers
     //    mavlink_log_warning("Calibrating RC, leave sticks at center", NULL);
@@ -339,7 +350,7 @@ void RC::calibrate_rc()
     static int32_t sum[4] = {0, 0, 0, 0};
     static int32_t count[4] = {0, 0, 0, 0};
 
-    while(board->clock_millis() - start < 5e3)
+    while (board->clock_millis() - start < 5e3)
     {
       for (int16_t i = 0; i < 4; i++)
       {
@@ -350,10 +361,14 @@ void RC::calibrate_rc()
       board->clock_delay(20); // RC is updated at 50 Hz
     }
 
-    params->set_param_int(PARAM_RC_X_CENTER, sum[params->get_param_int(PARAM_RC_X_CHANNEL)]/count[params->get_param_int(PARAM_RC_X_CHANNEL)]);
-    params->set_param_int(PARAM_RC_Y_CENTER, sum[params->get_param_int(PARAM_RC_Y_CHANNEL)]/count[params->get_param_int(PARAM_RC_Y_CHANNEL)]);
-    params->set_param_int(PARAM_RC_Z_CENTER, sum[params->get_param_int(PARAM_RC_Z_CHANNEL)]/count[params->get_param_int(PARAM_RC_Z_CHANNEL)]);
-    params->set_param_int(PARAM_RC_F_BOTTOM, sum[params->get_param_int(PARAM_RC_F_CHANNEL)]/count[params->get_param_int(PARAM_RC_F_CHANNEL)]);
+    params->set_param_int(PARAM_RC_X_CENTER,
+                          sum[params->get_param_int(PARAM_RC_X_CHANNEL)]/count[params->get_param_int(PARAM_RC_X_CHANNEL)]);
+    params->set_param_int(PARAM_RC_Y_CENTER,
+                          sum[params->get_param_int(PARAM_RC_Y_CHANNEL)]/count[params->get_param_int(PARAM_RC_Y_CHANNEL)]);
+    params->set_param_int(PARAM_RC_Z_CENTER,
+                          sum[params->get_param_int(PARAM_RC_Z_CHANNEL)]/count[params->get_param_int(PARAM_RC_Z_CHANNEL)]);
+    params->set_param_int(PARAM_RC_F_BOTTOM,
+                          sum[params->get_param_int(PARAM_RC_F_CHANNEL)]/count[params->get_param_int(PARAM_RC_F_CHANNEL)]);
     params->write_params();
     //    mavlink_log_warning("Completed RC calibration", NULL);
   }

@@ -41,7 +41,8 @@
 #include "param.h"
 #include "arming_fsm.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 class Mux;
 class Arming_FSM;
@@ -95,17 +96,17 @@ public:
 
   float _outputs[8];
 
-  void init(Board* _board, Mux* _mux, Params* _params, Arming_FSM* _fsm);
+  void init(Board *_board, Mux *_mux, Params *_params, Arming_FSM *_fsm);
   void init_PWM();
   void init_mixing();
   void mix_output();
 
 private:
 
-  Board* board;
-  Mux* mux;
-  Params* params;
-  Arming_FSM* fsm;
+  Board *board;
+  Mux *mux;
+  Params *params;
+  Arming_FSM *fsm;
 
   float prescaled_outputs[8];
 
@@ -182,7 +183,7 @@ private:
     {-1.0f,   1.0f,    1.0f,    1.0f,   -1.0f,   -1.0f,   0.0f, 0.0f}  // Z Mix
   };
 
-  const mixer_t* mixer_to_use;
+  const mixer_t *mixer_to_use;
 
   const mixer_t *array_of_mixers[NUM_MIXERS] =
   {

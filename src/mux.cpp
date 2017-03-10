@@ -35,9 +35,10 @@
 #include "mux.h"
 
 
-namespace rosflight {
+namespace rosflight
+{
 
-void Mux::init(Arming_FSM* _fsm, Params* _params, Board* _board)
+void Mux::init(Arming_FSM *_fsm, Params *_params, Board *_board)
 {
   fsm = _fsm;
   params = _params;
@@ -47,20 +48,8 @@ void Mux::init(Arming_FSM* _fsm, Params* _params, Board* _board)
 
 void Mux::do_muxing(uint8_t mux_channel)
 {
-  // get initial, unscaled RC values
-  _rc_control.x.value = rc_stick(RC_STICK_X);
-  _rc_control.y.value = rc_stick(RC_STICK_Y);
-  _rc_control.z.value = rc_stick(RC_STICK_Z);
-  _rc_control.F.value = rc_stick(RC_STICK_F);
-
-  // determine control mode for each channel and scale command values accordingly
-  if (get_param_int(PARAM_FIXED_WING)) //Fixed wing aircraft have no command scaling or PID control
-  {
-    _rc_control.x.type = PASSTHROUGH;
-    _rc_control.y.type = PASSTHROUGH;
-    _rc_control.z.type = PASSTHROUGH;
-  }
-  else
+  mux_t *mux_ptr = &(muxes[mux_channel]);
+  if (mux_ptr->rc->active)
   {
     // roll and pitch
     control_type_t roll_pitch_type;

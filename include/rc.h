@@ -43,7 +43,8 @@
 #include "arming_fsm.h"
 #include "common.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 class Arming_FSM;
 class Params;
@@ -70,7 +71,7 @@ public:
 
 
   bool _calibrate_rc;
-  void init_rc(Arming_FSM* _fsm, Board* _board, Params* _params, Mux* _mux);
+  void init_rc(Arming_FSM *_fsm, Board *_board, Params *_params, Mux *_mux);
   bool rc_switch(int16_t channel);
   bool receive_rc();
   bool rc_low(int16_t channel);
@@ -92,13 +93,13 @@ private:
     uint16_t center_param;
     uint16_t bottom_param;
     uint16_t range_param;
-    control_channel_t* control_channel_ptr;
+    control_channel_t *control_channel_ptr;
   } rc_channel_t;
 
-  Arming_FSM* fsm;
-  Board* board;
-  Params* params;
-  Mux* mux;
+  Arming_FSM *fsm;
+  Board *board;
+  Params *params;
+  Mux *mux;
 
   uint32_t time_of_last_stick_deviation = 0;
   uint32_t last_rc_receive_time = 0;

@@ -40,12 +40,14 @@
 #include "sensors.h"
 #include "param.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 class Params;
 class Sensors;
 
-class CommLink {
+class CommLink
+{
 public:
 
   enum
@@ -66,7 +68,7 @@ public:
     STREAM_COUNT
   };
 
-  virtual void init(Board* _board, Params* _params, Sensors* _sensors) = 0;
+  virtual void init(Board *_board, Params *_params, Sensors *_sensors) = 0;
   virtual void receive() = 0;
   virtual void stream() = 0;
   virtual void update_param(uint16_t param_id) = 0;

@@ -73,12 +73,12 @@ public:
   bool _new_command;
 
   bool mux_inputs();
-  void init(Arming_FSM* _fsm, Params* _params, Board* _board);
+  void init(Arming_FSM *_fsm, Params *_params, Board *_board);
 
 private:
-  Board* board;
-  Arming_FSM* fsm;
-  Params* params;
+  Board *board;
+  Arming_FSM *fsm;
+  Params *params;
 
   void do_muxing(uint8_t mux_channel);
   void do_min_throttle_muxing();

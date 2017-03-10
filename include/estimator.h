@@ -43,7 +43,8 @@
 #include "param.h"
 #include "sensors.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 class Params;
 class Sensors;
@@ -67,8 +68,8 @@ public:
   void run_estimator();
 
 private:
-  Params* params_;
-  Sensors* sensors_;
+  Params *params_;
+  Sensors *sensors_;
 
   vector_t w1;
   vector_t w2;

@@ -33,7 +33,8 @@
 
 #include "rosflight.h"
 
-namespace rosflight {
+namespace rosflight
+{
 
 ROSflight::ROSflight(Board *_board, CommLink *_commlink)
 {
