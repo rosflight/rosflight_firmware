@@ -28,7 +28,7 @@
 
 TARGET	?= rosflight
 
-DEBUG ?=
+DEBUG ?= GDB
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
@@ -79,7 +79,8 @@ ROSFLIGHT_SRC =	rosflight.cpp \
                 arming_fsm.cpp \
                 estimator.cpp \
                 controller.cpp \
-                mux.cpp
+                mux.cpp \
+                rc.cpp
 
 VPATH		:= $(VPATH):$(MAVLINK_DIR)
 MAVLINK_SRC = mavlink.cpp \

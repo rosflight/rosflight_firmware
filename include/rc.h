@@ -36,79 +36,69 @@
 
 #include "mux.h"
 #include "param.h"
+#include "board.h"
+#include "arming_fsm.h"
 
 namespace rosflight {
 
-typedef struct
+class RC
 {
-  int16_t channel;
-  int16_t direction;
-} rc_switch_t;
 
-typedef enum
-{
+public:
+  typedef enum
+  {
+    PARALLEL_PWM,
+    CPPM,
+  } rc_type_t;
+
+
+  bool _calibrate_rc;
+  void init_rc(Arming_FSM* _fsm, Board* _board, Params* _params, Mux* _mux);
+  bool rc_switch(int16_t channel);
+  bool receive_rc();
+  bool rc_low(int16_t channel);
+  bool rc_high(int16_t channel);
+
+
+private:
+  typedef struct
+  {
+    int16_t channel;
+    int16_t direction;
+  } rc_switch_t;
+
+  typedef struct
+  {
     uint16_t channel_param;
     uint16_t max_angle_param;
     uint16_t max_rate_param;
     uint16_t center_param;
     uint16_t bottom_param;
     uint16_t range_param;
-    control_channel_t* control_channel_ptr;
-} rc_channel_t;
+    Mux::control_channel_t* control_channel_ptr;
+  } rc_channel_t;
 
-typedef enum
-{
-  RC_SWITCH_ARM,
-  RC_SWITCH_ATT_OVERRIDE,
-  RC_SWITCH_THROTTLE_OVERRIDE,
-  RC_SWITCH_ATT_TYPE,
-  RC_SWITCHES_COUNT
-} rc_switch_t;
+  typedef enum
+  {
+    RC_X,
+    RC_Y,
+    RC_Z,
+    RC_F
+  } rc_channel_enum_t;
 
-typedef enum
-{
-  PARALLEL_PWM,
-  CPPM,
-} rc_type_t;
+  Arming_FSM* fsm;
+  Board* board;
+  Params* params;
+  Mux* mux;
 
-/**
- * @brief Initialize the RC sticks and switches.
- *
- * Assign channels and other values to the RC sticks and switches based on input parameters.
- */
-void init_rc(void);
+  rc_channel_t channels[4];
+  rc_switch_t switches[4];
 
-/**
- * @brief Get current stick value for the given channel.
- * @param  channel The stick channel whose value you wish to retrieve.
- * @return         Normalized float of the current stick value of the channel.
- */
-float rc_stick(rc_stick_t channel);
-
-/**
- * @brief Get the current switch value for the given channel.
- * @param  channel The switch channel whose value you wish to retrieve.
- * @return         True if the switch is mapped and in its on state, otherwise false.
- */
-bool rc_switch(rc_switch_t channel);
-
-/**
- * @brief Check if the given switch is mapped to an RC channel
- * @param  channel The switch type to check.
- * @return         True if this switch type was mapped to a valid RC channel, otherwise false.
- */
-bool rc_switch_mapped(rc_switch_t channel);
-
-/**
- * @brief Receive new RC data and update local data members.
- *
- *  Maps channeled inputs from the RC controller to their proper data member values within this 
- *  class every 20ms. Upon update, signals to the mux that a new command is waiting.
- * 
- * @return False if it hasn't been 20ms since the last update, otherwise true.
- */
-bool receive_rc();
-
+  void calibrate_rc();
+  void init_switches();
+  void interpret_command_values();
+  void interpret_command_type();
+  bool sticks_deviated(uint32_t now_ms);
+};
 }
-
 #endif
