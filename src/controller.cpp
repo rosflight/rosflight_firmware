@@ -1,30 +1,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <turbotrig/turbotrig.h>
-
-#include "param.h"
-#include "mixer.h"
-#include "mux.h"
-#include "estimator.h"
-#include "sensors.h"
-#include "mode.h"
-
 #include "controller.h"
 
-#include "mavlink_log.h"
-#include "mavlink_util.h"
-
-pid_t pid_roll;
-pid_t pid_roll_rate;
-pid_t pid_pitch;
-pid_t pid_pitch_rate;
-pid_t pid_yaw_rate;
-pid_t pid_altitude;
+namespace rosflight {
 
 
-void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
-              float *current_xdot, float *commanded_x, float *output, float max, float min)
+void Controller::init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id,
+                          uint16_t kd_param_id, float *current_x, float *current_xdot,
+                          float *commanded_x, float *output, float max, float min)
 {
   pid->kp_param_id = kp_param_id;
   pid->ki_param_id = ki_param_id;
@@ -36,16 +20,15 @@ void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
   pid->max = max;
   pid->min = min;
   pid->integrator = 0.0;
-  pid->prev_time = clock_micros()*1e-6;
   pid->differentiator = 0.0;
   pid->prev_x = 0.0;
-  pid->tau = get_param_float(PARAM_PID_TAU);
+  pid->tau = params->get_param_float(PARAM_PID_TAU);
 }
 
 
-static void run_pid(pid_t *pid, float dt)
+void Controller::run_pid(pid_t *pid, float dt)
 {
-  if (dt > 0.010 || !(_armed_state & ARMED))
+  if (dt > 0.010 || fsm->_armed_state == DISARMED)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
@@ -61,7 +44,7 @@ static void run_pid(pid_t *pid, float dt)
   float error = (*pid->commanded_x) - (*pid->current_x);
 
   // Initialize Terms
-  float p_term = error * get_param_float(pid->kp_param_id);
+  float p_term = error * params->get_param_float(pid->kp_param_id);
   float i_term = 0.0;
   float d_term = 0.0;
 
@@ -76,23 +59,25 @@ static void run_pid(pid_t *pid, float dt)
       pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
                               + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
       pid->prev_x = *pid->current_x;
-      d_term = get_param_float(pid->kd_param_id) * pid->differentiator;
+      d_term = params->get_param_float(pid->kd_param_id) * pid->differentiator;
     }
     else
     {
-      d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
+      d_term = params->get_param_float(pid->kd_param_id) * (*pid->current_xdot);
     }
   }
 
   // If there is an integrator, we are armed, and throttle is high
-  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (_combined_control.F.value > 0.1))
+  /// TODO: better way to figure out if throttle is high
+  if ( (pid->ki_param_id < PARAMS_COUNT) && (fsm->_armed_state == ARMED) &&
+       (board->pwm_read(params->get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
   {
-    if (get_param_float(pid->ki_param_id) > 0.0)
+    if (params->get_param_float(pid->ki_param_id) > 0.0)
     {
       // integrate
       pid->integrator += error*dt;
       // calculate I term (be sure to de-reference pointer to gain)
-      i_term = get_param_float(pid->ki_param_id) * pid->integrator;
+      i_term = params->get_param_float(pid->ki_param_id) * pid->integrator;
     }
   }
 
@@ -102,7 +87,7 @@ static void run_pid(pid_t *pid, float dt)
   // Integrator anti-windup
   float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
   if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
-    pid->integrator = (u_sat - p_term + d_term)/get_param_float(pid->ki_param_id);
+    pid->integrator = (u_sat - p_term + d_term)/params->get_param_float(pid->ki_param_id);
 
   // Set output
   (*pid->output) = u_sat;
@@ -111,106 +96,124 @@ static void run_pid(pid_t *pid, float dt)
 }
 
 
-void init_controller()
+void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mixer* _mixer,
+                                 Estimator* _estimator, Params* _params)
 {
+  fsm = _fsm;
+  board = _board;
+  estimator = _estimator;
+  params = _params;
+
+  prev_time = 0.0f;
+
   init_pid(&pid_roll,
            PARAM_PID_ROLL_ANGLE_P,
            PARAM_PID_ROLL_ANGLE_I,
            PARAM_PID_ROLL_ANGLE_D,
-           &_current_state.roll,
-           &_current_state.omega.x,
-           &_combined_control.x.value,
-           &_command.x,
-           get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*get_param_float(PARAM_MAX_COMMAND));
+           &estimator->roll,
+           &estimator->omega.x,
+           NULL, //&_combined_control.x.value,
+           NULL, //&_command.x,
+           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_pitch,
            PARAM_PID_PITCH_ANGLE_P,
            PARAM_PID_PITCH_ANGLE_I,
            PARAM_PID_PITCH_ANGLE_D,
-           &_current_state.pitch,
-           &_current_state.omega.y,
-           &_combined_control.y.value,
-           &_command.y,
-           get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*get_param_float(PARAM_MAX_COMMAND));
+           &estimator->pitch,
+           &estimator->omega.y,
+           NULL, //&_combined_control.y.value,
+           NULL, //&_command.y,
+           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_roll_rate,
            PARAM_PID_ROLL_RATE_P,
            PARAM_PID_ROLL_RATE_I,
            PARAM_PID_ROLL_RATE_D,
-           &_current_state.omega.x,
+           &estimator->omega.x,
            NULL,
-           &_combined_control.x.value,
-           &_command.x,
-           get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*get_param_float(PARAM_MAX_COMMAND));
+           NULL, //&_combined_control.x.value,
+           NULL, //&_command.x,
+           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_pitch_rate,
            PARAM_PID_PITCH_RATE_P,
            PARAM_PID_PITCH_RATE_I,
            PARAM_PID_PITCH_RATE_D,
-           &_current_state.omega.y,
+           &estimator->omega.y,
            NULL,
-           &_combined_control.y.value,
-           &_command.y,
-           get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*get_param_float(PARAM_MAX_COMMAND));
+           NULL, //&_combined_control.y.value,
+           NULL, //&_command.y,
+           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
   init_pid(&pid_yaw_rate,
            PARAM_PID_YAW_RATE_P,
            PARAM_PID_YAW_RATE_I,
            PARAM_PID_YAW_RATE_D,
-           &_current_state.omega.z,
+           &estimator->omega.z,
            NULL,
-           &_combined_control.z.value,
-           &_command.z,
-           get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*get_param_float(PARAM_MAX_COMMAND));
+           NULL, //&_combined_control.z.value,
+           NULL, //&_command.z,
+           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
+           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
+
+  init_pid(&pid_altitude,
+           PARAM_PID_ALT_P,
+           PARAM_PID_ALT_I,
+           PARAM_PID_ALT_D,
+           &estimator->altitude,
+           NULL,
+           NULL, //&_combined_control.F.value,
+           NULL, //&_command.F,
+           params->get_param_int(PARAM_MAX_COMMAND),
+           0.0f);
 }
 
 
-void run_controller()
+void Controller::run_controller()
 {
-  // Time calculation
-  static float prev_time = 0.0f;
+//  // Time calculation
+//  if (prev_time < 0.0000001)
+//  {
+//    prev_time = _current_state.now_us * 1e-6;
+//    return;
+//  }
 
-  if (prev_time < 0.0000001)
-  {
-    prev_time = _current_state.now_us * 1e-6;
-    return;
-  }
+//  float now = _current_state.now_us * 1e-6;
+//  float dt = now - prev_time;
+//  prev_time = now;
 
-  float now = _current_state.now_us * 1e-6;
-  float dt = now - prev_time;
-  prev_time = now;
+//  // ROLL
+//  if (_combined_control.x.type == RATE)
+//    run_pid(&pid_roll_rate, dt);
+//  else if (_combined_control.x.type == ANGLE)
+//    run_pid(&pid_roll, dt);
+//  else // PASSTHROUGH
+//    _command.x = _combined_control.x.value;
 
-  // ROLL
-  if (_combined_control.x.type == RATE)
-    run_pid(&pid_roll_rate, dt);
-  else if (_combined_control.x.type == ANGLE)
-    run_pid(&pid_roll, dt);
-  else // PASSTHROUGH
-    _command.x = _combined_control.x.value;
+//  // PITCH
+//  if (_combined_control.y.type == RATE)
+//    run_pid(&pid_pitch_rate, dt);
+//  else if (_combined_control.y.type == ANGLE)
+//    run_pid(&pid_pitch, dt);
+//  else // PASSTHROUGH
+//    _command.y = _combined_control.y.value;
 
-  // PITCH
-  if (_combined_control.y.type == RATE)
-    run_pid(&pid_pitch_rate, dt);
-  else if (_combined_control.y.type == ANGLE)
-    run_pid(&pid_pitch, dt);
-  else // PASSTHROUGH
-    _command.y = _combined_control.y.value;
+//  // YAW
+//  if (_combined_control.z.type == RATE)
+//    run_pid(&pid_yaw_rate, dt);
+//  else// PASSTHROUGH
+//    _command.z = _combined_control.z.value;
 
-  // YAW
-  if (_combined_control.z.type == RATE)
-    run_pid(&pid_yaw_rate, dt);
-  else// PASSTHROUGH
-    _command.z = _combined_control.z.value;
+//  // THROTTLE
+////  if(_combined_control.F.type == ALTITUDE)
+////    run_pid(&pid_altitude);
+////  else // PASSTHROUGH
+//  _command.F = _combined_control.F.value;
+}
 
-
-  // Add feedforward torques
-  _command.x += get_param_float(PARAM_X_EQ_TORQUE);
-  _command.y += get_param_float(PARAM_Y_EQ_TORQUE);
-  _command.z += get_param_float(PARAM_Z_EQ_TORQUE);
-  _command.F = _combined_control.F.value;
 }
