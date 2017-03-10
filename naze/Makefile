@@ -78,7 +78,8 @@ ROSFLIGHT_SRC =	rosflight.cpp \
                 sensors.cpp \
                 arming_fsm.cpp \
                 estimator.cpp \
-                controller.cpp
+                controller.cpp \
+                mux.cpp
 
 VPATH		:= $(VPATH):$(MAVLINK_DIR)
 MAVLINK_SRC = mavlink.cpp \

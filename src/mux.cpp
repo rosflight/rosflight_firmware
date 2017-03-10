@@ -30,76 +30,20 @@
  */
 
 #include <stdbool.h>
-#include <stdlib.h>
-
-#include "mavlink_util.h"
-
-#include "board.h"
-#include "rc.h"
 #include "mux.h"
-#include "param.h"
-#include "mode.h"
-#include "mavlink_receive.h"
-
-control_t _rc_control;
-control_t _offboard_control;
-control_t _combined_control;
-bool _new_command;
-
-static bool rc_override;
-static bool offboard_control_is_active;
 
 
-control_t _failsafe_control =
+namespace rosflight {
+
+void Mux::init(Arming_FSM* _fsm, Params* _params, Board* _board)
 {
-  {true, ANGLE, 0.0},
-  {true, ANGLE, 0.0},
-  {true, RATE, 0.0},
-  {true, THROTTLE, 0.0}
-};
+  fsm = _fsm;
+  params = _params;
+  board = _board;
+  _new_command = false;
+}
 
-typedef enum
-{
-  ATT_MODE_RATE,
-  ATT_MODE_ANGLE
-} att_mode_t;
-
-typedef enum
-{
-  MUX_X,
-  MUX_Y,
-  MUX_Z,
-  MUX_F,
-} mux_channel_t;
-
-typedef struct
-{
-  rc_stick_t rc_channel;
-  uint32_t last_override_time;
-} rc_stick_override_t;
-
-rc_stick_override_t rc_stick_override[] = {
-  { RC_STICK_X, 0 },
-  { RC_STICK_Y, 0 },
-  { RC_STICK_Z, 0 }
-};
-
-typedef struct
-{
-  control_channel_t* rc;
-  control_channel_t* onboard;
-  control_channel_t* combined;
-} mux_t;
-
-mux_t muxes[4] =
-{
-  {&_rc_control.x, &_offboard_control.x, &_combined_control.x},
-  {&_rc_control.y, &_offboard_control.y, &_combined_control.y},
-  {&_rc_control.z, &_offboard_control.z, &_combined_control.z},
-  {&_rc_control.F, &_offboard_control.F, &_combined_control.F}
-};
-
-static void interpret_rc(void)
+void Mux::do_muxing(uint8_t mux_channel)
 {
   // get initial, unscaled RC values
   _rc_control.x.value = rc_stick(RC_STICK_X);
@@ -195,7 +139,7 @@ static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
   return rc_override;
 }
 
-static bool do_throttle_muxing(void)
+void Mux::do_min_throttle_muxing()
 {
   bool rc_override;
 
@@ -228,8 +172,7 @@ static bool do_throttle_muxing(void)
   return rc_override;
 }
 
-
-bool rc_override_active()
+bool Mux::mux_inputs()
 {
   return rc_override;
 }
@@ -244,7 +187,7 @@ bool offboard_control_active()
   return false;
 }
 
-  if (_armed_state == DISARMED_FAILSAFE || _armed_state == ARMED_FAILSAFE)
+  if (fsm->_armed_state == DISARMED_FAILSAFE || fsm->_armed_state == ARMED_FAILSAFE)
   {
     _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;
@@ -265,33 +208,31 @@ bool offboard_control_active()
     // Check for offboard control timeout (100 ms)
     if (clock_micros() > _offboard_control_time + 100000)
     {
-      // If it has been longer than 100 ms, then disable the offboard control
-      _offboard_control.F.active = false;
-      _offboard_control.x.active = false;
-      _offboard_control.y.active = false;
-      _offboard_control.z.active = false;
-    }
-
-    // Perform muxing
-    bool rc_override = false;
-    for (mux_channel_t i = MUX_X; i <= MUX_Z; i++)
-    {
-      rc_override |= do_roll_pitch_yaw_muxing(i);
+      if (i == MUX_F && params->get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
+      {
+        do_min_throttle_muxing();
+      }
+      else
+      {
+        do_muxing(i);
+      }
     }
     rc_override |= do_throttle_muxing();
 
     // Light to indicate override
     if (rc_override)
     {
-      led0_on();
+      board->led0_on();
     }
     else
     {
-      led0_off();
+      board->led0_off();
     }
   }
 
   // reset the new command flag
   _new_command = false;
   return true;
+}
+
 }
