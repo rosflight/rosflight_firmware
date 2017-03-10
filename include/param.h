@@ -34,10 +34,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "mavlink.h"
 #include "board.h"
 
-#define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
+#define PARAMS_NAME_LENGTH 16
 
 namespace rosflight
 {
@@ -200,17 +199,17 @@ typedef enum
     PARAMS_COUNT
 } param_id_t;
 
+typedef enum
+{
+    PARAM_TYPE_INT32,
+    PARAM_TYPE_FLOAT,
+    PARAM_TYPE_INVALID
+} param_type_t;
+
 class Params
 {
 
 public:
-
-  typedef enum
-  {
-      PARAM_TYPE_INT32,
-      PARAM_TYPE_FLOAT,
-      PARAM_TYPE_INVALID
-  } param_type_t;
 
 private:
   typedef struct

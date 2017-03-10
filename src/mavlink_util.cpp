@@ -1,54 +1,24 @@
-/* 
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * 
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- * 
- * * Neither the name of the copyright holder nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+#include "controller.h"
 
-#include "board.h"
 #include "mavlink.h"
-#include "mavlink_util.h"
-#include "param.h"
 
-void mavlink_send_named_value_int(const char *const name, int32_t value)
+namespace rosflight{
+
+void Mavlink::mavlink_send_named_value_int(const char *const name, int32_t value)
 {
   mavlink_message_t msg;
-  mavlink_msg_named_value_int_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg, clock_millis(), name, value);
+  mavlink_msg_named_value_int_pack(sysid, compid, &msg, board_->clock_millis(), name, value);
   send_message(msg);
 }
 
-void mavlink_send_named_value_float(const char *const name, float value)
+void Mavlink::mavlink_send_named_value_float(const char *const name, float value)
 {
   mavlink_message_t msg;
-  mavlink_msg_named_value_float_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg, clock_millis(), name, value);
+  mavlink_msg_named_value_float_pack(sysid, compid, &msg, board_->clock_millis(), name, value);
   send_message(msg);
 }
 
-void mavlink_send_named_command_struct(const char *const name, control_t command_struct)
+void Mavlink::mavlink_send_named_command_struct(const char *const name, control_t command_struct)
 {
   uint8_t control_mode;
   if (command_struct.x.type == RATE && command_struct.y.type == RATE)
@@ -68,7 +38,7 @@ void mavlink_send_named_command_struct(const char *const name, control_t command
                    !(command_struct.z.active) << 2 ||
                    !(command_struct.F.active) << 3;
   mavlink_message_t msg;
-  mavlink_msg_named_command_struct_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg, name,
+  mavlink_msg_named_command_struct_pack(sysid, compid, &msg, name,
                                         control_mode,
                                         ignore,
                                         command_struct.x.value,
@@ -76,4 +46,6 @@ void mavlink_send_named_command_struct(const char *const name, control_t command
                                         command_struct.z.value,
                                         command_struct.F.value);
   send_message(msg);
+}
+
 }

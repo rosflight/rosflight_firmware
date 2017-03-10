@@ -31,13 +31,12 @@
 
 #pragma once
 
-extern "C"
-{
 #include <mavlink/v1.0/rosflight/mavlink.h>
-}
 
 #include "board.h"
 #include "param.h"
+
+#include "controller.h"
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
@@ -64,8 +63,14 @@ typedef enum
 class Mavlink
 {
 private:
+  uint32_t sysid;
+  uint32_t compid;
   uint64_t _offboard_control_time;
   Params* params_;
+  Board* board_;
+  uint8_t send_params_index;
+  mavlink_message_t in_buf;
+  mavlink_status_t status;
 
   typedef  void (Mavlink::*MavlinkStreamFcn)(void);
 
@@ -99,7 +104,7 @@ private:
   void mavlink_send_low_priority(void);
 
   mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] = {
-  //  period_us    last_time_us   send_function
+    //  period_us    last_time_us   send_function
     { 1000000,     0,             &rosflight::Mavlink::mavlink_send_heartbeat },
     { 200000,      0,             &rosflight::Mavlink::mavlink_send_attitude },
     { 1000,        0,             &rosflight::Mavlink::mavlink_send_imu },
@@ -130,6 +135,12 @@ public:
   void mavlink_stream(uint64_t time_us);
   void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate);
   void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us);
+
+  // Debugging Utils
+  void mavlink_send_named_value_int(const char *const name, int32_t value);
+  void mavlink_send_named_value_float(const char *const name, float value);
+  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
+
 };
 
 }

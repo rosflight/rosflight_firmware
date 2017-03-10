@@ -52,6 +52,7 @@ A2L=arm-none-eabi-addr2line
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
 ROSFLIGHT_DIR = ..
+MAVLINK_DIR = ..
 TURBOTRIG_DIR = ../lib/turbotrig
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
@@ -74,6 +75,14 @@ BOARD_CXX_SRC =	naze32.cpp \
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC =	rosflight.cpp \
                 param.cpp
+
+VPATH		:= $(VPATH):$(MAVLINK_DIR)
+MAVLINK_SRC = mavlink.cpp \
+              mavlink_stream.cpp \
+              mavlink_receive.cpp \
+              mavlink_param.cpp \
+              mavlink_util.cpp
+
 
 
 #                controller.cpp \
@@ -133,6 +142,7 @@ CSOURCES =  $(CMSIS_SRC) \
 
 # Compile a list of C++ Source Files
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
+                $(addprefix $(MAVLINK_DIR)/src/, $(MAVLINK_SRC)) \
                 $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
 
 # Set up Include Directoreis
@@ -189,7 +199,7 @@ MCFLAGS=-mcpu=cortex-m3 -mthumb
 DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 -U__STRICT_ANSI__
-LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -nostartfiles -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
+LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 #################################
 # Build

@@ -37,7 +37,8 @@ int main(void)
 {
   rosflight::Naze32 board;
   rosflight::Params params(&board);
-  rosflight::ROSflight firmware(&board, &params);
+  rosflight::Mavlink mavlink(&board, &params);
+  rosflight::ROSflight firmware(&board, &params, &mavlink);
   firmware.rosflight_init();
 
   while(1)

@@ -380,7 +380,7 @@ char *Params::get_param_name(param_id_t id)
   return params.names[id];
 }
 
-Params::param_type_t Params::get_param_type(param_id_t id)
+param_type_t Params::get_param_type(param_id_t id)
 {
   return params.types[id];
 }

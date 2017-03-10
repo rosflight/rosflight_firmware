@@ -33,24 +33,18 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 
 #include <stdint.h>
-
-#include "board.h"
-#include "mavlink_stream.h"
-#include "mavlink_log.h"
-#include "param.h"
 #include "mavlink.h"
-#include "mavlink_param.h"
 
-// local variable definitions
-static uint8_t send_params_index = PARAMS_COUNT; // current param to send when sending parameter list with low priority
+namespace rosflight {
+
 
 // function definitions
-void mavlink_send_param(param_id_t id)
+void Mavlink::mavlink_send_param(param_id_t id)
 {
   if (id < PARAMS_COUNT)
   {
     MAV_PARAM_TYPE type;
-    switch (get_param_type(id))
+    switch (params_->get_param_type(id))
     {
     case PARAM_TYPE_INT32:
       type = MAV_PARAM_TYPE_INT32;
@@ -63,39 +57,39 @@ void mavlink_send_param(param_id_t id)
     }
 
     mavlink_message_t msg;
-    mavlink_msg_param_value_pack(get_param_int(PARAM_SYSTEM_ID), 0, &msg,
-                                 get_param_name(id), get_param_float(id), type, PARAMS_COUNT, id);
+    mavlink_msg_param_value_pack(params_->get_param_int(PARAM_SYSTEM_ID), 0, &msg,
+                                 params_->get_param_name(id), params_->get_param_float(id), type, PARAMS_COUNT, id);
     send_message(msg);
   }
 }
 
-void mavlink_handle_msg_param_request_list(void)
+void Mavlink::mavlink_handle_msg_param_request_list(void)
 {
   send_params_index = 0;
 }
 
-void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
+void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
 {
   mavlink_param_request_read_t read;
   mavlink_msg_param_request_read_decode(msg, &read);
 
-  if (read.target_system == (uint8_t) get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
+  if (read.target_system == (uint8_t) params_->get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
   {
-    param_id_t id = (read.param_index < 0) ? lookup_param_id(read.param_id) : (param_id_t) read.param_index;
+    param_id_t id = (read.param_index < 0) ? params_->lookup_param_id(read.param_id) : (param_id_t) read.param_index;
 
     if (id < PARAMS_COUNT)
       mavlink_send_param(id);
   }
 }
 
-void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
+void Mavlink::mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
 {
   mavlink_param_set_t set;
   mavlink_msg_param_set_decode(msg, &set);
 
-  if (set.target_system == (uint8_t) get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
+  if (set.target_system == (uint8_t) params_->get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
   {
-    param_id_t id = lookup_param_id(set.param_id);
+    param_id_t id = params_->lookup_param_id(set.param_id);
 
     if (id < PARAMS_COUNT)
     {
@@ -113,15 +107,15 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
         break;
       }
 
-      if (candidate_type == get_param_type(id))
+      if (candidate_type == params_->get_param_type(id))
       {
         switch (candidate_type)
         {
         case PARAM_TYPE_INT32:
-          set_param_int(id, *(int32_t *) &set.param_value);
+          params_->set_param_int(id, *(int32_t *) &set.param_value);
           break;
         case PARAM_TYPE_FLOAT:
-          set_param_float(id, set.param_value);
+          params_->set_param_float(id, set.param_value);
           break;
         }
       }
@@ -129,11 +123,13 @@ void mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
   }
 }
 
-void mavlink_send_next_param(void)
+void Mavlink::mavlink_send_next_param(void)
 {
   if (send_params_index < PARAMS_COUNT)
   {
     mavlink_send_param((param_id_t) send_params_index);
     send_params_index++;
   }
+}
+
 }
