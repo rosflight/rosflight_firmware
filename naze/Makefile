@@ -76,7 +76,8 @@ VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC =	rosflight.cpp \
                 param.cpp \
                 sensors.cpp \
-                arming_fsm.cpp
+                arming_fsm.cpp \
+                estimator.cpp
 
 VPATH		:= $(VPATH):$(MAVLINK_DIR)
 MAVLINK_SRC = mavlink.cpp \

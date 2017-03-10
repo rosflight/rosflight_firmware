@@ -1,82 +1,19 @@
-/* 
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * 
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- * 
- * * Neither the name of the copyright holder nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
-
-#include <turbotrig/turbotrig.h>
-#include <turbotrig/turbovec.h>
-
-#include "board.h"
-#include "sensors.h"
-#include "param.h"
-#include "mode.h"
-
 #include "estimator.h"
 
-state_t _current_state;
-vector_t _adaptive_gyro_bias;
+namespace rosflight {
 
-static vector_t w1;
-static vector_t w2;
-static vector_t wbar;
-static vector_t wfinal;
-static vector_t w_acc;
-static const vector_t g = {0.0f, 0.0f, -1.0f};
-static vector_t b;
-static quaternion_t q_tilde;
-static quaternion_t q_hat;
-static uint64_t last_time;
-static uint64_t last_acc_update_us;
-
-static vector_t _accel_LPF;
-static vector_t _gyro_LPF;
-
-void reset_state()
+void Estimator::reset_state()
 {
-  _current_state.q.w = 1.0f;
-  _current_state.q.x = 0.0f;
-  _current_state.q.y = 0.0f;
-  _current_state.q.z = 0.0f;
-  _current_state.omega.x = 0.0f;
-  _current_state.omega.y = 0.0f;
-  _current_state.omega.z = 0.0f;
-  _current_state.roll = 0.0f;
-  _current_state.pitch = 0.0f;
-  _current_state.yaw = 0.0f;
+  q.w = 1.0f;
+  q.x = 0.0f;
+  q.y = 0.0f;
+  q.z = 0.0f;
+  omega.x = 0.0f;
+  omega.y = 0.0f;
+  omega.z = 0.0f;
+  roll = 0.0f;
+  pitch = 0.0f;
+  yaw = 0.0f;
 
   q_hat.w = 1.0f;
   q_hat.x = 0.0f;
@@ -116,68 +53,64 @@ void reset_state()
   _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
 }
 
-void reset_adaptive_bias()
+void Estimator::reset_adaptive_bias()
 {
   b.x = 0;
   b.y = 0;
   b.z = 0;
 }
 
-void init_estimator()
+void Estimator::init_estimator(Params* _params, Sensors* _sensors)
 {
+  params_ = _params;
+  sensors_ = _sensors;
+  mat_exp = false;
+  quad_int = false;
+  use_acc = true;
+
   last_time = 0;
   reset_state();
 }
 
-void run_LPF()
+void Estimator::run_LPF()
 {
-  float alpha_acc = get_param_float(PARAM_ACC_ALPHA);
-  _accel_LPF.x = (1.0f-alpha_acc)*_accel.x + alpha_acc*_accel_LPF.x;
-  _accel_LPF.y = (1.0f-alpha_acc)*_accel.y + alpha_acc*_accel_LPF.y;
-  _accel_LPF.z = (1.0f-alpha_acc)*_accel.z + alpha_acc*_accel_LPF.z;
+  float alpha_acc = params_->get_param_float(PARAM_ACC_ALPHA);
+  _accel_LPF.x = (1.0f-alpha_acc)*sensors_->_accel.x + alpha_acc*_accel_LPF.x;
+  _accel_LPF.y = (1.0f-alpha_acc)*sensors_->_accel.y + alpha_acc*_accel_LPF.y;
+  _accel_LPF.z = (1.0f-alpha_acc)*sensors_->_accel.z + alpha_acc*_accel_LPF.z;
 
-  float alpha_gyro = get_param_float(PARAM_GYRO_ALPHA);
-  _gyro_LPF.x = (1.0f-alpha_gyro)*_gyro.x + alpha_gyro*_gyro_LPF.x;
-  _gyro_LPF.y = (1.0f-alpha_gyro)*_gyro.y + alpha_gyro*_gyro_LPF.y;
-  _gyro_LPF.z = (1.0f-alpha_gyro)*_gyro.z + alpha_gyro*_gyro_LPF.z;
+  float alpha_gyro = params_->get_param_float(PARAM_GYRO_ALPHA);
+  _gyro_LPF.x = (1.0f-alpha_gyro)*sensors_->_gyro.x + alpha_gyro*_gyro_LPF.x;
+  _gyro_LPF.y = (1.0f-alpha_gyro)*sensors_->_gyro.y + alpha_gyro*_gyro_LPF.y;
+  _gyro_LPF.z = (1.0f-alpha_gyro)*sensors_->_gyro.z + alpha_gyro*_gyro_LPF.z;
 }
 
 
-void run_estimator()
+void Estimator::run_estimator()
 {
   static float kp, ki;
-  if (last_time == 0)
+  now_us = sensors_->_imu_time;
+  if (last_time == 0 || now_us <= last_time)
   {
-    last_time = _current_state.now_us;
-    last_acc_update_us = last_time;
-    return;
-  }
-  else if (_current_state.now_us == last_time)
-  {
-    return;
-  }
-  else if (_current_state.now_us < last_time)
-  {
-    _error_state |= ERROR_TIME_GOING_BACKWARDS;
-    last_time = _current_state.now_us;
+    last_time = now_us;
     return;
   }
   // clear the time going backwards error
   _error_state &= ~(ERROR_TIME_GOING_BACKWARDS);
 
-  float dt = (_current_state.now_us - last_time) * 1e-6f;
-  last_time = _current_state.now_us;
+  float dt = (now_us - last_time) * 1e-6f;
+  last_time = now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (_imu_time < (uint64_t)get_param_int(PARAM_INIT_TIME)*1000)
+  if (now_us < (uint64_t)params_->get_param_int(PARAM_INIT_TIME)*1000)
   {
-    kp = get_param_float(PARAM_FILTER_KP)*10.0f;
-    ki = get_param_float(PARAM_FILTER_KI)*10.0f;
+    kp = params_->get_param_float(PARAM_FILTER_KP)*10.0f;
+    ki = params_->get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = get_param_float(PARAM_FILTER_KP);
-    ki = get_param_float(PARAM_FILTER_KI);
+    kp = params_->get_param_float(PARAM_FILTER_KP);
+    ki = params_->get_param_float(PARAM_FILTER_KI);
   }
 
   // Run LPF to reject a lot of noise
@@ -278,26 +211,13 @@ void run_estimator()
   }
 
   // Save attitude estimate
-  _current_state.q = q_hat;
+  q = q_hat;
 
   // Extract Euler Angles for controller
-  euler_from_quat(_current_state.q, &_current_state.roll, &_current_state.pitch, &_current_state.yaw);
+  euler_from_quat(q, &roll, &pitch, &yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
-  _current_state.omega = vector_sub(_gyro_LPF, b);
-
-  // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
-  // then trigger an unhealthy estimator error
-  if (get_param_int(PARAM_FILTER_USE_ACC) && _current_state.now_us > 500000 + last_acc_update_us)
-  {
-    _error_state |= ERROR_UNHEALTHY_ESTIMATOR;
-  }
-  else
-  {
-    _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
-  }
+  omega = vector_sub(_gyro_LPF, b);
 }
 
-#ifdef __cplusplus
 }
-#endif
