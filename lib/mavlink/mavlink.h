@@ -35,12 +35,15 @@
 
 #include "board.h"
 #include "param.h"
-
-#include "controller.h"
+#include "sensors.h"
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 namespace rosflight {
+
+// Forward Declaraion of Params and Sensors
+class Params;
+class Sensors;
 
 typedef enum
 {
@@ -67,6 +70,7 @@ private:
   uint32_t compid;
   uint64_t _offboard_control_time;
   Params* params_;
+  Sensors* sensors_;
   Board* board_;
   uint8_t send_params_index;
   mavlink_message_t in_buf;
@@ -119,14 +123,14 @@ private:
 
 
 public:
-  Mavlink(Board* _board, Params* _params);
+  Mavlink(Board* _board);
 
   // Generic
-  void init_mavlink(void);
+  void init_mavlink(Params* _params, Sensors *_sensors);
   void send_message(const mavlink_message_t &msg);
 
   // Parameters
-  void mavlink_send_param(param_id_t id);
+  void mavlink_send_param(uint16_t id);
 
   // Receive
   void mavlink_receive(void);
@@ -139,7 +143,7 @@ public:
   // Debugging Utils
   void mavlink_send_named_value_int(const char *const name, int32_t value);
   void mavlink_send_named_value_float(const char *const name, float value);
-  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
+//  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
 
 };
 

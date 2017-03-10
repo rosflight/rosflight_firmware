@@ -74,14 +74,16 @@ BOARD_CXX_SRC =	naze32.cpp \
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC =	rosflight.cpp \
-                param.cpp
+                param.cpp \
+                sensors.cpp \
+                arming_fsm.cpp
 
 VPATH		:= $(VPATH):$(MAVLINK_DIR)
 MAVLINK_SRC = mavlink.cpp \
               mavlink_stream.cpp \
               mavlink_receive.cpp \
               mavlink_param.cpp \
-              mavlink_util.cpp
+              mavlink_util.cpp \
 
 
 
@@ -97,7 +99,7 @@ MAVLINK_SRC = mavlink.cpp \
 #                mixer.cpp \
 #                printf.cpp \
 #                rc.cpp \
-#                sensors.cpp
+
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)

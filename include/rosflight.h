@@ -33,8 +33,10 @@
 #define ROSFLIGHT_H_
 
 #include "board.h"
-#include "param.h"
 #include "mavlink.h"
+#include "param.h"
+#include "sensors.h"
+#include "arming_fsm.h"
 
 namespace rosflight {
 
@@ -43,11 +45,20 @@ class ROSflight
 
 private:
   Board* board_;
-  Params* params_;
   Mavlink* mavlink_;
 
+  Params params_;
+  Arming_FSM fsm_;
+  Sensors sensors_;
+//  Mux mux;
+//  Mixer mixer;
+//  Controller controller;
+//  RC rc;
+//  Mode mode;
+
+
 public:
-  ROSflight(Board* _board, Params* _params, Mavlink* _mavlink);
+  ROSflight(Board* _board, Mavlink* _mavlink);
 
   /**
  * @brief Main initialization routine for the ROSflight autopilot flight stack

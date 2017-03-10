@@ -32,7 +32,7 @@
 #include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
-#include "mode.h"
+#include "arming_fsm.h"
 #include "param.h"
 #include "mux.h"
 #include "sensors.h"
@@ -55,7 +55,8 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   bool reboot_to_bootloader_flag = false;
 
   // None of these actions can be performed if we are armed
-  if (_armed_state == ARMED)
+//  if (_armed_state == ARMED)
+  if(0)
   {
     result = false;
   }
@@ -74,10 +75,10 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       params_->set_param_defaults();
       break;
     case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
-      result = start_imu_calibration();
+//      result = start_imu_calibration();
       break;
     case ROSFLIGHT_CMD_GYRO_CALIBRATION:
-      result = start_gyro_calibration();
+//      result = start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
       board_->baro_calibrate();

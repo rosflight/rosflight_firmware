@@ -35,17 +35,17 @@
 #include <stdint.h>
 
 #include "board.h"
-
-#define PARAMS_NAME_LENGTH 16
+#include "mavlink.h"
 
 namespace rosflight
 {
 
-typedef enum
+enum : uint16_t
 {
     /******************************/
     /*** HARDWARE CONFIGURATION ***/
     /******************************/
+    PARAM_BOARD_REVISION = 0,
     PARAM_BAUD_RATE,
 
     /*****************************/
@@ -197,7 +197,7 @@ typedef enum
 
     // keep track of size of params array
     PARAMS_COUNT
-} param_id_t;
+};
 
 typedef enum
 {
@@ -206,10 +206,15 @@ typedef enum
     PARAM_TYPE_INVALID
 } param_type_t;
 
+
+// forward declaration of mavlink
+class Mavlink;
+
 class Params
 {
 
 public:
+  static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
 
 private:
   typedef struct
@@ -228,17 +233,18 @@ private:
 
   params_t params;
 
+  Mavlink* mavlink_;
   Board* board_;
 
   const uint8_t PARAM_CONF_VERSION = 76;
 
-  void init_param_int(param_id_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
-  void init_param_float(param_id_t id, const char name[PARAMS_NAME_LENGTH], float value);
+  void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
+  void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
   uint8_t compute_checksum(void);
 
 
 public:
-  Params(Board* _board);
+  Params();
 
 
 
@@ -247,7 +253,7 @@ public:
 /**
  * @brief Initialize parameter values
  */
-void init_params(void);
+void init_params(Board* _board, Mavlink* _mavlink);
 
 /**
  * @brief Set all parameters to default values
@@ -270,35 +276,35 @@ bool write_params(void);
  * @brief Callback for executing actions that need to be taken when a parameter value changes
  * @param id The ID of the parameter that was changed
  */
-void param_change_callback(param_id_t id);
+void param_change_callback(uint16_t id);
 
 /**
  * @brief Gets the id of a parameter from its name
  * @param name The name of the parameter
  * @return The ID of the parameter if the name is valid, PARAMS_COUNT otherwise (invalid ID)
  */
-param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
+uint16_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
 
 /**
  * @brief Get the value of an integer parameter by id
  * @param id The ID of the parameter
  * @return The value of the parameter
  */
-int get_param_int(param_id_t id);
+int get_param_int(uint16_t id);
 
 /**
  * @brief Get the value of a floating point parameter by id
  * @param id The ID of the parameter
  * @return The value of the parameter
  */
-float get_param_float(param_id_t id);
+float get_param_float(uint16_t id);
 
 /**
  * @brief Get the name of a parameter
  * @param id The ID of the parameter
  * @return The name of the parameter
  */
-char *get_param_name(param_id_t id);
+char *get_param_name(uint16_t id);
 
 /**
  * @brief Get the type of a parameter
@@ -308,7 +314,7 @@ char *get_param_name(param_id_t id);
  * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
  * See line 165
  */
-param_type_t get_param_type(param_id_t id);
+param_type_t get_param_type(uint16_t id);
 
 /**
  * @brief Sets the value of a parameter by ID and calls the parameter change callback
@@ -316,7 +322,7 @@ param_type_t get_param_type(param_id_t id);
  * @param value The new value
  * @return True if a parameter value was changed, false otherwise
  */
-bool set_param_int(param_id_t id, int32_t value);
+bool set_param_int(uint16_t id, int32_t value);
 
 /**
  * @brief Sets the value of a floating point parameter by ID and calls the parameter callback
@@ -324,7 +330,7 @@ bool set_param_int(param_id_t id, int32_t value);
  * @param value The new value
  * @return  True if a parameter was changed, false otherwise
  */
-bool set_param_float(param_id_t id, float value);
+bool set_param_float(uint16_t id, float value);
 
 /**
  * @brief Sets the value of a parameter by name and calls the parameter change callback
