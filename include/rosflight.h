@@ -33,7 +33,7 @@
 #define ROSFLIGHT_H_
 
 #include "board.h"
-#include "mavlink.h"
+#include "commlink.h"
 #include "param.h"
 #include "sensors.h"
 #include "arming_fsm.h"
@@ -45,7 +45,7 @@ class ROSflight
 
 private:
   Board* board_;
-  Mavlink* mavlink_;
+  CommLink* commlink_;
 
   Params params_;
   Arming_FSM fsm_;
@@ -58,7 +58,7 @@ private:
 
 
 public:
-  ROSflight(Board* _board, Mavlink* _mavlink);
+  ROSflight(Board* _board, CommLink* _commlink);
 
   /**
  * @brief Main initialization routine for the ROSflight autopilot flight stack

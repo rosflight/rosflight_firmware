@@ -37,8 +37,6 @@
 
 #include "board.h"
 #include "mavlink.h"
-//#include "mavlink_param.h"
-#include "mavlink_stream.h"
 
 #include "param.h"
 #include "mixer.h"
@@ -80,10 +78,10 @@ uint8_t Params::compute_checksum(void)
 }
 
 // function definitions
-void Params::init_params(Board *_board, Mavlink* _mavlink)
+void Params::init_params(Board *_board, CommLink *_commlink)
 {
   board_ = _board;
-  mavlink_ = _mavlink;
+  commlink_ = _commlink;
   for(uint32_t i = 0; i < static_cast<uint32_t>(PARAMS_COUNT); i++)
   {
     init_param_int(static_cast<uint16_t>(i), "DEFAULT", 0);

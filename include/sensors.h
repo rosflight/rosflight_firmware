@@ -41,8 +41,6 @@
 namespace rosflight
 {
 
-// forward declarations of circular dependencies
-class Mavlink;
 class Params;
 
 class Sensors

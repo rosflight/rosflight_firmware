@@ -35,16 +35,14 @@
 
 namespace rosflight {
 
-Mavlink::Mavlink(Board* _board)
-{
-  board_ = _board;
-}
+Mavlink::Mavlink(){}
 
 // function definitions
-void Mavlink::init_mavlink(Params *_params, Sensors* _sensors)
+void Mavlink::init(Board* _board, Params *_params, Sensors* _sensors)
 {
   params_ = _params;
   sensors_ = _sensors;
+  board_ = _board;
   board_->serial_init(params_->get_param_int(PARAM_BAUD_RATE));
 
   sysid = params_->get_param_int(PARAM_SYSTEM_ID);

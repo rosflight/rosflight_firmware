@@ -37,12 +37,15 @@
 #include "param.h"
 #include "sensors.h"
 
+#include "commlink.h"
+
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 namespace rosflight {
 
-// Forward Declaraion of Params and Sensors
+// Forward Declaraion of Required Classes
 class Params;
+class Board;
 class Sensors;
 
 typedef enum
@@ -63,7 +66,7 @@ typedef enum
   MAVLINK_STREAM_COUNT
 } mavlink_stream_id_t;
 
-class Mavlink
+class Mavlink : public CommLink
 {
 private:
   uint32_t sysid;
@@ -106,6 +109,14 @@ private:
   void mavlink_send_sonar(void);
   void mavlink_send_mag(void);
   void mavlink_send_low_priority(void);
+  void send_message(const mavlink_message_t &msg);
+  void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us);
+
+
+  // Debugging Utils
+  void mavlink_send_named_value_int(const char *const name, int32_t value);
+  void mavlink_send_named_value_float(const char *const name, float value);
+//  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
 
   mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] = {
     //  period_us    last_time_us   send_function
@@ -123,28 +134,13 @@ private:
 
 
 public:
-  Mavlink(Board* _board);
+  Mavlink();
 
-  // Generic
-  void init_mavlink(Params* _params, Sensors *_sensors);
-  void send_message(const mavlink_message_t &msg);
-
-  // Parameters
-  void mavlink_send_param(uint16_t id);
-
-  // Receive
-  void mavlink_receive(void);
-
-  // Stream
-  void mavlink_stream(uint64_t time_us);
-  void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate);
-  void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us);
-
-  // Debugging Utils
-  void mavlink_send_named_value_int(const char *const name, int32_t value);
-  void mavlink_send_named_value_float(const char *const name, float value);
-//  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
-
+  void init(Board* _board, Params* _params, Sensors *_sensors);
+  void receive(void);
+  void stream();
+  void update_param(uint16_t param_id);
+  void set_streaming_rate(uint16_t param_id, int32_t rate);
 };
 
 }

@@ -33,11 +33,12 @@
 #include "naze32.h"
 #include "param.h"
 #include "arming_fsm.h"
+#include "mavlink.h"
 
 int main(void)
 {
   rosflight::Naze32 board;
-  rosflight::Mavlink mavlink(&board);
+  rosflight::Mavlink mavlink;
 
   rosflight::ROSflight firmware(&board, &mavlink);
   firmware.rosflight_init();

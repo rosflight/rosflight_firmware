@@ -35,7 +35,7 @@
 #include <stdint.h>
 
 #include "board.h"
-#include "mavlink.h"
+#include "commlink.h"
 
 namespace rosflight
 {
@@ -206,10 +206,7 @@ typedef enum
     PARAM_TYPE_INVALID
 } param_type_t;
 
-
-// forward declaration of mavlink
-class Mavlink;
-
+class CommLink;
 class Params
 {
 
@@ -233,7 +230,7 @@ private:
 
   params_t params;
 
-  Mavlink* mavlink_;
+  CommLink* commlink_;
   Board* board_;
 
   const uint8_t PARAM_CONF_VERSION = 76;
@@ -253,7 +250,7 @@ public:
 /**
  * @brief Initialize parameter values
  */
-void init_params(Board* _board, Mavlink* _mavlink);
+void init_params(Board* _board, CommLink* _commlink);
 
 /**
  * @brief Set all parameters to default values

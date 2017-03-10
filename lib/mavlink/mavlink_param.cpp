@@ -39,12 +39,12 @@ namespace rosflight {
 
 
 // function definitions
-void Mavlink::mavlink_send_param(uint16_t id)
+void Mavlink::update_param(uint16_t param_id)
 {
-  if (id < PARAMS_COUNT)
+  if (param_id < PARAMS_COUNT)
   {
     MAV_PARAM_TYPE type;
-    switch (params_->get_param_type(id))
+    switch (params_->get_param_type(param_id))
     {
     case PARAM_TYPE_INT32:
       type = MAV_PARAM_TYPE_INT32;
@@ -58,7 +58,7 @@ void Mavlink::mavlink_send_param(uint16_t id)
 
     mavlink_message_t msg;
     mavlink_msg_param_value_pack(params_->get_param_int(PARAM_SYSTEM_ID), 0, &msg,
-                                 params_->get_param_name(id), params_->get_param_float(id), type, PARAMS_COUNT, id);
+                                 params_->get_param_name(param_id), params_->get_param_float(param_id), type, PARAMS_COUNT, param_id);
     send_message(msg);
   }
 }
@@ -78,7 +78,7 @@ void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *con
     uint16_t id = (read.param_index < 0) ? params_->lookup_param_id(read.param_id) : (uint16_t) read.param_index;
 
     if (id < PARAMS_COUNT)
-      mavlink_send_param(id);
+      update_param(id);
   }
 }
 
@@ -127,7 +127,7 @@ void Mavlink::mavlink_send_next_param(void)
 {
   if (send_params_index < PARAMS_COUNT)
   {
-    mavlink_send_param((uint16_t) send_params_index);
+    update_param((uint16_t) send_params_index);
     send_params_index++;
   }
 }

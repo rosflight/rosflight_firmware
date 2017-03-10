@@ -33,17 +33,12 @@
 
 #include "board.h"
 #include "mavlink.h"
-#include "mavlink_param.h"
 #include "mixer.h"
 #include "sensors.h"
 #include "estimator.h"
 #include "param.h"
 #include "arming_fsm.h"
 #include "rc.h"
-#include "mode.h"
-
-#include "mavlink_stream.h"
-#include "mavlink_util.h"
 #include "mavlink_log.h"
 
 namespace rosflight
@@ -225,8 +220,9 @@ void Mavlink::mavlink_send_low_priority(void)
 }
 
 // function definitions
-void Mavlink::mavlink_stream(uint64_t time_us)
+void Mavlink::stream()
 {
+  uint64_t time_us = board_->clock_micros();
   for (int i = 0; i < MAVLINK_STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams[i].next_time_us)
@@ -238,9 +234,9 @@ void Mavlink::mavlink_stream(uint64_t time_us)
   }
 }
 
-void Mavlink::mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate)
+void Mavlink::set_streaming_rate(uint16_t param_id, int32_t rate)
 {
-  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/rate);
+  mavlink_streams[param_id].period_us = (rate == 0 ? 0 : 1000000/rate);
 }
 
 void Mavlink::mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us)
