@@ -44,8 +44,8 @@ void ROSflight::rosflight_init(void)
 //  // mat_exp <- greater accuracy, but adds ~90 us
 //  // quadratic_integration <- some additional accuracy, adds ~20 us
 //  // accelerometer correction <- if using angle mode, this is required, adds ~70 us
-//  init_estimator(false, false, true);
-//    fsm_.init_mode(board_, &sensors_, &params_);
+  estimator_.init_estimator(&params_, &sensors_);
+  fsm_.init_mode(board_, &sensors_, &params_);
 }
 
 
@@ -55,13 +55,13 @@ void ROSflight::rosflight_run()
 //  /*********************/
 //  /***  Control Loop ***/
 //  /*********************/
-//  if (sensors_.update_sensors()) // 595 | 591 | 590 us
-//  {
-//    // If I have new IMU data, then perform control
-//    run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
+  if (sensors_.update_sensors()) // 595 | 591 | 590 us
+  {
+    // If I have new IMU data, then perform control
+    estimator_.run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
 //    run_controller(); // 278 | 271
 //    mix_output(); // 16 | 13 us
-//  }
+  }
 
   /*********************/
   /***  Post-Process ***/
@@ -73,7 +73,7 @@ void ROSflight::rosflight_run()
 //  mavlink_receive(); // 159 | 1 | 1
 
 //  // update the armed_states, an internal timer runs this at a fixed rate
-//  check_mode(board_->clock_micros()); // 108 | 1 | 1
+  fsm_.check_mode(); // 108 | 1 | 1
 
 //  // get RC, an internal timer runs this every 20 ms (50 Hz)
 //  receive_rc(); // 42 | 2 | 1

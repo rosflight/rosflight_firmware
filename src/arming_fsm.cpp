@@ -136,9 +136,9 @@ bool Arming_FSM::check_failsafe(void)
 }
 
 
-bool Arming_FSM::check_mode(uint64_t now)
+bool Arming_FSM::check_mode()
 {
-  static uint32_t time_sticks_have_been_in_arming_position_ms = 0;
+  uint32_t now = board_->clock_millis();
 
   // see it has been at least 20 ms
   uint32_t dt = now-prev_time_ms;

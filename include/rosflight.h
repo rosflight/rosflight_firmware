@@ -37,6 +37,7 @@
 #include "param.h"
 #include "sensors.h"
 #include "arming_fsm.h"
+#include "estimator.h"
 
 namespace rosflight {
 
@@ -50,6 +51,7 @@ private:
   Params params_;
   Arming_FSM fsm_;
   Sensors sensors_;
+  Estimator estimator_;
 //  Mux mux;
 //  Mixer mixer;
 //  Controller controller;

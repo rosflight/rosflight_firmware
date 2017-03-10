@@ -39,7 +39,7 @@ public:
   armed_state_t _armed_state;
 
   void init_mode(Board* _board, Sensors* _sensors, Params* _params);
-  bool check_mode(uint64_t now);
+  bool check_mode();
 
 };
 
