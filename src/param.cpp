@@ -40,7 +40,6 @@
 
 #include "param.h"
 #include "mixer.h"
-//#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
 
 namespace rosflight
 {
@@ -78,10 +77,11 @@ uint8_t Params::compute_checksum(void)
 }
 
 // function definitions
-void Params::init_params(Board *_board, CommLink *_commlink)
+void Params::init_params(Board *_board, CommLink *_commlink, Mixer* _mixer)
 {
   board_ = _board;
   commlink_ = _commlink;
+  mixer_ = _mixer;
   for(uint32_t i = 0; i < static_cast<uint32_t>(PARAMS_COUNT); i++)
   {
     init_param_int(static_cast<uint16_t>(i), "DEFAULT", 0);
@@ -286,49 +286,45 @@ void Params::param_change_callback(uint16_t id)
 {
   switch (id)
   {
-//  case PARAM_STREAM_HEARTBEAT_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
-//    break;
+  case PARAM_STREAM_HEARTBEAT_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
+    break;
 
-//  case PARAM_STREAM_ATTITUDE_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, get_param_int(PARAM_STREAM_ATTITUDE_RATE));
-//    break;
+  case PARAM_STREAM_ATTITUDE_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_ATTITUDE, get_param_int(PARAM_STREAM_ATTITUDE_RATE));
+    break;
 
-//  case PARAM_STREAM_IMU_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, get_param_int(PARAM_STREAM_IMU_RATE));
-//    break;
-//  case PARAM_STREAM_AIRSPEED_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, get_param_int(PARAM_STREAM_AIRSPEED_RATE));
-//    break;
-//  case PARAM_STREAM_SONAR_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, get_param_int(PARAM_STREAM_SONAR_RATE));
-//    break;
-//  case  PARAM_STREAM_BARO_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
-//    break;
-//  case  PARAM_STREAM_MAG_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, get_param_int(PARAM_STREAM_MAG_RATE));
-//    break;
+  case PARAM_STREAM_IMU_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_IMU, get_param_int(PARAM_STREAM_IMU_RATE));
+    break;
+  case PARAM_STREAM_AIRSPEED_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_DIFF_PRESSURE, get_param_int(PARAM_STREAM_AIRSPEED_RATE));
+    break;
+  case PARAM_STREAM_SONAR_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_SONAR, get_param_int(PARAM_STREAM_SONAR_RATE));
+    break;
+  case  PARAM_STREAM_BARO_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
+    break;
+  case  PARAM_STREAM_MAG_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_MAG, get_param_int(PARAM_STREAM_MAG_RATE));
+    break;
 
-//  case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, get_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE));
-//    break;
-//  case PARAM_STREAM_RC_RAW_RATE:
-//    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
-//    break;
+  case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_SERVO_OUTPUT_RAW, get_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE));
+    break;
+  case PARAM_STREAM_RC_RAW_RATE:
+    commlink_->set_streaming_rate(CommLink::STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
+    break;
 
-//  case PARAM_RC_TYPE:
-//    init_PWM();
-//    break;
-//  case PARAM_MOTOR_PWM_SEND_RATE:
-//    init_PWM();
-//    break;
-//  case PARAM_MOTOR_MIN_PWM:
-//    init_PWM();
-//    break;
-//  case PARAM_MIXER:
-//    init_mixing();
-//    break;
+  case PARAM_RC_TYPE:
+  case PARAM_MOTOR_PWM_SEND_RATE:
+  case PARAM_MOTOR_MIN_PWM:
+    mixer_->init_PWM();
+    break;
+  case PARAM_MIXER:
+    mixer_->init_mixing();
+    break;
 
   default:
     // no action needed for this parameter
@@ -388,7 +384,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
   {
     params.values[id] = value;
     param_change_callback(id);
-//    mavlink_send_param(id);
+    commlink_->update_param(id);
     return true;
   }
   return false;

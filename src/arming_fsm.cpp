@@ -44,8 +44,9 @@ Arming_FSM::Arming_FSM()
   time_sticks_have_been_in_arming_position_ms = 0;
 }
 
-void Arming_FSM::init_mode(Board *_board, Sensors *_sensors, Params *_params)
+void Arming_FSM::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
 {
+   rc_ = _rc;
    board_ = _board;
    sensors_ = _sensors;
    params_ = _params;
@@ -163,8 +164,7 @@ bool Arming_FSM::check_mode()
       if (!(_armed_state & ARMED))
       {
         // if left stick is down and to the right
-//        if (rc_low(RC_F) && rc_high(RC_Z))
-        if(0)
+        if (rc_->rc_low(RC::RC_F) && rc_->rc_high(RC::RC_Z))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }
@@ -181,8 +181,7 @@ bool Arming_FSM::check_mode()
       else // _armed_state is ARMED
       {
         // if left stick is down and to the left
-//        if (rc_low(RC_F) && rc_low(RC_Z))
-        if(0)
+        if (rc_->rc_low(RC::RC_F) && rc_->rc_low(RC::RC_Z))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }
@@ -199,8 +198,7 @@ bool Arming_FSM::check_mode()
     }
     else
     {
-//      if (rc_switch(get_param_int(PARAM_ARM_CHANNEL)))
-      if(0)
+      if (rc_->rc_switch(params_->get_param_int(PARAM_ARM_CHANNEL)))
       {
         if ( !(_armed_state & ARMED))
           arm();

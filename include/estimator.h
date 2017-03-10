@@ -42,6 +42,9 @@
 
 namespace rosflight {
 
+class Params;
+class Sensors;
+
 class Estimator
 {
 

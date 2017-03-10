@@ -112,8 +112,8 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
            PARAM_PID_ROLL_ANGLE_D,
            &estimator->roll,
            &estimator->omega.x,
-           NULL, //&_combined_control.x.value,
-           NULL, //&_command.x,
+           &mux->_combined_control.x.value,
+           &mixer->_command.x,
            params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
@@ -123,8 +123,8 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
            PARAM_PID_PITCH_ANGLE_D,
            &estimator->pitch,
            &estimator->omega.y,
-           NULL, //&_combined_control.y.value,
-           NULL, //&_command.y,
+           &mux->_combined_control.y.value,
+           &mixer->_command.y,
            params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
@@ -134,8 +134,8 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
            PARAM_PID_ROLL_RATE_D,
            &estimator->omega.x,
            NULL,
-           NULL, //&_combined_control.x.value,
-           NULL, //&_command.x,
+           &mux->_combined_control.x.value,
+           &mixer->_command.x,
            params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
@@ -145,8 +145,8 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
            PARAM_PID_PITCH_RATE_D,
            &estimator->omega.y,
            NULL,
-           NULL, //&_combined_control.y.value,
-           NULL, //&_command.y,
+           &mux->_combined_control.y.value,
+           &mixer->_command.y,
            params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
@@ -156,8 +156,8 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
            PARAM_PID_YAW_RATE_D,
            &estimator->omega.z,
            NULL,
-           NULL, //&_combined_control.z.value,
-           NULL, //&_command.z,
+           &mux->_combined_control.z.value,
+           &mixer->_command.z,
            params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
 
@@ -167,8 +167,8 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
            PARAM_PID_ALT_D,
            &estimator->altitude,
            NULL,
-           NULL, //&_combined_control.F.value,
-           NULL, //&_command.F,
+           &mux->_combined_control.F.value,
+           &mixer->_command.F,
            params->get_param_int(PARAM_MAX_COMMAND),
            0.0f);
 }
@@ -176,44 +176,44 @@ void Controller::init_controller(Arming_FSM*_fsm, Board* _board, //Mux* _mux, Mi
 
 void Controller::run_controller()
 {
-//  // Time calculation
-//  if (prev_time < 0.0000001)
-//  {
-//    prev_time = _current_state.now_us * 1e-6;
-//    return;
-//  }
+  // Time calculation
+  if (prev_time < 0.0000001)
+  {
+    prev_time = estimator->now_us * 1e-6;
+    return;
+  }
 
-//  float now = _current_state.now_us * 1e-6;
-//  float dt = now - prev_time;
-//  prev_time = now;
+  float now = estimator->now_us * 1e-6;
+  float dt = now - prev_time;
+  prev_time = now;
 
-//  // ROLL
-//  if (_combined_control.x.type == RATE)
-//    run_pid(&pid_roll_rate, dt);
-//  else if (_combined_control.x.type == ANGLE)
-//    run_pid(&pid_roll, dt);
+  // ROLL
+  if (mux->_combined_control.x.type == RATE)
+    run_pid(&pid_roll_rate, dt);
+  else if (mux->_combined_control.x.type == ANGLE)
+    run_pid(&pid_roll, dt);
+  else // PASSTHROUGH
+    mixer->_command.x = mux->_combined_control.x.value;
+
+  // PITCH
+  if (mux->_combined_control.y.type == RATE)
+    run_pid(&pid_pitch_rate, dt);
+  else if (mux->_combined_control.y.type == ANGLE)
+    run_pid(&pid_pitch, dt);
+  else // PASSTHROUGH
+    mixer->_command.y = mux->_combined_control.y.value;
+
+  // YAW
+  if (mux->_combined_control.z.type == RATE)
+    run_pid(&pid_yaw_rate, dt);
+  else// PASSTHROUGH
+    mixer->_command.z = mux->_combined_control.z.value;
+
+  // THROTTLE
+//  if(mux->_combined_control.F.type == ALTITUDE)
+//    run_pid(&pid_altitude);
 //  else // PASSTHROUGH
-//    _command.x = _combined_control.x.value;
-
-//  // PITCH
-//  if (_combined_control.y.type == RATE)
-//    run_pid(&pid_pitch_rate, dt);
-//  else if (_combined_control.y.type == ANGLE)
-//    run_pid(&pid_pitch, dt);
-//  else // PASSTHROUGH
-//    _command.y = _combined_control.y.value;
-
-//  // YAW
-//  if (_combined_control.z.type == RATE)
-//    run_pid(&pid_yaw_rate, dt);
-//  else// PASSTHROUGH
-//    _command.z = _combined_control.z.value;
-
-//  // THROTTLE
-////  if(_combined_control.F.type == ALTITUDE)
-////    run_pid(&pid_altitude);
-////  else // PASSTHROUGH
-//  _command.F = _combined_control.F.value;
+  mixer->_command.F = mux->_combined_control.F.value;
 }
 
 }

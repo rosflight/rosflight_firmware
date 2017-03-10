@@ -48,24 +48,6 @@ class Params;
 class Board;
 class Sensors;
 
-typedef enum
-{
-  MAVLINK_STREAM_ID_HEARTBEAT,
-
-  MAVLINK_STREAM_ID_ATTITUDE,
-
-  MAVLINK_STREAM_ID_IMU,
-  MAVLINK_STREAM_ID_DIFF_PRESSURE,
-  MAVLINK_STREAM_ID_BARO,
-  MAVLINK_STREAM_ID_SONAR,
-  MAVLINK_STREAM_ID_MAG,
-
-  MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW,
-  MAVLINK_STREAM_ID_RC_RAW,
-  MAVLINK_STREAM_ID_LOW_PRIORITY,
-  MAVLINK_STREAM_COUNT
-} mavlink_stream_id_t;
-
 class Mavlink : public CommLink
 {
 private:
@@ -110,7 +92,7 @@ private:
   void mavlink_send_mag(void);
   void mavlink_send_low_priority(void);
   void send_message(const mavlink_message_t &msg);
-  void mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us);
+  void mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us);
 
 
   // Debugging Utils
@@ -118,7 +100,7 @@ private:
   void mavlink_send_named_value_float(const char *const name, float value);
 //  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
 
-  mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] = {
+  mavlink_stream_t mavlink_streams[STREAM_COUNT] = {
     //  period_us    last_time_us   send_function
     { 1000000,     0,             &rosflight::Mavlink::mavlink_send_heartbeat },
     { 200000,      0,             &rosflight::Mavlink::mavlink_send_attitude },
@@ -140,7 +122,7 @@ public:
   void receive(void);
   void stream();
   void update_param(uint16_t param_id);
-  void set_streaming_rate(uint16_t param_id, int32_t rate);
+  void set_streaming_rate(uint8_t stream_id, int32_t rate);
 };
 
 }

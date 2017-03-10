@@ -223,7 +223,7 @@ void Mavlink::mavlink_send_low_priority(void)
 void Mavlink::stream()
 {
   uint64_t time_us = board_->clock_micros();
-  for (int i = 0; i < MAVLINK_STREAM_COUNT; i++)
+  for (int i = 0; i < STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams[i].next_time_us)
     {
@@ -234,12 +234,12 @@ void Mavlink::stream()
   }
 }
 
-void Mavlink::set_streaming_rate(uint16_t param_id, int32_t rate)
+void Mavlink::set_streaming_rate(uint8_t stream_id, int32_t rate)
 {
-  mavlink_streams[param_id].period_us = (rate == 0 ? 0 : 1000000/rate);
+  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/rate);
 }
 
-void Mavlink::mavlink_stream_set_period(mavlink_stream_id_t stream_id, uint32_t period_us)
+void Mavlink::mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us)
 {
   mavlink_streams[stream_id].period_us = period_us;
 }

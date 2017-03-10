@@ -17,10 +17,11 @@ namespace rosflight
 
 Sensors::Sensors(){}
 
-void Sensors::init_sensors(Board *_board, Params *_params)
+void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator)
 {
   board_ = _board;
   params_ = _params;
+  estimator_ = _estimator;
   IMU_ptr = this;
   new_imu_data = false;
   board_->sensors_init(params_->get_param_int(PARAM_BOARD_REVISION));
@@ -201,7 +202,7 @@ void Sensors::calibrate_gyro()
       params_->set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
 
       // Tell the estimator to reset it's bias estimate, because it should be zero now
-//      reset_adaptive_bias();
+      estimator_->reset_adaptive_bias();
     }
     else
     {
@@ -275,7 +276,7 @@ void Sensors::calibrate_accel(void)
       //      mavlink_log_info("IMU offsets captured", NULL);
 
       // reset the estimated state
-      //      reset_state();
+      estimator_->reset_state();
       calibrating_acc_flag = false;
     }
     else

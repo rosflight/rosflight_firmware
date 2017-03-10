@@ -10,10 +10,10 @@ void RC::init_rc(Arming_FSM* _fsm, Board* _board, Params* _params, Mux* _mux)
   mux = _mux;
 
   _calibrate_rc = false;
-  mux->_rc_control.x.type = Mux::ANGLE;
-  mux->_rc_control.y.type = Mux::ANGLE;
-  mux->_rc_control.z.type = Mux::RATE;
-  mux->_rc_control.F.type = Mux::THROTTLE;
+  mux->_rc_control.x.type = ANGLE;
+  mux->_rc_control.y.type = ANGLE;
+  mux->_rc_control.z.type = RATE;
+  mux->_rc_control.F.type = THROTTLE;
 
   mux->_rc_control.x.value = 0;
   mux->_rc_control.y.value = 0;
@@ -158,10 +158,10 @@ void RC::interpret_command_values()
     // Now, check the mode and convert the normalized value to the appropriate units
     switch(chan->control_channel_ptr->type)
     {
-    case Mux::RATE:
+    case RATE:
       chan->control_channel_ptr->value *= params->get_param_float(chan->max_rate_param);
       break;
-    case Mux::ANGLE:
+    case ANGLE:
       chan->control_channel_ptr->value *= params->get_param_float(chan->max_angle_param);
       break;
     default: // default and altitude modes, leave as normalized
@@ -176,21 +176,19 @@ void RC::interpret_command_type()
   if (params->get_param_int(PARAM_FIXED_WING))
   {
     // for using fixedwings
-    mux->_rc_control.x.type = mux->_rc_control.y.type = mux->_rc_control.z.type = Mux::PASSTHROUGH;
-    mux->_rc_control.F.type = Mux::THROTTLE;
+    mux->_rc_control.x.type = mux->_rc_control.y.type = mux->_rc_control.z.type = PASSTHROUGH;
+    mux->_rc_control.F.type = THROTTLE;
   }
   else
   {
-    mux->_rc_control.x.type = mux->_rc_control.y.type = rc_switch(params->get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? Mux::ANGLE : Mux::RATE;
-    mux->_rc_control.z.type = Mux::RATE;
-    mux->_rc_control.F.type = rc_switch(params->get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)) ? Mux::ALTITUDE : Mux::THROTTLE;
+    mux->_rc_control.x.type = mux->_rc_control.y.type = rc_switch(params->get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? ANGLE : RATE;
+    mux->_rc_control.z.type = RATE;
+    mux->_rc_control.F.type = rc_switch(params->get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)) ? ALTITUDE : THROTTLE;
   }
 }
 
 bool RC::sticks_deviated(uint32_t now_ms)
 {
-  static uint32_t time_of_last_stick_deviation = 0;
-
   // If we are in the lag time, return true;
   if(now_ms - time_of_last_stick_deviation < (uint64_t)(params->get_param_int(PARAM_OVERRIDE_LAG_TIME)))
   {
@@ -215,7 +213,6 @@ bool RC::sticks_deviated(uint32_t now_ms)
 
 bool RC::receive_rc()
 {
-  static uint32_t last_rc_receive_time = 0;
   // If the calibrate_rc flag is set, perform a calibration (blocking)
   if (_calibrate_rc)
   {

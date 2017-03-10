@@ -10,6 +10,9 @@
 
 namespace rosflight {
 
+class Mux;
+class Arming_FSM;
+
 class Mixer
 {
 

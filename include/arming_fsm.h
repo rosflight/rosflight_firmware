@@ -5,6 +5,7 @@
 #include "board.h"
 #include "sensors.h"
 #include "param.h"
+#include "rc.h"
 
 namespace rosflight
 {
@@ -17,9 +18,14 @@ typedef enum
   ARMED_FAILSAFE
 } armed_state_t;
 
+class Sensors;
+class Params;
+class RC;
+
 class Arming_FSM
 {
 private:
+  RC* rc_;
   Board* board_;
   Sensors* sensors_;
   Params* params_;
@@ -38,7 +44,7 @@ public:
   Arming_FSM();
   armed_state_t _armed_state;
 
-  void init_mode(Board* _board, Sensors* _sensors, Params* _params);
+  void init_mode(Board* _board, Sensors* _sensors, Params* _params, RC* _rc);
   bool check_mode();
 
 };

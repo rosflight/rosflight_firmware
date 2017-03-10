@@ -38,6 +38,8 @@
 #include "sensors.h"
 #include "arming_fsm.h"
 #include "estimator.h"
+#include "rc.h"
+#include "controller.h"
 
 namespace rosflight {
 
@@ -52,11 +54,10 @@ private:
   Arming_FSM fsm_;
   Sensors sensors_;
   Estimator estimator_;
-//  Mux mux;
-//  Mixer mixer;
-//  Controller controller;
-//  RC rc;
-//  Mode mode;
+  Mux mux_;
+  Mixer mixer_;
+  Controller controller_;
+  RC rc_;
 
 
 public:
