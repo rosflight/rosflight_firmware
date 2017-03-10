@@ -52,7 +52,7 @@ A2L=arm-none-eabi-addr2line
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
 ROSFLIGHT_DIR = ..
-MAVLINK_DIR = ..
+MAVLINK_DIR = ../lib/mavlink
 TURBOTRIG_DIR = ../lib/turbotrig
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
@@ -142,17 +142,18 @@ CSOURCES =  $(CMSIS_SRC) \
 
 # Compile a list of C++ Source Files
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
-                $(addprefix $(MAVLINK_DIR)/src/, $(MAVLINK_SRC)) \
+                $(addprefix $(MAVLINK_DIR)/, $(MAVLINK_SRC)) \
                 $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
-                                $(TURBOTRIG_DIR) \
-                                $(ROSFLIGHT_DIR)/include \
-                                $(ROSFLIGHT_DIR)/lib \
-                                $(STDPERIPH_DIR)/inc \
-                                $(CMSIS_DIR)/CM3/CoreSupport \
-                                $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
+				$(MAVLINK_DIR) \
+				$(TURBOTRIG_DIR) \
+				$(ROSFLIGHT_DIR)/include \
+				$(ROSFLIGHT_DIR)/lib \
+				$(STDPERIPH_DIR)/inc \
+				$(CMSIS_DIR)/CM3/CoreSupport \
+				$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
 
 
 #################################
