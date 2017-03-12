@@ -68,17 +68,20 @@ void run_pid(pid_t *pid, float dt)
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     // (Be sure to de-reference pointers)
-    if (pid->current_xdot == NULL && dt > 0.0f)
+    if (pid->current_xdot == NULL)
     {
-      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((
-                              *pid->current_x) - pid->prev_x);
-      pid->prev_x = *pid->current_x;
-      d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
+      if (dt > 0.0f)
+      {
+        pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((
+                                                                                                                     *pid->current_x) - pid->prev_x);
+        pid->prev_x = *pid->current_x;
+        d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
+      }
     }
-    else
-    {
-      d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
-    }
+  }
+  else
+  {
+    d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
   }
 
   // If there is an integrator, we are armed, and throttle is high
@@ -217,9 +220,9 @@ void run_controller()
     _command.z = _combined_control.z.value;
 
   // THROTTLE
-//  if(_combined_control.F.type == ALTITUDE)
-//    run_pid(&pid_altitude);
-//  else // PASSTHROUGH
+  //  if(_combined_control.F.type == ALTITUDE)
+  //    run_pid(&pid_altitude);
+  //  else // PASSTHROUGH
   _command.F = _combined_control.F.value;
 
   static uint32_t counter = 0;
