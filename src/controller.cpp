@@ -90,10 +90,13 @@ void Controller::run_pid(pid_t *pid, float dt)
     // (Be sure to de-reference pointers)
     if (pid->current_xdot == NULL)
     {
-      pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
-                            + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
-      pid->prev_x = *pid->current_x;
-      d_term = params->get_param_float(pid->kd_param_id) * pid->differentiator;
+      if(dt > 0.0f))
+      {
+        pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
+                              + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+        pid->prev_x = *pid->current_x;
+        d_term = params->get_param_float(pid->kd_param_id) * pid->differentiator;
+      }
     }
     else
     {
