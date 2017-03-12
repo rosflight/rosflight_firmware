@@ -13,7 +13,7 @@ extern "C" {
 #include "estimator.h"
 #include "mode.h"
 
-#include "turbovec.h"
+#include "turbotrig/turbovec.h"
 
 //==================================================================
 // global variable definitions

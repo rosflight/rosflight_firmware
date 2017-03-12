@@ -20,7 +20,7 @@ void init_mavlink(void)
 
   _offboard_control_time = 0;
 
-  mavlink_log_warning("rebooting");
+  mavlink_log_warning("rebooting", NULL);
 }
 
 // implement for mavlink convenience functions

@@ -3,7 +3,7 @@
 extern "C" {
 #endif
 
-#include <turbovec.h>
+#include <turbotrig/turbovec.h>
 
 #include <stdint.h>
 #include <stdbool.h>

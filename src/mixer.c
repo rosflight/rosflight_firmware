@@ -70,9 +70,18 @@ static mixer_t Y6_mixing =
 {
   {M, M, M, M, M, M, NONE, NONE},
   { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   0.0f, 0.0f}, // F Mix
-  { 0.0f,  -1.0f,    1.0f,    0.0f,   -1.0f,    1.0f,   0.0f, 0.0f}, // X Mix
-  {-1.333f, 0.667f,  0.667f, -1.333f,  0.667f,  0.667f, 0.0f, 0.0f}, // Y Mix
-  {-1.0f,   1.0f,    1.0f,    1.0f,   -1.0f,   -1.0f,   0.0f, 0.0f}  // Z Mix
+  {-1.0f,  -1.0f,    0.0f,    0.0f,    1.0f,    1.0f,   0.0f, 0.0f}, // X Mix
+  { 0.667f, 0.667f, -1.333f, -1.333f,  0.667f,  0.667f, 0.0f, 0.0f}, // Y Mix
+  {-1.0f,   1.0f,   -1.0f,    1.0f,   -1.0f,    1.0f,   0.0f, 0.0f}  // Z Mix
+};
+
+static mixer_t X8_mixing =
+{
+  {M, M, M, M, M, M, M, M},
+  { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   1.0f,  1.0f}, // F Mix
+  {-1.0f,   1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,  -1.0f,  1.0f}, // X Mix
+  { 1.0f,   1.0f,   -1.0f,   -1.0f,    1.0f,    1.0f,  -1.0f, -1.0f}, // Y Mix
+  { 1.0f,  -1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,   1.0f, -1.0f}  // Z Mix
 };
 
 static mixer_t mixer_to_use;
@@ -84,6 +93,7 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
   &quadcopter_h_mixing,
   &tricopter_mixing,
   &Y6_mixing,
+  &X8_mixing,
   &fixedwing_mixing
 };
 
@@ -208,7 +218,6 @@ void mix_output()
     {
       prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor; // scale all outputs by scale factor
     }
-
     if (output_type == NONE)
     {
       // Incorporate GPIO on not already reserved outputs

@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <turbotrig.h>
+#include <turbotrig/turbotrig.h>
 
 #include "param.h"
 #include "mixer.h"
@@ -77,6 +77,14 @@ void run_pid(pid_t *pid, float dt)
         pid->prev_x = *pid->current_x;
         d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
       }
+      else
+      {
+        d_term = 0;
+      }
+    }
+    else
+    {
+      d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
     }
   }
   else
