@@ -110,7 +110,7 @@ bool check_mode(uint64_t now)
       if (_armed_state == DISARMED)
       {
         // if left stick is down and to the right
-        if (rc_low(RC_F) && rc_high(RC_Z))
+        if (rc_low(RC_STICK_F) && rc_high(RC_STICK_Z))
         {
           time_sticks_have_been_in_arming_position += dt;
         }
@@ -127,7 +127,7 @@ bool check_mode(uint64_t now)
       else // _armed_state is ARMED
       {
         // if left stick is down and to the left
-        if (rc_low(RC_F) && rc_low(RC_Z))
+        if (rc_low(RC_STICK_F) && rc_low(RC_STICK_Z))
         {
           time_sticks_have_been_in_arming_position += dt;
         }
