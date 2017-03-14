@@ -81,19 +81,11 @@ static void mavlink_send_imu(void)
 
 }
 
-static void mavlink_send_servo_output_raw(void)
+static void mavlink_send_rosflight_output_raw(void)
 {
-  mavlink_msg_servo_output_raw_send(MAVLINK_COMM_0,
-                                    clock_micros(),
-                                    0,
-                                    _outputs[0],
-                                    _outputs[1],
-                                    _outputs[2],
-                                    _outputs[3],
-                                    _outputs[4],
-                                    _outputs[5],
-                                    _outputs[6],
-                                    _outputs[7]);
+  mavlink_msg_rosflight_output_raw_send(MAVLINK_COMM_0,
+                                        clock_millis(),
+                                        _outputs);
 }
 
 static void mavlink_send_rc_raw(void)
@@ -168,7 +160,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 100000,  .last_time_us = 0, .send_function = mavlink_send_sonar },
   { .period_us = 6250,    .last_time_us = 0, .send_function = mavlink_send_mag },
 
-  { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_servo_output_raw },
+  { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
   { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_rc_raw },
   { .period_us = 10000,   .last_time_us = 0, .send_function = mavlink_send_low_priority }
 };

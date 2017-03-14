@@ -162,8 +162,9 @@ TARGET_HEX=$(BIN_DIR)/$(TARGET).hex
 # Debug Config
 #################################
 ifeq ($(DEBUG), GDB)
-DEBUG_FLAGS = -ggdb3
+DEBUG_FLAGS = -ggdb
 OPTIMIZE = -Og
+$(info ***** Building with Debug Symbols *****)
 else
 OPTIMIZE = -Os
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
@@ -174,10 +175,8 @@ endif
 # Flags
 #################################
 MCFLAGS=-mcpu=cortex-m3 -mthumb
-OPTIMIZE =
-DEBUG = -DDebug -ggdb3
 DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
-CFLAGS=-c $(MCFLAGS) $(DEBUG) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
+CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
 CXXFLAGS+=-U__STRICT_ANSI__
 LDSCRIPT=$(BREEZY_DIR)/stm32_flash.ld

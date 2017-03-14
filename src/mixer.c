@@ -11,7 +11,7 @@ extern "C" {
 
 float _GPIO_outputs[8];
 static float prescaled_outputs[8];
-float _outputs[8];
+float _outputs[10];
 command_t _command;
 output_type_t _GPIO_output_type[8];
 
@@ -140,7 +140,7 @@ void write_motor(uint8_t index, float value)
     }
     else if (value < get_param_float(PARAM_MOTOR_IDLE_THROTTLE) && get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
     {
-      value = get_param_int(PARAM_MOTOR_IDLE_THROTTLE);
+      value = get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
     }
     else if (value < 0.0)
     {

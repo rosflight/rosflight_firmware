@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-pedantic"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #include <mavlink/v1.0/mavlink_types.h>
 #pragma GCC diagnostic pop
 
