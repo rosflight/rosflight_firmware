@@ -32,6 +32,9 @@ void calibrate_rc();
 static rc_stick_config_t sticks[RC_STICKS_COUNT];
 static rc_switch_config_t switches[RC_SWITCHES_COUNT];
 
+static float stick_values[RC_STICKS_COUNT];
+static bool switch_values[RC_SWITCHES_COUNT];
+
 void init_sticks(void)
 {
   sticks[RC_STICK_X].channel = get_param_int(PARAM_RC_X_CHANNEL);
@@ -153,25 +156,12 @@ void init_rc()
 
 float rc_stick(rc_stick_t channel)
 {
-  uint16_t pwm = pwm_read(sticks[channel].channel);
-  return (sticks[channel].one_sided ? 1.0f : 2.0f) * (float)(pwm - sticks[channel].trim) / (float) sticks[channel].range;
+  return stick_values[channel];
 }
 
 bool rc_switch(rc_switch_t channel)
 {
-  if (!switches[channel].mapped)
-  {
-    return false;
-  }
-
-  if (switches[channel].direction < 0)
-  {
-    return pwm_read(switches[channel].channel) < 1500;
-  }
-  else
-  {
-    return pwm_read(switches[channel].channel) >= 1500;
-  }
+  return switch_values[channel];
 }
 
 bool rc_low(int16_t channel)
@@ -297,6 +287,33 @@ bool receive_rc()
         return false;
     }
     last_rc_receive_time = now;
+
+    // read and normalize stick values
+    for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
+    {
+      uint16_t pwm = pwm_read(sticks[channel].channel);
+      stick_values[channel] = (sticks[channel].one_sided ? 1.0f : 2.0f) * (float)(pwm - sticks[channel].trim) / (float) sticks[channel].range;
+    }
+
+    // read and interpret switch values
+    for (rc_switch_t channel = 0; channel < RC_SWITCHES_COUNT; channel++)
+    {
+      if (switches[channel].mapped)
+      {
+        if (switches[channel].direction < 0)
+        {
+          switch_values[channel] = pwm_read(switches[channel].channel) < 1500;
+        }
+        else
+        {
+          switch_values[channel] = pwm_read(switches[channel].channel) >= 1500;
+        }
+      }
+      else
+      {
+        switch_values[channel] = false;
+      }
+    }
 
     // Determine whether we are in ANGLE, PASSTHROUGH, ALTIIUDE or RATE mode
     interpret_command_type();
