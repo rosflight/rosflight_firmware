@@ -173,7 +173,7 @@ typedef enum
     PARAMS_COUNT
 } param_id_t;
 
-typedef enum
+typedef enum uint8_t
 {
     PARAM_TYPE_INT32,
     PARAM_TYPE_FLOAT,

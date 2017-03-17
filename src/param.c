@@ -54,7 +54,11 @@ static uint8_t compute_checksum(void)
   uint8_t chk = 0;
   const uint8_t * p;
 
-  for (p = (const uint8_t *)&params; p < ((const uint8_t *)&params + sizeof(params_t)); p++)
+  for (p = (const uint8_t *)&params.values; p < ((const uint8_t *)&params.values + 4*PARAMS_COUNT); p++)
+    chk ^= *p;
+  for (p = (const uint8_t *)&params.names; p < ((const uint8_t *)&params.names + PARAMS_COUNT*PARAMS_NAME_LENGTH); p++)
+    chk ^= *p;
+  for (p = (const uint8_t *)&params.types; p < ((const uint8_t *)&params.types + PARAMS_COUNT); p++)
     chk ^= *p;
 
   return chk;
@@ -246,7 +250,7 @@ bool read_params(void)
   if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
     return false;
 
-  if (compute_checksum() != 0)
+  if (compute_checksum() != params.chk)
     return false;
 
   return true;
