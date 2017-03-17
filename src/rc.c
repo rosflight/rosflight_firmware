@@ -22,7 +22,7 @@ typedef struct
 typedef struct
 {
   uint8_t channel;
-  uint8_t direction;
+  int8_t direction;
   bool mapped;
 } rc_switch_config_t;
 
@@ -58,35 +58,13 @@ void init_sticks(void)
   sticks[RC_STICK_F].one_sided = true;
 }
 
-static uint8_t resolve_switch_direction(uint8_t chan)
-{
-  uint8_t direction = 1;
-  switch (chan)
-  {
-  case 4:
-    direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
-    break;
-  case 5:
-    direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
-    break;
-  case 6:
-    direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
-    break;
-  case 7:
-    direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
-    break;
-  }
-
-  return direction;
-}
-
 static void init_switches()
 {
-  switches[RC_SWITCH_ARM] = get_param_int(PARAM_ARM_CHANNEL);
-  switches[RC_SWITCH_ATT_OVERRIDE].channel = get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  switches[RC_SWITCH_ARM].channel               = get_param_int(PARAM_ARM_CHANNEL);
+  switches[RC_SWITCH_ATT_OVERRIDE].channel      = get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  switches[RC_SWITCH_ATT_TYPE].channel = get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-  switches[RC_SWITCH_THROTTLE_TYPE].channel = get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL);
+  switches[RC_SWITCH_ATT_TYPE].channel          = get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  switches[RC_SWITCH_THROTTLE_TYPE].channel     = get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL);
 
   for (rc_switch_t chan = 0; chan < RC_SWITCHES_COUNT; chan++)
   {
@@ -100,16 +78,16 @@ static void init_switches()
     switch (chan)
     {
     case 4:
-      direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
       break;
     case 5:
-      direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
       break;
     case 6:
-      direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
       break;
     case 7:
-      direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
       break;
     }
   }
@@ -119,39 +97,8 @@ void init_rc()
 {
     _calibrate_rc = false;
 
-//    _rc_control.x.type = ANGLE;
-//    _rc_control.y.type = ANGLE;
-//    _rc_control.z.type = RATE;
-//    _rc_control.F.type = THROTTLE;
-
-//    _rc_control.x.value = 0;
-//    _rc_control.y.value = 0;
-//    _rc_control.z.value = 0;
-//    _rc_control.F.value = 0;
-
-//    _offboard_control.x.active = false;
-//    _offboard_control.y.active = false;
-//    _offboard_control.z.active = false;
-//    _offboard_control.F.active = false;
-
     init_sticks();
     init_switches();
-
-//    sticks[RC_STICK_X].max_angle_param = PARAM_MAX_ROLL_ANGLE;
-//    sticks[RC_STICK_X].max_rate_param = PARAM_MAX_ROLL_RATE;
-//    sticks[RC_STICK_X].control_channel_ptr = &(_rc_control.x);
-
-//    sticks[RC_STICK_Y].max_angle_param = PARAM_MAX_PITCH_ANGLE;
-//    sticks[RC_STICK_Y].max_rate_param = PARAM_MAX_PITCH_RATE;
-//    sticks[RC_STICK_Y].control_channel_ptr = &(_rc_control.y);
-
-//    sticks[RC_STICK_Z].max_angle_param = 0;
-//    sticks[RC_STICK_Z].max_rate_param = PARAM_MAX_YAW_RATE;
-//    sticks[RC_STICK_Z].control_channel_ptr = &(_rc_control.z);
-
-//    sticks[RC_STICK_F].max_angle_param = 0;
-//    sticks[RC_STICK_F].max_rate_param = PARAM_MAX_ROLL_RATE;
-//    sticks[RC_STICK_F].control_channel_ptr = &(_rc_control.F);
 }
 
 float rc_stick(rc_stick_t channel)
@@ -164,7 +111,7 @@ bool rc_switch(rc_switch_t channel)
   return switch_values[channel];
 }
 
-bool rc_switch(rc_switch_t channel)
+bool rc_switch_mapped(rc_switch_t channel)
 {
   return switches[channel].mapped;
 }
