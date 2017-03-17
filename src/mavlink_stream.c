@@ -17,11 +17,17 @@
 // local function definitions
 static void mavlink_send_heartbeat(void)
 {
-  MAV_MODE armed_mode = MAV_MODE_ENUM_END; // used for failsafe
-  if (_armed_state == ARMED)
+  MAV_MODE armed_mode = 0;
+  if (_armed_state & ARMED)
     armed_mode = MAV_MODE_MANUAL_ARMED;
-  else if (_armed_state == DISARMED)
+  else
     armed_mode = MAV_MODE_MANUAL_DISARMED;
+
+  MAV_STATE failsafe_state = 0;
+  if (_armed_state & FAILSAFE)
+    failsafe_state = MAV_STATE_CRITICAL;
+  else
+    failsafe_state = MAV_STATE_STANDBY;
 
   uint8_t control_mode = 0;
   if (get_param_int(PARAM_FIXED_WING))
@@ -30,8 +36,10 @@ static void mavlink_send_heartbeat(void)
   }
   else
   {
-    control_mode = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE :
-                   MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
+    if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
+      control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
+    else
+      control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
   }
 
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
@@ -39,7 +47,7 @@ static void mavlink_send_heartbeat(void)
                              MAV_AUTOPILOT_GENERIC,
                              armed_mode,
                              control_mode,
-                             MAV_STATE_STANDBY);
+                             failsafe_state);
 }
 
 static void mavlink_send_attitude(void)

@@ -68,7 +68,7 @@ static void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id,
 
 static void run_pid(pid_t *pid, float dt)
 {
-  if (dt > 0.010 || _armed_state == DISARMED)
+  if (dt > 0.010 || !(_armed_state & ARMED))
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
