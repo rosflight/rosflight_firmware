@@ -169,34 +169,6 @@ bool rc_switch(rc_switch_t channel)
   return switches[channel].mapped;
 }
 
-bool rc_low(int16_t channel)
-{
-  if (channel < 4)
-  {
-    rc_stick_config_t* rc_ptr = &(sticks[channel]);
-    int16_t pwm = pwm_read(get_param_int(rc_ptr->channel_param));
-    if(channel != RC_STICK_F)
-      return pwm < get_param_int(rc_ptr->center_param) - get_param_int(rc_ptr->range_param)/2 +get_param_int(PARAM_ARM_THRESHOLD);
-    else
-      return pwm < get_param_int(rc_ptr->bottom_param) + get_param_int(PARAM_ARM_THRESHOLD);
-  }
-  return false;
-}
-
-bool rc_high(int16_t channel)
-{
-  if(channel < 4)
-  {
-    rc_stick_config_t* rc_ptr = &(sticks[channel]);
-    int16_t pwm = pwm_read(get_param_int(rc_ptr->channel_param));
-    if(channel != RC_STICK_F)
-      return pwm > get_param_int(rc_ptr->center_param) + get_param_int(rc_ptr->range_param)/2 - get_param_int(PARAM_ARM_THRESHOLD);
-    else
-      return pwm > get_param_int(rc_ptr->bottom_param) + get_param_int(rc_ptr->range_param) - get_param_int(PARAM_ARM_THRESHOLD);
-  }
-  return false;
-}
-
 bool receive_rc()
 {
     static uint32_t last_rc_receive_time = 0;
