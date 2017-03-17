@@ -111,7 +111,7 @@ static void interpret_rc(void)
     _rc_control.z.value *= get_param_float(PARAM_RC_MAX_YAWRATE);
 
     // throttle
-    _rc_control.z.type = THROTTLE;
+    _rc_control.F.type = THROTTLE;
   }
 }
 
