@@ -168,7 +168,7 @@ void write_servo(uint8_t index, float value)
     value = -0.5;
   }
   _outputs[index] = value;
-  pwm_write(index, _outputs[index] * 1000 + 1500);
+  pwm_write(index, _outputs[index] * 500 + 1500);
 }
 
 

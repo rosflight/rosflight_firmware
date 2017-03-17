@@ -106,10 +106,10 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
   _offboard_control_time = clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
-  // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
+  // put values into standard message
   _offboard_control.x.value = mavlink_offboard_control.x;
-  _offboard_control.y.value = -mavlink_offboard_control.y;
-  _offboard_control.z.value = -mavlink_offboard_control.z;
+  _offboard_control.y.value = mavlink_offboard_control.y;
+  _offboard_control.z.value = mavlink_offboard_control.z;
   _offboard_control.F.value = mavlink_offboard_control.F;
 
   // Move flags into standard message
@@ -126,17 +126,12 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.type = PASSTHROUGH;
     _offboard_control.z.type = PASSTHROUGH;
     _offboard_control.F.type = THROTTLE;
-    _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
-    _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
-    _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
-    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     break;
   case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
     _offboard_control.x.type = RATE;
     _offboard_control.y.type = RATE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
-    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     _offboard_control.x.value += get_param_float(PARAM_ROLL_RATE_TRIM);
     _offboard_control.y.value += get_param_float(PARAM_PITCH_RATE_TRIM);
     _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
@@ -146,7 +141,6 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.type = ANGLE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
-    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
     _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
     _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
