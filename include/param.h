@@ -31,7 +31,7 @@ typedef enum
     PARAM_STREAM_GPS_RATE,
     PARAM_STREAM_SONAR_RATE,
 
-    PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
+    PARAM_STREAM_OUTPUT_RAW_RATE,
     PARAM_STREAM_RC_RAW_RATE,
 
     /********************************/

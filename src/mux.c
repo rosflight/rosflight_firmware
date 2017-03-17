@@ -82,7 +82,6 @@ static void interpret_rc(void)
     _rc_control.x.type = PASSTHROUGH;
     _rc_control.y.type = PASSTHROUGH;
     _rc_control.z.type = PASSTHROUGH;
-    _rc_control.F.type = THROTTLE;
   }
   else
   {
@@ -213,6 +212,10 @@ bool mux_inputs()
   }
   else
   {
+    // Read RC
+    interpret_rc();
+
+    // Perform muxing
     bool rc_override = false;
     for (mux_channel_t i = MUX_X; i <= MUX_Z; i++)
     {

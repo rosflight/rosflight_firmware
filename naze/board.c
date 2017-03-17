@@ -7,13 +7,14 @@
 extern void SetSysClock(bool overclock);
 serialPort_t *Serial1;
 
-static uint8_t board_revision;
+static uint8_t _board_revision;
 
 void init_board(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
   systemInit();
+  _board_revision = 2;
 }
 
 void board_reset(bool bootloader)
@@ -22,7 +23,6 @@ void board_reset(bool bootloader)
 }
 
 // clock
-
 uint32_t clock_millis()
 {
   return millis();
@@ -66,7 +66,6 @@ static bool _baro_present;
 static bool _mag_present;
 static bool _sonar_present;
 static bool _diff_pressure_present;
-static int _board_revision;
 
 static float _accel_scale;
 static float _gyro_scale;
