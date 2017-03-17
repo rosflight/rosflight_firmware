@@ -164,6 +164,11 @@ bool rc_switch(rc_switch_t channel)
   return switch_values[channel];
 }
 
+bool rc_switch(rc_switch_t channel)
+{
+  return switches[channel].mapped;
+}
+
 bool rc_low(int16_t channel)
 {
   if (channel < 4)
@@ -191,84 +196,6 @@ bool rc_high(int16_t channel)
   }
   return false;
 }
-
-static void interpret_command_values()
-{
-    for (uint8_t i = 0; i < 4; i++)
-    {
-        rc_stick_config_t* chan = &(sticks[i]);
-        int16_t pwm = pwm_read(get_param_int(chan->channel_param));
-
-        // If this is the throttle channel, we need to go from 0.0 to 1.0
-        // Otherwise, we need to go from -1.0 to 1.0
-        if(i == RC_STICK_F)
-        {
-            chan->control_channel_ptr->value = (float)(pwm - get_param_int(chan->bottom_param)) /
-                    (float)(get_param_int(chan->range_param));
-        }
-        else
-        {
-            chan->control_channel_ptr->value = 2.0*(float)(pwm - get_param_int(chan->center_param))/
-                    (float)(get_param_int(chan->range_param));
-        }
-
-        // Now, check the mode and convert the normalized value to the appropriate units
-        switch(chan->control_channel_ptr->type)
-        {
-        case RATE:
-            chan->control_channel_ptr->value *= get_param_float(chan->max_rate_param);
-            break;
-        case ANGLE:
-            chan->control_channel_ptr->value *= get_param_float(chan->max_angle_param);
-            break;
-        default: // default and altitude modes, leave as normalized
-            break;
-        }
-    }
-}
-
-void interpret_command_type()
-{
-    // Figure out the desired control type from the switches and params
-    if (get_param_int(PARAM_FIXED_WING))
-    {
-        // for using fixedwings
-        _rc_control.x.type = _rc_control.y.type = _rc_control.z.type = PASSTHROUGH;
-        _rc_control.F.type = THROTTLE;
-    }
-    else
-    {
-        _rc_control.x.type = _rc_control.y.type = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? ANGLE : RATE;
-        _rc_control.z.type = RATE;
-        _rc_control.F.type = rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)) ? ALTITUDE : THROTTLE;
-    }
-}
-
-bool sticks_deviated(uint32_t now_ms)
-{
-    static uint32_t time_of_last_stick_deviation = 0;
-
-    // If we are in the lag time, return true;
-    if(now_ms - time_of_last_stick_deviation < (uint64_t)(get_param_int(PARAM_OVERRIDE_LAG_TIME)))
-    {
-        return true;
-    }
-    else
-    {
-        for (uint8_t i = 0; i < 3; i++)
-        {
-            int16_t deviation = pwm_read(get_param_int(sticks[i].channel_param)) - get_param_int(sticks[i].center_param);
-            if (abs(deviation) > get_param_int(PARAM_RC_OVERRIDE_DEVIATION))
-            {
-                time_of_last_stick_deviation = now_ms;
-                return true;
-            }
-        }
-        // None of the three sticks are deviated more than the override threshold
-        return false;
-    }
-}
-
 
 bool receive_rc()
 {
@@ -313,36 +240,6 @@ bool receive_rc()
       {
         switch_values[channel] = false;
       }
-    }
-
-    // Determine whether we are in ANGLE, PASSTHROUGH, ALTIIUDE or RATE mode
-    interpret_command_type();
-
-    // Interpret PWM Values from RC
-    interpret_command_values();
-
-    // Set flags for attitude channels
-    if (rc_switch(get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL)) || sticks_deviated(now))
-    {
-        // Pilot is in full control
-        _rc_control.x.active = _rc_control.y.active = _rc_control.z.active = true;
-    }
-    else
-    {
-        // Give computer control
-        _rc_control.x.active = _rc_control.x.active = _rc_control.x.active = false;
-    }
-
-    // Set flags for throttle channel
-    if (rc_switch(get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL)))
-    {
-        // RC Pilot is in control
-        _rc_control.F.active = true;
-    }
-    else
-    {
-        // Onboard computer has control - min throttle Checking will be done in mux and in the controller.
-        _rc_control.F.active = false;
     }
 
     // Signal to the mux that we need to compute a new combined command
