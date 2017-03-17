@@ -1,5 +1,4 @@
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mode.h"
@@ -57,10 +56,10 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       result = start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      start_baro_calibration();
+      baro_calibrate();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      start_airspeed_calibration();
+      diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       _calibrate_rc = true;
@@ -84,14 +83,14 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
-    delay(20);
-    systemReset(reboot_to_bootloader_flag);
+    clock_delay(20);
+    board_reset(reboot_to_bootloader_flag);
   }
 }
 
 static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint64_t now_us = micros();
+  uint64_t now_us = clock_micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
@@ -104,13 +103,13 @@ static void mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 
 static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
-  _offboard_control_time = micros();
+  _offboard_control_time = clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
-  // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
+  // put values into standard message
   _offboard_control.x.value = mavlink_offboard_control.x;
-  _offboard_control.y.value = -mavlink_offboard_control.y;
-  _offboard_control.z.value = -mavlink_offboard_control.z;
+  _offboard_control.y.value = mavlink_offboard_control.y;
+  _offboard_control.z.value = mavlink_offboard_control.z;
   _offboard_control.F.value = mavlink_offboard_control.F;
 
   // Move flags into standard message
@@ -127,17 +126,12 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.type = PASSTHROUGH;
     _offboard_control.z.type = PASSTHROUGH;
     _offboard_control.F.type = THROTTLE;
-    _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
-    _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
-    _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
-    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     break;
   case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
     _offboard_control.x.type = RATE;
     _offboard_control.y.type = RATE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
-    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
     _offboard_control.x.value += get_param_float(PARAM_ROLL_RATE_TRIM);
     _offboard_control.y.value += get_param_float(PARAM_PITCH_RATE_TRIM);
     _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
@@ -147,16 +141,6 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.type = ANGLE;
     _offboard_control.z.type = RATE;
     _offboard_control.F.type = THROTTLE;
-    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-    _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
-    _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
-    _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
-    break;
-  case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
-    _offboard_control.x.type = ANGLE;
-    _offboard_control.y.type = ANGLE;
-    _offboard_control.z.type = RATE;
-    _offboard_control.F.type = ALTITUDE;
     _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
     _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
     _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
@@ -196,10 +180,9 @@ static void handle_mavlink_message(void)
 // function definitions
 void mavlink_receive(void)
 {
-  while (serialTotalBytesWaiting(Serial1))
+  while (serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, serialRead(Serial1), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, serial_read(), &in_buf, &status))
       handle_mavlink_message();
   }
 }
-

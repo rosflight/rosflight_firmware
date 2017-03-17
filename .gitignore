@@ -11,6 +11,9 @@
 *.user.*
 *.o
 /build/*
+/naze/build
+
+param_description.md
 
 *.aux
 *.fdb_latexmk

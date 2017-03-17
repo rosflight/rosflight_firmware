@@ -13,7 +13,6 @@ typedef enum
   RATE, // Channel is is in rate mode (mrad/s)
   ANGLE, // Channel command is in angle mode (mrad)
   THROTTLE, // Channel is direcly controlling throttle max/1000
-  ALTITUDE, // Channel is commanding a specified altitude in cm
   PASSTHROUGH, // Channel directly passes PWM input to the mixer
 } control_type_t;
 

@@ -2,8 +2,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
-#include "flash.h"
+#include "board.h"
 #include "mavlink.h"
 #include "mavlink_param.h"
 #include "mavlink_stream.h"
@@ -12,28 +13,61 @@
 #include "mixer.h"
 //#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
 
+// type definitions
+typedef struct
+{
+  uint8_t version;
+  uint16_t size;
+  uint8_t magic_be;                       // magic number, should be 0xBE
+
+  int32_t values[PARAMS_COUNT];
+  char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
+  param_type_t types[PARAMS_COUNT];
+
+  uint8_t magic_ef;                       // magic number, should be 0xEF
+  uint8_t chk;                            // XOR checksum
+} params_t;
+
 // global variable definitions
-params_t _params;
+static params_t params;
+
+// local variable definitions
+static const uint8_t PARAM_CONF_VERSION = 76;
 
 // local function definitions
 static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = value;
-  _params.types[id] = PARAM_TYPE_INT32;
+  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  params.values[id] = value;
+  params.types[id] = PARAM_TYPE_INT32;
 }
 
 static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
 {
-  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = *((int32_t *) &value);
-  _params.types[id] = PARAM_TYPE_FLOAT;
+  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  params.values[id] = *((int32_t *) &value);
+  params.types[id] = PARAM_TYPE_FLOAT;
+}
+
+static uint8_t compute_checksum(void)
+{
+  uint8_t chk = 0;
+  const uint8_t * p;
+
+  for (p = (const uint8_t *)&params.values; p < ((const uint8_t *)&params.values + 4*PARAMS_COUNT); p++)
+    chk ^= *p;
+  for (p = (const uint8_t *)&params.names; p < ((const uint8_t *)&params.names + PARAMS_COUNT*PARAMS_NAME_LENGTH); p++)
+    chk ^= *p;
+  for (p = (const uint8_t *)&params.types; p < ((const uint8_t *)&params.types + PARAMS_COUNT); p++)
+    chk ^= *p;
+
+  return chk;
 }
 
 // function definitions
 void init_params(void)
 {
-  initEEPROM();
+  memory_init();
   if (!read_params())
   {
     set_param_defaults();
@@ -49,7 +83,6 @@ void set_param_defaults(void)
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2); // Major board revision of naze32/flip32 | 1 | 6
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
 
   /*****************************/
@@ -66,7 +99,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0); // Rate of GPS stream (Hz) | 0 | 1
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
-  init_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
+  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_OUTPUT", 50); // Rate of raw output stream | 0 |  490
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50
 
   /********************************/
@@ -78,36 +111,26 @@ void set_param_defaults(void)
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_D, "PID_ROLL_RATE_D", 0.000f); // Rall Rate Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_ROLL_RATE_TRIM, "ROLL_RATE_TRIM", 0.0f); // Roll Rate Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 3.14159f); // Maximum Roll Rate command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);  // Pitch Rate Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.0000f); // Pitch Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_D, "PID_PITCH_RATE_D", 0.0000f); // Pitch Rate Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_PITCH_RATE_TRIM, "PITCH_RATE_TRIM", 0.0f); // Pitch Rate Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 3.14159f);  // Maximum Pitch Rate command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.25f);   // Yaw Rate Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);  // Yaw Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_D, "PID_YAW_RATE_D", 0.0f);  // Yaw Rate Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_YAW_RATE_TRIM, "YAW_RATE_TRIM", 0.0f);  // Yaw Rate Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);   // Maximum Yaw Rate command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);   // Roll Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);   // Roll Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_ROLL_ANGLE_TRIM, "ROLL_TRIM", 0.0f);  // Roll Angle Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);   // Maximum Roll Angle command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);   // Maximum Pitch Angle command accepted into PID controllers | 0.0 | 1000.0
-
-  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 0.0f); // Altitude Proporitional Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f); // Altitude Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f); // Altitude Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_HOVER_THROTTLE, "HOVER_THR", 0.5); // Hover Throttle - See RC calibration | 0.0 | 1.0
 
   init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f); // Dirty Derivative time constant - See controller documentation | 0.0 | 1.0
 
@@ -116,7 +139,9 @@ void set_param_defaults(void)
   /*** PWM CONFIGURATION ***/
   /*************************/
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
-  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_PWM | 0 | 1
 
   /*******************************/
@@ -162,10 +187,10 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1); // RC input channel mapped to y-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3); // RC input channel mapped to z-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2); // RC input channel mapped to F-axis commands [0 - indexed] | 0 | 3
-  init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 -indexed] | 4 | 7
-  init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch hannel mapped to throttle override [0 -indexed] | 4 | 7
-  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5); // RC switch channel mapped to attitude control type [0 -indexed] | 4 | 7
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN",   7); // RC switch channel mapped to throttle control type override [0 -indexed] | 4 | 7
+  init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", -1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL", -1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500); // RC calibration x-axis center (us) | 1000 | 2000
@@ -176,20 +201,21 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_Y_RANGE,  "RC_Y_RANGE", 1000); // RC calibration y-axis range (us) | 500 | 2500
   init_param_int(PARAM_RC_Z_RANGE,  "RC_Z_RANGE", 1000); // RC calibration z-axis range (us) | 500 | 2500
   init_param_int(PARAM_RC_F_RANGE,  "RC_F_RANGE", 1000); // RC calibration F-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | 0 | 1
-  init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | 0 | 1
-  init_param_int(PARAM_RC_SWITCH_7_DIRECTION, "SWITCH_7_DIR", 1); // RC switch 7 toggle direction | 0 | 1
-  init_param_int(PARAM_RC_SWITCH_8_DIRECTION, "SWITCH_8_DIR", 1); // RC switch 8 toggle direction | 0 | 1
+  init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
+  init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | -1 | 1
+  init_param_int(PARAM_RC_SWITCH_7_DIRECTION, "SWITCH_7_DIR", 1); // RC switch 7 toggle direction | -1 | 1
+  init_param_int(PARAM_RC_SWITCH_8_DIRECTION, "SWITCH_8_DIR", 1); // RC switch 8 toggle direction | -1 | 1
 
-  init_param_int(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVRD_DEV", 100); // RC stick deviation from center for overrride (us) | 0 | 1000
+  init_param_float(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVRD_DEV", 0.1); // RC stick deviation from center for overrride | 0.0 | 1.0
   init_param_int(PARAM_OVERRIDE_LAG_TIME, "OVRD_LAG_TIME", 1000); // RC stick deviation lag time before returning control (ms) | 0 | 100000
   init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "MIN_THROTTLE", false); // Take minimum throttle between RC and computer at all times | 0 | 1
 
+  init_param_int(PARAM_RC_ATTITUDE_MODE, "RC_ATT_MODE", 1); // Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | 0 | 1
   init_param_float(PARAM_RC_MAX_ROLL, "RC_MAX_ROLL", 0.786f); // Maximum roll angle command sent by full deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f); // Maximum pitch angle command sent by full stick deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f); // Maximum roll rate command sent by full stick deflection of RC sticks | 0.0 | 9.42477796077
   init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 3.14159f); // Maximum pitch command sent by full stick deflection of RC sticks | 0.0 | 3.14159
-  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 0.786f); // Maximum pitch command sent by full stick deflection of RC sticks | 0.0 | 3.14159
+  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 1.507f); // Maximum pitch command sent by full stick deflection of RC sticks | 0.0 | 3.14159
 
   /***************************/
   /*** FRAME CONFIGURATION ***/
@@ -204,19 +230,37 @@ void set_param_defaults(void)
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true); // use RC sticks to arm vehicle (disables arm RC switch if enabled) | 0 | 1
-  init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5); // RC switch mapped to arm/disarm [0 -indexed] | 4 | 7
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
+  init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check | 0 | 0.5
 }
 
 bool read_params(void)
 {
-  return readEEPROM();
+  if (!memory_read(&params, sizeof(params_t)))
+    return false;
+
+  if (params.version != PARAM_CONF_VERSION)
+    return false;
+
+  if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
+    return false;
+
+  if (compute_checksum() != params.chk)
+    return false;
+
+  return true;
 }
 
 bool write_params(void)
 {
-  return writeEEPROM();
+  params.version = PARAM_CONF_VERSION;
+  params.size = sizeof(params_t);
+  params.magic_be = 0xBE;
+  params.magic_ef = 0xEF;
+  params.chk = compute_checksum();
+
+  if (!memory_write(&params, sizeof(params_t)))
+    return false;
+  return true;
 }
 
 void param_change_callback(param_id_t id)
@@ -250,8 +294,8 @@ void param_change_callback(param_id_t id)
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, get_param_int(PARAM_STREAM_MAG_RATE));
     break;
 
-  case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SERVO_OUTPUT_RAW, get_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE));
+  case PARAM_STREAM_OUTPUT_RAW_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_OUTPUT_RAW, get_param_int(PARAM_STREAM_OUTPUT_RAW_RATE));
     break;
   case PARAM_STREAM_RC_RAW_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
@@ -261,6 +305,9 @@ void param_change_callback(param_id_t id)
     init_PWM();
     break;
   case PARAM_MOTOR_PWM_SEND_RATE:
+    init_PWM();
+    break;
+  case PARAM_MOTOR_MIN_PWM:
     init_PWM();
     break;
   case PARAM_MIXER:
@@ -281,14 +328,14 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
     for (uint8_t i = 0; i < PARAMS_NAME_LENGTH; i++)
     {
       // compare each character
-      if (name[i] != _params.names[id][i])
+      if (name[i] != params.names[id][i])
       {
         match = false;
         break;
       }
 
       // stop comparing if end of string is reached
-      if (_params.names[id][i] == '\0')
+      if (params.names[id][i] == '\0')
         break;
     }
 
@@ -301,29 +348,29 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 
 int get_param_int(param_id_t id)
 {
-  return _params.values[id];
+  return params.values[id];
 }
 
 float get_param_float(param_id_t id)
 {
-  return *(float *) &_params.values[id];
+  return *(float *) &params.values[id];
 }
 
 char *get_param_name(param_id_t id)
 {
-  return _params.names[id];
+  return params.names[id];
 }
 
 param_type_t get_param_type(param_id_t id)
 {
-  return _params.types[id];
+  return params.types[id];
 }
 
 bool set_param_int(param_id_t id, int32_t value)
 {
-  if (id < PARAMS_COUNT && value != _params.values[id])
+  if (id < PARAMS_COUNT && value != params.values[id])
   {
-    _params.values[id] = value;
+    params.values[id] = value;
     param_change_callback(id);
     mavlink_send_param(id);
     return true;

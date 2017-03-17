@@ -1,12 +1,13 @@
 #pragma once
 
-#include <breezystm32/breezystm32.h>
+#include "board.h"
 
 #include "mavlink.h"
+#include "printf.h"
 
 #define mavlink_log(severity, format, ...) do { \
   char text[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN]; \
-  sprintf(text, format, ##__VA_ARGS__); \
+  tfp_sprintf(text, format, ##__VA_ARGS__); \
   mavlink_msg_statustext_send(MAVLINK_COMM_0, severity, text); \
   } while (0)
 
@@ -21,7 +22,7 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
@@ -33,7 +34,7 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
@@ -45,7 +46,7 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
@@ -57,11 +58,10 @@
   do\
   {\
     static uint32_t last_hit = 0; \
-    uint32_t now = millis(); \
+    uint32_t now = clock_millis(); \
     if (now - last_hit > delay_ms) \
     {\
       last_hit = now; \
       mavlink_log_info(format, ##__VA_ARGS__); \
     }\
   } while(0)
-
