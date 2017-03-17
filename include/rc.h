@@ -49,7 +49,9 @@ extern bool _calibrate_rc;
 void init_rc(void);
 float rc_stick(rc_stick_t channel);
 bool rc_switch(rc_switch_t channel);
+bool rc_switch_mapped(rc_switch_t channel);
 bool receive_rc();
+
 bool rc_low(int16_t channel);
 bool rc_high(int16_t channel);
 
