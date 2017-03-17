@@ -64,7 +64,6 @@ static void init_switches()
   switches[RC_SWITCH_ATT_OVERRIDE].channel      = get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_ATT_TYPE].channel          = get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-  switches[RC_SWITCH_THROTTLE_TYPE].channel     = get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL);
 
   for (rc_switch_t chan = 0; chan < RC_SWITCHES_COUNT; chan++)
   {

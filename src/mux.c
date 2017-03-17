@@ -13,6 +13,7 @@ control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
 
+// Drop like a brick
 control_t _failsafe_control =
 {
   {true, ANGLE, 0.0},
@@ -30,7 +31,6 @@ typedef enum
 typedef enum
 {
   THROTTLE_MODE_THROTTLE,
-  THROTTLE_MODE_ALTITUDE
 } throttle_mode_t;
 
 typedef enum
@@ -99,6 +99,8 @@ static void interpret_rc(void)
 
     _rc_control.x.type = roll_pitch_type;
     _rc_control.y.type = roll_pitch_type;
+
+    // Scale command to appropriate units
     switch (roll_pitch_type)
     {
       case RATE:
@@ -116,19 +118,6 @@ static void interpret_rc(void)
 
     // throttle
     _rc_control.z.type = THROTTLE;
-
-    /* TODO use this logic once altitude hold is implemented:
-    if (rc_switch_mapped(RC_SWITCH_THROTTLE_TYPE))
-    {
-      _rc_control.z.type = rc_switch(RC_SWITCH_THROTTLE_TYPE) ? ALTITUDE : THROTTLE;
-    }
-    else
-    {
-      _rc_control.z.type = (get_param_int(PARAM_RC_THROTTLE_MODE) == THROTTLE_MODE_ALTITUDE) ? ALTITUDE : THROTTLE;
-    }
-    */
-
-    // TODO run altitude controller here if in ALTITUDE mode, then result is in THROTTLE mode?
   }
 }
 
@@ -178,8 +167,6 @@ static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
 
 static bool do_throttle_muxing(void)
 {
-  // TODO this assumes that both RC and offboard are in THROTTLE mode
-
   bool rc_override;
 
   if (rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
@@ -229,9 +216,9 @@ bool mux_inputs()
     bool rc_override = false;
     for (mux_channel_t i = MUX_X; i <= MUX_Z; i++)
     {
-      rc_override = rc_override || do_roll_pitch_yaw_muxing(i);
+      rc_override |= do_roll_pitch_yaw_muxing(i);
     }
-    rc_override = rc_override || do_throttle_muxing();
+    rc_override |= do_throttle_muxing();
 
     // Light to indicate override
     if (rc_override)

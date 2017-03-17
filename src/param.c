@@ -138,11 +138,6 @@ void set_param_defaults(void)
   init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
   init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);   // Maximum Pitch Angle command accepted into PID controllers | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 0.0f); // Altitude Proporitional Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f); // Altitude Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f); // Altitude Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_HOVER_THROTTLE, "HOVER_THR", 0.5); // Hover Throttle - See RC calibration | 0.0 | 1.0
-
   init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f); // Dirty Derivative time constant - See controller documentation | 0.0 | 1.0
 
 
@@ -222,7 +217,6 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "MIN_THROTTLE", false); // Take minimum throttle between RC and computer at all times | 0 | 1
 
   init_param_int(PARAM_RC_ATTITUDE_MODE, "RC_ATT_MODE", 1); // Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | 0 | 1
-  init_param_int(PARAM_RC_THROTTLE_MODE, "RC_THR_MODE", 0); // Throttle mode for RC sticks (0: throttle, 1: altitude). Overridden if RC_F_CTRL_CHN is set. | 0 | 1
   init_param_float(PARAM_RC_MAX_ROLL, "RC_MAX_ROLL", 0.786f); // Maximum roll angle command sent by full deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f); // Maximum pitch angle command sent by full stick deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f); // Maximum roll rate command sent by full stick deflection of RC sticks | 0.0 | 9.42477796077

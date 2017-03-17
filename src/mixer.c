@@ -9,11 +9,9 @@ extern "C" {
 #include "mode.h"
 #include "rc.h"
 
-float _GPIO_outputs[8];
 static float prescaled_outputs[8];
-float _outputs[10];
+float _outputs[8];
 command_t _command;
-output_type_t _GPIO_output_type[8];
 
 static mixer_t quadcopter_plus_mixing =
 {
@@ -84,7 +82,7 @@ static mixer_t X8_mixing =
   { 1.0f,  -1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,   1.0f, -1.0f}  // Z Mix
 };
 
-static mixer_t mixer_to_use;
+static mixer_t* mixer_to_use;
 
 static mixer_t *array_of_mixers[NUM_MIXERS] =
 {
@@ -102,14 +100,12 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
 void init_mixing()
 {
   // We need a better way to choosing the mixer
-  mixer_to_use = *array_of_mixers[get_param_int(PARAM_MIXER)];
+  mixer_to_use = array_of_mixers[get_param_int(PARAM_MIXER)];
 
   for (int8_t i=0; i<8; i++)
   {
     _outputs[i] = 0.0f;
     prescaled_outputs[i] = 0.0f;
-    _GPIO_outputs[i] = 0.0f;
-    _GPIO_output_type[i] = NONE;
   }
   _command.F = 0;
   _command.x = 0;
@@ -176,22 +172,27 @@ void mix_output()
 {
   float max_output = 1.0f;
 
+  // Reverse Fixedwing channels just before mixing if we need to
+  if (get_param_int(PARAM_FIXED_WING))
+  {
+    _command.x *= get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    _command.y *= get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    _command.z *= get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+  }
+
   for (int8_t i=0; i<8; i++)
   {
-    if (mixer_to_use.output_type[i] != NONE)
+    if (mixer_to_use->output_type[i] != NONE)
     {
       // Matrix multiply to mix outputs
-      prescaled_outputs[i] = (_command.F*mixer_to_use.F[i] + _command.x*mixer_to_use.x[i] +
-                              _command.y*mixer_to_use.y[i] + _command.z*mixer_to_use.z[i]);
+      prescaled_outputs[i] = (_command.F*mixer_to_use->F[i] + _command.x*mixer_to_use->x[i] +
+                              _command.y*mixer_to_use->y[i] + _command.z*mixer_to_use->z[i]);
 
-      // Save off the largest control output if it is greater than 1.0
+      // Save off the largest control output if it is greater than 1.0 for future scaling
       if (prescaled_outputs[i] > max_output)
       {
         max_output = prescaled_outputs[i];
       }
-      // negative motor outputs are set to zero when writing to the motor,
-      // but they have to be allowed here because the same logic is used for
-      // servo commands, which may be negative
     }
   }
 
@@ -202,40 +203,24 @@ void mix_output()
     scale_factor = 1.0/max_output;
   }
 
-  // Reverse Fixedwing channels
-  if (get_param_int(PARAM_FIXED_WING))
-  {
-    prescaled_outputs[0] *= get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    prescaled_outputs[1] *= get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    prescaled_outputs[3] *= get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
-  }
-
   // Add in GPIO inputs from Onboard Computer
   for (int8_t i=0; i<8; i++)
   {
-    output_type_t output_type = mixer_to_use.output_type[i];
-    if (mixer_to_use.output_type[i] == M)
-    {
-      prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor; // scale all outputs by scale factor
-    }
-    if (output_type == NONE)
-    {
-      // Incorporate GPIO on not already reserved outputs
-      prescaled_outputs[i] = _GPIO_outputs[i];
-      output_type = _GPIO_output_type[i];
-    }
-
     // Write output to motors
-    if (output_type == S)
+    if (mixer_to_use->output_type[i] == S)
     {
       write_servo(i, prescaled_outputs[i]);
     }
-    else if (output_type == M)
+    else if (mixer_to_use->output_type[i] == M)
     {
+      // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
+      prescaled_outputs[i] *= scale_factor;
       write_motor(i, prescaled_outputs[i]);
     }
   }
 }
+
+
 #ifdef __cplusplus
 }
 #endif

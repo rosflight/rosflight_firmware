@@ -145,15 +145,6 @@ static void mavlink_handle_msg_offboard_control(const mavlink_message_t *const m
     _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
     _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
     break;
-  case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
-    _offboard_control.x.type = ANGLE;
-    _offboard_control.y.type = ANGLE;
-    _offboard_control.z.type = RATE;
-    _offboard_control.F.type = ALTITUDE;
-    _offboard_control.x.value += get_param_float(PARAM_ROLL_ANGLE_TRIM);
-    _offboard_control.y.value += get_param_float(PARAM_PITCH_ANGLE_TRIM);
-    _offboard_control.z.value += get_param_float(PARAM_YAW_RATE_TRIM);
-    break;
     // Handle error state
   }
   _new_command = true;

@@ -8,17 +8,6 @@
 
 #include "mux.h"
 
-//typedef struct
-//{
-//    int32_t channel_param;
-//    int32_t max_angle_param;
-//    int32_t max_rate_param;
-//    int32_t center_param;
-//    int32_t bottom_param;
-//    int32_t range_param;
-//    control_channel_t* control_channel_ptr;
-//} rc_channel_t;
-
 typedef enum
 {
   RC_STICK_X,
@@ -34,7 +23,6 @@ typedef enum
   RC_SWITCH_ATT_OVERRIDE,
   RC_SWITCH_THROTTLE_OVERRIDE,
   RC_SWITCH_ATT_TYPE,
-  RC_SWITCH_THROTTLE_TYPE,
   RC_SWITCHES_COUNT
 } rc_switch_t;
 
