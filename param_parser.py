@@ -18,7 +18,7 @@ for line in lines:
         name = re.search("\w{1,16}", name_with_quotes).group(0)
         if name != 'DEFAULT':
             params.append(dict())
-            params[i]['type'] = 'param'
+            params[i]['type'] = re.split("\(", re.split("_", line)[2])[0]
             params[i]['name'] = name
             # Find default value
             params[i]['default'] =  re.split("\)", re.split(",", line)[2])[0]
@@ -33,13 +33,15 @@ for line in lines:
 # Now, generate the markdown table of the parameters
 out = open('param_description.md', 'w')
 # Start the table
-out.write("| Parameter | Description | Default Value | Min | Max |\n")
-out.write("|-----------|-------------|---------------|-----|-----|\n")
+out.write("| Parameter | Description | Type | Default Value | Min | Max |\n")
+out.write("|-----------|-------------|------|---------------|-----|-----|\n")
 for param in params:
     out.write("| ")
     out.write(param['name'])
     out.write(" | ")
     out.write(param['description'])
+    out.write(" | ")
+    out.write(param['type'])
     out.write(" | ")
     out.write(param['default'])
     out.write(" | ")
