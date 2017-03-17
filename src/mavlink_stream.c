@@ -14,14 +14,6 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
-// typedefs
-typedef struct
-{
-  uint32_t period_us;
-  uint64_t last_time_us;
-  void (*send_function)(void);
-} mavlink_stream_t;
-
 // local function definitions
 static void mavlink_send_heartbeat(void)
 {
@@ -35,10 +27,6 @@ static void mavlink_send_heartbeat(void)
   if (get_param_int(PARAM_FIXED_WING))
   {
     control_mode = MODE_PASS_THROUGH;
-  }
-  else if (rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)))
-  {
-    control_mode = MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
   }
   else
   {
@@ -147,22 +135,29 @@ static void mavlink_send_low_priority(void)
   mavlink_send_next_param();
 }
 
+// typedefs
+typedef struct
+{
+  uint32_t period_us;
+  uint64_t next_time_us;
+  void (*send_function)(void);
+} mavlink_stream_t;
+
 // local variable definitions
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 {
-  { .period_us = 1000000, .last_time_us = 0, .send_function = mavlink_send_heartbeat },
+  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_heartbeat },
 
-  { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_attitude },
-
-  { .period_us = 1000,    .last_time_us = 0, .send_function = mavlink_send_imu },
-  { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_diff_pressure },
-  { .period_us = 200000,  .last_time_us = 0, .send_function = mavlink_send_baro },
-  { .period_us = 100000,  .last_time_us = 0, .send_function = mavlink_send_sonar },
-  { .period_us = 6250,    .last_time_us = 0, .send_function = mavlink_send_mag },
-
-  { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
-  { .period_us = 0,       .last_time_us = 0, .send_function = mavlink_send_rc_raw },
-  { .period_us = 10000,   .last_time_us = 0, .send_function = mavlink_send_low_priority }
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_attitude },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_imu },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_diff_pressure },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_baro },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_sonar },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_mag },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
+  
+  { .period_us = 10000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 
 // function definitions
@@ -170,10 +165,9 @@ void mavlink_stream(uint64_t time_us)
 {
   for (int i = 0; i < MAVLINK_STREAM_COUNT; i++)
   {
-    if (mavlink_streams[i].period_us && time_us - mavlink_streams[i].last_time_us >= mavlink_streams[i].period_us)
+    if (time_us >= mavlink_streams[i].next_time_us)
     {
-      // if we took too long, set the last_time_us to be where it should have been
-      mavlink_streams[i].last_time_us += mavlink_streams[i].period_us;
+      mavlink_streams[i].next_time_us += mavlink_streams[i].period_us;
       mavlink_streams[i].send_function();
     }
   }

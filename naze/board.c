@@ -7,11 +7,14 @@
 extern void SetSysClock(bool overclock);
 serialPort_t *Serial1;
 
+static uint8_t _board_revision;
+
 void init_board(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
   systemInit();
+  _board_revision = 2;
 }
 
 void board_reset(bool bootloader)
@@ -20,7 +23,6 @@ void board_reset(bool bootloader)
 }
 
 // clock
-
 uint32_t clock_millis()
 {
   return millis();
@@ -64,14 +66,12 @@ static bool _baro_present;
 static bool _mag_present;
 static bool _sonar_present;
 static bool _diff_pressure_present;
-static int _board_revision;
 
 static float _accel_scale;
 static float _gyro_scale;
 
-void sensors_init(int board_revision)
+void sensors_init()
 {
-    _board_revision = board_revision;
     // Initialize I2c
     i2cInit(I2CDEV_2);
 
@@ -79,19 +79,27 @@ void sensors_init(int board_revision)
 
     i2cWrite(0,0,0);
     _baro_present = ms5611_init();
-    _mag_present = hmc5883lInit(board_revision);
+    _mag_present = hmc5883lInit(_board_revision);
     _sonar_present = mb1242_init();
     _diff_pressure_present = ms4525_init();
 
     // IMU
     uint16_t acc1G;
-    mpu6050_init(true, &acc1G, &_gyro_scale, board_revision);
+    mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
     _accel_scale = 9.80665f/acc1G;
 }
 
 void imu_register_callback(void (*callback)(void))
 {
   mpu6050_register_interrupt_cb(callback);
+}
+
+void imu_not_responding_error()
+{
+  // If the IMU is not responding, then we need to change where we look for the
+  // interrupt
+  _board_revision = (_board_revision < 4) ? 5 : 2;
+  sensors_init();
 }
 
 void imu_read_accel(float accel[3])

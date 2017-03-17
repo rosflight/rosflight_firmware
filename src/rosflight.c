@@ -28,6 +28,9 @@ void rosflight_init(void)
   // Read EEPROM to get initial params
   init_params();
 
+  // Initialize MAVlink Communication
+  init_mavlink();
+
   /***********************/
   /***  Hardware Setup ***/
   /***********************/
@@ -35,9 +38,6 @@ void rosflight_init(void)
   // Initialize PWM and RC
   init_PWM();
   init_rc();
-
-  // Initialize MAVlink Communication
-  init_mavlink();
 
   // Initialize Sensors
   init_sensors();

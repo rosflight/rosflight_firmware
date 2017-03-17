@@ -17,13 +17,13 @@ armed_state_t _armed_state;
 
 void init_mode(void)
 {
-  _armed_state = DISARMED;
+  _armed_state = 0x00;
 }
 
 bool arm(void)
 {
   static bool started_gyro_calibration = false;
-  if (!started_gyro_calibration && _armed_state & DISARMED)
+  if (!started_gyro_calibration && !(_armed_state & ARMED))
   {
     start_gyro_calibration();
     started_gyro_calibration = true;
@@ -107,7 +107,7 @@ bool check_mode(uint64_t now)
     // check for arming switch
     if (get_param_int(PARAM_ARM_STICKS))
     {
-      if (_armed_state == DISARMED)
+      if (!(_armed_state & ARMED))
       {
         // if left stick is down and to the right
         if (rc_stick(RC_STICK_F) < get_param_float(PARAM_ARM_THRESHOLD)
@@ -129,7 +129,7 @@ bool check_mode(uint64_t now)
       {
         // if left stick is down and to the left
         if (rc_stick(RC_STICK_F) < get_param_float(PARAM_ARM_THRESHOLD)
-            && rc_stick(RC_STICK_Z) < (1.0f - get_param_float(PARAM_ARM_THRESHOLD)))
+            && rc_stick(RC_STICK_Z) < -(1.0f - get_param_float(PARAM_ARM_THRESHOLD)))
         {
           time_sticks_have_been_in_arming_position += dt;
         }
@@ -148,7 +148,7 @@ bool check_mode(uint64_t now)
     {
       if (rc_switch(get_param_int(PARAM_ARM_CHANNEL)))
       {
-        if (_armed_state == DISARMED)
+        if ( !(_armed_state & ARMED))
           arm();
       }
       else

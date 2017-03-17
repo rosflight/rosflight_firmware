@@ -15,7 +15,6 @@ typedef enum
     /******************************/
     /*** HARDWARE CONFIGURATION ***/
     /******************************/
-    PARAM_BOARD_REVISION,
     PARAM_BAUD_RATE,
 
     /*****************************/
@@ -32,7 +31,7 @@ typedef enum
     PARAM_STREAM_GPS_RATE,
     PARAM_STREAM_SONAR_RATE,
 
-    PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
+    PARAM_STREAM_OUTPUT_RAW_RATE,
     PARAM_STREAM_RC_RAW_RATE,
 
     /********************************/
@@ -69,11 +68,6 @@ typedef enum
     PARAM_PID_PITCH_ANGLE_D,
     PARAM_PITCH_ANGLE_TRIM,
     PARAM_MAX_PITCH_ANGLE,
-
-    PARAM_PID_ALT_P,
-    PARAM_PID_ALT_I,
-    PARAM_PID_ALT_D,
-    PARAM_HOVER_THROTTLE,
 
     PARAM_PID_TAU,
 
@@ -132,7 +126,6 @@ typedef enum
     PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
     PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
     PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,
-    PARAM_RC_F_CONTROL_TYPE_CHANNEL,
     PARAM_RC_NUM_CHANNELS,
 
     PARAM_RC_X_CENTER,
@@ -153,7 +146,6 @@ typedef enum
     PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE,
 
     PARAM_RC_ATTITUDE_MODE,
-    PARAM_RC_THROTTLE_MODE,
     PARAM_RC_MAX_ROLL,
     PARAM_RC_MAX_PITCH,
     PARAM_RC_MAX_ROLLRATE,
@@ -181,7 +173,7 @@ typedef enum
     PARAMS_COUNT
 } param_id_t;
 
-typedef enum
+typedef enum uint8_t
 {
     PARAM_TYPE_INT32,
     PARAM_TYPE_FLOAT,
