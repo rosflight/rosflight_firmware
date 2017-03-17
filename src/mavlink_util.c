@@ -21,14 +21,7 @@ void mavlink_send_named_command_struct(const char *const name, control_t command
   }
   else if (command_struct.x.type == ANGLE && command_struct.y.type == ANGLE)
   {
-    if (command_struct.x.type == ALTITUDE)
-    {
-      control_mode = MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
-    }
-    else
-    {
-      control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-    }
+    control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
   }
   else
   {

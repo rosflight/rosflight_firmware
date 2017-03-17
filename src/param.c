@@ -138,11 +138,6 @@ void set_param_defaults(void)
   init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
   init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);   // Maximum Pitch Angle command accepted into PID controllers | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 0.0f); // Altitude Proporitional Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f); // Altitude Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f); // Altitude Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_HOVER_THROTTLE, "HOVER_THR", 0.5); // Hover Throttle - See RC calibration | 0.0 | 1.0
-
   init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f); // Dirty Derivative time constant - See controller documentation | 0.0 | 1.0
 
 
@@ -194,15 +189,14 @@ void set_param_defaults(void)
   /*** RC CONFIGURATION ***/
   /************************/
   init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1); // Type of RC input 0 - Parallel PWM (PWM), 1 - Pulse-Position Modulation (PPM) | 0 | 1
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE",1); // Type of RC input 0 - Parallel PWM (PWM), 1 - Pulse-Position Modulation (PPM) | 0 | 1
   init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0); // RC input channel mapped to x-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1); // RC input channel mapped to y-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3); // RC input channel mapped to z-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2); // RC input channel mapped to F-axis commands [0 - indexed] | 0 | 3
-  init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 -indexed] | 4 | 7
-  init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch hannel mapped to throttle override [0 -indexed] | 4 | 7
-  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", 5); // RC switch channel mapped to attitude control type [0 -indexed] | 4 | 7
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN",   7); // RC switch channel mapped to throttle control type override [0 -indexed] | 4 | 7
+  init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", -1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN",   -1); // RC switch channel mapped to throttle control type override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500); // RC calibration x-axis center (us) | 1000 | 2000
@@ -213,15 +207,16 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_Y_RANGE,  "RC_Y_RANGE", 1000); // RC calibration y-axis range (us) | 500 | 2500
   init_param_int(PARAM_RC_Z_RANGE,  "RC_Z_RANGE", 1000); // RC calibration z-axis range (us) | 500 | 2500
   init_param_int(PARAM_RC_F_RANGE,  "RC_F_RANGE", 1000); // RC calibration F-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | 0 | 1
-  init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | 0 | 1
-  init_param_int(PARAM_RC_SWITCH_7_DIRECTION, "SWITCH_7_DIR", 1); // RC switch 7 toggle direction | 0 | 1
-  init_param_int(PARAM_RC_SWITCH_8_DIRECTION, "SWITCH_8_DIR", 1); // RC switch 8 toggle direction | 0 | 1
+  init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
+  init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | -1 | 1
+  init_param_int(PARAM_RC_SWITCH_7_DIRECTION, "SWITCH_7_DIR", 1); // RC switch 7 toggle direction | -1 | 1
+  init_param_int(PARAM_RC_SWITCH_8_DIRECTION, "SWITCH_8_DIR", 1); // RC switch 8 toggle direction | -1 | 1
 
-  init_param_int(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVRD_DEV", 100); // RC stick deviation from center for overrride (us) | 0 | 1000
+  init_param_float(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVRD_DEV", 0.1); // RC stick deviation from center for overrride | 0.0 | 1.0
   init_param_int(PARAM_OVERRIDE_LAG_TIME, "OVRD_LAG_TIME", 1000); // RC stick deviation lag time before returning control (ms) | 0 | 100000
   init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "MIN_THROTTLE", false); // Take minimum throttle between RC and computer at all times | 0 | 1
 
+  init_param_int(PARAM_RC_ATTITUDE_MODE, "RC_ATT_MODE", 1); // Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | 0 | 1
   init_param_float(PARAM_RC_MAX_ROLL, "RC_MAX_ROLL", 0.786f); // Maximum roll angle command sent by full deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f); // Maximum pitch angle command sent by full stick deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f); // Maximum roll rate command sent by full stick deflection of RC sticks | 0.0 | 9.42477796077
@@ -243,7 +238,7 @@ void set_param_defaults(void)
   /********************/
   init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true); // use RC sticks to arm vehicle (disables arm RC switch if enabled) | 0 | 1
   init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5); // RC switch mapped to arm/disarm [0 -indexed] | 4 | 7
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
+  init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check | 0 | 0.5
 }
 
 bool read_params(void)

@@ -8,6 +8,7 @@ extern "C" {
 #include <stdbool.h>
 
 
+// This enum needs to match the "array_of_mixers" variable in mixer.c
 typedef enum
 {
   QUADCOPTER_PLUS,
@@ -50,7 +51,7 @@ extern command_t _command;
 extern float _GPIO_outputs[8];
 extern output_type_t _GPIO_output_type[8];
 
-extern float _outputs[10];
+extern float _outputs[8];
 
 void init_PWM();
 void init_mixing();
