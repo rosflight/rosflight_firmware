@@ -155,13 +155,13 @@ void write_motor(uint8_t index, float value)
 
 void write_servo(uint8_t index, float value)
 {
-  if (value > 0.5)
+  if (value > 1.0)
   {
-    value = 0.5;
+    value = 1.0;
   }
-  else if (value < -0.5)
+  else if (value < -1.0)
   {
-    value = -0.5;
+    value = -1.0;
   }
   _outputs[index] = value;
   pwm_write(index, _outputs[index] * 500 + 1500);

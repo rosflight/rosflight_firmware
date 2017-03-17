@@ -68,11 +68,11 @@ static uint8_t compute_checksum(void)
 void init_params(void)
 {
   memory_init();
-  if (!read_params())
-  {
+//  if (!read_params())
+//  {
     set_param_defaults();
     write_params();
-  }
+//  }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback((param_id_t) id);
@@ -190,6 +190,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", -1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL", -1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500); // RC calibration x-axis center (us) | 1000 | 2000
@@ -229,8 +230,6 @@ void set_param_defaults(void)
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true); // use RC sticks to arm vehicle (disables arm RC switch if enabled) | 0 | 1
-  init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5); // RC switch mapped to arm/disarm [0 -indexed] | 4 | 7
   init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check | 0 | 0.5
 }
 

@@ -60,7 +60,7 @@ void init_sticks(void)
 
 static void init_switches()
 {
-  switches[RC_SWITCH_ARM].channel               = get_param_int(PARAM_ARM_CHANNEL);
+  switches[RC_SWITCH_ARM].channel               = get_param_int(PARAM_RC_ARM_CHANNEL);
   switches[RC_SWITCH_ATT_OVERRIDE].channel      = get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_ATT_TYPE].channel          = get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);

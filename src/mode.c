@@ -105,7 +105,7 @@ bool check_mode(uint64_t now)
   else
   {
     // check for arming switch
-    if (get_param_int(PARAM_ARM_STICKS))
+    if (!rc_switch_mapped(RC_SWITCH_ARM))
     {
       if (!(_armed_state & ARMED))
       {
@@ -146,7 +146,7 @@ bool check_mode(uint64_t now)
     }
     else
     {
-      if (rc_switch(get_param_int(PARAM_ARM_CHANNEL)))
+      if (rc_switch(RC_SWITCH_ARM))
       {
         if ( !(_armed_state & ARMED))
           arm();

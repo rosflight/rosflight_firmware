@@ -121,6 +121,7 @@ typedef enum
     PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
     PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
     PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,
+    PARAM_RC_ARM_CHANNEL,
     PARAM_RC_NUM_CHANNELS,
 
     PARAM_RC_X_CENTER,
@@ -160,8 +161,6 @@ typedef enum
     /********************/
     /*** ARMING SETUP ***/
     /********************/
-    PARAM_ARM_STICKS,
-    PARAM_ARM_CHANNEL,
     PARAM_ARM_THRESHOLD,
 
     // keep track of size of params array
