@@ -19,8 +19,34 @@ extern "C" {
 #include "mavlink_log.h"
 #include "mavlink_util.h"
 
+typedef struct
+{
+  param_id_t kp_param_id;
+  param_id_t ki_param_id;
+  param_id_t kd_param_id;
 
-void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
+  float *current_x;
+  float *current_xdot;
+  float *commanded_x;
+  float *output;
+
+  float max;
+  float min;
+
+  float integrator;
+  float prev_time;
+  float prev_x;
+  float differentiator;
+  float tau;
+} pid_t;
+
+static pid_t pid_roll;
+static pid_t pid_roll_rate;
+static pid_t pid_pitch;
+static pid_t pid_pitch_rate;
+static pid_t pid_yaw_rate;
+
+static void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
               float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
   pid->kp_param_id = kp_param_id;
@@ -40,7 +66,7 @@ void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_
 }
 
 
-void run_pid(pid_t *pid, float dt)
+static void run_pid(pid_t *pid, float dt)
 {
   if (dt > 0.010 || _armed_state == DISARMED)
   {
@@ -176,17 +202,6 @@ void init_controller()
            &_command.z,
            get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
-
-  init_pid(&pid_altitude,
-           PARAM_PID_ALT_P,
-           PARAM_PID_ALT_I,
-           PARAM_PID_ALT_D,
-           &_current_state.altitude,
-           NULL,
-           &_combined_control.F.value,
-           &_command.F,
-           get_param_int(PARAM_MAX_COMMAND),
-           0.0f);
 }
 
 
@@ -227,10 +242,6 @@ void run_controller()
   else// PASSTHROUGH
     _command.z = _combined_control.z.value;
 
-  // THROTTLE
-  //  if(_combined_control.F.type == ALTITUDE)
-  //    run_pid(&pid_altitude);
-  //  else // PASSTHROUGH
   _command.F = _combined_control.F.value;
 
   static uint32_t counter = 0;

@@ -18,12 +18,13 @@ uint16_t serial_bytes_available(void);
 uint8_t serial_read(void);
 
 // sensors
-void sensors_init(int board_revision);
+void sensors_init();
 
 void imu_register_callback(void (*callback)(void));
 void imu_read_accel(float accel[3]);
 void imu_read_gyro(float gyro[3]);
 float imu_read_temperature(void);
+void imu_not_responding_error();
 
 bool mag_check(void);
 bool mag_present(void);

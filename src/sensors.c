@@ -64,7 +64,7 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
-  sensors_init(get_param_int(PARAM_BOARD_REVISION));
+  sensors_init();
   imu_register_callback(&imu_ISR);
 }
 
@@ -212,8 +212,7 @@ static bool update_imu(void)
     {
       // change board revision and reset IMU
       last_imu_update_ms = clock_millis();
-      set_param_int(PARAM_BOARD_REVISION, (get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
-      sensors_init(get_param_int(PARAM_BOARD_REVISION));
+      imu_not_responding_error();
     }
     return false;
   }

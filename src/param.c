@@ -63,10 +63,6 @@ static uint8_t compute_checksum(void)
 // function definitions
 void init_params(void)
 {
-  for(uint8_t i = 0; i < PARAMS_COUNT; i++)
-  {
-    init_param_int(i, "DEFAULT", 0);
-  }
   memory_init();
   if (!read_params())
   {
@@ -83,7 +79,6 @@ void set_param_defaults(void)
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2); // Major board revision of naze32/flip32 | 1 | 6
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
 
   /*****************************/
@@ -196,7 +191,6 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", -1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
-  init_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL,    "RC_F_CTRL_CHN",   -1); // RC switch channel mapped to throttle control type override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500); // RC calibration x-axis center (us) | 1000 | 2000

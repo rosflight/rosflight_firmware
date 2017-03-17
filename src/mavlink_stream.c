@@ -36,10 +36,6 @@ static void mavlink_send_heartbeat(void)
   {
     control_mode = MODE_PASS_THROUGH;
   }
-  else if (rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)))
-  {
-    control_mode = MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
-  }
   else
   {
     control_mode = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? MODE_ROLL_PITCH_YAWRATE_THROTTLE :
