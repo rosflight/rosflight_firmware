@@ -68,11 +68,11 @@ static uint8_t compute_checksum(void)
 void init_params(void)
 {
   memory_init();
-//  if (!read_params())
-//  {
+  if (!read_params())
+  {
     set_param_defaults();
     write_params();
-//  }
+  }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback((param_id_t) id);
@@ -215,7 +215,7 @@ void set_param_defaults(void)
   init_param_float(PARAM_RC_MAX_PITCH, "RC_MAX_PITCH", 0.786f); // Maximum pitch angle command sent by full stick deflection of RC sticks | 0.0 | 3.14159
   init_param_float(PARAM_RC_MAX_ROLLRATE, "RC_MAX_ROLLRATE", 3.14159f); // Maximum roll rate command sent by full stick deflection of RC sticks | 0.0 | 9.42477796077
   init_param_float(PARAM_RC_MAX_PITCHRATE, "RC_MAX_PITCHRATE", 3.14159f); // Maximum pitch command sent by full stick deflection of RC sticks | 0.0 | 3.14159
-  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 0.786f); // Maximum pitch command sent by full stick deflection of RC sticks | 0.0 | 3.14159
+  init_param_float(PARAM_RC_MAX_YAWRATE, "RC_MAX_YAWRATE", 1.507f); // Maximum pitch command sent by full stick deflection of RC sticks | 0.0 | 3.14159
 
   /***************************/
   /*** FRAME CONFIGURATION ***/
