@@ -30,11 +30,6 @@ typedef enum
 
 typedef enum
 {
-  THROTTLE_MODE_THROTTLE,
-} throttle_mode_t;
-
-typedef enum
-{
   MUX_X,
   MUX_Y,
   MUX_Z,
