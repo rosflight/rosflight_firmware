@@ -24,7 +24,7 @@ extern state_t _current_state;
 
 void reset_state();
 void reset_adaptive_bias();
-void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer);
+void init_estimator();
 void run_estimator();
 #ifdef __cplusplus
 }

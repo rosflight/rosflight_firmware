@@ -19,7 +19,7 @@ typedef enum
 error_state_t _error_state;
 
 void init_mode(void);
-bool check_mode(uint64_t now);
+bool check_mode();
 
 #ifdef __cplusplus
 }

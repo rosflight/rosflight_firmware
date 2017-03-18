@@ -82,20 +82,22 @@ bool check_failsafe(void)
 }
 
 
-bool check_mode(uint64_t now)
+bool check_mode()
 {
-  static uint64_t prev_time = 0;
-  static uint32_t time_sticks_have_been_in_arming_position = 0;
+  static uint32_t prev_time_ms = 0;
+  static uint32_t time_sticks_have_been_in_arming_position_ms = 0;
+
+  uint32_t now_ms = clock_millis();
 
   // see it has been at least 20 ms
-  uint32_t dt = now-prev_time;
-  if (dt < 20000)
+  uint32_t dt = now_ms-prev_time_ms;
+  if (dt < 20)
   {
     return false;
   }
 
   // if it has, then do stuff
-  prev_time = now;
+  prev_time_ms = now_ms;
 
   // check for failsafe mode
   if (check_failsafe())
@@ -113,16 +115,16 @@ bool check_mode(uint64_t now)
         if (rc_stick(RC_STICK_F) < get_param_float(PARAM_ARM_THRESHOLD)
             && rc_stick(RC_STICK_Z) > (1.0f - get_param_float(PARAM_ARM_THRESHOLD)))
         {
-          time_sticks_have_been_in_arming_position += dt;
+          time_sticks_have_been_in_arming_position_ms += dt;
         }
         else
         {
-          time_sticks_have_been_in_arming_position = 0;
+          time_sticks_have_been_in_arming_position_ms = 0;
         }
-        if (time_sticks_have_been_in_arming_position > 500000)
+        if (time_sticks_have_been_in_arming_position_ms > 500)
         {
           if (arm())
-            time_sticks_have_been_in_arming_position = 0;
+            time_sticks_have_been_in_arming_position_ms = 0;
         }
       }
       else // _armed_state is ARMED
@@ -131,16 +133,16 @@ bool check_mode(uint64_t now)
         if (rc_stick(RC_STICK_F) < get_param_float(PARAM_ARM_THRESHOLD)
             && rc_stick(RC_STICK_Z) < -(1.0f - get_param_float(PARAM_ARM_THRESHOLD)))
         {
-          time_sticks_have_been_in_arming_position += dt;
+          time_sticks_have_been_in_arming_position_ms += dt;
         }
         else
         {
-          time_sticks_have_been_in_arming_position = 0;
+          time_sticks_have_been_in_arming_position_ms = 0;
         }
-        if (time_sticks_have_been_in_arming_position > 500000)
+        if (time_sticks_have_been_in_arming_position_ms > 500)
         {
           disarm();
-          time_sticks_have_been_in_arming_position = 0;
+          time_sticks_have_been_in_arming_position_ms = 0;
         }
       }
     }

@@ -29,10 +29,6 @@ static quaternion_t q_tilde;
 static quaternion_t q_hat;
 static uint64_t last_time;
 
-static bool mat_exp;
-static bool quad_int;
-static bool use_acc;
-
 static vector_t _accel_LPF;
 static vector_t _gyro_LPF;
 
@@ -91,14 +87,9 @@ void reset_adaptive_bias()
   b.z = 0;
 }
 
-void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
+void init_estimator()
 {
-  mat_exp = use_matrix_exponential;
-  quad_int = use_quadratic_integration;
-  use_acc = use_accelerometer;
-
   last_time = 0;
-
   reset_state();
 }
 
@@ -147,7 +138,7 @@ void run_estimator()
   // add in accelerometer
   float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
-  if (use_acc && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
+  if (get_param_int(PARAM_FILTER_USE_ACC) && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(_accel_LPF);
@@ -177,7 +168,7 @@ void run_estimator()
   }
 
   // Pull out Gyro measurements
-  if (quad_int)
+  if (get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
@@ -203,7 +194,7 @@ void run_estimator()
     float q = wfinal.y;
     float r = wfinal.z;
 
-    if (mat_exp)
+    if (get_param_int(PARAM_FILTER_USE_MAT_EXP))
     {
       // Matrix Exponential Approximation (From Attitude Representation and Kinematic
       // Propagation for Low-Cost UAVs by Robert T. Casey)
