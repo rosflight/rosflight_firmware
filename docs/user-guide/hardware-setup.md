@@ -35,9 +35,11 @@ ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www
 
 Additional Sensors you may want for you ROSflight setup include:
 
-Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
-GPS – Venus GPS – [$50 on Sparkfun](https://www.sparkfun.com/products/11058) – Requires FTDI USB-UART Converter – [$6 on Amazon](https://www.amazon.com/Blue3D-Ft232rl-Serial-Adapter-Arduino/dp/B012YUANZK/ref=sr_1_9?ie=UTF8&qid=1490068223&sr=8-9&keywords=FTDI+USB+converter) and Ceramic Antenna [$12 on Sparkfun](https://www.sparkfun.com/products/177)
-Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
+* Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
+* GPS – Venus GPS – [$50 on Sparkfun](https://www.sparkfun.com/products/11058)
+    - Requires FTDI USB-UART Converter – [$6 on Amazon](https://www.amazon.com/Blue3D-Ft232rl-Serial-Adapter-Arduino/dp/B012YUANZK/ref=sr_1_9?ie=UTF8&qid=1490068223&sr=8-9&keywords=FTDI+USB+converter) 
+    - and Ceramic Antenna [$12 on Sparkfun](https://www.sparkfun.com/products/177)
+* Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
 
 ### Vibration Isolation
@@ -79,8 +81,15 @@ The Joystick is not technically a required component, because you can actually c
 
 ## Wiring diagram
 
+Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboard computer.  This diagram also includes the motor power switch, which allows for the sensors, flight controller and onboard computer to be power on while the motors are off.  This is a safer way to work on the aircraft as the motors are unable to spin while the switch is off.
+
 ![Wiring Diagram](images/Wiring_Diagram.png)
 
+
+Your needs will likely be slightly different than what is shown.  This is meant as an example only and can be adapted to fit your needs.
+
 ## Motor layouts
+
+
 
 ## External sensors
