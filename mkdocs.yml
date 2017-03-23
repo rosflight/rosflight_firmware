@@ -1,0 +1,18 @@
+site_name: ROSflight
+site_url: http://rosflight.org
+repo_url: https://github.com/byu-magicc/ROSflight
+google_analytics: ['UA-96018590-1', 'rosflight.org']
+theme: readthedocs
+extra_css: [extra.css]
+pages:
+  - Home: index.md
+  - User Guide:
+    - Getting started: user-guide/getting-started.md
+    - Hardware setup: user-guide/hardware-setup.md
+    - Autopilot setup: user-guide/autopilot-setup.md
+    - ROS setup: user-guide/ros-setup.md
+    - Configuration: user-guide/configuration.md
+    - Preflight checks: user-guide/preflight-checks.md
+    - Improving performance: user-guide/performance.md
+    - Autonomous flight: user-guide/autonomous-flight.md
+    - Parameter descriptions: user-guide/parameter-descriptions.md
