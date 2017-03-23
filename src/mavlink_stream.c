@@ -165,7 +165,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
   
-  { .period_us = 10000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
+  { .period_us = 5000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
 };
 
 // function definitions
