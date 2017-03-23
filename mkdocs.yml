@@ -2,7 +2,7 @@ site_name: ROSflight
 site_url: http://rosflight.org
 repo_url: https://github.com/byu-magicc/ROSflight
 edit_uri: blob/master/docs/
-google_analytics: ['UA-96018590-1', 'rosflight.org']
+google_analytics: ['UA-96018590-2', 'docs.rosflight.org']
 theme: readthedocs
 extra_css: [extra.css]
 pages:
