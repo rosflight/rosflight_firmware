@@ -24,7 +24,7 @@ Some things to keep in mind as you design or build your MAV.
 
 * Most kits do not include space for an onboard computer, cameras, laser scanners or other sensors.  Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
 * You will likely also need to customize the power curcuitry of your MAV to provide power at some specific voltage to your onboard computer.  Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors.  This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand.  We will talk about this more when we talk about wiring up your MAV.
-* Cheap propellers can cause a huge amount of vibration.  Consider buying high-quality propellers, or doing a propeller balance.  RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
+* Cheap propellers can cause a huge amount of vibration.  Consider buying high-quality propellers, doing a propeller balance, or both.  RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
 
 
 ### Flight Controller
@@ -33,7 +33,7 @@ ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www
 
 ### External Sensors
 
-Additional Sensors you may want for you ROSflight setup include:
+Additional Sensors you may want for your ROSflight setup include:
 
 * Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
 * GPS – Venus GPS – [$50 on Sparkfun](https://www.sparkfun.com/products/11058)
@@ -44,7 +44,11 @@ Additional Sensors you may want for you ROSflight setup include:
 
 ### Vibration Isolation
 
-It is really important to isolate your flight controller from vibrations from propellers and motors.  We have had great success using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV (PICTURE GOES HERE).  We have also found that adding steel washers to the FC mounting board can help damp out some of these vibrations.  You may need to experiment to find the amount of mass you need to add to get good vibration isolation, We have gotten good performance by adding X grams to the flight control board.
+It is really important to isolate your flight controller from vibrations from propellers and motors.  We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV.  You may also want to try adding mass to the flight control board.  We have accomplished this by gluing steel washers to the fiberglass mounting plate.
+
+![Vibration Isloation](images/vibration_isolation.png)  
+
+You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the flight control board.  The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
 
 ### Onboard Computer
 
@@ -56,7 +60,7 @@ The only requirement for the onboard computer is that it runs Linux 16.04, ROS, 
 * ODROID-XU4 – Exynos5 2GHz 8-core – [$77 on Ameridroid](http://ameridroid.com/products/odroid-xu4)
 * ODROID-C2 – Cortex A53 2GHz 4-core – [$42 on Ameridroid](http://ameridroid.com/products/odroid-c2)
 * Rasberry Pi 3 – Cortex A53 1.2GHz 4-core – [$36 on Amazon](https://www.amazon.com/dp/B01CD5VC92/ref=cm_sw_su_dp)
-* NVIDIA Tegra TX1 - ARM Cortex-A57 4-core CPU 256-core Maxwell GPU - [$435 from NVIDA](http://www.nvidia.com/object/embedded-systems-dev-kits-modules.html) (Educational Discounts Available)
+* NVIDIA Tegra TX1 - Cortex-A57 4-core CPU, 256-core Maxwell GPU - [$435 from NVIDA](http://www.nvidia.com/object/embedded-systems-dev-kits-modules.html) (Educational Discounts Available)
 
 ### Wi-Fi
 
@@ -64,8 +68,9 @@ You will need Wi-Fi to communicate with your MAV when it is in the air.  ROS com
 
 ### RC Transmitter and Reciever
 
-For RC Control, you will need a transmitter with at least 6 channels. 8 Channels would be preferable, but ROSflight does not currently have the capability to handle more than 8 Channels, so any additional channels will be wasted. ROSflight requires RC control for safe operation. This may change in the future, but for now, RC control is mandatory for safe (and legal) flight.
-ROSflight only supports Parallel-PWM and PPM. Support for serial RC (Spektrum Sattelites) is expected in early 2017. A recommended RC setup is described below, but is meant as an example. Any configurations with Parallel-PWM or PPM and 6-8 channels will be sufficient.
+For RC Control, you will need a transmitter with between 6 and 8 channels.  Any additional channels will be wasted.  We require RC control for safe operation, and only support arming and disarming via RC control.
+
+As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. Support for serial RC (Spektrum Sattelites) is expected in future releases. A recommended RC setup is described below, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
 
 * Transmitter – [Spektrum DX8 $300 at Horizon Hobby](http://www.horizonhobby.com/dx8-transmitter-only-mode-2-spmr8000)
 * Receiver – [Orange Rx 8Ch PPM $22 on HobbyKing](https://hobbyking.com/en_us/orangerx-r820x-v2-6ch-2-4ghz-dsm2-dsmx-comp-full-range-rx-w-sat-div-ant-f-safe-cppm.html/?___store=en_us)
@@ -77,7 +82,7 @@ You will need a laptop which can run Ubuntu 16.04 and ROS to communicate with th
 
 ### Joystick
 
-The Joystick is not technically a required component, because you can actually control the MAV over command line. It does make things easier, however.  We recommend XBOX 360 controllers, because they are super easy to use and pretty cheap.
+The Joystick is not technically a required component, because it is possible to control your MAV over command line. It does make things easier, however.  We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration.  Other joysticks are supported, but you may need to perform custom axis and button mappings.
 
 ## Wiring diagram
 
@@ -85,10 +90,11 @@ Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboa
 
 ![Wiring Diagram](images/Wiring_Diagram.png)
 
-
 Your needs will likely be slightly different than what is shown.  This is meant as an example only and can be adapted to fit your needs.
 
 ## Motor layouts
+
+![Mixers](images/mixers.png)
 
 
 
