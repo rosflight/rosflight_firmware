@@ -24,6 +24,7 @@ vector_t _gyro;
 float _imu_temperature;
 uint64_t _imu_time;
 bool new_imu_data = false;
+bool _imu_sent = false;
 
 // Airspeed
 bool _diff_pressure_present = false;
@@ -173,6 +174,7 @@ bool gyro_calibration_complete(void)
 void imu_ISR(void)
 {
   _imu_time = clock_micros();
+  _imu_sent = false;
   new_imu_data = true;
 }
 
