@@ -65,15 +65,24 @@ static void mavlink_send_attitude(void)
 
 static void mavlink_send_imu(void)
 {
-  mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                             _imu_time,
-                             _accel.x,
-                             _accel.y,
-                             _accel.z,
-                             _gyro.x,
-                             _gyro.y,
-                             _gyro.z,
-                             _imu_temperature);
+  // If we haven't sent this IMU measurement yet, send it
+  if (!_imu_sent)
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel.x,
+                               _accel.y,
+                               _accel.z,
+                               _gyro.x,
+                               _gyro.y,
+                               _gyro.z,
+                               _imu_temperature);
+  }
+  else
+  {
+    // Otherwise, wait and signal that we still need to send IMU
+    mavlink_streams[MAVLINK_STREAM_ID_IMU].next_time_us -= mavlink_streams[MAVLINK_STREAM_ID_IMU].period_us;
+  }
 
 }
 
