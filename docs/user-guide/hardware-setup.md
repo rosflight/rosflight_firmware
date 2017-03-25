@@ -94,7 +94,23 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 ## Motor layouts
 
-![Mixers](images/mixers.png)
+As of March, 2017, we support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
+
+| mixer | value |
+|-----------------|-------|
+| Quadcopter-X | 0 |
+| Quadctoper-Plus | 1 |
+| Y6 | 2 |
+| X8 | 3 |
+| Fixed Wing | 4 |
+
+The associated motor layouts are shown below for each mixer
+
+![Mixer_1](images/mixer_1.png)
+
+![Mixer_2](images/mixer_2.png)
+
+-> ![Mixer_3](images/mixer_3.png) <-
 
 
 
