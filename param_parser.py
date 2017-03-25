@@ -31,7 +31,9 @@ for line in lines:
             i += 1
 
 # Now, generate the markdown table of the parameters
-out = open('param_description.md', 'w')
+out = open('parameter-descriptions.md', 'w')
+# Print the title
+out.write("# Parameter descriptions\n\n")
 # Start the table
 out.write("| Parameter | Description | Type | Default Value | Min | Max |\n")
 out.write("|-----------|-------------|------|---------------|-----|-----|\n")
