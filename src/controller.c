@@ -242,6 +242,13 @@ void run_controller()
   else// PASSTHROUGH
     _command.z = _combined_control.z.value;
 
+
+  // Add feedforward torques
+  _command.x += get_param_float(PARAM_X_EQ_TORQUE);
+  _command.y += get_param_float(PARAM_Y_EQ_TORQUE);
+  _command.z += get_param_float(PARAM_Z_EQ_TORQUE);
+
+
   _command.F = _combined_control.F.value;
 
   static uint32_t counter = 0;
@@ -253,4 +260,33 @@ void run_controller()
     counter = 0;
   }
   counter++;
+}
+
+void calculate_equilbrium_torque_from_rc()
+{
+  // Make sure we are disarmed
+  if (!(_armed_state & ARMED))
+  {
+    // Tell the user that we are doing a equilibrium torque calibration
+    mavlink_log_warning("Capturing equilbrium offsets from RC");
+
+    // pass the rc_control through the controller
+    _combined_control.x = _rc_control.x;
+    _combined_control.y = _rc_control.y;
+    _combined_control.z = _rc_control.z;
+
+    run_controller();
+
+    // the output from the controller is going to be the static offsets
+    set_param_float(PARAM_X_EQ_TORQUE, _command.x);
+    set_param_float(PARAM_Y_EQ_TORQUE, _command.y);
+    set_param_float(PARAM_Z_EQ_TORQUE, _command.z);
+
+    mavlink_log_warning("Equilibrium torques found and applied.");
+    mavlink_log_warning("Please zero out trims on your transmitter");
+  }
+  else
+  {
+    mavlink_log_warning("Cannot perform equilbirum offset calibration while armed");
+  }
 }

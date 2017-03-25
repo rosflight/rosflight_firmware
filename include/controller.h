@@ -12,6 +12,7 @@ extern "C" {
 
 void run_controller();
 void init_controller();
+void calculate_equilbrium_torque_from_rc();
 
 
 #ifdef __cplusplus

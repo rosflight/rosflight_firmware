@@ -53,37 +53,27 @@ static void mavlink_send_heartbeat(void)
 static void mavlink_send_attitude(void)
 {
   mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
-                                        clock_millis(),
-                                        _current_state.q.w,
-                                        _current_state.q.x,
-                                        _current_state.q.y,
-                                        _current_state.q.z,
-                                        _current_state.omega.x,
-                                        _current_state.omega.y,
-                                        _current_state.omega.z);
+                                       clock_millis(),
+                                       _current_state.q.w,
+                                       _current_state.q.x,
+                                       _current_state.q.y,
+                                       _current_state.q.z,
+                                       _current_state.omega.x,
+                                       _current_state.omega.y,
+                                       _current_state.omega.z);
 }
 
 static void mavlink_send_imu(void)
 {
-  // If we haven't sent this IMU measurement yet, send it
-  if (!_imu_sent)
-  {
-    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                               _imu_time,
-                               _accel.x,
-                               _accel.y,
-                               _accel.z,
-                               _gyro.x,
-                               _gyro.y,
-                               _gyro.z,
-                               _imu_temperature);
-  }
-  else
-  {
-    // Otherwise, wait and signal that we still need to send IMU
-    mavlink_streams[MAVLINK_STREAM_ID_IMU].next_time_us -= mavlink_streams[MAVLINK_STREAM_ID_IMU].period_us;
-  }
-
+  mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                             _imu_time,
+                             _accel.x,
+                             _accel.y,
+                             _accel.z,
+                             _gyro.x,
+                             _gyro.y,
+                             _gyro.z,
+                             _imu_temperature);
 }
 
 static void mavlink_send_rosflight_output_raw(void)
