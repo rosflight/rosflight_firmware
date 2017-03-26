@@ -110,8 +110,4 @@ The associated motor layouts are shown below for each mixer
 
 ![Mixer_2](images/mixer_2.png)
 
--> ![Mixer_3](images/mixer_3.png) <-
-
-
-
-## External sensors
+![Mixer_3](images/mixer_3.png)
