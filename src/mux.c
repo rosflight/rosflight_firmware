@@ -8,12 +8,12 @@
 #include "mux.h"
 #include "param.h"
 #include "mode.h"
+#include "mavlink_receive.h"
 
 control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
 
-// Drop like a brick
 control_t _failsafe_control =
 {
   {true, ANGLE, 0.0},
@@ -200,15 +200,28 @@ bool mux_inputs()
     return false;
   }
 
-  // otherwise combine the new commands
+  // Check for and apply failsafe command
   if (_armed_state & FAILSAFE)
   {
+    _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;
   }
+
+  // Otherwise, combine commands
   else
   {
     // Read RC
     interpret_rc();
+
+    // Check for offboard control timeout (100 ms)
+    if (clock_micros() > _offboard_control_time + 100000)
+    {
+      // If it has been longer than 100 ms, then disable the offboard control
+      _offboard_control.F.active = false;
+      _offboard_control.x.active = false;
+      _offboard_control.y.active = false;
+      _offboard_control.z.active = false;
+    }
 
     // Perform muxing
     bool rc_override = false;
