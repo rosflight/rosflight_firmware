@@ -129,12 +129,6 @@ void imu_read_accel(float accel[3])
   accel[0] = accel_raw[0] * _accel_scale;
   accel[1] = -accel_raw[1] * _accel_scale;
   accel[2] = -accel_raw[2] * _accel_scale;
-
-  for (int i = 0; i < 3; i++)
-    if (fabs(accel[i]) > 10.0)
-    {
-      volatile int debug = 1;
-    }
 }
 
 void imu_read_gyro(float gyro[3])
