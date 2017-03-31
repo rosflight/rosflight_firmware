@@ -14,6 +14,43 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
+// Declarations of local function definitions
+static void mavlink_send_heartbeat(void);
+static void mavlink_send_attitude(void);
+static void mavlink_send_imu(void);
+static void mavlink_send_rosflight_output_raw(void);
+static void mavlink_send_rc_raw(void);
+static void mavlink_send_diff_pressure(void);
+static void mavlink_send_baro(void);
+static void mavlink_send_sonar(void);
+static void mavlink_send_mag(void);
+static void mavlink_send_low_priority(void);
+
+// typedefs
+typedef struct
+{
+  uint32_t period_us;
+  uint64_t next_time_us;
+  void (*send_function)(void);
+} mavlink_stream_t;
+
+// local variable definitions
+static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
+{
+  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_heartbeat },
+
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_attitude },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_imu },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_diff_pressure },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_baro },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_sonar },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_mag },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
+
+  { .period_us = 5000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
+};
+
 // local function definitions
 static void mavlink_send_heartbeat(void)
 {
@@ -65,15 +102,24 @@ static void mavlink_send_attitude(void)
 
 static void mavlink_send_imu(void)
 {
-  mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                             _imu_time,
-                             _accel.x,
-                             _accel.y,
-                             _accel.z,
-                             _gyro.x,
-                             _gyro.y,
-                             _gyro.z,
-                             _imu_temperature);
+  // If we haven't sent this IMU measurement yet, send it
+  if (!_imu_sent)
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel.x,
+                               _accel.y,
+                               _accel.z,
+                               _gyro.x,
+                               _gyro.y,
+                               _gyro.z,
+                               _imu_temperature);
+  }
+  else
+  {
+    // Otherwise, wait and signal that we still need to send IMU
+    mavlink_streams[MAVLINK_STREAM_ID_IMU].next_time_us -= mavlink_streams[MAVLINK_STREAM_ID_IMU].period_us;
+  }
 
 }
 
@@ -142,31 +188,6 @@ static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
 }
-
-// typedefs
-typedef struct
-{
-  uint32_t period_us;
-  uint64_t next_time_us;
-  void (*send_function)(void);
-} mavlink_stream_t;
-
-// local variable definitions
-static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
-{
-  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_heartbeat },
-
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_attitude },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_imu },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_diff_pressure },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_baro },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_sonar },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_mag },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
-  
-  { .period_us = 5000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
-};
 
 // function definitions
 void mavlink_stream(uint64_t time_us)
