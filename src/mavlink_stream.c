@@ -53,14 +53,14 @@ static void mavlink_send_heartbeat(void)
 static void mavlink_send_attitude(void)
 {
   mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
-                                        clock_millis(),
-                                        _current_state.q.w,
-                                        _current_state.q.x,
-                                        _current_state.q.y,
-                                        _current_state.q.z,
-                                        _current_state.omega.x,
-                                        _current_state.omega.y,
-                                        _current_state.omega.z);
+                                       clock_millis(),
+                                       _current_state.q.w,
+                                       _current_state.q.x,
+                                       _current_state.q.y,
+                                       _current_state.q.z,
+                                       _current_state.omega.x,
+                                       _current_state.omega.y,
+                                       _current_state.omega.z);
 }
 
 static void mavlink_send_imu(void)
@@ -74,7 +74,6 @@ static void mavlink_send_imu(void)
                              _gyro.y,
                              _gyro.z,
                              _imu_temperature);
-
 }
 
 static void mavlink_send_rosflight_output_raw(void)
