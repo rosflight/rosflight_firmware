@@ -51,7 +51,6 @@ bool check_failsafe(void)
   {
     // Set the FAILSAFE bit
     _armed_state |= FAILSAFE;
-    return true;
   }
 
   else
@@ -61,16 +60,6 @@ bool check_failsafe(void)
       if(pwm_read(i) < 900 || pwm_read(i) > 2100)
       {
         _armed_state |= FAILSAFE;
-
-        // blink LED
-        static uint8_t count = 0;
-        if (count > 25)
-        {
-          led1_toggle();
-          count = 0;
-        }
-        count++;
-        return true;
       }
     }
 
@@ -78,6 +67,19 @@ bool check_failsafe(void)
     // Clear the FAILSAFE bit
     _armed_state &= ~(FAILSAFE);
     return false;
+  }
+
+  if (_armed_state & FAILSAFE)
+  {
+    // blink LED
+    static uint8_t count = 0;
+    if (count > 25)
+    {
+      led1_toggle();
+      count = 0;
+    }
+    count++;
+    return true;
   }
 }
 
