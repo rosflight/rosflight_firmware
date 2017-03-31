@@ -104,7 +104,7 @@ void set_param_defaults(void)
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
   /********************************/
-  init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000); // saturation point for PID controller output | 0 | 1000
+  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0.0 | 1.0
 
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f); // Roll Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
