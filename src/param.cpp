@@ -341,7 +341,8 @@ bool Params::write_params(void)
 void Params::param_change_callback(uint16_t id)
 {
   // call the callback function
-  callbacks[id](id);
+  if(callbacks[id])
+    callbacks[id](id);
 }
 
 uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])

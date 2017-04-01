@@ -77,7 +77,7 @@ public:
 
   void init_rc(Board *_board, Params *_params);
   float rc_stick(rc_stick_t channel);
-  bool rc_switch(rc_switch_t channel);
+  bool rc_switch(int16_t channel);
   bool rc_switch_mapped(rc_switch_t channel);
   bool receive_rc();
   bool new_command();

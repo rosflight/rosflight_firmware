@@ -75,10 +75,10 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       params_->set_param_defaults();
       break;
     case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
-//      result = start_imu_calibration();
+      result = sensors_->start_imu_calibration();
       break;
     case ROSFLIGHT_CMD_GYRO_CALIBRATION:
-//      result = start_gyro_calibration();
+      result = sensors_->start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
       board_->baro_calibrate();

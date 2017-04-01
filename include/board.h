@@ -65,6 +65,7 @@ public:
   virtual void imu_register_callback(void (*callback)(void)) = 0;
   virtual void imu_read_accel(float accel[3]) = 0;
   virtual void imu_read_gyro(float gyro[3]) = 0;
+  virtual void imu_read_all(float accel[3], float* temperature, float gyro[3]) = 0;
   virtual float imu_read_temperature(void) = 0;
 
   virtual bool mag_check(void) = 0;

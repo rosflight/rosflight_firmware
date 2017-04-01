@@ -107,11 +107,29 @@ void Naze32::imu_read_gyro(float gyro[3])
   gyro[2] = -gyro_raw[2] * _gyro_scale;
 }
 
+void Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3])
+{
+    int16_t gyro_raw[3], accel_raw[3];
+    int16_t raw_temp;
+    mpu6050_read_all(accel_raw, gyro_raw, &raw_temp);
+
+    accel[0] = accel_raw[0] * _accel_scale;
+    accel[1] = -accel_raw[1] * _accel_scale;
+    accel[2] = -accel_raw[2] * _accel_scale;
+
+    gyro[0] = gyro_raw[0] * _gyro_scale;
+    gyro[1] = -gyro_raw[1] * _gyro_scale;
+    gyro[2] = -gyro_raw[2] * _gyro_scale;
+
+    (*temperature) = (float)raw_temp/340.0f + 36.53f;
+}
+
 float Naze32::imu_read_temperature(void)
 {
   int16_t temperature_raw;
   mpu6050_read_temperature(&temperature_raw);
   return temperature_raw/340.0f + 36.53f;
+
 }
 
 bool Naze32::mag_present(void)

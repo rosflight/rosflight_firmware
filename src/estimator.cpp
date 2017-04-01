@@ -109,21 +109,23 @@ void Estimator::init_estimator(Params *_params, Sensors *_sensors)
 void Estimator::run_LPF()
 {
   float alpha_acc = params_->get_param_float(PARAM_ACC_ALPHA);
-  _accel_LPF.x = (1.0f-alpha_acc)*sensors_->_accel.x + alpha_acc*_accel_LPF.x;
-  _accel_LPF.y = (1.0f-alpha_acc)*sensors_->_accel.y + alpha_acc*_accel_LPF.y;
-  _accel_LPF.z = (1.0f-alpha_acc)*sensors_->_accel.z + alpha_acc*_accel_LPF.z;
+  vector_t raw_accel = sensors_->get_accel();
+  _accel_LPF.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*_accel_LPF.x;
+  _accel_LPF.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*_accel_LPF.y;
+  _accel_LPF.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*_accel_LPF.z;
 
   float alpha_gyro = params_->get_param_float(PARAM_GYRO_ALPHA);
-  _gyro_LPF.x = (1.0f-alpha_gyro)*sensors_->_gyro.x + alpha_gyro*_gyro_LPF.x;
-  _gyro_LPF.y = (1.0f-alpha_gyro)*sensors_->_gyro.y + alpha_gyro*_gyro_LPF.y;
-  _gyro_LPF.z = (1.0f-alpha_gyro)*sensors_->_gyro.z + alpha_gyro*_gyro_LPF.z;
+  vector_t raw_gyro = sensors_->get_gyro();
+  _gyro_LPF.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*_gyro_LPF.x;
+  _gyro_LPF.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*_gyro_LPF.y;
+  _gyro_LPF.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*_gyro_LPF.z;
 }
 
 
 void Estimator::run_estimator()
 {
   static float kp, ki;
-  now_us = sensors_->_imu_time;
+  now_us = sensors_->get_imu_time();
   if (last_time == 0 || now_us <= last_time)
   {
     last_time = now_us;

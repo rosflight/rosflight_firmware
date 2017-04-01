@@ -54,62 +54,148 @@ private:
   Board *board_;
   Params *params_;
   Estimator *estimator_;
-  float accel[3];
-  float gyro[3];
+  float accel[3] = {0, 0, 0};
+  float gyro[3] = {0, 0, 0};
 
-  bool calibrating_acc_flag;
-  bool calibrating_gyro_flag;
+  bool calibrating_acc_flag = false;
+  bool calibrating_gyro_flag = false;
   void calibrate_accel(void);
   void calibrate_gyro(void);
   void correct_imu(void);
   void correct_mag(void);
   void imu_ISR(void);
   bool update_imu(void);
-  uint32_t last_time_look_for_disarmed_sensors;
-  uint32_t last_imu_update_ms;
-  uint16_t gyro_calibration_count;
-  vector_t gyro_sum;
-  uint16_t accel_calibration_count;
-  vector_t acc_sum;
+  uint32_t last_time_look_for_disarmed_sensors = 0;
+  uint32_t last_imu_update_ms = 0;
+
+  // IMU calibration
+  uint16_t gyro_calibration_count = 0;
+  vector_t gyro_sum = {0, 0, 0};
+  uint16_t accel_calibration_count = 0;
+  vector_t acc_sum = {0, 0, 0};
   const vector_t gravity = {0.0f, 0.0f, 9.80665f};
   float acc_temp_sum = 0.0f;
+  vector_t max = {-1000.0f, -1000.0f, -1000.0f};
+  vector_t min = {1000.0f, 1000.0f, 1000.0f};
+
+  vector_t _accel = {0, 0, 0};
+  vector_t _gyro = {0, 0, 0};
+  float _imu_temperature = 0;
+  uint64_t _imu_time = 0;
+  bool new_imu_data = false;
+
+  float _diff_pressure_velocity = 0;
+  float _diff_pressure = 0;
+  float _diff_pressure_temp = 0;
+
+  float _baro_altitude = 0;
+  float _baro_pressure = 0;
+  float _baro_temperature = 0;
+
+  float _sonar_range = 0;
+
+  vector_t _mag = {0, 0, 0};// global variable declarations
 
 
 public:
 
   Sensors();
 
-  // global variable declarations
-  vector_t _accel;
-  vector_t _gyro;
-  float _imu_temperature;
-  uint64_t _imu_time;
-  bool new_imu_data;
-
-  bool _diff_pressure_present;
-  float _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp;
-
-  bool _baro_present;
-  float _baro_altitude;
-  float _baro_pressure;
-  float _baro_temperature;
-
-  bool _sonar_present;
-  float _sonar_range;
-
-  bool _mag_present;
-  vector_t _mag;
-
   // function declarations
   void init_sensors(Board *_board, Params *_params, Estimator *_estimator);
-  bool update_sensors();
+  bool update_sensors(void);
   void IMU_ISR(void);
 
+  // Calibration Functions
   bool start_imu_calibration(void);
   bool start_gyro_calibration(void);
   void start_baro_calibration(void);
   void start_airspeed_calibration(void);
   bool gyro_calibration_complete(void);
+
+  // IMU getters
+  inline vector_t get_accel(void)
+  {
+    return _accel;
+  }
+
+  inline vector_t get_gyro(void)
+  {
+    return _gyro;
+  }
+
+  inline float get_imu_temp(void)
+  {
+    return _imu_temperature;
+  }
+
+  inline uint64_t get_imu_time(void)
+  {
+    return _imu_time;
+  }
+
+  inline vector_t get_mag(void)
+  {
+    return _mag;
+  }
+
+  inline bool magnetometer_present(void)
+  {
+    return board_->mag_present();
+  }
+
+  // Differential Pressure Functions
+  inline bool differential_pressure_present(void)
+  {
+    return board_->diff_pressure_present();
+  }
+
+  inline float get_differential_pressure_velocity(void)
+  {
+    return _diff_pressure_velocity;
+  }
+
+  inline float get_differential_pressure(void)
+  {
+    return _diff_pressure;
+  }
+
+  inline float get_differential_pressure_temperature(void)
+  {
+    return _diff_pressure_temp;
+  }
+
+  // Barometer Access
+  inline bool barometer_present(void)
+  {
+    return board_->baro_present();
+  }
+
+  inline float get_barometer_altitude(void)
+  {
+    return _baro_altitude;
+  }
+
+  inline float get_barometer_pressure(void)
+  {
+    return _baro_pressure;
+  }
+
+  inline float get_barometer_temperature(void)
+  {
+    return _baro_temperature;
+  }
+
+  // Sonar Access
+  inline bool sonar_present(void)
+  {
+    return board_->sonar_present();
+  }
+
+  inline float get_sonar_range(void)
+  {
+    return _sonar_range;
+  }
 };
 
 }

@@ -62,7 +62,7 @@ void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator
 }
 
 
-bool Sensors::update_sensors()
+bool Sensors::update_sensors(void)
 {
   // First, check for new IMU data
   bool new_imu_data = update_imu();
@@ -136,6 +136,8 @@ bool Sensors::update_sensors()
 }
 
 
+
+
 bool Sensors::start_imu_calibration(void)
 {
   start_gyro_calibration();
@@ -163,24 +165,20 @@ bool Sensors::gyro_calibration_complete(void)
 
 
 
-
-//==================================================================
-// local function definitions
 void Sensors::IMU_ISR(void)
 {
   _imu_time = board_->clock_micros();
   new_imu_data = true;
 }
 
-
+//==================================================================
+// local function definitions
 bool Sensors::update_imu(void)
 {
   if (new_imu_data)
   {
     last_imu_update_ms = board_->clock_millis();
-    board_->imu_read_accel(accel);
-    board_->imu_read_gyro(gyro);
-    _imu_temperature = board_->imu_read_temperature();
+    board_->imu_read_all(accel, gyro, &_imu_temperature);
     new_imu_data = false;
 
     _accel.x = accel[0] * params_->get_param_float(PARAM_ACCEL_SCALE);
@@ -268,15 +266,30 @@ static vector_t vector_min(vector_t a, vector_t b)
 }
 
 
+
+vector_t vector_max(vector_t a, vector_t b)
+{
+  vector_t out = {a.x > b.x ? a.x : b.x,
+                  a.y > b.y ? a.y : b.y,
+                  a.z > b.z ? a.z : b.z};
+  return out;
+}
+
+vector_t vector_min(vector_t a, vector_t b)
+{
+  vector_t out = {a.x < b.x ? a.x : b.x,
+                  a.y < b.y ? a.y : b.y,
+                  a.z < b.z ? a.z : b.z};
+  return out;
+}
+
+
 void Sensors::calibrate_accel(void)
 {
-  acc_sum.x = 0.0f;
-  acc_sum.y = 0.0f;
-  acc_sum.z = 0.0f;
-  acc_temp_sum = 0.0f;
-
   acc_sum = vector_add(vector_add(acc_sum, _accel), gravity);
   acc_temp_sum += _imu_temperature;
+  max = vector_max(max, _accel);
+  min = vector_min(min, _accel);
   accel_calibration_count++;
 
   if (accel_calibration_count > 1000)
@@ -296,46 +309,52 @@ void Sensors::calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum,
-                                          scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
     if (norm(vector_sub(max, min)) > 1.0)
     {
-      params_->set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
-      params_->set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
-      params_->set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
-      //      mavlink_log_info("IMU offsets captured", NULL);
-
-      // reset the estimated state
-      estimator_->reset_state();
+//      mavlink_log_error("Too much movement for IMU cal", NULL);
       calibrating_acc_flag = false;
     }
     else
     {
-      // check for bad _accel_scale
-      if (sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
+      if (norm(accel_bias) < 3.0)
       {
-        //        mavlink_log_error("Detected bad IMU accel scale value", 0);
-        params_->set_param_float(PARAM_ACCEL_SCALE, 2.0 * params_->get_param_float(PARAM_ACCEL_SCALE));
-        params_->write_params();
-      }
-      else if (sqrd_norm(accel_bias) > 9.0*9.0 && sqrd_norm(accel_bias) < 11.0*11.0)
-      {
-        //        mavlink_log_error("Detected bad IMU accel scale value", 0);
-        params_->set_param_float(PARAM_ACCEL_SCALE, 0.5 * params_->get_param_float(PARAM_ACCEL_SCALE));
-        params_->write_params();
+        params_->set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
+        params_->set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
+        params_->set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
+//        mavlink_log_info("IMU offsets captured", NULL);
+
+        // reset the estimated state
+//        reset_state();
+        calibrating_acc_flag = false;
       }
       else
       {
-        //        mavlink_log_error("Too much movement for IMU cal", NULL);
-        calibrating_acc_flag = false;
+        // check for bad _accel_scale
+        if (norm(accel_bias) > 3.0 && norm(accel_bias) < 6.0)
+        {
+//          mavlink_log_error("Detected bad IMU accel scale value", 0);
+          params_->set_param_float(PARAM_ACCEL_SCALE, 2.0 * params_->get_param_float(PARAM_ACCEL_SCALE));
+          params_->write_params();
+        }
+        else if (norm(accel_bias) > 6.0)
+        {
+//          mavlink_log_error("Detected bad IMU accel scale value", 0);
+          params_->set_param_float(PARAM_ACCEL_SCALE, 0.5 * params_->get_param_float(PARAM_ACCEL_SCALE));
+          params_->write_params();
+        }
+        else
+        {
+
+        }
       }
     }
 
-    // reset calibration in case we do it again
+    // reset calibration counters in case we do it again
     accel_calibration_count = 0;
     acc_sum.x = 0.0f;
     acc_sum.y = 0.0f;

@@ -110,21 +110,23 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 //                                        _current_state.omega.x,
 //                                        _current_state.omega.y,
 //                                        _current_state.omega.z);
-  send_message(msg);
+//  send_message(msg);
 }
 
 void Mavlink::mavlink_send_imu(void)
 {
   mavlink_message_t msg;
-//  mavlink_msg_small_imu_pack(sysid, compid, &msg,
-//                             _imu_time,
-//                             _accel.x,
-//                             _accel.y,
-//                             _accel.z,
-//                             _gyro.x,
-//                             _gyro.y,
-//                             _gyro.z,
-//                             _imu_temperature);
+  vector_t accel = sensors_->get_accel();
+  vector_t gyro = sensors_->get_gyro();
+  mavlink_msg_small_imu_pack(sysid, compid, &msg,
+                             sensors_->get_imu_time(),
+                             accel.x,
+                             accel.y,
+                             accel.z,
+                             gyro.x,
+                             gyro.y,
+                             gyro.z,
+                             sensors_->get_imu_temp());
   send_message(msg);
 
 }
@@ -143,7 +145,7 @@ void Mavlink::mavlink_send_servo_output_raw(void)
 //                                    _outputs[5],
 //                                    _outputs[6],
 //                                    _outputs[7]);
-  send_message(msg);
+//  send_message(msg);
 }
 
  void Mavlink::mavlink_send_rc_raw(void)
@@ -161,7 +163,7 @@ void Mavlink::mavlink_send_servo_output_raw(void)
 //                               board_->pwm_read(6),
 //                               board_->pwm_read(7),
 //                               0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
-  send_message(msg);
+//  send_message(msg);
 }
 
 void Mavlink::mavlink_send_diff_pressure(void)
@@ -173,7 +175,7 @@ void Mavlink::mavlink_send_diff_pressure(void)
 //                                   _diff_pressure_velocity,
 //                                   _diff_pressure,
 //                                   _diff_pressure_temp);
-    send_message(msg);
+//    send_message(msg);
   }
 }
 
@@ -186,7 +188,7 @@ void Mavlink::mavlink_send_baro(void)
 //                                _baro_altitude,
 //                                _baro_pressure,
 //                                _baro_temperature);
-    send_message(msg);
+//    send_message(msg);
   }
 }
 
@@ -199,7 +201,7 @@ void Mavlink::mavlink_send_sonar(void)
 //                                 _sonar_range,
 //                                 8.0,
 //                                 0.25);
-    send_message(msg);
+//    send_message(msg);
   }
 }
 
@@ -212,7 +214,7 @@ void Mavlink::mavlink_send_mag(void)
 //                               _mag.x,
 //                               _mag.y,
 //                               _mag.z);
-    send_message(msg);
+//    send_message(msg);
   }
 }
 
@@ -236,9 +238,9 @@ void Mavlink::stream()
   }
 }
 
-void Mavlink::set_streaming_rate(uint8_t stream_id, int32_t rate)
+void Mavlink::set_streaming_rate(uint8_t stream_id, int16_t param_id)
 {
-  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/rate);
+  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/params_->get_param_int(param_id));
 }
 
 void Mavlink::mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us)

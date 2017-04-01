@@ -17,14 +17,14 @@ class Naze32 : public Board
 private:
   serialPort_t *Serial1;
 
-  bool _baro_present;
-  bool _mag_present;
-  bool _sonar_present;
-  bool _diff_pressure_present;
-  int _board_revision;
+  bool _baro_present = false;
+  bool _mag_present = false;
+  bool _sonar_present = false;
+  bool _diff_pressure_present = false;
+  int _board_revision = 2;
 
-  float _accel_scale;
-  float _gyro_scale;
+  float _accel_scale = 1.0;
+  float _gyro_scale = 1.0;
 
 public:
 
@@ -49,6 +49,7 @@ public:
   void imu_register_callback(void (*callback)(void));
   void imu_read_accel(float accel[3]);
   void imu_read_gyro(float gyro[3]);
+  void imu_read_all(float accel[3], float* temperature, float gyro[3]);
   float imu_read_temperature(void);
 
   bool mag_check(void);

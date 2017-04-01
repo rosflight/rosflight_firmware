@@ -50,7 +50,7 @@ float RC::rc_stick(rc_stick_t channel)
   return stick_values[channel];
 }
 
-bool RC::rc_switch(rc_switch_t channel)
+bool RC::rc_switch(int16_t channel)
 {
   return switch_values[channel];
 }
@@ -60,6 +60,21 @@ bool RC::rc_switch_mapped(rc_switch_t channel)
   return switches[channel].mapped;
 }
 
+
+void RC::init_sticks(void)
+{
+  sticks[RC_STICK_X].channel = params->get_param_int(PARAM_RC_X_CHANNEL);
+  sticks[RC_STICK_X].one_sided = false;
+
+  sticks[RC_STICK_Y].channel = params->get_param_int(PARAM_RC_Y_CHANNEL);
+  sticks[RC_STICK_Y].one_sided = false;
+
+  sticks[RC_STICK_Z].channel = params->get_param_int(PARAM_RC_Z_CHANNEL);
+  sticks[RC_STICK_Z].one_sided = false;
+
+  sticks[RC_STICK_F].channel = params->get_param_int(PARAM_RC_F_CHANNEL);
+  sticks[RC_STICK_F].one_sided = true;
+}
 
 void RC::init_switches()
 {

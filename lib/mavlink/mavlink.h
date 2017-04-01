@@ -124,7 +124,7 @@ public:
   void receive(void);
   void stream();
   void update_param(uint16_t param_id);
-  void set_streaming_rate(uint8_t stream_id, int32_t rate);
+  void set_streaming_rate(uint8_t stream_id, int16_t param_id);
 };
 
 }

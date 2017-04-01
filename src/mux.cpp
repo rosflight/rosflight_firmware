@@ -178,26 +178,14 @@ bool offboard_control_active()
   return false;
 }
 
-  if (fsm->_armed_state == DISARMED_FAILSAFE || fsm->_armed_state == ARMED_FAILSAFE)
-  {
-    _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
-    _combined_control = _failsafe_control;
-  }
+//  if (fsm->_armed_state == DISARMED_FAILSAFE || fsm->_armed_state == ARMED_FAILSAFE)
+//  {
+//    _combined_control = _failsafe_control;
+//  }
 
-  else if (!_new_command)
-  {
-    // we haven't received any new commands, so we shouldn't do anything
-    return false;
-  }
-
-  // Otherwise, combine commands
-  else
-  {
-    // Read RC
-    interpret_rc();
-
-    // Check for offboard control timeout (100 ms)
-    if (clock_micros() > _offboard_control_time + 100000)
+//  else
+//  {
+    for (uint8_t i = 0; i < 4; i++)
     {
       if (i == MUX_F && params->get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
       {
@@ -219,7 +207,7 @@ bool offboard_control_active()
     {
       board->led0_off();
     }
-  }
+//  }
 
   // reset the new command flag
   _new_command = false;
