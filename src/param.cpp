@@ -45,7 +45,11 @@
 namespace rosflight
 {
 
-Params::Params() {}
+Params::Params()
+{
+  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
+    callbacks[id] = NULL;
+}
 
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -93,9 +97,6 @@ void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
     set_param_defaults();
     write_params();
   }
-
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-    callbacks[id] = NULL;
 }
 
 void Params::set_param_defaults(void)
@@ -306,6 +307,7 @@ void Params::set_param_defaults(void)
 void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
 {
   callbacks[param_id] = callback;
+  callback(param_id);
 }
 
 bool Params::read_params(void)

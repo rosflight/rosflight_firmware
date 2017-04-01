@@ -45,11 +45,11 @@ ROSflight::ROSflight(Board *_board, CommLink *_commlink)
 // Initialization Routine
 void ROSflight::rosflight_init(void)
 {
-  // Initialize Mixer (because parameter callbacks need to use it.)
-  mixer_.init(board_, &mux_, &params_, &fsm_);
-
   // Read EEPROM to get initial params
   params_.init_params(board_, commlink_, &mixer_);
+
+  // Initialize Mixer
+  mixer_.init(board_, &mux_, &params_, &fsm_);
 
   /***********************/
   /***  Hardware Setup ***/

@@ -178,7 +178,7 @@ bool Sensors::update_imu(void)
   if (new_imu_data)
   {
     last_imu_update_ms = board_->clock_millis();
-    board_->imu_read_all(accel, gyro, &_imu_temperature);
+    board_->imu_read_all(accel, &_imu_temperature, gyro);
     new_imu_data = false;
 
     _accel.x = accel[0] * params_->get_param_float(PARAM_ACCEL_SCALE);
