@@ -166,7 +166,8 @@ bool Arming_FSM::check_mode()
       if (!(_armed_state & ARMED))
       {
         // if left stick is down and to the right
-        if (rc_->rc_low(RC::RC_F) && rc_->rc_high(RC::RC_Z))
+        if (rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD)
+            && rc_->rc_stick(RC_STICK_Z) > (1.0f - params_->get_param_float(PARAM_ARM_THRESHOLD)))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }
@@ -183,7 +184,8 @@ bool Arming_FSM::check_mode()
       else // _armed_state is ARMED
       {
         // if left stick is down and to the left
-        if (rc_->rc_low(RC::RC_F) && rc_->rc_low(RC::RC_Z))
+        if (rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD)
+            && rc_->rc_stick(RC_STICK_Z) < -(1.0f - params_->get_param_float(PARAM_ARM_THRESHOLD)))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }

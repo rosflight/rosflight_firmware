@@ -37,81 +37,81 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "mux.h"
 #include "param.h"
 #include "board.h"
-#include "arming_fsm.h"
 #include "common.h"
 
 namespace rosflight
 {
 
-class Arming_FSM;
 class Params;
-class Mux;
+
+typedef enum
+{
+  RC_STICK_X,
+  RC_STICK_Y,
+  RC_STICK_Z,
+  RC_STICK_F,
+  RC_STICKS_COUNT
+} rc_stick_t;
+
+typedef enum
+{
+  RC_SWITCH_ARM,
+  RC_SWITCH_ATT_OVERRIDE,
+  RC_SWITCH_THROTTLE_OVERRIDE,
+  RC_SWITCH_ATT_TYPE,
+  RC_SWITCHES_COUNT
+} rc_switch_t;
 
 class RC
 {
 
 public:
+
   typedef enum
   {
     PARALLEL_PWM,
     CPPM,
   } rc_type_t;
 
-
-  typedef enum
-  {
-    RC_X,
-    RC_Y,
-    RC_Z,
-    RC_F
-  } rc_channel_enum_t;
-
-
-  bool _calibrate_rc;
-  void init_rc(Arming_FSM *_fsm, Board *_board, Params *_params, Mux *_mux);
-  bool rc_switch(int16_t channel);
+  void init_rc(Board *_board, Params *_params);
+  float rc_stick(rc_stick_t channel);
+  bool rc_switch(rc_switch_t channel);
+  bool rc_switch_mapped(rc_switch_t channel);
   bool receive_rc();
-  bool rc_low(int16_t channel);
-  bool rc_high(int16_t channel);
+  bool new_command();
 
 
 private:
   typedef struct
   {
-    int16_t channel;
-    int16_t direction;
-  } rc_switch_t;
+    uint8_t channel;
+    int8_t direction;
+    bool mapped;
+  } rc_switch_config_t;
 
   typedef struct
   {
-    uint16_t channel_param;
-    uint16_t max_angle_param;
-    uint16_t max_rate_param;
-    uint16_t center_param;
-    uint16_t bottom_param;
-    uint16_t range_param;
-    control_channel_t *control_channel_ptr;
-  } rc_channel_t;
+    uint8_t channel;
+    bool one_sided;
+  } rc_stick_config_t;
 
-  Arming_FSM *fsm;
   Board *board;
   Params *params;
-  Mux *mux;
+  bool new_command_;
 
   uint32_t time_of_last_stick_deviation = 0;
   uint32_t last_rc_receive_time = 0;
 
-  rc_channel_t channels[4];
-  rc_switch_t switches[4];
+  rc_stick_config_t sticks[RC_STICKS_COUNT];
+  rc_switch_config_t switches[RC_SWITCHES_COUNT];
 
-  void calibrate_rc();
+  bool switch_values[RC_SWITCHES_COUNT];
+  float stick_values[RC_STICKS_COUNT];
+
   void init_switches();
-  void interpret_command_values();
-  void interpret_command_type();
-  bool sticks_deviated(uint32_t now_ms);
+  void init_sticks();
 };
 }
 #endif

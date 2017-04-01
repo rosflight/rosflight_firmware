@@ -59,7 +59,7 @@ void ROSflight::rosflight_init(void)
 
   // Initialize PWM and RC
   mixer_.init_PWM();
-  rc_.init_rc(&fsm_, board_, &params_, &mux_);
+  rc_.init_rc(board_, &params_);
 
   // Initialize MAVlink Communication
   commlink_->init(board_, &params_, &sensors_);
