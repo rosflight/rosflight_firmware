@@ -35,6 +35,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <functional>
 
 #include "board.h"
 #include "commlink.h"
@@ -242,6 +243,8 @@ private:
     uint8_t chk;                            // XOR checksum
   } params_t;
 
+  std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
+
   params_t params;
   Mixer *mixer_;
   CommLink *commlink_;
@@ -256,6 +259,8 @@ private:
 
 public:
   Params();
+
+  void add_callback(std::function<void(int)> callback, uint16_t param_id);
 
 
 

@@ -44,6 +44,24 @@ void Mixer::init(Board *_board, Mux *_mux, Params *_params, Arming_FSM *_fsm)
   mux = _mux;
   params = _params;
   fsm = _fsm;
+
+  params->add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_PWM_SEND_RATE);
+  params->add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_MIN_PWM);
+  params->add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
+  params->add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MIXER);
+}
+
+void Mixer::param_change_callback(uint16_t param_id)
+{
+  switch(param_id)
+  {
+    case PARAM_MIXER:
+      init_mixing();
+      break;
+    default:
+      init_PWM();
+      break;
+  }
 }
 
 

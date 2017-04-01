@@ -41,7 +41,6 @@
 #include "mavlink.h"
 
 #include "param.h"
-#include "mixer.h"
 
 namespace rosflight
 {
@@ -96,7 +95,7 @@ void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
   }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-    param_change_callback((uint16_t) id);
+    callbacks[id] = NULL;
 }
 
 void Params::set_param_defaults(void)
@@ -304,6 +303,11 @@ void Params::set_param_defaults(void)
                  150); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
 }
 
+void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
+{
+  callbacks[param_id] = callback;
+}
+
 bool Params::read_params(void)
 {
   if (!board_->memory_read(&params, sizeof(params_t)))
@@ -336,52 +340,8 @@ bool Params::write_params(void)
 
 void Params::param_change_callback(uint16_t id)
 {
-  switch (id)
-  {
-  case PARAM_STREAM_HEARTBEAT_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
-    break;
-
-  case PARAM_STREAM_ATTITUDE_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_ATTITUDE, get_param_int(PARAM_STREAM_ATTITUDE_RATE));
-    break;
-
-  case PARAM_STREAM_IMU_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_IMU, get_param_int(PARAM_STREAM_IMU_RATE));
-    break;
-  case PARAM_STREAM_AIRSPEED_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_DIFF_PRESSURE, get_param_int(PARAM_STREAM_AIRSPEED_RATE));
-    break;
-  case PARAM_STREAM_SONAR_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_SONAR, get_param_int(PARAM_STREAM_SONAR_RATE));
-    break;
-  case  PARAM_STREAM_BARO_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
-    break;
-  case  PARAM_STREAM_MAG_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_MAG, get_param_int(PARAM_STREAM_MAG_RATE));
-    break;
-
-  case PARAM_STREAM_SERVO_OUTPUT_RAW_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_SERVO_OUTPUT_RAW, get_param_int(PARAM_STREAM_SERVO_OUTPUT_RAW_RATE));
-    break;
-  case PARAM_STREAM_RC_RAW_RATE:
-    commlink_->set_streaming_rate(CommLink::STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
-    break;
-
-  case PARAM_RC_TYPE:
-  case PARAM_MOTOR_PWM_SEND_RATE:
-  case PARAM_MOTOR_MIN_PWM:
-    mixer_->init_PWM();
-    break;
-  case PARAM_MIXER:
-    mixer_->init_mixing();
-    break;
-
-  default:
-    // no action needed for this parameter
-    break;
-  }
+  // call the callback function
+  callbacks[id](id);
 }
 
 uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])

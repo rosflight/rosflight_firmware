@@ -100,6 +100,7 @@ public:
   void init_PWM();
   void init_mixing();
   void mix_output();
+  void param_change_callback(uint16_t param_id);
 
 private:
 
