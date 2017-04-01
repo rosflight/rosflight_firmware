@@ -60,7 +60,7 @@ void ROSflight::rosflight_init(void)
 //  rc_.init_rc(board_, &params_);
 
   // Initialize MAVlink Communication
-  commlink_->init(board_, &params_, &sensors_);
+  commlink_->init(board_, &params_, this);
 
   // Initialize Sensors
   sensors_.init_sensors(board_, &params_, &estimator_);
@@ -73,7 +73,7 @@ void ROSflight::rosflight_init(void)
 //  mixer_.init_mixing();
 
   // Initialize Estimator
-//  estimator_.init_estimator(&params_, &sensors_);
+  estimator_.init_estimator(&params_, &sensors_);
 
   // Initialize Controller
 //  controller_.init_controller(&fsm_, board_, &estimator_, &params_);
@@ -92,7 +92,7 @@ void ROSflight::rosflight_run()
   if (sensors_.update_sensors()) // 595 | 591 | 590 us
   {
     // If I have new IMU data, then perform control
-//    estimator_.run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
+    estimator_.run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
 //    controller_.run_controller(); // 278 | 271
 //    mixer_.mix_output(); // 16 | 13 us
   }

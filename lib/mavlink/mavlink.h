@@ -35,20 +35,11 @@
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
 
-#include "board.h"
-#include "param.h"
-#include "sensors.h"
-
 #include "commlink.h"
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 namespace rosflight {
-
-// Forward Declaraion of Required Classes
-class Params;
-class Board;
-class Sensors;
 
 class Mavlink : public CommLink
 {
@@ -56,9 +47,7 @@ private:
   uint32_t sysid;
   uint32_t compid;
   uint64_t _offboard_control_time;
-  Params* params_;
-  Sensors* sensors_;
-  Board* board_;
+  ROSflight* RF_;
   uint8_t send_params_index;
   mavlink_message_t in_buf;
   mavlink_status_t status;
@@ -120,7 +109,7 @@ private:
 public:
   Mavlink();
 
-  void init(Board* _board, Params* _params, Sensors *_sensors);
+  void init(Board* _board, Params *_params, ROSflight* firmware);
   void receive(void);
   void stream();
   void update_param(uint16_t param_id);

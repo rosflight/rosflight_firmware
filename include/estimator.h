@@ -53,41 +53,51 @@ class Estimator
 {
 
 public:
-  quaternion_t q;
-  vector_t omega;
-  float roll;
-  float pitch;
-  float yaw;
-  float altitude;
-  uint64_t now_us;
-  vector_t _adaptive_gyro_bias;
+
+  // Controller needs direct access to these values
+  vector_t omega = {0.0, 0.0, 0.0};
+  float roll = 0.0;
+  float pitch = 0.0;
+  float yaw = 0.0;
 
   void reset_state();
   void reset_adaptive_bias();
   void init_estimator(Params *_params, Sensors *_sensors);
   void run_estimator();
 
+  inline float get_roll() {return roll;}
+  inline float get_pitch() {return pitch;}
+  inline float get_yaw() {return yaw;}
+  inline vector_t get_angular_velocity() {return omega;}
+  inline quaternion_t get_attitude() {return q;}
+  inline uint64_t get_estimator_timestamp() {return now_us;}
+
 private:
   Params *params_;
   Sensors *sensors_;
 
-  vector_t w1;
-  vector_t w2;
-  vector_t wbar;
-  vector_t wfinal;
-  vector_t w_acc;
+  uint64_t now_us = 0;
+
+  quaternion_t q = {1.0, 0.0, 0.0, 0.0};
+
+
+  vector_t w1 = {0.0, 0.0, 0.0};
+  vector_t w2 = {0.0, 0.0, 0.0};
+  vector_t wbar = {0.0, 0.0, 0.0};
+  vector_t wfinal = {0.0, 0.0, 0.0};
+  vector_t w_acc = {0.0, 0.0, 0.0};
   const vector_t g = {0.0f, 0.0f, -1.0f};
-  vector_t b;
-  quaternion_t q_tilde;
-  quaternion_t q_hat;
-  uint64_t last_time;
+  vector_t b = {0.0, 0.0, 0.0};
+  quaternion_t q_tilde = {1.0, 0.0, 0.0, 0.0};
+  quaternion_t q_hat = {1.0, 0.0, 0.0, 0.0};
+  uint64_t last_time = 0;
 
-  bool mat_exp;
-  bool quad_int;
-  bool use_acc;
+  bool mat_exp = false;
+  bool quad_int = false;
+  bool use_acc = true;
 
-  vector_t _accel_LPF;
-  vector_t _gyro_LPF;
+  vector_t _accel_LPF = {0.0, 0.0, 0.0};
+  vector_t _gyro_LPF = {0.0, 0.0, 0.0};
 
   void run_LPF();
 };

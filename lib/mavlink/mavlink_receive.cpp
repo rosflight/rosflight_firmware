@@ -66,25 +66,25 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
     switch (cmd.command)
     {
     case ROSFLIGHT_CMD_READ_PARAMS:
-      result = params_->read_params();
+      result = RF_->params_.read_params();
       break;
     case ROSFLIGHT_CMD_WRITE_PARAMS:
-      result = params_->write_params();
+      result = RF_->params_.write_params();
       break;
     case ROSFLIGHT_CMD_SET_PARAM_DEFAULTS:
-      params_->set_param_defaults();
+      RF_->params_.set_param_defaults();
       break;
     case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
-      result = sensors_->start_imu_calibration();
+      result = RF_->sensors_.start_imu_calibration();
       break;
     case ROSFLIGHT_CMD_GYRO_CALIBRATION:
-      result = sensors_->start_gyro_calibration();
+      result = RF_->sensors_.start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      board_->baro_calibrate();
+      RF_->board_->baro_calibrate();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      board_->diff_pressure_calibrate();
+      RF_->board_->diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
 //      _calibrate_rc = true;
@@ -113,14 +113,14 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
-    board_->clock_delay(20);
-    board_->board_reset(reboot_to_bootloader_flag);
+    RF_->board_->clock_delay(20);
+    RF_->board_->board_reset(reboot_to_bootloader_flag);
   }
 }
 
 void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint64_t now_us = board_->clock_micros();
+  uint64_t now_us = RF_->board_->clock_micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
@@ -136,7 +136,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
 //  mavlink_offboard_control_t mavlink_offboard_control;
-//  _offboard_control_time = board_->clock_micros();
+//  _offboard_control_time = RF_->board_->clock_micros();
 //  mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
 //  // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
@@ -159,9 +159,9 @@ void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const
 //    _offboard_control.y.type = PASSTHROUGH;
 //    _offboard_control.z.type = PASSTHROUGH;
 //    _offboard_control.F.type = THROTTLE;
-//    _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)params_->get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
-//    _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)params_->get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
-//    _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)params_->get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
+//    _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)RF_->params_.get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
+//    _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)RF_->params_.get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
+//    _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)RF_->params_.get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
 //    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
 //    break;
 //  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
@@ -170,9 +170,9 @@ void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const
 //    _offboard_control.z.type = RATE;
 //    _offboard_control.F.type = THROTTLE;
 //    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-//    _offboard_control.x.value += params_->get_param_float(PARAM_ROLL_RATE_TRIM);
-//    _offboard_control.y.value += params_->get_param_float(PARAM_PITCH_RATE_TRIM);
-//    _offboard_control.z.value += params_->get_param_float(PARAM_YAW_RATE_TRIM);
+//    _offboard_control.x.value += RF_->params_.get_param_float(PARAM_ROLL_RATE_TRIM);
+//    _offboard_control.y.value += RF_->params_.get_param_float(PARAM_PITCH_RATE_TRIM);
+//    _offboard_control.z.value += RF_->params_.get_param_float(PARAM_YAW_RATE_TRIM);
 //    break;
 //  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
 //    _offboard_control.x.type = ANGLE;
@@ -180,18 +180,18 @@ void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const
 //    _offboard_control.z.type = RATE;
 //    _offboard_control.F.type = THROTTLE;
 //    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-//    _offboard_control.x.value += params_->get_param_float(PARAM_ROLL_ANGLE_TRIM);
-//    _offboard_control.y.value += params_->get_param_float(PARAM_PITCH_ANGLE_TRIM);
-//    _offboard_control.z.value += params_->get_param_float(PARAM_YAW_RATE_TRIM);
+//    _offboard_control.x.value += RF_->params_.get_param_float(PARAM_ROLL_ANGLE_TRIM);
+//    _offboard_control.y.value += RF_->params_.get_param_float(PARAM_PITCH_ANGLE_TRIM);
+//    _offboard_control.z.value += RF_->params_.get_param_float(PARAM_YAW_RATE_TRIM);
 //    break;
 //  case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
 //    _offboard_control.x.type = ANGLE;
 //    _offboard_control.y.type = ANGLE;
 //    _offboard_control.z.type = RATE;
 //    _offboard_control.F.type = ALTITUDE;
-//    _offboard_control.x.value += params_->get_param_float(PARAM_ROLL_ANGLE_TRIM);
-//    _offboard_control.y.value += params_->get_param_float(PARAM_PITCH_ANGLE_TRIM);
-//    _offboard_control.z.value += params_->get_param_float(PARAM_YAW_RATE_TRIM);
+//    _offboard_control.x.value += RF_->params_.get_param_float(PARAM_ROLL_ANGLE_TRIM);
+//    _offboard_control.y.value += RF_->params_.get_param_float(PARAM_PITCH_ANGLE_TRIM);
+//    _offboard_control.z.value += RF_->params_.get_param_float(PARAM_YAW_RATE_TRIM);
 //    break;
 //    // Handle error state
 //  }
@@ -228,9 +228,9 @@ void Mavlink::handle_mavlink_message(void)
 // function definitions
 void Mavlink::receive(void)
 {
-  while (board_->serial_bytes_available())
+  while (RF_->board_->serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, board_->serial_read(), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_->serial_read(), &in_buf, &status))
       handle_mavlink_message();
   }
 }

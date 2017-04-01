@@ -40,6 +40,7 @@
 #include "param.h"
 #include "estimator.h"
 #include "arming_fsm.h"
+#include "mixer.h"
 
 namespace rosflight
 {
@@ -47,6 +48,7 @@ namespace rosflight
 class Arming_FSM;
 class CommLink;
 class Estimator;
+class Mixer;
 
 class Controller
 {

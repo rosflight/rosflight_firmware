@@ -89,8 +89,8 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 //  }
 
   mavlink_message_t msg;
-  mavlink_msg_heartbeat_pack(params_->get_param_int(PARAM_SYSTEM_ID), 0, &msg,
-                             params_->get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
+  mavlink_msg_heartbeat_pack(RF_->params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
+                             RF_->params_.get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
                              MAV_AUTOPILOT_GENERIC,
                              armed_mode,
                              control_mode,
@@ -101,32 +101,32 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
  void Mavlink::mavlink_send_attitude(void)
 {
   mavlink_message_t msg;
-//  mavlink_msg_attitude_quaternion_pack(sysid, compid, &msg,
-//                                        board_->clock_millis(),
-//                                        _current_state.q.w,
-//                                        _current_state.q.x,
-//                                        _current_state.q.y,
-//                                        _current_state.q.z,
-//                                        _current_state.omega.x,
-//                                        _current_state.omega.y,
-//                                        _current_state.omega.z);
-//  send_message(msg);
+  mavlink_msg_attitude_quaternion_pack(sysid, compid, &msg,
+                                        RF_->estimator_.get_estimator_timestamp()/1000,
+                                        RF_->estimator_.get_attitude().w,
+                                        RF_->estimator_.get_attitude().x,
+                                        RF_->estimator_.get_attitude().y,
+                                        RF_->estimator_.get_attitude().z,
+                                        RF_->estimator_.get_angular_velocity().x,
+                                        RF_->estimator_.get_angular_velocity().y,
+                                        RF_->estimator_.get_angular_velocity().z);
+  send_message(msg);
 }
 
 void Mavlink::mavlink_send_imu(void)
 {
   mavlink_message_t msg;
-  vector_t accel = sensors_->get_accel();
-  vector_t gyro = sensors_->get_gyro();
+  vector_t accel = RF_->sensors_.get_accel();
+  vector_t gyro = RF_->sensors_.get_gyro();
   mavlink_msg_small_imu_pack(sysid, compid, &msg,
-                             sensors_->get_imu_time(),
+                             RF_->sensors_.get_imu_time(),
                              accel.x,
                              accel.y,
                              accel.z,
                              gyro.x,
                              gyro.y,
                              gyro.z,
-                             sensors_->get_imu_temp());
+                             RF_->sensors_.get_imu_temp());
   send_message(msg);
 
 }
@@ -168,7 +168,7 @@ void Mavlink::mavlink_send_servo_output_raw(void)
 
 void Mavlink::mavlink_send_diff_pressure(void)
 {
-  if (board_->diff_pressure_present())
+  if (RF_->board_->diff_pressure_present())
   {
     mavlink_message_t msg;
 //    mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
@@ -181,7 +181,7 @@ void Mavlink::mavlink_send_diff_pressure(void)
 
 void Mavlink::mavlink_send_baro(void)
 {
-  if (board_->baro_present())
+  if (RF_->board_->baro_present())
   {
     mavlink_message_t msg;
 //    mavlink_msg_small_baro_pack(sysid, compid, &msg,
@@ -194,7 +194,7 @@ void Mavlink::mavlink_send_baro(void)
 
 void Mavlink::mavlink_send_sonar(void)
 {
-  if (board_->sonar_present())
+  if (RF_->board_->sonar_present())
   {
     mavlink_message_t msg;
 //    mavlink_msg_small_sonar_pack(sysid, compid, &msg,
@@ -207,7 +207,7 @@ void Mavlink::mavlink_send_sonar(void)
 
 void Mavlink::mavlink_send_mag(void)
 {
-  if (board_->mag_present())
+  if (RF_->board_->mag_present())
   {
     mavlink_message_t msg;
 //    mavlink_msg_small_mag_pack(sysid, compid, &msg,
@@ -226,7 +226,7 @@ void Mavlink::mavlink_send_low_priority(void)
 // function definitions
 void Mavlink::stream()
 {
-  uint64_t time_us = board_->clock_micros();
+  uint64_t time_us = RF_->board_->clock_micros();
   for (int i = 0; i < STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams[i].next_time_us)
@@ -240,7 +240,7 @@ void Mavlink::stream()
 
 void Mavlink::set_streaming_rate(uint8_t stream_id, int16_t param_id)
 {
-  mavlink_streams[stream_id].period_us = (rate == 0 ? 0 : 1000000/params_->get_param_int(param_id));
+  mavlink_streams[stream_id].period_us = (RF_->params_.get_param_int(param_id) == 0 ? 0 : 1000000/RF_->params_.get_param_int(param_id));
 }
 
 void Mavlink::mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us)

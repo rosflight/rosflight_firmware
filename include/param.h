@@ -37,9 +37,9 @@
 #include <stdint.h>
 #include <functional>
 
+//#include "commlink.h"
 #include "board.h"
-#include "commlink.h"
-#include "mixer.h"
+//#include "mixer.h"
 
 namespace rosflight
 {
@@ -247,7 +247,7 @@ private:
 
   params_t params;
   Mixer *mixer_;
-  CommLink *commlink_;
+//  CommLink *commlink_;
   Board *board_;
 
   const uint8_t PARAM_CONF_VERSION = 76;

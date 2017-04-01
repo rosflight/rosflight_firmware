@@ -197,17 +197,6 @@ void Controller::init_controller(Arming_FSM *_fsm, Board *_board, //Mux* _mux, M
            &mixer->_command.z,
            params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
            -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
-
-  init_pid(&pid_altitude,
-           PARAM_PID_ALT_P,
-           PARAM_PID_ALT_I,
-           PARAM_PID_ALT_D,
-           &estimator->altitude,
-           NULL,
-           &mux->_combined_control.F.value,
-           &mixer->_command.F,
-           params->get_param_int(PARAM_MAX_COMMAND),
-           0.0f);
 }
 
 
@@ -216,11 +205,11 @@ void Controller::run_controller()
   // Time calculation
   if (prev_time < 0.0000001)
   {
-    prev_time = estimator->now_us * 1e-6;
+    prev_time = estimator->get_estimator_timestamp() * 1e-6;
     return;
   }
 
-  float now = estimator->now_us * 1e-6;
+  float now = estimator->get_estimator_timestamp() * 1e-6;
   float dt = now - prev_time;
   prev_time = now;
 

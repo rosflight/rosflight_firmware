@@ -35,21 +35,29 @@
 #define ROSFLIGHT_H_
 
 #include "board.h"
-#include "commlink.h"
 #include "param.h"
+
 #include "sensors.h"
 #include "arming_fsm.h"
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
+#include "commlink.h"
+#include "mixer.h"
 
 namespace rosflight
 {
+
+class CommLink;
 
 class ROSflight
 {
 
 private:
+
+
+public:
+
   Board *board_;
   CommLink *commlink_;
 
@@ -62,8 +70,6 @@ private:
   Controller controller_;
   RC rc_;
 
-
-public:
   ROSflight(Board *_board, CommLink *_commlink);
 
   /**

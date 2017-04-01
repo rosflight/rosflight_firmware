@@ -37,14 +37,13 @@
 #include <stdint.h>
 
 #include "board.h"
-#include "sensors.h"
-#include "param.h"
+#include "rosflight.h"
 
 namespace rosflight
 {
 
+class ROSflight;
 class Params;
-class Sensors;
 
 class CommLink
 {
@@ -68,11 +67,11 @@ public:
     STREAM_COUNT
   };
 
-  virtual void init(Board *_board, Params *_params, Sensors *_sensors) = 0;
+  virtual void init(Board *_board, Params *_params, ROSflight* firmware) = 0;
   virtual void receive() = 0;
   virtual void stream() = 0;
   virtual void update_param(uint16_t param_id) = 0;
-  virtual void set_streaming_rate(uint8_t stream_id, int32_t rate) = 0;
+  virtual void set_streaming_rate(uint8_t stream_id, int16_t param_id) = 0;
 };
 
 

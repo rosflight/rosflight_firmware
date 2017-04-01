@@ -81,7 +81,7 @@ uint8_t Params::compute_checksum(void)
 void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
 {
   board_ = _board;
-  commlink_ = _commlink;
+//  commlink_ = _commlink;
   mixer_ = _mixer;
   for (uint32_t i = 0; i < static_cast<uint32_t>(PARAMS_COUNT); i++)
   {
@@ -397,7 +397,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
   {
     params.values[id] = value;
     param_change_callback(id);
-    commlink_->update_param(id);
+//    commlink_->update_param(id);
     return true;
   }
   return false;

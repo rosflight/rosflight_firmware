@@ -34,36 +34,35 @@
 #include <stdint.h>
 
 #include "mavlink.h"
+#include "estimator.h"
 
 namespace rosflight {
 
 Mavlink::Mavlink(){}
 
 // function definitions
-void Mavlink::init(Board* _board, Params *_params, Sensors* _sensors)
+void Mavlink::init(Board* _board, Params *_params, ROSflight *firmware)
 {
-  params_ = _params;
-  sensors_ = _sensors;
-  board_ = _board;
-  board_->serial_init(params_->get_param_int(PARAM_BAUD_RATE));
+  RF_ = firmware;
+  RF_->board_->serial_init(RF_->params_.get_param_int(PARAM_BAUD_RATE));
 
-  sysid = params_->get_param_int(PARAM_SYSTEM_ID);
+  sysid = RF_->params_.get_param_int(PARAM_SYSTEM_ID);
   compid = 250;
 
   _offboard_control_time = 0;
   send_params_index = PARAMS_COUNT;
 
   // Register Param change callbacks
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_HEARTBEAT, std::placeholders::_1), PARAM_STREAM_HEARTBEAT_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1), PARAM_STREAM_ATTITUDE_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_IMU, std::placeholders::_1), PARAM_STREAM_IMU_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1), PARAM_STREAM_ATTITUDE_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_DIFF_PRESSURE, std::placeholders::_1), PARAM_STREAM_AIRSPEED_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_BARO, std::placeholders::_1), PARAM_STREAM_BARO_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SONAR, std::placeholders::_1), PARAM_STREAM_SONAR_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1), PARAM_STREAM_MAG_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_SERVO_OUTPUT_RAW_RATE);
-  params_->add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_HEARTBEAT, std::placeholders::_1), PARAM_STREAM_HEARTBEAT_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1), PARAM_STREAM_ATTITUDE_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_IMU, std::placeholders::_1), PARAM_STREAM_IMU_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1), PARAM_STREAM_ATTITUDE_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_DIFF_PRESSURE, std::placeholders::_1), PARAM_STREAM_AIRSPEED_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_BARO, std::placeholders::_1), PARAM_STREAM_BARO_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SONAR, std::placeholders::_1), PARAM_STREAM_SONAR_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1), PARAM_STREAM_MAG_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_SERVO_OUTPUT_RAW_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
 }
 
 void Mavlink::send_message(const mavlink_message_t &msg)
@@ -72,7 +71,7 @@ void Mavlink::send_message(const mavlink_message_t &msg)
   uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
   for (int i = 0; i < len; i++)
   {
-    board_->serial_write(data[i]);
+    RF_->board_->serial_write(data[i]);
   }
 }
 
