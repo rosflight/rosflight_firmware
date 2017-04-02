@@ -38,7 +38,7 @@
 #include "param.h"
 
 #include "sensors.h"
-#include "arming_fsm.h"
+#include "mode.h"
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
@@ -62,7 +62,7 @@ public:
   CommLink *commlink_;
 
   Params params_;
-  Arming_FSM fsm_;
+  Mode fsm_;
   Sensors sensors_;
   Estimator estimator_;
   Mux mux_;

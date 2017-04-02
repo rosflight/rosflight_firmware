@@ -49,7 +49,7 @@ void ROSflight::rosflight_init(void)
   params_.init_params(board_, commlink_, &mixer_);
 
   // Initialize Mixer
-  mixer_.init(board_, &mux_, &params_, &fsm_);
+  mixer_.init(board_, &params_, &fsm_);
 
   /***********************/
   /***  Hardware Setup ***/
@@ -79,7 +79,7 @@ void ROSflight::rosflight_init(void)
 //  controller_.init_controller(&fsm_, board_, &estimator_, &params_);
 
   // Initialize the arming finite state machine
-//  fsm_.init_mode(board_, &sensors_, &params_, &rc_);
+  fsm_.init_mode(board_, &sensors_, &params_, &rc_);
 }
 
 
@@ -107,7 +107,7 @@ void ROSflight::rosflight_run()
   commlink_->receive(); // 159 | 1 | 1
 
   // update the state machine, an internal timer runs this at a fixed rate
-//  fsm_.check_mode(); // 108 | 1 | 1
+  fsm_.update_armed_state(); // 108 | 1 | 1
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
 //  rc_.receive_rc(); // 42 | 2 | 1

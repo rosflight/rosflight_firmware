@@ -38,10 +38,9 @@
 namespace rosflight
 {
 
-void Mixer::init(Board *_board, Mux *_mux, Params *_params, Arming_FSM *_fsm)
+void Mixer::init(Board *_board, Params *_params, Mode *_fsm)
 {
   board = _board;
-  mux = _mux;
   params = _params;
   fsm = _fsm;
 
@@ -96,7 +95,7 @@ void Mixer::init_PWM()
 
 void Mixer::write_motor(uint8_t index, float value)
 {
-  if (fsm->_armed_state == ARMED)
+  if (fsm->armed())
   {
     if (value > 1.0)
     {

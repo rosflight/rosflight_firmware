@@ -39,7 +39,7 @@
 #include "sensors.h"
 #include "estimator.h"
 #include "param.h"
-#include "arming_fsm.h"
+#include "mode.h"
 #include "rc.h"
 #include "mavlink_log.h"
 

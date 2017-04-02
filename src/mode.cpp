@@ -34,19 +34,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "arming_fsm.h"
+#include "mode.h"
 
 namespace rosflight
 {
 
-Arming_FSM::Arming_FSM()
+Mode::Mode()
 {
   _armed_state = DISARMED;
   prev_time_ms = 0;
   time_sticks_have_been_in_arming_position_ms = 0;
 }
 
-void Arming_FSM::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
+void Mode::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
 {
   rc_ = _rc;
   board_ = _board;
@@ -55,10 +55,10 @@ void Arming_FSM::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC
   _armed_state = DISARMED;
 }
 
-bool Arming_FSM::arm(void)
+bool Mode::arm(void)
 {
   started_gyro_calibration = false;
-  if (!started_gyro_calibration && _armed_state & DISARMED)
+  if (!started_gyro_calibration && _armed_state == DISARMED)
   {
     sensors_->start_gyro_calibration();
     started_gyro_calibration = true;
@@ -74,19 +74,18 @@ bool Arming_FSM::arm(void)
   return false;
 }
 
-void Arming_FSM::disarm(void)
+void Mode::disarm(void)
 {
   _armed_state = DISARMED;
   board_->led1_off();
 }
 
-bool Arming_FSM::check_failsafe(void)
+bool Mode::check_failsafe(void)
 {
   if (board_->pwm_lost())
   {
     // Set the FAILSAFE bit
-    _armed_state = (ARMED) ? ARMED_FAILSAFE : DISARMED_FAILSAFE;
-    return true;
+    _failsafe_state = FAILSAFE;
   }
 
     // Set the RC Lost error flag
@@ -98,7 +97,7 @@ bool Arming_FSM::check_failsafe(void)
     {
       if (board_->pwm_read(i) < 900 || board_->pwm_read(i) > 2100)
       {
-        _armed_state = (ARMED) ? ARMED_FAILSAFE : DISARMED_FAILSAFE;
+        _failsafe_state = FAILSAFE;
 
         // blink LED
         static uint8_t count = 0;
@@ -108,7 +107,6 @@ bool Arming_FSM::check_failsafe(void)
           count = 0;
         }
         count++;
-        return true;
       }
     }
   }
@@ -131,15 +129,13 @@ bool Arming_FSM::check_failsafe(void)
   {
     // we got a valid RC measurement for all channels and pwm is active
     // Clear the FAILSAFE bit
-    _armed_state = (ARMED_FAILSAFE) ? ARMED : DISARMED;
-    return false;
+    _failsafe_state = NORMAL;
   }
-
-  return failsafe;
+  return (bool)_failsafe_state;
 }
 
 
-bool Arming_FSM::check_mode()
+bool Mode::update_armed_state()
 {
   uint32_t now = board_->clock_millis();
 

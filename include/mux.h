@@ -36,15 +36,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "arming_fsm.h"
+#include "mode.h"
 #include "param.h"
 #include "board.h"
 #include "common.h"
+#include "rc.h"
 
 namespace rosflight
 {
 
-class Arming_FSM;
+class Mode;
 
 class Mux
 {
@@ -59,9 +60,27 @@ public:
   };
 
 
-  control_t _rc_control;
-  control_t _offboard_control;
-  control_t _combined_control;
+  control_t _rc_control =
+  {
+    {false, ANGLE, 0.0},
+    {false, ANGLE, 0.0},
+    {false, RATE, 0.0},
+    {false, THROTTLE, 0.0}
+  };
+  control_t _offboard_control =
+  {
+    {false, ANGLE, 0.0},
+    {false, ANGLE, 0.0},
+    {false, RATE, 0.0},
+    {false, THROTTLE, 0.0}
+  };
+  control_t _combined_control =
+  {
+    {false, ANGLE, 0.0},
+    {false, ANGLE, 0.0},
+    {false, RATE, 0.0},
+    {false, THROTTLE, 0.0}
+  };
   control_t _failsafe_control =
   {
     {true, ANGLE, 0.0},
@@ -73,15 +92,20 @@ public:
   bool _new_command;
 
   bool mux_inputs();
-  void init(Arming_FSM *_fsm, Params *_params, Board *_board);
+  void init(Mode *_fsm, Params *_params, Board *_board, RC* _rc);
 
 private:
   Board *board;
-  Arming_FSM *fsm;
+  Mode *fsm;
   Params *params;
+  RC *rc;
 
   void do_muxing(uint8_t mux_channel);
   void do_min_throttle_muxing();
+  void interpret_rc(void);
+  bool stick_deviated(mux_channel_t channel);
+  bool do_roll_pitch_yaw_muxing(mux_channel_t channel);
+  bool do_throttle_muxing(void);
 };
 
 }

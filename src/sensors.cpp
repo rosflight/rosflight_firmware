@@ -35,7 +35,7 @@
 #include <stdint.h>
 
 #include "sensors.h"
-#include "arming_fsm.h"
+#include "mode.h"
 
 #include <turbovec.h>
 

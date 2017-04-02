@@ -39,13 +39,13 @@
 #include "mux.h"
 #include "param.h"
 #include "estimator.h"
-#include "arming_fsm.h"
+#include "mode.h"
 #include "mixer.h"
 
 namespace rosflight
 {
 
-class Arming_FSM;
+class Mode;
 class CommLink;
 class Estimator;
 class Mixer;
@@ -54,7 +54,7 @@ class Controller
 {
 public:
   void run_controller();
-  void init_controller(Arming_FSM *_fsm, Board *_board, //Mux* _mux, Mixer* _mixer,
+  void init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* _mixer,
                        Estimator *_estimator, Params *_params);
 private:
   typedef struct
@@ -85,7 +85,7 @@ private:
   pid_t pid_altitude;
 
   Estimator *estimator;
-  Arming_FSM *fsm;
+  Mode *fsm;
   Mux *mux;
   Mixer *mixer;
   Params *params;

@@ -33,7 +33,7 @@
 
 #include "board.h"
 #include "mavlink.h"
-#include "arming_fsm.h"
+#include "mode.h"
 #include "param.h"
 #include "mux.h"
 #include "sensors.h"
