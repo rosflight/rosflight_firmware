@@ -151,19 +151,19 @@ void Mavlink::mavlink_send_servo_output_raw(void)
  void Mavlink::mavlink_send_rc_raw(void)
 {
   mavlink_message_t msg;
-//  mavlink_msg_rc_channels_pack(sysid, compid, &msg,
-//                               board_->clock_millis(),
-//                               0,
-//                               board_->pwm_read(0),
-//                               board_->pwm_read(1),
-//                               board_->pwm_read(2),
-//                               board_->pwm_read(3),
-//                               board_->pwm_read(4),
-//                               board_->pwm_read(5),
-//                               board_->pwm_read(6),
-//                               board_->pwm_read(7),
-//                               0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
-//  send_message(msg);
+  mavlink_msg_rc_channels_pack(sysid, compid, &msg,
+                               RF_->board_->clock_millis(),
+                               0,
+                               RF_->board_->pwm_read(0),
+                               RF_->board_->pwm_read(1),
+                               RF_->board_->pwm_read(2),
+                               RF_->board_->pwm_read(3),
+                               RF_->board_->pwm_read(4),
+                               RF_->board_->pwm_read(5),
+                               RF_->board_->pwm_read(6),
+                               RF_->board_->pwm_read(7),
+                               0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
+  send_message(msg);
 }
 
 void Mavlink::mavlink_send_diff_pressure(void)
@@ -171,11 +171,11 @@ void Mavlink::mavlink_send_diff_pressure(void)
   if (RF_->board_->diff_pressure_present())
   {
     mavlink_message_t msg;
-//    mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
-//                                   _diff_pressure_velocity,
-//                                   _diff_pressure,
-//                                   _diff_pressure_temp);
-//    send_message(msg);
+    mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
+                                   RF_->sensors_.get_differential_pressure_velocity(),
+                                   RF_->sensors_.get_differential_pressure(),
+                                   RF_->sensors_.get_differential_pressure_temperature());
+    send_message(msg);
   }
 }
 
@@ -184,11 +184,11 @@ void Mavlink::mavlink_send_baro(void)
   if (RF_->board_->baro_present())
   {
     mavlink_message_t msg;
-//    mavlink_msg_small_baro_pack(sysid, compid, &msg,
-//                                _baro_altitude,
-//                                _baro_pressure,
-//                                _baro_temperature);
-//    send_message(msg);
+    mavlink_msg_small_baro_pack(sysid, compid, &msg,
+                                RF_->sensors_.get_barometer_altitude(),
+                                RF_->sensors_.get_barometer_pressure(),
+                                RF_->sensors_.get_barometer_temperature());
+    send_message(msg);
   }
 }
 
@@ -197,11 +197,11 @@ void Mavlink::mavlink_send_sonar(void)
   if (RF_->board_->sonar_present())
   {
     mavlink_message_t msg;
-//    mavlink_msg_small_sonar_pack(sysid, compid, &msg,
-//                                 _sonar_range,
-//                                 8.0,
-//                                 0.25);
-//    send_message(msg);
+    mavlink_msg_small_sonar_pack(sysid, compid, &msg,
+                                 RF_->sensors_.get_sonar_range(),
+                                 8.0,
+                                 0.25);
+    send_message(msg);
   }
 }
 
@@ -210,11 +210,11 @@ void Mavlink::mavlink_send_mag(void)
   if (RF_->board_->mag_present())
   {
     mavlink_message_t msg;
-//    mavlink_msg_small_mag_pack(sysid, compid, &msg,
-//                               _mag.x,
-//                               _mag.y,
-//                               _mag.z);
-//    send_message(msg);
+    mavlink_msg_small_mag_pack(sysid, compid, &msg,
+                               RF_->sensors_.get_mag().x,
+                               RF_->sensors_.get_mag().y,
+                               RF_->sensors_.get_mag().z);
+    send_message(msg);
   }
 }
 

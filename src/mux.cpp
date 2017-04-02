@@ -180,27 +180,20 @@ bool Mux::do_throttle_muxing(void)
   return rc_override;
 }
 
-bool _new_command;
+void Mux::signal_new_command()
+{
+  new_command = true;
+}
 
 bool Mux::mux_inputs()
 {
-  return rc_override;
-}
-
-bool offboard_control_active()
-{
-  for (int i = 0; i < 4; i++)
-  {
-    if(muxes[i].onboard->active)
-      return true;
-  }
-
   // otherwise combine the new commands
   if (fsm->in_failsafe())
   {
     _combined_control = _failsafe_control;
   }
-  else
+
+  else if (rc->new_command())
   {
     // Read RC
     interpret_rc();
@@ -223,9 +216,6 @@ bool offboard_control_active()
       board->led0_off();
     }
   }
-
-  // reset the new command flag
-  _new_command = false;
   return true;
 }
 

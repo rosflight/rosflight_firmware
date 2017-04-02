@@ -56,8 +56,8 @@ void ROSflight::rosflight_init(void)
   /***********************/
 
   // Initialize PWM and RC
-//  mixer_.init_PWM();
-//  rc_.init_rc(board_, &params_);
+  mixer_.init_PWM();
+  rc_.init_rc(board_, &params_);
 
   // Initialize MAVlink Communication
   commlink_->init(board_, &params_, this);
@@ -110,10 +110,10 @@ void ROSflight::rosflight_run()
   fsm_.update_armed_state(); // 108 | 1 | 1
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-//  rc_.receive_rc(); // 42 | 2 | 1
+  rc_.receive_rc(); // 42 | 2 | 1
 
   // update commands (internal logic tells whether or not we should do anything or not)
-//  mux_.mux_inputs(); // 6 | 1 | 1
+  mux_.mux_inputs(); // 6 | 1 | 1
 }
 
 }

@@ -79,7 +79,7 @@ void RC::init_sticks(void)
 void RC::init_switches()
 {
   // Make sure that parameters for switch channels are correct
-//  switches[RC_SWITCH_ARM].channel               = params->get_param_int(PARAM_RC_ARM_CHANNEL);
+  switches[RC_SWITCH_ARM].channel               = params->get_param_int(PARAM_RC_ARM_CHANNEL);
   switches[RC_SWITCH_ATT_OVERRIDE].channel      = params->get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = params->get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_ATT_TYPE].channel          = params->get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);

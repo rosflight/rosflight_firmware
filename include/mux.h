@@ -89,9 +89,8 @@ public:
     {true, THROTTLE, 0.0}
   };
 
-  bool _new_command;
-
   bool mux_inputs();
+  void signal_new_command();
   void init(Mode *_fsm, Params *_params, Board *_board, RC* _rc);
 
 private:
@@ -99,6 +98,8 @@ private:
   Mode *fsm;
   Params *params;
   RC *rc;
+
+  bool new_command;
 
   void do_muxing(uint8_t mux_channel);
   void do_min_throttle_muxing();
