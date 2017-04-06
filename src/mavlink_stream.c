@@ -1,4 +1,4 @@
-#include <stdbool.h>
+  #include <stdbool.h>
 
 #include "board.h"
 #include "mavlink.h"
@@ -67,21 +67,14 @@ static void mavlink_send_heartbeat(void)
     failsafe_state = MAV_STATE_STANDBY;
 
   uint8_t control_mode = 0;
-  if (get_param_int(PARAM_FIXED_WING))
-  {
-    control_mode = MODE_PASS_THROUGH;
-  }
-  else
-  {
     if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
       control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
     else
       control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-  }
 
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
                              get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
-                             MAV_AUTOPILOT_GENERIC,
+                             rc_override_active(),
                              armed_mode,
                              control_mode,
                              failsafe_state);

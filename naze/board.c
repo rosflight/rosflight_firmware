@@ -60,6 +60,11 @@ uint8_t serial_read(void)
   return serialRead(Serial1);
 }
 
+uint16_t get_i2c_errors(void)
+{
+  return i2cGetErrorCounter();
+}
+
 // sensors
 
 static bool _baro_present;

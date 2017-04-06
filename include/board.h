@@ -17,6 +17,9 @@ void serial_write(uint8_t byte);
 uint16_t serial_bytes_available(void);
 uint8_t serial_read(void);
 
+// I2C status
+uint16_t get_i2c_errors(void);
+
 // sensors
 void sensors_init();
 
