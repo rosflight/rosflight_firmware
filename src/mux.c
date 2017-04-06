@@ -97,13 +97,13 @@ static void interpret_rc(void)
     // Scale command to appropriate units
     switch (roll_pitch_type)
     {
-      case RATE:
-        _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLLRATE);
-        _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCHRATE);
-        break;
-      case ANGLE:
-        _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLL);
-        _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCH);
+    case RATE:
+      _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLLRATE);
+      _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCHRATE);
+      break;
+    case ANGLE:
+      _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLL);
+      _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCH);
     }
 
     // yaw
@@ -194,17 +194,17 @@ bool _new_command;
 
 bool mux_inputs()
 {
-  if (!_new_command)
-  {
-    // we haven't received any new commands, so we shouldn't do anything
-    return false;
-  }
-
   // Check for and apply failsafe command
   if (_armed_state & FAILSAFE)
   {
     _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;
+  }
+
+  else if (!_new_command)
+  {
+    // we haven't received any new commands, so we shouldn't do anything
+    return false;
   }
 
   // Otherwise, combine commands
