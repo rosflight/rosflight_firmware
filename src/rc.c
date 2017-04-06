@@ -117,7 +117,14 @@ bool receive_rc()
     for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
     {
       uint16_t pwm = pwm_read(sticks[channel].channel);
-      stick_values[channel] = (sticks[channel].one_sided ? 1.0f : 2.0f) * (float)(pwm - 1500) / (1000.0);
+      if (sticks[channel].one_sided)
+      {
+        stick_values[channel] = (float)(pwm - 1000) / (1000.0);
+      }
+      else
+      {
+        stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+      }
     }
 
     // read and interpret switch values

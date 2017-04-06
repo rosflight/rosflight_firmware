@@ -256,6 +256,9 @@ void run_controller()
   {
     mavlink_send_named_command_struct("RC", _rc_control);
     mavlink_send_named_command_struct("offboard", _offboard_control);
+    _combined_control.x.value += get_param_float(PARAM_X_EQ_TORQUE);
+    _combined_control.y.value += get_param_float(PARAM_Y_EQ_TORQUE);
+    _combined_control.z.value += get_param_float(PARAM_Z_EQ_TORQUE);
     mavlink_send_named_command_struct("combined", _combined_control);
     counter = 0;
   }
