@@ -78,21 +78,21 @@ static float _gyro_scale;
 
 void sensors_init()
 {
-    // Initialize I2c
-    i2cInit(I2CDEV_2);
+  // Initialize I2c
+  i2cInit(I2CDEV_2);
 
-    while(millis() < 50);
+  while(millis() < 50);
 
-    i2cWrite(0,0,0);
-    _baro_present = ms5611_init();
-    _mag_present = hmc5883lInit(_board_revision);
-    _sonar_present = mb1242_init();
-    _diff_pressure_present = ms4525_init();
+  i2cWrite(0,0,0);
+  _baro_present = ms5611_init();
+  _mag_present = hmc5883lInit(_board_revision);
+  _sonar_present = mb1242_init();
+  _diff_pressure_present = ms4525_init();
 
-    // IMU
-    uint16_t acc1G;
-    mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
-    _accel_scale = 9.80665f/acc1G;
+  // IMU
+  uint16_t acc1G;
+  mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
+  _accel_scale = 9.80665f/acc1G;
 }
 
 void imu_register_callback(void (*callback)(void))
@@ -254,9 +254,14 @@ void pwm_write(uint8_t channel, uint16_t value)
   pwmWriteMotor(channel, value);
 }
 
+bool pwm_read_ready()
+{
+  return pwmNewData();
+}
+
 bool pwm_lost()
 {
-    return ((millis() - pwmLastUpdate()) > 40);
+  return ((millis() - pwmLastUpdate()) > 40);
 }
 
 // non-volatile memory

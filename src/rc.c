@@ -102,16 +102,8 @@ bool rc_switch_mapped(rc_switch_t channel)
 
 bool receive_rc()
 {
-    static uint32_t last_rc_receive_time = 0;
-
-    uint32_t now = clock_millis();
-
-    // if it has been more than 20ms then look for new RC values and parse them
-    if (now - last_rc_receive_time < 20)
-    {
-        return false;
-    }
-    last_rc_receive_time = now;
+    if (!pwm_read_ready())
+      return false;
 
     // read and normalize stick values
     for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)

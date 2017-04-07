@@ -53,6 +53,7 @@ float sonar_read(void);
 void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
 bool pwm_lost();
 uint16_t pwm_read(uint8_t channel);
+bool pwm_read_ready();
 void pwm_write(uint8_t channel, uint16_t value);
 
 // non-volatile memory
