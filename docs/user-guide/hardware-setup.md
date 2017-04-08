@@ -1,6 +1,4 @@
-# Hardware setup
-
-## Parts list
+# Parts list
 
 To use ROSflight to its full potential, you will need the following parts on your MAV (Minature Aerial Vehicle).  ROSflight supports both multirotor and fixedwing vehicles.
 
@@ -14,7 +12,7 @@ To use ROSflight to its full potential, you will need the following parts on you
 8. Laptop or base station computer
 9. Joystick (Xbox controller)
 
-### Frame, Motors, ESCs, Battery and Propeller
+## Frame, Motors, ESCs, Battery and Propeller
 
 We do not officially support any specific multirotor or airplane frame, motor, ESC, Battery or Propeller combination.  There are a lot of great resources for building your own MAV, and there are a lot of great kits out there that have all of these parts.
 
@@ -27,11 +25,11 @@ Some things to keep in mind as you design or build your MAV.
 * Cheap propellers can cause a huge amount of vibration.  Consider buying high-quality propellers, doing a propeller balance, or both.  RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
 
 
-### Flight Controller
+## Flight Controller
 
 ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www.readytoflyquads.com/the-flip32-187).  It works on any variant of the naze32 flight controller, but the flip32 has the convenience of having through-hole boot pins.  The naze32 and flip32 have identical schematics, they differ only in the layout of the board. We have seen some problems using off-brand versions of the naze32 or flip32 because there are fake versions of accelerometers which can mess with the firmware, try to avoid those if you can.
 
-### External Sensors
+## External Sensors
 
 Additional Sensors you may want for your ROSflight setup include:
 
@@ -42,7 +40,7 @@ Additional Sensors you may want for your ROSflight setup include:
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
 
-### Vibration Isolation
+## Vibration Isolation
 
 It is really important to isolate your flight controller from vibrations from propellers and motors.  We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV.  You may also want to try adding mass to the flight control board.  We have accomplished this by gluing steel washers to the fiberglass mounting plate.
 
@@ -50,7 +48,7 @@ It is really important to isolate your flight controller from vibrations from pr
 
 You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the flight control board.  The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
 
-### Onboard Computer
+## Onboard Computer
 
 The only requirement for the onboard computer is that it runs Linux 16.04, ROS, has at least one USB port, and can be carried by the aircraft.  We have had success with the following onboard computers, but by no means is this a comprehensive list, it is more by way of suggestion.
 
@@ -62,11 +60,11 @@ The only requirement for the onboard computer is that it runs Linux 16.04, ROS, 
 * Rasberry Pi 3 – Cortex A53 1.2GHz 4-core – [$36 on Amazon](https://www.amazon.com/dp/B01CD5VC92/ref=cm_sw_su_dp)
 * NVIDIA Tegra TX1 - Cortex-A57 4-core CPU, 256-core Maxwell GPU - [$435 from NVIDA](http://www.nvidia.com/object/embedded-systems-dev-kits-modules.html) (Educational Discounts Available)
 
-### Wi-Fi
+## Wi-Fi
 
 You will need Wi-Fi to communicate with your MAV when it is in the air.  ROS communicates over TCP, so it is really easy to use ROS to view what is going on in your MAV while it is flying, send commands and read sensor data.  For most applications, a standard Wi-Fi router and dongle will suffice.  For long-range applications, you may want to look into [Ubiquiti](https://www.ubnt.com/) point-to-point Wi-Fi.  (We have seen ranges over a mile with these networks)
 
-### RC Transmitter and Reciever
+## RC Transmitter and Reciever
 
 For RC Control, you will need a transmitter with between 6 and 8 channels.  Any additional channels will be wasted.  We require RC control for safe operation, and only support arming and disarming via RC control.
 
@@ -76,15 +74,15 @@ As of version 1.0, ROSflight only supports PPM (pulse position modulation) recei
 * Receiver – [Orange Rx 8Ch PPM $22 on HobbyKing](https://hobbyking.com/en_us/orangerx-r820x-v2-6ch-2-4ghz-dsm2-dsmx-comp-full-range-rx-w-sat-div-ant-f-safe-cppm.html/?___store=en_us)
 
 
-### Laptop or Base Station Computer
+## Laptop or Base Station Computer
 
 You will need a laptop which can run Ubuntu 16.04 and ROS to communicate with the MAV over WiFi.  If you are new to Linux, I would recommend dual booting your computer rather than using VirtualBox.
 
-### Joystick
+## Joystick
 
 The Joystick is not technically a required component, because it is possible to control your MAV over command line. It does make things easier, however.  We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration.  Other joysticks are supported, but you may need to perform custom axis and button mappings.
 
-## Wiring diagram
+# Wiring diagram
 
 Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboard computer.  This diagram also includes the motor power switch, which allows for the sensors, flight controller and onboard computer to be power on while the motors are off.  This is a safer way to work on the aircraft as the motors are unable to spin while the switch is off.
 
@@ -92,7 +90,7 @@ Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboa
 
 Your needs will likely be slightly different than what is shown.  This is meant as an example only and can be adapted to fit your needs.
 
-## Motor layouts
+# Motor layouts
 
 As of March, 2017, we support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
 
