@@ -12,8 +12,8 @@ pages:
     - Hardware setup: user-guide/hardware-setup.md
     - Autopilot setup: user-guide/autopilot-setup.md
     - ROS setup: user-guide/ros-setup.md
-    - Configuration: user-guide/configuration.md
+    - Parameter Configuration: user-guide/parameter_config.md
+    - RC Configuration: user-guide/rc_configuration.md
     - Preflight checks: user-guide/preflight-checks.md
     - Improving performance: user-guide/performance.md
     - Autonomous flight: user-guide/autonomous-flight.md
-    - Parameter descriptions: user-guide/parameter-descriptions.md

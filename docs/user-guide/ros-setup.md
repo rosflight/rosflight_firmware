@@ -44,6 +44,6 @@ catkin_make
 rosrun fcu_io fcu_io_node
 ```
 
-
+* You should now see `fcu_io` print the value of all internal variables to the screen, as well as some status messages such as flight mode and failsafe information
 
 
