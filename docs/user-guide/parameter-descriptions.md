@@ -1,5 +1,3 @@
-# Parameter descriptions
-
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
