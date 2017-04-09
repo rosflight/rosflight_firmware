@@ -26,7 +26,7 @@ Until we get a video of this for our system, you may want to follow this YouTube
 
 You now have to make sure your RC transmitter is sending commands consistent with the north-east-down (NED) frame assumed by ROSflight.
 
-You may find this graphic helpful.  It shows all the basic stick positions, and the associated output from the first four channels when looking at the raw RC signal from `fcu_io`.  Make sure that the stick output is in the right direction.
+You may find this graphic helpful.  It shows all the basic stick positions, and the associated output from the first four channels when looking at a raw AETR RC signal from `fcu_io`.  Make sure that the stick output is in the right direction.
 
 ![stick_image](images/sticks.png)
 

@@ -84,17 +84,17 @@ bool update_sensors()
       last_time_look_for_disarmed_sensors = now;
       if(!sonar_present())
       {
-        if(sonar_check())
-        {
-          mavlink_log_info("FOUND SONAR", NULL);
-        }
+//        if(sonar_check())
+//        {
+//          mavlink_log_info("FOUND SONAR", NULL);
+//        }
       }
       if(!diff_pressure_present())
       {
-        if(diff_pressure_check())
-        {
-          mavlink_log_info("FOUND DIFF PRESS", NULL);
-        }
+//        if(diff_pressure_check())
+//        {
+//          mavlink_log_info("FOUND DIFF PRESS", NULL);
+//        }
       }
       if (!mag_present())
       {
