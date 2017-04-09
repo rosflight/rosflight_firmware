@@ -23,6 +23,7 @@ Some things to keep in mind as you design or build your MAV.
 * Most kits do not include space for an onboard computer, cameras, laser scanners or other sensors.  Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
 * You will likely also need to customize the power curcuitry of your MAV to provide power at some specific voltage to your onboard computer.  Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors.  This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand.  We will talk about this more when we talk about wiring up your MAV.
 * Cheap propellers can cause a huge amount of vibration.  Consider buying high-quality propellers, doing a propeller balance, or both.  RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
+* ESCs will need to be calibrated from 2000 to 1000 us
 
 
 ## Flight Controller

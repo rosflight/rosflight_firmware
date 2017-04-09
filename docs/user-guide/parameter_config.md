@@ -74,7 +74,29 @@ rosservice call /param_load_from_file ~/parameters.yml
 Again, you must specify the absolute file name of the file to be loaded
 
 
+# Fixed Wing Parameter Configuration
+
+Because ROSflight ships with default parameters for multirotors, you will probably want to change the following parameters if you want to fly a fixed wing aircraft.
+
+
+| Parameter | Description | Type | Fixed Wing Value
+|-----------|-------------|------|---------------|
+| MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors and servos (Hz) - See motor documentation | int |  50 |
+| ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_PWM | int |  false |
+| MOTOR_IDLE_THR | Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | float |  0.0 |
+| ARM_CHANNEL | RC switch channel mapped to arming [0 indexed, -1 to disable] | int |  4 |
+| FIXED_WING | switches on passthrough commands for fixedwing operation | int |  true |
+| MIXER | Which mixer to choose - See Mixer documentation | int | 4  |
+| ELEVATOR_REV | reverses elevator servo output | int |  0/1 |
+| AIL_REV | reverses aileron servo output | int |  0/1 |
+| RUDDER_REV | reverses rudder servo output | int |  0/1 |
+
+
 # Description of all Parameters
+
+This is a list of all parameters on ROSflight, their default values as well as a minimum and maximum recommended setting.
+
+
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
@@ -85,7 +107,6 @@ Again, you must specify the absolute file name of the file to be loaded
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  75 | 0 | 75 |
 | STRM_BARO | Rate of barometer stream (Hz) | int |  100 | 0 | 100 |
 | STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  20 | 0 | 50 |
-| STRM_GPS | Rate of GPS stream (Hz) | int |  0 | 0 | 1 |
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_OUTPUT | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
