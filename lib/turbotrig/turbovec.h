@@ -54,6 +54,7 @@ vector_t scalar_multiply(float s, vector_t v);
 vector_t vector_add(vector_t u, vector_t v);
 vector_t vector_sub(vector_t u, vector_t v);
 float sqrd_norm(vector_t v);
+float norm(vector_t v);
 vector_t vector_normalize(vector_t v);
 quaternion_t quaternion_normalize(quaternion_t q);
 quaternion_t quaternion_multiply(quaternion_t q1, quaternion_t q2);

@@ -8,12 +8,16 @@
 #include "mux.h"
 #include "param.h"
 #include "mode.h"
+#include "mavlink_receive.h"
 
 control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
+bool _new_command;
 
-// Drop like a brick
+static bool rc_override;
+
+
 control_t _failsafe_control =
 {
   {true, ANGLE, 0.0},
@@ -53,14 +57,15 @@ typedef struct
   control_channel_t* rc;
   control_channel_t* onboard;
   control_channel_t* combined;
+  control_channel_t* failsafe;
 } mux_t;
 
 mux_t muxes[4] =
 {
-  {&_rc_control.x, &_offboard_control.x, &_combined_control.x},
-  {&_rc_control.y, &_offboard_control.y, &_combined_control.y},
-  {&_rc_control.z, &_offboard_control.z, &_combined_control.z},
-  {&_rc_control.F, &_offboard_control.F, &_combined_control.F}
+  {&_rc_control.x, &_offboard_control.x, &_combined_control.x, &_failsafe_control.x},
+  {&_rc_control.y, &_offboard_control.y, &_combined_control.y, &_failsafe_control.y},
+  {&_rc_control.z, &_offboard_control.z, &_combined_control.z, &_failsafe_control.z},
+  {&_rc_control.F, &_offboard_control.F, &_combined_control.F, &_failsafe_control.F}
 };
 
 static void interpret_rc(void)
@@ -70,6 +75,22 @@ static void interpret_rc(void)
   _rc_control.y.value = rc_stick(RC_STICK_Y);
   _rc_control.z.value = rc_stick(RC_STICK_Z);
   _rc_control.F.value = rc_stick(RC_STICK_F);
+
+  // Deactivate RC command if in failsafe
+  if (_armed_state & FAILSAFE)
+  {
+    _rc_control.x.active = false;
+    _rc_control.y.active = false;
+    _rc_control.z.active = false;
+    _rc_control.F.active = false;
+  }
+  else
+  {
+    _rc_control.x.active = true;
+    _rc_control.y.active = true;
+    _rc_control.z.active = true;
+    _rc_control.F.active = true;
+  }
 
   // determine control mode for each channel and scale command values accordingly
   if (get_param_int(PARAM_FIXED_WING))
@@ -97,13 +118,13 @@ static void interpret_rc(void)
     // Scale command to appropriate units
     switch (roll_pitch_type)
     {
-      case RATE:
-        _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLLRATE);
-        _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCHRATE);
-        break;
-      case ANGLE:
-        _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLL);
-        _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCH);
+    case RATE:
+      _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLLRATE);
+      _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCHRATE);
+      break;
+    case ANGLE:
+      _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLL);
+      _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCH);
     }
 
     // yaw
@@ -137,60 +158,90 @@ static bool stick_deviated(mux_channel_t channel)
 
 static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
 {
-  bool rc_override;
+  bool rc_override = (rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE))
+                      || stick_deviated(channel);
+  bool in_failsafe = (_armed_state & FAILSAFE);
 
-  if ((rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
-  {
-    rc_override = true;
-  }
-  else
+  if (in_failsafe)
   {
     if (muxes[channel].onboard->active)
     {
-      rc_override = false;
+      *muxes[channel].combined = *muxes[channel].onboard;
+      return false;
     }
     else
     {
-      rc_override = true;
+      *muxes[channel].combined = *muxes[channel].failsafe;
+      return true;
     }
   }
 
-  *muxes[channel].combined = rc_override ? *muxes[channel].rc : *muxes[channel].onboard;
-  return rc_override;
+  else if (muxes[channel].onboard->active)
+  {
+    if (rc_override)
+    {
+      *muxes[channel].combined = *muxes[channel].rc;
+      return true;
+    }
+    else
+    {
+      *muxes[channel].combined = *muxes[channel].onboard;
+      return false;
+    }
+  }
+
+  else
+  {
+    *muxes[channel].combined = *muxes[channel].rc;
+    return true;
+  }
 }
 
 static bool do_throttle_muxing(void)
 {
-  bool rc_override;
+  bool rc_override = (rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
+                      || muxes[MUX_F].rc->active;
+  bool in_failsafe = (_armed_state & FAILSAFE);
 
-  if (rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
+  if (rc_override && !in_failsafe)
   {
-    rc_override = true;
+    *muxes[MUX_F].combined = *muxes[MUX_F].rc;
+    return true;
   }
-  else
+  else if (muxes[MUX_F].onboard->active)
   {
-    if (muxes[MUX_F].onboard->active)
+    if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
     {
-      if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
-      {
-        rc_override = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
-      }
-      else
-      {
-        rc_override = false;
-      }
+      bool rc_lower_throttle = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
+      (*muxes[MUX_F].combined) =  (rc_lower_throttle) ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
+      return rc_lower_throttle;
     }
     else
     {
-      rc_override = true;
+      *muxes[MUX_F].combined = *muxes[MUX_F].onboard;
+      return false;
     }
   }
+  else if (in_failsafe)
+  {
+    *muxes[MUX_F].combined = *muxes[MUX_F].failsafe;
+    return false;
+  }
 
-  *muxes[MUX_F].combined = rc_override ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
+  else
+  {
+    *muxes[MUX_F].combined = *muxes[MUX_F].rc;
+    return true;
+  }
+}
+
+
+
+bool rc_override_active()
+{
   return rc_override;
 }
 
-bool _new_command;
 
 bool mux_inputs()
 {
@@ -200,15 +251,21 @@ bool mux_inputs()
     return false;
   }
 
-  // otherwise combine the new commands
-  if (_armed_state & FAILSAFE)
-  {
-    _combined_control = _failsafe_control;
-  }
+  // Otherwise, combine commands
   else
   {
     // Read RC
     interpret_rc();
+
+    // Check for offboard control timeout (100 ms)
+    if (clock_micros() > _offboard_control_time + 100000)
+    {
+      // If it has been longer than 100 ms, then disable the offboard control
+      _offboard_control.F.active = false;
+      _offboard_control.x.active = false;
+      _offboard_control.y.active = false;
+      _offboard_control.z.active = false;
+    }
 
     // Perform muxing
     bool rc_override = false;

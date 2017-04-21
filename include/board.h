@@ -17,6 +17,9 @@ void serial_write(uint8_t byte);
 uint16_t serial_bytes_available(void);
 uint8_t serial_read(void);
 
+// I2C status
+uint16_t get_i2c_errors(void);
+
 // sensors
 void sensors_init();
 
@@ -24,6 +27,7 @@ void imu_register_callback(void (*callback)(void));
 void imu_read_accel(float accel[3]);
 void imu_read_gyro(float gyro[3]);
 float imu_read_temperature(void);
+void imu_read_all(float accel[3], float gyro[3], float* temperature);
 void imu_not_responding_error();
 
 bool mag_check(void);
@@ -49,6 +53,7 @@ float sonar_read(void);
 void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
 bool pwm_lost();
 uint16_t pwm_read(uint8_t channel);
+bool pwm_read_ready();
 void pwm_write(uint8_t channel, uint16_t value);
 
 // non-volatile memory

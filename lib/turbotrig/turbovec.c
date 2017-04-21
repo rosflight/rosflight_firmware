@@ -164,7 +164,7 @@ float sqrd_norm(vector_t v)
 
 float norm(vector_t v)
 {
-  float out = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+  float out = 1.0/turboInvSqrt(v.x*v.x + v.y*v.y + v.z*v.z);
   return out;
 }
 
