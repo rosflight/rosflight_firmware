@@ -159,24 +159,37 @@ static bool stick_deviated(mux_channel_t channel)
 static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
 {
   bool rc_override = (rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE))
-                      || stick_deviated(channel) || muxes[channel].rc->active;
+                      || stick_deviated(channel);
   bool in_failsafe = (_armed_state & FAILSAFE);
 
-  if (rc_override && !in_failsafe)
+  if (in_failsafe)
   {
-    *muxes[channel].combined = *muxes[channel].rc;
-    return true;
+    if (muxes[channel].onboard->active)
+    {
+      *muxes[channel].combined = *muxes[channel].onboard;
+      return false;
+    }
+    else
+    {
+      *muxes[channel].combined = *muxes[channel].failsafe;
+      return true;
+    }
   }
+
   else if (muxes[channel].onboard->active)
   {
-    *muxes[channel].combined = *muxes[channel].onboard;
-    return false;
+    if (rc_override)
+    {
+      *muxes[channel].combined = *muxes[channel].rc;
+      return true;
+    }
+    else
+    {
+      *muxes[channel].combined = *muxes[channel].onboard;
+      return false;
+    }
   }
-  else if (in_failsafe)
-  {
-    *muxes[channel].combined = *muxes[channel].failsafe;
-    return false;
-  }
+
   else
   {
     *muxes[channel].combined = *muxes[channel].rc;
