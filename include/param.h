@@ -22,6 +22,7 @@ typedef enum
     /*****************************/
     PARAM_SYSTEM_ID,
     PARAM_STREAM_HEARTBEAT_RATE,
+    PARAM_STREAM_STATUS_RATE,
 
     PARAM_STREAM_ATTITUDE_RATE,
     PARAM_STREAM_IMU_RATE,
