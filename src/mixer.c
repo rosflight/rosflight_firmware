@@ -8,6 +8,7 @@ extern "C" {
 #include "param.h"
 #include "mode.h"
 #include "rc.h"
+#include "estimator.h"
 
 #include "mavlink_log.h"
 
@@ -227,6 +228,8 @@ void mix_output()
       write_motor(i, prescaled_outputs[i]);
     }
   }
+  // Calculate loop time (from when IMU was captured to now)
+  _loop_time_us = clock_micros() - _current_state.now_us;
 }
 
 

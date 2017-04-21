@@ -8,6 +8,7 @@ extern void SetSysClock(bool overclock);
 serialPort_t *Serial1;
 
 static uint8_t _board_revision;
+uint32_t _loop_time_us;
 
 void init_board(void)
 {

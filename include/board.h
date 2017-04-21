@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+extern uint32_t _loop_time_us;
+
 // setup
 void init_board(void);
 void board_reset(bool bootloader);

@@ -16,6 +16,7 @@
 
 // Declarations of local function definitions
 static void mavlink_send_heartbeat(void);
+static void mavlink_send_status(void);
 static void mavlink_send_attitude(void);
 static void mavlink_send_imu(void);
 static void mavlink_send_rosflight_output_raw(void);
@@ -38,6 +39,7 @@ typedef struct
 static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 {
   { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_heartbeat },
+  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_status},
 
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_attitude },
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_imu },
@@ -54,30 +56,38 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
 // local function definitions
 static void mavlink_send_heartbeat(void)
 {
-  MAV_MODE armed_mode = 0;
-  if (_armed_state & ARMED)
-    armed_mode = MAV_MODE_MANUAL_ARMED;
-  else
-    armed_mode = MAV_MODE_MANUAL_DISARMED;
-
-  MAV_STATE failsafe_state = 0;
-  if (_armed_state & FAILSAFE)
-    failsafe_state = MAV_STATE_CRITICAL;
-  else
-    failsafe_state = MAV_STATE_STANDBY;
-
-  uint8_t control_mode = 0;
-    if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
-      control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-    else
-      control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-
   mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
                              get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
-                             rc_override_active(),
-                             armed_mode,
-                             control_mode,
-                             failsafe_state);
+                             0, 0, 0, 0);
+}
+
+// local function definitions
+static void mavlink_send_status(void)
+{
+  uint8_t status = 0;
+  status |= (_armed_state & ARMED) ? ROSFLIGHT_STATUS_ARMED : 0x00;
+  status |= (_armed_state & FAILSAFE) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
+  status |= (rc_override_active()) ? ROSFLIGHT_STATUS_RC_OVERRIDE : 0x00;
+  status |= (offboard_control_active()) ? ROSFLIGHT_STATUS_OFFBOARD_CONTROL_ACTIVE : 0x00;
+
+  // no support for error codes yet (TODO)
+  uint8_t error_code = 0;
+
+  uint8_t control_mode = 0;
+  if (get_param_int(PARAM_FIXED_WING))
+    control_mode = MODE_PASS_THROUGH;
+  else
+    // TODO - Support rate mode
+    control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
+
+
+
+  mavlink_msg_rosflight_status_send(MAVLINK_COMM_0,
+                                    status,
+                                    error_code,
+                                    control_mode,
+                                    get_i2c_errors(),
+                                    _loop_time_us);
 }
 
 static void mavlink_send_attitude(void)

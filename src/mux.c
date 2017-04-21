@@ -16,6 +16,7 @@ control_t _combined_control;
 bool _new_command;
 
 static bool rc_override;
+static bool offboard_control_is_active;
 
 
 control_t _failsafe_control =
@@ -196,6 +197,16 @@ static bool do_throttle_muxing(void)
 bool rc_override_active()
 {
   return rc_override;
+}
+
+bool offboard_control_active()
+{
+  for (int i = 0; i < 4; i++)
+  {
+    if(muxes[i].onboard->active)
+      return true;
+  }
+  return false;
 }
 
 
