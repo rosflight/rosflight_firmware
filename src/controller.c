@@ -273,6 +273,21 @@ void calculate_equilbrium_torque_from_rc()
     // Tell the user that we are doing a equilibrium torque calibration
     mavlink_log_warning("Capturing equilbrium offsets from RC");
 
+    // Prepare for calibration
+    // artificially tell the flight controller it is leveled
+    // and zero out previously calculate offset torques
+    _current_state.omega.x = 0.0;
+    _current_state.omega.y = 0.0;
+    _current_state.omega.z = 0.0;
+    _current_state.q.w = 1.0;
+    _current_state.q.x = 0.0;
+    _current_state.q.y = 0.0;
+    _current_state.q.z = 0.0;
+
+    set_param_float(PARAM_X_EQ_TORQUE, 0.0);
+    set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
+    set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
+
     // pass the rc_control through the controller
     _combined_control.x = _rc_control.x;
     _combined_control.y = _rc_control.y;
