@@ -99,7 +99,14 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
 
 void init_mixing()
 {
-  // We need a better way to choosing the mixer
+  uint8_t mixer_choice = get_param_int(PARAM_MIXER);
+
+  if (mixer_choice >= NUM_MIXERS)
+  {
+    // we should probably enter an error state here
+    mixer_choice = 0;
+  }
+
   mixer_to_use = array_of_mixers[get_param_int(PARAM_MIXER)];
 
   for (int8_t i=0; i<8; i++)
@@ -128,7 +135,7 @@ void init_PWM()
 
 void write_motor(uint8_t index, float value)
 {
-  if (_armed_state == ARMED)
+  if (_armed_state & ARMED)
   {
     if (value > 1.0)
     {
