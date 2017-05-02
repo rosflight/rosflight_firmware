@@ -14,8 +14,6 @@
 typedef struct
 {
   uint8_t channel;
-  uint16_t trim;
-  uint16_t range;
   bool one_sided;
 } rc_stick_config_t;
 
@@ -26,9 +24,6 @@ typedef struct
   bool mapped;
 } rc_switch_config_t;
 
-bool _calibrate_rc;
-void calibrate_rc();
-
 static rc_stick_config_t sticks[RC_STICKS_COUNT];
 static rc_switch_config_t switches[RC_SWITCHES_COUNT];
 
@@ -38,23 +33,15 @@ static bool switch_values[RC_SWITCHES_COUNT];
 void init_sticks(void)
 {
   sticks[RC_STICK_X].channel = get_param_int(PARAM_RC_X_CHANNEL);
-  sticks[RC_STICK_X].trim = get_param_int(PARAM_RC_X_CENTER);
-  sticks[RC_STICK_X].range = get_param_int(PARAM_RC_X_RANGE);
   sticks[RC_STICK_X].one_sided = false;
 
   sticks[RC_STICK_Y].channel = get_param_int(PARAM_RC_Y_CHANNEL);
-  sticks[RC_STICK_Y].trim = get_param_int(PARAM_RC_Y_CENTER);
-  sticks[RC_STICK_Y].range = get_param_int(PARAM_RC_Y_RANGE);
   sticks[RC_STICK_Y].one_sided = false;
 
   sticks[RC_STICK_Z].channel = get_param_int(PARAM_RC_Z_CHANNEL);
-  sticks[RC_STICK_Z].trim = get_param_int(PARAM_RC_Z_CENTER);
-  sticks[RC_STICK_Z].range = get_param_int(PARAM_RC_Z_RANGE);
   sticks[RC_STICK_Z].one_sided = false;
 
   sticks[RC_STICK_F].channel = get_param_int(PARAM_RC_F_CHANNEL);
-  sticks[RC_STICK_F].trim = get_param_int(PARAM_RC_F_BOTTOM);
-  sticks[RC_STICK_F].range = get_param_int(PARAM_RC_F_RANGE);
   sticks[RC_STICK_F].one_sided = true;
 }
 
@@ -94,8 +81,6 @@ static void init_switches()
 
 void init_rc()
 {
-    _calibrate_rc = false;
-
     init_sticks();
     init_switches();
 }
@@ -118,11 +103,6 @@ bool rc_switch_mapped(rc_switch_t channel)
 bool receive_rc()
 {
     static uint32_t last_rc_receive_time = 0;
-    // If the calibrate_rc flag is set, perform a calibration (blocking)
-    if (_calibrate_rc)
-    {
-        calibrate_rc();
-    }
 
     uint32_t now = clock_millis();
 
@@ -137,7 +117,14 @@ bool receive_rc()
     for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
     {
       uint16_t pwm = pwm_read(sticks[channel].channel);
-      stick_values[channel] = (sticks[channel].one_sided ? 1.0f : 2.0f) * (float)(pwm - sticks[channel].trim) / ((float)(sticks[channel].range));
+      if (sticks[channel].one_sided)
+      {
+        stick_values[channel] = (float)(pwm - 1000) / (1000.0);
+      }
+      else
+      {
+        stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+      }
     }
 
     // read and interpret switch values
@@ -163,68 +150,4 @@ bool receive_rc()
     // Signal to the mux that we need to compute a new combined command
     _new_command = true;
     return true;
-}
-
-void calibrate_rc()
-{
-    if (_armed_state & ARMED || _armed_state & FAILSAFE)
-    {
-        mavlink_log_error("Cannot calibrate RC when FCU is armed or in failsafe", NULL);
-    }
-    else
-    {
-        // Calibrate Extents of RC Transmitter
-        mavlink_log_warning("Calibrating RC, move sticks to full extents", NULL);
-        mavlink_log_warning("in the next 10s", NULL);
-        uint32_t start = clock_millis();
-        static int32_t max[4] = {0, 0, 0, 0};
-        static int32_t min[4] = {10000, 10000, 10000, 10000};
-        while(clock_millis() - start < 1e4)
-        {
-            for (int16_t i = 0; i < 4; i++)
-            {
-                int32_t read_value = (int32_t)pwm_read(i);
-                if(read_value > max[i])
-                {
-                    max[i] = read_value;
-                }
-                if (read_value < min[i])
-                {
-                    min[i] = read_value;
-                }
-            }
-            clock_delay(10);
-        }
-        set_param_int(PARAM_RC_X_RANGE, max[get_param_int(PARAM_RC_X_CHANNEL)] - min[get_param_int(PARAM_RC_X_CHANNEL)]);
-        set_param_int(PARAM_RC_Y_RANGE, max[get_param_int(PARAM_RC_Y_CHANNEL)] - min[get_param_int(PARAM_RC_Y_CHANNEL)]);
-        set_param_int(PARAM_RC_Z_RANGE, max[get_param_int(PARAM_RC_Z_CHANNEL)] - min[get_param_int(PARAM_RC_Z_CHANNEL)]);
-        set_param_int(PARAM_RC_F_RANGE, max[get_param_int(PARAM_RC_F_CHANNEL)] - min[get_param_int(PARAM_RC_F_CHANNEL)]);
-
-        // Calibrate Trimmed Centers
-        mavlink_log_warning("Calibrating RC, leave sticks at center", NULL);
-        mavlink_log_warning("and throttle low for next 10 seconds", NULL);
-        clock_delay(5000);
-        start = clock_millis();
-        static int32_t sum[4] = {0, 0, 0, 0};
-        static int32_t count[4] = {0, 0, 0, 0};
-
-        while(clock_millis() - start < 5e3)
-        {
-            for (int16_t i = 0; i < 4; i++)
-            {
-                int32_t read_value = (int32_t)pwm_read(i);
-                sum[i] = sum[i] + read_value;
-                count[i] = count[i] + 1;
-            }
-            clock_delay(20); // RC is updated at 50 Hz
-        }
-
-        set_param_int(PARAM_RC_X_CENTER, sum[get_param_int(PARAM_RC_X_CHANNEL)]/count[get_param_int(PARAM_RC_X_CHANNEL)]);
-        set_param_int(PARAM_RC_Y_CENTER, sum[get_param_int(PARAM_RC_Y_CHANNEL)]/count[get_param_int(PARAM_RC_Y_CHANNEL)]);
-        set_param_int(PARAM_RC_Z_CENTER, sum[get_param_int(PARAM_RC_Z_CHANNEL)]/count[get_param_int(PARAM_RC_Z_CHANNEL)]);
-        set_param_int(PARAM_RC_F_BOTTOM, sum[get_param_int(PARAM_RC_F_CHANNEL)]/count[get_param_int(PARAM_RC_F_CHANNEL)]);
-        write_params();
-        mavlink_log_warning("Completed RC calibration", NULL);
-    }
-    _calibrate_rc = false;
 }
