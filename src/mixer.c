@@ -9,6 +9,8 @@ extern "C" {
 #include "mode.h"
 #include "rc.h"
 
+#include "mavlink_log.h"
+
 static float prescaled_outputs[8];
 float _outputs[8];
 command_t _command;
@@ -103,7 +105,7 @@ void init_mixing()
 
   if (mixer_choice >= NUM_MIXERS)
   {
-    // we should probably enter an error state here
+    mavlink_log_error("Invalid Mixer Choice", NULL);
     mixer_choice = 0;
   }
 

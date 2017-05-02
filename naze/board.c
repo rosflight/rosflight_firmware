@@ -3,7 +3,6 @@
 #include "flash.h"
 
 #include "board.h"
-#include "math.h"
 
 extern void SetSysClock(bool overclock);
 serialPort_t *Serial1;
@@ -103,7 +102,7 @@ void imu_not_responding_error()
   sensors_init();
 }
 
-void imu_read_all(float accel[3], float gyro[3], float* temperature)
+bool imu_read_all(float accel[3], float gyro[3], float* temperature)
 {
   // Convert to NED
   int16_t accel_raw[3];
@@ -119,6 +118,12 @@ void imu_read_all(float accel[3], float gyro[3], float* temperature)
   gyro[2] = -gyro_raw[2] * _gyro_scale;
 
   (*temperature) = temperature_raw/340.0f + 36.53f;
+
+  if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0)
+  {
+    return false;
+  }
+  else return true;
 }
 
 void imu_read_accel(float accel[3])
