@@ -156,8 +156,8 @@ void init_controller()
            &_current_state.omega.x,
            &_combined_control.x.value,
            &_command.x,
-           get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_pitch,
            PARAM_PID_PITCH_ANGLE_P,
@@ -167,8 +167,8 @@ void init_controller()
            &_current_state.omega.y,
            &_combined_control.y.value,
            &_command.y,
-           get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_roll_rate,
            PARAM_PID_ROLL_RATE_P,
@@ -178,8 +178,8 @@ void init_controller()
            NULL,
            &_combined_control.x.value,
            &_command.x,
-           get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_pitch_rate,
            PARAM_PID_PITCH_RATE_P,
@@ -189,8 +189,8 @@ void init_controller()
            NULL,
            &_combined_control.y.value,
            &_command.y,
-           get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_yaw_rate,
            PARAM_PID_YAW_RATE_P,
@@ -200,8 +200,8 @@ void init_controller()
            NULL,
            &_combined_control.z.value,
            &_command.z,
-           get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*get_param_float(PARAM_MAX_COMMAND));
 }
 
 
