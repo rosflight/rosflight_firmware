@@ -186,13 +186,9 @@ static bool update_imu(void)
   if (new_imu_data)
   {
     last_imu_update_ms = clock_millis();
-    imu_read_all(accel, gyro, &_imu_temperature);
-
-    // Sometimes the IMU returns all zeros (this is a bug in the STM32F1 I2C driver)
-    if (accel[0] == 0.0  && accel[1] == 0.0 && accel[2] == 0.0)
-    {
+    if (!imu_read_all(accel, gyro, &_imu_temperature))
       return false;
-    }
+
 
     new_imu_data = false;
 

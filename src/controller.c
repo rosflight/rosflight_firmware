@@ -247,22 +247,7 @@ void run_controller()
   _command.x += get_param_float(PARAM_X_EQ_TORQUE);
   _command.y += get_param_float(PARAM_Y_EQ_TORQUE);
   _command.z += get_param_float(PARAM_Z_EQ_TORQUE);
-
-
   _command.F = _combined_control.F.value;
-
-  static uint32_t counter = 0;
-  if (counter > 100)
-  {
-    mavlink_send_named_command_struct("RC", _rc_control);
-    mavlink_send_named_command_struct("offboard", _offboard_control);
-    _combined_control.x.value += get_param_float(PARAM_X_EQ_TORQUE);
-    _combined_control.y.value += get_param_float(PARAM_Y_EQ_TORQUE);
-    _combined_control.z.value += get_param_float(PARAM_Z_EQ_TORQUE);
-    mavlink_send_named_command_struct("combined", _combined_control);
-    counter = 0;
-  }
-  counter++;
 }
 
 void calculate_equilbrium_torque_from_rc()
@@ -272,6 +257,21 @@ void calculate_equilbrium_torque_from_rc()
   {
     // Tell the user that we are doing a equilibrium torque calibration
     mavlink_log_warning("Capturing equilbrium offsets from RC");
+
+    // Prepare for calibration
+    // artificially tell the flight controller it is leveled
+    // and zero out previously calculate offset torques
+    _current_state.omega.x = 0.0;
+    _current_state.omega.y = 0.0;
+    _current_state.omega.z = 0.0;
+    _current_state.q.w = 1.0;
+    _current_state.q.x = 0.0;
+    _current_state.q.y = 0.0;
+    _current_state.q.z = 0.0;
+
+    set_param_float(PARAM_X_EQ_TORQUE, 0.0);
+    set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
+    set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
 
     // pass the rc_control through the controller
     _combined_control.x = _rc_control.x;
