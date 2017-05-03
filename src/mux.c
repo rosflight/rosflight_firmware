@@ -13,6 +13,11 @@
 control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
+bool _new_command;
+
+static bool rc_override;
+static bool offboard_control_is_active;
+
 
 control_t _failsafe_control =
 {
@@ -137,8 +142,6 @@ static bool stick_deviated(mux_channel_t channel)
 
 static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
 {
-  bool rc_override;
-
   if ((rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
     rc_override = true;
@@ -190,7 +193,22 @@ static bool do_throttle_muxing(void)
   return rc_override;
 }
 
-bool _new_command;
+
+bool rc_override_active()
+{
+  return rc_override;
+}
+
+bool offboard_control_active()
+{
+  for (int i = 0; i < 4; i++)
+  {
+    if(muxes[i].onboard->active)
+      return true;
+  }
+  return false;
+}
+
 
 bool mux_inputs()
 {

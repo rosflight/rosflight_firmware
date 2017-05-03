@@ -237,6 +237,11 @@ float sonar_read(void)
   return mb1242_read();
 }
 
+uint16_t num_sensor_errors(void)
+{
+  return i2cGetErrorCounter();
+}
+
 // PWM
 
 void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)

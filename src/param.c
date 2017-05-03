@@ -90,6 +90,7 @@ void set_param_defaults(void)
   /*****************************/
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1); // Mavlink System ID  | 1 | 255
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1); // Rate of heartbeat streaming (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status streaming (Hz) | 0 | 1000
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100); // Rate of attitude stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500); // Rate of IMU stream (Hz) | 0 | 1000
@@ -271,6 +272,9 @@ void param_change_callback(param_id_t id)
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
+    break;
+  case PARAM_STREAM_STATUS_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_STATUS, get_param_int(PARAM_STREAM_STATUS_RATE));
     break;
 
   case PARAM_STREAM_ATTITUDE_RATE:
