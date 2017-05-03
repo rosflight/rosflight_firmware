@@ -14,6 +14,8 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
+uint32_t _loop_time_us;
+
 // Declarations of local function definitions
 static void mavlink_send_heartbeat(void);
 static void mavlink_send_status(void);

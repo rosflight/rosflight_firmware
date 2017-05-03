@@ -23,6 +23,8 @@ typedef enum
   MAVLINK_STREAM_COUNT
 } mavlink_stream_id_t;
 
+extern uint32_t _loop_time_us;
+
 // function declarations
 void mavlink_stream(uint64_t time_us);
 void mavlink_stream_set_rate(mavlink_stream_id_t stream_id, uint32_t rate);
