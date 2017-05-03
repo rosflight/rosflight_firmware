@@ -17,9 +17,6 @@ void serial_write(uint8_t byte);
 uint16_t serial_bytes_available(void);
 uint8_t serial_read(void);
 
-// I2C status
-uint16_t get_i2c_errors(void);
-
 // sensors
 void sensors_init();
 
@@ -47,6 +44,8 @@ void diff_pressure_read(float *diff_pressure, float *temperature, float *velocit
 bool sonar_present(void);
 bool sonar_check(void);
 float sonar_read(void);
+
+uint16_t num_sensor_errors(void);
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)

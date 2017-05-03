@@ -88,7 +88,7 @@ static void mavlink_send_status(void)
                                     status,
                                     error_code,
                                     control_mode,
-                                    get_i2c_errors(),
+                                    num_sensor_errors(),
                                     _loop_time_us);
 }
 
