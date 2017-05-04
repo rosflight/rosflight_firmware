@@ -52,7 +52,7 @@ static void init_switches()
   switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
   switches[RC_SWITCH_ATT_TYPE].channel          = get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
 
-  for (rc_switch_t chan = 0; chan < RC_SWITCHES_COUNT; chan++)
+  for (rc_switch_t chan = RC_SWITCH_ARM; chan < RC_SWITCHES_COUNT; chan++)
   {
     switches[chan].mapped = switches[chan].channel > 3 && switches[chan].channel < get_param_int(PARAM_RC_NUM_CHANNELS);
     if (!switches[chan].mapped)
@@ -63,16 +63,16 @@ static void init_switches()
     switches[chan].direction = 1;
     switch (chan)
     {
-    case 4:
+    case RC_SWITCH_ARM:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
       break;
-    case 5:
+    case RC_SWITCH_ATT_OVERRIDE:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
       break;
-    case 6:
+    case RC_SWITCH_THROTTLE_OVERRIDE:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
       break;
-    case 7:
+    case RC_SWITCH_ATT_TYPE:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
       break;
     }
