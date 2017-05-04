@@ -45,6 +45,8 @@ bool sonar_present(void);
 bool sonar_check(void);
 float sonar_read(void);
 
+uint16_t num_sensor_errors(void);
+
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
 void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);

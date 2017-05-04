@@ -70,6 +70,9 @@ void rosflight_run()
     run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
     run_controller(); // 278 | 271
     mix_output(); // 16 | 13 us
+
+    // Calculate loop time (from when IMU was captured to now)
+    _loop_time_us = clock_micros() - _current_state.now_us;
   }
 
   /*********************/

@@ -8,6 +8,7 @@ extern "C" {
 #include "param.h"
 #include "mode.h"
 #include "rc.h"
+#include "estimator.h"
 
 #include "mavlink_log.h"
 

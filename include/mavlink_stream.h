@@ -7,6 +7,7 @@
 typedef enum
 {
   MAVLINK_STREAM_ID_HEARTBEAT,
+  MAVLINK_STREAM_ID_STATUS,
 
   MAVLINK_STREAM_ID_ATTITUDE,
   MAVLINK_STREAM_ID_IMU,
@@ -21,6 +22,8 @@ typedef enum
 
   MAVLINK_STREAM_COUNT
 } mavlink_stream_id_t;
+
+extern uint32_t _loop_time_us;
 
 // function declarations
 void mavlink_stream(uint64_t time_us);
