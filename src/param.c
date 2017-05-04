@@ -198,7 +198,7 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", -1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL", -1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
-  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 8); // number of RC input channels | 1 | 8
+  init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
   init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | -1 | 1
