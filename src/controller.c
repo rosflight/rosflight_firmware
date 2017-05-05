@@ -103,24 +103,15 @@ static void run_pid(pid_t *pid, float dt)
         pid->prev_x = *pid->current_x;
         d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
       }
-      else
-      {
-        d_term = 0;
-      }
     }
     else
     {
       d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
     }
   }
-  else
-  {
-    d_term = get_param_float(pid->kd_param_id) * (*pid->current_xdot);
-  }
 
   // If there is an integrator, we are armed, and throttle is high
-  /// TODO: better way to figure out if throttle is high
-  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (pwm_read(get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
+  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (_combined_control.F.value > 0.1))
   {
     if (get_param_float(pid->ki_param_id) > 0.0)
     {
