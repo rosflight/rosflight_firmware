@@ -14,7 +14,7 @@
 /naze/build
 /site/
 
-/parameter-descriptions.md
+param_description.md
 
 *.aux
 *.fdb_latexmk
