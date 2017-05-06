@@ -14,67 +14,117 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
+uint32_t _loop_time_us;
+
+// Declarations of local function definitions
+static void mavlink_send_heartbeat(void);
+static void mavlink_send_status(void);
+static void mavlink_send_attitude(void);
+static void mavlink_send_imu(void);
+static void mavlink_send_rosflight_output_raw(void);
+static void mavlink_send_rc_raw(void);
+static void mavlink_send_diff_pressure(void);
+static void mavlink_send_baro(void);
+static void mavlink_send_sonar(void);
+static void mavlink_send_mag(void);
+static void mavlink_send_low_priority(void);
+
+// typedefs
+typedef struct
+{
+  uint32_t period_us;
+  uint64_t next_time_us;
+  void (*send_function)(void);
+} mavlink_stream_t;
+
+// local variable definitions
+static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
+{
+  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_heartbeat },
+  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_status},
+
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_attitude },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_imu },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_diff_pressure },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_baro },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_sonar },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_mag },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
+
+  { .period_us = 5000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
+};
+
 // local function definitions
 static void mavlink_send_heartbeat(void)
 {
-  MAV_MODE armed_mode = 0;
-  if (_armed_state & ARMED)
-    armed_mode = MAV_MODE_MANUAL_ARMED;
-  else
-    armed_mode = MAV_MODE_MANUAL_DISARMED;
+  mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
+                             get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
+                             0, 0, 0, 0);
+}
 
-  MAV_STATE failsafe_state = 0;
-  if (_armed_state & FAILSAFE)
-    failsafe_state = MAV_STATE_CRITICAL;
-  else
-    failsafe_state = MAV_STATE_STANDBY;
+// local function definitions
+static void mavlink_send_status(void)
+{
+  uint8_t status = 0;
+  status |= (_armed_state & ARMED) ? ROSFLIGHT_STATUS_ARMED : 0x00;
+  status |= (_armed_state & FAILSAFE) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
+  status |= (rc_override_active()) ? ROSFLIGHT_STATUS_RC_OVERRIDE : 0x00;
+  status |= (offboard_control_active()) ? ROSFLIGHT_STATUS_OFFBOARD_CONTROL_ACTIVE : 0x00;
+
+  // no support for error codes yet (TODO)
+  uint8_t error_code = 0;
 
   uint8_t control_mode = 0;
   if (get_param_int(PARAM_FIXED_WING))
-  {
     control_mode = MODE_PASS_THROUGH;
-  }
   else
-  {
-    if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
-      control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-    else
-      control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-  }
+    // TODO - Support rate mode
+    control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
 
-  mavlink_msg_heartbeat_send(MAVLINK_COMM_0,
-                             get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
-                             MAV_AUTOPILOT_GENERIC,
-                             armed_mode,
-                             control_mode,
-                             failsafe_state);
+
+
+  mavlink_msg_rosflight_status_send(MAVLINK_COMM_0,
+                                    status,
+                                    error_code,
+                                    control_mode,
+                                    num_sensor_errors(),
+                                    _loop_time_us);
 }
 
 static void mavlink_send_attitude(void)
 {
   mavlink_msg_attitude_quaternion_send(MAVLINK_COMM_0,
-                                        clock_millis(),
-                                        _current_state.q.w,
-                                        _current_state.q.x,
-                                        _current_state.q.y,
-                                        _current_state.q.z,
-                                        _current_state.omega.x,
-                                        _current_state.omega.y,
-                                        _current_state.omega.z);
+                                       clock_millis(),
+                                       _current_state.q.w,
+                                       _current_state.q.x,
+                                       _current_state.q.y,
+                                       _current_state.q.z,
+                                       _current_state.omega.x,
+                                       _current_state.omega.y,
+                                       _current_state.omega.z);
 }
 
 static void mavlink_send_imu(void)
 {
-  mavlink_msg_small_imu_send(MAVLINK_COMM_0,
-                             _imu_time,
-                             _accel.x,
-                             _accel.y,
-                             _accel.z,
-                             _gyro.x,
-                             _gyro.y,
-                             _gyro.z,
-                             _imu_temperature);
-
+  // If we haven't sent this IMU measurement yet, send it
+  if (!_imu_sent)
+  {
+    mavlink_msg_small_imu_send(MAVLINK_COMM_0,
+                               _imu_time,
+                               _accel.x,
+                               _accel.y,
+                               _accel.z,
+                               _gyro.x,
+                               _gyro.y,
+                               _gyro.z,
+                               _imu_temperature);
+  }
+  else
+  {
+    // Otherwise, wait and signal that we still need to send IMU
+    mavlink_streams[MAVLINK_STREAM_ID_IMU].next_time_us -= mavlink_streams[MAVLINK_STREAM_ID_IMU].period_us;
+  }
 }
 
 static void mavlink_send_rosflight_output_raw(void)
@@ -142,31 +192,6 @@ static void mavlink_send_low_priority(void)
 {
   mavlink_send_next_param();
 }
-
-// typedefs
-typedef struct
-{
-  uint32_t period_us;
-  uint64_t next_time_us;
-  void (*send_function)(void);
-} mavlink_stream_t;
-
-// local variable definitions
-static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
-{
-  { .period_us = 0, .next_time_us = 0, .send_function = mavlink_send_heartbeat },
-
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_attitude },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_imu },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_diff_pressure },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_baro },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_sonar },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_mag },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
-  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
-  
-  { .period_us = 5000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
-};
 
 // function definitions
 void mavlink_stream(uint64_t time_us)

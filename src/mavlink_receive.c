@@ -6,6 +6,7 @@
 #include "mux.h"
 #include "sensors.h"
 #include "rc.h"
+#include "controller.h"
 
 #include "mavlink_receive.h"
 #include "mavlink_log.h"
@@ -62,7 +63,7 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
-      _calibrate_rc = true;
+      calculate_equilbrium_torque_from_rc();
       break;
     case ROSFLIGHT_CMD_REBOOT:
       reboot_flag = true;

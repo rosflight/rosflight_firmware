@@ -24,6 +24,7 @@ vector_t _gyro;
 float _imu_temperature;
 uint64_t _imu_time;
 bool new_imu_data = false;
+bool _imu_sent = false;
 
 // Airspeed
 bool _diff_pressure_present = false;
@@ -173,6 +174,7 @@ bool gyro_calibration_complete(void)
 void imu_ISR(void)
 {
   _imu_time = clock_micros();
+  _imu_sent = false;
   new_imu_data = true;
 }
 
@@ -184,9 +186,10 @@ static bool update_imu(void)
   if (new_imu_data)
   {
     last_imu_update_ms = clock_millis();
-    imu_read_accel(accel);
-    imu_read_gyro(gyro);
-    _imu_temperature = imu_read_temperature();
+    if (!imu_read_all(accel, gyro, &_imu_temperature))
+      return false;
+
+
     new_imu_data = false;
 
     _accel.x = accel[0] * get_param_float(PARAM_ACCEL_SCALE);
@@ -201,6 +204,7 @@ static bool update_imu(void)
       calibrate_accel();
     if (calibrating_gyro_flag)
       calibrate_gyro();
+
 
     correct_imu();
     return true;
@@ -231,7 +235,7 @@ static void calibrate_gyro()
     // Gyros are simple.  Just find the average during the calibration
     vector_t gyro_bias = scalar_multiply(1.0/(float)count, gyro_sum);
 
-    if (sqrd_norm(gyro_bias) < 1.0)
+    if (norm(gyro_bias) < 1.0)
     {
       set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
@@ -254,16 +258,36 @@ static void calibrate_gyro()
   }
 }
 
+static vector_t vector_max(vector_t a, vector_t b)
+{
+  vector_t out = {a.x > b.x ? a.x : b.x,
+                  a.y > b.y ? a.y : b.y,
+                  a.z > b.z ? a.z : b.z};
+  return out;
+}
+
+static vector_t vector_min(vector_t a, vector_t b)
+{
+  vector_t out = {a.x < b.x ? a.x : b.x,
+                  a.y < b.y ? a.y : b.y,
+                  a.z < b.z ? a.z : b.z};
+  return out;
+}
+
 
 static void calibrate_accel(void)
 {
   static uint16_t count = 0;
   static vector_t acc_sum  = { 0.0f, 0.0f, 0.0f };
   static const vector_t gravity = {0.0f, 0.0f, 9.80665f};
+  static vector_t max = {-1000.0f, -1000.0f, -1000.0f};
+  static vector_t min = {1000.0f, 1000.0f, 1000.0f};
   static float acc_temp_sum = 0.0f;
 
   acc_sum = vector_add(vector_add(acc_sum, _accel), gravity);
   acc_temp_sum += _imu_temperature;
+  max = vector_max(max, _accel);
+  min = vector_min(min, _accel);
   count++;
 
   if (count > 1000)
@@ -288,45 +312,58 @@ static void calibrate_accel(void)
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if (sqrd_norm(accel_bias) < 4.5)
+    if (norm(vector_sub(max, min)) > 1.0)
     {
-      set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
-      set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
-      set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
-      mavlink_log_info("IMU offsets captured", NULL);
-
-      // reset the estimated state
-      reset_state();
+      mavlink_log_error("Too much movement for IMU cal", NULL);
       calibrating_acc_flag = false;
     }
     else
     {
-      // check for bad _accel_scale
-      if (sqrd_norm(accel_bias) > 4.5*4.5 && sqrd_norm(accel_bias) < 5.5*5.5)
+      if (norm(accel_bias) < 3.0)
       {
-        mavlink_log_error("Detected bad IMU accel scale value", 0);
-        set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
-        write_params();
-      }
-      else if (sqrd_norm(accel_bias) > 9.0*9.0 && sqrd_norm(accel_bias) < 11.0*11.0)
-      {
-        mavlink_log_error("Detected bad IMU accel scale value", 0);
-        set_param_float(PARAM_ACCEL_SCALE, 0.5 * get_param_float(PARAM_ACCEL_SCALE));
-        write_params();
+        set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
+        set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
+        set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
+        mavlink_log_info("IMU offsets captured", NULL);
+
+        // reset the estimated state
+        reset_state();
+        calibrating_acc_flag = false;
       }
       else
       {
-        mavlink_log_error("Too much movement for IMU cal", NULL);
-        calibrating_acc_flag = false;
+        // check for bad _accel_scale
+        if (norm(accel_bias) > 3.0 && norm(accel_bias) < 6.0)
+        {
+          mavlink_log_error("Detected bad IMU accel scale value", 0);
+          set_param_float(PARAM_ACCEL_SCALE, 2.0 * get_param_float(PARAM_ACCEL_SCALE));
+          write_params();
+        }
+        else if (norm(accel_bias) > 6.0)
+        {
+          mavlink_log_error("Detected bad IMU accel scale value", 0);
+          set_param_float(PARAM_ACCEL_SCALE, 0.5 * get_param_float(PARAM_ACCEL_SCALE));
+          write_params();
+        }
+        else
+        {
+
+        }
       }
     }
 
-    // reset calibration in case we do it again
+    // reset calibration counters in case we do it again
     count = 0;
     acc_sum.x = 0.0f;
     acc_sum.y = 0.0f;
     acc_sum.z = 0.0f;
     acc_temp_sum = 0.0f;
+    max.x = -1000.0f;
+    max.y = -1000.0f;
+    max.z = -1000.0f;
+    min.x = 1000.0f;
+    min.y = 1000.0f;
+    min.z = 1000.0f;
   }
 }
 
@@ -352,11 +389,11 @@ static void correct_mag(void)
 
   // correct according to known soft iron bias - converts to nT
   _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y +
-           get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+      get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
   _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y +
-           get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+      get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
   _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y +
-           get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
+      get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 

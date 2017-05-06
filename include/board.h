@@ -24,6 +24,7 @@ void imu_register_callback(void (*callback)(void));
 void imu_read_accel(float accel[3]);
 void imu_read_gyro(float gyro[3]);
 float imu_read_temperature(void);
+bool imu_read_all(float accel[3], float gyro[3], float* temperature);
 void imu_not_responding_error();
 
 bool mag_check(void);
@@ -43,6 +44,8 @@ void diff_pressure_read(float *diff_pressure, float *temperature, float *velocit
 bool sonar_present(void);
 bool sonar_check(void);
 float sonar_read(void);
+
+uint16_t num_sensor_errors(void);
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)

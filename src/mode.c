@@ -47,31 +47,29 @@ void disarm(void)
 
 bool check_failsafe(void)
 {
+
+  bool failsafe = false;
+
   if (pwm_lost())
   {
     // Set the FAILSAFE bit
-    _armed_state |= FAILSAFE;
+    failsafe = true;
   }
-
   else
   {
+    // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
       if(pwm_read(i) < 900 || pwm_read(i) > 2100)
       {
-        _armed_state |= FAILSAFE;
+        failsafe = true;
       }
     }
-
-    // we got a valid RC measurement for all channels and pwm is active
-    // Clear the FAILSAFE bit
-    _armed_state &= ~(FAILSAFE);
-    return false;
   }
 
-  if (_armed_state & FAILSAFE)
+  if (failsafe)
   {
-    // blink LED
+    // blink LED to let the user know we are in failsafe
     static uint8_t count = 0;
     if (count > 25)
     {
@@ -79,8 +77,18 @@ bool check_failsafe(void)
       count = 0;
     }
     count++;
-    return true;
+
+    // Set the FAILSAFE bit
+    _armed_state |= FAILSAFE;
   }
+  else
+  {
+    // we got a valid RC measurement for all channels and pwm is active
+    // Clear the FAILSAFE bit
+    _armed_state &= ~(FAILSAFE);
+  }
+
+  return failsafe;
 }
 
 

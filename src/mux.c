@@ -8,12 +8,17 @@
 #include "mux.h"
 #include "param.h"
 #include "mode.h"
+#include "mavlink_receive.h"
 
 control_t _rc_control;
 control_t _offboard_control;
 control_t _combined_control;
+bool _new_command;
 
-// Drop like a brick
+static bool rc_override;
+static bool offboard_control_is_active;
+
+
 control_t _failsafe_control =
 {
   {true, ANGLE, 0.0},
@@ -97,13 +102,13 @@ static void interpret_rc(void)
     // Scale command to appropriate units
     switch (roll_pitch_type)
     {
-      case RATE:
-        _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLLRATE);
-        _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCHRATE);
-        break;
-      case ANGLE:
-        _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLL);
-        _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCH);
+    case RATE:
+      _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLLRATE);
+      _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCHRATE);
+      break;
+    case ANGLE:
+      _rc_control.x.value *= get_param_float(PARAM_RC_MAX_ROLL);
+      _rc_control.y.value *= get_param_float(PARAM_RC_MAX_PITCH);
     }
 
     // yaw
@@ -137,8 +142,6 @@ static bool stick_deviated(mux_channel_t channel)
 
 static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
 {
-  bool rc_override;
-
   if ((rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
     rc_override = true;
@@ -190,25 +193,53 @@ static bool do_throttle_muxing(void)
   return rc_override;
 }
 
-bool _new_command;
+
+bool rc_override_active()
+{
+  return rc_override;
+}
+
+bool offboard_control_active()
+{
+  for (int i = 0; i < 4; i++)
+  {
+    if(muxes[i].onboard->active)
+      return true;
+  }
+  return false;
+}
+
 
 bool mux_inputs()
 {
-  if (!_new_command)
+  // Check for and apply failsafe command
+  if (_armed_state & FAILSAFE)
+  {
+    _failsafe_control.F.value = get_param_float(PARAM_FAILSAFE_THROTTLE);
+    _combined_control = _failsafe_control;
+  }
+
+  else if (!_new_command)
   {
     // we haven't received any new commands, so we shouldn't do anything
     return false;
   }
 
-  // otherwise combine the new commands
-  if (_armed_state & FAILSAFE)
-  {
-    _combined_control = _failsafe_control;
-  }
+  // Otherwise, combine commands
   else
   {
     // Read RC
     interpret_rc();
+
+    // Check for offboard control timeout (100 ms)
+    if (clock_micros() > _offboard_control_time + 100000)
+    {
+      // If it has been longer than 100 ms, then disable the offboard control
+      _offboard_control.F.active = false;
+      _offboard_control.x.active = false;
+      _offboard_control.y.active = false;
+      _offboard_control.z.active = false;
+    }
 
     // Perform muxing
     bool rc_override = false;

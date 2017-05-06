@@ -39,6 +39,8 @@ extern control_t _failsafe_control;
 extern bool _new_command;
 
 bool mux_inputs();
+bool rc_override_active();
+bool offboard_control_active();
 
 #ifdef __cplusplus
 }

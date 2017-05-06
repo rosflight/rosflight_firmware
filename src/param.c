@@ -90,13 +90,13 @@ void set_param_defaults(void)
   /*****************************/
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1); // Mavlink System ID  | 1 | 255
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1); // Rate of heartbeat streaming (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status streaming (Hz) | 0 | 1000
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100); // Rate of attitude stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500); // Rate of IMU stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 75); // Rate of magnetometer stream (Hz) | 0 | 75
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 100); // Rate of barometer stream (Hz) | 0 | 100
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
-  init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 0); // Rate of GPS stream (Hz) | 0 | 1
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
   init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_OUTPUT", 50); // Rate of raw output stream | 0 |  490
@@ -105,7 +105,7 @@ void set_param_defaults(void)
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
   /********************************/
-  init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000); // saturation point for PID controller output | 0 | 1000
+  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0.0 | 1.0
 
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f); // Roll Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
@@ -126,11 +126,14 @@ void set_param_defaults(void)
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);   // Roll Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_ROLL_ANGLE_TRIM, "ROLL_TRIM", 0.0f);  // Roll Angle Trim - See RC calibration | -1000.0 | 1000.0
-
   init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
   init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
+
+  init_param_float(PARAM_X_EQ_TORQUE, "X_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on x axis | -1.0 | 1.0
+  init_param_float(PARAM_Y_EQ_TORQUE, "Y_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on y axis | -1.0 | 1.0
+  init_param_float(PARAM_Z_EQ_TORQUE, "Z_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on z axis | -1.0 | 1.0
 
   init_param_float(PARAM_PID_TAU, "PID_TAU", 0.05f); // Dirty Derivative time constant - See controller documentation | 0.0 | 1.0
 
@@ -139,7 +142,8 @@ void set_param_defaults(void)
   /*** PWM CONFIGURATION ***/
   /*************************/
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
-  init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
+  init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
   init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_PWM | 0 | 1
@@ -197,14 +201,6 @@ void set_param_defaults(void)
   init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL", -1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
-  init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500); // RC calibration x-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500); // RC calibration y-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_Z_CENTER, "RC_Z_CENTER", 1500); // RC calibration z-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_F_BOTTOM, "RC_F_BOTTOM", 1000); // RC calibration F-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_X_RANGE,  "RC_X_RANGE", 1000); // RC calibration x-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_Y_RANGE,  "RC_Y_RANGE", 1000); // RC calibration y-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_Z_RANGE,  "RC_Z_RANGE", 1000); // RC calibration z-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_F_RANGE,  "RC_F_RANGE", 1000); // RC calibration F-axis range (us) | 500 | 2500
   init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
   init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | -1 | 1
   init_param_int(PARAM_RC_SWITCH_7_DIRECTION, "SWITCH_7_DIR", 1); // RC switch 7 toggle direction | -1 | 1
@@ -276,6 +272,9 @@ void param_change_callback(param_id_t id)
     break;
   case PARAM_STREAM_HEARTBEAT_RATE:
     mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
+    break;
+  case PARAM_STREAM_STATUS_RATE:
+    mavlink_stream_set_rate(MAVLINK_STREAM_ID_STATUS, get_param_int(PARAM_STREAM_STATUS_RATE));
     break;
 
   case PARAM_STREAM_ATTITUDE_RATE:
