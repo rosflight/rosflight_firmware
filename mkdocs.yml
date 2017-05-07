@@ -5,6 +5,10 @@ edit_uri: blob/master/docs/
 google_analytics: ['UA-96018590-2', 'docs.rosflight.org']
 theme: readthedocs
 extra_css: [extra.css]
+extra_javascript: 
+    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+markdown_extensions:
+    - mdx_math
 pages:
   - Home: index.md
   - User Guide:
