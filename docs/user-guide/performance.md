@@ -42,23 +42,23 @@ Next, land the multirotor, disarm, center the sticks and perform an rc calibrati
 
 # Estimator Tuning
 
-ROSflight uses a non-linear complementary filter, based on the quaternion implementation of "[Non-linear complementary filters on the special orthogonal group](http://ieeexplore.ieee.org/document/4608934/) " by Robert Mahony.  The implementation has been improved with suggestions from "[Attitude Representation and Kinematic Propagation for Low-Cost UAVs](https://arc.aiaa.org/doi/abs/10.2514/6.2013-4615)" by Robert Casey.  A write-up of the derivation and implementation details can be found in the LaTeX report in `reports/estimator.tex` (You'll need to be able to compile LaTeX sources to view the PDF).
+ROSflight uses a non-linear complementary filter, based on the quaternion implementation of "[Non-linear complementary filters on the special orthogonal group](http://ieeexplore.ieee.org/document/4608934/) " by Robert Mahony to estimate attitude and angular rates.  The implementation has been improved with suggestions from "[Attitude Representation and Kinematic Propagation for Low-Cost UAVs](https://arc.aiaa.org/doi/abs/10.2514/6.2013-4615)" by Robert Casey.  A write-up of the derivation and implementation details can be found in the LaTeX report in `reports/estimator.tex` (You'll need to be able to compile LaTeX sources to view the PDF).
 
-Beyond just the completmentary filter, accelerometer and gyro measurements are filtered using a simple low-pass filter (LPF) to cut out noise from vibrations.  A block diagram of the estimator is shown below.
+In addition to the complementary filter, accelerometer and gyro measurements are filtered using a simple low-pass filter (LPF) to cut out noise from vibrations.  A block diagram of the estimator is shown below for reference.  \(y_{gyro}\) and \(y_{acc}\) are gyro and accelerometer measurements, respectively and \(\beta_{gyro}\) is the estimated gyro biases.
 
 ![CF_diagram](images/Comp_Filter_Block_Diagram.png)
 
 ### Tuning the Low-Pass Filter Gains
 
-The `ACC_LPF_ALPHA` and `GYRO_LPF_ALPHA` parameters are used in the following low-pass-filter implementation.
+The `ACC_LPF_ALPHA` and `GYRO_LPF_ALPHA` parameters are used in the following low-pass-filter implementation. (see lines `98-106` of `estimator.c`).
 
 $$x_t = (1-\alpha)y_t + \alpha x_{t-1}$$
 
 
-where \(y_t\) is the measurement and \(x_t\) is the filtered value.  Lowering \(\alpha\) will reduce lag in response, so if you feel like your MAV is sluggish despite all attempts at controller gain tuning, consider reducing \(\alpha\).  Reducing \(\alpha\) too far, however will result in a lot of noise from the sensors making its way into the motor commands.  This can cause motors to get really hot, so make sure you check that if you are changing the low-pass filter constants.
+where \(y_t\) is the measurement and \(x_t\) is the filtered value.  Lowering \(\alpha\) will reduce lag in response, so if you feel like your MAV is sluggish despite all attempts at controller gain tuning, consider reducing \(\alpha\).  Reducing \(\alpha\) too far, however will result in a lot of noise from the sensors making its way into the motors.  This can cause motors to get really hot, so make sure you check that if you are changing the low-pass filter constants.
 
 ### Tuning the Complementary Filter
-The complementary filter has two gains, \(k_p\) and \(k_i\).  For a complete understanding of how these work, I would recommend reading the Mahony Paper, or the technical report in the reports folder.  In short, \(k_p\) can be thought of the strength of accelerometer measurements in the filter.  In most cases, this value should not be changed.  The \(k_i\) gain is the integral constant on the gyro bias.  This value also, should probably not be changed.  Before you go changing these values, make sure you _completely_ understand how they work in the filter.  
+The complementary filter has two gains, \(k_p\) and \(k_i\).  For a complete understanding of how these work, I would recommend reading the Mahony Paper, or the technical report in the reports folder.  In short, \(k_p\) can be thought of the strength of accelerometer measurements in the filter, and the \(k_i\) gain is the integral constant on the gyro bias.  These values should probably not be changed.  Before you go changing these values, make sure you _completely_ understand how they work in the filter.  
 
 If you do decide to change these values, you should stick to the following rule of them. 
 
