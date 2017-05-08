@@ -186,7 +186,6 @@ GIT_VARS:=$(addprefix -DGIT_VERSION=, $(GIT_VERSION)) $(addprefix -DGIT_DIRTY=, 
 # Flags
 #################################
 MCFLAGS=-mcpu=cortex-m3 -mthumb
-$(info GIT_VARS=$(GIT_VARS))
 DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER $(GIT_VARS)
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
