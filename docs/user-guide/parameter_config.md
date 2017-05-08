@@ -1,6 +1,7 @@
 # Parameter interface
 
 The ROSflight firmware has several dozen parameters which it uses to customize performance.  Parameters are considered semi-static variables.  That is, parameters do not change during flight, but they may change between vehicles.  Examples of parameters you may wish to change are:
+
 * PID gains
 * Mixer choice
 * IMU low-pass filter constant

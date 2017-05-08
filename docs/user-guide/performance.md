@@ -4,7 +4,12 @@ Becuase there are a wide variety of multirotors out there, no one set of PID con
 
 If you are unfamiliar with PIDs, then you should probably go read about them before trying to tune a multirotor.  Getting an understanding for what is going on will definitely guide your decision making process as you try to figure out better gains.
 
-Some people like to build test stands to tune multirotors.  This is probably a good idea.  However, I've never used one of these stands and I've tuned multirotors that weigh several times as much as I do without one.  It is definitely not necessary.  However, in most cases, I have added what I call "training wheels" to the multirotors I'm tuning, which amounts to thin carbon rods in the shape of an X zip-tied to the landing gear.  This widens out the base of the quadcopter so if you come down on a hard oscillation, chances are you'll end up upright, hopefully without a prop strike.
+While tuning controller gains, there is a very likely scenario that the multirotor will oscillate out of control.  To handle that, I generally add what I call "training wheels" to the multirotors I'm tuning, which amounts to thin carbon rods in the shape of an X zip-tied to the landing gear.  This widens out the base of the quadcopter so if you come down on a hard oscillation, chances are you'll end up upright, hopefully without a prop strike.  Here is a video of the maiden flight of ROSflight with "training wheels" attached. 
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/T8_E1pIiAVQ" frameborder="0" allowfullscreen></iframe>
+
+Now, for the procedure on tuning.
+
 
 ### Tuning Roll and Pitch Controllers
 
@@ -16,12 +21,12 @@ You may want to do another D-tuning iteration, and sometimes it is helpful to do
 
 Notice, I didn't include any I tuning.  As a general rule, try to keep the I gain as low as possible.  It will _always_ slow your reponse rate to input, and it can induce low frequency oscillations.  
 
-You should _only_ have I gain on roll and pitch if
+You should _only_ have I gain on roll and pitch if one of the following is true:
 
 1. You expect your CG to change or 
 2. you expect your rotor geometry to change.  
  
-This is pretty rare.  Instead, use your RC transmitter to trim the aircraft so it hovers on no stick input.  In the next section will use the RC trim to calculate a feed-forward torque on roll, pitch and yawrate.
+Both of these are pretty rare.  Instead, use your RC transmitter to trim the aircraft so it hovers on no stick input.  In the RC trim calculation section will use the RC trim to calculate a feed-forward torque on roll, pitch and yawrate.
 
 
 ### Tuning Yawrate
@@ -38,7 +43,7 @@ In the vast majority of cases, your multirotor will not be built perfectly.  The
 
 Use the RC transmitter to find the "equilibrium torques" about the x, y, and z axes to keep the multirotor level.  This is done by trimming the aircraft with the RC trims.  These are usually the little switches next to sticks on your transmitter.  Adjust these until you can hover the multirotor without touching the sticks.
 
-Next, land the multirotor, disarm, center the sticks and perform an rc calibration `rosservice call /calibrate_rc_trim`.  ROSflight then uses the trim settings on your transmitter to find these equilibrium or feed-forward torques that need to be applied post-controller to keep the multirotor level.  These torques will be applied to all future commands, so you will need to zero out your transmitter trims after calibration.
+Next, land the multirotor, disarm, center the sticks and perform a trim calibration with `rosservice call /calibrate_rc_trim`.  ROSflight then uses the trim settings on your transmitter to find these equilibrium or feed-forward torques that need to be applied post-controller to keep the multirotor level.  These torques will be applied to all future commands, so you will need to zero out your transmitter trims after calibration.
 
 # Estimator Tuning
 
@@ -60,7 +65,7 @@ where \(y_t\) is the measurement and \(x_t\) is the filtered value.  Lowering \(
 ### Tuning the Complementary Filter
 The complementary filter has two gains, \(k_p\) and \(k_i\).  For a complete understanding of how these work, I would recommend reading the Mahony Paper, or the technical report in the reports folder.  In short, \(k_p\) can be thought of the strength of accelerometer measurements in the filter, and the \(k_i\) gain is the integral constant on the gyro bias.  These values should probably not be changed.  Before you go changing these values, make sure you _completely_ understand how they work in the filter.  
 
-If you do decide to change these values, you should stick to the following rule of them. 
+If you do decide to change these values, you should stick to the following rule of thumb. 
 
 $$k_i \approx \tfrac{k_p}{10}.$$
 
