@@ -96,6 +96,8 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
+  // clear the IMU read error
+  _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
   sensors_init();
   imu_register_callback(&imu_ISR);
 }
@@ -247,6 +249,7 @@ static bool update_imu(void)
     {
       // Tell the board to fix it
       last_imu_update_ms = clock_millis();
+      _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
       imu_not_responding_error();
     }
     return false;
