@@ -71,14 +71,14 @@ void init_rc(void);
 
 /**
  * @brief Get current stick value for the given channel.
- * @param  channel The stick channel who's value you wish to retrieve.
+ * @param  channel The stick channel whose value you wish to retrieve.
  * @return         Normalized float of the current stick value of the channel.
  */
 float rc_stick(rc_stick_t channel);
 
 /**
  * @brief Get the current switch value for the given channel.
- * @param  channel The switch channel who's value you wish to retrieve.
+ * @param  channel The switch channel whose value you wish to retrieve.
  * @return         True if the switch is mapped and in its on state, otherwise false.
  */
 bool rc_switch(rc_switch_t channel);
@@ -96,7 +96,7 @@ bool rc_switch_mapped(rc_switch_t channel);
  *  Maps channeled inputs from the RC controller to their proper data member values within this 
  *  class every 20ms. Upon update, signals to the mux that a new command is waiting.
  * 
- * @return False if it hasen't been 20ms since the last update, otherwise true.
+ * @return False if it hasn't been 20ms since the last update, otherwise true.
  */
 bool receive_rc();
 
