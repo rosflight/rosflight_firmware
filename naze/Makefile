@@ -170,12 +170,24 @@ OPTIMIZE = -Os
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
 
+#################################
+# VERSION CONTROL
+#################################
+GIT_VERSION := $(addprefix 0x,$(shell git describe --abbrev=4 --always))
+GIT_DIRTY := 0
+ifneq ($(shell git status --porcelain), )
+GIT_DIRTY := 1
+endif
+GIT_VARS:=$(addprefix -DGIT_VERSION=, $(GIT_VERSION)) $(addprefix -DGIT_DIRTY=, $(GIT_DIRTY))
+
+
 
 #################################
 # Flags
 #################################
 MCFLAGS=-mcpu=cortex-m3 -mthumb
-DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
+$(info GIT_VARS=$(GIT_VARS))
+DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER $(GIT_VARS)
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
 CXXFLAGS+=-U__STRICT_ANSI__
@@ -210,7 +222,7 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.s
 
 #################################
 # Recipes
-#################################
+################################# 
 .PHONY: all flash clean
 
 clean:
