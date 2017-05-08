@@ -47,7 +47,7 @@
 // type definitions
 typedef struct
 {
-  uint8_t version;
+  uint32_t version;
   uint16_t size;
   uint8_t magic_be;                       // magic number, should be 0xBE
 
@@ -61,9 +61,6 @@ typedef struct
 
 // global variable definitions
 static params_t params;
-
-// local variable definitions
-static const uint8_t PARAM_CONF_VERSION = 76;
 
 // local function definitions
 static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -269,7 +266,7 @@ bool read_params(void)
   if (!memory_read(&params, sizeof(params_t)))
     return false;
 
-  if (params.version != PARAM_CONF_VERSION)
+  if (params.version != GIT_VERSION);
     return false;
 
   if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
@@ -283,8 +280,8 @@ bool read_params(void)
 
 bool write_params(void)
 {
-  params.version = PARAM_CONF_VERSION;
   params.size = sizeof(params_t);
+  params.version = GIT_VERSION;
   params.magic_be = 0xBE;
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
