@@ -80,12 +80,17 @@ static mixer_t *array_of_mixers[NUM_MIXERS] =
 
 void init_mixing()
 {
+  // clear the invalid mixer flag
+  _error_state &= ~(ERROR_INVALID_MIXER);
+
   uint8_t mixer_choice = get_param_int(PARAM_MIXER);
 
   if (mixer_choice >= NUM_MIXERS)
   {
     mavlink_log_error("Invalid Mixer Choice", NULL);
     mixer_choice = 0;
+    // set the invalid mixer flag
+    _error_state |= ERROR_INVALID_MIXER;
   }
 
   mixer_to_use = array_of_mixers[get_param_int(PARAM_MIXER)];
