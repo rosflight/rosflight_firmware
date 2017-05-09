@@ -102,6 +102,9 @@ static void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
     case ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER:
       reboot_to_bootloader_flag = true;
       break;
+    case ROSFLIGHT_CMD_SEND_VERSION:
+      mavlink_msg_rosflight_version_send(MAVLINK_COMM_0, GIT_VERSION_STRING);
+      break;
     default:
       mavlink_log_error("unsupported ROSFLIGHT CMD %d", cmd.command);
       result = false;
