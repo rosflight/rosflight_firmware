@@ -266,7 +266,7 @@ bool read_params(void)
   if (!memory_read(&params, sizeof(params_t)))
     return false;
 
-  if (params.version != GIT_VERSION_HASH);
+  if (params.version != GIT_VERSION_HASH)
     return false;
 
   if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
@@ -280,8 +280,8 @@ bool read_params(void)
 
 bool write_params(void)
 {
-  params.size = sizeof(params_t);
   params.version = GIT_VERSION_HASH;
+  params.size = sizeof(params_t);
   params.magic_be = 0xBE;
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
