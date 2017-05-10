@@ -170,12 +170,18 @@ OPTIMIZE = -Os
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
 
+#################################
+# VERSION CONTROL
+#################################
+GIT_VERSION_HASH := $(shell git rev-parse --short=8 HEAD)
+GIT_VERSION_STRING := $(shell git describe --tags --abbrev=8 --always --dirty --long)
+GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GIT_VERSION_STRING)\"
 
 #################################
 # Flags
 #################################
 MCFLAGS=-mcpu=cortex-m3 -mthumb
-DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
+DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER $(GIT_VARS)
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
 CXXFLAGS+=-U__STRICT_ANSI__
@@ -210,7 +216,7 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.s
 
 #################################
 # Recipes
-#################################
+################################# 
 .PHONY: all flash clean
 
 clean:

@@ -1,3 +1,34 @@
+/* 
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ * 
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -54,25 +85,27 @@ static void init_switches()
 
   for (rc_switch_t chan = RC_SWITCH_ARM; chan < RC_SWITCHES_COUNT; chan++)
   {
+    //check for a valid stick mapping. Channels 0-3 are reserved for FXYZ
     switches[chan].mapped = switches[chan].channel > 3 && switches[chan].channel < get_param_int(PARAM_RC_NUM_CHANNELS);
     if (!switches[chan].mapped)
     {
       mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
     }
 
+    //get switch toggle direction from associated param
     switches[chan].direction = 1;
-    switch (chan)
+    switch (switches[chan].channel)
     {
-    case RC_SWITCH_ARM:
+    case 4:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
       break;
-    case RC_SWITCH_ATT_OVERRIDE:
+    case 5:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
       break;
-    case RC_SWITCH_THROTTLE_OVERRIDE:
+    case 6:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
       break;
-    case RC_SWITCH_ATT_TYPE:
+    case 7:
       switches[chan].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
       break;
     }
@@ -117,7 +150,7 @@ bool receive_rc()
     for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
     {
       uint16_t pwm = pwm_read(sticks[channel].channel);
-      if (sticks[channel].one_sided)
+      if (sticks[channel].one_sided) //generally only F is one_sided
       {
         stick_values[channel] = (float)(pwm - 1000) / (1000.0);
       }
@@ -132,7 +165,7 @@ bool receive_rc()
     {
       if (switches[channel].mapped)
       {
-        if (switches[channel].direction < 0)
+        if (switches[channel].direction < 0) //switch is on/off dependent on its default direction as set in the params/init_switches
         {
           switch_values[channel] = pwm_read(switches[channel].channel) < 1500;
         }
