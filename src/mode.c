@@ -56,6 +56,11 @@ void init_mode(void)
 bool arm(void)
 {
   static bool started_gyro_calibration = false;
+  if (_error_state)
+  {
+    mavlink_log_error("Unable to arm due to error code %d", _error_state);
+    return false;
+  }
   if (!started_gyro_calibration && !(_armed_state & ARMED))
   {
     start_gyro_calibration();

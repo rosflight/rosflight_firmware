@@ -45,6 +45,7 @@ extern vector_t _gyro;
 extern float _imu_temperature;
 extern uint64_t _imu_time;
 extern bool _imu_sent;
+extern bool _currently_using_imu_time;
 
 extern bool _diff_pressure_present;
 extern float _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp;

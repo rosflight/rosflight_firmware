@@ -60,6 +60,7 @@ static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
 static uint64_t last_time;
+static uint64_t last_acc_update_us;
 
 static vector_t _accel_LPF;
 static vector_t _gyro_LPF;
@@ -145,9 +146,19 @@ void run_LPF()
 void run_estimator()
 {
   static float kp, ki;
-  _current_state.now_us = _imu_time;
-  if (last_time == 0 || _current_state.now_us <= last_time)
+  if (last_time == 0)
   {
+    last_time = _current_state.now_us;
+    last_acc_update_us = last_time;
+    return;
+  }
+  else if (_current_state.now_us == last_time)
+  {
+    return;
+  }
+  else if (_current_state.now_us < last_time)
+  {
+    _error_state |= ERROR_TIME_GOING_BACKWARDS;
     last_time = _current_state.now_us;
     return;
   }
@@ -170,27 +181,29 @@ void run_estimator()
   // Run LPF to reject a lot of noise
   run_LPF();
 
-  // add in accelerometer
+  // add in accelerometerPARAM_FILTER_USE_ACC
   float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
   if (get_param_int(PARAM_FILTER_USE_ACC) && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
+    // Keep track of the last time that the acc update ran
+    last_acc_update_us = _current_state.now_us;
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(_accel_LPF);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
     quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g));
     // Get the error quaternion between observer and low-freq q
-    // Below Eq. 45 Mahoney Paper
+    // Below Eq. 45 Mahony Paper
     q_tilde = quaternion_multiply(q_acc_inv, q_hat);
-    // Correction Term of Eq. 47a and 47b Mahoney Paper
+    // Correction Term of Eq. 47a and 47b Mahony Paper
     // w_acc = 2*s_tilde*v_tilde
     w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
     w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
     w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
     // integrate biases from accelerometer feedback
-    // (eq 47b Mahoney Paper, using correction term w_acc found above)
+    // (eq 47b Mahony Paper, using correction term w_acc found above)
     b.x -= ki*w_acc.x*dt;
     b.y -= ki*w_acc.y*dt;
     b.z = 0.0;  // Don't integrate z bias, because it's unobservable
@@ -218,7 +231,7 @@ void run_estimator()
   }
 
   // Build the composite omega vector for kinematic propagation
-  // This the stuff inside the p function in eq. 47a - Mahoney Paper
+  // This the stuff inside the p function in eq. 47a - Mahony Paper
   wfinal = vector_add(vector_sub(wbar, b), scalar_multiply(kp, w_acc));
 
   // Propagate Dynamics (only if we've moved)
@@ -248,7 +261,7 @@ void run_estimator()
     else
     {
       // Euler Integration
-      // (Eq. 47a Mahoney Paper), but this is pretty straight-forward
+      // (Eq. 47a Mahony Paper), but this is pretty straight-forward
       quaternion_t qdot = {0.5f * (- p*q_hat.x - q*q_hat.y - r*q_hat.z),
                            0.5f * (p*q_hat.w             + r*q_hat.y - q*q_hat.z),
                            0.5f * (q*q_hat.w - r*q_hat.x             + p*q_hat.z),
@@ -271,10 +284,15 @@ void run_estimator()
   // Save off adjust gyro measurements with estimated biases for control
   _current_state.omega = vector_sub(_gyro_LPF, b);
 
-  // If the gyro bias is running away, then the estimator is wigging out.
-  if (sqrd_norm(b) > 1.0)
+  // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
+  // then trigger an unhealthy estimator error
+  if (get_param_int(PARAM_FILTER_USE_ACC) && _current_state.now_us > 500000 + last_acc_update_us)
   {
     _error_state |= ERROR_UNHEALTHY_ESTIMATOR;
+  }
+  else
+  {
+    _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
   }
 }
 

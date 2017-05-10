@@ -40,6 +40,7 @@
 #include "param.h"
 #include "mode.h"
 #include "rc.h"
+#include "mode.h"
 
 #include "mavlink_stream.h"
 #include "mavlink_util.h"
@@ -97,14 +98,11 @@ static void mavlink_send_heartbeat(void)
 // local function definitions
 static void mavlink_send_status(void)
 {
-  uint8_t status = 0;
+  volatile uint8_t status = 0;
   status |= (_armed_state & ARMED) ? ROSFLIGHT_STATUS_ARMED : 0x00;
   status |= (_armed_state & FAILSAFE) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
   status |= (rc_override_active()) ? ROSFLIGHT_STATUS_RC_OVERRIDE : 0x00;
   status |= (offboard_control_active()) ? ROSFLIGHT_STATUS_OFFBOARD_CONTROL_ACTIVE : 0x00;
-
-  // no support for error codes yet (TODO)
-  uint8_t error_code = 0;
 
   uint8_t control_mode = 0;
   if (get_param_int(PARAM_FIXED_WING))
@@ -117,7 +115,7 @@ static void mavlink_send_status(void)
 
   mavlink_msg_rosflight_status_send(MAVLINK_COMM_0,
                                     status,
-                                    error_code,
+                                    _error_state,
                                     control_mode,
                                     num_sensor_errors(),
                                     _loop_time_us);
