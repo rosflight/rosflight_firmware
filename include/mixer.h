@@ -44,8 +44,6 @@ typedef enum
 {
   QUADCOPTER_PLUS,
   QUADCOPTER_X,
-  QUADCOPTER_H,
-  TRICOPTER,
   Y6,
   X8,
   FIXEDWING,

@@ -1,0 +1,23 @@
+site_name: ROSflight
+site_url: http://rosflight.org
+repo_url: https://github.com/byu-magicc/ROSflight
+edit_uri: blob/master/docs/
+google_analytics: ['UA-96018590-2', 'docs.rosflight.org']
+theme: readthedocs
+extra_css: [extra.css]
+extra_javascript: 
+    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+markdown_extensions:
+    - mdx_math
+pages:
+  - Home: index.md
+  - User Guide:
+    - Getting started: user-guide/getting-started.md
+    - Hardware setup: user-guide/hardware-setup.md
+    - Autopilot setup: user-guide/autopilot-setup.md
+    - ROS setup: user-guide/ros-setup.md
+    - Parameter Configuration: user-guide/parameter_config.md
+    - RC Configuration: user-guide/rc_configuration.md
+    - Preflight checks: user-guide/preflight-checks.md
+    - Improving performance: user-guide/performance.md
+    - Autonomous flight: user-guide/autonomous-flight.md

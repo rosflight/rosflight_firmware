@@ -12,6 +12,7 @@
 *.o
 /build/*
 /naze/build
+/site/
 
 param_description.md
 

@@ -96,6 +96,8 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
+  // clear the IMU read error
+  _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
   sensors_init();
   imu_register_callback(&imu_ISR);
 }
@@ -116,17 +118,17 @@ bool update_sensors()
       last_time_look_for_disarmed_sensors = now;
       if(!sonar_present())
       {
-        if(sonar_check())
-        {
-          mavlink_log_info("FOUND SONAR", NULL);
-        }
+//        if(sonar_check())
+//        {
+//          mavlink_log_info("FOUND SONAR", NULL);
+//        }
       }
       if(!diff_pressure_present())
       {
-        if(diff_pressure_check())
-        {
-          mavlink_log_info("FOUND DIFF PRESS", NULL);
-        }
+//        if(diff_pressure_check())
+//        {
+//          mavlink_log_info("FOUND DIFF PRESS", NULL);
+//        }
       }
       if (!mag_present())
       {
@@ -247,6 +249,7 @@ static bool update_imu(void)
     {
       // Tell the board to fix it
       last_imu_update_ms = clock_millis();
+      _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
       imu_not_responding_error();
     }
     return false;

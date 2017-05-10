@@ -43,6 +43,7 @@ extern "C" {
 #include "board.h"
 #include "sensors.h"
 #include "param.h"
+#include "mode.h"
 
 #include "estimator.h"
 
@@ -109,6 +110,9 @@ void reset_state()
   _gyro_LPF.x = 0;
   _gyro_LPF.y = 0;
   _gyro_LPF.z = 0;
+
+  // Clear the unhealthy estimator flag
+  _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
 }
 
 void reset_adaptive_bias()
@@ -266,6 +270,12 @@ void run_estimator()
 
   // Save off adjust gyro measurements with estimated biases for control
   _current_state.omega = vector_sub(_gyro_LPF, b);
+
+  // If the gyro bias is running away, then the estimator is wigging out.
+  if (sqrd_norm(b) > 1.0)
+  {
+    _error_state |= ERROR_UNHEALTHY_ESTIMATOR;
+  }
 }
 
 #ifdef __cplusplus
