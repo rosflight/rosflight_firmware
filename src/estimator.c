@@ -181,7 +181,7 @@ void run_estimator()
   // Run LPF to reject a lot of noise
   run_LPF();
 
-  // add in accelerometerPARAM_FILTER_USE_ACC
+  // add in accelerometer
   float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
   if (get_param_int(PARAM_FILTER_USE_ACC) && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
