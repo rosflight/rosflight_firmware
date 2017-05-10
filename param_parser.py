@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+#
+__author__ = "James Jackson"
+__copyright__ = "Copyright 2017, ROSflight"
+__license__ = "BSD-3"
+__version__ = "0.1"
+__maintainer__ = "James Jackson"
+__email__ = "superjax08@gmail.com"
 
 import re
 

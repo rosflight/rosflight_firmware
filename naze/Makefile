@@ -173,14 +173,9 @@ endif
 #################################
 # VERSION CONTROL
 #################################
-GIT_VERSION := $(addprefix 0x,$(shell git describe --abbrev=4 --always))
-GIT_DIRTY := 0
-ifneq ($(shell git status --porcelain), )
-GIT_DIRTY := 1
-endif
-GIT_VARS:=$(addprefix -DGIT_VERSION=, $(GIT_VERSION)) $(addprefix -DGIT_DIRTY=, $(GIT_DIRTY))
-
-
+GIT_VERSION_HASH := $(shell git rev-parse --short=8 HEAD)
+GIT_VERSION_STRING := $(shell git describe --tags --abbrev=8 --always --dirty --long)
+GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GIT_VERSION_STRING)\"
 
 #################################
 # Flags
