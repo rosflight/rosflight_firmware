@@ -70,14 +70,10 @@ bool writeEEPROM(const void * src, size_t len)
 
     for(int i = 0; i < NUM_PAGES; i++)
       status = FLASH_ErasePage(FLASH_WRITE_ADDR + i * FLASH_PAGE_SIZE);
+
     for (unsigned int i = 0; i < len && status == FLASH_COMPLETE; i += 4)
-    {
       status = FLASH_ProgramWord(FLASH_WRITE_ADDR + i, *(uint32_t *)((char *)src + i));
-      if (status != FLASH_COMPLETE)
-      {
-        continue;
-      }
-    }
+
     if(status == FLASH_COMPLETE)
       break;
   }
@@ -85,9 +81,7 @@ bool writeEEPROM(const void * src, size_t len)
 
   // Flash write failed - just die now
   if (status != FLASH_COMPLETE || compute_checksum(src, len) != compute_checksum((uint32_t*)FLASH_WRITE_ADDR, len))
-  {
     return false;
-  }
 
   return true;
 }
