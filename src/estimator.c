@@ -162,6 +162,8 @@ void run_estimator()
     last_time = _current_state.now_us;
     return;
   }
+  // clear the time going backwards error
+  _error_state &= ~(ERROR_TIME_GOING_BACKWARDS);
 
   float dt = (_current_state.now_us - last_time) * 1e-6f;
   last_time = _current_state.now_us;
