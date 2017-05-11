@@ -51,7 +51,7 @@ ROSflight uses a non-linear complementary filter, based on the quaternion implem
 
 In addition to the complementary filter, accelerometer and gyro measurements are filtered using a simple low-pass filter (LPF) to cut out noise from vibrations.  A block diagram of the estimator is shown below for reference.  \(y_{gyro}\) and \(y_{acc}\) are gyro and accelerometer measurements, respectively and \(\beta_{gyro}\) is the estimated gyro biases.
 
-![CF_diagram](images/Comp_Filter_Block_Diagram.png)
+![CF_diagram](images/CF_Diagram.png)
 
 ### Tuning the Low-Pass Filter Gains
 
