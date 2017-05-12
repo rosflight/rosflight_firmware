@@ -96,6 +96,8 @@ static bool update_imu(void);
 // function definitions
 void init_sensors(void)
 {
+  // clear the IMU read error
+  _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
   sensors_init();
   imu_register_callback(&imu_ISR);
 }
@@ -103,7 +105,10 @@ void init_sensors(void)
 
 bool update_sensors()
 {
-  // Look for disabled sensors while disarmed (poll every 0.5 seconds)
+  // First, check for new IMU data
+  bool new_imu_data = update_imu();
+
+  // Now, look for disabled sensors while disarmed (poll every 0.5 seconds)
   // These sensors need power to respond, so they might not have been
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
@@ -138,6 +143,7 @@ bool update_sensors()
     }
   }
 
+  // Update whatever sensos are available
   if(baro_present())
   {
     baro_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
@@ -168,7 +174,7 @@ bool update_sensors()
   }
 
   // Return whether or not we got new IMU data
-  return update_imu();
+  return new_imu_data;
 }
 
 
@@ -217,10 +223,9 @@ static bool update_imu(void)
   if (new_imu_data)
   {
     last_imu_update_ms = clock_millis();
+    _current_state.now_us = _imu_time;
     if (!imu_read_all(accel, gyro, &_imu_temperature))
       return false;
-
-
     new_imu_data = false;
 
     _accel.x = accel[0] * get_param_float(PARAM_ACCEL_SCALE);
@@ -247,6 +252,9 @@ static bool update_imu(void)
     {
       // Tell the board to fix it
       last_imu_update_ms = clock_millis();
+
+      // Indicate an IMU error
+      _error_state |= ERROR_IMU_NOT_RESPONDING;
       imu_not_responding_error();
     }
     return false;

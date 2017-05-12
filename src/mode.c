@@ -45,15 +45,22 @@
 
 
 armed_state_t _armed_state;
+error_state_t _error_state;
 
 void init_mode(void)
 {
   _armed_state = 0x00;
+  _error_state = ERROR_NONE;
 }
 
 bool arm(void)
 {
   static bool started_gyro_calibration = false;
+  if (_error_state)
+  {
+    mavlink_log_error("Unable to arm due to error code %d", _error_state);
+    return false;
+  }
   if (!started_gyro_calibration && !(_armed_state & ARMED))
   {
     start_gyro_calibration();
@@ -85,6 +92,9 @@ bool check_failsafe(void)
   {
     // Set the FAILSAFE bit
     failsafe = true;
+
+    // Set the RC Lost error flag
+    _error_state |= ERROR_RC_LOST;
   }
   else
   {
@@ -117,6 +127,9 @@ bool check_failsafe(void)
     // we got a valid RC measurement for all channels and pwm is active
     // Clear the FAILSAFE bit
     _armed_state &= ~(FAILSAFE);
+
+    // clear the RC Lost error
+    _error_state &= ~(ERROR_RC_LOST);
   }
 
   return failsafe;
