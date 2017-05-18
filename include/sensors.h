@@ -40,10 +40,12 @@
 #include "board.h"
 #include "param.h"
 #include "estimator.h"
+#include "mode.h"
 
 namespace rosflight
 {
 
+class Mode;
 class Params;
 class Estimator;
 
@@ -54,6 +56,8 @@ private:
   Board *board_;
   Params *params_;
   Estimator *estimator_;
+  Mode* fsm_;
+
   float accel[3] = {0, 0, 0};
   float gyro[3] = {0, 0, 0};
 
@@ -83,6 +87,7 @@ private:
   float _imu_temperature = 0;
   uint64_t _imu_time = 0;
   bool new_imu_data = false;
+  bool _imu_data_sent = false;
 
   float _diff_pressure_velocity = 0;
   float _diff_pressure = 0;
@@ -102,7 +107,7 @@ public:
   Sensors();
 
   // function declarations
-  void init_sensors(Board *_board, Params *_params, Estimator *_estimator);
+  void init_sensors(Board *_board, Params *_params, Estimator *_estimator, Mode *fsm);
   bool update_sensors(void);
   void IMU_ISR(void);
 

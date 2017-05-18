@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,10 +85,6 @@ void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
   board_ = _board;
   //  commlink_ = _commlink;
   mixer_ = _mixer;
-  for (uint32_t i = 0; i < static_cast<uint32_t>(PARAMS_COUNT); i++)
-  {
-    init_param_int(static_cast<uint16_t>(i), "DEFAULT", 0);
-  }
   board_->memory_init();
   if (!read_params())
   {
@@ -104,7 +98,6 @@ void Params::set_param_defaults(void)
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  init_param_int(PARAM_BOARD_REVISION, "BOARD_REV", 2); // Major board revision of naze32/flip32 | 1 | 6
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
 
   /*****************************/
@@ -121,7 +114,7 @@ void Params::set_param_defaults(void)
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
-  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_OUTPUT", 50); // Rate of raw output stream | 0 |  490
+  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50
 
   /********************************/
@@ -132,32 +125,22 @@ void Params::set_param_defaults(void)
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f); // Roll Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_D, "PID_ROLL_RATE_D", 0.000f); // Rall Rate Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_ROLL_RATE_TRIM, "ROLL_RATE_TRIM", 0.0f); // Roll Rate Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 3.14159f); // Maximum Roll Rate command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);  // Pitch Rate Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.0000f); // Pitch Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_D, "PID_PITCH_RATE_D", 0.0000f); // Pitch Rate Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PITCH_RATE_TRIM, "PITCH_RATE_TRIM", 0.0f); // Pitch Rate Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 3.14159f);  // Maximum Pitch Rate command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.25f);   // Yaw Rate Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);  // Yaw Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_D, "PID_YAW_RATE_D", 0.0f);  // Yaw Rate Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_YAW_RATE_TRIM, "YAW_RATE_TRIM", 0.0f);  // Yaw Rate Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);   // Maximum Yaw Rate command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);   // Roll Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);   // Roll Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_ROLL_ANGLE_TRIM, "ROLL_TRIM", 0.0f);  // Roll Angle Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);   // Maximum Roll Angle command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
-  init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);   // Maximum Pitch Angle command accepted into PID controllers | 0.0 | 1000.0
 
   init_param_float(PARAM_X_EQ_TORQUE, "X_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on x axis | -1.0 | 1.0
   init_param_float(PARAM_Y_EQ_TORQUE, "Y_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on y axis | -1.0 | 1.0
@@ -170,7 +153,8 @@ void Params::set_param_defaults(void)
   /*** PWM CONFIGURATION ***/
   /*************************/
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
-  init_param_int(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 1100); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
+  init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
+  init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
   init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_PWM | 0 | 1
@@ -181,6 +165,10 @@ void Params::set_param_defaults(void)
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f); // estimator proportional gain - See estimator documentation | 0 | 10.0
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f); // estimator integral gain - See estimator documentation | 0 | 1.0
+
+  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 0); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
+  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 0); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
+  init_param_int(PARAM_FILTER_USE_ACC, "FILTER_USE_ACC", 1);  // Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | 0 | 1
 
   init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.888f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
   init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.888f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
@@ -224,14 +212,6 @@ void Params::set_param_defaults(void)
   init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL", -1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
-  init_param_int(PARAM_RC_X_CENTER, "RC_X_CENTER", 1500); // RC calibration x-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_Y_CENTER, "RC_Y_CENTER", 1500); // RC calibration y-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_Z_CENTER, "RC_Z_CENTER", 1500); // RC calibration z-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_F_BOTTOM, "RC_F_BOTTOM", 1000); // RC calibration F-axis center (us) | 1000 | 2000
-  init_param_int(PARAM_RC_X_RANGE,  "RC_X_RANGE", 1000); // RC calibration x-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_Y_RANGE,  "RC_Y_RANGE", 1000); // RC calibration y-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_Z_RANGE,  "RC_Z_RANGE", 1000); // RC calibration z-axis range (us) | 500 | 2500
-  init_param_int(PARAM_RC_F_RANGE,  "RC_F_RANGE", 1000); // RC calibration F-axis range (us) | 500 | 2500
   init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
   init_param_int(PARAM_RC_SWITCH_6_DIRECTION, "SWITCH_6_DIR", 1); // RC switch 6 toggle direction | -1 | 1
   init_param_int(PARAM_RC_SWITCH_7_DIRECTION, "SWITCH_7_DIR", 1); // RC switch 7 toggle direction | -1 | 1
@@ -261,9 +241,7 @@ void Params::set_param_defaults(void)
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  init_param_int(PARAM_ARM_STICKS, "ARM_STICKS", true); // use RC sticks to arm vehicle (disables arm RC switch if enabled) | 0 | 1
-  init_param_int(PARAM_ARM_CHANNEL, "ARM_CHANNEL", 5); // RC switch mapped to arm/disarm [0 -indexed] | 4 | 7
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 150); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
+  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
 }
 
 void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)

@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +39,11 @@
 #include "board.h"
 //#include "mixer.h"
 
+#ifndef GIT_VERSION_HASH
+#define GIT_VERSION_HASH 0x00
+//#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
+#endif
+
 namespace rosflight
 {
 
@@ -49,24 +52,23 @@ enum : uint16_t
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  PARAM_BOARD_REVISION = 0,
-  PARAM_BAUD_RATE,
+  PARAM_BAUD_RATE = 0,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
   /*****************************/
   PARAM_SYSTEM_ID,
   PARAM_STREAM_HEARTBEAT_RATE,
+  PARAM_STREAM_STATUS_RATE,
 
   PARAM_STREAM_ATTITUDE_RATE,
   PARAM_STREAM_IMU_RATE,
   PARAM_STREAM_MAG_RATE,
   PARAM_STREAM_BARO_RATE,
   PARAM_STREAM_AIRSPEED_RATE,
-  PARAM_STREAM_GPS_RATE,
   PARAM_STREAM_SONAR_RATE,
 
-  PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
+  PARAM_STREAM_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
 
   /********************************/
@@ -77,37 +79,26 @@ enum : uint16_t
   PARAM_PID_ROLL_RATE_P,
   PARAM_PID_ROLL_RATE_I,
   PARAM_PID_ROLL_RATE_D,
-  PARAM_ROLL_RATE_TRIM,
-  PARAM_MAX_ROLL_RATE,
 
   PARAM_PID_PITCH_RATE_P,
   PARAM_PID_PITCH_RATE_I,
   PARAM_PID_PITCH_RATE_D,
-  PARAM_PITCH_RATE_TRIM,
-  PARAM_MAX_PITCH_RATE,
 
   PARAM_PID_YAW_RATE_P,
   PARAM_PID_YAW_RATE_I,
   PARAM_PID_YAW_RATE_D,
-  PARAM_YAW_RATE_TRIM,
-  PARAM_MAX_YAW_RATE,
 
   PARAM_PID_ROLL_ANGLE_P,
   PARAM_PID_ROLL_ANGLE_I,
   PARAM_PID_ROLL_ANGLE_D,
-  PARAM_ROLL_ANGLE_TRIM,
-  PARAM_MAX_ROLL_ANGLE,
 
   PARAM_PID_PITCH_ANGLE_P,
   PARAM_PID_PITCH_ANGLE_I,
   PARAM_PID_PITCH_ANGLE_D,
-  PARAM_PITCH_ANGLE_TRIM,
-  PARAM_MAX_PITCH_ANGLE,
 
-  PARAM_PID_ALT_P,
-  PARAM_PID_ALT_I,
-  PARAM_PID_ALT_D,
-  PARAM_HOVER_THROTTLE,
+  PARAM_X_EQ_TORQUE,
+  PARAM_Y_EQ_TORQUE,
+  PARAM_Z_EQ_TORQUE,
 
   PARAM_PID_TAU,
 
@@ -116,6 +107,7 @@ enum : uint16_t
   /*************************/
   PARAM_MOTOR_PWM_SEND_RATE,
   PARAM_MOTOR_IDLE_THROTTLE,
+  PARAM_FAILSAFE_THROTTLE,
   PARAM_MOTOR_MAX_PWM,
   PARAM_MOTOR_MIN_PWM,
   PARAM_SPIN_MOTORS_WHEN_ARMED,
@@ -126,6 +118,10 @@ enum : uint16_t
   PARAM_INIT_TIME,
   PARAM_FILTER_KP,
   PARAM_FILTER_KI,
+
+  PARAM_FILTER_USE_QUAD_INT,
+  PARAM_FILTER_USE_MAT_EXP,
+  PARAM_FILTER_USE_ACC,
 
   PARAM_GYRO_ALPHA,
   PARAM_ACC_ALPHA,
@@ -169,14 +165,6 @@ enum : uint16_t
   PARAM_RC_ARM_CHANNEL,
   PARAM_RC_NUM_CHANNELS,
 
-  PARAM_RC_X_CENTER,
-  PARAM_RC_Y_CENTER,
-  PARAM_RC_Z_CENTER,
-  PARAM_RC_F_BOTTOM,
-  PARAM_RC_X_RANGE,
-  PARAM_RC_Y_RANGE,
-  PARAM_RC_Z_RANGE,
-  PARAM_RC_F_RANGE,
   PARAM_RC_SWITCH_5_DIRECTION,
   PARAM_RC_SWITCH_6_DIRECTION,
   PARAM_RC_SWITCH_7_DIRECTION,
@@ -206,8 +194,6 @@ enum : uint16_t
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  PARAM_ARM_STICKS,
-  PARAM_ARM_CHANNEL,
   PARAM_ARM_THRESHOLD,
 
   // keep track of size of params array
@@ -232,7 +218,7 @@ public:
 private:
   typedef struct
   {
-    uint8_t version;
+    uint32_t version;
     uint16_t size;
     uint8_t magic_be;                       // magic number, should be 0xBE
 
@@ -248,10 +234,8 @@ private:
 
   params_t params;
   Mixer *mixer_;
-//  CommLink *commlink_;
+  //  CommLink *commlink_;
   Board *board_;
-
-  const uint8_t PARAM_CONF_VERSION = 76;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -265,7 +249,7 @@ public:
 
 
 
-// function declarations
+  // function declarations
 
   /**
    * @brief Initialize parameter values

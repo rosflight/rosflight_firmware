@@ -63,7 +63,7 @@ void ROSflight::rosflight_init(void)
   commlink_->init(board_, &params_, this);
 
   // Initialize Sensors
-  sensors_.init_sensors(board_, &params_, &estimator_);
+  sensors_.init_sensors(board_, &params_, &estimator_, &fsm_);
 
   /***********************/
   /***  Software Setup ***/
@@ -73,7 +73,7 @@ void ROSflight::rosflight_init(void)
 //  mixer_.init_mixing();
 
   // Initialize Estimator
-  estimator_.init_estimator(&params_, &sensors_);
+  estimator_.init_estimator(&params_, &sensors_, &fsm_);
 
   // Initialize Controller
 //  controller_.init_controller(&fsm_, board_, &estimator_, &params_);
@@ -107,7 +107,7 @@ void ROSflight::rosflight_run()
   commlink_->receive(); // 159 | 1 | 1
 
   // update the state machine, an internal timer runs this at a fixed rate
-  fsm_.update_armed_state(); // 108 | 1 | 1
+  fsm_.update_state(); // 108 | 1 | 1
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
   rc_.receive_rc(); // 42 | 2 | 1

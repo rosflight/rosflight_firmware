@@ -1,3 +1,34 @@
+/*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 extern "C"
 {
 #include <breezystm32.h>
@@ -63,8 +94,9 @@ uint8_t Naze32::serial_read(void)
 
 // sensors
 
-void Naze32::sensors_init(int board_revision)
+void Naze32::sensors_init()
 {
+    _board_revision = 2;
     // Initialize I2c
     i2cInit(I2CDEV_2);
 
@@ -80,6 +112,11 @@ void Naze32::sensors_init(int board_revision)
     uint16_t acc1G;
     mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
     _accel_scale = 9.80665f/acc1G;
+}
+
+uint16_t Naze32::num_sensor_errors(void)
+{
+  return i2cGetErrorCounter();
 }
 
 void Naze32::imu_register_callback(void (*callback)(void))
@@ -107,7 +144,7 @@ void Naze32::imu_read_gyro(float gyro[3])
   gyro[2] = -gyro_raw[2] * _gyro_scale;
 }
 
-void Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3])
+bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3])
 {
     int16_t gyro_raw[3], accel_raw[3];
     int16_t raw_temp;
@@ -122,6 +159,12 @@ void Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3])
     gyro[2] = -gyro_raw[2] * _gyro_scale;
 
     (*temperature) = (float)raw_temp/340.0f + 36.53f;
+
+    if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0)
+    {
+      return false;
+    }
+    else return true;
 }
 
 float Naze32::imu_read_temperature(void)
@@ -129,7 +172,14 @@ float Naze32::imu_read_temperature(void)
   int16_t temperature_raw;
   mpu6050_read_temperature(&temperature_raw);
   return temperature_raw/340.0f + 36.53f;
+}
 
+void Naze32::imu_not_responding_error(void)
+{
+  // If the IMU is not responding, then we need to change where we look for the
+  // interrupt
+  _board_revision = (_board_revision < 4) ? 5 : 2;
+  sensors_init();
 }
 
 bool Naze32::mag_present(void)

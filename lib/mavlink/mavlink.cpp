@@ -61,7 +61,7 @@ void Mavlink::init(Board* _board, Params *_params, ROSflight *firmware)
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_BARO, std::placeholders::_1), PARAM_STREAM_BARO_RATE);
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SONAR, std::placeholders::_1), PARAM_STREAM_SONAR_RATE);
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1), PARAM_STREAM_MAG_RATE);
-  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_SERVO_OUTPUT_RAW_RATE);
+  RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_OUTPUT_RAW_RATE);
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
 }
 

@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +47,7 @@ class Mode;
 class CommLink;
 class Estimator;
 class Mixer;
+class Mux;
 
 class Controller
 {
@@ -56,6 +55,9 @@ public:
   void run_controller();
   void init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* _mixer,
                        Estimator *_estimator, Params *_params);
+  void calculate_equilbrium_torque_from_rc();
+
+
 private:
   typedef struct
   {

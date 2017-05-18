@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,13 +92,11 @@ void Estimator::reset_adaptive_bias()
   b.z = 0;
 }
 
-void Estimator::init_estimator(Params *_params, Sensors *_sensors)
+void Estimator::init_estimator(Params *_params, Sensors *_sensors, Mode *_fsm)
 {
   params_ = _params;
   sensors_ = _sensors;
-  mat_exp = false;
-  quad_int = false;
-  use_acc = true;
+  fsm_ = _fsm;
 
   last_time = 0;
   reset_state();
@@ -126,13 +122,23 @@ void Estimator::run_estimator()
 {
   static float kp, ki;
   now_us = sensors_->get_imu_time();
-  if (last_time == 0 || now_us <= last_time)
+  if (last_time == 0)
   {
+    last_time = now_us;
+    last_acc_update_us = last_time;
+    return;
+  }
+  else if(now_us <= last_time)
+  {
+    // this shouldn't happen
+    fsm_->set_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
     last_time = now_us;
     return;
   }
   // clear the time going backwards error
   _error_state &= ~(ERROR_TIME_GOING_BACKWARDS);
+
+  fsm_->clear_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
 
   float dt = (now_us - last_time) * 1e-6f;
   last_time = now_us;
@@ -155,7 +161,8 @@ void Estimator::run_estimator()
   // add in accelerometer
   float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
-  if (get_param_int(PARAM_FILTER_USE_ACC) && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
+  if (params_->get_param_int(PARAM_FILTER_USE_ACC)
+      && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     // Keep track of the last time that the acc update ran
     last_acc_update_us = _current_state.now_us;
@@ -187,7 +194,7 @@ void Estimator::run_estimator()
   }
 
   // Pull out Gyro measurements
-  if (get_param_int(PARAM_FILTER_USE_QUAD_INT))
+  if (params_->get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
@@ -213,7 +220,7 @@ void Estimator::run_estimator()
     float q = wfinal.y;
     float r = wfinal.z;
 
-    if (get_param_int(PARAM_FILTER_USE_MAT_EXP))
+    if (params_->get_param_int(PARAM_FILTER_USE_MAT_EXP))
     {
       // Matrix Exponential Approximation (From Attitude Representation and Kinematic
       // Propagation for Low-Cost UAVs by Robert T. Casey)
@@ -254,6 +261,17 @@ void Estimator::run_estimator()
 
   // Save off adjust gyro measurements with estimated biases for control
   omega = vector_sub(_gyro_LPF, b);
+
+  // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
+  // then trigger an unhealthy estimator error
+  if (params_->get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us)
+  {
+    fsm_->set_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+  }
+  else
+  {
+    fsm_->clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+  }
 }
 
 }

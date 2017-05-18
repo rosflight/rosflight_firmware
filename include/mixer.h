@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #pragma once
 
 #include <stdint.h>
@@ -49,18 +48,17 @@ class Mixer
 {
 
 public:
-  typedef enum
+  enum
   {
     QUADCOPTER_PLUS,
     QUADCOPTER_X,
     QUADCOPTER_H,
     TRICOPTER,
     Y6,
+    X8,
     FIXEDWING,
-    MYTWINDREAM_MIXER,
     NUM_MIXERS
-
-  } mixer_type_t;
+  };
 
   typedef enum
   {
@@ -88,9 +86,6 @@ public:
   } mixer_t;
 
   command_t _command;
-
-  float _GPIO_outputs[8];
-  output_type_t _GPIO_output_type[8];
 
   float _outputs[8];
 
@@ -152,14 +147,13 @@ private:
     { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
-  const mixer_t mytwindream_mixing =
+  const mixer_t X8_mixing =
   {
-    {S, S, M, S, S, M, NONE, NONE},
-
-    { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-    { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+    {M, M, M, M, M, M, M, M},
+    { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   1.0f,  1.0f}, // F Mix
+    {-1.0f,   1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,  -1.0f,  1.0f}, // X Mix
+    { 1.0f,   1.0f,   -1.0f,   -1.0f,    1.0f,    1.0f,  -1.0f, -1.0f}, // Y Mix
+    { 1.0f,  -1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,   1.0f, -1.0f}  // Z Mix
   };
 
   const mixer_t tricopter_mixing =
@@ -176,9 +170,9 @@ private:
   {
     {M, M, M, M, M, M, NONE, NONE},
     { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   0.0f, 0.0f}, // F Mix
-    { 0.0f,  -1.0f,    1.0f,    0.0f,   -1.0f,    1.0f,   0.0f, 0.0f}, // X Mix
-    {-1.333f, 0.667f,  0.667f, -1.333f,  0.667f,  0.667f, 0.0f, 0.0f}, // Y Mix
-    {-1.0f,   1.0f,    1.0f,    1.0f,   -1.0f,   -1.0f,   0.0f, 0.0f}  // Z Mix
+    {-1.0f,  -1.0f,    0.0f,    0.0f,    1.0f,    1.0f,   0.0f, 0.0f}, // X Mix
+    { 0.667f, 0.667f, -1.333f, -1.333f,  0.667f,  0.667f, 0.0f, 0.0f}, // Y Mix
+    {-1.0f,   1.0f,   -1.0f,    1.0f,   -1.0f,    1.0f,   0.0f, 0.0f}  // Z Mix
   };
 
   const mixer_t *mixer_to_use;
@@ -190,8 +184,8 @@ private:
     &quadcopter_h_mixing,
     &tricopter_mixing,
     &Y6_mixing,
-    &fixedwing_mixing,
-    &mytwindream_mixing
+    &X8_mixing,
+    &fixedwing_mixing
   };
 
 

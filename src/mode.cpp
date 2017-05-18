@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +39,7 @@ namespace rosflight
 
 Mode::Mode()
 {
-  _armed_state = DISARMED;
+  _armed = false;
   prev_time_ms = 0;
   time_sticks_have_been_in_arming_position_ms = 0;
 }
@@ -52,13 +50,20 @@ void Mode::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
   board_ = _board;
   sensors_ = _sensors;
   params_ = _params;
-  _armed_state = DISARMED;
+  _armed = false;
+  _error_code = ERROR_NONE;
+  _failsafe_active = false;
 }
 
 bool Mode::arm(void)
 {
   started_gyro_calibration = false;
-  if (!started_gyro_calibration && _armed_state == DISARMED)
+  if(_error_code != ERROR_NONE)
+  {
+    //    mavlink_log_error("Unable to arm due to error code %d", _error_state);
+    return false;
+  }
+  if (!started_gyro_calibration && !_armed)
   {
     sensors_->start_gyro_calibration();
     started_gyro_calibration = true;
@@ -67,7 +72,7 @@ bool Mode::arm(void)
   else if (sensors_->gyro_calibration_complete())
   {
     started_gyro_calibration = false;
-    _armed_state = ARMED;
+    _armed = true;
     board_->led1_on();
     return true;
   }
@@ -76,16 +81,19 @@ bool Mode::arm(void)
 
 void Mode::disarm(void)
 {
-  _armed_state = DISARMED;
+  _armed = false;
   board_->led1_off();
 }
 
 bool Mode::check_failsafe(void)
 {
+  bool failsafe = false;
+
   if (board_->pwm_lost())
   {
-    // Set the FAILSAFE bit
-    _failsafe_state = FAILSAFE;
+    failsafe = true;
+    // set the RC Lost error flag
+    set_error_code(ERROR_RC_LOST);
   }
 
     // Set the RC Lost error flag
@@ -93,20 +101,12 @@ bool Mode::check_failsafe(void)
   }
   else
   {
+    // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<params_->get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
       if (board_->pwm_read(i) < 900 || board_->pwm_read(i) > 2100)
       {
-        _failsafe_state = FAILSAFE;
-
-        // blink LED
-        static uint8_t count = 0;
-        if (count > 25)
-        {
-          board_->led1_toggle();
-          count = 0;
-        }
-        count++;
+        failsafe = true;
       }
     }
   }
@@ -117,37 +117,40 @@ bool Mode::check_failsafe(void)
     static uint8_t count = 0;
     if (count > 25)
     {
-      led1_toggle();
+      board_->led1_toggle();
       count = 0;
     }
     count++;
 
     // Set the FAILSAFE bit
-    _armed_state |= FAILSAFE;
+    _failsafe_active = true;
   }
   else
   {
-    // we got a valid RC measurement for all channels and pwm is active
-    // Clear the FAILSAFE bit
-    _failsafe_state = NORMAL;
+  // we got a valid RC measurement for all channels and pwm is active
+  // Clear the FAILSAFE bit
+    _failsafe_active = false;
+
+    // Clear the RC Lost Error
+    clear_error_code(ERROR_RC_LOST);
   }
-  return (bool)_failsafe_state;
+  return failsafe;
 }
 
 
-bool Mode::update_armed_state()
+bool Mode::update_state()
 {
-  uint32_t now = board_->clock_millis();
+  uint32_t now_ms = board_->clock_millis();
 
   // see it has been at least 20 ms
-  uint32_t dt = now-prev_time_ms;
+  uint32_t dt = now_ms-prev_time_ms;
   if (dt < 20)
   {
     return false;
   }
 
   // if it has, then do stuff
-  prev_time_ms = now;
+  prev_time_ms = now_ms;
 
   // check for failsafe mode
   if (check_failsafe())
@@ -157,9 +160,9 @@ bool Mode::update_armed_state()
   else
   {
     // check for arming switch
-    if (params_->get_param_int(PARAM_ARM_STICKS))
+    if (!rc_->rc_switch_mapped(RC_SWITCH_ARM))
     {
-      if (!(_armed_state & ARMED))
+      if (!_armed) // we are DISARMED
       {
         // if left stick is down and to the right
         if (rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD)
@@ -177,7 +180,7 @@ bool Mode::update_armed_state()
             time_sticks_have_been_in_arming_position_ms = 0;
         }
       }
-      else // _armed_state is ARMED
+      else // we are ARMED
       {
         // if left stick is down and to the left
         if (rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD)
@@ -196,11 +199,11 @@ bool Mode::update_armed_state()
         }
       }
     }
-    else
+    else // ARMING WITH SWITCH
     {
-      if (rc_->rc_switch(params_->get_param_int(PARAM_ARM_CHANNEL)))
+      if (rc_->rc_switch(RC_SWITCH_ARM))
       {
-        if ( !(_armed_state & ARMED))
+        if (!_armed)
           arm();
       }
       else

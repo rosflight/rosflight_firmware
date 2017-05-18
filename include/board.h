@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,13 +58,15 @@ public:
   virtual uint8_t serial_read(void) = 0;
 
 // sensors
-  virtual void sensors_init(int board_revision) = 0;
+  virtual void sensors_init() = 0;
+  virtual uint16_t num_sensor_errors(void)  = 0;
 
   virtual void imu_register_callback(void (*callback)(void)) = 0;
   virtual void imu_read_accel(float accel[3]) = 0;
   virtual void imu_read_gyro(float gyro[3]) = 0;
-  virtual void imu_read_all(float accel[3], float* temperature, float gyro[3]) = 0;
+  virtual bool imu_read_all(float accel[3], float* temperature, float gyro[3]) = 0;
   virtual float imu_read_temperature(void) = 0;
+  virtual void imu_not_responding_error(void) = 0;
 
   virtual bool mag_check(void) = 0;
   virtual bool mag_present(void) = 0;

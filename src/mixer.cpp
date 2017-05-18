@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,20 +52,32 @@ void Mixer::param_change_callback(uint16_t param_id)
 {
   switch(param_id)
   {
-    case PARAM_MIXER:
-      init_mixing();
-      break;
-    default:
-      init_PWM();
-      break;
+  case PARAM_MIXER:
+    init_mixing();
+    break;
+  default:
+    init_PWM();
+    break;
   }
 }
 
 
 void Mixer::init_mixing()
 {
-  // We need a better way to choosing the mixer
-  mixer_to_use = array_of_mixers[params->get_param_int(PARAM_MIXER)];
+  // clear the invalid mixer error
+  fsm->clear_error_code(Mode::ERROR_INVALID_MIXER);
+
+  uint8_t mixer_choice = params->get_param_int(PARAM_MIXER);
+
+  if (mixer_choice >= NUM_MIXERS)
+  {
+//    mavlink_log_error("Invalid Mixer Choice", NULL);
+    mixer_choice = 0;
+    // set the invalid mixer flag
+    fsm->set_error_code(Mode::ERROR_INVALID_MIXER);
+  }
+
+  mixer_to_use = array_of_mixers[mixer_choice];
 
   for (int8_t i=0; i<8; i++)
   {
@@ -104,7 +114,7 @@ void Mixer::write_motor(uint8_t index, float value)
     else if (value < params->get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
              && params->get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
     {
-      value = params->get_param_int(PARAM_MOTOR_IDLE_THROTTLE);
+      value = params->get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
     }
     else if (value < 0.0)
     {
@@ -133,7 +143,7 @@ void Mixer::write_servo(uint8_t index, float value)
     value = -1.0;
   }
   _outputs[index] = value;
-  board->pwm_write(index, _outputs[index] * 1000 + 1500);
+  board->pwm_write(index, _outputs[index] * 500 + 1500);
 }
 
 
@@ -142,11 +152,11 @@ void Mixer::mix_output()
   float max_output = 1.0f;
 
   // Reverse Fixedwing channels just before mixing if we need to
-  if (get_param_int(PARAM_FIXED_WING))
+  if (params->get_param_int(PARAM_FIXED_WING))
   {
-    _command.x *= get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    _command.y *= get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    _command.z *= get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+    prescaled_outputs[0] *= params->get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    prescaled_outputs[1] *= params->get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    prescaled_outputs[3] *= params->get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
 
   for (int8_t i=0; i<8; i++)
@@ -172,30 +182,10 @@ void Mixer::mix_output()
     scale_factor = 1.0/max_output;
   }
 
-  // Reverse Fixedwing channels
-  if (params->get_param_int(PARAM_FIXED_WING))
-  {
-    prescaled_outputs[0] *= params->get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    prescaled_outputs[1] *= params->get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    prescaled_outputs[3] *= params->get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
-  }
 
-  // Add in GPIO inputs from Onboard Computer
+
   for (int8_t i=0; i<8; i++)
   {
-    output_type_t output_type = mixer_to_use->output_type[i];
-    if (mixer_to_use->output_type[i] == M)
-    {
-      prescaled_outputs[i] = (prescaled_outputs[i])*scale_factor; // scale all outputs by scale factor
-    }
-
-    if (output_type == NONE)
-    {
-      // Incorporate GPIO on not already reserved outputs
-      prescaled_outputs[i] = _GPIO_outputs[i];
-      output_type = _GPIO_output_type[i];
-    }
-
     // Write output to motors
     if (mixer_to_use->output_type[i] == S)
     {

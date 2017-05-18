@@ -1,3 +1,35 @@
+/*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -31,12 +63,13 @@ typedef struct
   control_channel_t* combined;
 } mux_t;
 
-void Mux::init(Mode *_fsm, Params *_params, Board *_board, RC *_rc)
+void Mux::init(Mode *_fsm, Params *_params, Board *_board, RC *_rc, CommLink *_commlink)
 {
   rc = _rc;
   params = _params;
   board = _board;
   fsm = _fsm;
+  commlink = _commlink;
 }
 
 void Mux::interpret_rc(void)
@@ -73,13 +106,13 @@ void Mux::interpret_rc(void)
     // Scale command to appropriate units
     switch (roll_pitch_type)
     {
-      case RATE:
-        _rc_control.x.value *= params->get_param_float(PARAM_RC_MAX_ROLLRATE);
-        _rc_control.y.value *= params->get_param_float(PARAM_RC_MAX_PITCHRATE);
-        break;
-      case ANGLE:
-        _rc_control.x.value *= params->get_param_float(PARAM_RC_MAX_ROLL);
-        _rc_control.y.value *= params->get_param_float(PARAM_RC_MAX_PITCH);
+    case RATE:
+      _rc_control.x.value *= params->get_param_float(PARAM_RC_MAX_ROLLRATE);
+      _rc_control.y.value *= params->get_param_float(PARAM_RC_MAX_PITCHRATE);
+      break;
+    case ANGLE:
+      _rc_control.x.value *= params->get_param_float(PARAM_RC_MAX_ROLL);
+      _rc_control.y.value *= params->get_param_float(PARAM_RC_MAX_PITCH);
     }
 
     // yaw
@@ -91,7 +124,7 @@ void Mux::interpret_rc(void)
   }
 }
 
-bool Mux::stick_deviated(mux_channel_t channel)
+bool Mux::stick_deviated(uint8_t channel)
 {
   uint32_t now = board->clock_millis();
 
@@ -111,29 +144,14 @@ bool Mux::stick_deviated(mux_channel_t channel)
   }
 }
 
-bool Mux::do_roll_pitch_yaw_muxing(mux_channel_t channel)
+bool Mux::do_roll_pitch_yaw_muxing(uint8_t channel)
 {
-  bool rc_override;
-
+  //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
   if ((rc->rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc->rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
     rc_override = true;
   }
-  else
-  { //check if the RC value for this channel has moved from center enough to trigger a RC override
-    if (fabs(rc_stick(rc_stick_override[channel].rc_channel)) > get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
-    {
-      rc_stick_override[channel].last_override_time = now;
-      return true;
-    }
-    return false;
-  }
-}
-
-static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
-{
-  //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
-  if ((rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
+  else // Otherwise only have RC override if the offboard channel is inactive
   {
     if (muxes[channel].onboard->active)
     {
@@ -144,23 +162,23 @@ static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
       rc_override = true;
     }
   }
-
+  // set the combined channel output depending on whether RC is overriding for this channel or not
   *muxes[channel].combined = rc_override ? *muxes[channel].rc : *muxes[channel].onboard;
   return rc_override;
 }
 
 bool Mux::do_throttle_muxing(void)
 {
-  bool rc_override;
-
+  // Check if the override switch exists and is triggered
   if (rc->rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && rc->rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
   {
     rc_override = true;
   }
-  else
+  else // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
   {
     if (muxes[MUX_F].onboard->active)
     {
+      // Check if the parameter flag is set to have us always take the smaller throttle
       if (params->get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
       {
         rc_override = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
@@ -176,8 +194,24 @@ bool Mux::do_throttle_muxing(void)
     }
   }
 
+  // Set the combined channel output depending on whether RC is overriding for this channel or not
   *muxes[MUX_F].combined = rc_override ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
   return rc_override;
+}
+
+bool Mux::rc_override_active()
+{
+  return rc_override;
+}
+
+bool Mux::offboard_control_active()
+{
+  for (int i = 0; i < 4; i++)
+  {
+    if (muxes[i].onboard->active)
+      return true;
+  }
+  return false;
 }
 
 void Mux::signal_new_command()
@@ -187,9 +221,10 @@ void Mux::signal_new_command()
 
 bool Mux::mux_inputs()
 {
-  // otherwise combine the new commands
+  // Check for and apply failsafe command
   if (fsm->in_failsafe())
   {
+    _failsafe_control.F.value = params->get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;
   }
 
@@ -198,13 +233,24 @@ bool Mux::mux_inputs()
     // Read RC
     interpret_rc();
 
+    // Check for offboard control timeout (100 ms)
+    if (board->clock_micros() > _offboard_control.stamp_us + 100000)
+    {
+      // If it has been longer than 100 ms, then disable the offboard control
+      _offboard_control.F.active = false;
+      _offboard_control.x.active = false;
+      _offboard_control.y.active = false;
+      _offboard_control.z.active = false;
+    }
+
+
     // Perform muxing
-    bool rc_override = false;
+    rc_override = false;
     for (uint8_t i = MUX_X; i <= MUX_Z; i++)
     {
-      rc_override |= do_roll_pitch_yaw_muxing((mux_channel_t)i);
+      do_roll_pitch_yaw_muxing(i);
     }
-    rc_override |= do_throttle_muxing();
+    do_throttle_muxing();
 
     // Light to indicate override
     if (rc_override)

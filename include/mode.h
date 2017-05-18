@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,22 +41,23 @@
 namespace rosflight
 {
 
+class Sensors;
 class Mode
 {
 
+public:
+
+  enum
+  {
+    ERROR_NONE = 0x0000,
+    ERROR_INVALID_MIXER = 0x0001,
+    ERROR_IMU_NOT_RESPONDING = 0x0002,
+    ERROR_RC_LOST = 0x0004,
+    ERROR_UNHEALTHY_ESTIMATOR = 0x0008,
+    ERROR_TIME_GOING_BACKWARDS = 0x0010
+  };
+
 private:
-
-  typedef enum
-  {
-    DISARMED = 0,
-    ARMED = 1
-  } armed_state_t;
-
-  typedef enum
-  {
-    NORMAL = 0,
-    FAILSAFE = 1
-  } failsafe_state_t;
 
   RC *rc_;
   Board *board_;
@@ -70,8 +69,9 @@ private:
   uint32_t prev_time_ms;
   uint32_t time_sticks_have_been_in_arming_position_ms = 0;
 
-  armed_state_t _armed_state;
-  failsafe_state_t _failsafe_state;
+  bool _armed;
+  bool _failsafe_active;
+  uint16_t _error_code;
 
   bool started_gyro_calibration;
 
@@ -79,16 +79,18 @@ private:
   void disarm(void);
   bool check_failsafe(void);
 
-
 public:
+
   Mode();
 
   void init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc);
-  bool update_armed_state();
+  bool update_state();
 
-  inline bool armed() {return _armed_state;}
-  inline bool in_failsafe() {return _failsafe_state;}
-
+  inline bool armed() { return _armed; }
+  inline bool in_failsafe() { return _failsafe_active; }
+  inline uint16_t error_state(){ return _error_code; }
+  inline void set_error_code(uint16_t error_code) { _error_code |= error_code; }
+  inline void clear_error_code(uint16_t error_code) { _error_code &= ~(error_code); }
 };
 
 }

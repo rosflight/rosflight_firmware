@@ -89,7 +89,7 @@ void RC::init_switches()
     switches[chan].mapped = switches[chan].channel > 3 && switches[chan].channel < params->get_param_int(PARAM_RC_NUM_CHANNELS);
     if (!switches[chan].mapped)
     {
-//      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
+      //      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
     }
 
     switches[chan].direction = 1;
@@ -114,47 +114,54 @@ void RC::init_switches()
 
 bool RC::receive_rc()
 {
-    static uint32_t last_rc_receive_time = 0;
+  static uint32_t last_rc_receive_time = 0;
 
-    uint32_t now = board->clock_millis();
+  uint32_t now = board->clock_millis();
 
-    // if it has been more than 20ms then look for new RC values and parse them
-    if (now - last_rc_receive_time < 20)
+  // if it has been more than 20ms then look for new RC values and parse them
+  if (now - last_rc_receive_time < 20)
+  {
+    return false;
+  }
+  last_rc_receive_time = now;
+
+  // read and normalize stick values
+  for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
+  {
+    uint16_t pwm = board->pwm_read(sticks[channel].channel);
+    if (sticks[channel].one_sided) //generally only F is one_sided
     {
-        return false;
+      stick_values[channel] = (float)(pwm - 1000) / (1000.0);
     }
-    last_rc_receive_time = now;
-
-    // read and normalize stick values
-    for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
+    else
     {
-      uint16_t pwm = board->pwm_read(sticks[channel].channel);
-      stick_values[channel] = (sticks[channel].one_sided ? 1.0f : 2.0f) * (float)(pwm - 1500)/1000.0;
+      stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
     }
+  }
 
-    // read and interpret switch values
-    for (uint8_t channel = 0; channel < (uint8_t)RC_SWITCHES_COUNT; channel++)
+  // read and interpret switch values
+  for (uint8_t channel = 0; channel < (uint8_t)RC_SWITCHES_COUNT; channel++)
+  {
+    if (switches[channel].mapped)
     {
-      if (switches[channel].mapped)
+      if (switches[channel].direction < 0)
       {
-        if (switches[channel].direction < 0)
-        {
-          switch_values[channel] = board->pwm_read(switches[channel].channel) < 1500;
-        }
-        else
-        {
-          switch_values[channel] = board->pwm_read(switches[channel].channel) >= 1500;
-        }
+        switch_values[channel] = board->pwm_read(switches[channel].channel) < 1500;
       }
       else
       {
-        switch_values[channel] = false;
+        switch_values[channel] = board->pwm_read(switches[channel].channel) >= 1500;
       }
     }
+    else
+    {
+      switch_values[channel] = false;
+    }
+  }
 
-    // Signal to the mux that we need to compute a new combined command
-    new_command_ = true;
-    return true;
+  // Signal to the mux that we need to compute a new combined command
+  new_command_ = true;
+  return true;
 }
 
 bool RC::new_command()

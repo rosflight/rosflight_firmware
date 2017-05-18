@@ -50,14 +50,19 @@ namespace rosflight
 
 Sensors::Sensors() {}
 
-void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator)
+void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator, Mode* _fsm)
 {
   board_ = _board;
   params_ = _params;
   estimator_ = _estimator;
+  fsm_ = _fsm;
+
   IMU_ptr = this;
   new_imu_data = false;
-  board_->sensors_init(params_->get_param_int(PARAM_BOARD_REVISION));
+
+  // clear the IMU read error
+  fsm_->clear_error_code(Mode::ERROR_IMU_NOT_RESPONDING);
+  board_->sensors_init();
   board_->imu_register_callback(&IMU_ISR_wrapper);
 }
 
@@ -67,12 +72,12 @@ bool Sensors::update_sensors(void)
   // First, check for new IMU data
   bool new_imu_data = update_imu();
 
-  // Now, look for disabled sensors while disarmed (poll every 0.5 seconds)
+
+  // Now, Look for disabled sensors while disarmed (poll every 0.5 seconds)
   // These sensors need power to respond, so they might not have been
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
-  //  if ((_armed_state & ARMED) == 0)
-  if (0)
+  if (fsm_->armed())
   {
     uint32_t now = board_->clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
@@ -102,6 +107,8 @@ bool Sensors::update_sensors(void)
     }
   }
 
+
+  // Update whatever sensors are available
   if (board_->baro_present())
   {
     board_->baro_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
@@ -131,7 +138,6 @@ bool Sensors::update_sensors(void)
     correct_mag();
   }
 
-  // Return whether or not we got new IMU data
   return new_imu_data;
 }
 
@@ -168,6 +174,7 @@ bool Sensors::gyro_calibration_complete(void)
 void Sensors::IMU_ISR(void)
 {
   _imu_time = board_->clock_micros();
+  _imu_data_sent = false;
   new_imu_data = true;
 }
 
@@ -178,7 +185,10 @@ bool Sensors::update_imu(void)
   if (new_imu_data)
   {
     last_imu_update_ms = board_->clock_millis();
-    board_->imu_read_all(accel, &_imu_temperature, gyro);
+    if(!board_->imu_read_all(accel, &_imu_temperature, gyro))
+    {
+      return false;
+    }
     new_imu_data = false;
 
     _accel.x = accel[0] * params_->get_param_float(PARAM_ACCEL_SCALE);
@@ -203,10 +213,12 @@ bool Sensors::update_imu(void)
     // if we have lost 1000 IMU messages then something is wrong
     if (board_->clock_millis() > last_imu_update_ms + 1000)
     {
-      // change board revision and reset IMU
+      // Tell the board to fix it
       last_imu_update_ms = board_->clock_millis();
-      params_->set_param_int(PARAM_BOARD_REVISION, (params_->get_param_int(PARAM_BOARD_REVISION) >= 4) ? 2 : 5);
-      board_->sensors_init(params_->get_param_int(PARAM_BOARD_REVISION));
+      board_->imu_not_responding_error();
+
+      // Indicate an IMU error
+      fsm_->set_error_code(Mode::ERROR_IMU_NOT_RESPONDING);
     }
     return false;
   }
@@ -329,7 +341,7 @@ void Sensors::calibrate_accel(void)
 //        mavlink_log_info("IMU offsets captured", NULL);
 
         // reset the estimated state
-//        reset_state();
+        estimator_->reset_state();
         calibrating_acc_flag = false;
       }
       else

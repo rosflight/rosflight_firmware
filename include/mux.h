@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +47,40 @@ class Mode;
 
 class Mux
 {
+private:
+  typedef enum
+  {
+    ATT_MODE_RATE,
+    ATT_MODE_ANGLE
+  } att_mode_t;
+
+  enum
+  {
+    MUX_X,
+    MUX_Y,
+    MUX_Z,
+    MUX_F,
+  };
+
+  typedef struct
+  {
+    rc_stick_t rc_channel;
+    uint32_t last_override_time;
+  } rc_stick_override_t;
+
+  rc_stick_override_t rc_stick_override[3] = {
+    { RC_STICK_X, 0 },
+    { RC_STICK_Y, 0 },
+    { RC_STICK_Z, 0 }
+  };
+
+  typedef struct
+  {
+    control_channel_t* rc;
+    control_channel_t* onboard;
+    control_channel_t* combined;
+  } mux_t;
+
 public:
 
   mux_t muxes[4] =
@@ -59,9 +91,9 @@ public:
     {&_rc_control.F, &_offboard_control.F, &_combined_control.F}
   };
 
-
   control_t _rc_control =
   {
+    0,
     {false, ANGLE, 0.0},
     {false, ANGLE, 0.0},
     {false, RATE, 0.0},
@@ -69,6 +101,7 @@ public:
   };
   control_t _offboard_control =
   {
+    0,
     {false, ANGLE, 0.0},
     {false, ANGLE, 0.0},
     {false, RATE, 0.0},
@@ -76,6 +109,7 @@ public:
   };
   control_t _combined_control =
   {
+    0,
     {false, ANGLE, 0.0},
     {false, ANGLE, 0.0},
     {false, RATE, 0.0},
@@ -83,6 +117,7 @@ public:
   };
   control_t _failsafe_control =
   {
+    0,
     {true, ANGLE, 0.0},
     {true, ANGLE, 0.0},
     {true, RATE, 0.0},
@@ -90,22 +125,27 @@ public:
   };
 
   bool mux_inputs();
+  bool rc_override_active();
+  bool offboard_control_active();
   void signal_new_command();
-  void init(Mode *_fsm, Params *_params, Board *_board, RC* _rc);
+  void init(Mode *_fsm, Params *_params, Board *_board, RC* _rc, CommLink* _commlink);
 
 private:
+
   Board *board;
   Mode *fsm;
   Params *params;
   RC *rc;
+  CommLink *commlink;
 
   bool new_command;
+  bool rc_override;
 
   void do_muxing(uint8_t mux_channel);
   void do_min_throttle_muxing();
   void interpret_rc(void);
-  bool stick_deviated(mux_channel_t channel);
-  bool do_roll_pitch_yaw_muxing(mux_channel_t channel);
+  bool stick_deviated(uint8_t channel);
+  bool do_roll_pitch_yaw_muxing(uint8_t channel);
   bool do_throttle_muxing(void);
 };
 

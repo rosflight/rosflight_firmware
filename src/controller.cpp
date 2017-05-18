@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +60,7 @@ void Controller::init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id
 
 void Controller::run_pid(pid_t *pid, float dt)
 {
-  if (dt > 0.010 || fsm->armed())
+  if (dt > 0.010 || !fsm->armed())
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
@@ -93,7 +91,7 @@ void Controller::run_pid(pid_t *pid, float dt)
       if (dt > 0.0f)
       {
         pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
-                              + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+            + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
         pid->prev_x = *pid->current_x;
         d_term = params->get_param_float(pid->kd_param_id) * pid->differentiator;
       }
@@ -106,8 +104,7 @@ void Controller::run_pid(pid_t *pid, float dt)
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ((pid->ki_param_id < PARAMS_COUNT) && (fsm->armed()) &&
-      (board->pwm_read(params->get_param_int(PARAM_RC_F_CHANNEL) > 1200)))
+  if ((pid->ki_param_id < PARAMS_COUNT) && (fsm->armed()) && (mux->_combined_control.F.value > 0.1))
   {
     if (params->get_param_float(pid->ki_param_id) > 0.0)
     {
@@ -151,8 +148,8 @@ void Controller::init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* 
            &estimator->omega.x,
            &mux->_combined_control.x.value,
            &mixer->_command.x,
-           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           params->get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*params->get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_pitch,
            PARAM_PID_PITCH_ANGLE_P,
@@ -162,8 +159,8 @@ void Controller::init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* 
            &estimator->omega.y,
            &mux->_combined_control.y.value,
            &mixer->_command.y,
-           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           params->get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*params->get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_roll_rate,
            PARAM_PID_ROLL_RATE_P,
@@ -173,8 +170,8 @@ void Controller::init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* 
            NULL,
            &mux->_combined_control.x.value,
            &mixer->_command.x,
-           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           params->get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*params->get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_pitch_rate,
            PARAM_PID_PITCH_RATE_P,
@@ -184,8 +181,8 @@ void Controller::init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* 
            NULL,
            &mux->_combined_control.y.value,
            &mixer->_command.y,
-           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           params->get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*params->get_param_float(PARAM_MAX_COMMAND));
 
   init_pid(&pid_yaw_rate,
            PARAM_PID_YAW_RATE_P,
@@ -195,8 +192,8 @@ void Controller::init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* 
            NULL,
            &mux->_combined_control.z.value,
            &mixer->_command.z,
-           params->get_param_int(PARAM_MAX_COMMAND)/2.0f,
-           -1.0f*params->get_param_int(PARAM_MAX_COMMAND)/2.0f);
+           params->get_param_float(PARAM_MAX_COMMAND),
+           -1.0f*params->get_param_float(PARAM_MAX_COMMAND));
 }
 
 
@@ -235,11 +232,55 @@ void Controller::run_controller()
   else// PASSTHROUGH
     mixer->_command.z = mux->_combined_control.z.value;
 
-  // THROTTLE
-//  if(mux->_combined_control.F.type == ALTITUDE)
-//    run_pid(&pid_altitude);
-//  else // PASSTHROUGH
+  // Add feedforward torques
+  mixer->_command.x += params->get_param_float(PARAM_X_EQ_TORQUE);
+  mixer->_command.y += params->get_param_float(PARAM_Y_EQ_TORQUE);
+  mixer->_command.z += params->get_param_float(PARAM_Z_EQ_TORQUE);
   mixer->_command.F = mux->_combined_control.F.value;
+}
+
+void Controller::calculate_equilbrium_torque_from_rc()
+{
+  // Make sure we are disarmed
+  if (!(fsm->armed()))
+  {
+    // Tell the user that we are doing a equilibrium torque calibration
+    //    mavlink_log_warning("Capturing equilbrium offsets from RC");
+
+    // Prepare for calibration
+    // artificially tell the flight controller it is leveled
+    // and zero out previously calculate offset torques
+    estimator->omega.x = 0.0;
+    estimator->omega.y = 0.0;
+    estimator->omega.z = 0.0;
+    estimator->q.w = 1.0;
+    estimator->q.x = 0.0;
+    estimator->q.y = 0.0;
+    estimator->q.z = 0.0;
+
+    params->set_param_float(PARAM_X_EQ_TORQUE, 0.0);
+    params->set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
+    params->set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
+
+    // pass the rc_control through the controller
+    mux->_combined_control.x = mux->_rc_control.x;
+    mux->_combined_control.y = mux->_rc_control.y;
+    mux->_combined_control.z = mux->_rc_control.z;
+
+    run_controller();
+
+    // the output from the controller is going to be the static offsets
+    params->set_param_float(PARAM_X_EQ_TORQUE, mixer->_command.x);
+    params->set_param_float(PARAM_Y_EQ_TORQUE, mixer->_command.y);
+    params->set_param_float(PARAM_Z_EQ_TORQUE, mixer->_command.z);
+
+    //    mavlink_log_warning("Equilibrium torques found and applied.");
+    //    mavlink_log_warning("Please zero out trims on your transmitter");
+  }
+  else
+  {
+    //    mavlink_log_warning("Cannot perform equilbirum offset calibration while armed");
+  }
 }
 
 }

@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,12 +40,14 @@
 
 #include "param.h"
 #include "sensors.h"
+#include "mode.h"
 
 namespace rosflight
 {
 
 class Params;
 class Sensors;
+class Mode;
 
 class Estimator
 {
@@ -59,10 +59,11 @@ public:
   float roll = 0.0;
   float pitch = 0.0;
   float yaw = 0.0;
+  quaternion_t q = {1.0, 0.0, 0.0, 0.0};
 
   void reset_state();
   void reset_adaptive_bias();
-  void init_estimator(Params *_params, Sensors *_sensors);
+  void init_estimator(Params *_params, Sensors *_sensors, Mode* _fsm);
   void run_estimator();
 
   inline float get_roll() {return roll;}
@@ -75,11 +76,10 @@ public:
 private:
   Params *params_;
   Sensors *sensors_;
+  Mode *fsm_;
 
   uint64_t now_us = 0;
-
-  quaternion_t q = {1.0, 0.0, 0.0, 0.0};
-
+  uint64_t last_acc_update_us = 0;
 
   vector_t w1 = {0.0, 0.0, 0.0};
   vector_t w2 = {0.0, 0.0, 0.0};
@@ -91,10 +91,6 @@ private:
   quaternion_t q_tilde = {1.0, 0.0, 0.0, 0.0};
   quaternion_t q_hat = {1.0, 0.0, 0.0, 0.0};
   uint64_t last_time = 0;
-
-  bool mat_exp = false;
-  bool quad_int = false;
-  bool use_acc = true;
 
   vector_t _accel_LPF = {0.0, 0.0, 0.0};
   vector_t _gyro_LPF = {0.0, 0.0, 0.0};
