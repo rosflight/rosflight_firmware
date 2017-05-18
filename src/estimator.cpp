@@ -82,7 +82,7 @@ void Estimator::reset_state()
   _gyro_LPF.z = 0;
 
   // Clear the unhealthy estimator flag
-  _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
+  fsm_->clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
 }
 
 void Estimator::reset_adaptive_bias()
@@ -135,8 +135,6 @@ void Estimator::run_estimator()
     last_time = now_us;
     return;
   }
-  // clear the time going backwards error
-  _error_state &= ~(ERROR_TIME_GOING_BACKWARDS);
 
   fsm_->clear_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
 

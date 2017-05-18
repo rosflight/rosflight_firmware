@@ -95,10 +95,6 @@ bool Mode::check_failsafe(void)
     // set the RC Lost error flag
     set_error_code(ERROR_RC_LOST);
   }
-
-    // Set the RC Lost error flag
-    _error_state |= ERROR_RC_LOST;
-  }
   else
   {
     // go into failsafe if we get an invalid RC command for any channel

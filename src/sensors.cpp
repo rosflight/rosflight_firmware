@@ -261,24 +261,6 @@ void Sensors::calibrate_gyro()
   }
 }
 
-static vector_t vector_max(vector_t a, vector_t b)
-{
-  vector_t out = {a.x > b.x ? a.x : b.x,
-                  a.y > b.y ? a.y : b.y,
-                  a.z > b.z ? a.z : b.z};
-  return out;
-}
-
-static vector_t vector_min(vector_t a, vector_t b)
-{
-  vector_t out = {a.x < b.x ? a.x : b.x,
-                  a.y < b.y ? a.y : b.y,
-                  a.z < b.z ? a.z : b.z};
-  return out;
-}
-
-
-
 vector_t vector_max(vector_t a, vector_t b)
 {
   vector_t out = {a.x > b.x ? a.x : b.x,
