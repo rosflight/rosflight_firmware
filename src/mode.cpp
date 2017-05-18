@@ -53,11 +53,11 @@ void Mode::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
   _armed = false;
   _error_code = ERROR_NONE;
   _failsafe_active = false;
+  started_gyro_calibration = false;
 }
 
 bool Mode::arm(void)
 {
-  started_gyro_calibration = false;
   if(_error_code != ERROR_NONE)
   {
     //    mavlink_log_error("Unable to arm due to error code %d", _error_state);
@@ -165,8 +165,8 @@ bool Mode::update_state()
       if (!_armed) // we are DISARMED
       {
         // if left stick is down and to the right
-        if (rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD)
-            && rc_->rc_stick(RC_STICK_Z) > (1.0f - params_->get_param_float(PARAM_ARM_THRESHOLD)))
+        if ((rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD))
+            && (rc_->rc_stick(RC_STICK_Z) > (1.0f - params_->get_param_float(PARAM_ARM_THRESHOLD))))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }

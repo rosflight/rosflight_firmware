@@ -44,6 +44,10 @@
 //#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
 #endif
 
+#ifndef GIT_VERSION_STRING
+#define GIT_VERSION_STRING "empty"
+#endif
+
 namespace rosflight
 {
 

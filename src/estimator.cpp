@@ -164,8 +164,7 @@ void Estimator::run_estimator()
   if (params_->get_param_int(PARAM_FILTER_USE_ACC)
       && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
-    // Keep track of the last time that the acc update ran
-    last_acc_update_us = _current_state.now_us;
+    last_acc_update_us = now_us;
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(_accel_LPF);
     // Get the quaternion from accelerometer (low-frequency measure q)

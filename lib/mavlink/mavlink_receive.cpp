@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,8 +53,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   bool reboot_to_bootloader_flag = false;
 
   // None of these actions can be performed if we are armed
-//  if (_armed_state == ARMED)
-  if(0)
+  if (RF_->fsm_.armed())
   {
     result = false;
   }
@@ -87,7 +84,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       RF_->board_->diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
-//      _calibrate_rc = true;
+      RF_->controller_.calculate_equilbrium_torque_from_rc();
       break;
     case ROSFLIGHT_CMD_REBOOT:
       reboot_flag = true;
@@ -96,10 +93,12 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       reboot_to_bootloader_flag = true;
       break;
     case ROSFLIGHT_CMD_SEND_VERSION:
-      mavlink_msg_rosflight_version_send(MAVLINK_COMM_0, GIT_VERSION_STRING);
+      mavlink_message_t msg;
+      mavlink_msg_rosflight_version_pack(sysid, compid, &msg, GIT_VERSION_STRING);
+      send_message(msg);
       break;
     default:
-//      mavlink_log_error("unsupported ROSFLIGHT CMD %d", cmd.command);
+      log_error(this, "unsupported ROSFLIGHT CMD %d", cmd.command);
       result = false;
       break;
     }
@@ -135,67 +134,48 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 
 void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
-//  mavlink_offboard_control_t mavlink_offboard_control;
-//  _offboard_control_time = RF_->board_->clock_micros();
-//  mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
+  mavlink_offboard_control_t mavlink_offboard_control;
+  _offboard_control_time = RF_->board_->clock_micros();
+  mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
-//  // put values into standard message (Commands coming in are in NED, onboard estimator is in NWU)
-//  _offboard_control.x.value = mavlink_offboard_control.x;
-//  _offboard_control.y.value = -mavlink_offboard_control.y;
-//  _offboard_control.z.value = -mavlink_offboard_control.z;
-//  _offboard_control.F.value = mavlink_offboard_control.F;
+  // put values into standard message
+  RF_->mux_._offboard_control.x.value = mavlink_offboard_control.x;
+  RF_->mux_._offboard_control.y.value = mavlink_offboard_control.y;
+  RF_->mux_._offboard_control.z.value = mavlink_offboard_control.z;
+  RF_->mux_._offboard_control.F.value = mavlink_offboard_control.F;
 
-//  // Move flags into standard message
-//  _offboard_control.x.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE1);
-//  _offboard_control.y.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE2);
-//  _offboard_control.z.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE3);
-//  _offboard_control.F.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE4);
+  // Move flags into standard message
+  RF_->mux_._offboard_control.x.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE1);
+  RF_->mux_._offboard_control.y.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE2);
+  RF_->mux_._offboard_control.z.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE3);
+  RF_->mux_._offboard_control.F.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE4);
 
-//  // translate modes into standard message
-//  switch (mavlink_offboard_control.mode)
-//  {
-//  case MODE_PASS_THROUGH:
-//    _offboard_control.x.type = PASSTHROUGH;
-//    _offboard_control.y.type = PASSTHROUGH;
-//    _offboard_control.z.type = PASSTHROUGH;
-//    _offboard_control.F.type = THROTTLE;
-//    _offboard_control.x.value = mavlink_offboard_control.x*500.0f + (float)RF_->params_.get_param_int(PARAM_RC_X_CENTER) - 1500.0f;
-//    _offboard_control.y.value = mavlink_offboard_control.y*500.0f + (float)RF_->params_.get_param_int(PARAM_RC_Y_CENTER) - 1500.0f;
-//    _offboard_control.z.value = mavlink_offboard_control.z*500.0f + (float)RF_->params_.get_param_int(PARAM_RC_Z_CENTER) - 1500.0f;
-//    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-//    break;
-//  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-//    _offboard_control.x.type = RATE;
-//    _offboard_control.y.type = RATE;
-//    _offboard_control.z.type = RATE;
-//    _offboard_control.F.type = THROTTLE;
-//    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-//    _offboard_control.x.value += RF_->params_.get_param_float(PARAM_ROLL_RATE_TRIM);
-//    _offboard_control.y.value += RF_->params_.get_param_float(PARAM_PITCH_RATE_TRIM);
-//    _offboard_control.z.value += RF_->params_.get_param_float(PARAM_YAW_RATE_TRIM);
-//    break;
-//  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
-//    _offboard_control.x.type = ANGLE;
-//    _offboard_control.y.type = ANGLE;
-//    _offboard_control.z.type = RATE;
-//    _offboard_control.F.type = THROTTLE;
-//    _offboard_control.F.value = mavlink_offboard_control.F*1000.0f;
-//    _offboard_control.x.value += RF_->params_.get_param_float(PARAM_ROLL_ANGLE_TRIM);
-//    _offboard_control.y.value += RF_->params_.get_param_float(PARAM_PITCH_ANGLE_TRIM);
-//    _offboard_control.z.value += RF_->params_.get_param_float(PARAM_YAW_RATE_TRIM);
-//    break;
-//  case MODE_ROLL_PITCH_YAWRATE_ALTITUDE:
-//    _offboard_control.x.type = ANGLE;
-//    _offboard_control.y.type = ANGLE;
-//    _offboard_control.z.type = RATE;
-//    _offboard_control.F.type = ALTITUDE;
-//    _offboard_control.x.value += RF_->params_.get_param_float(PARAM_ROLL_ANGLE_TRIM);
-//    _offboard_control.y.value += RF_->params_.get_param_float(PARAM_PITCH_ANGLE_TRIM);
-//    _offboard_control.z.value += RF_->params_.get_param_float(PARAM_YAW_RATE_TRIM);
-//    break;
-//    // Handle error state
-//  }
-//  _new_command = true;
+  // translate modes into standard message
+  switch (mavlink_offboard_control.mode)
+  {
+  case MODE_PASS_THROUGH:
+    RF_->mux_._offboard_control.x.type = PASSTHROUGH;
+    RF_->mux_._offboard_control.y.type = PASSTHROUGH;
+    RF_->mux_._offboard_control.z.type = PASSTHROUGH;
+    RF_->mux_._offboard_control.F.type = THROTTLE;
+    break;
+  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+    RF_->mux_._offboard_control.x.type = RATE;
+    RF_->mux_._offboard_control.y.type = RATE;
+    RF_->mux_._offboard_control.z.type = RATE;
+    RF_->mux_._offboard_control.F.type = THROTTLE;
+    break;
+  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
+    RF_->mux_._offboard_control.x.type = ANGLE;
+    RF_->mux_._offboard_control.y.type = ANGLE;
+    RF_->mux_._offboard_control.z.type = RATE;
+    RF_->mux_._offboard_control.F.type = THROTTLE;
+    break;
+    // Handle error state
+  }
+
+  // Tell the mux that we have a new command we need to mux
+  RF_->mux_.signal_new_command();
 }
 
 void Mavlink::handle_mavlink_message(void)

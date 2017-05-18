@@ -208,7 +208,7 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
           uli2a(va_arg(va, unsigned long int),16,(ch=='X'),bf);
         else
 #endif
-          ui2a(va_arg(va, unsigned int),16,(ch=='X'),bf);
+        ui2a(va_arg(va, unsigned int),16,(ch=='X'),bf);
         putchw(putp,putf,w,lz,bf);
         break;
       case 'c' :
@@ -247,8 +247,6 @@ static void putcp(void *p,char c)
 {
   *(*((char **)p))++ = c;
 }
-
-
 
 void tfp_sprintf(char *s, const char *fmt, ...)
 {

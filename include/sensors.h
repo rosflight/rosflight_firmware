@@ -144,6 +144,15 @@ public:
     return _mag;
   }
 
+  inline bool should_send_imu_data(void)
+  {
+    if(_imu_data_sent)
+      return false;
+    else
+      _imu_data_sent = true;
+    return true;
+  }
+
   inline bool magnetometer_present(void)
   {
     return board_->mag_present();

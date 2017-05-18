@@ -38,6 +38,18 @@
 
 #include "board.h"
 #include "rosflight.h"
+#include "printf.h"
+
+#define commlink_log(objectptr, severity, format, ...) do {\
+  char text[50]; \
+  sprintf(text, format, ##__VA_ARGS__); \
+  objectptr->send_log_message(severity, text); \
+  } while(0)
+
+#define log_critical(objectptr, format, ...) commlink_log(objectptr, 2, format, ##__VA_ARGS__)
+#define log_error(objectptr, format, ...)    commlink_log(objectptr, 3, format, ##__VA_ARGS__)
+#define log_warning(objectptr, format, ...)  commlink_log(objectptr, 4, format, ##__VA_ARGS__)
+#define log_info(objectptr, format, ...)     commlink_log(objectptr, 6, format, ##__VA_ARGS__)
 
 namespace rosflight
 {
@@ -52,6 +64,7 @@ public:
   enum
   {
     STREAM_ID_HEARTBEAT,
+    STREAM_ID_STATUS,
 
     STREAM_ID_ATTITUDE,
 
@@ -72,6 +85,7 @@ public:
   virtual void stream() = 0;
   virtual void update_param(uint16_t param_id) = 0;
   virtual void set_streaming_rate(uint8_t stream_id, int16_t param_id) = 0;
+  virtual void send_log_message(uint8_t severity, char* text);
 };
 
 

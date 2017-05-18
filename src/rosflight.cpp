@@ -70,16 +70,17 @@ void ROSflight::rosflight_init(void)
   /***********************/
 
   // Initialize Motor Mixing
-//  mixer_.init_mixing();
+  mixer_.init_mixing();
 
   // Initialize Estimator
   estimator_.init_estimator(&params_, &sensors_, &fsm_);
 
   // Initialize Controller
-//  controller_.init_controller(&fsm_, board_, &estimator_, &params_);
+  controller_.init_controller(&fsm_, board_,  &mux_, &mixer_, &estimator_, &params_);
 
   // Initialize the arming finite state machine
   fsm_.init_mode(board_, &sensors_, &params_, &rc_);
+  mux_.init(&fsm_, &params_, board_, &rc_, commlink_);
 }
 
 
@@ -89,12 +90,14 @@ void ROSflight::rosflight_run()
   /*********************/
   /***  Control Loop ***/
   /*********************/
+  uint64_t start = board_->clock_micros();
   if (sensors_.update_sensors()) // 595 | 591 | 590 us
   {
     // If I have new IMU data, then perform control
     estimator_.run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
-//    controller_.run_controller(); // 278 | 271
-//    mixer_.mix_output(); // 16 | 13 us
+    controller_.run_controller(); // 278 | 271
+    mixer_.mix_output(); // 16 | 13 us
+    loop_time_us = board_->clock_micros() - start;
   }
 
   /*********************/
@@ -114,6 +117,11 @@ void ROSflight::rosflight_run()
 
   // update commands (internal logic tells whether or not we should do anything or not)
   mux_.mux_inputs(); // 6 | 1 | 1
+}
+
+uint32_t ROSflight::get_loop_time_us()
+{
+  return loop_time_us;
 }
 
 }

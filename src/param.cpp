@@ -86,11 +86,11 @@ void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
   //  commlink_ = _commlink;
   mixer_ = _mixer;
   board_->memory_init();
-  if (!read_params())
-  {
+//  if (!read_params())
+//  {
     set_param_defaults();
     write_params();
-  }
+//  }
 }
 
 void Params::set_param_defaults(void)
@@ -120,7 +120,7 @@ void Params::set_param_defaults(void)
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
   /********************************/
-  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0.0 | 1.0
+  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0 | 1.0
 
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f); // Roll Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
@@ -241,7 +241,7 @@ void Params::set_param_defaults(void)
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  init_param_int(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
+  init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
 }
 
 void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)

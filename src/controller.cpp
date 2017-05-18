@@ -130,13 +130,15 @@ void Controller::run_pid(pid_t *pid, float dt)
 }
 
 
-void Controller::init_controller(Mode *_fsm, Board *_board, //Mux* _mux, Mixer* _mixer,
+void Controller::init_controller(Mode *_fsm, Board *_board, Mux* _mux, Mixer* _mixer,
                                  Estimator *_estimator, Params *_params)
 {
   fsm = _fsm;
   board = _board;
   estimator = _estimator;
   params = _params;
+  mux = _mux;
+  mixer  = _mixer;
 
   prev_time = 0.0f;
 

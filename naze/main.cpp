@@ -30,28 +30,35 @@
  */
 
 #include "naze32.h"
-
 //#include "rosflight.h"
 #include "mavlink.h"
 //#include "param.h"
 //#include "arming_fsm.h"
 
 
+rosflight::Naze32* boardptr;
+void putc(void* p, char c)
+{
+  boardptr->serial_write(c);
+}
+
 int main(void)
 {
   rosflight::Naze32 board;
   board.init_board();
+  boardptr = &board;
 
   rosflight::Mavlink mavlink;
 
-//  rosflight::ROSflight firmware(&board, &mavlink);
-//  firmware.rosflight_init();
+  rosflight::ROSflight firmware(&board, &mavlink);
+  firmware.rosflight_init();
 
   while(1)
   {
-    board.clock_delay(100);
-    board.led0_toggle();
-//    firmware.rosflight_run();
+//    board.clock_delay(100);
+//    board.led0_toggle();
+//    log_critical((&mavlink), "rolling");
+    firmware.rosflight_run();
   }
   return 0;
 }

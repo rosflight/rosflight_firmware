@@ -73,7 +73,7 @@ BOARD_CXX_SRC =	naze32.cpp \
 
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
-ROSFLIGHT_SRC =	rosflight.cpp \
+ROSFLIGHT_SRC = rosflight.cpp \
                 param.cpp \
                 sensors.cpp \
                 mode.cpp \
@@ -88,47 +88,32 @@ MAVLINK_SRC = mavlink.cpp \
               mavlink_stream.cpp \
               mavlink_receive.cpp \
               mavlink_param.cpp \
-              mavlink_util.cpp \
-
-
-
-#                controller.cpp \
-#                estimator.cpp \
-#                mavlink.cpp \
-#                mavlink_param.cpp \
-#                mavlink_receive.cpp \
-#                mavlink_stream.cpp \
-#                mavlink_util.cpp \
-#                mode.cpp \
-#                mux.cpp \
-#                mixer.cpp \
-#                printf.cpp \
-#                rc.cpp \
+              mavlink_util.cpp
 
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
 MATH_SRC =	turbotrig.c \
-                        turbovec.c
+                turbovec.c
 
 
 # Hardware Driver Source Files
 VPATH :=	$(VPATH):$(BREEZY_DIR)
 BREEZY_SRC = drv_gpio.c \
-                         drv_i2c.c \
-                         drv_adc.c \
-                         drv_spi.c \
-                         drv_pwm.c \
-                         drv_system.c \
-                         drv_serial.c \
-                         drv_uart.c \
-                         drv_timer.c \
-                         drv_mpu6050.c \
-                         drv_ms4525.c \
-                         drv_mb1242.c \
-                         drv_ms5611.c \
-                         drv_hmc5883l.c \
-                         startup_stm32f10x_md_gcc.S
+             drv_i2c.c \
+             drv_adc.c \
+             drv_spi.c \
+             drv_pwm.c \
+             drv_system.c \
+             drv_serial.c \
+             drv_uart.c \
+             drv_timer.c \
+             drv_mpu6050.c \
+             drv_ms4525.c \
+             drv_mb1242.c \
+             drv_ms5611.c \
+             drv_hmc5883l.c \
+             startup_stm32f10x_md_gcc.S
 
 # Search path and source files for the CMSIS sources
 VPATH		:= $(VPATH):$(CMSIS_DIR)/CM3/CoreSupport:$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
@@ -142,10 +127,11 @@ STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 
 # Compile a list of C source files
 CSOURCES =  $(CMSIS_SRC) \
-                        $(STDPERIPH_SRC) \
-                        $(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
-                        $(addprefix $(BOARD_DIR)/, $(BOARD_C_SRC)) \
-                        $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC))
+            $(STDPERIPH_SRC) \
+            $(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
+            $(addprefix $(BOARD_DIR)/, $(BOARD_C_SRC)) \
+            $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) \
+            $(ROSFLIGHT_DIR)/src/printf.c
 
 # Compile a list of C++ Source Files
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
@@ -154,13 +140,13 @@ CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
-				$(MAVLINK_DIR) \
-				$(TURBOTRIG_DIR) \
-				$(ROSFLIGHT_DIR)/include \
-				$(ROSFLIGHT_DIR)/lib \
-				$(STDPERIPH_DIR)/inc \
-				$(CMSIS_DIR)/CM3/CoreSupport \
-				$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
+                $(MAVLINK_DIR) \
+                $(TURBOTRIG_DIR) \
+                $(ROSFLIGHT_DIR)/include \
+                $(ROSFLIGHT_DIR)/lib \
+                $(STDPERIPH_DIR)/inc \
+                $(CMSIS_DIR)/CM3/CoreSupport \
+                $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
 
 
 #################################
@@ -202,11 +188,11 @@ GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GI
 #################################
 # Flags
 #################################
-COMPILE_FLAGS+=-ffunction-sections -fdata-sections -fno-rtti -fno-exceptions
+COMPILE_FLAGS+=-ffunction-sections -fdata-sections -fno-exceptions
 MCFLAGS=-mcpu=cortex-m3 -mthumb
 DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
-CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 -U__STRICT_ANSI__
+CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(COMPILE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 -U__STRICT_ANSI__ -fno-rtti
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 #################################
@@ -244,6 +230,5 @@ clean:
 		rm -f $(OBJECTS) $(TARGET_ELF) $(TARGET_HEX) $(BIN_DIR)/output.map
 
 flash: $(TARGET_HEX)
-		stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
 		stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
 

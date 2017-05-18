@@ -102,6 +102,10 @@ For further details see source code.
 regs Kusti, 23.10.2004
 */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #ifndef __TFP_PRINTF__
 #define __TFP_PRINTF__
@@ -116,7 +120,11 @@ void tfp_sprintf(char *s, const char *fmt, ...);
 void tfp_format(void *putp, void (*putf)(void *,char), const char *fmt, va_list va);
 
 // modified by Daniel Koch <danielpkoch@gmail.com>:
-// #define printf tfp_printf
-// #define sprintf tfp_sprintf
+#define printf tfp_printf
+#define sprintf tfp_sprintf
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

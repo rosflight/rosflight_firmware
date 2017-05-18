@@ -70,6 +70,8 @@ public:
   Controller controller_;
   RC rc_;
 
+  uint32_t loop_time_us;
+
   ROSflight(Board *_board, CommLink *_commlink);
 
   /**
@@ -82,6 +84,7 @@ public:
   */
   void rosflight_run(void);
 
+  uint32_t get_loop_time_us();
 };
 
 }

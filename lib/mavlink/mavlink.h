@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +55,7 @@ private:
   typedef struct
   {
     uint32_t period_us;
-    uint64_t last_time_us;
+    uint64_t next_time_us;
     MavlinkStreamFcn send_function;
   } mavlink_stream_t;
 
@@ -73,9 +71,10 @@ private:
   void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg);
 
   void mavlink_send_heartbeat(void);
+  void mavlink_send_status(void);
   void mavlink_send_attitude(void);
   void mavlink_send_imu(void);
-  void mavlink_send_servo_output_raw(void);
+  void mavlink_send_output_raw(void);
   void mavlink_send_rc_raw(void);
   void mavlink_send_diff_pressure(void);
   void mavlink_send_baro(void);
@@ -92,17 +91,18 @@ private:
 //  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
 
   mavlink_stream_t mavlink_streams[STREAM_COUNT] = {
-    //  period_us    last_time_us   send_function
+  //  period_us    last_time_us   send_function
     { 1000000,     0,             &rosflight::Mavlink::mavlink_send_heartbeat },
+    { 1000000,     0,             &rosflight::Mavlink::mavlink_send_status},
     { 200000,      0,             &rosflight::Mavlink::mavlink_send_attitude },
     { 1000,        0,             &rosflight::Mavlink::mavlink_send_imu },
     { 200000,      0,             &rosflight::Mavlink::mavlink_send_diff_pressure },
     { 200000,      0,             &rosflight::Mavlink::mavlink_send_baro },
     { 100000,      0,             &rosflight::Mavlink::mavlink_send_sonar },
     { 6250,        0,             &rosflight::Mavlink::mavlink_send_mag },
-    { 0,           0,             &rosflight::Mavlink::mavlink_send_servo_output_raw },
+    { 0,           0,             &rosflight::Mavlink::mavlink_send_output_raw },
     { 0,           0,             &rosflight::Mavlink::mavlink_send_rc_raw },
-    { 10000,       0,             &rosflight::Mavlink::mavlink_send_low_priority }
+    { 5000,        0,             &rosflight::Mavlink::mavlink_send_low_priority }
   };
 
 
@@ -114,6 +114,7 @@ public:
   void stream();
   void update_param(uint16_t param_id);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
+  void send_log_message(uint8_t severity, char* text);
 };
 
 }
