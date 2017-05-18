@@ -86,11 +86,11 @@ void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
   //  commlink_ = _commlink;
   mixer_ = _mixer;
   board_->memory_init();
-//  if (!read_params())
-//  {
+  if (!read_params())
+  {
     set_param_defaults();
     write_params();
-//  }
+  }
 }
 
 void Params::set_param_defaults(void)
