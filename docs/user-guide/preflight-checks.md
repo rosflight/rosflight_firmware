@@ -35,7 +35,7 @@ This is an example of a ROSflight pre-flight checklist.  You will likely need to
 - ROS is running and communicating on both the base station and onboard computer
 - Set fixed wing parameters
 - Wireless network setup is working
-- `fcu_io` reports no errors
+- `rosflight_io` reports no errors
 - RC communication and override check
 - Proper directions on all control surfaces, from both RC and onboard computer
 - Failsafe behavior is working
@@ -56,5 +56,3 @@ This is an example of a ROSflight pre-flight checklist.  You will likely need to
 - Check automatic logging
 - Start external video recording
 - Go fly!
-
-

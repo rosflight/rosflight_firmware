@@ -7,7 +7,7 @@ The ROSflight firmware has several dozen parameters which it uses to customize p
 * IMU low-pass filter constant
 * RC receiver type
 
-and so on.  All parameter access is enabled via ros services advertised by `fcu_io` while the flight controller is connected.
+and so on.  All parameter access is enabled via ROS services advertised by `rosflight_io` while the flight controller is connected.
 
 ## Getting Parameter Values
 
@@ -26,14 +26,14 @@ value: 0.15000000596
 
 ## Changing Parameters
 
-Parameters are changed via the `param_set` service.  As an example, let's change the roll angle controller P gain.  (I will assume that the flight controller is connected and `fcu_io` is running in the root namespace).
+Parameters are changed via the `param_set` service.  As an example, let's change the roll angle controller P gain.  (I will assume that the flight controller is connected and `rosflight_io` is running in the root namespace).
 
-``` 
+```
 rosservice call /param_set PID_ROLL_ANG_P 0.08
 ```
 
-You should get a prompt from `fcu_io` saying
-``` 
+You should get a prompt from `rosflight_io` saying
+```
 [ INFO] [1491672408.585339558]: Parameter PID_ROLL_ANG_P has new value 0.08
 [ WARN] [1491672408.585508849]: There are unsaved changes to onboard parameters
 ```
@@ -48,7 +48,7 @@ To ensure that parameter values persist between reboots, you must write the para
 rosservice call /param_write
 ```
 
-`fcu_io` should then respond with
+`rosflight_io` should then respond with
 ```
 [ INFO] [1491672597.123201952]: Param write succeeded
 [ INFO] [1491672597.123452908]: Onboard parameters have been saved

@@ -5,7 +5,7 @@ To use ROSflight to its full potential, you will need the following parts on you
 1. Aircraft Frame, Motor(s), ESC(s), Battery and Propeller(s)
 2. Flight Controller (FC)
 3. Any external sensors
-4. Vibration Isolation for FC 
+4. Vibration Isolation for FC
 5. Onboard Computer
 6. Wi-Fi Router and Dongle
 7. RC transmitter and receiver
@@ -21,14 +21,14 @@ If you are designing your own multirotor or airplane, you may want to look at [e
 Some things to keep in mind as you design or build your MAV.
 
 * Most kits do not include space for an onboard computer, cameras, laser scanners or other sensors.  Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
-* You will likely also need to customize the power curcuitry of your MAV to provide power at some specific voltage to your onboard computer.  Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors.  This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand.  We will talk about this more when we talk about wiring up your MAV.
+* You will likely also need to customize the power circuitry of your MAV to provide power at some specific voltage to your onboard computer.  Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors.  This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand.  We will talk about this more when we talk about wiring up your MAV.
 * Cheap propellers can cause a huge amount of vibration.  Consider buying high-quality propellers, doing a propeller balance, or both.  RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
 * ESCs will need to be calibrated from 2000 to 1000 us
 
 
 ## Flight Controller
 
-ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www.readytoflyquads.com/the-flip32-187).  It works on any variant of the naze32 flight controller, but the flip32 has the convenience of having through-hole boot pins.  The naze32 and flip32 have identical schematics, they differ only in the layout of the board. We have seen some problems using off-brand versions of the naze32 or flip32 because there are fake versions of accelerometers which can mess with the firmware, try to avoid those if you can.
+ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www.readytoflyquads.com/the-flip32-187).  It works on any variant of the naze32 flight controller, but the flip32 has the convenience of having through-hole boot pins.  The naze32 and flip32 have identical schematics, they differ only in the layout of the board. We have seen some problems using off-brand versions of the naze32 or flip32 because there are fake versions of accelerometers which can mess with the firmware; try to avoid those if you can.
 
 ## External Sensors
 
@@ -36,7 +36,7 @@ Additional Sensors you may want for your ROSflight setup include:
 
 * Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
 * GPS – Venus GPS – [$50 on Sparkfun](https://www.sparkfun.com/products/11058)
-    - Requires FTDI USB-UART Converter – [$6 on Amazon](https://www.amazon.com/Blue3D-Ft232rl-Serial-Adapter-Arduino/dp/B012YUANZK/ref=sr_1_9?ie=UTF8&qid=1490068223&sr=8-9&keywords=FTDI+USB+converter) 
+    - Requires FTDI USB-UART Converter – [$6 on Amazon](https://www.amazon.com/Blue3D-Ft232rl-Serial-Adapter-Arduino/dp/B012YUANZK/ref=sr_1_9?ie=UTF8&qid=1490068223&sr=8-9&keywords=FTDI+USB+converter)
     - and Ceramic Antenna [$12 on Sparkfun](https://www.sparkfun.com/products/177)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 

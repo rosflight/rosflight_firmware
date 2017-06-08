@@ -1,6 +1,6 @@
 site_name: ROSflight
 site_url: http://rosflight.org
-repo_url: https://github.com/byu-magicc/ROSflight
+repo_url: https://github.com/rosflight/firmware
 edit_uri: blob/master/docs/
 google_analytics: ['UA-96018590-2', 'docs.rosflight.org']
 theme: readthedocs
