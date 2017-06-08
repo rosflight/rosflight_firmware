@@ -4,9 +4,9 @@ As of march, 2017, ROSflight is only supported on flight controllers with STM32F
 
 # Flashing firmware using the Cleanflight Configurator
 
-* download the latest version of ROSflight [here](https://github.com/rosflight/firmware/releases).
+* Download the latest version of ROSflight [here](https://github.com/rosflight/firmware/releases).
 * Install the cleanflight configurator - It is an extension to Google Chrome - [link](https://chrome.google.com/webstore/detail/cleanflight-configurator/enacoimjcgeinfnnnpajinjgmkahmfgb?hl=en)
-* Be sure your user is in the dialout group so you have access to the serial ports
+* Be sure your user is in the `dialout` group so you have access to the serial ports
 * Load the firmware and flash using cleanflight configurator
 
     * Open the configurator, open firmware flasher.  Connect your flight controller, and make sure that you have selected the right port.  Then select "Load Firmware (Local)" and  select your .hex file you downloaded earlier.

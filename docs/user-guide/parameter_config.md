@@ -2,6 +2,7 @@
 
 The ROSflight firmware has several dozen parameters which it uses to customize performance.  Parameters are considered semi-static variables.  That is, parameters do not change during flight, but they may change between vehicles.  Examples of parameters you may wish to change are:
 
+* Fixed-wing vehicle flag
 * PID gains
 * Mixer choice
 * IMU low-pass filter constant
@@ -38,7 +39,7 @@ You should get a prompt from `rosflight_io` saying
 [ WARN] [1491672408.585508849]: There are unsaved changes to onboard parameters
 ```
 
-Notice that the parameters have been set, but not saved.  Parameter changes take effect immediately, however they will not persist over a reboot unless you `write` them to the non-volatile memory.  This brings us to the next task.
+Notice that the parameters have been set, but not saved.  Parameter changes take effect immediately, however they will not persist over a reboot unless you *write* them to the non-volatile memory.  This brings us to the next task.
 
 ## Writing Parameters
 
@@ -75,7 +76,7 @@ rosservice call /param_load_from_file ~/parameters.yml
 Again, you must specify the absolute file name of the file to be loaded
 
 
-# Fixed Wing Parameter Configuration
+# Fixed-Wing Parameter Configuration
 
 Because ROSflight ships with default parameters for multirotors, you will probably want to change the following parameters if you want to fly a fixed wing aircraft.
 
@@ -84,10 +85,10 @@ Because ROSflight ships with default parameters for multirotors, you will probab
 |-----------|-------------|------|---------------|
 | MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors and servos (Hz) - See motor documentation | int |  50 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_PWM | int |  false |
-| MOTOR_IDLE_THR | Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | float |  0.0 |
+| MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 |
 | ARM_CHANNEL | RC switch channel mapped to arming [0 indexed, -1 to disable] | int |  4 |
 | FIXED_WING | switches on passthrough commands for fixedwing operation | int |  true |
-| MIXER | Which mixer to choose - See Mixer documentation | int | 4  |
+| MIXER | Which mixer to choose - See [Mixer documentation](hardware-setup/#motor-layouts) | int | 4  |
 | ELEVATOR_REV | reverses elevator servo output | int |  0/1 |
 | AIL_REV | reverses aileron servo output | int |  0/1 |
 | RUDDER_REV | reverses rudder servo output | int |  0/1 |
@@ -95,7 +96,7 @@ Because ROSflight ships with default parameters for multirotors, you will probab
 
 # Description of all Parameters
 
-This is a list of all parameters on ROSflight, their default values as well as a minimum and maximum recommended setting.
+This is a list of all parameters on ROSflight, their types, default values, and minimum and maximum recommended setting.
 
 
 | Parameter | Description | Type | Default Value | Min | Max |
@@ -103,6 +104,7 @@ This is a list of all parameters on ROSflight, their default values as well as a
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
 | STRM_HRTBT | Rate of heartbeat streaming (Hz) | int |  1 | 0 | 1000 |
+| STRM_STATUS | Rate of status streaming (Hz) | int |  10 | 0 | 1000 |
 | STRM_ATTITUDE | Rate of attitude stream (Hz) | int |  100 | 0 | 1000 |
 | STRM_IMU | Rate of IMU stream (Hz) | int |  500 | 0 | 1000 |
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  75 | 0 | 75 |
@@ -111,7 +113,7 @@ This is a list of all parameters on ROSflight, their default values as well as a
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_OUTPUT | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
-| PARAM_MAX_CMD | saturation point for PID controller output | int |  1000 | 0 | 1000 |
+| PARAM_MAX_CMD | saturation point for PID controller output | float |  1.0 | 0.0 | 1.0 |
 | PID_ROLL_RATE_P | Roll Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_I | Roll Rate Integral Gain | float |  0.000f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_D | Rall Rate Derivative Gain | float |  0.000f | 0.0 | 1000.0 |
@@ -132,12 +134,16 @@ This is a list of all parameters on ROSflight, their default values as well as a
 | PID_PITCH_ANG_I | Pitch Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_D | Pitch Angle Derivative Gain | float |  0.07f | 0.0 | 1000.0 |
 | PITCH_TRIM | Pitch Angle Trim - See RC calibration | float |  0.0f | -1000.0 | 1000.0 |
+| X_EQ_TORQUE | Equilibrium torque added to output of controller on x axis | float |  0.0f | -1.0 | 1.0 |
+| Y_EQ_TORQUE | Equilibrium torque added to output of controller on y axis | float |  0.0f | -1.0 | 1.0 |
+| Z_EQ_TORQUE | Equilibrium torque added to output of controller on z axis | float |  0.0f | -1.0 | 1.0 |
 | PID_TAU | Dirty Derivative time constant - See controller documentation | float |  0.05f | 0.0 | 1.0 |
 | MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors - See motor documentation | int |  490 | 0 | 1000 |
-| MOTOR_IDLE_THR | Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | float |  0.1 | 1000 | 2000 |
-| MOTOR_MIN_PWM | Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | int |  1000 | 1000 | 2000 |
-| MOTOR_MAX_PWM | Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | int |  2000 | 1000 | 2000 |
-| ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_PWM | int |  true | 0 | 1 |
+| MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 | 0.0 | 1.0 |
+| FAILSAFE_THR | Throttle sent to motors in failsafe condition (set just below hover throttle) | float |  0.3 | 0.0 | 1.0 |
+| MOTOR_MIN_PWM | PWM value sent to motor ESCs at zero throttle | int |  1000 | 1000 | 2000 |
+| MOTOR_MAX_PWM | PWM value sent to motor ESCs at full throttle | int |  2000 | 1000 | 2000 |
+| ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_THR | int |  true | 0 | 1 |
 | FILTER_INIT_T | Time in ms to initialize estimator | int |  3000 | 0 | 100000 |
 | FILTER_KP | estimator proportional gain - See estimator documentation | float |  1.0f | 0 | 10.0 |
 | FILTER_KI | estimator integral gain - See estimator documentation | float |  0.1f | 0 | 1.0 |
@@ -178,14 +184,6 @@ This is a list of all parameters on ROSflight, their default values as well as a
 | RC_ATT_CTRL_CHN | RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | int |  -1 | 4 | 7 |
 | ARM_CHANNEL | RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | int |  -1 | 4 | 7 |
 | RC_NUM_CHN | number of RC input channels | int |  6 | 1 | 8 |
-| RC_X_CENTER | RC calibration x-axis center (us) | int |  1500 | 1000 | 2000 |
-| RC_Y_CENTER | RC calibration y-axis center (us) | int |  1500 | 1000 | 2000 |
-| RC_Z_CENTER | RC calibration z-axis center (us) | int |  1500 | 1000 | 2000 |
-| RC_F_BOTTOM | RC calibration F-axis center (us) | int |  1000 | 1000 | 2000 |
-| RC_X_RANGE | RC calibration x-axis range (us) | int |  1000 | 500 | 2500 |
-| RC_Y_RANGE | RC calibration y-axis range (us) | int |  1000 | 500 | 2500 |
-| RC_Z_RANGE | RC calibration z-axis range (us) | int |  1000 | 500 | 2500 |
-| RC_F_RANGE | RC calibration F-axis range (us) | int |  1000 | 500 | 2500 |
 | SWITCH_5_DIR | RC switch 5 toggle direction | int |  1 | -1 | 1 |
 | SWITCH_6_DIR | RC switch 6 toggle direction | int |  1 | -1 | 1 |
 | SWITCH_7_DIR | RC switch 7 toggle direction | int |  1 | -1 | 1 |

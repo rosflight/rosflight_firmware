@@ -93,7 +93,7 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 # Motor layouts
 
-As of March, 2017, we support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
+We currently support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
 
 | mixer | value |
 |-----------------|-------|
