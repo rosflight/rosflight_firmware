@@ -8,8 +8,13 @@ This is an example of a ROSflight pre-flight checklist.  You will likely need to
 - ROS is running on onboard computer, communicating with base station
 - Sensors are calibrated and publishing
     + IMU (re-calibrate every flight)
-    + Magnetometer
+    ```bash
+    rosservice call /calibrate_imu
+    ```
     + Barometer
+    ```bash
+    rosservice call /calibrate_baro
+    ```
     + Sonar (if attached)
     + Airspeed (if attached)
 - Estimated attitude is being published and looks accurate
