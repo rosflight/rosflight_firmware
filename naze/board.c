@@ -97,6 +97,7 @@ static bool _baro_present;
 static bool _mag_present;
 static bool _sonar_present;
 static bool _diff_pressure_present;
+static bool _lidar_present;
 
 static float _accel_scale;
 static float _gyro_scale;
@@ -113,6 +114,7 @@ void sensors_init()
     _mag_present = hmc5883lInit(_board_revision);
     _sonar_present = mb1242_init();
     _diff_pressure_present = ms4525_init();
+    _lidar_present = sen13680_init();
 
     // IMU
     uint16_t acc1G;
@@ -266,6 +268,25 @@ float sonar_read(void)
 {
   mb1242_update();
   return mb1242_read();
+}
+
+bool lidar_present(void) {
+  return _lidar_present;
+}
+
+bool lidar_check(void) {
+  if (!_lidar_present)
+  {
+    sen13680_init();
+  }
+  sen13680_update();
+  _lidar_present = sen13680_read < 257;
+  return _lidar_present;
+}
+
+float lidar_read(void) {
+  sen13680_update();
+  return sen13680_read();
 }
 
 uint16_t num_sensor_errors(void)

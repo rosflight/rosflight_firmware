@@ -110,6 +110,7 @@ BREEZY_SRC = drv_gpio.c \
 			 drv_mb1242.c \
 			 drv_ms5611.c \
 			 drv_hmc5883l.c \
+			 drv_sen13680.c \
 			 startup_stm32f10x_md_gcc.S
 
 # Search path and source files for the CMSIS sources

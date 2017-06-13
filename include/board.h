@@ -76,6 +76,10 @@ bool sonar_present(void);
 bool sonar_check(void);
 float sonar_read(void);
 
+bool lidar_present(void);
+bool lidar_check(void);
+float lidar_read(void);
+
 uint16_t num_sensor_errors(void);
 
 // PWM

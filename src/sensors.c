@@ -71,6 +71,10 @@ float _baro_temperature;
 bool _sonar_present = false;
 float _sonar_range;
 
+//lidar
+bool _lidar_present = false;
+float _lidar_value;
+
 // Magnetometer
 bool _mag_present = false;
 vector_t _mag;
@@ -140,6 +144,10 @@ bool update_sensors()
           mavlink_log_info("FOUND MAG", NULL);
         }
       }
+      if (!lidar_present() && lidar_check())
+      {
+        mavlink_log_info("FOUND LIDAR", NULL);
+      }
     }
   }
 
@@ -171,6 +179,11 @@ bool update_sensors()
     _mag.y = mag[1];
     _mag.z = mag[2];
     correct_mag();
+  }
+
+  if (lidar_present())
+  {
+    _lidar_value = lidar_read();
   }
 
   // Return whether or not we got new IMU data
