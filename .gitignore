@@ -10,8 +10,7 @@
 *.orig
 *.user.*
 *.o
-/build/*
-/naze/build
+/boards/*/build/
 /site/
 
 param_description.md
