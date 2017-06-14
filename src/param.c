@@ -42,7 +42,7 @@
 
 #include "param.h"
 #include "mixer.h"
-//#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
+#include "rc.h"
 
 // type definitions
 typedef struct
@@ -335,16 +335,27 @@ void param_change_callback(param_id_t id)
     break;
 
   case PARAM_RC_TYPE:
-    init_PWM();
-    break;
   case PARAM_MOTOR_PWM_SEND_RATE:
-    init_PWM();
-    break;
   case PARAM_MOTOR_MIN_PWM:
     init_PWM();
     break;
   case PARAM_MIXER:
     init_mixing();
+    break;
+
+  case PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL:
+  case PARAM_RC_THROTTLE_OVERRIDE_CHANNEL:
+  case PARAM_RC_ATT_CONTROL_TYPE_CHANNEL:
+  case PARAM_RC_ARM_CHANNEL:
+  case PARAM_RC_X_CHANNEL:
+  case PARAM_RC_Y_CHANNEL:
+  case PARAM_RC_Z_CHANNEL:
+  case PARAM_RC_F_CHANNEL:
+  case PARAM_RC_SWITCH_5_DIRECTION:
+  case PARAM_RC_SWITCH_6_DIRECTION:
+  case PARAM_RC_SWITCH_7_DIRECTION:
+  case PARAM_RC_SWITCH_8_DIRECTION:
+    init_rc();
     break;
 
   default:
