@@ -96,11 +96,11 @@ static uint8_t compute_checksum(void)
 void init_params(void)
 {
   memory_init();
-  if (!read_params())
-  {
+//  if (!read_params())
+//  {
     set_param_defaults();
-    write_params();
-  }
+//    write_params();
+//  }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback((param_id_t) id);
@@ -111,7 +111,7 @@ void set_param_defaults(void)
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 3000000); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
+  init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/

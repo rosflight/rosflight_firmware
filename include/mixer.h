@@ -47,7 +47,8 @@ typedef enum
   Y6,
   X8,
   FIXEDWING,
-  INVALID_MIXER
+  NUM_MIXERS,
+  INVALID_MIXER = 255
 } mixer_type_t;
 
 typedef enum
