@@ -1,5 +1,5 @@
 # ROSflight
-[![Build Status](https://travis-ci.org/rosflight/firmware.svg?branch=master)](https://travis-ci.org/byu-magicc/ROSflight)
+[![Build Status](https://travis-ci.org/rosflight/firmware.svg?branch=master)](https://travis-ci.org/rosflight/firmware)
 [![Documentation Status](https://readthedocs.org/projects/rosflight/badge/?version=latest)](http://docs.rosflight.org/en/latest/?badge=latest)
 <!--[![Documentation](https://codedocs.xyz/byu-magicc/ROSflight.svg)](https://codedocs.xyz/byu-magicc/ROSflight/) -->
 
