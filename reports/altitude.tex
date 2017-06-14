@@ -1,0 +1,175 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{fancyhdr} % Custom headers and footers
+\usepackage{bm}
+\usepackage{upgreek}
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{
+\normalfont \normalsize
+\textsc{MAGICC Lab - Brigham Young University} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Altitude Complementary Filter \\ % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{James Jackson} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+\section{Introduction}
+
+A common operational requirement for autonomous multirotor MAVs is to hover at a given altitude.  
+This is typically performed by fusing inertial and other measurements with an Extended Kalman Filter (EKF) to provide an estimate of current altitude.  
+The altitude estimate is then used to calculate control input to reach and maintain desired altitude.  
+While this method has been demonstrated successfully in practice, the calculation of  state with a full EKF requires a great deal of computation.
+This calculation is impossible to perform on most embedded MAV flight control units and is instead generally performed on an onboard computer.
+Given a separation between an onboard computer performing full-state estimation and a smaller, less capable, but real-time embedded flight control processor
+This document outlines the derivation of a nonlinear altitude observer that fuses measurements from an onboard barometer, accelerometer and sonar.
+It will also be shown through a Lyuapunov stability analysis that this observer guarantees estimates of both altitude and accelerometer bias to converge exponentially to their true values.
+
+
+\section{Definitions}
+
+\newcommand{\zhat}{\hat{z}}
+\newcommand{\z}{z}
+\newcommand{\zdot}{\dot{z}}
+\newcommand{\acc}{\bm{a}}
+\newcommand{\ameas}{\bm{a}_{meas}}
+\newcommand{\khat}{\hat{\bm{k}}}
+\newcommand{\RbI}{R_b^I}
+\newcommand{\RIb}{R_I^b}
+\newcomand{\norm{x}}{\vert x \vert}
+
+Altitude $\z$ is defined as the inertial z component of distance between the current position of the MAV and it's initial starting position, and is measured positive upwards. It is known to evolve according to the following dynamics:
+
+\begin{equation}
+	\begin{aligned}
+		\zdot = \left( \RbI \acc \right) \cdot \khat
+	\end{aligned}
+\end{equation}
+
+where $\RbI$ is the rotation from the body-fixed to the inertial frame, $\khat$ is the unit vector in the positive z inertial direction, and $\acc$ is the body fixed acceleration
+
+We will assume we have measurement from 3 sources: a 3-axis accelerometer, sonar and barometer.  
+We will assume that the accelerometer measurement $\ameas$ includes all accelerations due to forces except gravity with the addition of some small random, quasi-static bias $\bm{\alpha}$ and noise $\bm{\eta}$.
+We will also assume that $\vert\bm{\alpha}\vert$ is bounded by some $\alpha_{max}$ and that $\vert\bm{\eta}\vert$ is also bounded by some $\eta_{max}$. 
+Therefore, we model true body-fixed acceleration as follows:
+
+\begin{equation}
+\begin{aligned}
+	\acc &= \ameas + \bm{\alpha} + \RIb\bm{g} + \bm{\eta} \\
+	\vert\vert \bm{\alpha} \vert\vert &\leq \alpha_{max} \\
+	\vert\vert \bm{\eta} \vert\vert &\leq \eta_{max} \\
+\end{aligned}
+\label{eq:accel_model}
+\end{equation}
+
+\newcommand{\zbaro}{\z_{baro}}
+
+Barometer measurements, $\zbaro$ are assumed to include an absolute altitude measurement with respect to sea level with the addition of a significant wandering bias $\beta$ and noise $\xi$.  We can assume, however, that both $\beta$ and $\xi$ are bounded by $\beta_{max}$ and $\xi_{max}$, respectively.  Because altitude is measured with respect to the initial position, and not sea level, the intial altitude with repect to sea level, $b_0$ can be subtracted off the measurement to provide measurements with repect to the intial position rather than sea level.  It is important to note that $b_0$ can also be thought of as part of $\beta$, rather than it's own term, because it is simply a constant bias.
+
+\begin{equation}
+\begin{aligned}
+	\zbaro &= z + b_0 + \beta + \xi \\
+	\vert \beta \vert  &\leq \beta_{max} \\
+	\vert \xi \vert &\leq \xi_{max}
+\end{aligned} 
+\end{equation} 
+
+\newcommand{\zsonar}{z_{sonar}}
+
+Sonar measurements $\zsonar$ are assumed to be absolute altitude above ground with the addition of some noise $\zeta$.  
+For this filter, we will assume that the ground remains level, so that this measurement can be a measurement of altitude directly, ignoring any additions of terrain changes.
+Instead of a bias, many sonars have a cone of sensitivity which responds with a measurement of the closest point within this cone and a maximum and minimum range.
+If the measurement is valid (i.e. the measurement is within the maximum and minimum range and the attitude of the MAV is sufficiently close to zero so as to have the measurement returned be of the perpendicular distance from the ground to the MAV) we use the following measurement model:
+\begin{equation}
+\begin{aligned}
+	\zsonar &= z + \zeta \\
+	\vert \zeta \vert &\leq \zeta_{max} 
+\end{aligned}
+\end{equation}
+
+
+\section{Derivation}
+
+\newcommand{\alphahat}{\bm{\hat{\alpha}}}
+
+The derivation of the filter follows a predict-update sequence much like common nonlinear attitude observers. 
+Simple kinematics dictate that altitude will evolve according to the double integral of acceleration.
+
+\begin{equation}
+	\zhat(t) = \int_0^t\int_0^t (\RbI\acc) \cdot \khat \; dtdt
+	\label{eq:simple_dynamics}
+\end{equation}
+
+Substituting the expected value of equation~\ref{eq:accel_model} into~\ref{eq:simple_dynamics} yields the following equation for the main predict step of the filter
+
+\begin{equation}
+	\zhat(t) = \int_0^t\int_0^t \left(\RbI \left(\ameas + \alphahat\right) \right) \cdot \khat \; dtdt
+\end{equation}
+
+As sonar and barometer are available, update steps are performed to correct drift and converge on accurate estimates for $\alphahat$.
+
+
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{./library}
+
+
+\end{document}
+

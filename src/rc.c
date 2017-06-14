@@ -1,8 +1,39 @@
+/* 
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ * 
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
-#include <breezystm32/breezystm32.h>
-
+#include "board.h"
 #include "param.h"
 #include "rc.h"
 #include "mux.h"
@@ -11,264 +42,145 @@
 #include "mavlink_util.h"
 #include "mavlink_log.h"
 
-static rc_switch_t switches[4];
-bool _calibrate_rc;
-void calibrate_rc();
+typedef struct
+{
+  uint8_t channel;
+  bool one_sided;
+} rc_stick_config_t;
+
+typedef struct
+{
+  uint8_t channel;
+  int8_t direction;
+  bool mapped;
+} rc_switch_config_t;
+
+static rc_stick_config_t sticks[RC_STICKS_COUNT];
+static rc_switch_config_t switches[RC_SWITCHES_COUNT];
+
+static float stick_values[RC_STICKS_COUNT];
+static bool switch_values[RC_SWITCHES_COUNT];
+
+void init_sticks(void)
+{
+  sticks[RC_STICK_X].channel = get_param_int(PARAM_RC_X_CHANNEL);
+  sticks[RC_STICK_X].one_sided = false;
+
+  sticks[RC_STICK_Y].channel = get_param_int(PARAM_RC_Y_CHANNEL);
+  sticks[RC_STICK_Y].one_sided = false;
+
+  sticks[RC_STICK_Z].channel = get_param_int(PARAM_RC_Z_CHANNEL);
+  sticks[RC_STICK_Z].one_sided = false;
+
+  sticks[RC_STICK_F].channel = get_param_int(PARAM_RC_F_CHANNEL);
+  sticks[RC_STICK_F].one_sided = true;
+}
+
+static void init_switches()
+{
+  switches[RC_SWITCH_ARM].channel               = get_param_int(PARAM_RC_ARM_CHANNEL);
+  switches[RC_SWITCH_ATT_OVERRIDE].channel      = get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  switches[RC_SWITCH_ATT_TYPE].channel          = get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+
+  for (rc_switch_t chan = RC_SWITCH_ARM; chan < RC_SWITCHES_COUNT; chan++)
+  {
+    //check for a valid stick mapping. Channels 0-3 are reserved for FXYZ
+    switches[chan].mapped = switches[chan].channel > 3 && switches[chan].channel < get_param_int(PARAM_RC_NUM_CHANNELS);
+    if (!switches[chan].mapped)
+    {
+      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
+    }
+
+    //get switch toggle direction from associated param
+    switches[chan].direction = 1;
+    switch (switches[chan].channel)
+    {
+    case 4:
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
+      break;
+    case 5:
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
+      break;
+    case 6:
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
+      break;
+    case 7:
+      switches[chan].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
+      break;
+    }
+  }
+}
 
 void init_rc()
 {
-  _calibrate_rc = false;
-  _rc_control.x.type = ANGLE;
-  _rc_control.y.type = ANGLE;
-  _rc_control.z.type = RATE;
-  _rc_control.F.type = THROTTLE;
-
-  _rc_control.x.value = 0;
-  _rc_control.y.value = 0;
-  _rc_control.z.value = 0;
-  _rc_control.F.value = 0;
-
-  _offboard_control.x.active = false;
-  _offboard_control.y.active = false;
-  _offboard_control.z.active = false;
-  _offboard_control.F.active = false;
-
-  switches[0].channel = 4;
-  switches[0].direction = get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
-  switches[1].channel = 5;
-  switches[1].direction = get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
-  switches[2].channel = 6;
-  switches[2].direction = get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
-  switches[3].channel = 7;
-  switches[3].direction = get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
+    init_sticks();
+    init_switches();
 }
 
-bool rc_switch(int16_t channel)
+float rc_stick(rc_stick_t channel)
 {
-  if(channel < 4 || channel > 8)
-  {
-    return false;
-  }
-  if(switches[channel - 4].direction < 0)
-  {
-    return pwmRead(channel) < 1500;
-  }
-  else
-  {
-    return pwmRead(channel) > 1500;
-  }
+  return stick_values[channel];
 }
 
-static void convertPWMtoRad()
+bool rc_switch(rc_switch_t channel)
 {
-  // Get Roll control command out of RC
-  if (_rc_control.x.type == ANGLE)
-  {
-    _rc_control.x.value = (float)((pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
-                           *2.0f*get_param_float(PARAM_RC_MAX_ROLL))/(float)get_param_int(PARAM_RC_X_RANGE);
-  }
-  else if (_rc_control.x.type == RATE)
-  {
-    _rc_control.x.value = (float)((pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - 1500)
-                            *2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE))/(float)get_param_int(PARAM_RC_X_RANGE);
-  }
-  else if (_rc_control.x.type == PASSTHROUGH)
-  {
-    _rc_control.x.value = pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - get_param_int(PARAM_RC_X_CENTER);
-  }
-
-  // Get Pitch control command out of RC
-  if (_rc_control.y.type == ANGLE)
-  {
-    _rc_control.y.value = ((pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
-                            *2.0f*get_param_float(PARAM_RC_MAX_PITCH))/(float)get_param_int(PARAM_RC_Y_RANGE);
-  }
-  else if (_rc_control.y.type == RATE)
-  {
-    _rc_control.y.value = (float)((pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500)
-                            *2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE))/(float)get_param_int(PARAM_RC_Y_RANGE);
-  }
-  else if (_rc_control.y.type == PASSTHROUGH)
-  {
-    _rc_control.y.value = pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - 1500;
-  }
-
-  // Get the Yaw control command type out of RC
-  if (_rc_control.z.type == RATE)
-  {
-    _rc_control.z.value = ((pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) - 1500)
-                           *2.0f*get_param_float(PARAM_RC_MAX_YAWRATE))/(float)get_param_int(PARAM_RC_Z_RANGE);
-  }
-  else if (_rc_control.z.type == PASSTHROUGH)
-  {
-    _rc_control.z.value = pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) - 1500;
-  }
-
-  // Finally, the throttle command
-  _rc_control.F.value = (float)((pwmRead(get_param_int(PARAM_RC_F_CHANNEL)) - get_param_int(PARAM_RC_F_BOTTOM)))
-                        / (float)get_param_int(PARAM_RC_F_RANGE);
+  return switch_values[channel];
 }
 
-
-bool receive_rc(uint32_t now)
+bool rc_switch_mapped(rc_switch_t channel)
 {
-  if(_calibrate_rc)
-  {
-    calibrate_rc();
-  }
-  // if it has been more than 20ms then look for new RC values and parse them
-  static uint32_t last_rc_receive_time = 0;
-  static uint32_t time_of_last_stick_deviation = 0;
+  return switches[channel].mapped;
+}
 
-  if (now - last_rc_receive_time < 20000)
-  {
-    return false;
-  }
-  last_rc_receive_time = now;
-  // Get timestamp for deadband control lag
+bool receive_rc()
+{
+    static uint32_t last_rc_receive_time = 0;
 
+    uint32_t now = clock_millis();
 
-  // Figure out the desired control type from the switches and params
-  if (get_param_int(PARAM_FIXED_WING))
-  {
-    // for using fixedwings
-    _rc_control.x.type = _rc_control.y.type = _rc_control.z.type = PASSTHROUGH;
-    _rc_control.F.type = THROTTLE;
-  }
-  else
-  {
-    _rc_control.x.type = _rc_control.y.type = rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)) ? ANGLE : RATE;
-    _rc_control.z.type = RATE;
-    _rc_control.F.type = rc_switch(get_param_int(PARAM_RC_F_CONTROL_TYPE_CHANNEL)) ? ALTITUDE : THROTTLE;
-  }
-
-  // Interpret PWM Values from RC
-  convertPWMtoRad();
-
-  // Set flags for attitude channels
-  if (rc_switch(get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL))
-      || now - time_of_last_stick_deviation < (uint32_t)(get_param_int(PARAM_OVERRIDE_LAG_TIME))*1000)
-  {
-    // Pilot is in full control
-    _rc_control.x.active = true;
-    _rc_control.y.active = true;
-    _rc_control.z.active = true;
-  }
-  else
-  {
-    // Check for stick deviation - if so, then the channel is active
-    _rc_control.x.active = _rc_control.y.active  = _rc_control.z.active =
-                             abs(pwmRead(get_param_int(PARAM_RC_X_CHANNEL)) - get_param_int(PARAM_RC_X_CENTER)) >
-                             get_param_int(PARAM_RC_OVERRIDE_DEVIATION)
-                             || abs(pwmRead(get_param_int(PARAM_RC_Y_CHANNEL)) - get_param_int(PARAM_RC_Y_CENTER)) >
-                             get_param_int(PARAM_RC_OVERRIDE_DEVIATION)
-                             || abs(pwmRead(get_param_int(PARAM_RC_Z_CHANNEL)) - get_param_int(PARAM_RC_Z_CENTER)) >
-                             get_param_int(PARAM_RC_OVERRIDE_DEVIATION);
-    if (_rc_control.x.active)
+    // if it has been more than 20ms then look for new RC values and parse them
+    if (now - last_rc_receive_time < 20)
     {
-      // reset override lag
-      time_of_last_stick_deviation = now;
+        return false;
     }
-  }
+    last_rc_receive_time = now;
 
-
-  // Set flags for throttle channel
-  if (rc_switch(get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL)))
-  {
-    // RC Pilot is in full control
-    _rc_control.F.active = true;
-  }
-  else
-  {
-    // Onboard Control - min throttle Checking will be done in mux and in the controller.
-    _rc_control.F.active = false;
-  }
-
-  _new_command = true;
-  return true;
-}
-
-void calibrate_rc()
-{
-  if(_armed_state == ARMED)
-  {
-    mavlink_log_error("Cannot calibrate RC when FCU is armed", NULL);
-  }
-  else
-  {
-    // Calibrate Extents of RC Transmitter
-    mavlink_log_warning("Calibrating RC, move sticks to full extents", NULL);
-    mavlink_log_warning("in the next 10s", NULL);
-    uint32_t now = micros();
-    static int32_t max[4] = {0, 0, 0, 0};
-    static int32_t min[4] = {10000, 10000, 10000, 10000};
-    while(micros() - now < 1e7)
+    // read and normalize stick values
+    for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
     {
-      for(int16_t i = 0; i < 4; i++)
+      uint16_t pwm = pwm_read(sticks[channel].channel);
+      if (sticks[channel].one_sided) //generally only F is one_sided
       {
-        int32_t read_value = (int32_t)pwmRead(i);
-        if(read_value > max[i])
+        stick_values[channel] = (float)(pwm - 1000) / (1000.0);
+      }
+      else
+      {
+        stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+      }
+    }
+
+    // read and interpret switch values
+    for (rc_switch_t channel = 0; channel < RC_SWITCHES_COUNT; channel++)
+    {
+      if (switches[channel].mapped)
+      {
+        if (switches[channel].direction < 0) //switch is on/off dependent on its default direction as set in the params/init_switches
         {
-          max[i] = read_value;
+          switch_values[channel] = pwm_read(switches[channel].channel) < 1500;
         }
-        if(read_value < min[i])
+        else
         {
-          min[i] = read_value;
+          switch_values[channel] = pwm_read(switches[channel].channel) >= 1500;
         }
       }
-      delay(10);
-    }
-    set_param_int(PARAM_RC_X_RANGE, max[get_param_int(PARAM_RC_X_CHANNEL)] - min[get_param_int(PARAM_RC_X_CHANNEL)]);
-    set_param_int(PARAM_RC_Y_RANGE, max[get_param_int(PARAM_RC_Y_CHANNEL)] - min[get_param_int(PARAM_RC_Y_CHANNEL)]);
-    set_param_int(PARAM_RC_Z_RANGE, max[get_param_int(PARAM_RC_Z_CHANNEL)] - min[get_param_int(PARAM_RC_Z_CHANNEL)]);
-    set_param_int(PARAM_RC_F_RANGE, max[get_param_int(PARAM_RC_F_CHANNEL)] - min[get_param_int(PARAM_RC_F_CHANNEL)]);
-
-    // Calibrate Trimmed Centers
-    mavlink_log_warning("Calibrating RC, leave sticks at center", NULL);
-    mavlink_log_warning("and throttle low for next 10 seconds", NULL);
-    delay(5000);
-    now = micros();
-    static int32_t sum[4] = {0, 0, 0, 0};
-    static int32_t count[4] = {0, 0, 0, 0};
-
-    while(micros() - now < 5e6)
-    {
-      for(int16_t i = 0; i < 4; i++)
+      else
       {
-        int32_t read_value = (int32_t)pwmRead(i);
-        sum[i] = sum[i] + read_value;
-        count[i] = count[i] + 1;
+        switch_values[channel] = false;
       }
-      delay(20); // RC is updated at 50 Hz
     }
 
-    set_param_int(PARAM_RC_X_CENTER, sum[get_param_int(PARAM_RC_X_CHANNEL)]/count[get_param_int(PARAM_RC_X_CHANNEL)]);
-    set_param_int(PARAM_RC_Y_CENTER, sum[get_param_int(PARAM_RC_Y_CHANNEL)]/count[get_param_int(PARAM_RC_Y_CHANNEL)]);
-    set_param_int(PARAM_RC_Z_CENTER, sum[get_param_int(PARAM_RC_Z_CHANNEL)]/count[get_param_int(PARAM_RC_Z_CHANNEL)]);
-    set_param_int(PARAM_RC_F_BOTTOM, sum[get_param_int(PARAM_RC_F_CHANNEL)]/count[get_param_int(PARAM_RC_F_CHANNEL)]);
-  }
-
-  // calculate Trim values (in terms of SI units)
-  if(rc_switch(get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL)))
-  {
-    // in angle mode
-    set_param_float(PARAM_ROLL_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLL)
-                          /(float)get_param_int(PARAM_RC_X_RANGE));
-    set_param_float(PARAM_PITCH_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCH)
-                          /(float)get_param_int(PARAM_RC_Y_RANGE));
-  }
-  else
-  {
-    // in rate mode
-    set_param_float(PARAM_ROLLRATE_TRIM, (float)(get_param_int(PARAM_RC_X_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_ROLLRATE)
-                          /(float)get_param_int(PARAM_RC_X_RANGE));
-    set_param_float(PARAM_PITCHRATE_TRIM, (float)(get_param_int(PARAM_RC_Y_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_PITCHRATE)
-                          /(float)get_param_int(PARAM_RC_Y_RANGE));
-  }
-  set_param_float(PARAM_YAWRATE_TRIM, (float)(get_param_int(PARAM_RC_Z_CENTER) - 1500)*2.0f*get_param_float(PARAM_RC_MAX_YAWRATE)
-                        /(float)get_param_int(PARAM_RC_Z_RANGE));
-
-  mavlink_log_warning("Completed RC calibration", NULL);
-  _calibrate_rc = false;
+    // Signal to the mux that we need to compute a new combined command
+    _new_command = true;
+    return true;
 }
-

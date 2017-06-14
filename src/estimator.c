@@ -1,3 +1,34 @@
+/* 
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ * 
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6,12 +37,13 @@ extern "C" {
 #include <stdbool.h>
 #include <math.h>
 
-#include <breezystm32/breezystm32.h>
 #include <turbotrig/turbotrig.h>
 #include <turbotrig/turbovec.h>
 
+#include "board.h"
 #include "sensors.h"
 #include "param.h"
+#include "mode.h"
 
 #include "estimator.h"
 
@@ -27,27 +59,24 @@ static const vector_t g = {0.0f, 0.0f, -1.0f};
 static vector_t b;
 static quaternion_t q_tilde;
 static quaternion_t q_hat;
-static int32_t last_time;
-
-static bool mat_exp;
-static bool quad_int;
-static bool use_acc;
-
-static float kp_;
-static float ki_;
-static uint32_t init_time;
+static uint64_t last_time;
+static uint64_t last_acc_update_us;
 
 static vector_t _accel_LPF;
 static vector_t _gyro_LPF;
 
-void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration, bool use_accelerometer)
+void reset_state()
 {
-  _current_state.p = 0.0f;
-  _current_state.q = 0.0f;
-  _current_state.r = 0.0f;
-  _current_state.phi = 0.0f;
-  _current_state.theta = 0.0f;
-  _current_state.psi = 0.0f;
+  _current_state.q.w = 1.0f;
+  _current_state.q.x = 0.0f;
+  _current_state.q.y = 0.0f;
+  _current_state.q.z = 0.0f;
+  _current_state.omega.x = 0.0f;
+  _current_state.omega.y = 0.0f;
+  _current_state.omega.z = 0.0f;
+  _current_state.roll = 0.0f;
+  _current_state.pitch = 0.0f;
+  _current_state.yaw = 0.0f;
 
   q_hat.w = 1.0f;
   q_hat.x = 0.0f;
@@ -66,10 +95,6 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   b.y = 0.0f;
   b.z = 0.0f;
 
-  kp_ = get_param_float(PARAM_FILTER_KP);
-  ki_ = get_param_float(PARAM_FILTER_KI);
-  init_time = get_param_int(PARAM_INIT_TIME)*1000; // microseconds
-
   w_acc.x = 0.0f;
   w_acc.y = 0.0f;
   w_acc.z = 0.0f;
@@ -79,14 +104,6 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   q_tilde.y = 0.0f;
   q_tilde.z = 0.0f;
 
-  mat_exp = use_matrix_exponential;
-  quad_int = use_quadratic_integration;
-  use_acc = use_accelerometer;
-
-  _adaptive_gyro_bias.x = 0;
-  _adaptive_gyro_bias.y = 0;
-  _adaptive_gyro_bias.z = 0;
-
   _accel_LPF.x = 0;
   _accel_LPF.y = 0;
   _accel_LPF.z = -9.80665;
@@ -95,7 +112,21 @@ void init_estimator(bool use_matrix_exponential, bool use_quadratic_integration,
   _gyro_LPF.y = 0;
   _gyro_LPF.z = 0;
 
+  // Clear the unhealthy estimator flag
+  _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
+}
+
+void reset_adaptive_bias()
+{
+  b.x = 0;
+  b.y = 0;
+  b.z = 0;
+}
+
+void init_estimator()
+{
   last_time = 0;
+  reset_state();
 }
 
 void run_LPF()
@@ -112,27 +143,41 @@ void run_LPF()
 }
 
 
-void run_estimator(uint32_t now)
+void run_estimator()
 {
   static float kp, ki;
   if (last_time == 0)
   {
-    last_time = now;
+    last_time = _current_state.now_us;
+    last_acc_update_us = last_time;
     return;
   }
-  float dt = (now - last_time) * 1e-6f;
-  last_time = now;
+  else if (_current_state.now_us == last_time)
+  {
+    return;
+  }
+  else if (_current_state.now_us < last_time)
+  {
+    _error_state |= ERROR_TIME_GOING_BACKWARDS;
+    last_time = _current_state.now_us;
+    return;
+  }
+  // clear the time going backwards error
+  _error_state &= ~(ERROR_TIME_GOING_BACKWARDS);
+
+  float dt = (_current_state.now_us - last_time) * 1e-6f;
+  last_time = _current_state.now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now < init_time)
+  if (_imu_time < (uint64_t)get_param_int(PARAM_INIT_TIME)*1000)
   {
-    kp = kp_*10.0f;
-    ki = ki_*10.0f;
+    kp = get_param_float(PARAM_FILTER_KP)*10.0f;
+    ki = get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = kp_;
-    ki = ki_;
+    kp = get_param_float(PARAM_FILTER_KP);
+    ki = get_param_float(PARAM_FILTER_KI);
   }
 
   // Run LPF to reject a lot of noise
@@ -141,27 +186,29 @@ void run_estimator(uint32_t now)
   // add in accelerometer
   float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
-  if (use_acc && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
+  if (get_param_int(PARAM_FILTER_USE_ACC) && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
+    // Keep track of the last time that the acc update ran
+    last_acc_update_us = _current_state.now_us;
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(_accel_LPF);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
     quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g));
     // Get the error quaternion between observer and low-freq q
-    // Below Eq. 45 Mahoney Paper
+    // Below Eq. 45 Mahony Paper
     q_tilde = quaternion_multiply(q_acc_inv, q_hat);
-    // Correction Term of Eq. 47a and 47b Mahoney Paper
+    // Correction Term of Eq. 47a and 47b Mahony Paper
     // w_acc = 2*s_tilde*v_tilde
     w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
     w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
-    w_acc.z = -2.0f*q_tilde.w*q_tilde.z;
+    w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
     // integrate biases from accelerometer feedback
-    // (eq 47b Mahoney Paper, using correction term w_acc found above)
+    // (eq 47b Mahony Paper, using correction term w_acc found above)
     b.x -= ki*w_acc.x*dt;
     b.y -= ki*w_acc.y*dt;
-    //    b.z -= ki*w_acc.z*dt;  // Don't integrate z bias, because it's unobservable
+    b.z = 0.0;  // Don't integrate z bias, because it's unobservable
   }
   else
   {
@@ -171,7 +218,7 @@ void run_estimator(uint32_t now)
   }
 
   // Pull out Gyro measurements
-  if (quad_int)
+  if (get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
@@ -186,7 +233,7 @@ void run_estimator(uint32_t now)
   }
 
   // Build the composite omega vector for kinematic propagation
-  // This the stuff inside the p function in eq. 47a - Mahoney Paper
+  // This the stuff inside the p function in eq. 47a - Mahony Paper
   wfinal = vector_add(vector_sub(wbar, b), scalar_multiply(kp, w_acc));
 
   // Propagate Dynamics (only if we've moved)
@@ -197,7 +244,7 @@ void run_estimator(uint32_t now)
     float q = wfinal.y;
     float r = wfinal.z;
 
-    if (mat_exp)
+    if (get_param_int(PARAM_FILTER_USE_MAT_EXP))
     {
       // Matrix Exponential Approximation (From Attitude Representation and Kinematic
       // Propagation for Low-Cost UAVs by Robert T. Casey)
@@ -207,7 +254,7 @@ void run_estimator(uint32_t now)
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);
       float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
-      qhat_np1.w = t1*q_hat.w   + t2*(          - p*q_hat.x - q*q_hat.y - r*q_hat.z);
+      qhat_np1.w = t1*q_hat.w   + t2*(- p*q_hat.x - q*q_hat.y - r*q_hat.z);
       qhat_np1.x = t1*q_hat.x   + t2*(p*q_hat.w             + r*q_hat.y - q*q_hat.z);
       qhat_np1.y = t1*q_hat.y   + t2*(q*q_hat.w - r*q_hat.x             + p*q_hat.z);
       qhat_np1.z = t1*q_hat.z   + t2*(r*q_hat.w + q*q_hat.x - p*q_hat.y);
@@ -216,11 +263,11 @@ void run_estimator(uint32_t now)
     else
     {
       // Euler Integration
-      // (Eq. 47a Mahoney Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5f * (           - p*q_hat.x - q*q_hat.y - r*q_hat.z),
-                           0.5f * ( p*q_hat.w             + r*q_hat.y - q*q_hat.z),
-                           0.5f * ( q*q_hat.w - r*q_hat.x             + p*q_hat.z),
-                           0.5f * ( r*q_hat.w + q*q_hat.x - p*q_hat.y)
+      // (Eq. 47a Mahony Paper), but this is pretty straight-forward
+      quaternion_t qdot = {0.5f * (- p*q_hat.x - q*q_hat.y - r*q_hat.z),
+                           0.5f * (p*q_hat.w             + r*q_hat.y - q*q_hat.z),
+                           0.5f * (q*q_hat.w - r*q_hat.x             + p*q_hat.z),
+                           0.5f * (r*q_hat.w + q*q_hat.x - p*q_hat.y)
                           };
       q_hat.w += qdot.w*dt;
       q_hat.x += qdot.x*dt;
@@ -230,22 +277,27 @@ void run_estimator(uint32_t now)
     }
   }
 
+  // Save attitude estimate
+  _current_state.q = q_hat;
+
   // Extract Euler Angles for controller
-  euler_from_quat(q_hat, &_current_state.phi, &_current_state.theta, &_current_state.psi);
+  euler_from_quat(_current_state.q, &_current_state.roll, &_current_state.pitch, &_current_state.yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
-  wbar = vector_sub(wbar, b);
-  _current_state.p = _gyro_LPF.x - _adaptive_gyro_bias.x;
-  _current_state.q = _gyro_LPF.y - _adaptive_gyro_bias.y;
-  _current_state.r = _gyro_LPF.z;
+  _current_state.omega = vector_sub(_gyro_LPF, b);
 
-  // Save gyro biases for streaming to computer
-  _adaptive_gyro_bias.x = b.x;
-  _adaptive_gyro_bias.y = b.y;
-  _adaptive_gyro_bias.z = 0.0; // Until we have MAG support, the z-bias is totally meaningless
+  // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
+  // then trigger an unhealthy estimator error
+  if (get_param_int(PARAM_FILTER_USE_ACC) && _current_state.now_us > 500000 + last_acc_update_us)
+  {
+    _error_state |= ERROR_UNHEALTHY_ESTIMATOR;
+  }
+  else
+  {
+    _error_state &= ~(ERROR_UNHEALTHY_ESTIMATOR);
+  }
 }
 
 #ifdef __cplusplus
 }
 #endif
-

@@ -10,7 +10,10 @@
 *.orig
 *.user.*
 *.o
-/build/*
+/boards/*/build/
+/site/
+
+param_description.md
 
 *.aux
 *.fdb_latexmk

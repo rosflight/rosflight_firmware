@@ -1,3 +1,34 @@
+/* 
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ * 
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #pragma once
 #ifdef __cplusplus
 extern "C" {
@@ -5,7 +36,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "param.h"
 
 #include "mavlink.h"
 
@@ -13,187 +43,170 @@ extern "C" {
 
 typedef enum
 {
-  /******************************/
-  /*** HARDWARE CONFIGURATION ***/
-  /******************************/
-  PARAM_BOARD_REVISION,
-  PARAM_BAUD_RATE,
+    /******************************/
+    /*** HARDWARE CONFIGURATION ***/
+    /******************************/
+    PARAM_BAUD_RATE,
 
-  /*****************************/
-  /*** MAVLINK CONFIGURATION ***/
-  /*****************************/
-  PARAM_SYSTEM_ID,
-  PARAM_STREAM_HEARTBEAT_RATE,
+    /*****************************/
+    /*** MAVLINK CONFIGURATION ***/
+    /*****************************/
+    PARAM_SYSTEM_ID,
+    PARAM_STREAM_HEARTBEAT_RATE,
+    PARAM_STREAM_STATUS_RATE,
 
-  PARAM_STREAM_ATTITUDE_RATE,
-  PARAM_STREAM_IMU_RATE,
-  PARAM_STREAM_MAG_RATE,
-  PARAM_STREAM_AIRSPEED_RATE,
-  PARAM_STREAM_BARO_RATE,
-  PARAM_STREAM_GPS_RATE,
-  PARAM_STREAM_SONAR_RATE,
+    PARAM_STREAM_ATTITUDE_RATE,
+    PARAM_STREAM_IMU_RATE,
+    PARAM_STREAM_MAG_RATE,
+    PARAM_STREAM_BARO_RATE,
+    PARAM_STREAM_AIRSPEED_RATE,
+    PARAM_STREAM_SONAR_RATE,
 
-  PARAM_STREAM_SERVO_OUTPUT_RAW_RATE,
-  PARAM_STREAM_RC_RAW_RATE,
+    PARAM_STREAM_OUTPUT_RAW_RATE,
+    PARAM_STREAM_RC_RAW_RATE,
 
-  /****************************/
-  /*** SYSTEM CONFIGURATION ***/
-  /****************************/
-  PARAM_DIFF_PRESS_UPDATE,
-  PARAM_BARO_UPDATE,
-  PARAM_SONAR_UPDATE,
-  PARAM_MAG_UPDATE,
+    /********************************/
+    /*** CONTROLLER CONFIGURATION ***/
+    /********************************/
+    PARAM_MAX_COMMAND,
 
-  /*****************/
-  /*** PID GAINS ***/
-  /*****************/
-  PARAM_MAX_COMMAND,
+    PARAM_PID_ROLL_RATE_P,
+    PARAM_PID_ROLL_RATE_I,
+    PARAM_PID_ROLL_RATE_D,
+    PARAM_ROLL_RATE_TRIM,
 
-  PARAM_PID_ROLL_RATE_P,
-  PARAM_PID_ROLL_RATE_I,
-  PARAM_MAX_ROLL_RATE,
+    PARAM_PID_PITCH_RATE_P,
+    PARAM_PID_PITCH_RATE_I,
+    PARAM_PID_PITCH_RATE_D,
+    PARAM_PITCH_RATE_TRIM,
 
-  PARAM_PID_PITCH_RATE_P,
-  PARAM_PID_PITCH_RATE_I,
-  PARAM_MAX_PITCH_RATE,
+    PARAM_PID_YAW_RATE_P,
+    PARAM_PID_YAW_RATE_I,
+    PARAM_PID_YAW_RATE_D,
+    PARAM_YAW_RATE_TRIM,
 
-  PARAM_PID_YAW_RATE_P,
-  PARAM_PID_YAW_RATE_I,
-  PARAM_MAX_YAW_RATE,
+    PARAM_PID_ROLL_ANGLE_P,
+    PARAM_PID_ROLL_ANGLE_I,
+    PARAM_PID_ROLL_ANGLE_D,
+    PARAM_ROLL_ANGLE_TRIM,
 
-  PARAM_PID_ROLL_ANGLE_P,
-  PARAM_PID_ROLL_ANGLE_I,
-  PARAM_PID_ROLL_ANGLE_D,
-  PARAM_MAX_ROLL_ANGLE,
+    PARAM_PID_PITCH_ANGLE_P,
+    PARAM_PID_PITCH_ANGLE_I,
+    PARAM_PID_PITCH_ANGLE_D,
+    PARAM_PITCH_ANGLE_TRIM,
 
-  PARAM_PID_PITCH_ANGLE_P,
-  PARAM_PID_PITCH_ANGLE_I,
-  PARAM_PID_PITCH_ANGLE_D,
-  PARAM_MAX_PITCH_ANGLE,
+    PARAM_X_EQ_TORQUE,
+    PARAM_Y_EQ_TORQUE,
+    PARAM_Z_EQ_TORQUE,
 
-  PARAM_PID_ALT_P,
-  PARAM_PID_ALT_I,
-  PARAM_PID_ALT_D,
+    PARAM_PID_TAU,
 
-  PARAM_PID_TAU,
+    /*************************/
+    /*** PWM CONFIGURATION ***/
+    /*************************/
+    PARAM_MOTOR_PWM_SEND_RATE,
+    PARAM_MOTOR_IDLE_THROTTLE,
+    PARAM_FAILSAFE_THROTTLE,
+    PARAM_MOTOR_MAX_PWM,
+    PARAM_MOTOR_MIN_PWM,
+    PARAM_SPIN_MOTORS_WHEN_ARMED,
 
-  /*************************/
-  /*** PWM CONFIGURATION ***/
-  /*************************/
-  PARAM_MOTOR_PWM_SEND_RATE,
-  PARAM_MOTOR_IDLE_PWM,
-  PARAM_SPIN_MOTORS_WHEN_ARMED,
+    /*******************************/
+    /*** ESTIMATOR CONFIGURATION ***/
+    /*******************************/
+    PARAM_INIT_TIME,
+    PARAM_FILTER_KP,
+    PARAM_FILTER_KI,
 
-  /*******************************/
-  /*** ESTIMATOR CONFIGURATION ***/
-  /*******************************/
-  PARAM_INIT_TIME,
-  PARAM_FILTER_KP,
-  PARAM_FILTER_KI,
-  PARAM_GYRO_ALPHA,
-  PARAM_ACC_ALPHA,
-  PARAM_STREAM_ADJUSTED_GYRO,
-  PARAM_GYRO_X_BIAS,
-  PARAM_GYRO_Y_BIAS,
-  PARAM_GYRO_Z_BIAS,
-  PARAM_ACC_X_BIAS,
-  PARAM_ACC_Y_BIAS,
-  PARAM_ACC_Z_BIAS,
-  PARAM_ACC_X_TEMP_COMP,
-  PARAM_ACC_Y_TEMP_COMP,
-  PARAM_ACC_Z_TEMP_COMP,
+    PARAM_FILTER_USE_QUAD_INT,
+    PARAM_FILTER_USE_MAT_EXP,
+    PARAM_FILTER_USE_ACC,
 
-  /************************/
-  /*** RC CONFIGURATION ***/
-  /************************/
-  PARAM_RC_TYPE,
-  PARAM_RC_X_CHANNEL,
-  PARAM_RC_Y_CHANNEL,
-  PARAM_RC_Z_CHANNEL,
-  PARAM_RC_F_CHANNEL,
-  PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
-  PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
-  PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,
-  PARAM_RC_F_CONTROL_TYPE_CHANNEL,
-  PARAM_RC_NUM_CHANNELS,
+    PARAM_CALIBRATE_GYRO_ON_ARM,
 
-  PARAM_RC_X_CENTER,
-  PARAM_RC_Y_CENTER,
-  PARAM_RC_Z_CENTER,
-  PARAM_RC_F_BOTTOM,
-  PARAM_RC_X_RANGE,
-  PARAM_RC_Y_RANGE,
-  PARAM_RC_Z_RANGE,
-  PARAM_RC_F_RANGE,
-  PARAM_RC_SWITCH_5_DIRECTION,
-  PARAM_RC_SWITCH_6_DIRECTION,
-  PARAM_RC_SWITCH_7_DIRECTION,
-  PARAM_RC_SWITCH_8_DIRECTION,
+    PARAM_GYRO_ALPHA,
+    PARAM_ACC_ALPHA,
 
-  PARAM_RC_OVERRIDE_DEVIATION,
-  PARAM_OVERRIDE_LAG_TIME,
-  PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE,
+    PARAM_ACCEL_SCALE,
 
-  PARAM_RC_MAX_ROLL,
-  PARAM_RC_MAX_PITCH,
-  PARAM_RC_MAX_ROLLRATE,
-  PARAM_RC_MAX_PITCHRATE,
-  PARAM_RC_MAX_YAWRATE,
+    PARAM_GYRO_X_BIAS,
+    PARAM_GYRO_Y_BIAS,
+    PARAM_GYRO_Z_BIAS,
+    PARAM_ACC_X_BIAS,
+    PARAM_ACC_Y_BIAS,
+    PARAM_ACC_Z_BIAS,
+    PARAM_ACC_X_TEMP_COMP,
+    PARAM_ACC_Y_TEMP_COMP,
+    PARAM_ACC_Z_TEMP_COMP,
 
-  /*******************/
-  /*** TRIM VALUES ***/
-  /*******************/
-  PARAM_ROLL_TRIM,
-  PARAM_PITCH_TRIM,
-  PARAM_ROLLRATE_TRIM,
-  PARAM_PITCHRATE_TRIM,
-  PARAM_YAWRATE_TRIM,
-  PARAM_FAILSAFE_THROTTLE,
+    PARAM_MAG_A11_COMP,
+    PARAM_MAG_A12_COMP,
+    PARAM_MAG_A13_COMP,
+    PARAM_MAG_A21_COMP,
+    PARAM_MAG_A22_COMP,
+    PARAM_MAG_A23_COMP,
+    PARAM_MAG_A31_COMP,
+    PARAM_MAG_A32_COMP,
+    PARAM_MAG_A33_COMP,
+    PARAM_MAG_X_BIAS,
+    PARAM_MAG_Y_BIAS,
+    PARAM_MAG_Z_BIAS,
 
-  /***************************/
-  /*** FRAME CONFIGURATION ***/
-  /***************************/
-  PARAM_FIXED_WING,
-  PARAM_MIXER,
-  PARAM_ELEVATOR_REVERSE,
-  PARAM_AILERON_REVERSE,
-  PARAM_RUDDER_REVERSE,
+    /************************/
+    /*** RC CONFIGURATION ***/
+    /************************/
+    PARAM_RC_TYPE,
+    PARAM_RC_X_CHANNEL,
+    PARAM_RC_Y_CHANNEL,
+    PARAM_RC_Z_CHANNEL,
+    PARAM_RC_F_CHANNEL,
+    PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL,
+    PARAM_RC_THROTTLE_OVERRIDE_CHANNEL,
+    PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,
+    PARAM_RC_ARM_CHANNEL,
+    PARAM_RC_NUM_CHANNELS,
 
-  /********************/
-  /*** ARMING SETUP ***/
-  /********************/
-  PARAM_ARM_STICKS,
-  PARAM_ARM_CHANNEL,
-  PARAM_ARM_THRESHOLD,
+    PARAM_RC_SWITCH_5_DIRECTION,
+    PARAM_RC_SWITCH_6_DIRECTION,
+    PARAM_RC_SWITCH_7_DIRECTION,
+    PARAM_RC_SWITCH_8_DIRECTION,
 
-  // keep track of size of params array
-  PARAMS_COUNT
+    PARAM_RC_OVERRIDE_DEVIATION,
+    PARAM_OVERRIDE_LAG_TIME,
+    PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE,
+
+    PARAM_RC_ATTITUDE_MODE,
+    PARAM_RC_MAX_ROLL,
+    PARAM_RC_MAX_PITCH,
+    PARAM_RC_MAX_ROLLRATE,
+    PARAM_RC_MAX_PITCHRATE,
+    PARAM_RC_MAX_YAWRATE,
+
+    /***************************/
+    /*** FRAME CONFIGURATION ***/
+    /***************************/
+    PARAM_MIXER,
+
+    PARAM_FIXED_WING,
+    PARAM_ELEVATOR_REVERSE,
+    PARAM_AILERON_REVERSE,
+    PARAM_RUDDER_REVERSE,
+
+    /********************/
+    /*** ARMING SETUP ***/
+    /********************/
+    PARAM_ARM_THRESHOLD,
+
+    // keep track of size of params array
+    PARAMS_COUNT
 } param_id_t;
 
-typedef enum
+typedef enum uint8_t
 {
-  PARAM_TYPE_INT32,
-  PARAM_TYPE_FLOAT,
-  PARAM_TYPE_INVALID
+    PARAM_TYPE_INT32,
+    PARAM_TYPE_FLOAT,
+    PARAM_TYPE_INVALID
 } param_type_t;
-
-// type definitions
-typedef struct
-{
-  uint8_t version;
-  uint16_t size;
-  uint8_t magic_be;                       // magic number, should be 0xBE
-
-  int32_t values[PARAMS_COUNT];
-  char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
-  param_type_t types[PARAMS_COUNT];
-
-  uint8_t magic_ef;                       // magic number, should be 0xEF
-  uint8_t chk;                            // XOR checksum
-} params_t;
-
-// global variable declarations
-extern params_t _params;
 
 // function declarations
 
@@ -251,12 +264,15 @@ float get_param_float(param_id_t id);
  * @param id The ID of the parameter
  * @return The name of the parameter
  */
-char * get_param_name(param_id_t id);
+char *get_param_name(param_id_t id);
 
 /**
  * @brief Get the type of a parameter
  * @param id The ID of the parameter
  * @return The type of the parameter
+ * This returns one of three possible types
+ * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
+ * See line 165
  */
 param_type_t get_param_type(param_id_t id);
 
