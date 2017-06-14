@@ -111,7 +111,7 @@ void set_param_defaults(void)
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
+  init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 3000000); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
