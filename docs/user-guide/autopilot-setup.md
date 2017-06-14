@@ -1,6 +1,6 @@
 # Compatible hardware
 
-As of march, 2017, ROSflight is only supported on flight controllers with STM32F103 processors.  Specifically, the naze32 and the flip32.  Both the 6-DOF and 10-DOF versions of each board are fully supported.  We have had most success with flip32 boards purchased directly from [readytoflyquads.com](www.readytoflyquads.com).  We have had weird issues with knock-off boards from Chinese vendors.
+As of June 2017 ROSflight is only supported on flight controllers with STM32F103 processors, specifically, the naze32 and the flip32.  Both the 6-DOF and 10-DOF versions of each board are fully supported.  We have had most success with flip32 boards purchased directly from [readytoflyquads.com](http://www.readytoflyquads.com/).  We have had weird issues with knock-off boards from Chinese vendors.
 
 # Flashing firmware using the Cleanflight Configurator
 
@@ -21,7 +21,7 @@ As of march, 2017, ROSflight is only supported on flight controllers with STM32F
 
 # Flashing Firmware using stm32flash (CLI Linux)
 
-You can also use stm32flash to flash firmware.  This is helpful if you need a command-line interface.
+You can also use stm32flash to flash firmware.  This is helpful if you need (or prefer) a command-line interface.
 
 * Download and install stm32flash
 ``` bash
@@ -33,8 +33,8 @@ rm -rf stm32flash-code
 ```
 * Make sure you are in the dialout group (same instructions as above)
 * Short boot pins, restart the naze (by unplugging and plugging back in)
-* Download the latest ROSflight.hex file [here](https://github.com/rosflight/firmware/releases).
+* Download the latest rosflight.hex file [here](https://github.com/rosflight/firmware/releases).
 * Flash the firmware to the proper device (replace `/dev/ttyUSB0`)
 ``` bash
-    stm32flash -w ROSflight.hex -v -g 0x0 -b 921600 /dev/ttyUSB0
+    stm32flash -w rosflight.hex -v -g 0x0 -b 921600 /dev/ttyUSB0
 ```
