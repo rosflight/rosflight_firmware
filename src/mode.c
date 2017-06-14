@@ -47,6 +47,7 @@
 armed_state_t _armed_state;
 error_state_t _error_state;
 
+
 void init_mode(void)
 {
   _armed_state = 0x00;
@@ -60,11 +61,34 @@ bool arm(void)
     mavlink_log_error("Unable to arm due to error code %d", _error_state);
     return false;
   }
-  if (!(_armed_state & ARMED))
+
+  else if (get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
   {
-    _armed_state |= ARMED;
-    led1_on();
-    return true;
+    static bool started_gyro_calibration = false;
+    if (!started_gyro_calibration && !(_armed_state & ARMED))
+    {
+      start_gyro_calibration();
+      started_gyro_calibration = true;
+      return false;
+    }
+    else if (gyro_calibration_complete())
+    {
+      started_gyro_calibration = false;
+      _armed_state |= ARMED;
+      led1_on();
+      return true;
+    }
+    return false;
+  }
+  else
+  {
+    if (!(_armed_state & ARMED))
+    {
+      _armed_state |= ARMED;
+      led1_on();
+      return true;
+    }
+    return false;
   }
   return false;
 }
