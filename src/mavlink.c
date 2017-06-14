@@ -40,6 +40,7 @@
 
 // global variable definitions
 mavlink_system_t mavlink_system;
+static bool mavlink_initialized = false;
 
 // function definitions
 void init_mavlink(void)
@@ -52,12 +53,13 @@ void init_mavlink(void)
   _offboard_control_time = 0;
 
   mavlink_log_warning("rebooting", NULL);
+  mavlink_initialized = true;
 }
 
 // implement for mavlink convenience functions
 inline void comm_send_ch(mavlink_channel_t chan, uint8_t ch)
 {
-  if (chan == MAVLINK_COMM_0)
+  if (chan == MAVLINK_COMM_0 && mavlink_initialized)
   {
     serial_write(ch);
   }

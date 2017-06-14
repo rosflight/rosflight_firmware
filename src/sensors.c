@@ -100,6 +100,14 @@ void init_sensors(void)
   _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
   sensors_init();
   imu_register_callback(&imu_ISR);
+
+  // See if the IMU is uncalibrated, and throw an error if it is
+  if (get_param_float(PARAM_ACC_X_BIAS) == 0.0 && get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
+      get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
+      get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
+  {
+    _error_state |= ERROR_UNCALIBRATED_IMU;
+  }
 }
 
 
@@ -363,6 +371,10 @@ static void calibrate_accel(void)
         set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
         set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
         set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
+
+        // clear uncalibrated IMU flag
+        _error_state &= ~(ERROR_UNCALIBRATED_IMU);
+
         mavlink_log_info("IMU offsets captured", NULL);
 
         // reset the estimated state

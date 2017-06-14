@@ -42,7 +42,7 @@
 
 #include "param.h"
 #include "mixer.h"
-//#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
+#include "rc.h"
 
 // type definitions
 typedef struct
@@ -192,6 +192,8 @@ void set_param_defaults(void)
 
   init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f); // Scale factor to apply to IMU measurements - Read-Only | 0.5 | 2.0
 
+  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "GYRO_CAL_ON_ARM", false); // Calibrate gyros when arming - generally only for multirotors | 0 | 1
+
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0.0f); // Constant z-bias of gyroscope readings | -1.0 | 1.0
@@ -248,7 +250,7 @@ void set_param_defaults(void)
   /***************************/
   /*** FRAME CONFIGURATION ***/
   /***************************/
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X); // Which mixer to choose - See Mixer documentation | 0 | 5
+  init_param_int(PARAM_MIXER, "MIXER", INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 5
 
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false); // switches on passthrough commands for fixedwing operation | 0 | 1
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0); // reverses elevator servo output | 0 | 1
@@ -333,16 +335,27 @@ void param_change_callback(param_id_t id)
     break;
 
   case PARAM_RC_TYPE:
-    init_PWM();
-    break;
   case PARAM_MOTOR_PWM_SEND_RATE:
-    init_PWM();
-    break;
   case PARAM_MOTOR_MIN_PWM:
     init_PWM();
     break;
   case PARAM_MIXER:
     init_mixing();
+    break;
+
+  case PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL:
+  case PARAM_RC_THROTTLE_OVERRIDE_CHANNEL:
+  case PARAM_RC_ATT_CONTROL_TYPE_CHANNEL:
+  case PARAM_RC_ARM_CHANNEL:
+  case PARAM_RC_X_CHANNEL:
+  case PARAM_RC_Y_CHANNEL:
+  case PARAM_RC_Z_CHANNEL:
+  case PARAM_RC_F_CHANNEL:
+  case PARAM_RC_SWITCH_5_DIRECTION:
+  case PARAM_RC_SWITCH_6_DIRECTION:
+  case PARAM_RC_SWITCH_7_DIRECTION:
+  case PARAM_RC_SWITCH_8_DIRECTION:
+    init_rc();
     break;
 
   default:

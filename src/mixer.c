@@ -124,7 +124,7 @@ void init_mixing()
     _error_state |= ERROR_INVALID_MIXER;
   }
 
-  mixer_to_use = array_of_mixers[get_param_int(PARAM_MIXER)];
+  mixer_to_use = array_of_mixers[mixer_choice];
 
   for (int8_t i=0; i<8; i++)
   {
