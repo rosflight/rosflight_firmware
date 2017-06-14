@@ -96,11 +96,11 @@ static uint8_t compute_checksum(void)
 void init_params(void)
 {
   memory_init();
-//  if (!read_params())
-//  {
+  if (!read_params())
+  {
     set_param_defaults();
-//    write_params();
-//  }
+    write_params();
+  }
 
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     param_change_callback((param_id_t) id);
