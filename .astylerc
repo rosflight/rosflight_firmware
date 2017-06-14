@@ -7,4 +7,3 @@ align-pointer=name
 align-reference=name
 max-code-length=120
 suffix=none
---ignore-exclude-errors-x

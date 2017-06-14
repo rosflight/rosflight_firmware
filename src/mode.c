@@ -118,7 +118,7 @@ bool check_failsafe(void)
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if(pwm_read(i) < 900 || pwm_read(i) > 2100)
+      if (pwm_read(i) < 900 || pwm_read(i) > 2100)
       {
         failsafe = true;
       }
@@ -225,7 +225,7 @@ bool check_mode()
     {
       if (rc_switch(RC_SWITCH_ARM))
       {
-        if ( !(_armed_state & ARMED))
+        if (!(_armed_state & ARMED))
           arm();
       }
       else

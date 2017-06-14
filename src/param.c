@@ -80,7 +80,7 @@ static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float
 static uint8_t compute_checksum(void)
 {
   uint8_t chk = 0;
-  const uint8_t * p;
+  const uint8_t *p;
 
   for (p = (const uint8_t *)&params.values; p < ((const uint8_t *)&params.values + 4*PARAMS_COUNT); p++)
     chk ^= *p;
