@@ -50,6 +50,7 @@ typedef enum
   ERROR_RC_LOST = 0x04,
   ERROR_UNHEALTHY_ESTIMATOR = 0x08,
   ERROR_TIME_GOING_BACKWARDS = 0x10,
+  ERROR_UNCALIBRATED_IMU = 0x20,
 } error_state_t;
 extern error_state_t _error_state;
 

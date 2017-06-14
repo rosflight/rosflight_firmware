@@ -80,6 +80,7 @@ bool arm(void)
     }
     return false;
   }
+
   else
   {
     if (!(_armed_state & ARMED))
