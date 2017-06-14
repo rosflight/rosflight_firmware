@@ -147,6 +147,10 @@ bool check_failsafe(void)
 
     // clear the RC Lost error
     _error_state &= ~(ERROR_RC_LOST);
+    if (_armed_state & ARMED)
+      led1_on();
+    else
+      led1_off();
   }
 
   return failsafe;
