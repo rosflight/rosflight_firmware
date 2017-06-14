@@ -98,7 +98,7 @@ static mixer_t X8_mixing =
 
 static mixer_t* mixer_to_use;
 
-static mixer_t *array_of_mixers[NUM_MIXERS] =
+static mixer_t *array_of_mixers[INVALID_MIXER] =
 {
   &quadcopter_plus_mixing,
   &quadcopter_x_mixing,
@@ -116,7 +116,7 @@ void init_mixing()
 
   uint8_t mixer_choice = get_param_int(PARAM_MIXER);
 
-  if (mixer_choice >= NUM_MIXERS)
+  if (mixer_choice >= INVALID_MIXER)
   {
     mavlink_log_error("Invalid Mixer Choice", NULL);
     mixer_choice = 0;
