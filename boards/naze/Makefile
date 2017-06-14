@@ -51,8 +51,8 @@ A2L=arm-none-eabi-addr2line
 #################################
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
-ROSFLIGHT_DIR = ..
-TURBOTRIG_DIR = ../lib/turbotrig
+ROSFLIGHT_DIR = ../..
+TURBOTRIG_DIR = $(ROSFLIGHT_DIR)/lib/turbotrig
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
 STDPERIPH_DIR	= $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
@@ -128,10 +128,10 @@ CSOURCES =  $(CMSIS_SRC) \
 			$(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
 			$(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
 			$(addprefix $(BOARD_DIR)/, $(BOARD_SRC)) \
-			$(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) 
+			$(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC))
 
 # Compile a list of C++ Source Files
-CXXSOURCES = 
+CXXSOURCES =
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
@@ -216,7 +216,7 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.s
 
 #################################
 # Recipes
-################################# 
+#################################
 .PHONY: all flash clean
 
 clean:
@@ -225,4 +225,3 @@ clean:
 flash: $(TARGET_HEX)
 	stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
 	stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
-
