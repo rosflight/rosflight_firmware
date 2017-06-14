@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * 
+ *
  * * Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -114,8 +114,8 @@ static void init_switches()
 
 void init_rc()
 {
-    init_sticks();
-    init_switches();
+  init_sticks();
+  init_switches();
 }
 
 float rc_stick(rc_stick_t channel)
@@ -135,52 +135,53 @@ bool rc_switch_mapped(rc_switch_t channel)
 
 bool receive_rc()
 {
-    static uint32_t last_rc_receive_time = 0;
+  static uint32_t last_rc_receive_time = 0;
 
-    uint32_t now = clock_millis();
+  uint32_t now = clock_millis();
 
-    // if it has been more than 20ms then look for new RC values and parse them
-    if (now - last_rc_receive_time < 20)
+  // if it has been more than 20ms then look for new RC values and parse them
+  if (now - last_rc_receive_time < 20)
+  {
+    return false;
+  }
+  last_rc_receive_time = now;
+
+  // read and normalize stick values
+  for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
+  {
+    uint16_t pwm = pwm_read(sticks[channel].channel);
+    if (sticks[channel].one_sided) //generally only F is one_sided
     {
-        return false;
+      stick_values[channel] = (float)(pwm - 1000) / (1000.0);
     }
-    last_rc_receive_time = now;
-
-    // read and normalize stick values
-    for (rc_stick_t channel = 0; channel < RC_STICKS_COUNT; channel++)
+    else
     {
-      uint16_t pwm = pwm_read(sticks[channel].channel);
-      if (sticks[channel].one_sided) //generally only F is one_sided
+      stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+    }
+  }
+
+  // read and interpret switch values
+  for (rc_switch_t channel = 0; channel < RC_SWITCHES_COUNT; channel++)
+  {
+    if (switches[channel].mapped)
+    {
+      //switch is on/off dependent on its default direction as set in the params/init_switches
+      if (switches[channel].direction <  0)
       {
-        stick_values[channel] = (float)(pwm - 1000) / (1000.0);
+        switch_values[channel] = pwm_read(switches[channel].channel) < 1500;
       }
       else
       {
-        stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+        switch_values[channel] = pwm_read(switches[channel].channel) >= 1500;
       }
     }
-
-    // read and interpret switch values
-    for (rc_switch_t channel = 0; channel < RC_SWITCHES_COUNT; channel++)
+    else
     {
-      if (switches[channel].mapped)
-      {
-        if (switches[channel].direction < 0) //switch is on/off dependent on its default direction as set in the params/init_switches
-        {
-          switch_values[channel] = pwm_read(switches[channel].channel) < 1500;
-        }
-        else
-        {
-          switch_values[channel] = pwm_read(switches[channel].channel) >= 1500;
-        }
-      }
-      else
-      {
-        switch_values[channel] = false;
-      }
+      switch_values[channel] = false;
     }
+  }
 
-    // Signal to the mux that we need to compute a new combined command
-    _new_command = true;
-    return true;
+  // Signal to the mux that we need to compute a new combined command
+  _new_command = true;
+  return true;
 }

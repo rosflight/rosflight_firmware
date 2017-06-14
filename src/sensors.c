@@ -1,22 +1,22 @@
 /*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * 
+ *
  * * Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -127,14 +127,14 @@ bool update_sensors()
     if (now > (last_time_look_for_disarmed_sensors + 500))
     {
       last_time_look_for_disarmed_sensors = now;
-      if(!sonar_present())
+      if (!sonar_present())
       {
 //        if(sonar_check())
 //        {
 //          mavlink_log_info("FOUND SONAR", NULL);
 //        }
       }
-      if(!diff_pressure_present())
+      if (!diff_pressure_present())
       {
 //        if(diff_pressure_check())
 //        {
@@ -152,14 +152,14 @@ bool update_sensors()
   }
 
   // Update whatever sensos are available
-  if(baro_present())
+  if (baro_present())
   {
     baro_read(&_baro_altitude, &_baro_pressure, &_baro_temperature);
   }
 
-  if(diff_pressure_present())
+  if (diff_pressure_present())
   {
-    if(baro_present())
+    if (baro_present())
     {
       diff_pressure_set_atm(_baro_pressure);
     }
@@ -256,7 +256,7 @@ static bool update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages then something is wrong
-    if(clock_millis() > last_imu_update_ms + 1000)
+    if (clock_millis() > last_imu_update_ms + 1000)
     {
       // Tell the board to fix it
       last_imu_update_ms = clock_millis();
@@ -309,7 +309,8 @@ static vector_t vector_max(vector_t a, vector_t b)
 {
   vector_t out = {a.x > b.x ? a.x : b.x,
                   a.y > b.y ? a.y : b.y,
-                  a.z > b.z ? a.z : b.z};
+                  a.z > b.z ? a.z : b.z
+                 };
   return out;
 }
 
@@ -317,7 +318,8 @@ static vector_t vector_min(vector_t a, vector_t b)
 {
   vector_t out = {a.x < b.x ? a.x : b.x,
                   a.y < b.y ? a.y : b.y,
-                  a.z < b.z ? a.z : b.z};
+                  a.z < b.z ? a.z : b.z
+                 };
   return out;
 }
 
@@ -354,7 +356,8 @@ static void calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)count,
+                                          vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
@@ -440,11 +443,11 @@ static void correct_mag(void)
 
   // correct according to known soft iron bias - converts to nT
   _mag.x = get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A12_COMP)*mag_hard_y +
-      get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
+           get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
   _mag.y = get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A22_COMP)*mag_hard_y +
-      get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
+           get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
   _mag.z = get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + get_param_float(PARAM_MAG_A32_COMP)*mag_hard_y +
-      get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
+           get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }
 
 

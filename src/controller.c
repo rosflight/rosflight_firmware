@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * 
+ *
  * * Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -77,8 +77,8 @@ static pid_t pid_pitch;
 static pid_t pid_pitch_rate;
 static pid_t pid_yaw_rate;
 
-static void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id, float *current_x,
-              float *current_xdot, float *commanded_x, float *output, float max, float min)
+static void init_pid(pid_t *pid, param_id_t kp_param_id, param_id_t ki_param_id, param_id_t kd_param_id,
+                     float *current_x, float *current_xdot, float *commanded_x, float *output, float max, float min)
 {
   pid->kp_param_id = kp_param_id;
   pid->ki_param_id = ki_param_id;
@@ -129,8 +129,8 @@ static void run_pid(pid_t *pid, float dt)
     {
       if (dt > 0.0f)
       {
-        pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator + 2.0f/(2.0f*pid->tau+dt)*((
-                                                                                                                     *pid->current_x) - pid->prev_x);
+        pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
+                                + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
         pid->prev_x = *pid->current_x;
         d_term = get_param_float(pid->kd_param_id)*pid->differentiator;
       }
@@ -142,7 +142,7 @@ static void run_pid(pid_t *pid, float dt)
   }
 
   // If there is an integrator, we are armed, and throttle is high
-  if ( (pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (_combined_control.F.value > 0.1))
+  if ((pid->ki_param_id < PARAMS_COUNT) && (_armed_state == ARMED) && (_combined_control.F.value > 0.1))
   {
     if (get_param_float(pid->ki_param_id) > 0.0)
     {
