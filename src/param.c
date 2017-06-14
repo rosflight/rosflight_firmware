@@ -192,7 +192,7 @@ void set_param_defaults(void)
 
   init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f); // Scale factor to apply to IMU measurements - Read-Only | 0.5 | 2.0
 
-  init_param_float(PARAM_CALIBRATE_GYRO_ON_ARM, "GYRO_CAL_ON_ARM", false); // Calibrate gyros when arming - generally only for multirotors | 0 | 1
+  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "GYRO_CAL_ON_ARM", false); // Calibrate gyros when arming - generally only for multirotors | 0 | 1
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
