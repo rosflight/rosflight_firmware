@@ -60,6 +60,9 @@ extern float _sonar_range;
 extern bool _mag_present;
 extern vector_t _mag;
 
+extern bool _lidar_present;
+extern float _lidar_altitude;
+
 // function declarations
 void init_sensors(void);
 bool update_sensors();

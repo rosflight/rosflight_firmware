@@ -270,21 +270,24 @@ float sonar_read(void)
   return mb1242_read();
 }
 
-bool lidar_present(void) {
+bool lidar_present(void) 
+{
+  _lidar_present = (sen13680_read() < 257);
   return _lidar_present;
 }
 
-bool lidar_check(void) {
-  if (!_lidar_present)
-  {
+bool lidar_check(void) 
+{
+  if (!_lidar_present) {
     sen13680_init();
   }
   sen13680_update();
-  _lidar_present = sen13680_read < 257;
+  _lidar_present = (sen13680_read() < 257);
   return _lidar_present;
 }
 
-float lidar_read(void) {
+float lidar_read(void) 
+{
   sen13680_update();
   return sen13680_read();
 }

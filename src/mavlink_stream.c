@@ -59,6 +59,7 @@ static void mavlink_send_diff_pressure(void);
 static void mavlink_send_baro(void);
 static void mavlink_send_sonar(void);
 static void mavlink_send_mag(void);
+static void mavlink_send_lidar(void);
 static void mavlink_send_low_priority(void);
 
 // typedefs
@@ -83,6 +84,7 @@ static mavlink_stream_t mavlink_streams[MAVLINK_STREAM_COUNT] =
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_mag },
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rosflight_output_raw },
   { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_rc_raw },
+  { .period_us = 0,  .next_time_us = 0, .send_function = mavlink_send_lidar },
 
   { .period_us = 5000,   .next_time_us = 0, .send_function = mavlink_send_low_priority }
 };
@@ -214,6 +216,14 @@ static void mavlink_send_mag(void)
                                _mag.x,
                                _mag.y,
                                _mag.z);
+  }
+}
+
+static void mavlink_send_lidar(void) 
+{
+  if (lidar_present())
+  {
+    mavlink_msg_lidar_send(MAVLINK_COMM_0, _lidar_altitude);
   }
 }
 
