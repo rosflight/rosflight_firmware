@@ -201,7 +201,8 @@ static void mavlink_send_sonar(void)
 {
   if (sonar_present())
   {
-    mavlink_msg_small_sonar_send(MAVLINK_COMM_0,
+    mavlink_msg_small_range_send(MAVLINK_COMM_0,
+                                ROSFLIGHT_RANGE_SONAR,
                                  _sonar_range,
                                  8.0,
                                  0.25);
@@ -223,7 +224,11 @@ static void mavlink_send_lidar(void)
 {
   if (lidar_present())
   {
-    mavlink_msg_lidar_send(MAVLINK_COMM_0, _lidar_altitude);
+    mavlink_msg_small_range_send(MAVLINK_COMM_0,
+                                ROSFLIGHT_RANGE_LIDAR,
+                                 _lidar_range,
+                                 40.0,
+                                 0.25);
   }
 }
 

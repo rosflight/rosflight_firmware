@@ -73,7 +73,7 @@ float _sonar_range;
 
 //lidar
 bool _lidar_present = false;
-float _lidar_altitude;
+float _lidar_range;
 
 // Magnetometer
 bool _mag_present = false;
@@ -183,7 +183,7 @@ bool update_sensors()
 
   if (lidar_present())
   {
-    _lidar_altitude = lidar_read();
+    _lidar_range = lidar_read();
   }
 
   // Return whether or not we got new IMU data

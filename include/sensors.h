@@ -61,7 +61,7 @@ extern bool _mag_present;
 extern vector_t _mag;
 
 extern bool _lidar_present;
-extern float _lidar_altitude;
+extern float _lidar_range;
 
 // function declarations
 void init_sensors(void);

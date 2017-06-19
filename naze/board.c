@@ -272,7 +272,7 @@ float sonar_read(void)
 
 bool lidar_present(void) 
 {
-  _lidar_present = (sen13680_read() < 257);
+  _lidar_present = (sen13680_read() > -1 && sen13680_read() < 257);
   return _lidar_present;
 }
 
@@ -282,8 +282,7 @@ bool lidar_check(void)
     sen13680_init();
   }
   sen13680_update();
-  _lidar_present = (sen13680_read() < 257);
-  return _lidar_present;
+  return lidar_present();
 }
 
 float lidar_read(void) 
