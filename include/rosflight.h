@@ -31,8 +31,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSFLIGHT_H_
-#define ROSFLIGHT_H_
+#ifndef ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
+#define ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 
 #include "board.h"
 #include "param.h"
@@ -57,8 +57,9 @@ private:
 
 
 public:
+  ROSflight(Board& board);
 
-  Board *board_;
+  Board& board_;
   Mavlink mavlink_;
 
   Params params_;
@@ -71,8 +72,6 @@ public:
   RC rc_;
 
   uint32_t loop_time_us;
-
-  ROSflight(Board *_board);
 
   /**
   * @brief Main initialization routine for the ROSflight autopilot flight stack
@@ -89,4 +88,4 @@ public:
 
 }
 
-#endif // ROSFLIGHT_H_
+#endif // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H

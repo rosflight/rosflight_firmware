@@ -35,10 +35,8 @@
 
 int main(void)
 {
-  rosflight::Naze32 board;
-  board.init_board();
-
-  rosflight::ROSflight firmware(&board);
+  rosflight_firmware::Naze32 board;
+  rosflight_firmware::ROSflight firmware(board);
 
   firmware.rosflight_init();
 

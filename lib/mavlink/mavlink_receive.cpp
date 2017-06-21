@@ -36,6 +36,7 @@
 #include "mux.h"
 #include "sensors.h"
 //#include "rc.h"
+#include "rosflight.h"
 
 #include "mavlink.h"
 
@@ -78,10 +79,10 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       result = RF_->sensors_.start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      RF_->board_->baro_calibrate();
+      RF_->board_.baro_calibrate();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      RF_->board_->diff_pressure_calibrate();
+      RF_->board_.diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       RF_->controller_.calculate_equilbrium_torque_from_rc();
@@ -98,7 +99,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       send_message(msg);
       break;
     default:
-      log_error(this, "unsupported ROSFLIGHT CMD %d", cmd.command);
+      // log_error(this, "unsupported ROSFLIGHT CMD %d", cmd.command);
       result = false;
       break;
     }
@@ -112,14 +113,14 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
-    RF_->board_->clock_delay(20);
-    RF_->board_->board_reset(reboot_to_bootloader_flag);
+    RF_->board_.clock_delay(20);
+    RF_->board_.board_reset(reboot_to_bootloader_flag);
   }
 }
 
 void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint64_t now_us = RF_->board_->clock_micros();
+  uint64_t now_us = RF_->board_.clock_micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
@@ -135,7 +136,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t mavlink_offboard_control;
-  _offboard_control_time = RF_->board_->clock_micros();
+  _offboard_control_time = RF_->board_.clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
   // put values into standard message
@@ -208,9 +209,9 @@ void Mavlink::handle_mavlink_message(void)
 // function definitions
 void Mavlink::receive(void)
 {
-  while (RF_->board_->serial_bytes_available())
+  while (RF_->board_.serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_->serial_read(), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_.serial_read(), &in_buf, &status))
       handle_mavlink_message();
   }
 }

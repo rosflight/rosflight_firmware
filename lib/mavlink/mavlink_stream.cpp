@@ -39,6 +39,7 @@
 #include "param.h"
 #include "mode.h"
 #include "rc.h"
+#include "rosflight.h"
 
 namespace rosflight_firmware
 {
@@ -84,7 +85,7 @@ void Mavlink::mavlink_send_status(void)
                                     status,
                                     (uint8_t)RF_->fsm_.error_state(),
                                     control_mode,
-                                    RF_->board_->num_sensor_errors(),
+                                    RF_->board_.num_sensor_errors(),
                                     RF_->get_loop_time_us());
   send_message(msg);
 }
@@ -135,7 +136,7 @@ void Mavlink::mavlink_send_output_raw(void)
 {
   mavlink_message_t msg;
     mavlink_msg_rosflight_output_raw_pack(sysid, compid, &msg,
-                                      RF_->board_->clock_millis(),
+                                      RF_->board_.clock_millis(),
                                       RF_->mixer_._outputs);
     send_message(msg);
 }
@@ -144,23 +145,23 @@ void Mavlink::mavlink_send_rc_raw(void)
 {
   mavlink_message_t msg;
   mavlink_msg_rc_channels_pack(sysid, compid, &msg,
-                               RF_->board_->clock_millis(),
+                               RF_->board_.clock_millis(),
                                0,
-                               RF_->board_->pwm_read(0),
-                               RF_->board_->pwm_read(1),
-                               RF_->board_->pwm_read(2),
-                               RF_->board_->pwm_read(3),
-                               RF_->board_->pwm_read(4),
-                               RF_->board_->pwm_read(5),
-                               RF_->board_->pwm_read(6),
-                               RF_->board_->pwm_read(7),
+                               RF_->board_.pwm_read(0),
+                               RF_->board_.pwm_read(1),
+                               RF_->board_.pwm_read(2),
+                               RF_->board_.pwm_read(3),
+                               RF_->board_.pwm_read(4),
+                               RF_->board_.pwm_read(5),
+                               RF_->board_.pwm_read(6),
+                               RF_->board_.pwm_read(7),
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
   send_message(msg);
 }
 
 void Mavlink::mavlink_send_diff_pressure(void)
 {
-  if (RF_->board_->diff_pressure_present())
+  if (RF_->board_.diff_pressure_present())
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
@@ -173,7 +174,7 @@ void Mavlink::mavlink_send_diff_pressure(void)
 
 void Mavlink::mavlink_send_baro(void)
 {
-  if (RF_->board_->baro_present())
+  if (RF_->board_.baro_present())
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid, compid, &msg,
@@ -186,7 +187,7 @@ void Mavlink::mavlink_send_baro(void)
 
 void Mavlink::mavlink_send_sonar(void)
 {
-  if (RF_->board_->sonar_present())
+  if (RF_->board_.sonar_present())
   {
     mavlink_message_t msg;
     mavlink_msg_small_sonar_pack(sysid, compid, &msg,
@@ -199,7 +200,7 @@ void Mavlink::mavlink_send_sonar(void)
 
 void Mavlink::mavlink_send_mag(void)
 {
-  if (RF_->board_->mag_present())
+  if (RF_->board_.mag_present())
   {
     mavlink_message_t msg;
     mavlink_msg_small_mag_pack(sysid, compid, &msg,
@@ -218,7 +219,7 @@ void Mavlink::mavlink_send_low_priority(void)
 // function definitions
 void Mavlink::stream()
 {
-  uint64_t time_us = RF_->board_->clock_micros();
+  uint64_t time_us = RF_->board_.clock_micros();
   for (int i = 0; i < STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams[i].next_time_us)

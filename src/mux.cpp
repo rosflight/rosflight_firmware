@@ -124,7 +124,7 @@ void Mux::interpret_rc(void)
 
 bool Mux::stick_deviated(uint8_t channel)
 {
-  uint32_t now = RF_->board_->clock_millis();
+  uint32_t now = RF_->board_.clock_millis();
 
   // if we are still in the lag time, return true
   if (now - rc_stick_override[channel].last_override_time < (uint32_t)RF_->params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
@@ -232,7 +232,7 @@ bool Mux::mux_inputs()
     interpret_rc();
 
     // Check for offboard control timeout (100 ms)
-    if (RF_->board_->clock_micros() > _offboard_control.stamp_us + 100000)
+    if (RF_->board_.clock_micros() > _offboard_control.stamp_us + 100000)
     {
       // If it has been longer than 100 ms, then disable the offboard control
       _offboard_control.F.active = false;
@@ -253,11 +253,11 @@ bool Mux::mux_inputs()
     // Light to indicate override
     if (rc_override)
     {
-      RF_->board_->led0_on();
+      RF_->board_.led0_on();
     }
     else
     {
-      RF_->board_->led0_off();
+      RF_->board_.led0_off();
     }
   }
   return true;

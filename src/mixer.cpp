@@ -102,7 +102,7 @@ void Mixer::init_PWM()
   }
   int16_t motor_refresh_rate = RF_->params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
   int16_t off_pwm = RF_->params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_->board_->pwm_init(useCPPM, motor_refresh_rate, off_pwm);
+  RF_->board_.pwm_init(useCPPM, motor_refresh_rate, off_pwm);
 }
 
 
@@ -131,7 +131,7 @@ void Mixer::write_motor(uint8_t index, float value)
   _outputs[index] = value;
   int32_t pwm_us = value * (RF_->params_.get_param_int(PARAM_MOTOR_MAX_PWM) - RF_->params_.get_param_int(
                               PARAM_MOTOR_MIN_PWM)) + RF_->params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_->board_->pwm_write(index, pwm_us);
+  RF_->board_.pwm_write(index, pwm_us);
 }
 
 
@@ -146,7 +146,7 @@ void Mixer::write_servo(uint8_t index, float value)
     value = -1.0;
   }
   _outputs[index] = value;
-  RF_->board_->pwm_write(index, _outputs[index] * 500 + 1500);
+  RF_->board_.pwm_write(index, _outputs[index] * 500 + 1500);
 }
 
 

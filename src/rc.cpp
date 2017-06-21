@@ -141,7 +141,7 @@ bool RC::receive_rc()
 {
   static uint32_t last_rc_receive_time = 0;
 
-  uint32_t now = RF_->board_->clock_millis();
+  uint32_t now = RF_->board_.clock_millis();
 
   // if it has been more than 20ms then look for new RC values and parse them
   if (now - last_rc_receive_time < 20)
@@ -153,7 +153,7 @@ bool RC::receive_rc()
   // read and normalize stick values
   for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
   {
-    uint16_t pwm = RF_->board_->pwm_read(sticks[channel].channel);
+    uint16_t pwm = RF_->board_.pwm_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
       stick_values[channel] = (float)(pwm - 1000) / (1000.0);
@@ -171,11 +171,11 @@ bool RC::receive_rc()
     {
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_->board_->pwm_read(switches[channel].channel) < 1500;
+        switch_values[channel] = RF_->board_.pwm_read(switches[channel].channel) < 1500;
       }
       else
       {
-        switch_values[channel] = RF_->board_->pwm_read(switches[channel].channel) >= 1500;
+        switch_values[channel] = RF_->board_.pwm_read(switches[channel].channel) >= 1500;
       }
     }
     else

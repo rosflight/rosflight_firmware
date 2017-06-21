@@ -76,7 +76,7 @@ bool Mode::arm(void)
     {
       started_gyro_calibration = false;
       _armed = true;
-      RF_->board_->led1_on();
+      RF_->board_.led1_on();
       return true;
     }
     return false;
@@ -88,7 +88,7 @@ bool Mode::arm(void)
     if (!_armed)
     {
       _armed = true;
-      RF_->board_->led1_on();
+      RF_->board_.led1_on();
       return true;
     }
     return false;
@@ -99,14 +99,14 @@ bool Mode::arm(void)
 void Mode::disarm(void)
 {
   _armed = false;
-  RF_->board_->led1_off();
+  RF_->board_.led1_off();
 }
 
 bool Mode::check_failsafe(void)
 {
   bool failsafe = false;
 
-  if (RF_->board_->pwm_lost())
+  if (RF_->board_.pwm_lost())
   {
     failsafe = true;
     // set the RC Lost error flag
@@ -117,7 +117,7 @@ bool Mode::check_failsafe(void)
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_->params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_->board_->pwm_read(i) < 900 || RF_->board_->pwm_read(i) > 2100)
+      if (RF_->board_.pwm_read(i) < 900 || RF_->board_.pwm_read(i) > 2100)
       {
         failsafe = true;
       }
@@ -130,7 +130,7 @@ bool Mode::check_failsafe(void)
     static uint8_t count = 0;
     if (count > 25)
     {
-      RF_->board_->led1_toggle();
+      RF_->board_.led1_toggle();
       count = 0;
     }
     count++;
@@ -148,9 +148,9 @@ bool Mode::check_failsafe(void)
     clear_error_code(ERROR_RC_LOST);
 
     if (_armed)
-      RF_->board_->led1_on();
+      RF_->board_.led1_on();
     else
-      RF_->board_->led1_off();
+      RF_->board_.led1_off();
   }
   return failsafe;
 }
@@ -158,7 +158,7 @@ bool Mode::check_failsafe(void)
 
 bool Mode::update_state()
 {
-  uint32_t now_ms = RF_->board_->clock_millis();
+  uint32_t now_ms = RF_->board_.clock_millis();
 
   // see it has been at least 20 ms
   uint32_t dt = now_ms-prev_time_ms;
