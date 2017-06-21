@@ -63,15 +63,8 @@ bool Mode::arm(void)
     //    mavlink_log_error("Unable to arm due to error code %d", _error_state);
     return false;
   }
-  if (!started_gyro_calibration && !_armed)
+  if (!_armed)
   {
-    sensors_->start_gyro_calibration();
-    started_gyro_calibration = true;
-    return false;
-  }
-  else if (sensors_->gyro_calibration_complete())
-  {
-    started_gyro_calibration = false;
     _armed = true;
     board_->led1_on();
     return true;

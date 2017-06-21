@@ -51,9 +51,9 @@ A2L=arm-none-eabi-addr2line
 #################################
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
-ROSFLIGHT_DIR = ..
-MAVLINK_DIR = ../lib/mavlink
-TURBOTRIG_DIR = ../lib/turbotrig
+ROSFLIGHT_DIR   = ../..
+MAVLINK_DIR     = $(ROSFLIGHT_DIR)/lib/mavlink
+TURBOTRIG_DIR   = $(ROSFLIGHT_DIR)/lib/turbotrig
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
 STDPERIPH_DIR	= $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
@@ -137,6 +137,7 @@ CSOURCES =  $(CMSIS_SRC) \
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
                 $(addprefix $(MAVLINK_DIR)/, $(MAVLINK_SRC)) \
                 $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
+
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
@@ -230,7 +231,7 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.s
 
 #################################
 # Recipes
-################################# 
+#################################
 .PHONY: all flash clean
 
 clean:

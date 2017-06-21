@@ -17,4 +17,4 @@ before_script:
   - arm-none-eabi-gcc --version
 
 script:
-  - cd naze && make
+  - make
