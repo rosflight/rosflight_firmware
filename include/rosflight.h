@@ -42,7 +42,7 @@
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
-#include "commlink.h"
+#include "mavlink.h"
 #include "mixer.h"
 #include "mode.h"
 #include "mux.h"
@@ -50,8 +50,6 @@
 
 namespace rosflight
 {
-
-class CommLink;
 
 class ROSflight
 {
@@ -62,7 +60,7 @@ private:
 public:
 
   Board *board_;
-  CommLink *commlink_;
+  Mavlink mavlink_;
 
   Params params_;
   Mode fsm_;
@@ -75,7 +73,7 @@ public:
 
   uint32_t loop_time_us;
 
-  ROSflight(Board *_board, CommLink *_commlink);
+  ROSflight(Board *_board);
 
   /**
   * @brief Main initialization routine for the ROSflight autopilot flight stack

@@ -38,8 +38,7 @@ int main(void)
   rosflight::Naze32 board;
   board.init_board();
 
-  rosflight::Mavlink mavlink;
-  rosflight::ROSflight firmware(&board, &mavlink);
+  rosflight::ROSflight firmware(&board);
 
   firmware.rosflight_init();
 
