@@ -33,7 +33,9 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 
 #include <stdint.h>
+#include "rosflight.h"
 #include "mavlink.h"
+
 
 namespace rosflight_firmware {
 

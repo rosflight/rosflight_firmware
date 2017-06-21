@@ -29,14 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "board.h"
-#include "mavlink.h"
-#include "mode.h"
-#include "param.h"
-#include "mux.h"
-#include "sensors.h"
-//#include "rc.h"
-
+#include "rosflight.h"
 #include "mavlink.h"
 
 namespace rosflight_firmware{

@@ -31,14 +31,7 @@
 
 #include <stdbool.h>
 
-#include "board.h"
-#include "mavlink.h"
-#include "mixer.h"
-#include "sensors.h"
-#include "estimator.h"
-#include "param.h"
-#include "mode.h"
-#include "rc.h"
+#include "rosflight.h"
 
 namespace rosflight_firmware
 {

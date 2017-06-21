@@ -39,7 +39,7 @@
 
 #include <turbovec.h>
 
-rosflight::Sensors *IMU_ptr;
+rosflight_firmware::Sensors *IMU_ptr;
 void IMU_ISR_wrapper(void)
 {
   IMU_ptr->IMU_ISR();

@@ -1,6 +1,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_STATE_MANAGER_H
 #define ROSFLIGHT_FIRMWARE_STATE_MANAGER_H
 
+#include <stdint.h>
+
 namespace rosflight_firmware
 {
 
@@ -18,13 +20,26 @@ class StateManager
 
   enum Event
   {
-    EVENT_GYRO_CALIBRATION_COMPLETE;
-    EVENT_GYRO_CALIBRATION_FAILED;
+    EVENT_INITIALIZED,
+    EVENT_REQUEST_ARM,
+    EVENT_REQUEST_DISARM,
+    EVENT_RC_LOST,
+    EVENT_RC_FOUND,
+    EVENT_ERROR,
+    EVENT_NO_ERROR,
+    EVENT_CALIBRATION_COMPLETE,
+    EVENT_CALIBRATION_FAILED,
   };
 
-  enum Error
+  enum
   {
-    ERROR_MEH = 0x01;
+    ERROR_NONE = 0x0000,
+    ERROR_INVALID_MIXER = 0x0001,
+    ERROR_IMU_NOT_RESPONDING = 0x0002,
+    ERROR_RC_LOST = 0x0004,
+    ERROR_UNHEALTHY_ESTIMATOR = 0x0008,
+    ERROR_TIME_GOING_BACKWARDS = 0x0010,
+    ERROR_UNCALIBRATED_IMU = 0x0020,
   };
 
 public:
@@ -35,14 +50,16 @@ public:
   inline const State& state() const { return state_; }
 
   void set_event(Event event);
-  void set_error(Error error);
-  void clear_error(Error error);
+  void set_error(uint16_t error);
+  void clear_error(uint16_t error);
 
 private:
-  ROSflight& rosflight_;
+  ROSflight& RF_;
   State state_;
 
-  enum FsmState;
+  int led_blink_counter_ = 0;
+
+  enum FsmState
   {
     FSM_STATE_INIT,
     FSM_STATE_PREFLIGHT,
@@ -54,17 +71,18 @@ private:
 
   enum FsmEvent
   {
-    FSM_EVENT_INITIALIZED,
-    FSM_EVENT_REQUEST_ARM,
-    FSM_EVENT_REQUEST_DISARM,
-    FSM_EVENT_RC_LOST,
-    FSM_EVENT_RC_FOUND,
-    FSM_EVENT_ERROR,
-    FSM_EVENT_NO_ERROR
+    EVENT_INITIALIZED,
+    EVENT_REQUEST_ARM,
+    EVENT_REQUEST_DISARM,
+    EVENT_RC_LOST,
+    EVENT_RC_FOUND,
+    EVENT_ERROR,
+    EVENT_NO_ERROR,
+    EVENT_CALIBRATION_COMPLETE,
+    EVENT_CALIBRATION_FAILED,
   };
 
   FsmState fsm_state_;
-  void update_fsm(FsmEvent event);
   void process_errors();
 
   void update_leds();

@@ -32,8 +32,20 @@
 #pragma once
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
+#include "printf.h"
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+
+#define commlink_log(objectptr, severity, format, ...) do {\
+  char text[50]; \
+  sprintf(text, format, ##__VA_ARGS__); \
+  objectptr->send_log_message(severity, text); \
+  } while(0)
+
+#define log_critical(objectptr, format, ...) commlink_log(objectptr, 2, format, ##__VA_ARGS__)
+#define log_error(objectptr, format, ...)    commlink_log(objectptr, 3, format, ##__VA_ARGS__)
+#define log_warning(objectptr, format, ...)  commlink_log(objectptr, 4, format, ##__VA_ARGS__)
+#define log_info(objectptr, format, ...)     commlink_log(objectptr, 6, format, ##__VA_ARGS__)
 
 namespace rosflight_firmware {
 
@@ -112,17 +124,17 @@ private:
 
   mavlink_stream_t mavlink_streams[STREAM_COUNT] = {
   //  period_us    last_time_us   send_function
-    { 1000000,     0,             &rosflight::Mavlink::mavlink_send_heartbeat },
-    { 1000000,     0,             &rosflight::Mavlink::mavlink_send_status},
-    { 200000,      0,             &rosflight::Mavlink::mavlink_send_attitude },
-    { 1000,        0,             &rosflight::Mavlink::mavlink_send_imu },
-    { 200000,      0,             &rosflight::Mavlink::mavlink_send_diff_pressure },
-    { 200000,      0,             &rosflight::Mavlink::mavlink_send_baro },
-    { 100000,      0,             &rosflight::Mavlink::mavlink_send_sonar },
-    { 6250,        0,             &rosflight::Mavlink::mavlink_send_mag },
-    { 0,           0,             &rosflight::Mavlink::mavlink_send_output_raw },
-    { 0,           0,             &rosflight::Mavlink::mavlink_send_rc_raw },
-    { 5000,        0,             &rosflight::Mavlink::mavlink_send_low_priority }
+    { 1000000,     0,             &rosflight_firmware::Mavlink::mavlink_send_heartbeat },
+    { 1000000,     0,             &rosflight_firmware::Mavlink::mavlink_send_status},
+    { 200000,      0,             &rosflight_firmware::Mavlink::mavlink_send_attitude },
+    { 1000,        0,             &rosflight_firmware::Mavlink::mavlink_send_imu },
+    { 200000,      0,             &rosflight_firmware::Mavlink::mavlink_send_diff_pressure },
+    { 200000,      0,             &rosflight_firmware::Mavlink::mavlink_send_baro },
+    { 100000,      0,             &rosflight_firmware::Mavlink::mavlink_send_sonar },
+    { 6250,        0,             &rosflight_firmware::Mavlink::mavlink_send_mag },
+    { 0,           0,             &rosflight_firmware::Mavlink::mavlink_send_output_raw },
+    { 0,           0,             &rosflight_firmware::Mavlink::mavlink_send_rc_raw },
+    { 5000,        0,             &rosflight_firmware::Mavlink::mavlink_send_low_priority }
   };
 
 
