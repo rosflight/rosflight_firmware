@@ -64,6 +64,14 @@ void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator
   fsm_->clear_error_code(Mode::ERROR_IMU_NOT_RESPONDING);
   board_->sensors_init();
   board_->imu_register_callback(&IMU_ISR_wrapper);
+
+  // See if the IMU is uncalibrated, and throw an error if it is
+  if (params_->get_param_float(PARAM_ACC_X_BIAS) == 0.0 && params_->get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
+      params_->get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && params_->get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
+      params_->get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && params_->get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
+  {
+    fsm_->set_error_code(Mode::ERROR_UNCALIBRATED_IMU);
+  }
 }
 
 
@@ -321,6 +329,9 @@ void Sensors::calibrate_accel(void)
         params_->set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
         params_->set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
 //        mavlink_log_info("IMU offsets captured", NULL);
+
+        // clear uncalibrated IMU flag
+        fsm_->clear_error_code(Mode::ERROR_UNCALIBRATED_IMU);
 
         // reset the estimated state
         estimator_->reset_state();

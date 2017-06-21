@@ -35,7 +35,10 @@
 
 namespace rosflight {
 
-Mavlink::Mavlink(){}
+Mavlink::Mavlink()
+{
+  initialized = false;
+}
 
 // function definitions
 void Mavlink::init(Board* _board, Params *_params, ROSflight *firmware)
@@ -60,15 +63,20 @@ void Mavlink::init(Board* _board, Params *_params, ROSflight *firmware)
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1), PARAM_STREAM_MAG_RATE);
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_OUTPUT_RAW_RATE);
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
+
+  initialized = true;
 }
 
 void Mavlink::send_message(const mavlink_message_t &msg)
 {
-  uint8_t data[MAVLINK_MAX_PACKET_LEN];
-  uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
-  for (int i = 0; i < len; i++)
+  if (initialized)
   {
-    RF_->board_->serial_write(data[i]);
+    uint8_t data[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
+    for (int i = 0; i < len; i++)
+    {
+      RF_->board_->serial_write(data[i]);
+    }
   }
 }
 

@@ -75,13 +75,14 @@ public:
     CPPM,
   } rc_type_t;
 
-  void init_rc(Board *_board, Params *_params);
+  void init(Board *_board, Params *_params);
+  void init_rc();
   float rc_stick(rc_stick_t channel);
   bool rc_switch(int16_t channel);
   bool rc_switch_mapped(rc_switch_t channel);
   bool receive_rc();
   bool new_command();
-
+  void param_change_callback(uint16_t param_id);
 
 private:
   typedef struct

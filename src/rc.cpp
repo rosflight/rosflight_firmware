@@ -36,12 +36,36 @@
 namespace rosflight
 {
 
-void RC::init_rc(Board *_board, Params *_params)
+void RC::init(Board *_board, Params *_params)
 {
   params = _params;
   board = _board;
+
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ARM_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_X_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Y_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Z_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_F_CHANNEL);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_5_DIRECTION);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_6_DIRECTION);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_7_DIRECTION);
+  params->add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_8_DIRECTION);
+  init_rc();
+}
+
+void RC::init_rc()
+{
+
   init_sticks();
   init_switches();
+}
+
+void RC::param_change_callback(uint16_t param_id)
+{
+  init_rc();
 }
 
 float RC::rc_stick(rc_stick_t channel)

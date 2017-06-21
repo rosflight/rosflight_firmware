@@ -55,7 +55,8 @@ public:
     Y6,
     X8,
     FIXEDWING,
-    NUM_MIXERS
+    NUM_MIXERS,
+    INVALID_MIXER = 255
   };
 
   typedef enum

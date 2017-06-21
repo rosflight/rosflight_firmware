@@ -45,6 +45,9 @@ ROSflight::ROSflight(Board *_board, CommLink *_commlink)
 // Initialization Routine
 void ROSflight::rosflight_init(void)
 {
+  // Initialize the arming finite state machine
+  fsm_.init_mode(board_, &sensors_, &params_, &rc_);
+
   // Read EEPROM to get initial params
   params_.init_params(board_, commlink_, &mixer_);
 
@@ -57,7 +60,7 @@ void ROSflight::rosflight_init(void)
 
   // Initialize PWM and RC
   mixer_.init_PWM();
-  rc_.init_rc(board_, &params_);
+  rc_.init(board_, &params_);
 
   // Initialize MAVlink Communication
   commlink_->init(board_, &params_, this);
@@ -78,8 +81,7 @@ void ROSflight::rosflight_init(void)
   // Initialize Controller
   controller_.init_controller(&fsm_, board_,  &mux_, &mixer_, &estimator_, &params_);
 
-  // Initialize the arming finite state machine
-  fsm_.init_mode(board_, &sensors_, &params_, &rc_);
+  // Initialize the command muxer
   mux_.init(&fsm_, &params_, board_, &rc_, commlink_);
 }
 

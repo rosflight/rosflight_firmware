@@ -49,6 +49,7 @@ private:
   uint8_t send_params_index;
   mavlink_message_t in_buf;
   mavlink_status_t status;
+  bool initialized;
 
   typedef  void (Mavlink::*MavlinkStreamFcn)(void);
 

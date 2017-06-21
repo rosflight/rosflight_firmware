@@ -58,16 +58,42 @@ void Mode::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
 
 bool Mode::arm(void)
 {
+  // look for error codes
   if(_error_code != ERROR_NONE)
   {
     //    mavlink_log_error("Unable to arm due to error code %d", _error_state);
     return false;
   }
-  if (!_armed)
+
+  // Perform a gyro calibration on ARM
+  else if (params_->get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
   {
-    _armed = true;
-    board_->led1_on();
-    return true;
+    if (!started_gyro_calibration && !_armed)
+    {
+      sensors_->start_gyro_calibration();
+      started_gyro_calibration = true;
+      return false;
+    }
+    else if (sensors_->gyro_calibration_complete())
+    {
+      started_gyro_calibration = false;
+      _armed = true;
+      board_->led1_on();
+      return true;
+    }
+    return false;
+  }
+
+  // Just arm straight away
+  else
+  {
+    if (!_armed)
+    {
+      _armed = true;
+      board_->led1_on();
+      return true;
+    }
+    return false;
   }
   return false;
 }
@@ -116,12 +142,17 @@ bool Mode::check_failsafe(void)
   }
   else
   {
-  // we got a valid RC measurement for all channels and pwm is active
-  // Clear the FAILSAFE bit
+    // we got a valid RC measurement for all channels and pwm is active
+    // Clear the FAILSAFE bit
     _failsafe_active = false;
 
     // Clear the RC Lost Error
     clear_error_code(ERROR_RC_LOST);
+
+    if(_armed)
+      board_->led1_on();
+    else
+      board_->led1_off();
   }
   return failsafe;
 }
