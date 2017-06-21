@@ -36,7 +36,6 @@
 
 #include "board.h"
 #include "param.h"
-
 #include "sensors.h"
 #include "mode.h"
 #include "estimator.h"
@@ -78,12 +77,12 @@ public:
   /**
   * @brief Main initialization routine for the ROSflight autopilot flight stack
   */
-  void rosflight_init(void);
+  void rosflight_init();
 
   /**
   * @brief Main loop for the ROSflight autopilot flight stack
   */
-  void rosflight_run(void);
+  void rosflight_run();
 
   uint32_t get_loop_time_us();
 };
