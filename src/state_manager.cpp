@@ -10,7 +10,7 @@ StateManager::StateManager(ROSflight& parent) :
 
 void StateManager::init()
 {
-  update_fsm(EVENT_INITIALIZED);
+  set_event(EVENT_INITIALIZED);
   process_errors();
 
   // Initialize LEDs

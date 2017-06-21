@@ -10,6 +10,8 @@ class ROSflight;
 
 class StateManager
 {
+
+public:
   struct State
   {
     bool armed;
@@ -42,7 +44,6 @@ class StateManager
     ERROR_UNCALIBRATED_IMU = 0x0020,
   };
 
-public:
   StateManager(ROSflight& parent);
   void init();
   void run();
@@ -67,19 +68,6 @@ private:
     FSM_STATE_ERROR,
     FSM_STATE_FAILSAFE,
     FSM_STATE_CALIBRATING
-  };
-
-  enum FsmEvent
-  {
-    EVENT_INITIALIZED,
-    EVENT_REQUEST_ARM,
-    EVENT_REQUEST_DISARM,
-    EVENT_RC_LOST,
-    EVENT_RC_FOUND,
-    EVENT_ERROR,
-    EVENT_NO_ERROR,
-    EVENT_CALIBRATION_COMPLETE,
-    EVENT_CALIBRATION_FAILED,
   };
 
   FsmState fsm_state_;

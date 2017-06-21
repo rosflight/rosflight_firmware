@@ -220,7 +220,7 @@ void Mux::signal_new_command()
 bool Mux::mux_inputs()
 {
   // Check for and apply failsafe command
-  if (RF_->fsm_.in_failsafe())
+  if (RF_->state_manager_.state().failsafe)
   {
     _failsafe_control.F.value = RF_->params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;

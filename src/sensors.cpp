@@ -60,7 +60,7 @@ void Sensors::init(ROSflight* _rf)
   data_.new_imu_data = false;
 
   // clear the IMU read error
-  RF_->fsm_.clear_error_code(Mode::ERROR_IMU_NOT_RESPONDING);
+  RF_->state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
   RF_->board_->sensors_init();
   RF_->board_->imu_register_callback(&IMU_ISR_wrapper);
 
@@ -69,7 +69,7 @@ void Sensors::init(ROSflight* _rf)
       RF_->params_.get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && RF_->params_.get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
       RF_->params_.get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && RF_->params_.get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
   {
-    RF_->fsm_.set_error_code(Mode::ERROR_UNCALIBRATED_IMU);
+    RF_->state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
   }
 }
 
@@ -84,7 +84,7 @@ bool Sensors::update_sensors(void)
   // These sensors need power to respond, so they might not have been
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
-  if (RF_->fsm_.armed())
+  if (RF_->state_manager_.state().armed)
   {
     uint32_t now = RF_->board_->clock_millis();
     if (now > (last_time_look_for_disarmed_sensors + 500))
@@ -225,7 +225,7 @@ bool Sensors::update_imu(void)
       RF_->board_->imu_not_responding_error();
 
       // Indicate an IMU error
-      RF_->fsm_.set_error_code(Mode::ERROR_IMU_NOT_RESPONDING);
+      RF_->state_manager_.set_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     }
     return false;
   }
@@ -253,9 +253,14 @@ void Sensors::calibrate_gyro()
 
       // Tell the estimator to reset it's bias estimate, because it should be zero now
       RF_->estimator_.reset_adaptive_bias();
+
+      // Tell the state manager that we just completed a gyro calibration
+      RF_->state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
     }
     else
     {
+      // Tell the state manager that we just failed a gyro calibration
+      RF_->state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
       //      mavlink_log_error("Too much movement for gyro cal", NULL);
     }
 
@@ -333,7 +338,7 @@ void Sensors::calibrate_accel(void)
 //        mavlink_log_info("IMU offsets captured", NULL);
 
         // clear uncalibrated IMU flag
-        RF_->fsm_.clear_error_code(Mode::ERROR_UNCALIBRATED_IMU);
+        RF_->state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
 
         // reset the estimated state
         RF_->estimator_.reset_state();

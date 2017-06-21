@@ -36,7 +36,8 @@
 namespace rosflight_firmware
 {
 
-ROSflight::ROSflight(Board *_board)
+ROSflight::ROSflight(Board *_board) :
+  state_manager_(*this)
 {
   board_ = _board;
 }
@@ -45,7 +46,7 @@ ROSflight::ROSflight(Board *_board)
 void ROSflight::rosflight_init()
 {
   // Initialize the arming finite state machine
-  fsm_.init(this);
+  state_manager_.init();
 
   // Read EEPROM to get initial params
   params_.init(this);
@@ -107,7 +108,7 @@ void ROSflight::rosflight_run()
   mavlink_.receive(); // 159 | 1 | 1
 
   // update the state machine, an internal timer runs this at a fixed rate
-  fsm_.update_state(); // 108 | 1 | 1
+  state_manager_.run(); // 108 | 1 | 1
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
   rc_.receive_rc(); // 42 | 2 | 1

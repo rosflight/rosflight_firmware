@@ -37,15 +37,13 @@
 #include "board.h"
 #include "param.h"
 #include "sensors.h"
-#include "mode.h"
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
 #include "mavlink.h"
 #include "mixer.h"
-#include "mode.h"
+#include "state_manager.h"
 #include "mux.h"
-#include "mode.h"
 
 namespace rosflight_firmware
 {
@@ -62,7 +60,7 @@ public:
   Mavlink mavlink_;
 
   Params params_;
-  Mode fsm_;
+  StateManager state_manager_;
   Sensors sensors_;
   Estimator estimator_;
   Mux mux_;

@@ -99,6 +99,8 @@ private:
   bool new_command_;
 
   uint32_t time_of_last_stick_deviation = 0;
+  uint32_t time_sticks_have_been_in_arming_position_ms = 0;
+  uint32_t prev_time_ms = 0;
   uint32_t last_rc_receive_time = 0;
 
   rc_stick_config_t sticks[RC_STICKS_COUNT];
@@ -109,6 +111,8 @@ private:
 
   void init_switches();
   void init_sticks();
+  bool check_rc_lost();
+  void look_for_arm_disarm_signal();
 };
 }
 #endif

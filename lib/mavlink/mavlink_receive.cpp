@@ -46,7 +46,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   bool reboot_to_bootloader_flag = false;
 
   // None of these actions can be performed if we are armed
-  if (RF_->fsm_.armed())
+  if (RF_->state_manager_.state().armed)
   {
     result = false;
   }
