@@ -35,14 +35,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "board.h"
-#include "param.h"
-#include "mode.h"
 
 namespace rosflight
 {
 
-class Mode;
+class ROSflight;
 
 class Mixer
 {
@@ -88,7 +85,7 @@ public:
 
   float _outputs[8];
 
-  void init(Board *_board, Params *_params, Mode *_fsm);
+  void init(ROSflight* _rf);
   void init_PWM();
   void init_mixing();
   void mix_output();
@@ -96,9 +93,7 @@ public:
 
 private:
 
-  Board *board;
-  Params *params;
-  Mode *fsm;
+  ROSflight* RF_;
 
   float prescaled_outputs[8];
 

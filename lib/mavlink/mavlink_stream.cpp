@@ -110,17 +110,17 @@ void Mavlink::mavlink_send_imu(void)
   if(RF_->sensors_.should_send_imu_data())
   {
     mavlink_message_t msg;
-    vector_t accel = RF_->sensors_.get_accel();
-    vector_t gyro = RF_->sensors_.get_gyro();
+    vector_t accel = RF_->sensors_.data()._accel;
+    vector_t gyro = RF_->sensors_.data()._gyro;
     mavlink_msg_small_imu_pack(sysid, compid, &msg,
-                               RF_->sensors_.get_imu_time(),
+                               RF_->sensors_.data()._imu_time,
                                accel.x,
                                accel.y,
                                accel.z,
                                gyro.x,
                                gyro.y,
                                gyro.z,
-                               RF_->sensors_.get_imu_temp());
+                               RF_->sensors_.data()._imu_temperature);
     send_message(msg);
   }
   else
@@ -164,9 +164,9 @@ void Mavlink::mavlink_send_diff_pressure(void)
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
-                                   RF_->sensors_.get_differential_pressure_velocity(),
-                                   RF_->sensors_.get_differential_pressure(),
-                                   RF_->sensors_.get_differential_pressure_temperature());
+                                   RF_->sensors_.data()._diff_pressure_velocity,
+                                   RF_->sensors_.data()._diff_pressure,
+                                   RF_->sensors_.data()._diff_pressure_temp);
     send_message(msg);
   }
 }
@@ -177,9 +177,9 @@ void Mavlink::mavlink_send_baro(void)
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid, compid, &msg,
-                                RF_->sensors_.get_barometer_altitude(),
-                                RF_->sensors_.get_barometer_pressure(),
-                                RF_->sensors_.get_barometer_temperature());
+                                RF_->sensors_.data()._baro_altitude,
+                                RF_->sensors_.data()._baro_pressure,
+                                RF_->sensors_.data()._baro_temperature);
     send_message(msg);
   }
 }
@@ -190,7 +190,7 @@ void Mavlink::mavlink_send_sonar(void)
   {
     mavlink_message_t msg;
     mavlink_msg_small_sonar_pack(sysid, compid, &msg,
-                                 RF_->sensors_.get_sonar_range(),
+                                 RF_->sensors_.data()._sonar_range,
                                  8.0,
                                  0.25);
     send_message(msg);
@@ -203,9 +203,9 @@ void Mavlink::mavlink_send_mag(void)
   {
     mavlink_message_t msg;
     mavlink_msg_small_mag_pack(sysid, compid, &msg,
-                               RF_->sensors_.get_mag().x,
-                               RF_->sensors_.get_mag().y,
-                               RF_->sensors_.get_mag().z);
+                               RF_->sensors_.data()._mag.x,
+                               RF_->sensors_.data()._mag.y,
+                               RF_->sensors_.data()._mag.z);
     send_message(msg);
   }
 }

@@ -37,26 +37,38 @@
 #include <stdbool.h>
 #include <turbovec.h>
 
-#include "board.h"
-#include "param.h"
-#include "estimator.h"
-#include "mode.h"
-
 namespace rosflight
 {
 
-class Mode;
-class Params;
-class Estimator;
+class ROSflight;
 
 class Sensors
 {
 
+  struct Data
+  {
+    vector_t _accel = {0, 0, 0};
+    vector_t _gyro = {0, 0, 0};
+    float _imu_temperature = 0;
+    uint64_t _imu_time = 0;
+    bool new_imu_data = false;
+    bool _imu_data_sent = false;
+
+    float _diff_pressure_velocity = 0;
+    float _diff_pressure = 0;
+    float _diff_pressure_temp = 0;
+
+    float _baro_altitude = 0;
+    float _baro_pressure = 0;
+    float _baro_temperature = 0;
+
+    float _sonar_range = 0;
+
+    vector_t _mag = {0, 0, 0};
+  };
+
 private:
-  Board *board_;
-  Params *params_;
-  Estimator *estimator_;
-  Mode *fsm_;
+  ROSflight* RF_;
 
   float accel[3] = {0, 0, 0};
   float gyro[3] = {0, 0, 0};
@@ -82,32 +94,14 @@ private:
   vector_t max = {-1000.0f, -1000.0f, -1000.0f};
   vector_t min = {1000.0f, 1000.0f, 1000.0f};
 
-  vector_t _accel = {0, 0, 0};
-  vector_t _gyro = {0, 0, 0};
-  float _imu_temperature = 0;
-  uint64_t _imu_time = 0;
-  bool new_imu_data = false;
-  bool _imu_data_sent = false;
-
-  float _diff_pressure_velocity = 0;
-  float _diff_pressure = 0;
-  float _diff_pressure_temp = 0;
-
-  float _baro_altitude = 0;
-  float _baro_pressure = 0;
-  float _baro_temperature = 0;
-
-  float _sonar_range = 0;
-
-  vector_t _mag = {0, 0, 0};// global variable declarations
-
+  Data data_;
 
 public:
 
   Sensors();
 
   // function declarations
-  void init_sensors(Board *_board, Params *_params, Estimator *_estimator, Mode *fsm);
+  void init(ROSflight *_rf);
   bool update_sensors(void);
   void IMU_ISR(void);
 
@@ -118,98 +112,23 @@ public:
   void start_airspeed_calibration(void);
   bool gyro_calibration_complete(void);
 
-  // IMU getters
-  inline vector_t get_accel(void)
-  {
-    return _accel;
-  }
-
-  inline vector_t get_gyro(void)
-  {
-    return _gyro;
-  }
-
-  inline float get_imu_temp(void)
-  {
-    return _imu_temperature;
-  }
-
-  inline uint64_t get_imu_time(void)
-  {
-    return _imu_time;
-  }
-
-  inline vector_t get_mag(void)
-  {
-    return _mag;
-  }
+  inline Data data() {return data_;}
 
   inline bool should_send_imu_data(void)
   {
-    if (_imu_data_sent)
+    if (data_._imu_data_sent)
       return false;
     else
-      _imu_data_sent = true;
+      data_._imu_data_sent = true;
     return true;
   }
 
-  inline bool magnetometer_present(void)
-  {
-    return board_->mag_present();
-  }
+//  // Sensor present functions
+//  bool magnetometer_present(void);
+//  bool differential_pressure_present(void);
+//  bool barometer_present(void);
+//  bool sonar_present(void);
 
-  // Differential Pressure Functions
-  inline bool differential_pressure_present(void)
-  {
-    return board_->diff_pressure_present();
-  }
-
-  inline float get_differential_pressure_velocity(void)
-  {
-    return _diff_pressure_velocity;
-  }
-
-  inline float get_differential_pressure(void)
-  {
-    return _diff_pressure;
-  }
-
-  inline float get_differential_pressure_temperature(void)
-  {
-    return _diff_pressure_temp;
-  }
-
-  // Barometer Access
-  inline bool barometer_present(void)
-  {
-    return board_->baro_present();
-  }
-
-  inline float get_barometer_altitude(void)
-  {
-    return _baro_altitude;
-  }
-
-  inline float get_barometer_pressure(void)
-  {
-    return _baro_pressure;
-  }
-
-  inline float get_barometer_temperature(void)
-  {
-    return _baro_temperature;
-  }
-
-  // Sonar Access
-  inline bool sonar_present(void)
-  {
-    return board_->sonar_present();
-  }
-
-  inline float get_sonar_range(void)
-  {
-    return _sonar_range;
-  }
 };
 
 }

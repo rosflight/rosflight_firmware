@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #include "mux.h"
+#include "rosflight.h"
 
 namespace rosflight
 {
@@ -64,25 +65,21 @@ typedef struct
   control_channel_t *combined;
 } mux_t;
 
-void Mux::init(Mode *_fsm, Params *_params, Board *_board, RC *_rc, CommLink *_commlink)
+void Mux::init(ROSflight* _rf)
 {
-  rc = _rc;
-  params = _params;
-  board = _board;
-  fsm = _fsm;
-  commlink = _commlink;
+  RF_ = _rf;
 }
 
 void Mux::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  _rc_control.x.value = rc->rc_stick(RC_STICK_X);
-  _rc_control.y.value = rc->rc_stick(RC_STICK_Y);
-  _rc_control.z.value = rc->rc_stick(RC_STICK_Z);
-  _rc_control.F.value = rc->rc_stick(RC_STICK_F);
+  _rc_control.x.value = RF_->rc_.rc_stick(RC_STICK_X);
+  _rc_control.y.value = RF_->rc_.rc_stick(RC_STICK_Y);
+  _rc_control.z.value = RF_->rc_.rc_stick(RC_STICK_Z);
+  _rc_control.F.value = RF_->rc_.rc_stick(RC_STICK_F);
 
   // determine control mode for each channel and scale command values accordingly
-  if (params->get_param_int(PARAM_FIXED_WING))
+  if (RF_->params_.get_param_int(PARAM_FIXED_WING))
   {
     _rc_control.x.type = PASSTHROUGH;
     _rc_control.y.type = PASSTHROUGH;
@@ -92,13 +89,13 @@ void Mux::interpret_rc(void)
   {
     // roll and pitch
     control_type_t roll_pitch_type;
-    if (rc->rc_switch_mapped(RC_SWITCH_ATT_TYPE))
+    if (RF_->rc_.rc_switch_mapped(RC_SWITCH_ATT_TYPE))
     {
-      roll_pitch_type = rc->rc_switch(RC_SWITCH_ATT_TYPE) ? ANGLE : RATE;
+      roll_pitch_type = RF_->rc_.rc_switch(RC_SWITCH_ATT_TYPE) ? ANGLE : RATE;
     }
     else
     {
-      roll_pitch_type = (params->get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE: ANGLE;
+      roll_pitch_type = (RF_->params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE: ANGLE;
     }
 
     _rc_control.x.type = roll_pitch_type;
@@ -108,17 +105,17 @@ void Mux::interpret_rc(void)
     switch (roll_pitch_type)
     {
     case RATE:
-      _rc_control.x.value *= params->get_param_float(PARAM_RC_MAX_ROLLRATE);
-      _rc_control.y.value *= params->get_param_float(PARAM_RC_MAX_PITCHRATE);
+      _rc_control.x.value *= RF_->params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
+      _rc_control.y.value *= RF_->params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
       break;
     case ANGLE:
-      _rc_control.x.value *= params->get_param_float(PARAM_RC_MAX_ROLL);
-      _rc_control.y.value *= params->get_param_float(PARAM_RC_MAX_PITCH);
+      _rc_control.x.value *= RF_->params_.get_param_float(PARAM_RC_MAX_ROLL);
+      _rc_control.y.value *= RF_->params_.get_param_float(PARAM_RC_MAX_PITCH);
     }
 
     // yaw
     _rc_control.z.type = RATE;
-    _rc_control.z.value *= params->get_param_float(PARAM_RC_MAX_YAWRATE);
+    _rc_control.z.value *= RF_->params_.get_param_float(PARAM_RC_MAX_YAWRATE);
 
     // throttle
     _rc_control.F.type = THROTTLE;
@@ -127,16 +124,16 @@ void Mux::interpret_rc(void)
 
 bool Mux::stick_deviated(uint8_t channel)
 {
-  uint32_t now = board->clock_millis();
+  uint32_t now = RF_->board_->clock_millis();
 
   // if we are still in the lag time, return true
-  if (now - rc_stick_override[channel].last_override_time < (uint32_t)params->get_param_int(PARAM_OVERRIDE_LAG_TIME))
+  if (now - rc_stick_override[channel].last_override_time < (uint32_t)RF_->params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
   {
     return true;
   }
   else
   {
-    if (abs(rc->rc_stick(rc_stick_override[channel].rc_channel)) > params->get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
+    if (abs(RF_->rc_.rc_stick(rc_stick_override[channel].rc_channel)) > RF_->params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override[channel].last_override_time = now;
       return true;
@@ -148,7 +145,7 @@ bool Mux::stick_deviated(uint8_t channel)
 bool Mux::do_roll_pitch_yaw_muxing(uint8_t channel)
 {
   //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
-  if ((rc->rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc->rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
+  if ((RF_->rc_.rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && RF_->rc_.rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
     rc_override = true;
   }
@@ -171,7 +168,7 @@ bool Mux::do_roll_pitch_yaw_muxing(uint8_t channel)
 bool Mux::do_throttle_muxing(void)
 {
   // Check if the override switch exists and is triggered
-  if (rc->rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && rc->rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
+  if (RF_->rc_.rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && RF_->rc_.rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
   {
     rc_override = true;
   }
@@ -180,7 +177,7 @@ bool Mux::do_throttle_muxing(void)
     if (muxes[MUX_F].onboard->active)
     {
       // Check if the parameter flag is set to have us always take the smaller throttle
-      if (params->get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
+      if (RF_->params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
       {
         rc_override = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
       }
@@ -223,19 +220,19 @@ void Mux::signal_new_command()
 bool Mux::mux_inputs()
 {
   // Check for and apply failsafe command
-  if (fsm->in_failsafe())
+  if (RF_->fsm_.in_failsafe())
   {
-    _failsafe_control.F.value = params->get_param_float(PARAM_FAILSAFE_THROTTLE);
+    _failsafe_control.F.value = RF_->params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
     _combined_control = _failsafe_control;
   }
 
-  else if (rc->new_command())
+  else if (RF_->rc_.new_command())
   {
     // Read RC
     interpret_rc();
 
     // Check for offboard control timeout (100 ms)
-    if (board->clock_micros() > _offboard_control.stamp_us + 100000)
+    if (RF_->board_->clock_micros() > _offboard_control.stamp_us + 100000)
     {
       // If it has been longer than 100 ms, then disable the offboard control
       _offboard_control.F.active = false;
@@ -256,11 +253,11 @@ bool Mux::mux_inputs()
     // Light to indicate override
     if (rc_override)
     {
-      board->led0_on();
+      RF_->board_->led0_on();
     }
     else
     {
-      board->led0_off();
+      RF_->board_->led0_off();
     }
   }
   return true;

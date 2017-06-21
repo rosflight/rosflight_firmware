@@ -40,6 +40,8 @@
 
 #include "param.h"
 
+#include "rosflight.h"
+
 namespace rosflight
 {
 
@@ -80,12 +82,10 @@ uint8_t Params::compute_checksum(void)
 }
 
 // function definitions
-void Params::init_params(Board *_board, CommLink *_commlink, Mixer *_mixer)
+void Params::init(ROSflight *_rf)
 {
-  board_ = _board;
-  //  commlink_ = _commlink;
-  mixer_ = _mixer;
-  board_->memory_init();
+  RF_ = _rf;
+  RF_->board_->memory_init();
   if (!read_params())
   {
     set_param_defaults();
@@ -252,7 +252,7 @@ void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
 
 bool Params::read_params(void)
 {
-  if (!board_->memory_read(&params, sizeof(params_t)))
+  if (!RF_->board_->memory_read(&params, sizeof(params_t)))
     return false;
 
   if (params.version != GIT_VERSION_HASH)
@@ -275,7 +275,7 @@ bool Params::write_params(void)
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
 
-  if (!board_->memory_write(&params, sizeof(params_t)))
+  if (!RF_->board_->memory_write(&params, sizeof(params_t)))
     return false;
   return true;
 }

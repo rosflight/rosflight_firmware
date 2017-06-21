@@ -31,7 +31,7 @@
 #include <stdint.h>
 
 #include "mavlink.h"
-#include "estimator.h"
+#include "rosflight.h"
 
 namespace rosflight {
 
@@ -41,7 +41,7 @@ Mavlink::Mavlink()
 }
 
 // function definitions
-void Mavlink::init(Board* _board, Params *_params, ROSflight *firmware)
+void Mavlink::init(ROSflight *firmware)
 {
   RF_ = firmware;
   RF_->board_->serial_init(RF_->params_.get_param_int(PARAM_BAUD_RATE));

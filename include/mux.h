@@ -34,16 +34,36 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "mode.h"
-#include "param.h"
-#include "board.h"
-#include "common.h"
 #include "rc.h"
 
 namespace rosflight
 {
 
-class Mode;
+class ROSflight;
+
+typedef enum
+{
+  RATE,         // Channel is is in rate mode (mrad/s)
+  ANGLE,        // Channel command is in angle mode (mrad)
+  THROTTLE,     // Channel is direcly controlling throttle max/1000
+  PASSTHROUGH,  // Channel directly passes PWM input to the mixer
+} control_type_t;
+
+typedef struct
+{
+  bool active;          // Whether or not the channel is active
+  control_type_t type;  // What type the channel is
+  float value;          // The value of the channel
+} control_channel_t;
+
+typedef struct
+{
+  uint64_t stamp_us;
+  control_channel_t x;
+  control_channel_t y;
+  control_channel_t z;
+  control_channel_t F;
+} control_t;
 
 class Mux
 {
@@ -129,15 +149,11 @@ public:
   bool rc_override_active();
   bool offboard_control_active();
   void signal_new_command();
-  void init(Mode *_fsm, Params *_params, Board *_board, RC *_rc, CommLink *_commlink);
+  void init(ROSflight* _rf);
 
 private:
 
-  Board *board;
-  Mode *fsm;
-  Params *params;
-  RC *rc;
-  CommLink *commlink;
+  ROSflight* RF_;
 
   bool new_command;
   bool rc_override;
