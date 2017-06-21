@@ -59,7 +59,7 @@ void Mode::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
 bool Mode::arm(void)
 {
   // look for error codes
-  if(_error_code != ERROR_NONE)
+  if (_error_code != ERROR_NONE)
   {
     //    mavlink_log_error("Unable to arm due to error code %d", _error_state);
     return false;
@@ -149,7 +149,7 @@ bool Mode::check_failsafe(void)
     // Clear the RC Lost Error
     clear_error_code(ERROR_RC_LOST);
 
-    if(_armed)
+    if (_armed)
       board_->led1_on();
     else
       board_->led1_off();

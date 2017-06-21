@@ -80,12 +80,12 @@ public:
     STREAM_COUNT
   };
 
-  virtual void init(Board *_board, Params *_params, ROSflight* firmware) = 0;
+  virtual void init(Board *_board, Params *_params, ROSflight *firmware) = 0;
   virtual void receive() = 0;
   virtual void stream() = 0;
   virtual void update_param(uint16_t param_id) = 0;
   virtual void set_streaming_rate(uint8_t stream_id, int16_t param_id) = 0;
-  virtual void send_log_message(uint8_t severity, char* text);
+  virtual void send_log_message(uint8_t severity, char *text);
 };
 
 

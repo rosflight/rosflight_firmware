@@ -91,7 +91,7 @@ void Controller::run_pid(pid_t *pid, float dt)
       if (dt > 0.0f)
       {
         pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
-            + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
+                              + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
         pid->prev_x = *pid->current_x;
         d_term = params->get_param_float(pid->kd_param_id) * pid->differentiator;
       }
@@ -130,7 +130,7 @@ void Controller::run_pid(pid_t *pid, float dt)
 }
 
 
-void Controller::init_controller(Mode *_fsm, Board *_board, Mux* _mux, Mixer* _mixer,
+void Controller::init_controller(Mode *_fsm, Board *_board, Mux *_mux, Mixer *_mixer,
                                  Estimator *_estimator, Params *_params)
 {
   fsm = _fsm;

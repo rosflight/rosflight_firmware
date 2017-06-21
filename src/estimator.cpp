@@ -128,7 +128,7 @@ void Estimator::run_estimator()
     last_acc_update_us = last_time;
     return;
   }
-  else if(now_us <= last_time)
+  else if (now_us <= last_time)
   {
     // this shouldn't happen
     fsm_->set_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);

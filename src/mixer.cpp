@@ -50,7 +50,7 @@ void Mixer::init(Board *_board, Params *_params, Mode *_fsm)
 
 void Mixer::param_change_callback(uint16_t param_id)
 {
-  switch(param_id)
+  switch (param_id)
   {
   case PARAM_MIXER:
     init_mixing();

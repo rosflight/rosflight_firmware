@@ -50,7 +50,7 @@ namespace rosflight
 
 Sensors::Sensors() {}
 
-void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator, Mode* _fsm)
+void Sensors::init_sensors(Board *_board, Params *_params, Estimator *_estimator, Mode *_fsm)
 {
   board_ = _board;
   params_ = _params;
@@ -193,7 +193,7 @@ bool Sensors::update_imu(void)
   if (new_imu_data)
   {
     last_imu_update_ms = board_->clock_millis();
-    if(!board_->imu_read_all(accel, &_imu_temperature, gyro))
+    if (!board_->imu_read_all(accel, &_imu_temperature, gyro))
     {
       return false;
     }
@@ -273,7 +273,8 @@ vector_t vector_max(vector_t a, vector_t b)
 {
   vector_t out = {a.x > b.x ? a.x : b.x,
                   a.y > b.y ? a.y : b.y,
-                  a.z > b.z ? a.z : b.z};
+                  a.z > b.z ? a.z : b.z
+                 };
   return out;
 }
 
@@ -281,7 +282,8 @@ vector_t vector_min(vector_t a, vector_t b)
 {
   vector_t out = {a.x < b.x ? a.x : b.x,
                   a.y < b.y ? a.y : b.y,
-                  a.z < b.z ? a.z : b.z};
+                  a.z < b.z ? a.z : b.z
+                 };
   return out;
 }
 
@@ -311,7 +313,8 @@ void Sensors::calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum, scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum,
+                                          scalar_multiply(acc_temp_sum, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,

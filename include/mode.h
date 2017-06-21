@@ -87,11 +87,26 @@ public:
   void init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc);
   bool update_state();
 
-  bool armed() { return _armed; }
-  bool in_failsafe() { return _failsafe_active; }
-  uint16_t error_state(){ return _error_code; }
-  void set_error_code(uint16_t error_code) { _error_code |= error_code; }
-  void clear_error_code(uint16_t error_code) { _error_code &= ~(error_code); }
+  bool armed()
+  {
+    return _armed;
+  }
+  bool in_failsafe()
+  {
+    return _failsafe_active;
+  }
+  uint16_t error_state()
+  {
+    return _error_code;
+  }
+  void set_error_code(uint16_t error_code)
+  {
+    _error_code |= error_code;
+  }
+  void clear_error_code(uint16_t error_code)
+  {
+    _error_code &= ~(error_code);
+  }
 };
 
 }

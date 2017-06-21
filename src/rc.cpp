@@ -110,7 +110,8 @@ void RC::init_switches()
 
   for (uint8_t chan = 0; chan < (uint8_t)RC_SWITCHES_COUNT; chan++)
   {
-    switches[chan].mapped = switches[chan].channel > 3 && switches[chan].channel < params->get_param_int(PARAM_RC_NUM_CHANNELS);
+    switches[chan].mapped = switches[chan].channel > 3
+                            && switches[chan].channel < params->get_param_int(PARAM_RC_NUM_CHANNELS);
     if (!switches[chan].mapped)
     {
       //      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name

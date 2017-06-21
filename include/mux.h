@@ -68,7 +68,8 @@ private:
     uint32_t last_override_time;
   } rc_stick_override_t;
 
-  rc_stick_override_t rc_stick_override[3] = {
+  rc_stick_override_t rc_stick_override[3] =
+  {
     { RC_STICK_X, 0 },
     { RC_STICK_Y, 0 },
     { RC_STICK_Z, 0 }
@@ -76,9 +77,9 @@ private:
 
   typedef struct
   {
-    control_channel_t* rc;
-    control_channel_t* onboard;
-    control_channel_t* combined;
+    control_channel_t *rc;
+    control_channel_t *onboard;
+    control_channel_t *combined;
   } mux_t;
 
 public:
@@ -128,7 +129,7 @@ public:
   bool rc_override_active();
   bool offboard_control_active();
   void signal_new_command();
-  void init(Mode *_fsm, Params *_params, Board *_board, RC* _rc, CommLink* _commlink);
+  void init(Mode *_fsm, Params *_params, Board *_board, RC *_rc, CommLink *_commlink);
 
 private:
 

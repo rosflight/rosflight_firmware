@@ -63,15 +63,33 @@ public:
 
   void reset_state();
   void reset_adaptive_bias();
-  void init_estimator(Params *_params, Sensors *_sensors, Mode* _fsm);
+  void init_estimator(Params *_params, Sensors *_sensors, Mode *_fsm);
   void run_estimator();
 
-  inline float get_roll() {return roll;}
-  inline float get_pitch() {return pitch;}
-  inline float get_yaw() {return yaw;}
-  inline vector_t get_angular_velocity() {return omega;}
-  inline quaternion_t get_attitude() {return q;}
-  inline uint64_t get_estimator_timestamp() {return now_us;}
+  inline float get_roll()
+  {
+    return roll;
+  }
+  inline float get_pitch()
+  {
+    return pitch;
+  }
+  inline float get_yaw()
+  {
+    return yaw;
+  }
+  inline vector_t get_angular_velocity()
+  {
+    return omega;
+  }
+  inline quaternion_t get_attitude()
+  {
+    return q;
+  }
+  inline uint64_t get_estimator_timestamp()
+  {
+    return now_us;
+  }
 
 private:
   Params *params_;

@@ -56,7 +56,7 @@ private:
   Board *board_;
   Params *params_;
   Estimator *estimator_;
-  Mode* fsm_;
+  Mode *fsm_;
 
   float accel[3] = {0, 0, 0};
   float gyro[3] = {0, 0, 0};
@@ -146,7 +146,7 @@ public:
 
   inline bool should_send_imu_data(void)
   {
-    if(_imu_data_sent)
+    if (_imu_data_sent)
       return false;
     else
       _imu_data_sent = true;

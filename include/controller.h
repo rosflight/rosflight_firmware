@@ -53,7 +53,7 @@ class Controller
 {
 public:
   void run_controller();
-  void init_controller(Mode *_fsm, Board *_board, Mux* _mux, Mixer* _mixer,
+  void init_controller(Mode *_fsm, Board *_board, Mux *_mux, Mixer *_mixer,
                        Estimator *_estimator, Params *_params);
   void calculate_equilbrium_torque_from_rc();
 
