@@ -31,7 +31,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
+#define ROSFLIGHT_FIRMWARE_SENSORS_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -51,8 +52,6 @@ class Sensors
     vector_t _gyro = {0, 0, 0};
     float _imu_temperature = 0;
     uint64_t _imu_time = 0;
-    bool new_imu_data = false;
-    bool _imu_data_sent = false;
 
     float _diff_pressure_velocity = 0;
     float _diff_pressure = 0;
@@ -67,8 +66,43 @@ class Sensors
     vector_t _mag = {0, 0, 0};
   };
 
+public:
+  Sensors(ROSflight& rosflight);
+
+  inline const Data& data() const { return data_; }
+
+  // function declarations
+  void init();
+  bool update_sensors();
+  void IMU_ISR();
+
+  // Calibration Functions
+  bool start_imu_calibration(void);
+  bool start_gyro_calibration(void);
+  void start_baro_calibration(void);
+  void start_airspeed_calibration(void);
+  bool gyro_calibration_complete(void);
+
+
+  inline bool should_send_imu_data(void)
+  {
+    if (imu_data_sent_)
+      return false;
+    else
+      imu_data_sent_ = true;
+    return true;
+  }
+
+//  // Sensor present functions
+//  bool magnetometer_present(void);
+//  bool differential_pressure_present(void);
+//  bool barometer_present(void);
+//  bool sonar_present(void);
+
 private:
-  ROSflight* RF_;
+  ROSflight& rf_;
+
+  Data data_;
 
   float accel[3] = {0, 0, 0};
   float gyro[3] = {0, 0, 0};
@@ -84,6 +118,9 @@ private:
   uint32_t last_time_look_for_disarmed_sensors = 0;
   uint32_t last_imu_update_ms = 0;
 
+  bool new_imu_data_;
+  bool imu_data_sent_;
+
   // IMU calibration
   uint16_t gyro_calibration_count = 0;
   vector_t gyro_sum = {0, 0, 0};
@@ -94,41 +131,8 @@ private:
   vector_t max = {-1000.0f, -1000.0f, -1000.0f};
   vector_t min = {1000.0f, 1000.0f, 1000.0f};
 
-  Data data_;
-
-public:
-
-  Sensors();
-
-  // function declarations
-  void init(ROSflight *_rf);
-  bool update_sensors(void);
-  void IMU_ISR(void);
-
-  // Calibration Functions
-  bool start_imu_calibration(void);
-  bool start_gyro_calibration(void);
-  void start_baro_calibration(void);
-  void start_airspeed_calibration(void);
-  bool gyro_calibration_complete(void);
-
-  inline Data data() {return data_;}
-
-  inline bool should_send_imu_data(void)
-  {
-    if (data_._imu_data_sent)
-      return false;
-    else
-      data_._imu_data_sent = true;
-    return true;
-  }
-
-//  // Sensor present functions
-//  bool magnetometer_present(void);
-//  bool differential_pressure_present(void);
-//  bool barometer_present(void);
-//  bool sonar_present(void);
-
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_SENSORS_H
