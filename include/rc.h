@@ -37,14 +37,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "param.h"
-#include "board.h"
-#include "common.h"
-
 namespace rosflight
 {
 
-class Params;
+class ROSflight;
 
 typedef enum
 {
@@ -75,7 +71,7 @@ public:
     CPPM,
   } rc_type_t;
 
-  void init(Board *_board, Params *_params);
+  void init(ROSflight *_rf);
   void init_rc();
   float rc_stick(rc_stick_t channel);
   bool rc_switch(int16_t channel);
@@ -85,6 +81,8 @@ public:
   void param_change_callback(uint16_t param_id);
 
 private:
+  ROSflight* RF_;
+
   typedef struct
   {
     uint8_t channel;
@@ -98,8 +96,6 @@ private:
     bool one_sided;
   } rc_stick_config_t;
 
-  Board *board;
-  Params *params;
   bool new_command_;
 
   uint32_t time_of_last_stick_deviation = 0;

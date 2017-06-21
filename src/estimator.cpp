@@ -30,6 +30,7 @@
  */
 
 #include "estimator.h"
+#include "rosflight.h"
 
 namespace rosflight
 {
@@ -82,7 +83,7 @@ void Estimator::reset_state()
   _gyro_LPF.z = 0;
 
   // Clear the unhealthy estimator flag
-  fsm_->clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+  RF_->fsm_.clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
 }
 
 void Estimator::reset_adaptive_bias()
@@ -92,11 +93,9 @@ void Estimator::reset_adaptive_bias()
   b.z = 0;
 }
 
-void Estimator::init_estimator(Params *_params, Sensors *_sensors, Mode *_fsm)
+void Estimator::init(ROSflight *_rf)
 {
-  params_ = _params;
-  sensors_ = _sensors;
-  fsm_ = _fsm;
+  RF_ = _rf;
 
   last_time = 0;
   reset_state();
@@ -104,14 +103,14 @@ void Estimator::init_estimator(Params *_params, Sensors *_sensors, Mode *_fsm)
 
 void Estimator::run_LPF()
 {
-  float alpha_acc = params_->get_param_float(PARAM_ACC_ALPHA);
-  vector_t raw_accel = sensors_->get_accel();
+  float alpha_acc = RF_->params_.get_param_float(PARAM_ACC_ALPHA);
+  vector_t raw_accel = RF_->sensors_.data()._accel;
   _accel_LPF.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*_accel_LPF.x;
   _accel_LPF.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*_accel_LPF.y;
   _accel_LPF.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*_accel_LPF.z;
 
-  float alpha_gyro = params_->get_param_float(PARAM_GYRO_ALPHA);
-  vector_t raw_gyro = sensors_->get_gyro();
+  float alpha_gyro = RF_->params_.get_param_float(PARAM_GYRO_ALPHA);
+  vector_t raw_gyro = RF_->sensors_.data()._gyro;
   _gyro_LPF.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*_gyro_LPF.x;
   _gyro_LPF.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*_gyro_LPF.y;
   _gyro_LPF.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*_gyro_LPF.z;
@@ -121,7 +120,7 @@ void Estimator::run_LPF()
 void Estimator::run_estimator()
 {
   static float kp, ki;
-  now_us = sensors_->get_imu_time();
+  now_us = RF_->sensors_.data()._imu_time;
   if (last_time == 0)
   {
     last_time = now_us;
@@ -131,26 +130,26 @@ void Estimator::run_estimator()
   else if (now_us <= last_time)
   {
     // this shouldn't happen
-    fsm_->set_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
+    RF_->fsm_.set_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
     last_time = now_us;
     return;
   }
 
-  fsm_->clear_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
+  RF_->fsm_.clear_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
 
   float dt = (now_us - last_time) * 1e-6f;
   last_time = now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now_us < (uint64_t)params_->get_param_int(PARAM_INIT_TIME)*1000)
+  if (now_us < (uint64_t)RF_->params_.get_param_int(PARAM_INIT_TIME)*1000)
   {
-    kp = params_->get_param_float(PARAM_FILTER_KP)*10.0f;
-    ki = params_->get_param_float(PARAM_FILTER_KI)*10.0f;
+    kp = RF_->params_.get_param_float(PARAM_FILTER_KP)*10.0f;
+    ki = RF_->params_.get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = params_->get_param_float(PARAM_FILTER_KP);
-    ki = params_->get_param_float(PARAM_FILTER_KI);
+    kp = RF_->params_.get_param_float(PARAM_FILTER_KP);
+    ki = RF_->params_.get_param_float(PARAM_FILTER_KI);
   }
 
   // Run LPF to reject a lot of noise
@@ -159,7 +158,7 @@ void Estimator::run_estimator()
   // add in accelerometer
   float a_sqrd_norm = _accel_LPF.x*_accel_LPF.x + _accel_LPF.y*_accel_LPF.y + _accel_LPF.z*_accel_LPF.z;
 
-  if (params_->get_param_int(PARAM_FILTER_USE_ACC)
+  if (RF_->params_.get_param_int(PARAM_FILTER_USE_ACC)
       && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     last_acc_update_us = now_us;
@@ -191,7 +190,7 @@ void Estimator::run_estimator()
   }
 
   // Pull out Gyro measurements
-  if (params_->get_param_int(PARAM_FILTER_USE_QUAD_INT))
+  if (RF_->params_.get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
@@ -217,7 +216,7 @@ void Estimator::run_estimator()
     float q = wfinal.y;
     float r = wfinal.z;
 
-    if (params_->get_param_int(PARAM_FILTER_USE_MAT_EXP))
+    if (RF_->params_.get_param_int(PARAM_FILTER_USE_MAT_EXP))
     {
       // Matrix Exponential Approximation (From Attitude Representation and Kinematic
       // Propagation for Low-Cost UAVs by Robert T. Casey)
@@ -261,13 +260,13 @@ void Estimator::run_estimator()
 
   // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
   // then trigger an unhealthy estimator error
-  if (params_->get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us)
+  if (RF_->params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us)
   {
-    fsm_->set_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+    RF_->fsm_.set_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
   }
   else
   {
-    fsm_->clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+    RF_->fsm_.clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
   }
 }
 

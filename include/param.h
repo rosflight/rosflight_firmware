@@ -35,10 +35,6 @@
 #include <stdint.h>
 #include <functional>
 
-//#include "commlink.h"
-#include "board.h"
-//#include "mixer.h"
-
 #ifndef GIT_VERSION_HASH
 #define GIT_VERSION_HASH 0x00
 //#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
@@ -213,8 +209,7 @@ typedef enum
   PARAM_TYPE_INVALID
 } param_type_t;
 
-class CommLink;
-class Mixer;
+class ROSflight;
 class Params
 {
 
@@ -239,9 +234,7 @@ private:
   std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
 
   params_t params;
-  Mixer *mixer_;
-  //  CommLink *commlink_;
-  Board *board_;
+  ROSflight* RF_;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -260,7 +253,7 @@ public:
   /**
    * @brief Initialize parameter values
    */
-  void init_params(Board *_board, CommLink *_commlink, Mixer *_mixer);
+  void init(ROSflight* _rf);
 
   /**
    * @brief Set all parameters to default values

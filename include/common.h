@@ -36,28 +36,6 @@
 
 #include "stdint.h"
 
-typedef enum
-{
-  RATE,         // Channel is is in rate mode (mrad/s)
-  ANGLE,        // Channel command is in angle mode (mrad)
-  THROTTLE,     // Channel is direcly controlling throttle max/1000
-  PASSTHROUGH,  // Channel directly passes PWM input to the mixer
-} control_type_t;
 
-typedef struct
-{
-  bool active;          // Whether or not the channel is active
-  control_type_t type;  // What type the channel is
-  float value;          // The value of the channel
-} control_channel_t;
-
-typedef struct
-{
-  uint64_t stamp_us;
-  control_channel_t x;
-  control_channel_t y;
-  control_channel_t z;
-  control_channel_t F;
-} control_t;
 
 #endif // COMMON_H

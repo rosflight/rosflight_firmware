@@ -33,6 +33,7 @@
 #include <stdbool.h>
 
 #include "mode.h"
+#include "rosflight.h"
 
 namespace rosflight
 {
@@ -44,12 +45,9 @@ Mode::Mode()
   time_sticks_have_been_in_arming_position_ms = 0;
 }
 
-void Mode::init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc)
+void Mode::init(ROSflight *_rf)
 {
-  rc_ = _rc;
-  board_ = _board;
-  sensors_ = _sensors;
-  params_ = _params;
+  RF_ = _rf;
   _armed = false;
   _error_code = ERROR_NONE;
   _failsafe_active = false;
@@ -66,19 +64,19 @@ bool Mode::arm(void)
   }
 
   // Perform a gyro calibration on ARM
-  else if (params_->get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
+  else if (RF_->params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
   {
     if (!started_gyro_calibration && !_armed)
     {
-      sensors_->start_gyro_calibration();
+      RF_->sensors_.start_gyro_calibration();
       started_gyro_calibration = true;
       return false;
     }
-    else if (sensors_->gyro_calibration_complete())
+    else if (RF_->sensors_.gyro_calibration_complete())
     {
       started_gyro_calibration = false;
       _armed = true;
-      board_->led1_on();
+      RF_->board_->led1_on();
       return true;
     }
     return false;
@@ -90,7 +88,7 @@ bool Mode::arm(void)
     if (!_armed)
     {
       _armed = true;
-      board_->led1_on();
+      RF_->board_->led1_on();
       return true;
     }
     return false;
@@ -101,14 +99,14 @@ bool Mode::arm(void)
 void Mode::disarm(void)
 {
   _armed = false;
-  board_->led1_off();
+  RF_->board_->led1_off();
 }
 
 bool Mode::check_failsafe(void)
 {
   bool failsafe = false;
 
-  if (board_->pwm_lost())
+  if (RF_->board_->pwm_lost())
   {
     failsafe = true;
     // set the RC Lost error flag
@@ -117,9 +115,9 @@ bool Mode::check_failsafe(void)
   else
   {
     // go into failsafe if we get an invalid RC command for any channel
-    for (int8_t i = 0; i<params_->get_param_int(PARAM_RC_NUM_CHANNELS); i++)
+    for (int8_t i = 0; i<RF_->params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (board_->pwm_read(i) < 900 || board_->pwm_read(i) > 2100)
+      if (RF_->board_->pwm_read(i) < 900 || RF_->board_->pwm_read(i) > 2100)
       {
         failsafe = true;
       }
@@ -132,7 +130,7 @@ bool Mode::check_failsafe(void)
     static uint8_t count = 0;
     if (count > 25)
     {
-      board_->led1_toggle();
+      RF_->board_->led1_toggle();
       count = 0;
     }
     count++;
@@ -150,9 +148,9 @@ bool Mode::check_failsafe(void)
     clear_error_code(ERROR_RC_LOST);
 
     if (_armed)
-      board_->led1_on();
+      RF_->board_->led1_on();
     else
-      board_->led1_off();
+      RF_->board_->led1_off();
   }
   return failsafe;
 }
@@ -160,7 +158,7 @@ bool Mode::check_failsafe(void)
 
 bool Mode::update_state()
 {
-  uint32_t now_ms = board_->clock_millis();
+  uint32_t now_ms = RF_->board_->clock_millis();
 
   // see it has been at least 20 ms
   uint32_t dt = now_ms-prev_time_ms;
@@ -180,13 +178,13 @@ bool Mode::update_state()
   else
   {
     // check for arming switch
-    if (!rc_->rc_switch_mapped(RC_SWITCH_ARM))
+    if (!RF_->rc_.rc_switch_mapped(RC_SWITCH_ARM))
     {
       if (!_armed) // we are DISARMED
       {
         // if left stick is down and to the right
-        if ((rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD))
-            && (rc_->rc_stick(RC_STICK_Z) > (1.0f - params_->get_param_float(PARAM_ARM_THRESHOLD))))
+        if ((RF_->rc_.rc_stick(RC_STICK_F) < RF_->params_.get_param_float(PARAM_ARM_THRESHOLD))
+            && (RF_->rc_.rc_stick(RC_STICK_Z) > (1.0f - RF_->params_.get_param_float(PARAM_ARM_THRESHOLD))))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }
@@ -203,8 +201,8 @@ bool Mode::update_state()
       else // we are ARMED
       {
         // if left stick is down and to the left
-        if (rc_->rc_stick(RC_STICK_F) < params_->get_param_float(PARAM_ARM_THRESHOLD)
-            && rc_->rc_stick(RC_STICK_Z) < -(1.0f - params_->get_param_float(PARAM_ARM_THRESHOLD)))
+        if (RF_->rc_.rc_stick(RC_STICK_F) < RF_->params_.get_param_float(PARAM_ARM_THRESHOLD)
+            && RF_->rc_.rc_stick(RC_STICK_Z) < -(1.0f - RF_->params_.get_param_float(PARAM_ARM_THRESHOLD)))
         {
           time_sticks_have_been_in_arming_position_ms += dt;
         }
@@ -221,7 +219,7 @@ bool Mode::update_state()
     }
     else // ARMING WITH SWITCH
     {
-      if (rc_->rc_switch(RC_SWITCH_ARM))
+      if (RF_->rc_.rc_switch(RC_SWITCH_ARM))
       {
         if (!_armed)
           arm();

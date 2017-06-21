@@ -38,16 +38,10 @@
 #include <turbovec.h>
 #include <turbotrig.h>
 
-#include "param.h"
-#include "sensors.h"
-#include "mode.h"
-
 namespace rosflight
 {
 
-class Params;
-class Sensors;
-class Mode;
+class ROSflight;
 
 class Estimator
 {
@@ -63,7 +57,7 @@ public:
 
   void reset_state();
   void reset_adaptive_bias();
-  void init_estimator(Params *_params, Sensors *_sensors, Mode *_fsm);
+  void init(ROSflight* _rf);
   void run_estimator();
 
   inline float get_roll()
@@ -92,9 +86,7 @@ public:
   }
 
 private:
-  Params *params_;
-  Sensors *sensors_;
-  Mode *fsm_;
+  ROSflight* RF_;
 
   uint64_t now_us = 0;
   uint64_t last_acc_update_us = 0;

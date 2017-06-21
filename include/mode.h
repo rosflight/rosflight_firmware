@@ -33,15 +33,11 @@
 
 #include <stdint.h>
 
-#include "board.h"
-#include "sensors.h"
-#include "param.h"
-#include "rc.h"
-
 namespace rosflight
 {
 
-class Sensors;
+class ROSflight;
+
 class Mode
 {
 
@@ -60,12 +56,7 @@ public:
 
 private:
 
-  RC *rc_;
-  Board *board_;
-  Params *params_;
-
-  // We need a sensors pointer for gyro calibration on arm
-  Sensors *sensors_;
+  ROSflight* RF_;
 
   uint32_t prev_time_ms;
   uint32_t time_sticks_have_been_in_arming_position_ms = 0;
@@ -84,7 +75,7 @@ public:
 
   Mode();
 
-  void init_mode(Board *_board, Sensors *_sensors, Params *_params, RC *_rc);
+  void init(ROSflight* _rf);
   bool update_state();
 
   bool armed()

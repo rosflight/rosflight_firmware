@@ -34,27 +34,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "mux.h"
-#include "param.h"
-#include "estimator.h"
-#include "mode.h"
-#include "mixer.h"
-
 namespace rosflight
 {
 
-class Mode;
-class CommLink;
-class Estimator;
-class Mixer;
-class Mux;
+class ROSflight;
 
 class Controller
 {
 public:
   void run_controller();
-  void init_controller(Mode *_fsm, Board *_board, Mux *_mux, Mixer *_mixer,
-                       Estimator *_estimator, Params *_params);
+  void init(ROSflight* _rf);
   void calculate_equilbrium_torque_from_rc();
 
 
@@ -86,13 +75,7 @@ private:
   pid_t pid_yaw_rate;
   pid_t pid_altitude;
 
-  Estimator *estimator;
-  Mode *fsm;
-  Mux *mux;
-  Mixer *mixer;
-  Params *params;
-  Board *board;
-  CommLink *comm_link;
+  ROSflight* RF_;
 
   void init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, float *current_x,
                 float *current_xdot, float *commanded_x, float *output, float max, float min);

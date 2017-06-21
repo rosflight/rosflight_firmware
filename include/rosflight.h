@@ -44,6 +44,9 @@
 #include "controller.h"
 #include "commlink.h"
 #include "mixer.h"
+#include "mode.h"
+#include "mux.h"
+#include "mode.h"
 
 namespace rosflight
 {
