@@ -38,7 +38,7 @@ extern void SetSysClock(bool overclock);
 
 #include "naze32.h"
 
-namespace rosflight {
+namespace rosflight_firmware {
 
 void Naze32::init_board(void)
 {

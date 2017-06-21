@@ -35,7 +35,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 class Board

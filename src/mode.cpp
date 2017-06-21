@@ -35,7 +35,7 @@
 #include "mode.h"
 #include "rosflight.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 Mode::Mode()

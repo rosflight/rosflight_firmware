@@ -47,7 +47,7 @@
 #include "mux.h"
 #include "mode.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 class ROSflight

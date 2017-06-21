@@ -40,7 +40,7 @@
 #include "mode.h"
 #include "rc.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 void Mavlink::send_log_message(uint8_t severity, char *text)

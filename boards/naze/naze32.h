@@ -40,7 +40,7 @@ extern "C"
 
 #include "board.h"
 
-namespace rosflight {
+namespace rosflight_firmware {
 
 class Naze32 : public Board
 {

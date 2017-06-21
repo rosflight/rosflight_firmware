@@ -32,7 +32,7 @@
 #include "estimator.h"
 #include "rosflight.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 void Estimator::reset_state()

@@ -33,7 +33,7 @@
 
 #include "rosflight.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 ROSflight::ROSflight(Board *_board)

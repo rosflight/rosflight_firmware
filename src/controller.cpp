@@ -35,7 +35,7 @@
 #include "controller.h"
 #include "rosflight.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 

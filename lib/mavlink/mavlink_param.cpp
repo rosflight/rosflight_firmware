@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include "mavlink.h"
 
-namespace rosflight {
+namespace rosflight_firmware {
 
 
 // function definitions

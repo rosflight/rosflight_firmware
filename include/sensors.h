@@ -37,7 +37,7 @@
 #include <stdbool.h>
 #include <turbovec.h>
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 class ROSflight;

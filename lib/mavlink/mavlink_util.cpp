@@ -32,7 +32,7 @@
 #include "controller.h"
 #include "mavlink.h"
 
-namespace rosflight{
+namespace rosflight_firmware{
 
 void Mavlink::mavlink_send_named_value_int(const char *const name, int32_t value)
 {

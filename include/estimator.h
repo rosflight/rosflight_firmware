@@ -38,7 +38,7 @@
 #include <turbovec.h>
 #include <turbotrig.h>
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 class ROSflight;

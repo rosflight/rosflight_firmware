@@ -36,7 +36,7 @@
 #include "mux.h"
 #include "rosflight.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 typedef enum

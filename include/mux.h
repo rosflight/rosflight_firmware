@@ -36,7 +36,7 @@
 
 #include "rc.h"
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 class ROSflight;

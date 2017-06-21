@@ -35,7 +35,7 @@
 
 #define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
-namespace rosflight {
+namespace rosflight_firmware {
 
 class ROSflight;
 

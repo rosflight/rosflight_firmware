@@ -33,7 +33,7 @@
 #include "mavlink.h"
 #include "rosflight.h"
 
-namespace rosflight {
+namespace rosflight_firmware {
 
 Mavlink::Mavlink()
 {

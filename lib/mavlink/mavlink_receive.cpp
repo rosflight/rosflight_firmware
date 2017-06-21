@@ -39,7 +39,7 @@
 
 #include "mavlink.h"
 
-namespace rosflight{
+namespace rosflight_firmware{
 
 
 // local function definitions

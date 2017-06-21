@@ -45,7 +45,7 @@ void IMU_ISR_wrapper(void)
   IMU_ptr->IMU_ISR();
 }
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 Sensors::Sensors()

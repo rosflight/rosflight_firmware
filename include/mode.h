@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 class ROSflight;

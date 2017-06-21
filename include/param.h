@@ -44,7 +44,7 @@
 #define GIT_VERSION_STRING "empty"
 #endif
 
-namespace rosflight
+namespace rosflight_firmware
 {
 
 enum : uint16_t
