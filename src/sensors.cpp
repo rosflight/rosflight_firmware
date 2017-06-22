@@ -257,7 +257,7 @@ void Sensors::calibrate_gyro()
     else
     {
       // Tell the state manager that we just failed a gyro calibration
-      RF_->state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
+      rf_.state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
       //      mavlink_log_error("Too much movement for gyro cal", NULL);
     }
 

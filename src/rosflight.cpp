@@ -38,7 +38,9 @@ namespace rosflight_firmware
 
 ROSflight::ROSflight(Board& board) :
   board_(board),
-  sensors_(*this){
+  sensors_(*this),
+  state_manager_(*this)
+{
 }
 
 // Initialization Routine

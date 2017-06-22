@@ -141,7 +141,7 @@ bool RC::check_rc_lost()
   bool failsafe = false;
 
   // If the board reports that we have lost RC, tell the state manager
-  if (RF_->board_->pwm_lost())
+  if (RF_->board_.pwm_lost())
   {
     failsafe = true;
   }
@@ -150,7 +150,7 @@ bool RC::check_rc_lost()
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_->params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_->board_->pwm_read(i) < 900 || RF_->board_->pwm_read(i) > 2100)
+      if (RF_->board_.pwm_read(i) < 900 || RF_->board_.pwm_read(i) > 2100)
       {
         failsafe = true;
       }
@@ -169,7 +169,7 @@ bool RC::check_rc_lost()
 
 void RC::look_for_arm_disarm_signal()
 {
-  uint32_t now_ms = RF_->board_->clock_millis();
+  uint32_t now_ms = RF_->board_.clock_millis();
   uint32_t dt = now_ms - prev_time_ms;
   // check for arming switch
   if (!rc_switch_mapped(RC_SWITCH_ARM))

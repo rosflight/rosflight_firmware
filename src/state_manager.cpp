@@ -14,7 +14,7 @@ void StateManager::init()
   process_errors();
 
   // Initialize LEDs
-  RF_.board_->led1_off();
+  RF_.board_.led1_off();
 }
 
 void StateManager::run()
@@ -140,15 +140,15 @@ void StateManager::update_leds()
 {
   // off if disarmed, on if armed
   if (!state_.armed)
-    RF_.board_->led1_off();
+    RF_.board_.led1_off();
   else
-    RF_.board_->led1_on();
+    RF_.board_.led1_on();
 
   if (state_.error)
   {
     if (led_blink_counter_++ > 25)
     {
-      RF_.board_->led1_toggle();
+      RF_.board_.led1_toggle();
       led_blink_counter_ = 0;
     }
   }
@@ -157,7 +157,7 @@ void StateManager::update_leds()
   {
     if (led_blink_counter_++ > 13)
     {
-      RF_.board_->led1_toggle();
+      RF_.board_.led1_toggle();
       led_blink_counter_ = 0;
     }
   }
