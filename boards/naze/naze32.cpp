@@ -130,7 +130,7 @@ void Naze32::imu_read_accel(float accel[3])
 {
   // Convert to NED
   int16_t accel_raw[3];
-  mpu6050_read_accel(accel_raw);
+//  mpu6050_read_accel(accel_raw);
   accel[0] = accel_raw[0] * _accel_scale;
   accel[1] = -accel_raw[1] * _accel_scale;
   accel[2] = -accel_raw[2] * _accel_scale;
@@ -140,7 +140,7 @@ void Naze32::imu_read_gyro(float gyro[3])
 {
   //  Convert to NED
   int16_t gyro_raw[3];
-  mpu6050_read_gyro(gyro_raw);
+//  mpu6050_read_gyro(gyro_raw);
   gyro[0] = gyro_raw[0] * _gyro_scale;
   gyro[1] = -gyro_raw[1] * _gyro_scale;
   gyro[2] = -gyro_raw[2] * _gyro_scale;
@@ -148,9 +148,9 @@ void Naze32::imu_read_gyro(float gyro[3])
 
 bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
-    int16_t gyro_raw[3], accel_raw[3];
-    int16_t raw_temp;
-    mpu6050_read_all(accel_raw, gyro_raw, &raw_temp, time_us);
+    volatile int16_t gyro_raw[3], accel_raw[3];
+    volatile int16_t raw_temp;
+    mpu6050_async_read_all(accel_raw, &raw_temp, gyro_raw, time_us);
 
     accel[0] = accel_raw[0] * _accel_scale;
     accel[1] = -accel_raw[1] * _accel_scale;
@@ -172,7 +172,7 @@ bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uin
 float Naze32::imu_read_temperature(void)
 {
   int16_t temperature_raw;
-  mpu6050_read_temperature(&temperature_raw);
+//  mpu6050_read_temperature(&temperature_raw);
   return temperature_raw/340.0f + 36.53f;
 }
 
@@ -193,8 +193,9 @@ void Naze32::mag_read(float mag[3])
 {
   // Convert to NED
   int16_t raw_mag[3];
-  hmc5883l_update();
-  hmc5883l_read(raw_mag);
+//  hmc5883l_update();
+  hmc5883l_request_async_update();
+  hmc5883l_async_read(raw_mag);
   mag[0] = (float)raw_mag[0];
   mag[1] = -(float)raw_mag[1];
   mag[2] = -(float)raw_mag[2];
@@ -202,7 +203,7 @@ void Naze32::mag_read(float mag[3])
 
 bool Naze32::mag_check(void)
 {
-  _mag_present = hmc5883lInit(_board_revision);
+//  _mag_present = hmc5883lInit(_board_revision);
   return _mag_present;
 }
 
@@ -213,13 +214,14 @@ bool Naze32::baro_present(void)
 
 void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
 {
-  ms5611_update();
-  ms5611_read(altitude, pressure, temperature);
+  ms5611_async_update();
+  ms5611_async_read(altitude, pressure, temperature);
   (*altitude) *= -1.0; // Convert to NED
 }
 
 void Naze32::baro_calibrate()
 {
+  /// TODO: barometer needs asynchronous driver
   ms5611_start_calibration();
 }
 
@@ -230,24 +232,24 @@ bool Naze32::diff_pressure_present(void)
 
 bool Naze32::diff_pressure_check(void)
 {
-  _diff_pressure_present = ms4525_init();
+//  _diff_pressure_present = ms4525_init();
   return _diff_pressure_present;
 }
 
 void Naze32::diff_pressure_calibrate()
 {
-  ms4525_start_calibration();
+//  ms4525_start_calibration();
 }
 
 void Naze32::diff_pressure_set_atm(float barometric_pressure)
 {
-  ms4525_set_atm((uint32_t) barometric_pressure);
+//  ms4525_set_atm((uint32_t) barometric_pressure);
 }
 
 void Naze32::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity)
 {
-  ms4525_update();
-  ms4525_read(diff_pressure, temperature, velocity);
+//  ms4525_request_async_update();
+//  ms4525_read(diff_pressure, temperature, velocity);
 }
 
 bool Naze32::sonar_present(void)
@@ -257,15 +259,15 @@ bool Naze32::sonar_present(void)
 
 bool Naze32::sonar_check(void)
 {
-  mb1242_update();
-  _sonar_present = (mb1242_read() > 0.2);
+//  mb1242_update();
+//  _sonar_present = (mb1242_read() > 0.2);
   return _sonar_present;
 }
 
 float Naze32::sonar_read(void)
 {
-  mb1242_update();
-  return mb1242_read();
+//  mb1242_update();
+//  return mb1242_read();
 }
 
 uint16_t num_sensor_errors(void)

@@ -418,8 +418,8 @@ void Mavlink::mavlink_send_attitude(void)
 
 void Mavlink::mavlink_send_imu(void)
 {
-  if(RF_->sensors_.should_send_imu_data())
-  {
+//  if(RF_->sensors_.should_send_imu_data())
+//  {
     mavlink_message_t msg;
     vector_t accel = RF_->sensors_.data()._accel;
     vector_t gyro = RF_->sensors_.data()._gyro;
@@ -433,12 +433,12 @@ void Mavlink::mavlink_send_imu(void)
                                gyro.z,
                                RF_->sensors_.data()._imu_temperature);
     send_message(msg);
-  }
-  else
-  {
+//  }
+//  else
+//  {
     // Otherwise, wait and signal that we still need to send IMU
-    mavlink_streams[STREAM_ID_IMU].next_time_us -= mavlink_streams[STREAM_ID_IMU].period_us;
-  }
+//    mavlink_streams[STREAM_ID_IMU].next_time_us -= mavlink_streams[STREAM_ID_IMU].period_us;
+//  }
 
 }
 

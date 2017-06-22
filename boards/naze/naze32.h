@@ -90,7 +90,7 @@ public:
   bool new_imu_data();
   void imu_read_accel(float accel[3]);
   void imu_read_gyro(float gyro[3]);
-  bool imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t *time_us);
+  bool imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t* time_us);
   float imu_read_temperature(void);
   void imu_not_responding_error();
 

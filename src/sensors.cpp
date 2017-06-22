@@ -74,35 +74,35 @@ bool Sensors::update_sensors(void)
   // These sensors need power to respond, so they might not have been
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
-  if (rf_.state_manager_.state().armed)
-  {
-    uint32_t now = rf_.board_.clock_millis();
-    if (now > (last_time_look_for_disarmed_sensors + 500))
-    {
-      last_time_look_for_disarmed_sensors = now;
-      if (!rf_.board_.sonar_present())
-      {
-        if (rf_.board_.sonar_check())
-        {
-          //          mavlink_log_info("FOUND SONAR", NULL);
-        }
-      }
-      if (!rf_.board_.diff_pressure_present())
-      {
-        if (rf_.board_.diff_pressure_check())
-        {
-          //          mavlink_log_info("FOUND DIFF PRESS", NULL);
-        }
-      }
-      if (!rf_.board_.mag_present())
-      {
-        if (rf_.board_.mag_check())
-        {
-          //          mavlink_log_info("FOUND MAG", NULL);
-        }
-      }
-    }
-  }
+//  if (rf_.state_manager_.state().armed)
+//  {
+//    uint32_t now = rf_.board_.clock_millis();
+//    if (now > (last_time_look_for_disarmed_sensors + 500))
+//    {
+//      last_time_look_for_disarmed_sensors = now;
+//      if (!rf_.board_.sonar_present())
+//      {
+//        if (rf_.board_.sonar_check())
+//        {
+//          //          mavlink_log_info("FOUND SONAR", NULL);
+//        }
+//      }
+//      if (!rf_.board_.diff_pressure_present())
+//      {
+//        if (rf_.board_.diff_pressure_check())
+//        {
+//          //          mavlink_log_info("FOUND DIFF PRESS", NULL);
+//        }
+//      }
+//      if (!rf_.board_.mag_present())
+//      {
+//        if (rf_.board_.mag_check())
+//        {
+//          //          mavlink_log_info("FOUND MAG", NULL);
+//        }
+//      }
+//    }
+//  }
 
 
   // Update whatever sensors are available
@@ -111,19 +111,19 @@ bool Sensors::update_sensors(void)
     rf_.board_.baro_read(&data_._baro_altitude, &data_._baro_pressure, &data_._baro_temperature);
   }
 
-  if (rf_.board_.diff_pressure_present())
-  {
-    if (rf_.board_.baro_present())
-    {
-      rf_.board_.diff_pressure_set_atm(data_._baro_pressure);
-    }
-    rf_.board_.diff_pressure_read(&data_._diff_pressure, &data_._diff_pressure_temp, &data_._diff_pressure_velocity);
-  }
+//  if (rf_.board_.diff_pressure_present())
+//  {
+//    if (rf_.board_.baro_present())
+//    {
+//      rf_.board_.diff_pressure_set_atm(data_._baro_pressure);
+//    }
+//    rf_.board_.diff_pressure_read(&data_._diff_pressure, &data_._diff_pressure_temp, &data_._diff_pressure_velocity);
+//  }
 
-  if (rf_.board_.sonar_present())
-  {
-    data_._sonar_range = rf_.board_.sonar_read();
-  }
+//  if (rf_.board_.sonar_present())
+//  {
+//    data_._sonar_range = rf_.board_.sonar_read();
+//  }
 
   if (rf_.board_.mag_present())
   {
