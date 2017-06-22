@@ -53,7 +53,6 @@ void Sensors::init()
   // clear the IMU read error
   rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
   rf_.board_.sensors_init();
-  rf_.board_.imu_register_callback(std::bind(&Sensors::imu_callback, this));
 
   // See if the IMU is uncalibrated, and throw an error if it is
   if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
@@ -167,25 +166,17 @@ bool Sensors::gyro_calibration_complete(void)
   return !calibrating_gyro_flag;
 }
 
-void Sensors::imu_callback()
-{
-  data_._imu_time = rf_.board_.clock_micros();
-  imu_data_sent_ = false;
-  new_imu_data_ = true;
-}
-
 //==================================================================
 // local function definitions
 bool Sensors::update_imu(void)
 {
-  if (new_imu_data_)
+  if (rf_.board_.new_imu_data())
   {
     last_imu_update_ms = rf_.board_.clock_millis();
-    if (!rf_.board_.imu_read_all(accel, &data_._imu_temperature, gyro))
+    if (!rf_.board_.imu_read_all(accel, &data_._imu_temperature, gyro, &data_._imu_time))
     {
       return false;
     }
-    new_imu_data_ = false;
 
     data_._accel.x = accel[0] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
     data_._accel.y = accel[1] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
@@ -199,7 +190,6 @@ bool Sensors::update_imu(void)
       calibrate_accel();
     if (calibrating_gyro_flag)
       calibrate_gyro();
-
 
     correct_imu();
     return true;

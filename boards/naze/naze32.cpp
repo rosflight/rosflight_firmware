@@ -38,19 +38,9 @@ extern void SetSysClock(bool overclock);
 
 #include "naze32.h"
 
-// wrapper to convert std::function to raw function pointer
-rosflight_firmware::Naze32 *board_ptr;
-void imu_callback_wrapper(void)
-{
-  board_ptr->call_imu_callback();
-}
-
 namespace rosflight_firmware {
 
-Naze32::Naze32()
-{
-  board_ptr = this;
-}
+Naze32::Naze32(){}
 
 void Naze32::init_board(void)
 {
@@ -131,10 +121,9 @@ uint16_t Naze32::num_sensor_errors(void)
   return i2cGetErrorCounter();
 }
 
-void Naze32::imu_register_callback(std::function<void(void)> callback)
+bool Naze32::new_imu_data()
 {
-  imu_callback_ = callback;
-  mpu6050_register_interrupt_cb(&imu_callback_wrapper);
+  return mpu6050_new_data();
 }
 
 void Naze32::imu_read_accel(float accel[3])
@@ -157,11 +146,11 @@ void Naze32::imu_read_gyro(float gyro[3])
   gyro[2] = -gyro_raw[2] * _gyro_scale;
 }
 
-bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3])
+bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
     int16_t gyro_raw[3], accel_raw[3];
     int16_t raw_temp;
-    mpu6050_read_all(accel_raw, gyro_raw, &raw_temp);
+    mpu6050_read_all(accel_raw, gyro_raw, &raw_temp, time_us);
 
     accel[0] = accel_raw[0] * _accel_scale;
     accel[1] = -accel_raw[1] * _accel_scale;

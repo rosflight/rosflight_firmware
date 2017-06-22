@@ -62,10 +62,10 @@ public:
   virtual void sensors_init() = 0;
   virtual uint16_t num_sensor_errors(void)  = 0;
 
-  virtual void imu_register_callback(std::function<void(void)> callback) = 0;
+  virtual bool new_imu_data() = 0;
   virtual void imu_read_accel(float accel[3]) = 0;
   virtual void imu_read_gyro(float gyro[3]) = 0;
-  virtual bool imu_read_all(float accel[3], float *temperature, float gyro[3]) = 0;
+  virtual bool imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time) = 0;
   virtual float imu_read_temperature(void) = 0;
   virtual void imu_not_responding_error(void) = 0;
 

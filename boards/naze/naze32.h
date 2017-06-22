@@ -59,8 +59,13 @@ private:
   float _accel_scale = 1.0;
   float _gyro_scale = 1.0;
 
+
+
 public:
   Naze32();
+
+  bool new_imu_data_;
+  uint64_t imu_time_us_;
 
   // setup
   void init_board(void);
@@ -81,10 +86,11 @@ public:
   void sensors_init();
   uint16_t num_sensor_errors(void);
 
-  void imu_register_callback(std::function<void(void)> callback);
+
+  bool new_imu_data();
   void imu_read_accel(float accel[3]);
   void imu_read_gyro(float gyro[3]);
-  bool imu_read_all(float accel[3], float* temperature, float gyro[3]);
+  bool imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t *time_us);
   float imu_read_temperature(void);
   void imu_not_responding_error();
 

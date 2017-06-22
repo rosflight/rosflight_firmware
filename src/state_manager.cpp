@@ -43,12 +43,18 @@ void StateManager::set_error(uint16_t error)
 
 void StateManager::clear_error(uint16_t error)
 {
-  // Clear the error code
-  state_.error_codes &= ~(error);
+  // If this error code was set,
+  if (state_.error_codes & error)
+  {
+    // Clear the error code
+    state_.error_codes &= ~(error);
 
-  // If there are no errors, tell the FSM
-  process_errors();
-  RF_.mavlink_.update_status();
+    // If there are no errors, tell the FSM
+    process_errors();
+
+    // Send a status update (for logging)
+    RF_.mavlink_.update_status();
+  }
 }
 
 void StateManager::set_event(StateManager::Event event)
