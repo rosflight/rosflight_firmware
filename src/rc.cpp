@@ -250,11 +250,11 @@ bool RC::receive_rc()
     uint16_t pwm = RF_->board_.pwm_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
-      stick_values[channel] = (float)(pwm - 1000) / (1000.0);
+      stick_values[channel] = ((float)(pwm - 1000)) / 1000.0f;
     }
     else
     {
-      stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+      stick_values[channel] = (float)(2*(pwm - 1500)) / (1000.0);
     }
   }
 
