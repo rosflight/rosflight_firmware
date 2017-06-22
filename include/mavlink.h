@@ -32,9 +32,9 @@
 #pragma once
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
-#include "printf.h"
+#include "nanoprintf.h"
 
-#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
+//#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 #define commlink_log(objectptr, severity, format, ...) do {\
   char text[50]; \

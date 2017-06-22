@@ -123,7 +123,7 @@ CSOURCES =  $(CMSIS_SRC) \
             $(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
             $(addprefix $(BOARD_DIR)/, $(BOARD_C_SRC)) \
             $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) \
-            $(ROSFLIGHT_DIR)/src/printf.c
+            $(ROSFLIGHT_DIR)/src/nanoprintf.c
 
 # Compile a list of C++ Source Files
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \

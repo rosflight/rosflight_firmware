@@ -29,7 +29,7 @@
  * OF SUCH DAMAGE.
  */
 
-#include "printf.h"
+#include "nanoprintf.h"
 
 typedef void (*putcf)(void *,char);
 static putcf stdout_putf;
