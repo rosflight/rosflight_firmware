@@ -47,6 +47,54 @@
 #define log_warning(objectptr, format, ...)  commlink_log(objectptr, 4, format, ##__VA_ARGS__)
 #define log_info(objectptr, format, ...)     commlink_log(objectptr, 6, format, ##__VA_ARGS__)
 
+//#define mavlink_log_critical_throttle(delay_ms, format, ...) \
+//  do\
+//  {\
+//    static uint32_t last_hit = 0; \
+//    uint32_t now = clock_millis(); \
+//    if (now - last_hit > delay_ms) \
+//    {\
+//      last_hit = now; \
+//      mavlink_log_critical(format, ##__VA_ARGS__); \
+//    }\
+//  } while(0)
+
+//#define mavlink_log_error_throttle(delay_ms, format, ...) \
+//  do\
+//  {\
+//    static uint32_t last_hit = 0; \
+//    uint32_t now = clock_millis(); \
+//    if (now - last_hit > delay_ms) \
+//    {\
+//      last_hit = now; \
+//      mavlink_log_error(format, ##__VA_ARGS__); \
+//    }\
+//  } while(0)
+
+//#define mavlink_log_warning_throttle(delay_ms, format, ...) \
+//  do\
+//  {\
+//    static uint32_t last_hit = 0; \
+//    uint32_t now = clock_millis(); \
+//    if (now - last_hit > delay_ms) \
+//    {\
+//      last_hit = now; \
+//      mavlink_log_warning(format, ##__VA_ARGS__); \
+//    }\
+//  } while(0)
+
+//#define mavlink_log_info_throttle(delay_ms, format, ...) \
+//  do\
+//  {\
+//    static uint32_t last_hit = 0; \
+//    uint32_t now = clock_millis(); \
+//    if (now - last_hit > delay_ms) \
+//    {\
+//      last_hit = now; \
+//      mavlink_log_info(format, ##__VA_ARGS__); \
+//    }\
+//  } while(0)
+
 namespace rosflight_firmware {
 
 class ROSflight;

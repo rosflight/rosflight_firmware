@@ -247,14 +247,14 @@ bool RC::receive_rc()
   // read and normalize stick values
   for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
   {
-    uint16_t pwm = RF_->board_->pwm_read(sticks[channel].channel);
+    int16_t pwm = 1100;//RF_->board_->pwm_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
-      stick_values[channel] = (float)(pwm - 1000) / (1000.0);
+      stick_values[channel] = ((float)(pwm - 1000)) / 1000.0f;
     }
     else
     {
-      stick_values[channel] = (float)(2*(pwm - 1500) / (1000.0));
+      stick_values[channel] = (float)(2*(pwm - 1500)) / (1000.0);
     }
   }
 
@@ -269,7 +269,7 @@ bool RC::receive_rc()
       }
       else
       {
-        switch_values[channel] = RF_->board_->pwm_read(switches[channel].channel) >= 1500;
+         switch_values[channel] = RF_->board_->pwm_read(switches[channel].channel) >= 1500;
       }
     }
     else

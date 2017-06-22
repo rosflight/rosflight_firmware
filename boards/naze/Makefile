@@ -52,7 +52,6 @@ A2L=arm-none-eabi-addr2line
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
 ROSFLIGHT_DIR   = ../..
-MAVLINK_DIR     = $(ROSFLIGHT_DIR)/lib/mavlink
 TURBOTRIG_DIR   = $(ROSFLIGHT_DIR)/lib/turbotrig
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
@@ -78,18 +77,11 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 sensors.cpp \
                 state_manager.cpp \
                 estimator.cpp \
+                mavlink.cpp \
                 controller.cpp \
                 mux.cpp \
                 rc.cpp \
                 mixer.cpp
-
-VPATH		:= $(VPATH):$(MAVLINK_DIR)
-MAVLINK_SRC = mavlink.cpp \
-              mavlink_stream.cpp \
-              mavlink_receive.cpp \
-              mavlink_param.cpp \
-              mavlink_util.cpp
-
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
@@ -141,7 +133,6 @@ CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
-                $(MAVLINK_DIR) \
                 $(TURBOTRIG_DIR) \
                 $(ROSFLIGHT_DIR)/include \
                 $(ROSFLIGHT_DIR)/lib \
