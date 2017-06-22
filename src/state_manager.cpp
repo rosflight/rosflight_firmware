@@ -5,8 +5,13 @@ namespace rosflight_firmware
 {
 
 StateManager::StateManager(ROSflight& parent) :
-  RF_(parent)
-{}
+  RF_(parent), fsm_state_(FSM_STATE_INIT)
+{
+  state_.armed = false;
+  state_.error = false;
+  state_.failsafe = false;
+  state_.error_codes = 0x00;
+}
 
 void StateManager::init()
 {
@@ -33,6 +38,7 @@ void StateManager::set_error(uint16_t error)
 
   // Tell the FSM that we have had an error change
   process_errors();
+  RF_.mavlink_.update_status();
 }
 
 void StateManager::clear_error(uint16_t error)
@@ -42,6 +48,7 @@ void StateManager::clear_error(uint16_t error)
 
   // If there are no errors, tell the FSM
   process_errors();
+  RF_.mavlink_.update_status();
 }
 
 void StateManager::set_event(StateManager::Event event)
@@ -72,6 +79,7 @@ void StateManager::set_event(StateManager::Event event)
       else
       {
         state_.armed = true;
+        RF_.mavlink_.update_status();
         fsm_state_ = FSM_STATE_ARMED;
       }
       break;
@@ -104,10 +112,12 @@ void StateManager::set_event(StateManager::Event event)
     {
     case EVENT_RC_LOST:
       state_.failsafe = true;
+      RF_.mavlink_.update_status();
       fsm_state_ = FSM_STATE_FAILSAFE;
       break;
     case EVENT_REQUEST_DISARM:
       state_.armed = false;
+      RF_.mavlink_.update_status();
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_ERROR:
@@ -119,6 +129,7 @@ void StateManager::set_event(StateManager::Event event)
     switch (event)
     {
     case EVENT_RC_FOUND:
+      RF_.mavlink_.update_status();
       state_.failsafe = false;
       fsm_state_ = FSM_STATE_ARMED;
       break;

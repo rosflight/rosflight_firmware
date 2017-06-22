@@ -195,6 +195,7 @@ public:
   void update_param(uint16_t param_id);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void send_log_message(uint8_t severity, char* text);
+  void update_status();
 };
 
 }
