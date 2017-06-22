@@ -44,7 +44,7 @@ Mavlink::Mavlink()
 void Mavlink::init(ROSflight *firmware)
 {
   RF_ = firmware;
-  RF_->board_->serial_init(RF_->params_.get_param_int(PARAM_BAUD_RATE));
+  RF_->board_.serial_init(RF_->params_.get_param_int(PARAM_BAUD_RATE));
 
   sysid = RF_->params_.get_param_int(PARAM_SYSTEM_ID);
   compid = 250;
@@ -75,7 +75,7 @@ void Mavlink::send_message(const mavlink_message_t &msg)
     uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
     for (int i = 0; i < len; i++)
     {
-      RF_->board_->serial_write(data[i]);
+      RF_->board_.serial_write(data[i]);
     }
   }
 }
@@ -215,10 +215,10 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       result = RF_->sensors_.start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      RF_->board_->baro_calibrate();
+      RF_->board_.baro_calibrate();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      RF_->board_->diff_pressure_calibrate();
+      RF_->board_.diff_pressure_calibrate();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       RF_->controller_.calculate_equilbrium_torque_from_rc();
@@ -249,14 +249,14 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
-    RF_->board_->clock_delay(20);
-    RF_->board_->board_reset(reboot_to_bootloader_flag);
+    RF_->board_.clock_delay(20);
+    RF_->board_.board_reset(reboot_to_bootloader_flag);
   }
 }
 
 void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 {
-  uint64_t now_us = RF_->board_->clock_micros();
+  uint64_t now_us = RF_->board_.clock_micros();
 
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
@@ -272,7 +272,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t mavlink_offboard_control;
-  _offboard_control_time = RF_->board_->clock_micros();
+  _offboard_control_time = RF_->board_.clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
   // put values into standard message
@@ -345,9 +345,9 @@ void Mavlink::handle_mavlink_message(void)
 // function definitions
 void Mavlink::receive(void)
 {
-  while (RF_->board_->serial_bytes_available())
+  while (RF_->board_.serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_->serial_read(), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_.serial_read(), &in_buf, &status))
       handle_mavlink_message();
   }
 }
@@ -395,7 +395,7 @@ void Mavlink::mavlink_send_status(void)
                                     status,
                                     RF_->state_manager_.state().error_codes,
                                     control_mode,
-                                    RF_->board_->num_sensor_errors(),
+                                    RF_->board_.num_sensor_errors(),
                                     RF_->get_loop_time_us());
   send_message(msg);
 }
@@ -446,7 +446,7 @@ void Mavlink::mavlink_send_output_raw(void)
 {
   mavlink_message_t msg;
     mavlink_msg_rosflight_output_raw_pack(sysid, compid, &msg,
-                                      RF_->board_->clock_millis(),
+                                      RF_->board_.clock_millis(),
                                       RF_->mixer_._outputs);
     send_message(msg);
 }
@@ -455,23 +455,23 @@ void Mavlink::mavlink_send_rc_raw(void)
 {
   mavlink_message_t msg;
   mavlink_msg_rc_channels_pack(sysid, compid, &msg,
-                               RF_->board_->clock_millis(),
+                               RF_->board_.clock_millis(),
                                0,
-                               RF_->board_->pwm_read(0),
-                               RF_->board_->pwm_read(1),
-                               RF_->board_->pwm_read(2),
-                               RF_->board_->pwm_read(3),
-                               RF_->board_->pwm_read(4),
-                               RF_->board_->pwm_read(5),
-                               RF_->board_->pwm_read(6),
-                               RF_->board_->pwm_read(7),
+                               RF_->board_.pwm_read(0),
+                               RF_->board_.pwm_read(1),
+                               RF_->board_.pwm_read(2),
+                               RF_->board_.pwm_read(3),
+                               RF_->board_.pwm_read(4),
+                               RF_->board_.pwm_read(5),
+                               RF_->board_.pwm_read(6),
+                               RF_->board_.pwm_read(7),
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0);
   send_message(msg);
 }
 
 void Mavlink::mavlink_send_diff_pressure(void)
 {
-  if (RF_->board_->diff_pressure_present())
+  if (RF_->board_.diff_pressure_present())
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
@@ -484,7 +484,7 @@ void Mavlink::mavlink_send_diff_pressure(void)
 
 void Mavlink::mavlink_send_baro(void)
 {
-  if (RF_->board_->baro_present())
+  if (RF_->board_.baro_present())
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid, compid, &msg,
@@ -497,7 +497,7 @@ void Mavlink::mavlink_send_baro(void)
 
 void Mavlink::mavlink_send_sonar(void)
 {
-  if (RF_->board_->sonar_present())
+  if (RF_->board_.sonar_present())
   {
     mavlink_message_t msg;
     mavlink_msg_small_range_pack(sysid, compid, &msg,
@@ -511,7 +511,7 @@ void Mavlink::mavlink_send_sonar(void)
 
 void Mavlink::mavlink_send_mag(void)
 {
-  if (RF_->board_->mag_present())
+  if (RF_->board_.mag_present())
   {
     mavlink_message_t msg;
     mavlink_msg_small_mag_pack(sysid, compid, &msg,
@@ -530,7 +530,7 @@ void Mavlink::mavlink_send_low_priority(void)
 // function definitions
 void Mavlink::stream()
 {
-  uint64_t time_us = RF_->board_->clock_micros();
+  uint64_t time_us = RF_->board_.clock_micros();
   for (int i = 0; i < STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams[i].next_time_us)
@@ -556,14 +556,14 @@ void Mavlink::mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us)
 void Mavlink::mavlink_send_named_value_int(const char *const name, int32_t value)
 {
   mavlink_message_t msg;
-  mavlink_msg_named_value_int_pack(sysid, compid, &msg, RF_->board_->clock_millis(), name, value);
+  mavlink_msg_named_value_int_pack(sysid, compid, &msg, RF_->board_.clock_millis(), name, value);
   send_message(msg);
 }
 
 void Mavlink::mavlink_send_named_value_float(const char *const name, float value)
 {
   mavlink_message_t msg;
-  mavlink_msg_named_value_float_pack(sysid, compid, &msg, RF_->board_->clock_millis(), name, value);
+  mavlink_msg_named_value_float_pack(sysid, compid, &msg, RF_->board_.clock_millis(), name, value);
   send_message(msg);
 }
 
