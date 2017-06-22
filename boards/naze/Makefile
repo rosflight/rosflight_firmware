@@ -76,7 +76,7 @@ VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC = rosflight.cpp \
                 param.cpp \
                 sensors.cpp \
-                mode.cpp \
+                state_manager.cpp \
                 estimator.cpp \
                 controller.cpp \
                 mux.cpp \

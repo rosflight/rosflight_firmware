@@ -31,14 +31,6 @@
 
 #include <stdbool.h>
 
-#include "board.h"
-#include "mavlink.h"
-#include "mixer.h"
-#include "sensors.h"
-#include "estimator.h"
-#include "param.h"
-#include "mode.h"
-#include "rc.h"
 #include "rosflight.h"
 
 namespace rosflight_firmware
@@ -67,8 +59,8 @@ void Mavlink::mavlink_send_heartbeat(void)
 void Mavlink::mavlink_send_status(void)
 {
   volatile uint8_t status = 0;
-  status |= (RF_->fsm_.armed()) ? ROSFLIGHT_STATUS_ARMED : 0x00;
-  status |= (RF_->fsm_.in_failsafe()) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
+  status |= (RF_->state_manager_.state().armed) ? ROSFLIGHT_STATUS_ARMED : 0x00;
+  status |= (RF_->state_manager_.state().failsafe) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
   status |= (RF_->mux_.rc_override_active()) ? ROSFLIGHT_STATUS_RC_OVERRIDE : 0x00;
   status |= (RF_->mux_.offboard_control_active()) ? ROSFLIGHT_STATUS_OFFBOARD_CONTROL_ACTIVE : 0x00;
 
@@ -83,7 +75,7 @@ void Mavlink::mavlink_send_status(void)
   mavlink_message_t msg;
   mavlink_msg_rosflight_status_pack(RF_->params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                                     status,
-                                    (uint8_t)RF_->fsm_.error_state(),
+                                    RF_->state_manager_.state().error_codes,
                                     control_mode,
                                     RF_->board_.num_sensor_errors(),
                                     RF_->get_loop_time_us());

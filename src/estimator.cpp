@@ -83,7 +83,7 @@ void Estimator::reset_state()
   _gyro_LPF.z = 0;
 
   // Clear the unhealthy estimator flag
-  RF_->fsm_.clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+  RF_->state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
 }
 
 void Estimator::reset_adaptive_bias()
@@ -130,12 +130,12 @@ void Estimator::run_estimator()
   else if (now_us <= last_time)
   {
     // this shouldn't happen
-    RF_->fsm_.set_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
+    RF_->state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
     last_time = now_us;
     return;
   }
 
-  RF_->fsm_.clear_error_code(Mode::ERROR_TIME_GOING_BACKWARDS);
+  RF_->state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
 
   float dt = (now_us - last_time) * 1e-6f;
   last_time = now_us;
@@ -262,11 +262,11 @@ void Estimator::run_estimator()
   // then trigger an unhealthy estimator error
   if (RF_->params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us)
   {
-    RF_->fsm_.set_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+    RF_->state_manager_.set_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }
   else
   {
-    RF_->fsm_.clear_error_code(Mode::ERROR_UNHEALTHY_ESTIMATOR);
+    RF_->state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }
 }
 

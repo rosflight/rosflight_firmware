@@ -67,7 +67,7 @@ void Mixer::param_change_callback(uint16_t param_id)
 void Mixer::init_mixing()
 {
   // clear the invalid mixer error
-  RF_->fsm_.clear_error_code(Mode::ERROR_INVALID_MIXER);
+  RF_->state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
 
   uint8_t mixer_choice = RF_->params_.get_param_int(PARAM_MIXER);
 
@@ -77,7 +77,7 @@ void Mixer::init_mixing()
     mixer_choice = 0;
 
     // set the invalid mixer flag
-    RF_->fsm_.set_error_code(Mode::ERROR_INVALID_MIXER);
+    RF_->state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   }
 
   mixer_to_use = array_of_mixers[mixer_choice];
@@ -108,7 +108,7 @@ void Mixer::init_PWM()
 
 void Mixer::write_motor(uint8_t index, float value)
 {
-  if (RF_->fsm_.armed())
+  if (RF_->state_manager_.state().armed)
   {
     if (value > 1.0)
     {

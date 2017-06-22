@@ -38,8 +38,7 @@ namespace rosflight_firmware
 
 ROSflight::ROSflight(Board& board) :
   board_(board),
-  sensors_(*this)
-{
+  sensors_(*this){
 }
 
 // Initialization Routine
@@ -49,7 +48,7 @@ void ROSflight::rosflight_init()
   board_.init_board();
 
   // Initialize the arming finite state machine
-  fsm_.init(this);
+  state_manager_.init();
 
   // Read EEPROM to get initial params
   params_.init(this);
@@ -111,7 +110,7 @@ void ROSflight::rosflight_run()
   mavlink_.receive(); // 159 | 1 | 1
 
   // update the state machine, an internal timer runs this at a fixed rate
-  fsm_.update_state(); // 108 | 1 | 1
+  state_manager_.run(); // 108 | 1 | 1
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
   rc_.receive_rc(); // 42 | 2 | 1

@@ -61,7 +61,7 @@ void Controller::init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id
 
 void Controller::run_pid(pid_t *pid, float dt)
 {
-  if (dt > 0.010 || !RF_->fsm_.armed())
+  if (dt > 0.010 || !RF_->state_manager_.state().armed)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
@@ -105,7 +105,7 @@ void Controller::run_pid(pid_t *pid, float dt)
 
   // If there is an integrator, we are armed, and throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ((pid->ki_param_id < PARAMS_COUNT) && (RF_->fsm_.armed()) && (RF_->mux_._combined_control.F.value > 0.1))
+  if ((pid->ki_param_id < PARAMS_COUNT) && (RF_->state_manager_.state().armed) && (RF_->mux_._combined_control.F.value > 0.1))
   {
     if (RF_->params_.get_param_float(pid->ki_param_id) > 0.0)
     {
@@ -239,7 +239,7 @@ void Controller::run_controller()
 void Controller::calculate_equilbrium_torque_from_rc()
 {
   // Make sure we are disarmed
-  if (!(RF_->fsm_.armed()))
+  if (!(RF_->state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
     //    mavlink_log_warning("Capturing equilbrium offsets from RC");

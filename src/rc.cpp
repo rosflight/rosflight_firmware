@@ -136,6 +136,94 @@ void RC::init_switches()
   }
 }
 
+bool RC::check_rc_lost()
+{
+  bool failsafe = false;
+
+  // If the board reports that we have lost RC, tell the state manager
+  if (RF_->board_->pwm_lost())
+  {
+    failsafe = true;
+  }
+  else
+  {
+    // go into failsafe if we get an invalid RC command for any channel
+    for (int8_t i = 0; i<RF_->params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
+    {
+      if (RF_->board_->pwm_read(i) < 900 || RF_->board_->pwm_read(i) > 2100)
+      {
+        failsafe = true;
+      }
+    }
+  }
+
+  if (failsafe)
+    // set the RC Lost error flag
+    RF_->state_manager_.set_error(StateManager::ERROR_RC_LOST);
+  else
+    // Clear the RC Lost Error
+    RF_->state_manager_.clear_error(StateManager::ERROR_RC_LOST);
+
+  return failsafe;
+}
+
+void RC::look_for_arm_disarm_signal()
+{
+  uint32_t now_ms = RF_->board_->clock_millis();
+  uint32_t dt = now_ms - prev_time_ms;
+  // check for arming switch
+  if (!rc_switch_mapped(RC_SWITCH_ARM))
+  {
+    if (!RF_->state_manager_.state().armed) // we are DISARMED
+    {
+      // if left stick is down and to the right
+      if ((RF_->rc_.rc_stick(RC_STICK_F) < RF_->params_.get_param_float(PARAM_ARM_THRESHOLD))
+          && (RF_->rc_.rc_stick(RC_STICK_Z) > (1.0f - RF_->params_.get_param_float(PARAM_ARM_THRESHOLD))))
+      {
+        time_sticks_have_been_in_arming_position_ms += dt;
+      }
+      else
+      {
+        time_sticks_have_been_in_arming_position_ms = 0;
+      }
+      if (time_sticks_have_been_in_arming_position_ms > 500)
+      {
+        RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+      }
+    }
+    else // we are ARMED
+    {
+      // if left stick is down and to the left
+      if (RF_->rc_.rc_stick(RC_STICK_F) < RF_->params_.get_param_float(PARAM_ARM_THRESHOLD)
+          && RF_->rc_.rc_stick(RC_STICK_Z) < -(1.0f - RF_->params_.get_param_float(PARAM_ARM_THRESHOLD)))
+      {
+        time_sticks_have_been_in_arming_position_ms += dt;
+      }
+      else
+      {
+        time_sticks_have_been_in_arming_position_ms = 0;
+      }
+      if (time_sticks_have_been_in_arming_position_ms > 500)
+      {
+        RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+        time_sticks_have_been_in_arming_position_ms = 0;
+      }
+    }
+  }
+  else // ARMING WITH SWITCH
+  {
+    if (RF_->rc_.rc_switch(RC_SWITCH_ARM))
+    {
+      if (!RF_->state_manager_.state().armed)
+        RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);;
+    }
+    else
+    {
+      RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+    }
+  }
+}
+
 
 bool RC::receive_rc()
 {
@@ -149,6 +237,12 @@ bool RC::receive_rc()
     return false;
   }
   last_rc_receive_time = now;
+
+
+  // Check for rc lost
+  if (check_rc_lost())
+    return false;
+
 
   // read and normalize stick values
   for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
@@ -183,6 +277,9 @@ bool RC::receive_rc()
       switch_values[channel] = false;
     }
   }
+
+  // Look for arming and disarming signals
+  look_for_arm_disarm_signal();
 
   // Signal to the mux that we need to compute a new combined command
   new_command_ = true;

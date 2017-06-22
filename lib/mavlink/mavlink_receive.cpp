@@ -29,15 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "board.h"
-#include "mavlink.h"
-#include "mode.h"
-#include "param.h"
-#include "mux.h"
-#include "sensors.h"
-//#include "rc.h"
 #include "rosflight.h"
-
 #include "mavlink.h"
 
 namespace rosflight_firmware{
@@ -54,7 +46,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   bool reboot_to_bootloader_flag = false;
 
   // None of these actions can be performed if we are armed
-  if (RF_->fsm_.armed())
+  if (RF_->state_manager_.state().armed)
   {
     result = false;
   }
