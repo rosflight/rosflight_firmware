@@ -74,7 +74,8 @@ public:
   // function declarations
   void init();
   bool update_sensors();
-  void IMU_ISR();
+
+  void imu_callback();
 
   // Calibration Functions
   bool start_imu_calibration(void);

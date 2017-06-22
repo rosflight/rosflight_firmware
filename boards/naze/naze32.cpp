@@ -38,7 +38,19 @@ extern void SetSysClock(bool overclock);
 
 #include "naze32.h"
 
+// wrapper to convert std::function to raw function pointer
+rosflight_firmware::Naze32 *board_ptr;
+void imu_callback_wrapper(void)
+{
+  board_ptr->call_imu_callback();
+}
+
 namespace rosflight_firmware {
+
+Naze32::Naze32()
+{
+  board_ptr = this;
+}
 
 void Naze32::init_board(void)
 {
@@ -119,9 +131,10 @@ uint16_t Naze32::num_sensor_errors(void)
   return i2cGetErrorCounter();
 }
 
-void Naze32::imu_register_callback(void (*callback)(void))
+void Naze32::imu_register_callback(std::function<void(void)> callback)
 {
-  mpu6050_register_interrupt_cb(callback);
+  imu_callback_ = callback;
+  mpu6050_register_interrupt_cb(&imu_callback_wrapper);
 }
 
 void Naze32::imu_read_accel(float accel[3])

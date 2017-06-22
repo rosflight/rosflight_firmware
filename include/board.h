@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <functional>
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -61,7 +62,7 @@ public:
   virtual void sensors_init() = 0;
   virtual uint16_t num_sensor_errors(void)  = 0;
 
-  virtual void imu_register_callback(void (*callback)(void)) = 0;
+  virtual void imu_register_callback(std::function<void(void)> callback) = 0;
   virtual void imu_read_accel(float accel[3]) = 0;
   virtual void imu_read_gyro(float gyro[3]) = 0;
   virtual bool imu_read_all(float accel[3], float *temperature, float gyro[3]) = 0;

@@ -39,20 +39,12 @@
 
 #include <turbovec.h>
 
-rosflight_firmware::Sensors *IMU_ptr;
-void IMU_ISR_wrapper(void)
-{
-  IMU_ptr->IMU_ISR();
-}
-
 namespace rosflight_firmware
 {
 
 Sensors::Sensors(ROSflight& rosflight) :
   rf_(rosflight)
-{
-  IMU_ptr = this;
-}
+{}
 
 void Sensors::init()
 {
@@ -61,7 +53,7 @@ void Sensors::init()
   // clear the IMU read error
   rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
   rf_.board_.sensors_init();
-  rf_.board_.imu_register_callback(&IMU_ISR_wrapper);
+  rf_.board_.imu_register_callback(std::bind(&Sensors::imu_callback, this));
 
   // See if the IMU is uncalibrated, and throw an error if it is
   if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
@@ -175,7 +167,7 @@ bool Sensors::gyro_calibration_complete(void)
   return !calibrating_gyro_flag;
 }
 
-void Sensors::IMU_ISR(void)
+void Sensors::imu_callback()
 {
   data_._imu_time = rf_.board_.clock_micros();
   imu_data_sent_ = false;

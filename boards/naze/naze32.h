@@ -48,6 +48,8 @@ class Naze32 : public Board
 private:
   serialPort_t *Serial1;
 
+  std::function<void(void)> imu_callback_;
+
   bool _baro_present = false;
   bool _mag_present = false;
   bool _sonar_present = false;
@@ -58,6 +60,7 @@ private:
   float _gyro_scale = 1.0;
 
 public:
+  Naze32();
 
   // setup
   void init_board(void);
@@ -78,7 +81,7 @@ public:
   void sensors_init();
   uint16_t num_sensor_errors(void);
 
-  void imu_register_callback(void (*callback)(void));
+  void imu_register_callback(std::function<void(void)> callback);
   void imu_read_accel(float accel[3]);
   void imu_read_gyro(float gyro[3]);
   bool imu_read_all(float accel[3], float* temperature, float gyro[3]);
@@ -124,6 +127,8 @@ public:
   void led1_off(void);
   void led1_toggle(void);
 
+  // required to convert std::function to raw function pointer
+  inline void call_imu_callback() const { imu_callback_(); }
 };
 
 }
