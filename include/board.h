@@ -74,6 +74,7 @@ public:
   virtual void mag_read(float mag[3]) = 0;
 
   virtual bool baro_present(void) = 0;
+  virtual bool baro_check(void) = 0;
   virtual void baro_read(float *altitude, float *pressure,
                          float *temperature) = 0; // TODO move altitude calculation outside this function
   virtual void baro_calibrate() = 0;

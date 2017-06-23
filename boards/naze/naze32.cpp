@@ -209,7 +209,7 @@ bool Naze32::mag_check(void)
 
 bool Naze32::baro_present(void)
 {
-  return _baro_present;
+  return ms5611_present();
 }
 
 void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
@@ -217,6 +217,12 @@ void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
   ms5611_async_update();
   ms5611_async_read(altitude, pressure, temperature);
   (*altitude) *= -1.0; // Convert to NED
+}
+
+bool Naze32::baro_check()
+{
+  ms5611_async_update();
+  return ms5611_present();
 }
 
 void Naze32::baro_calibrate()
@@ -232,24 +238,24 @@ bool Naze32::diff_pressure_present(void)
 
 bool Naze32::diff_pressure_check(void)
 {
-//  _diff_pressure_present = ms4525_init();
+  _diff_pressure_present = ms4525_present();
   return _diff_pressure_present;
 }
 
 void Naze32::diff_pressure_calibrate()
 {
-//  ms4525_start_calibration();
+  ms4525_start_calibration();
 }
 
 void Naze32::diff_pressure_set_atm(float barometric_pressure)
 {
-//  ms4525_set_atm((uint32_t) barometric_pressure);
+  ms4525_set_atm((uint32_t) barometric_pressure);
 }
 
 void Naze32::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity)
 {
-//  ms4525_request_async_update();
-//  ms4525_read(diff_pressure, temperature, velocity);
+  ms4525_request_async_update();
+  ms4525_async_read(diff_pressure, temperature, velocity);
 }
 
 bool Naze32::sonar_present(void)

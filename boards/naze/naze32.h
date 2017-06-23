@@ -98,6 +98,7 @@ public:
   bool mag_present(void);
   void mag_read(float mag[3]);
 
+  bool baro_check();
   bool baro_present(void);
   void baro_read(float *altitude, float *pressure, float *temperature); // TODO move altitude calculation outside this function
   void baro_calibrate();
