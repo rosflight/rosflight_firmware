@@ -34,54 +34,60 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "mixer.h"
+
 namespace rosflight_firmware
 {
 
 class ROSflight;
 
-class Controller
+class PID
 {
 public:
-  void run_controller();
-  void init(ROSflight* _rf);
-  void calculate_equilbrium_torque_from_rc();
-
+  PID(uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, ROSflight &_rf);
+  void set_max_and_min(float max, float min);
+  float run(float x, float x_c, float dt, bool use_derivative, float xdot =0 );
 
 private:
-  typedef struct
-  {
-    uint16_t kp_param_id;
-    uint16_t ki_param_id;
-    uint16_t kd_param_id;
+  ROSflight& RF_;
+  uint16_t kp_param_id_;
+  uint16_t ki_param_id_;
+  uint16_t kd_param_id_;
 
-    float *current_x;
-    float *current_xdot;
-    float *commanded_x;
-    float *output;
+  float max_;
+  float min_;
 
-    float max;
-    float min;
+  float integrator_;
+  float prev_x_;
+  float differentiator_;
+  float tau_;
 
-    float integrator;
-    float prev_x;
-    float differentiator;
-    float tau;
-  } pid_t;
+};
 
-  pid_t pid_roll;
-  pid_t pid_roll_rate;
-  pid_t pid_pitch;
-  pid_t pid_pitch_rate;
-  pid_t pid_yaw_rate;
-  pid_t pid_altitude;
+class Controller
+{
 
-  ROSflight* RF_;
+private:
 
-  void init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, float *current_x,
-                float *current_xdot, float *commanded_x, float *output, float max, float min);
-  void run_pid(pid_t *pid, float dt);
+  Mixer::command_t outputs_;
+
+  PID roll_;
+  PID roll_rate_;
+  PID pitch_;
+  PID pitch_rate_;
+  PID yaw_rate_;
+
+  ROSflight& RF_;
 
   float prev_time;
 
+public:
+  Controller(ROSflight& _rf);
+  void run_controller();
+  void init();
+  void calculate_equilbrium_torque_from_rc();
+  inline Mixer::command_t get_outputs() {return outputs_;}
+
 };
+
 }

@@ -37,14 +37,16 @@
 namespace rosflight_firmware
 {
 
-void Mixer::init(ROSflight* _rf)
-{
-  RF_ = _rf;
+Mixer::Mixer(ROSflight &_rf) :
+  RF_(_rf)
+{}
 
-  RF_->params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_PWM_SEND_RATE);
-  RF_->params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_MIN_PWM);
-  RF_->params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
-  RF_->params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MIXER);
+void Mixer::init()
+{
+  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_PWM_SEND_RATE);
+  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_MIN_PWM);
+  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
+  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MIXER);
 
   init_mixing();
   init_PWM();
@@ -67,9 +69,9 @@ void Mixer::param_change_callback(uint16_t param_id)
 void Mixer::init_mixing()
 {
   // clear the invalid mixer error
-  RF_->state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
+  RF_.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
 
-  uint8_t mixer_choice = RF_->params_.get_param_int(PARAM_MIXER);
+  uint8_t mixer_choice = RF_.params_.get_param_int(PARAM_MIXER);
 
   if (mixer_choice >= NUM_MIXERS)
   {
@@ -77,7 +79,7 @@ void Mixer::init_mixing()
     mixer_choice = 0;
 
     // set the invalid mixer flag
-    RF_->state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
+    RF_.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   }
 
   mixer_to_use = array_of_mixers[mixer_choice];
@@ -87,37 +89,33 @@ void Mixer::init_mixing()
     _outputs[i] = 0.0f;
     prescaled_outputs[i] = 0.0f;
   }
-  _command.F = 0;
-  _command.x = 0;
-  _command.y = 0;
-  _command.z = 0;
 }
 
 void Mixer::init_PWM()
 {
   bool useCPPM = false;
-  if (RF_->params_.get_param_int(PARAM_RC_TYPE) == 1)
+  if (RF_.params_.get_param_int(PARAM_RC_TYPE) == 1)
   {
     useCPPM = true;
   }
-  int16_t motor_refresh_rate = RF_->params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
-  int16_t off_pwm = RF_->params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_->board_.pwm_init(useCPPM, motor_refresh_rate, off_pwm);
+  int16_t motor_refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
+  int16_t off_pwm = RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
+  RF_.board_.pwm_init(useCPPM, motor_refresh_rate, off_pwm);
 }
 
 
 void Mixer::write_motor(uint8_t index, float value)
 {
-  if (RF_->state_manager_.state().armed)
+  if (RF_.state_manager_.state().armed)
   {
     if (value > 1.0)
     {
       value = 1.0;
     }
-    else if (value < RF_->params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
-             && RF_->params_.get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
+    else if (value < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
+             && RF_.params_.get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED))
     {
-      value = RF_->params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
+      value = RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
     }
     else if (value < 0.0)
     {
@@ -129,9 +127,9 @@ void Mixer::write_motor(uint8_t index, float value)
     value = 0.0;
   }
   _outputs[index] = value;
-  int32_t pwm_us = value * (RF_->params_.get_param_int(PARAM_MOTOR_MAX_PWM) - RF_->params_.get_param_int(
-                              PARAM_MOTOR_MIN_PWM)) + RF_->params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_->board_.pwm_write(index, pwm_us);
+  int32_t pwm_us = value * (RF_.params_.get_param_int(PARAM_MOTOR_MAX_PWM) - RF_.params_.get_param_int(
+                              PARAM_MOTOR_MIN_PWM)) + RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
+  RF_.board_.pwm_write(index, pwm_us);
 }
 
 
@@ -146,20 +144,21 @@ void Mixer::write_servo(uint8_t index, float value)
     value = -1.0;
   }
   _outputs[index] = value;
-  RF_->board_.pwm_write(index, _outputs[index] * 500 + 1500);
+  RF_.board_.pwm_write(index, _outputs[index] * 500 + 1500);
 }
 
 
 void Mixer::mix_output()
 {
+  command_t commands = RF_.controller_.get_outputs();
   float max_output = 1.0f;
 
   // Reverse Fixedwing channels just before mixing if we need to
-  if (RF_->params_.get_param_int(PARAM_FIXED_WING))
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
-    prescaled_outputs[0] *= RF_->params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    prescaled_outputs[1] *= RF_->params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    prescaled_outputs[3] *= RF_->params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+    prescaled_outputs[0] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    prescaled_outputs[1] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    prescaled_outputs[3] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
 
   for (int8_t i=0; i<8; i++)
@@ -167,8 +166,8 @@ void Mixer::mix_output()
     if (mixer_to_use->output_type[i] != NONE)
     {
       // Matrix multiply to mix outputs
-      prescaled_outputs[i] = (_command.F*mixer_to_use->F[i] + _command.x*mixer_to_use->x[i] +
-                              _command.y*mixer_to_use->y[i] + _command.z*mixer_to_use->z[i]);
+      prescaled_outputs[i] = (commands.F*mixer_to_use->F[i] + commands.x*mixer_to_use->x[i] +
+                              commands.y*mixer_to_use->y[i] + commands.z*mixer_to_use->z[i]);
 
       // Save off the largest control output if it is greater than 1.0 for future scaling
       if (prescaled_outputs[i] > max_output)

@@ -81,19 +81,11 @@ public:
     float z[8];
   } mixer_t;
 
-  command_t _command;
+private:
 
   float _outputs[8];
 
-  void init(ROSflight* _rf);
-  void init_PWM();
-  void init_mixing();
-  void mix_output();
-  void param_change_callback(uint16_t param_id);
-
-private:
-
-  ROSflight* RF_;
+  ROSflight& RF_;
 
   float prescaled_outputs[8];
 
@@ -159,6 +151,15 @@ private:
     &X8_mixing,
     &fixedwing_mixing
   };
+
+public:
+  Mixer(ROSflight& _rf);
+  void init();
+  void init_PWM();
+  void init_mixing();
+  void mix_output();
+  void param_change_callback(uint16_t param_id);
+  inline float* get_outputs() {return _outputs;}
 
 
 };

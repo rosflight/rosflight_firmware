@@ -447,7 +447,7 @@ void Mavlink::mavlink_send_output_raw(void)
   mavlink_message_t msg;
     mavlink_msg_rosflight_output_raw_pack(sysid, compid, &msg,
                                       RF_->board_.clock_millis(),
-                                      RF_->mixer_._outputs);
+                                      RF_->mixer_.get_outputs());
     send_message(msg);
 }
 

@@ -39,7 +39,11 @@ namespace rosflight_firmware
 ROSflight::ROSflight(Board& board) :
   board_(board),
   sensors_(*this),
-  state_manager_(*this)
+  state_manager_(*this),
+  controller_(*this),
+  estimator_(*this),
+  params_(*this),
+  mixer_(*this)
 {
 }
 
@@ -53,10 +57,10 @@ void ROSflight::rosflight_init()
   state_manager_.init();
 
   // Read EEPROM to get initial params
-  params_.init(this);
+  params_.init();
 
   // Initialize Mixer
-  mixer_.init(this);
+  mixer_.init();
 
   /***********************/
   /***  Hardware Setup ***/
@@ -76,10 +80,10 @@ void ROSflight::rosflight_init()
   /***********************/
 
   // Initialize Estimator
-  estimator_.init(this);
+  estimator_.init();
 
   // Initialize Controller
-  controller_.init(this);
+  controller_.init();
 
   // Initialize the command muxer
   mux_.init(this);

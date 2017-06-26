@@ -45,7 +45,8 @@
 namespace rosflight_firmware
 {
 
-Params::Params()
+Params::Params(ROSflight& _rf) :
+  RF_(_rf)
 {
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
     callbacks[id] = NULL;
@@ -82,10 +83,9 @@ uint8_t Params::compute_checksum(void)
 }
 
 // function definitions
-void Params::init(ROSflight *_rf)
+void Params::init()
 {
-  RF_ = _rf;
-  RF_->board_.memory_init();
+  RF_.board_.memory_init();
   if (!read_params())
   {
     set_param_defaults();
@@ -254,7 +254,7 @@ void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
 
 bool Params::read_params(void)
 {
-  if (!RF_->board_.memory_read(&params, sizeof(params_t)))
+  if (!RF_.board_.memory_read(&params, sizeof(params_t)))
     return false;
 
   if (params.version != GIT_VERSION_HASH)
@@ -277,7 +277,7 @@ bool Params::write_params(void)
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
 
-  if (!RF_->board_.memory_write(&params, sizeof(params_t)))
+  if (!RF_.board_.memory_write(&params, sizeof(params_t)))
     return false;
   return true;
 }

@@ -48,6 +48,8 @@ class Estimator
 
 public:
 
+  Estimator(ROSflight& _rf);
+
   // Controller needs direct access to these values
   vector_t omega = {0.0, 0.0, 0.0};
   float roll = 0.0;
@@ -57,7 +59,7 @@ public:
 
   void reset_state();
   void reset_adaptive_bias();
-  void init(ROSflight* _rf);
+  void init();
   void run_estimator();
 
   inline float get_roll()
@@ -86,7 +88,7 @@ public:
   }
 
 private:
-  ROSflight* RF_;
+  ROSflight& RF_;
 
   uint64_t now_us = 0;
   uint64_t last_acc_update_us = 0;

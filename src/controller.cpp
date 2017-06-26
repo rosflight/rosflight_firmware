@@ -39,29 +39,35 @@ namespace rosflight_firmware
 {
 
 
-void Controller::init_pid(pid_t *pid, uint16_t kp_param_id, uint16_t ki_param_id,
-                          uint16_t kd_param_id, float *current_x, float *current_xdot,
-                          float *commanded_x, float *output, float max, float min)
+PID::PID(uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, ROSflight& _rf):
+  RF_(_rf)
 {
-  pid->kp_param_id = kp_param_id;
-  pid->ki_param_id = ki_param_id;
-  pid->kd_param_id = kd_param_id;
-  pid->current_x = current_x;
-  pid->current_xdot = current_xdot;
-  pid->commanded_x = commanded_x;
-  pid->output = output;
-  pid->max = max;
-  pid->min = min;
-  pid->integrator = 0.0;
-  pid->differentiator = 0.0;
-  pid->prev_x = 0.0;
-  pid->tau = RF_->params_.get_param_float(PARAM_PID_TAU);
+  kp_param_id_ = kp_param_id;
+  ki_param_id_ = ki_param_id;
+  kd_param_id_ = kd_param_id;
+  max_ = 1.0;
+  min_ = -1.0;
 }
 
-
-void Controller::run_pid(pid_t *pid, float dt)
+void PID::set_max_and_min(float max, float min)
 {
-  if (dt > 0.010 || !RF_->state_manager_.state().armed)
+  max_ = max;
+  min_ = min;
+}
+
+Controller::Controller(ROSflight& _rf) :
+  RF_(_rf),
+  roll_(PARAM_PID_ROLL_ANGLE_P, PARAM_PID_ROLL_ANGLE_I, PARAM_PID_ROLL_ANGLE_D, _rf),
+  roll_rate_(PARAM_PID_ROLL_RATE_P, PARAM_PID_ROLL_RATE_I, PARAM_PID_ROLL_RATE_D, _rf),
+  pitch_(PARAM_PID_PITCH_ANGLE_P, PARAM_PID_PITCH_ANGLE_I, PARAM_PID_PITCH_ANGLE_D, _rf),
+  pitch_rate_(PARAM_PID_PITCH_RATE_P, PARAM_PID_PITCH_RATE_I, PARAM_PID_PITCH_RATE_D, _rf),
+  yaw_rate_(PARAM_PID_YAW_RATE_P, PARAM_PID_YAW_RATE_I, PARAM_PID_YAW_RATE_D, _rf)
+{}
+
+
+float PID::run(float x, float x_c, float dt, bool use_derivative, float xdot)
+{
+  if (dt > 0.010 || !RF_.state_manager_.state().armed)
   {
     // This means that this is a ''stale'' controller and needs to be reset.
     // This would happen if we have been operating in a different mode for a while
@@ -70,127 +76,77 @@ void Controller::run_pid(pid_t *pid, float dt)
     // Setting dt to zero for this loop will mean that the integrator and dirty derivative
     // doesn't do anything this time but will keep it from exploding.
     dt = 0.0;
-    pid->differentiator = 0.0;
+    differentiator_ = 0.0;
   }
 
   // Calculate Error (make sure to de-reference pointers)
-  float error = (*pid->commanded_x) - (*pid->current_x);
+  float error = x_c - x;
 
   // Initialize Terms
-  float p_term = error * RF_->params_.get_param_float(pid->kp_param_id);
+  float p_term = error * RF_.params_.get_param_float(kp_param_id_);
   float i_term = 0.0;
   float d_term = 0.0;
 
   // If there is a derivative term
-  if (pid->kd_param_id < PARAMS_COUNT)
+  if (kd_param_id_ < PARAMS_COUNT)
   {
+    if (use_derivative)
+    {
+      d_term = RF_.params_.get_param_float(kd_param_id_) * xdot;
+    }
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
-    // (Be sure to de-reference pointers)
-    if (pid->current_xdot == NULL)
+    //// (Include reference to Dr. Beard's notes here)
+    else
     {
       if (dt > 0.0f)
       {
-        pid->differentiator = (2.0f*pid->tau-dt)/(2.0f*pid->tau+dt)*pid->differentiator
-                              + 2.0f/(2.0f*pid->tau+dt)*((*pid->current_x) - pid->prev_x);
-        pid->prev_x = *pid->current_x;
-        d_term = RF_->params_.get_param_float(pid->kd_param_id) * pid->differentiator;
+        differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
+                              + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+        d_term = RF_.params_.get_param_float(kd_param_id_) * differentiator_;
+        prev_x_ = x;
       }
     }
-    else
-    {
-      d_term = RF_->params_.get_param_float(pid->kd_param_id) * (*pid->current_xdot);
-    }
+
   }
 
-  // If there is an integrator, we are armed, and throttle is high
+  // If there is an integrator, we are armed, the integrator gain is greater than 1 and the the throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ((pid->ki_param_id < PARAMS_COUNT) && (RF_->state_manager_.state().armed) && (RF_->mux_._combined_control.F.value > 0.1))
+  if ((ki_param_id_ < PARAMS_COUNT) && (RF_.state_manager_.state().armed)
+      && (RF_.mux_._combined_control.F.value > 0.1) && (RF_.params_.get_param_float(ki_param_id_) > 0.0))
   {
-    if (RF_->params_.get_param_float(pid->ki_param_id) > 0.0)
-    {
       // integrate
-      pid->integrator += error*dt;
-      // calculate I term (be sure to de-reference pointer to gain)
-      i_term = RF_->params_.get_param_float(pid->ki_param_id) * pid->integrator;
-    }
+      integrator_ += error * dt;
+      // calculate I term
+      i_term = RF_.params_.get_param_float(ki_param_id_) * integrator_;
   }
 
   // sum three terms
   float u = p_term + i_term - d_term;
 
   // Integrator anti-windup
-  float u_sat = (u > pid->max) ? pid->max : (u < pid->min) ? pid->min : u;
+  //// Inlcude reference to Dr. Beard's Notes here
+  float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
   if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
-    pid->integrator = (u_sat - p_term + d_term)/RF_->params_.get_param_float(pid->ki_param_id);
+    integrator_ = (u_sat - p_term + d_term)/RF_.params_.get_param_float(ki_param_id_);
 
   // Set output
-  (*pid->output) = u_sat;
-
-  return;
+  return u_sat;
 }
 
 
-void Controller::init(ROSflight *_rf)
+void Controller::init()
 {
-  RF_ = _rf;
-
   prev_time = 0.0f;
 
-  init_pid(&pid_roll,
-           PARAM_PID_ROLL_ANGLE_P,
-           PARAM_PID_ROLL_ANGLE_I,
-           PARAM_PID_ROLL_ANGLE_D,
-           &RF_->estimator_.roll,
-           &RF_->estimator_.omega.x,
-           &RF_->mux_._combined_control.x.value,
-           &RF_->mixer_._command.x,
-           RF_->params_.get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*RF_->params_.get_param_float(PARAM_MAX_COMMAND));
+  float max = RF_.params_.get_param_float(PARAM_MAX_COMMAND);
+  float min = -1.0 * max;
 
-  init_pid(&pid_pitch,
-           PARAM_PID_PITCH_ANGLE_P,
-           PARAM_PID_PITCH_ANGLE_I,
-           PARAM_PID_PITCH_ANGLE_D,
-           &RF_->estimator_.pitch,
-           &RF_->estimator_.omega.y,
-           &RF_->mux_._combined_control.y.value,
-           &RF_->mixer_._command.y,
-           RF_->params_.get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*RF_->params_.get_param_float(PARAM_MAX_COMMAND));
-
-  init_pid(&pid_roll_rate,
-           PARAM_PID_ROLL_RATE_P,
-           PARAM_PID_ROLL_RATE_I,
-           PARAM_PID_ROLL_RATE_D,
-           &RF_->estimator_.omega.x,
-           NULL,
-           &RF_->mux_._combined_control.x.value,
-           &RF_->mixer_._command.x,
-           RF_->params_.get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*RF_->params_.get_param_float(PARAM_MAX_COMMAND));
-
-  init_pid(&pid_pitch_rate,
-           PARAM_PID_PITCH_RATE_P,
-           PARAM_PID_PITCH_RATE_I,
-           PARAM_PID_PITCH_RATE_D,
-           &RF_->estimator_.omega.y,
-           NULL,
-           &RF_->mux_._combined_control.y.value,
-           &RF_->mixer_._command.y,
-           RF_->params_.get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*RF_->params_.get_param_float(PARAM_MAX_COMMAND));
-
-  init_pid(&pid_yaw_rate,
-           PARAM_PID_YAW_RATE_P,
-           PARAM_PID_YAW_RATE_I,
-           PARAM_PID_YAW_RATE_D,
-           &RF_->estimator_.omega.z,
-           NULL,
-           &RF_->mux_._combined_control.z.value,
-           &RF_->mixer_._command.z,
-           RF_->params_.get_param_float(PARAM_MAX_COMMAND),
-           -1.0f*RF_->params_.get_param_float(PARAM_MAX_COMMAND));
+  roll_.set_max_and_min(max, min);
+  roll_rate_.set_max_and_min(max, min);
+  pitch_.set_max_and_min(max, min);
+  pitch_rate_.set_max_and_min(max, min);
+  yaw_rate_.set_max_and_min(max, min);
 }
 
 
@@ -199,47 +155,50 @@ void Controller::run_controller()
   // Time calculation
   if (prev_time < 0.0000001)
   {
-    prev_time = RF_->estimator_.get_estimator_timestamp() * 1e-6;
+    prev_time = RF_.estimator_.get_estimator_timestamp() * 1e-6;
     return;
   }
 
-  float now = RF_->estimator_.get_estimator_timestamp() * 1e-6;
+  float now = RF_.estimator_.get_estimator_timestamp() * 1e-6;
   float dt = now - prev_time;
   prev_time = now;
 
+
+  // Based on the control types coming from the command manager, run the appropriate PID loops
+
   // ROLL
-  if (RF_->mux_._combined_control.x.type == RATE)
-    run_pid(&pid_roll_rate, dt);
-  else if (RF_->mux_._combined_control.x.type == ANGLE)
-    run_pid(&pid_roll, dt);
-  else // PASSTHROUGH
-    RF_->mixer_._command.x = RF_->mux_._combined_control.x.value;
+  if (RF_.mux_._combined_control.x.type == RATE)
+    outputs_.x = roll_rate_.run(RF_.estimator_.get_angular_velocity().x, RF_.mux_._combined_control.x.value, dt, false);
+  else if (RF_.mux_._combined_control.x.type == ANGLE)
+    outputs_.x = roll_.run(RF_.estimator_.get_roll(), RF_.mux_._combined_control.x.value, dt, true, RF_.estimator_.get_angular_velocity().x);
+  else
+    outputs_.x = RF_.mux_._combined_control.x.value;
 
   // PITCH
-  if (RF_->mux_._combined_control.y.type == RATE)
-    run_pid(&pid_pitch_rate, dt);
-  else if (RF_->mux_._combined_control.y.type == ANGLE)
-    run_pid(&pid_pitch, dt);
-  else // PASSTHROUGH
-    RF_->mixer_._command.y = RF_->mux_._combined_control.y.value;
+  if (RF_.mux_._combined_control.y.type == RATE)
+    outputs_.y = pitch_rate_.run(RF_.estimator_.get_angular_velocity().y, RF_.mux_._combined_control.y.value, dt, false);
+  else if (RF_.mux_._combined_control.y.type == ANGLE)
+    outputs_.y = pitch_.run(RF_.estimator_.get_pitch(), RF_.mux_._combined_control.y.value, dt, true, RF_.estimator_.get_angular_velocity().y);
+  else
+    outputs_.y = RF_.mux_._combined_control.y.value;
 
   // YAW
-  if (RF_->mux_._combined_control.z.type == RATE)
-    run_pid(&pid_yaw_rate, dt);
+  if (RF_.mux_._combined_control.z.type == RATE)
+    outputs_.z = yaw_rate_.run(RF_.estimator_.get_angular_velocity().z, RF_.mux_._combined_control.z.value, dt, false);
   else// PASSTHROUGH
-    RF_->mixer_._command.z = RF_->mux_._combined_control.z.value;
+    outputs_.z = RF_.mux_._combined_control.z.value;
 
   // Add feedforward torques
-  RF_->mixer_._command.x += RF_->params_.get_param_float(PARAM_X_EQ_TORQUE);
-  RF_->mixer_._command.y += RF_->params_.get_param_float(PARAM_Y_EQ_TORQUE);
-  RF_->mixer_._command.z += RF_->params_.get_param_float(PARAM_Z_EQ_TORQUE);
-  RF_->mixer_._command.F = RF_->mux_._combined_control.F.value;
+  outputs_.x += RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
+  outputs_.y += RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
+  outputs_.z += RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
+  outputs_.F = RF_.mux_._combined_control.F.value;
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()
 {
   // Make sure we are disarmed
-  if (!(RF_->state_manager_.state().armed))
+  if (!(RF_.state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
     //    mavlink_log_warning("Capturing equilbrium offsets from RC");
@@ -247,29 +206,26 @@ void Controller::calculate_equilbrium_torque_from_rc()
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
     // and zero out previously calculate offset torques
-    RF_->estimator_.omega.x = 0.0;
-    RF_->estimator_.omega.y = 0.0;
-    RF_->estimator_.omega.z = 0.0;
-    RF_->estimator_.q.w = 1.0;
-    RF_->estimator_.q.x = 0.0;
-    RF_->estimator_.q.y = 0.0;
-    RF_->estimator_.q.z = 0.0;
+    RF_.estimator_.reset_state();
 
-    RF_->params_.set_param_float(PARAM_X_EQ_TORQUE, 0.0);
-    RF_->params_.set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
-    RF_->params_.set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
+    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, 0.0);
+    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
+    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
 
     // pass the rc_control through the controller
-    RF_->mux_._combined_control.x = RF_->mux_._rc_control.x;
-    RF_->mux_._combined_control.y = RF_->mux_._rc_control.y;
-    RF_->mux_._combined_control.z = RF_->mux_._rc_control.z;
+    RF_.mux_._combined_control.x = RF_.mux_._rc_control.x;
+    RF_.mux_._combined_control.y = RF_.mux_._rc_control.y;
+    RF_.mux_._combined_control.z = RF_.mux_._rc_control.z;
 
+    // dt is zero, so what this really does is applies the P gain with the settings
+    // your RC transmitter, which if it flies level is a really good guess for
+    // the static offset torques
     run_controller();
 
     // the output from the controller is going to be the static offsets
-    RF_->params_.set_param_float(PARAM_X_EQ_TORQUE, RF_->mixer_._command.x);
-    RF_->params_.set_param_float(PARAM_Y_EQ_TORQUE, RF_->mixer_._command.y);
-    RF_->params_.set_param_float(PARAM_Z_EQ_TORQUE, RF_->mixer_._command.z);
+    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, outputs_.x);
+    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, outputs_.y);
+    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, outputs_.z);
 
     //    mavlink_log_warning("Equilibrium torques found and applied.");
     //    mavlink_log_warning("Please zero out trims on your transmitter");

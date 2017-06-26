@@ -234,7 +234,7 @@ private:
   std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
 
   params_t params;
-  ROSflight* RF_;
+  ROSflight& RF_;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -242,7 +242,7 @@ private:
 
 
 public:
-  Params();
+  Params(ROSflight& _rf);
 
   void add_callback(std::function<void(int)> callback, uint16_t param_id);
 
@@ -253,7 +253,7 @@ public:
   /**
    * @brief Initialize parameter values
    */
-  void init(ROSflight* _rf);
+  void init();
 
   /**
    * @brief Set all parameters to default values
