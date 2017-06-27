@@ -104,7 +104,7 @@ void ROSflight::rosflight_run()
   {
     // If I have new IMU data, then perform control
     estimator_.run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
-    controller_.run_controller(); // 278 | 271
+    controller_.run(); // 278 | 271
     mixer_.mix_output(); // 16 | 13 us
     loop_time_us = board_.clock_micros() - start;
   }

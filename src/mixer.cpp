@@ -150,7 +150,7 @@ void Mixer::write_servo(uint8_t index, float value)
 
 void Mixer::mix_output()
 {
-  command_t commands = RF_.controller_.get_outputs();
+  Controller::Output commands = RF_.controller_.output();
   float max_output = 1.0f;
 
   // Reverse Fixedwing channels just before mixing if we need to
