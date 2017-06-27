@@ -39,30 +39,51 @@ namespace rosflight_firmware
 {
 
 
-PID::PID(uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, ROSflight& _rf):
+PID::PID(ROSflight& _rf):
   RF_(_rf)
-{
-  kp_param_id_ = kp_param_id;
-  ki_param_id_ = ki_param_id;
-  kd_param_id_ = kd_param_id;
-  max_ = 1.0;
-  min_ = -1.0;
-}
+{}
 
-void PID::set_max_and_min(float max, float min)
+void PID::init(float kp, float ki, float kd, float max, float min, float tau)
 {
+  kp_ = kp;
+  ki_ = ki;
+  kd_ = kd;
   max_ = max;
   min_ = min;
+  tau_ = tau;
 }
 
 Controller::Controller(ROSflight& _rf) :
   RF_(_rf),
-  roll_(PARAM_PID_ROLL_ANGLE_P, PARAM_PID_ROLL_ANGLE_I, PARAM_PID_ROLL_ANGLE_D, _rf),
-  roll_rate_(PARAM_PID_ROLL_RATE_P, PARAM_PID_ROLL_RATE_I, PARAM_PID_ROLL_RATE_D, _rf),
-  pitch_(PARAM_PID_PITCH_ANGLE_P, PARAM_PID_PITCH_ANGLE_I, PARAM_PID_PITCH_ANGLE_D, _rf),
-  pitch_rate_(PARAM_PID_PITCH_RATE_P, PARAM_PID_PITCH_RATE_I, PARAM_PID_PITCH_RATE_D, _rf),
-  yaw_rate_(PARAM_PID_YAW_RATE_P, PARAM_PID_YAW_RATE_I, PARAM_PID_YAW_RATE_D, _rf)
-{}
+  roll_(_rf),
+  roll_rate_(_rf),
+  pitch_(_rf),
+  pitch_rate_(_rf),
+  yaw_rate_(_rf)
+{
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_P);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_I);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_D);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_P);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_I);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_D);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_P);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_I);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_D);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_P);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_I);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_D);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_P);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_I);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_D);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_MAX_COMMAND);
+  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_TAU);
+}
+
+void Controller::param_change_callback(uint16_t param_id)
+{
+  init();
+}
 
 
 float PID::run(float x, float x_c, float dt, bool use_derivative, float xdot)
@@ -83,16 +104,16 @@ float PID::run(float x, float x_c, float dt, bool use_derivative, float xdot)
   float error = x_c - x;
 
   // Initialize Terms
-  float p_term = error * RF_.params_.get_param_float(kp_param_id_);
+  float p_term = error * kp_;
   float i_term = 0.0;
   float d_term = 0.0;
 
   // If there is a derivative term
-  if (kd_param_id_ < PARAMS_COUNT)
+  if (kd_ > 0.0)
   {
     if (use_derivative)
     {
-      d_term = RF_.params_.get_param_float(kd_param_id_) * xdot;
+      d_term = kd_ * xdot;
     }
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
@@ -103,7 +124,7 @@ float PID::run(float x, float x_c, float dt, bool use_derivative, float xdot)
       {
         differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
                               + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
-        d_term = RF_.params_.get_param_float(kd_param_id_) * differentiator_;
+        d_term = kd_ * differentiator_;
         prev_x_ = x;
       }
     }
@@ -112,13 +133,12 @@ float PID::run(float x, float x_c, float dt, bool use_derivative, float xdot)
 
   // If there is an integrator, we are armed, the integrator gain is greater than 1 and the the throttle is high
   /// TODO: better way to figure out if throttle is high
-  if ((ki_param_id_ < PARAMS_COUNT) && (RF_.state_manager_.state().armed)
-      && (RF_.command_manager_._combined_control.F.value > 0.1) && (RF_.params_.get_param_float(ki_param_id_) > 0.0))
+  if ((ki_ > 0.0) && (RF_.state_manager_.state().armed) && (RF_.command_manager_._combined_control.F.value > 0.1))
   {
       // integrate
       integrator_ += error * dt;
       // calculate I term
-      i_term = RF_.params_.get_param_float(ki_param_id_) * integrator_;
+      i_term = ki_ * integrator_;
   }
 
   // sum three terms
@@ -128,7 +148,7 @@ float PID::run(float x, float x_c, float dt, bool use_derivative, float xdot)
   //// Inlcude reference to Dr. Beard's Notes here
   float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
   if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term))
-    integrator_ = (u_sat - p_term + d_term)/RF_.params_.get_param_float(ki_param_id_);
+    integrator_ = (u_sat - p_term + d_term)/ki_;
 
   // Set output
   return u_sat;
@@ -142,11 +162,22 @@ void Controller::init()
   float max = RF_.params_.get_param_float(PARAM_MAX_COMMAND);
   float min = -1.0 * max;
 
-  roll_.set_max_and_min(max, min);
-  roll_rate_.set_max_and_min(max, min);
-  pitch_.set_max_and_min(max, min);
-  pitch_rate_.set_max_and_min(max, min);
-  yaw_rate_.set_max_and_min(max, min);
+  float tau = RF_.params_.get_param_float(PARAM_PID_TAU);
+  roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P),
+             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
+             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max, min, tau);
+  roll_rate_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_P),
+                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_I),
+                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D), max, min, tau);
+  pitch_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_P),
+              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_I),
+              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max, min, tau);
+  pitch_rate_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_P),
+                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_I),
+                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max, min, tau);
+  yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P),
+                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
+                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max, min, tau);
 }
 
 

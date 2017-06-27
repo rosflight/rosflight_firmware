@@ -44,23 +44,23 @@ class ROSflight;
 class PID
 {
 public:
-  PID(uint16_t kp_param_id, uint16_t ki_param_id, uint16_t kd_param_id, ROSflight &_rf);
-  void set_max_and_min(float max, float min);
+  PID(ROSflight &_rf);
+  void init(float kp, float ki, float kd, float max, float min, float tau);
   float run(float x, float x_c, float dt, bool use_derivative, float xdot =0 );
 
 private:
   ROSflight& RF_;
-  uint16_t kp_param_id_;
-  uint16_t ki_param_id_;
-  uint16_t kd_param_id_;
+  float kp_ = 0.0;
+  float ki_ = 0.0;
+  float kd_ = 0.0;
 
-  float max_;
-  float min_;
+  float max_ = 1.0;
+  float min_ = -1.0;
 
-  float integrator_;
-  float prev_x_;
-  float differentiator_;
-  float tau_;
+  float integrator_ = 0.0;
+  float prev_x_ = 0.0;
+  float differentiator_ = 0.0;
+  float tau_ = 0.05;
 
 };
 
@@ -86,6 +86,7 @@ public:
   void run_controller();
   void init();
   void calculate_equilbrium_torque_from_rc();
+  void param_change_callback(uint16_t param_id);
   inline Mixer::command_t get_outputs() {return outputs_;}
 
 };
