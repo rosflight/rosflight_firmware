@@ -37,22 +37,24 @@
 namespace rosflight_firmware
 {
 
-void RC::init(ROSflight* _rf)
-{
-  RF_ = _rf;
+RC::RC(ROSflight &_rf) :
+  RF_(_rf)
+{}
 
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ARM_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_X_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Y_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Z_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_F_CHANNEL);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_5_DIRECTION);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_6_DIRECTION);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_7_DIRECTION);
-  RF_->params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_8_DIRECTION);
+void RC::init()
+{
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ARM_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_X_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Y_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Z_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_F_CHANNEL);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_5_DIRECTION);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_6_DIRECTION);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_7_DIRECTION);
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_8_DIRECTION);
   init_rc();
 }
 
@@ -87,31 +89,31 @@ bool RC::rc_switch_mapped(rc_switch_t channel)
 
 void RC::init_sticks(void)
 {
-  sticks[RC_STICK_X].channel = RF_->params_.get_param_int(PARAM_RC_X_CHANNEL);
+  sticks[RC_STICK_X].channel = RF_.params_.get_param_int(PARAM_RC_X_CHANNEL);
   sticks[RC_STICK_X].one_sided = false;
 
-  sticks[RC_STICK_Y].channel = RF_->params_.get_param_int(PARAM_RC_Y_CHANNEL);
+  sticks[RC_STICK_Y].channel = RF_.params_.get_param_int(PARAM_RC_Y_CHANNEL);
   sticks[RC_STICK_Y].one_sided = false;
 
-  sticks[RC_STICK_Z].channel = RF_->params_.get_param_int(PARAM_RC_Z_CHANNEL);
+  sticks[RC_STICK_Z].channel = RF_.params_.get_param_int(PARAM_RC_Z_CHANNEL);
   sticks[RC_STICK_Z].one_sided = false;
 
-  sticks[RC_STICK_F].channel = RF_->params_.get_param_int(PARAM_RC_F_CHANNEL);
+  sticks[RC_STICK_F].channel = RF_.params_.get_param_int(PARAM_RC_F_CHANNEL);
   sticks[RC_STICK_F].one_sided = true;
 }
 
 void RC::init_switches()
 {
   // Make sure that parameters for switch channels are correct
-  switches[RC_SWITCH_ARM].channel               = RF_->params_.get_param_int(PARAM_RC_ARM_CHANNEL);
-  switches[RC_SWITCH_ATT_OVERRIDE].channel      = RF_->params_.get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = RF_->params_.get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  switches[RC_SWITCH_ATT_TYPE].channel          = RF_->params_.get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  switches[RC_SWITCH_ARM].channel               = RF_.params_.get_param_int(PARAM_RC_ARM_CHANNEL);
+  switches[RC_SWITCH_ATT_OVERRIDE].channel      = RF_.params_.get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = RF_.params_.get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  switches[RC_SWITCH_ATT_TYPE].channel          = RF_.params_.get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
 
   for (uint8_t chan = 0; chan < (uint8_t)RC_SWITCHES_COUNT; chan++)
   {
     switches[chan].mapped = switches[chan].channel > 3
-                            && switches[chan].channel < RF_->params_.get_param_int(PARAM_RC_NUM_CHANNELS);
+                            && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
     if (!switches[chan].mapped)
     {
       //      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
@@ -121,16 +123,16 @@ void RC::init_switches()
     switch (chan)
     {
     case 4:
-      switches[chan].direction = RF_->params_.get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
+      switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
       break;
     case 5:
-      switches[chan].direction = RF_->params_.get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
+      switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
       break;
     case 6:
-      switches[chan].direction = RF_->params_.get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
+      switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
       break;
     case 7:
-      switches[chan].direction = RF_->params_.get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
+      switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
       break;
     }
   }
@@ -141,16 +143,16 @@ bool RC::check_rc_lost()
   bool failsafe = false;
 
   // If the board reports that we have lost RC, tell the state manager
-  if (RF_->board_.pwm_lost())
+  if (RF_.board_.pwm_lost())
   {
     failsafe = true;
   }
   else
   {
     // go into failsafe if we get an invalid RC command for any channel
-    for (int8_t i = 0; i<RF_->params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
+    for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_->board_.pwm_read(i) < 900 || RF_->board_.pwm_read(i) > 2100)
+      if (RF_.board_.pwm_read(i) < 900 || RF_.board_.pwm_read(i) > 2100)
       {
         failsafe = true;
       }
@@ -159,27 +161,27 @@ bool RC::check_rc_lost()
 
   if (failsafe)
     // set the RC Lost error flag
-    RF_->state_manager_.set_error(StateManager::ERROR_RC_LOST);
+    RF_.state_manager_.set_error(StateManager::ERROR_RC_LOST);
   else
     // Clear the RC Lost Error
-    RF_->state_manager_.clear_error(StateManager::ERROR_RC_LOST);
+    RF_.state_manager_.clear_error(StateManager::ERROR_RC_LOST);
 
   return failsafe;
 }
 
 void RC::look_for_arm_disarm_signal()
 {
-  uint32_t now_ms = RF_->board_.clock_millis();
+  uint32_t now_ms = RF_.board_.clock_millis();
   uint32_t dt = now_ms - prev_time_ms;
   prev_time_ms = now_ms;
   // check for arming switch
   if (!rc_switch_mapped(RC_SWITCH_ARM))
   {
-    if (!RF_->state_manager_.state().armed) // we are DISARMED
+    if (!RF_.state_manager_.state().armed) // we are DISARMED
     {
       // if left stick is down and to the right
-      if ((RF_->rc_.rc_stick(RC_STICK_F) < RF_->params_.get_param_float(PARAM_ARM_THRESHOLD))
-          && (RF_->rc_.rc_stick(RC_STICK_Z) > (1.0f - RF_->params_.get_param_float(PARAM_ARM_THRESHOLD))))
+      if ((RF_.rc_.rc_stick(RC_STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
+          && (RF_.rc_.rc_stick(RC_STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -189,14 +191,14 @@ void RC::look_for_arm_disarm_signal()
       }
       if (time_sticks_have_been_in_arming_position_ms > 1000)
       {
-        RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+        RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
       }
     }
     else // we are ARMED
     {
       // if left stick is down and to the left
-      if (RF_->rc_.rc_stick(RC_STICK_F) < RF_->params_.get_param_float(PARAM_ARM_THRESHOLD)
-          && RF_->rc_.rc_stick(RC_STICK_Z) < -(1.0f - RF_->params_.get_param_float(PARAM_ARM_THRESHOLD)))
+      if (RF_.rc_.rc_stick(RC_STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
+          && RF_.rc_.rc_stick(RC_STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -206,21 +208,21 @@ void RC::look_for_arm_disarm_signal()
       }
       if (time_sticks_have_been_in_arming_position_ms > 1000)
       {
-        RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+        RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
         time_sticks_have_been_in_arming_position_ms = 0;
       }
     }
   }
   else // ARMING WITH SWITCH
   {
-    if (RF_->rc_.rc_switch(RC_SWITCH_ARM))
+    if (RF_.rc_.rc_switch(RC_SWITCH_ARM))
     {
-      if (!RF_->state_manager_.state().armed)
-        RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);;
+      if (!RF_.state_manager_.state().armed)
+        RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);;
     }
     else
     {
-      RF_->state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+      RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
     }
   }
 }
@@ -230,7 +232,7 @@ bool RC::receive_rc()
 {
   static uint32_t last_rc_receive_time = 0;
 
-  uint32_t now = RF_->board_.clock_millis();
+  uint32_t now = RF_.board_.clock_millis();
 
   // if it has been more than 20ms then look for new RC values and parse them
   if (now - last_rc_receive_time < 20)
@@ -248,7 +250,7 @@ bool RC::receive_rc()
   // read and normalize stick values
   for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
   {
-    uint16_t pwm = RF_->board_.pwm_read(sticks[channel].channel);
+    uint16_t pwm = RF_.board_.pwm_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
       stick_values[channel] = ((float)(pwm - 1000)) / 1000.0f;
@@ -266,11 +268,11 @@ bool RC::receive_rc()
     {
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_->board_.pwm_read(switches[channel].channel) < 1500;
+        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1500;
       }
       else
       {
-        switch_values[channel] = RF_->board_.pwm_read(switches[channel].channel) >= 1500;
+        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1500;
       }
     }
     else

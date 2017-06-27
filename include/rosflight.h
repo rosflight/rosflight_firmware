@@ -43,7 +43,7 @@
 #include "mavlink.h"
 #include "mixer.h"
 #include "state_manager.h"
-#include "mux.h"
+#include "command_manager.h"
 
 namespace rosflight_firmware
 {
@@ -64,7 +64,7 @@ public:
   StateManager state_manager_;
   Sensors sensors_;
   Estimator estimator_;
-  Mux mux_;
+  CommandManager command_manager_;
   Mixer mixer_;
   Controller controller_;
   RC rc_;

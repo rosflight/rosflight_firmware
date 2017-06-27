@@ -124,7 +124,7 @@ private:
   uint32_t sysid;
   uint32_t compid;
   uint64_t _offboard_control_time;
-  ROSflight* RF_;
+  ROSflight& RF_;
   uint8_t send_params_index;
   mavlink_message_t in_buf;
   mavlink_status_t status;
@@ -187,9 +187,9 @@ private:
 
 
 public:
-  Mavlink();
+  Mavlink(ROSflight &_rf);
 
-  void init(ROSflight* firmware);
+  void init();
   void receive(void);
   void stream();
   void update_param(uint16_t param_id);

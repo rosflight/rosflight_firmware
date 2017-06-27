@@ -43,7 +43,10 @@ ROSflight::ROSflight(Board& board) :
   controller_(*this),
   estimator_(*this),
   params_(*this),
-  mixer_(*this)
+  mixer_(*this),
+  rc_(*this),
+  mavlink_(*this),
+  command_manager_(*this)
 {
 }
 
@@ -67,10 +70,10 @@ void ROSflight::rosflight_init()
   /***********************/
 
   // Initialize PWM and RC
-  rc_.init(this);
+  rc_.init();
 
   // Initialize MAVlink Communication
-  mavlink_.init(this);
+  mavlink_.init();
 
   // Initialize Sensors
   sensors_.init();
@@ -86,7 +89,7 @@ void ROSflight::rosflight_init()
   controller_.init();
 
   // Initialize the command muxer
-  mux_.init(this);
+  command_manager_.init();
 }
 
 
@@ -122,7 +125,7 @@ void ROSflight::rosflight_run()
   rc_.receive_rc(); // 42 | 2 | 1
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  mux_.mux_inputs(); // 6 | 1 | 1
+  command_manager_.mux_inputs(); // 6 | 1 | 1
 }
 
 uint32_t ROSflight::get_loop_time_us()

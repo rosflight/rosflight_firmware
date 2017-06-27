@@ -79,7 +79,7 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 estimator.cpp \
                 mavlink.cpp \
                 controller.cpp \
-                mux.cpp \
+                command_manager.cpp \
                 rc.cpp \
                 mixer.cpp
 

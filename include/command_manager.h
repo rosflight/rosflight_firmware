@@ -65,7 +65,7 @@ typedef struct
   control_channel_t F;
 } control_t;
 
-class Mux
+class CommandManager
 {
 private:
   typedef enum
@@ -145,15 +145,16 @@ public:
     {true, THROTTLE, 0.0}
   };
 
+  CommandManager(ROSflight& _rf);
   bool mux_inputs();
   bool rc_override_active();
   bool offboard_control_active();
   void signal_new_command();
-  void init(ROSflight* _rf);
+  void init();
 
 private:
 
-  ROSflight* RF_;
+  ROSflight& RF_;
 
   bool new_command;
   bool rc_override;

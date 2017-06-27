@@ -65,13 +65,15 @@ class RC
 
 public:
 
+  RC(ROSflight& _rf);
+
   typedef enum
   {
     PARALLEL_PWM,
     CPPM,
   } rc_type_t;
 
-  void init(ROSflight *_rf);
+  void init();
   void init_rc();
   float rc_stick(rc_stick_t channel);
   bool rc_switch(int16_t channel);
@@ -81,7 +83,7 @@ public:
   void param_change_callback(uint16_t param_id);
 
 private:
-  ROSflight* RF_;
+  ROSflight& RF_;
 
   typedef struct
   {
