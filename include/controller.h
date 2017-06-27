@@ -29,7 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
+#define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -50,9 +51,9 @@ public:
     float z;
   };
 
-  Controller(ROSflight& _rf);
+  Controller(ROSflight& rf);
 
-  inline const Output& output() const { return output_;}
+  inline const Output& output() const { return output_; }
 
   void init();
   void run();
@@ -83,6 +84,7 @@ private:
     float tau_;
   };
 
+  ROSflight& RF_;
   Output output_;
 
   PID roll_;
@@ -91,10 +93,9 @@ private:
   PID pitch_rate_;
   PID yaw_rate_;
 
-  ROSflight& RF_;
-
   float prev_time;
-
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_CONTROLLER_H

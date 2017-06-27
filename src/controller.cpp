@@ -38,30 +38,8 @@
 namespace rosflight_firmware
 {
 
-Controller::PID::PID() :
-  kp_(0.0f),
-  ki_(0.0f),
-  kd_(0.0f),
-  max_(1.0f),
-  min_(-1.0f),
-  integrator_(0.0f),
-  differentiator_(0.0f),
-  prev_x_(0.0f),
-  tau_(0.05)
-{}
-
-void Controller::PID::init(float kp, float ki, float kd, float max, float min, float tau)
-{
-  kp_ = kp;
-  ki_ = ki;
-  kd_ = kd;
-  max_ = max;
-  min_ = min;
-  tau_ = tau;
-}
-
-Controller::Controller(ROSflight& _rf) :
-  RF_(_rf)
+Controller::Controller(ROSflight& rf) :
+  RF_(rf)
 {
   RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_P);
   RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_I);
@@ -80,71 +58,6 @@ Controller::Controller(ROSflight& _rf) :
   RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_D);
   RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_MAX_COMMAND);
   RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_TAU);
-}
-
-void Controller::param_change_callback(uint16_t param_id)
-{
-  init();
-}
-
-float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
-{
-  float xdot;
-  if (dt > 0.0001f)
-  {
-    // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
-    // The dirty derivative is a sort of low-pass filtered version of the derivative.
-    //// (Include reference to Dr. Beard's notes here)
-    differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
-                          + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
-    xdot = differentiator_;
-  }
-  else
-  {
-    xdot = 0.0f;
-  }
-  prev_x_ = x;
-
-  return run(dt, x, x_c, update_integrator, xdot);
-}
-
-float Controller::PID::run(float dt, float x, float x_c, bool update_integrator, float xdot)
-{
-  // Calculate Error (make sure to de-reference pointers)
-  float error = x_c - x;
-
-  // Initialize Terms
-  float p_term = error * kp_;
-  float i_term = 0.0f;
-  float d_term = 0.0f;
-
-  // If there is a derivative term
-  if (kd_ > 0.0f)
-  {
-    d_term = kd_ * xdot;
-  }
-
-  // If there is an integrator, we are armed, the integrator gain is greater than 1 and the the throttle is high
-  /// TODO: better way to figure out if throttle is high
-  if ((ki_ > 0.0f) && update_integrator)
-  {
-      // integrate
-      integrator_ += error * dt;
-      // calculate I term
-      i_term = ki_ * integrator_;
-  }
-
-  // sum three terms
-  float u = p_term + i_term - d_term;
-
-  // Integrator anti-windup
-  //// Include reference to Dr. Beard's notes here
-  float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
-  if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f)
-    integrator_ = (u_sat - p_term + d_term)/ki_;
-
-  // Set output
-  return u_sat;
 }
 
 void Controller::init()
@@ -192,6 +105,7 @@ void Controller::run()
   prev_time = now;
 
   // Check if integrators should be updated
+  //! @todo better way to figure out if throttle is high
   bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_._combined_control.F.value > 0.1f) && dt < 0.01f;
 
   // Based on the control types coming from the command manager, run the appropriate PID loops
@@ -266,4 +180,90 @@ void Controller::calculate_equilbrium_torque_from_rc()
   }
 }
 
+void Controller::param_change_callback(uint16_t param_id)
+{
+  init();
 }
+
+Controller::PID::PID() :
+  kp_(0.0f),
+  ki_(0.0f),
+  kd_(0.0f),
+  max_(1.0f),
+  min_(-1.0f),
+  integrator_(0.0f),
+  differentiator_(0.0f),
+  prev_x_(0.0f),
+  tau_(0.05)
+{}
+
+void Controller::PID::init(float kp, float ki, float kd, float max, float min, float tau)
+{
+  kp_ = kp;
+  ki_ = ki;
+  kd_ = kd;
+  max_ = max;
+  min_ = min;
+  tau_ = tau;
+}
+
+float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
+{
+  float xdot;
+  if (dt > 0.0001f)
+  {
+    // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
+    // The dirty derivative is a sort of low-pass filtered version of the derivative.
+    //// (Include reference to Dr. Beard's notes here)
+    differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
+                          + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+    xdot = differentiator_;
+  }
+  else
+  {
+    xdot = 0.0f;
+  }
+  prev_x_ = x;
+
+  return run(dt, x, x_c, update_integrator, xdot);
+}
+
+float Controller::PID::run(float dt, float x, float x_c, bool update_integrator, float xdot)
+{
+  // Calculate Error (make sure to de-reference pointers)
+  float error = x_c - x;
+
+  // Initialize Terms
+  float p_term = error * kp_;
+  float i_term = 0.0f;
+  float d_term = 0.0f;
+
+  // If there is a derivative term
+  if (kd_ > 0.0f)
+  {
+    d_term = kd_ * xdot;
+  }
+
+  // If there is an integrator term and we are updating integrators
+  if ((ki_ > 0.0f) && update_integrator)
+  {
+      // integrate
+      integrator_ += error * dt;
+      // calculate I term
+      i_term = ki_ * integrator_;
+  }
+
+  // sum three terms
+  float u = p_term + i_term - d_term;
+
+  // Integrator anti-windup
+  //// Include reference to Dr. Beard's notes here
+  float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
+  if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f)
+    integrator_ = (u_sat - p_term + d_term)/ki_;
+
+  // Set output
+  return u_sat;
+}
+
+} // namespace rosflight_firmware
