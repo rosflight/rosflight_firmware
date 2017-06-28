@@ -62,9 +62,9 @@ void Estimator::reset_state()
   w2_.y = 0.0f;
   w2_.z = 0.0f;
 
-  b_.x = 0.0f;
-  b_.y = 0.0f;
-  b_.z = 0.0f;
+  bias_.x = 0.0f;
+  bias_.y = 0.0f;
+  bias_.z = 0.0f;
 
   accel_LPF_.x = 0;
   accel_LPF_.y = 0;
@@ -80,9 +80,9 @@ void Estimator::reset_state()
 
 void Estimator::reset_adaptive_bias()
 {
-  b_.x = 0;
-  b_.y = 0;
-  b_.z = 0;
+  bias_.x = 0;
+  bias_.y = 0;
+  bias_.z = 0;
 }
 
 void Estimator::init()
@@ -154,6 +154,7 @@ void Estimator::run()
       && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     last_acc_update_us_ = now_us;
+
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(accel_LPF_);
     // Get the quaternion from accelerometer (low-frequency measure q)
@@ -169,10 +170,10 @@ void Estimator::run()
     w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
     // integrate biases from accelerometer feedback
-    // (eq 47b Mahony Paper, using correction term w_acc found above)
-    b_.x -= ki*w_acc.x*dt;
-    b_.y -= ki*w_acc.y*dt;
-    b_.z = 0.0;  // Don't integrate z bias, because it's unobservable
+    // (eq 47b Mahony Paper, using correction term w_acc found above
+    bias_.x -= ki*w_acc.x*dt;
+    bias_.y -= ki*w_acc.y*dt;
+    bias_.z = 0.0;  // Don't integrate z bias, because it's unobservable
   }
   else
   {
@@ -199,7 +200,8 @@ void Estimator::run()
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
-  vector_t wfinal = vector_add(vector_sub(wbar, b_), scalar_multiply(kp, w_acc));
+  vector_t wfinal = vector_add(vector_sub(wbar, bias_), scalar_multiply(kp, w_acc));
+
 
   // Propagate Dynamics (only if we've moved)
   float sqrd_norm_w = sqrd_norm(wfinal);
@@ -246,7 +248,7 @@ void Estimator::run()
   euler_from_quat(state_.attitude, &state_.roll, &state_.pitch, &state_.yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
-  state_.angular_velocity = vector_sub(gyro_LPF_, b_);
+  state_.angular_velocity = vector_sub(gyro_LPF_, bias_);
 
   // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
   // then trigger an unhealthy estimator error

@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2017, James Jackson  BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,64 +31,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSFLIGHT_FIRMWARE_ESTIMATOR_H
-#define ROSFLIGHT_FIRMWARE_ESTIMATOR_H
+#include "math.h"
+#include "turbotrig.h"
+#include "printf.h"
+#include <gtest/gtest.h>
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <math.h>
-
-#include <turbovec.h>
-#include <turbotrig.h>
-
-namespace rosflight_firmware
-{
-
-class ROSflight;
-
-class Estimator
-{
-
-public:
-  struct State
+TEST(turbotrig_test, atan2_test) {
+  for (float i = -1.0; i <= 1.0; i += 0.1)
   {
-    vector_t angular_velocity;
-    quaternion_t attitude;
-    float roll;
-    float pitch;
-    float yaw;
-    uint64_t timestamp;
-  };
+    for (float j = -1.0; j <= 1.0; j += 0.1)
+    {
+      if (fabs(j) > 0.0001)
+      {
+        printf("i: %f, j: %f, approx: %f, actual: %f, diff: %f\n",
+               i, j, atan2_approx(i, j), atan2(i, j), fabs(atan2_approx(i, j) - atan2(i, j)));
+        ASSERT_LE(fabs(atan2_approx(i, j) - atan2(i, j)), 0.01);
+      }
+    }
+  }
+}
 
-  Estimator(ROSflight& _rf);
+TEST(turbotrig_test, asin_test) {
+  for (float i = -1.0; i <= 1.0; i += 0.1)
+  {
+    printf("i: %f, approx: %f, actual: %f, diff: %f\n",
+           i, asin_approx(i), asin(i), fabs(asin_approx(i) - asin(i)));
+    ASSERT_LE(fabs(asin_approx(i) - asin(i)), 0.01);
+  }
+}
 
-  inline const State& state() const { return state_; }
-
-  void init();
-  void run();
-  void reset_state();
-  void reset_adaptive_bias();
-
-private:
-  const vector_t g_ = {0.0f, 0.0f, -1.0f};
-
-  ROSflight& RF_;
-  State state_;
-
-  uint64_t last_time_;
-  uint64_t last_acc_update_us_;
-
-  vector_t w1_;
-  vector_t w2_;
-
-  vector_t bias_;
-
-  vector_t accel_LPF_;
-  vector_t gyro_LPF_;
-
-  void run_LPF();
-};
-
-} // namespace rosflight_firmware
-
-#endif // ROSFLIGHT_FIRMWARE_ESTIMATOR_H
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

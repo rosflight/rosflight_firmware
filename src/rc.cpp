@@ -87,28 +87,28 @@ bool RC::rc_switch_mapped(rc_switch_t channel)
 
 void RC::init_sticks(void)
 {
-  sticks[RC_STICK_X].channel = RF_.params_.get_param_int(PARAM_RC_X_CHANNEL);
-  sticks[RC_STICK_X].one_sided = false;
+  sticks[STICK_X].channel = RF_.params_.get_param_int(PARAM_RC_X_CHANNEL);
+  sticks[STICK_X].one_sided = false;
 
-  sticks[RC_STICK_Y].channel = RF_.params_.get_param_int(PARAM_RC_Y_CHANNEL);
-  sticks[RC_STICK_Y].one_sided = false;
+  sticks[STICK_Y].channel = RF_.params_.get_param_int(PARAM_RC_Y_CHANNEL);
+  sticks[STICK_Y].one_sided = false;
 
-  sticks[RC_STICK_Z].channel = RF_.params_.get_param_int(PARAM_RC_Z_CHANNEL);
-  sticks[RC_STICK_Z].one_sided = false;
+  sticks[STICK_Z].channel = RF_.params_.get_param_int(PARAM_RC_Z_CHANNEL);
+  sticks[STICK_Z].one_sided = false;
 
-  sticks[RC_STICK_F].channel = RF_.params_.get_param_int(PARAM_RC_F_CHANNEL);
-  sticks[RC_STICK_F].one_sided = true;
+  sticks[STICK_F].channel = RF_.params_.get_param_int(PARAM_RC_F_CHANNEL);
+  sticks[STICK_F].one_sided = true;
 }
 
 void RC::init_switches()
 {
   // Make sure that parameters for switch channels are correct
-  switches[RC_SWITCH_ARM].channel               = RF_.params_.get_param_int(PARAM_RC_ARM_CHANNEL);
-  switches[RC_SWITCH_ATT_OVERRIDE].channel      = RF_.params_.get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  switches[RC_SWITCH_THROTTLE_OVERRIDE].channel = RF_.params_.get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  switches[RC_SWITCH_ATT_TYPE].channel          = RF_.params_.get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  switches[SWITCH_ARM].channel               = RF_.params_.get_param_int(PARAM_RC_ARM_CHANNEL);
+  switches[SWITCH_ATT_OVERRIDE].channel      = RF_.params_.get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  switches[SWITCH_THROTTLE_OVERRIDE].channel = RF_.params_.get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  switches[SWITCH_ATT_TYPE].channel          = RF_.params_.get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
 
-  for (uint8_t chan = 0; chan < (uint8_t)RC_SWITCHES_COUNT; chan++)
+  for (uint8_t chan = 0; chan < (uint8_t)SWITCHES_COUNT; chan++)
   {
     switches[chan].mapped = switches[chan].channel > 3
                             && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
@@ -173,13 +173,13 @@ void RC::look_for_arm_disarm_signal()
   uint32_t dt = now_ms - prev_time_ms;
   prev_time_ms = now_ms;
   // check for arming switch
-  if (!rc_switch_mapped(RC_SWITCH_ARM))
+  if (!rc_switch_mapped(SWITCH_ARM))
   {
     if (!RF_.state_manager_.state().armed) // we are DISARMED
     {
       // if left stick is down and to the right
-      if ((RF_.rc_.rc_stick(RC_STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
-          && (RF_.rc_.rc_stick(RC_STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
+      if ((RF_.rc_.rc_stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
+          && (RF_.rc_.rc_stick(STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -195,8 +195,8 @@ void RC::look_for_arm_disarm_signal()
     else // we are ARMED
     {
       // if left stick is down and to the left
-      if (RF_.rc_.rc_stick(RC_STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
-          && RF_.rc_.rc_stick(RC_STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
+      if (RF_.rc_.rc_stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
+          && RF_.rc_.rc_stick(STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -213,7 +213,7 @@ void RC::look_for_arm_disarm_signal()
   }
   else // ARMING WITH SWITCH
   {
-    if (RF_.rc_.rc_switch(RC_SWITCH_ARM))
+    if (RF_.rc_.rc_switch(SWITCH_ARM))
     {
       if (!RF_.state_manager_.state().armed)
         RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);;
@@ -246,7 +246,7 @@ bool RC::receive_rc()
 
 
   // read and normalize stick values
-  for (uint8_t channel = 0; channel < (uint8_t)RC_STICKS_COUNT; channel++)
+  for (uint8_t channel = 0; channel < (uint8_t)STICKS_COUNT; channel++)
   {
     uint16_t pwm = RF_.board_.pwm_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
@@ -260,17 +260,17 @@ bool RC::receive_rc()
   }
 
   // read and interpret switch values
-  for (uint8_t channel = 0; channel < (uint8_t)RC_SWITCHES_COUNT; channel++)
+  for (uint8_t channel = 0; channel < (uint8_t)SWITCHES_COUNT; channel++)
   {
     if (switches[channel].mapped)
     {
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1500;
+        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1200;
       }
       else
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1500;
+        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1800;
       }
     }
     else

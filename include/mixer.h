@@ -66,14 +66,6 @@ public:
 
   typedef struct
   {
-    float F;
-    float x;
-    float y;
-    float z;
-  } command_t;
-
-  typedef struct
-  {
     output_type_t output_type[8];
     float F[8];
     float x[8];
@@ -82,12 +74,11 @@ public:
   } mixer_t;
 
 private:
-
-  float _outputs[8];
-
   ROSflight& RF_;
 
-  float prescaled_outputs[8];
+  float raw_outputs_[8];
+  float unsaturated_outputs_[8];
+
 
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
@@ -101,7 +92,6 @@ private:
     {-1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
     {-1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
-
 
   const mixer_t quadcopter_x_mixing =
   {
@@ -141,9 +131,9 @@ private:
     {-1.0f,   1.0f,   -1.0f,    1.0f,   -1.0f,    1.0f,   0.0f, 0.0f}  // Z Mix
   };
 
-  const mixer_t *mixer_to_use;
+  const mixer_t *mixer_to_use_;
 
-  const mixer_t *array_of_mixers[NUM_MIXERS] =
+  const mixer_t *array_of_mixers_[NUM_MIXERS] =
   {
     &quadcopter_plus_mixing,
     &quadcopter_x_mixing,
@@ -159,7 +149,7 @@ public:
   void init_mixing();
   void mix_output();
   void param_change_callback(uint16_t param_id);
-  inline float* get_outputs() {return _outputs;}
+  inline float* get_outputs() {return raw_outputs_;}
 };
 
 } // namespace rosflight_firmware

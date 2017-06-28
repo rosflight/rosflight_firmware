@@ -105,6 +105,8 @@ regs Kusti, 23.10.2004
 #ifndef __TFP_PRINTF__
 #define __TFP_PRINTF__
 
+#ifndef USING_STDLIB_PRINTF
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -124,6 +126,8 @@ void tfp_format(void *putp, void (*putf)(void *,char), const char *fmt, va_list 
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif

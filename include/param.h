@@ -291,21 +291,21 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  int get_param_int(uint16_t id);
+  inline const int get_param_int(uint16_t id) const { return params.values[id]; }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  float get_param_float(uint16_t id);
+  inline const float get_param_float(uint16_t id) const { return *(float *) &params.values[id]; }
 
   /**
    * @brief Get the name of a parameter
    * @param id The ID of the parameter
    * @return The name of the parameter
    */
-  char *get_param_name(uint16_t id);
+  inline const char *get_param_name(uint16_t id) const { return params.names[id]; }
 
   /**
    * @brief Get the type of a parameter
@@ -315,7 +315,7 @@ public:
    * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
    * See line 165
    */
-  param_type_t get_param_type(uint16_t id);
+  inline const param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
 
   /**
    * @brief Sets the value of a parameter by ID and calls the parameter change callback

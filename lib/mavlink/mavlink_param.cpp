@@ -68,7 +68,7 @@ void Mavlink::update_param(uint16_t param_id)
 
 void Mavlink::mavlink_handle_msg_param_request_list(void)
 {
-  send_params_index = 0;
+  send_params_index_ = 0;
 }
 
 void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
@@ -128,10 +128,10 @@ void Mavlink::mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
 
 void Mavlink::mavlink_send_next_param(void)
 {
-  if (send_params_index < PARAMS_COUNT)
+  if (send_params_index_ < PARAMS_COUNT)
   {
-    update_param((uint16_t) send_params_index);
-    send_params_index++;
+    update_param((uint16_t) send_params_index_);
+    send_params_index_++;
   }
 }
 

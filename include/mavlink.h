@@ -102,7 +102,7 @@ class ROSflight;
 
 class Mavlink
 {
-public:
+private:
   enum
     {
       STREAM_ID_HEARTBEAT,
@@ -121,15 +121,15 @@ public:
       STREAM_ID_LOW_PRIORITY,
       STREAM_COUNT
     };
-private:
-  uint32_t sysid;
-  uint32_t compid;
-  uint64_t _offboard_control_time;
+
+  uint32_t sysid_;
+  uint32_t compid_;
+  uint64_t offboard_control_time_;
   ROSflight& RF_;
-  uint8_t send_params_index;
-  mavlink_message_t in_buf;
-  mavlink_status_t status;
-  bool initialized;
+  uint8_t send_params_index_;
+  mavlink_message_t in_buf_;
+  mavlink_status_t status_;
+  bool initialized_;
 
   typedef  void (Mavlink::*MavlinkStreamFcn)(void);
 
@@ -165,13 +165,12 @@ private:
   void send_message(const mavlink_message_t &msg);
   void mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us);
 
-
   // Debugging Utils
   void mavlink_send_named_value_int(const char *const name, int32_t value);
   void mavlink_send_named_value_float(const char *const name, float value);
 //  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
 
-  mavlink_stream_t mavlink_streams[STREAM_COUNT] = {
+  mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
   //  period_us    last_time_us   send_function
     { 1000000,     0,             &rosflight_firmware::Mavlink::mavlink_send_heartbeat },
     { 1000000,     0,             &rosflight_firmware::Mavlink::mavlink_send_status},

@@ -40,28 +40,27 @@ namespace rosflight_firmware
 
 class ROSflight;
 
-typedef enum
-{
-  RC_STICK_X,
-  RC_STICK_Y,
-  RC_STICK_Z,
-  RC_STICK_F,
-  RC_STICKS_COUNT
-} rc_stick_t;
-
-typedef enum
-{
-  RC_SWITCH_ARM,
-  RC_SWITCH_ATT_OVERRIDE,
-  RC_SWITCH_THROTTLE_OVERRIDE,
-  RC_SWITCH_ATT_TYPE,
-  RC_SWITCHES_COUNT
-} rc_switch_t;
-
 class RC
 {
 
 public:
+  typedef enum
+  {
+    STICK_X,
+    STICK_Y,
+    STICK_Z,
+    STICK_F,
+    STICKS_COUNT
+  } rc_stick_t;
+
+  typedef enum
+  {
+    SWITCH_ARM,
+    SWITCH_ATT_OVERRIDE,
+    SWITCH_THROTTLE_OVERRIDE,
+    SWITCH_ATT_TYPE,
+    SWITCHES_COUNT
+  } rc_switch_t;
 
   RC(ROSflight& _rf);
 
@@ -103,11 +102,11 @@ private:
   uint32_t prev_time_ms = 0;
   uint32_t last_rc_receive_time = 0;
 
-  rc_stick_config_t sticks[RC_STICKS_COUNT];
-  rc_switch_config_t switches[RC_SWITCHES_COUNT];
+  rc_stick_config_t sticks[STICKS_COUNT];
+  rc_switch_config_t switches[SWITCHES_COUNT];
 
-  bool switch_values[RC_SWITCHES_COUNT];
-  float stick_values[RC_STICKS_COUNT];
+  bool switch_values[SWITCHES_COUNT];
+  float stick_values[STICKS_COUNT];
 
   void init_switches();
   void init_sticks();

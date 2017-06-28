@@ -37,7 +37,7 @@ namespace rosflight_firmware {
 
 Mavlink::Mavlink()
 {
-  initialized = false;
+  initialized_ = false;
 }
 
 // function definitions
@@ -46,11 +46,11 @@ void Mavlink::init(ROSflight *firmware)
   RF_ = firmware;
   RF_->board_.serial_init(RF_->params_.get_param_int(PARAM_BAUD_RATE));
 
-  sysid = RF_->params_.get_param_int(PARAM_SYSTEM_ID);
-  compid = 250;
+  sysid_ = RF_->params_.get_param_int(PARAM_SYSTEM_ID);
+  compid_ = 250;
 
-  _offboard_control_time = 0;
-  send_params_index = PARAMS_COUNT;
+  offboard_control_time_ = 0;
+  send_params_index_ = PARAMS_COUNT;
 
   // Register Param change callbacks
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_HEARTBEAT, std::placeholders::_1), PARAM_STREAM_HEARTBEAT_RATE);
@@ -64,12 +64,12 @@ void Mavlink::init(ROSflight *firmware)
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_OUTPUT_RAW_RATE);
   RF_->params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
 
-  initialized = true;
+  initialized_ = true;
 }
 
 void Mavlink::send_message(const mavlink_message_t &msg)
 {
-  if (initialized)
+  if (initialized_)
   {
     uint8_t data[MAVLINK_MAX_PACKET_LEN];
     uint16_t len = mavlink_msg_to_send_buffer(data, &msg);

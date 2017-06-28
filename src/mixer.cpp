@@ -82,12 +82,12 @@ void Mixer::init_mixing()
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   }
 
-  mixer_to_use = array_of_mixers[mixer_choice];
+  mixer_to_use_ = array_of_mixers_[mixer_choice];
 
   for (int8_t i=0; i<8; i++)
   {
-    _outputs[i] = 0.0f;
-    prescaled_outputs[i] = 0.0f;
+    raw_outputs_[i] = 0.0f;
+    unsaturated_outputs_[i] = 0.0f;
   }
 }
 
@@ -126,7 +126,7 @@ void Mixer::write_motor(uint8_t index, float value)
   {
     value = 0.0;
   }
-  _outputs[index] = value;
+  raw_outputs_[index] = value;
   int32_t pwm_us = value * (RF_.params_.get_param_int(PARAM_MOTOR_MAX_PWM) - RF_.params_.get_param_int(
                               PARAM_MOTOR_MIN_PWM)) + RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
   RF_.board_.pwm_write(index, pwm_us);
@@ -143,8 +143,8 @@ void Mixer::write_servo(uint8_t index, float value)
   {
     value = -1.0;
   }
-  _outputs[index] = value;
-  RF_.board_.pwm_write(index, _outputs[index] * 500 + 1500);
+  raw_outputs_[index] = value;
+  RF_.board_.pwm_write(index, raw_outputs_[index] * 500 + 1500);
 }
 
 
@@ -156,23 +156,23 @@ void Mixer::mix_output()
   // Reverse Fixedwing channels just before mixing if we need to
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
-    prescaled_outputs[0] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    prescaled_outputs[1] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    prescaled_outputs[3] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+    unsaturated_outputs_[0] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    unsaturated_outputs_[1] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    unsaturated_outputs_[3] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
 
   for (int8_t i=0; i<8; i++)
   {
-    if (mixer_to_use->output_type[i] != NONE)
+    if (mixer_to_use_->output_type[i] != NONE)
     {
       // Matrix multiply to mix outputs
-      prescaled_outputs[i] = (commands.F*mixer_to_use->F[i] + commands.x*mixer_to_use->x[i] +
-                              commands.y*mixer_to_use->y[i] + commands.z*mixer_to_use->z[i]);
+      unsaturated_outputs_[i] = (commands.F*mixer_to_use_->F[i] + commands.x*mixer_to_use_->x[i] +
+                              commands.y*mixer_to_use_->y[i] + commands.z*mixer_to_use_->z[i]);
 
       // Save off the largest control output if it is greater than 1.0 for future scaling
-      if (prescaled_outputs[i] > max_output)
+      if (unsaturated_outputs_[i] > max_output)
       {
-        max_output = prescaled_outputs[i];
+        max_output = unsaturated_outputs_[i];
       }
     }
   }
@@ -189,15 +189,15 @@ void Mixer::mix_output()
   for (int8_t i=0; i<8; i++)
   {
     // Write output to motors
-    if (mixer_to_use->output_type[i] == S)
+    if (mixer_to_use_->output_type[i] == S)
     {
-      write_servo(i, prescaled_outputs[i]);
+      write_servo(i, unsaturated_outputs_[i]);
     }
-    else if (mixer_to_use->output_type[i] == M)
+    else if (mixer_to_use_->output_type[i] == M)
     {
       // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
-      prescaled_outputs[i] *= scale_factor;
-      write_motor(i, prescaled_outputs[i]);
+      unsaturated_outputs_[i] *= scale_factor;
+      write_motor(i, unsaturated_outputs_[i]);
     }
   }
 }
