@@ -230,7 +230,7 @@ static bool update_imu(void)
 
   if (new_imu_data)
   {
-    _error_state &= ERROR_IMU_NOT_RESPONDING;
+    _error_state &= ~(ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms = clock_millis();
     _current_state.now_us = _imu_time;
     if (!imu_read_all(accel, gyro, &_imu_temperature))
@@ -256,9 +256,10 @@ static bool update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages then something is wrong
-    if (clock_millis() > last_imu_update_ms + 1000)
+    // if we have lost 5 seconds of IMU messages then something is wrong
+    if (clock_millis() > last_imu_update_ms + 5000)
     {
+      mavlink_log_error("imu not responding");
       // Tell the board to fix it
       last_imu_update_ms = clock_millis();
 
