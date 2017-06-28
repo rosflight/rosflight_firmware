@@ -11,6 +11,7 @@
 *.user.*
 *.o
 /boards/*/build/
+/test/build/
 /site/
 
 param_description.md
