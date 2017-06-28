@@ -230,6 +230,7 @@ static bool update_imu(void)
 
   if (new_imu_data)
   {
+    _error_state &= ERROR_IMU_NOT_RESPONDING;
     last_imu_update_ms = clock_millis();
     _current_state.now_us = _imu_time;
     if (!imu_read_all(accel, gyro, &_imu_temperature))
