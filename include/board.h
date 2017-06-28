@@ -29,7 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_BOARD_H
+#define ROSFLIGHT_FIRMWARE_BOARD_H
 
 #include <functional>
 #include <stddef.h>
@@ -115,3 +116,4 @@ public:
 
 } // namespace rosflight_firmware
 
+#endif // ROSLFIGHT_FIRMWARE_BOARD_H
