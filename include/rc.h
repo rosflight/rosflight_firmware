@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RC_H_
-#define RC_H_
+#ifndef ROSLFIGHT_FIRMWARE_RC_H
+#define ROSFLIGHT_FIRMWARE_RC_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -116,5 +114,7 @@ private:
   bool check_rc_lost();
   void look_for_arm_disarm_signal();
 };
-}
-#endif
+
+} // namespace rosflight_firmware
+
+#endif // ROSLFLIGHT_FIRMWARE_RC_H

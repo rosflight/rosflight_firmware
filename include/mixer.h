@@ -30,11 +30,11 @@
  */
 
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_MIXER_H
+#define ROSFLIGHT_FIRMWARE_MIXER_H
 
 #include <stdint.h>
 #include <stdbool.h>
-
 
 namespace rosflight_firmware
 {
@@ -160,8 +160,8 @@ public:
   void mix_output();
   void param_change_callback(uint16_t param_id);
   inline float* get_outputs() {return _outputs;}
-
-
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_MIXER_H
