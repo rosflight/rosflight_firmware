@@ -29,7 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_MAVLINK_H
+#define ROSFLIGHT_FIRMWARE_MAVLINK_H
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
 #include "nanoprintf.h"
@@ -198,4 +199,6 @@ public:
   void update_status();
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_MAVLINK_H
