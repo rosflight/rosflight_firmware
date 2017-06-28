@@ -46,16 +46,38 @@ class ROSflight;
 class Estimator
 {
 
+private:
+  // Controller needs direct access to these values
+  vector_t omega_ = {0.0, 0.0, 0.0};
+  float roll_ = 0.0;
+  float pitch_ = 0.0;
+  float yaw_ = 0.0;
+  quaternion_t q_ = {1.0, 0.0, 0.0, 0.0};
+
+  ROSflight& RF_;
+
+  uint64_t now_us_ = 0;
+  uint64_t last_acc_update_us_ = 0;
+
+  vector_t w1_ = {0.0, 0.0, 0.0};
+  vector_t w2_ = {0.0, 0.0, 0.0};
+  vector_t wbar_ = {0.0, 0.0, 0.0};
+  vector_t wfinal_ = {0.0, 0.0, 0.0};
+  vector_t w_acc_ = {0.0, 0.0, 0.0};
+  const vector_t g_ = {0.0f, 0.0f, -1.0f};
+  vector_t bias_ = {0.0, 0.0, 0.0};
+  quaternion_t q_tilde_ = {1.0, 0.0, 0.0, 0.0};
+  quaternion_t q_hat_ = {1.0, 0.0, 0.0, 0.0};
+  uint64_t last_time_ = 0;
+
+  vector_t accel_LPF_ = {0.0, 0.0, 0.0};
+  vector_t gyro_LPF_ = {0.0, 0.0, 0.0};
+
+  void run_LPF();
+
 public:
 
   Estimator(ROSflight& _rf);
-
-  // Controller needs direct access to these values
-  vector_t omega = {0.0, 0.0, 0.0};
-  float roll = 0.0;
-  float pitch = 0.0;
-  float yaw = 0.0;
-  quaternion_t q = {1.0, 0.0, 0.0, 0.0};
 
   void reset_state();
   void reset_adaptive_bias();
@@ -64,50 +86,28 @@ public:
 
   inline float get_roll()
   {
-    return roll;
+    return roll_;
   }
   inline float get_pitch()
   {
-    return pitch;
+    return pitch_;
   }
   inline float get_yaw()
   {
-    return yaw;
+    return yaw_;
   }
   inline vector_t get_angular_velocity()
   {
-    return omega;
+    return omega_;
   }
   inline quaternion_t get_attitude()
   {
-    return q;
+    return q_;
   }
   inline uint64_t get_estimator_timestamp()
   {
-    return now_us;
+    return now_us_;
   }
-
-private:
-  ROSflight& RF_;
-
-  uint64_t now_us = 0;
-  uint64_t last_acc_update_us = 0;
-
-  vector_t w1 = {0.0, 0.0, 0.0};
-  vector_t w2 = {0.0, 0.0, 0.0};
-  vector_t wbar = {0.0, 0.0, 0.0};
-  vector_t wfinal = {0.0, 0.0, 0.0};
-  vector_t w_acc = {0.0, 0.0, 0.0};
-  const vector_t g = {0.0f, 0.0f, -1.0f};
-  vector_t b = {0.0, 0.0, 0.0};
-  quaternion_t q_tilde = {1.0, 0.0, 0.0, 0.0};
-  quaternion_t q_hat = {1.0, 0.0, 0.0, 0.0};
-  uint64_t last_time = 0;
-
-  vector_t _accel_LPF = {0.0, 0.0, 0.0};
-  vector_t _gyro_LPF = {0.0, 0.0, 0.0};
-
-  void run_LPF();
 };
 
 }

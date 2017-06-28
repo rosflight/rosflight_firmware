@@ -134,15 +134,15 @@ private:
 
   typedef struct
   {
-    rc_stick_t rc_channel;
+    RC::rc_stick_t rc_channel;
     uint32_t last_override_time;
   } rc_stick_override_t;
 
   rc_stick_override_t rc_stick_override_[3] =
   {
-    { RC_STICK_X, 0 },
-    { RC_STICK_Y, 0 },
-    { RC_STICK_Z, 0 }
+    { RC::STICK_X, 0 },
+    { RC::STICK_Y, 0 },
+    { RC::STICK_Z, 0 }
   };
 
   ROSflight& RF_;

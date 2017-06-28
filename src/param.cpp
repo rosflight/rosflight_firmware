@@ -315,26 +315,6 @@ uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
   return PARAMS_COUNT;
 }
 
-int Params::get_param_int(uint16_t id)
-{
-  return params.values[id];
-}
-
-float Params::get_param_float(uint16_t id)
-{
-  return *(float *) &params.values[id];
-}
-
-char *Params::get_param_name(uint16_t id)
-{
-  return params.names[id];
-}
-
-param_type_t Params::get_param_type(uint16_t id)
-{
-  return params.types[id];
-}
-
 bool Params::set_param_int(uint16_t id, int32_t value)
 {
   if (id < PARAMS_COUNT && value != params.values[id])

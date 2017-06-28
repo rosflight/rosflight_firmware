@@ -95,29 +95,15 @@ bool Sensors::run(void)
 //                    mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
       }
-//      if (!rf_.board_.baro_present())
-//      {
-//        if (rf_.board_.baro_check())
-//        {
-//          //          mavlink_log_info("FOUND BARO", NULL);
-//        }
-//      }
-//      if (!rf_.board_.mag_present())
-//      {
-//        if (rf_.board_.mag_check())
-//        {
-//          //          mavlink_log_info("FOUND MAG", NULL);
-//        }
-//      }
     }
   }
 
 
   // Update whatever sensors are available
-//  if (rf_.board_.baro_present())
-//  {
-//    rf_.board_.baro_read(&data_._baro_altitude, &data_._baro_pressure, &data_._baro_temperature);
-//  }
+  if (rf_.board_.baro_present())
+  {
+    rf_.board_.baro_read(&data_.baro_altitude, &data_.baro_pressure, &data_.baro_temperature);
+  }
 
   if (rf_.board_.diff_pressure_present())
   {
@@ -133,15 +119,15 @@ bool Sensors::run(void)
 //    data_._sonar_range = rf_.board_.sonar_read();
 //  }
 
-//  if (rf_.board_.mag_present())
-//  {
-//    float mag[3];
-//    rf_.board_.mag_read(mag);
-//    data_._mag.x = mag[0];
-//    data_._mag.y = mag[1];
-//    data_._mag.z = mag[2];
-//    correct_mag();
-//  }
+  if (rf_.board_.mag_present())
+  {
+    float mag[3];
+    rf_.board_.mag_read(mag);
+    data_.mag.x = mag[0];
+    data_.mag.y = mag[1];
+    data_.mag.z = mag[2];
+    correct_mag();
+  }
 
   return new_imu_data;
 }

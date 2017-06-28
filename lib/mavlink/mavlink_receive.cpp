@@ -87,7 +87,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
       break;
     case ROSFLIGHT_CMD_SEND_VERSION:
       mavlink_message_t msg;
-      mavlink_msg_rosflight_version_pack(sysid, compid, &msg, GIT_VERSION_STRING);
+      mavlink_msg_rosflight_version_pack(sysid_, compid_, &msg, GIT_VERSION_STRING);
       send_message(msg);
       break;
     default:
@@ -100,7 +100,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   uint8_t response = (result) ? ROSFLIGHT_CMD_SUCCESS : ROSFLIGHT_CMD_FAILED;
 
   mavlink_message_t ack_msg;
-  mavlink_msg_rosflight_cmd_ack_pack(sysid, compid, &ack_msg, cmd.command, response);
+  mavlink_msg_rosflight_cmd_ack_pack(sysid_, compid_, &ack_msg, cmd.command, response);
   send_message(ack_msg);
 
   if (reboot_flag || reboot_to_bootloader_flag)
@@ -120,7 +120,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
   if (tsync.tc1 == 0) // check that this is a request, not a response
   {
     mavlink_message_t msg;
-    mavlink_msg_timesync_pack(sysid, compid, &msg, (int64_t) now_us*1000, tsync.ts1);
+    mavlink_msg_timesync_pack(sysid_, compid_, &msg, (int64_t) now_us*1000, tsync.ts1);
     send_message(msg);
   }
 }
@@ -128,7 +128,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
 void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t mavlink_offboard_control;
-  _offboard_control_time = RF_->board_.clock_micros();
+  offboard_control_time_ = RF_->board_.clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
   // put values into standard message
@@ -173,25 +173,25 @@ void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const
 
 void Mavlink::handle_mavlink_message(void)
 {
-  switch (in_buf.msgid)
+  switch (in_buf_.msgid)
   {
   case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
-    mavlink_handle_msg_offboard_control(&in_buf);
+    mavlink_handle_msg_offboard_control(&in_buf_);
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
     mavlink_handle_msg_param_request_list();
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-    mavlink_handle_msg_param_request_read(&in_buf);
+    mavlink_handle_msg_param_request_read(&in_buf_);
     break;
   case MAVLINK_MSG_ID_PARAM_SET:
-    mavlink_handle_msg_param_set(&in_buf);
+    mavlink_handle_msg_param_set(&in_buf_);
     break;
   case MAVLINK_MSG_ID_ROSFLIGHT_CMD:
-    mavlink_handle_msg_rosflight_cmd(&in_buf);
+    mavlink_handle_msg_rosflight_cmd(&in_buf_);
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
-    mavlink_handle_msg_timesync(&in_buf);
+    mavlink_handle_msg_timesync(&in_buf_);
     break;
   default:
     break;
@@ -203,7 +203,7 @@ void Mavlink::receive(void)
 {
   while (RF_->board_.serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_.serial_read(), &in_buf, &status))
+    if (mavlink_parse_char(MAVLINK_COMM_0, RF_->board_.serial_read(), &in_buf_, &status_))
       handle_mavlink_message();
   }
 }

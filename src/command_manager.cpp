@@ -47,15 +47,15 @@ typedef enum
 
 typedef struct
 {
-  rc_stick_t rc_channel;
+  RC::rc_stick_t rc_channel;
   uint32_t last_override_time;
 } rc_stick_override_t;
 
 rc_stick_override_t rc_stick_override[] =
 {
-  { RC_STICK_X, 0 },
-  { RC_STICK_Y, 0 },
-  { RC_STICK_Z, 0 }
+  { RC::STICK_X, 0 },
+  { RC::STICK_Y, 0 },
+  { RC::STICK_Z, 0 }
 };
 
 typedef struct
@@ -75,10 +75,10 @@ void CommandManager::init()
 void CommandManager::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  rc_command_.x.value = RF_.rc_.rc_stick(RC_STICK_X);
-  rc_command_.y.value = RF_.rc_.rc_stick(RC_STICK_Y);
-  rc_command_.z.value = RF_.rc_.rc_stick(RC_STICK_Z);
-  rc_command_.F.value = RF_.rc_.rc_stick(RC_STICK_F);
+  rc_command_.x.value = RF_.rc_.rc_stick(RC::STICK_X);
+  rc_command_.y.value = RF_.rc_.rc_stick(RC::STICK_Y);
+  rc_command_.z.value = RF_.rc_.rc_stick(RC::STICK_Z);
+  rc_command_.F.value = RF_.rc_.rc_stick(RC::STICK_F);
 
   // determine control mode for each channel and scale command values accordingly
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
@@ -91,9 +91,9 @@ void CommandManager::interpret_rc(void)
   {
     // roll and pitch
     control_type_t roll_pitch_type;
-    if (RF_.rc_.rc_switch_mapped(RC_SWITCH_ATT_TYPE))
+    if (RF_.rc_.rc_switch_mapped(RC::SWITCH_ATT_TYPE))
     {
-      roll_pitch_type = RF_.rc_.rc_switch(RC_SWITCH_ATT_TYPE) ? ANGLE : RATE;
+      roll_pitch_type = RF_.rc_.rc_switch(RC::SWITCH_ATT_TYPE) ? ANGLE : RATE;
     }
     else
     {
@@ -147,7 +147,7 @@ bool CommandManager::stick_deviated(uint8_t channel)
 bool CommandManager::do_roll_pitch_yaw_muxing(uint8_t channel)
 {
   //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
-  if ((RF_.rc_.rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && RF_.rc_.rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
+  if ((RF_.rc_.rc_switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.rc_switch(RC::SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
     rc_override_ = true;
   }
@@ -170,7 +170,7 @@ bool CommandManager::do_roll_pitch_yaw_muxing(uint8_t channel)
 bool CommandManager::do_throttle_muxing(void)
 {
   // Check if the override switch exists and is triggered
-  if (RF_.rc_.rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
+  if (RF_.rc_.rc_switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.rc_switch(RC::SWITCH_THROTTLE_OVERRIDE))
   {
     rc_override_ = true;
   }
