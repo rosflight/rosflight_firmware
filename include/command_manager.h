@@ -168,7 +168,8 @@ public:
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
   void override_combined_command_with_rc();
-  inline const control_t combined_control() const { return combined_command_; }
+  inline const control_t& combined_control() const { return combined_command_; }
+  inline const control_t& rc_control() const { return rc_command_; }
 };
 
 }

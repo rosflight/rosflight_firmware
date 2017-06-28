@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "command_manager.h"
 #include "estimator.h"
 #include "rosflight.h"
 
@@ -110,7 +111,7 @@ void Controller::run()
   bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt < 0.01f;
 
   // Run the PID loops
-  vector_t pid_output = run_pid_loops(dt, RF_.estimator_.state(), update_integrators);
+  vector_t pid_output = run_pid_loops(dt, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
@@ -144,16 +145,10 @@ void Controller::calculate_equilbrium_torque_from_rc()
     fake_state.yaw = 0.0f;
 
     // pass the rc_control through the controller
-    //! @todo pass in fake combined control to run_pid_loops()
-    RF_.command_manager_.combined_control().x = RF_.command_manager_._rc_control.x;
-    RF_.command_manager_.combined_control().y = RF_.command_manager_._rc_control.y;
-    RF_.command_manager_.combined_control().z = RF_.command_manager_._rc_control.z;
-//    RF_.command_manager_.override_combined_command_with_rc();
-
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
     // the static offset torques
-    vector_t pid_output = run_pid_loops(0.0f, fake_state, false);
+    vector_t pid_output = run_pid_loops(0.0f, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x);
@@ -174,32 +169,32 @@ void Controller::param_change_callback(uint16_t param_id)
   init();
 }
 
-vector_t Controller::run_pid_loops(float dt, const Estimator::State& state, bool update_integrators)
+vector_t Controller::run_pid_loops(float dt, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   vector_t output;
 
   // ROLL
-  if (RF_.command_manager_.combined_control().x.type == RATE)
-    output.x = roll_rate_.run(dt, state.angular_velocity.x, RF_.command_manager_.combined_control().x.value, update_integrators);
-  else if (RF_.command_manager_.combined_control().x.type == ANGLE)
-    output.x = roll_.run(dt, state.roll, RF_.command_manager_.combined_control().x.value, update_integrators, state.angular_velocity.x);
+  if (command.x.type == RATE)
+    output.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
+  else if (command.x.type == ANGLE)
+    output.x = roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
   else
-    output.x = RF_.command_manager_.combined_control().x.value;
+    output.x = command.x.value;
 
   // PITCH
-  if (RF_.command_manager_.combined_control().y.type == RATE)
-    output.y = pitch_rate_.run(dt, state.angular_velocity.y, RF_.command_manager_.combined_control().y.value, update_integrators);
-  else if (RF_.command_manager_.combined_control().y.type == ANGLE)
-    output.y = pitch_.run(dt, state.pitch, RF_.command_manager_.combined_control().y.value, update_integrators, state.angular_velocity.y);
+  if (command.y.type == RATE)
+    output.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
+  else if (command.y.type == ANGLE)
+    output.y = pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
   else
-    output.y = RF_.command_manager_.combined_control().y.value;
+    output.y = command.y.value;
 
   // YAW
-  if (RF_.command_manager_.combined_control().z.type == RATE)
-    output.z = yaw_rate_.run(dt, state.angular_velocity.z, RF_.command_manager_.combined_control().z.value, update_integrators);
+  if (command.z.type == RATE)
+    output.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
   else// PASSTHROUGH
-    output.z = RF_.command_manager_.combined_control().z.value;
+    output.z = command.z.value;
 
   return output;
 }
