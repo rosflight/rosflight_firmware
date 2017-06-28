@@ -79,13 +79,13 @@ private:
 
   mux_t muxes[4] =
   {
-    {&_rc_control.x, &_offboard_control.x, &_combined_control.x},
-    {&_rc_control.y, &_offboard_control.y, &_combined_control.y},
-    {&_rc_control.z, &_offboard_control.z, &_combined_control.z},
-    {&_rc_control.F, &_offboard_control.F, &_combined_control.F}
+    {&rc_command_.x, &offboard_command_.x, &combined_command_.x},
+    {&rc_command_.y, &offboard_command_.y, &combined_command_.y},
+    {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
+    {&rc_command_.F, &offboard_command_.F, &combined_command_.F}
   };
 
-  control_t _rc_control =
+  control_t rc_command_ =
   {
     0,
     {false, ANGLE, 0.0},
@@ -93,7 +93,7 @@ private:
     {false, RATE, 0.0},
     {false, THROTTLE, 0.0}
   };
-  control_t _offboard_control =
+  control_t offboard_command_ =
   {
     0,
     {false, ANGLE, 0.0},
@@ -101,7 +101,7 @@ private:
     {false, RATE, 0.0},
     {false, THROTTLE, 0.0}
   };
-  control_t _combined_control =
+  control_t combined_command_ =
   {
     0,
     {false, ANGLE, 0.0},
@@ -109,7 +109,7 @@ private:
     {false, RATE, 0.0},
     {false, THROTTLE, 0.0}
   };
-  control_t _failsafe_control =
+  control_t failsafe_command_ =
   {
     0,
     {true, ANGLE, 0.0},
@@ -138,7 +138,7 @@ private:
     uint32_t last_override_time;
   } rc_stick_override_t;
 
-  rc_stick_override_t rc_stick_override[3] =
+  rc_stick_override_t rc_stick_override_[3] =
   {
     { RC_STICK_X, 0 },
     { RC_STICK_Y, 0 },
@@ -147,27 +147,28 @@ private:
 
   ROSflight& RF_;
 
-  bool new_command;
-  bool rc_override;
+  bool new_command_;
+  bool rc_override_;
 
   void do_muxing(uint8_t mux_channel);
-  void do_min_throttle_muxing();
-  void interpret_rc(void);
-  bool stick_deviated(uint8_t channel);
   bool do_roll_pitch_yaw_muxing(uint8_t channel);
   bool do_throttle_muxing(void);
+  void do_min_throttle_muxing();
+
+  void interpret_rc(void);
+  bool stick_deviated(uint8_t channel);
 
 public:
 
   CommandManager(ROSflight& _rf);
+  void init();
   bool run();
   bool rc_override_active();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
   void override_combined_command_with_rc();
-  inline const control_t combined_control() const { return _combined_control; }
-  void init();
+  inline const control_t combined_control() const { return combined_command_; }
 };
 
 }
