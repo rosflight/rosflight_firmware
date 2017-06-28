@@ -10,6 +10,7 @@
 *.orig
 *.user.*
 *.o
+*.html
 /boards/*/build/
 /test/build/
 /site/
