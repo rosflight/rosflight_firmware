@@ -100,7 +100,7 @@ void ROSflight::rosflight_run()
   /***  Control Loop ***/
   /*********************/
   uint64_t start = board_.clock_micros();
-  if (sensors_.update_sensors()) // 595 | 591 | 590 us
+  if (sensors_.run()) // 595 | 591 | 590 us
   {
     // If I have new IMU data, then perform control
     estimator_.run(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
@@ -125,7 +125,7 @@ void ROSflight::rosflight_run()
   rc_.receive_rc(); // 42 | 2 | 1
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  command_manager_.mux_inputs(); // 6 | 1 | 1
+  command_manager_.run(); // 6 | 1 | 1
 }
 
 uint32_t ROSflight::get_loop_time_us()

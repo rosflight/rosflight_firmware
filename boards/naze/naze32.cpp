@@ -34,6 +34,11 @@ extern "C"
 #include <breezystm32.h>
 #include "flash.h"
 extern void SetSysClock(bool overclock);
+
+void WWDG_IRQHandler()
+{
+  volatile int debug = 1;
+}
 }
 
 #include "naze32.h"
@@ -227,19 +232,18 @@ bool Naze32::baro_check()
 
 void Naze32::baro_calibrate()
 {
-  /// TODO: barometer needs asynchronous driver
   ms5611_start_calibration();
 }
 
 bool Naze32::diff_pressure_present(void)
 {
-  return _diff_pressure_present;
+  return ms4525_present();
 }
 
 bool Naze32::diff_pressure_check(void)
 {
-  _diff_pressure_present = ms4525_present();
-  return _diff_pressure_present;
+  ms4525_async_update();
+  return ms4525_present();
 }
 
 void Naze32::diff_pressure_calibrate()
@@ -254,26 +258,25 @@ void Naze32::diff_pressure_set_atm(float barometric_pressure)
 
 void Naze32::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity)
 {
-  ms4525_request_async_update();
+  ms4525_async_update();
   ms4525_async_read(diff_pressure, temperature, velocity);
 }
 
 bool Naze32::sonar_present(void)
 {
-  return _sonar_present;
+  return mb1242_present();
 }
 
 bool Naze32::sonar_check(void)
 {
-//  mb1242_update();
-//  _sonar_present = (mb1242_read() > 0.2);
-  return _sonar_present;
+  mb1242_async_update();
+  return mb1242_present();
 }
 
 float Naze32::sonar_read(void)
 {
-//  mb1242_update();
-//  return mb1242_read();
+  mb1242_update();
+  return mb1242_read();
 }
 
 uint16_t num_sensor_errors(void)

@@ -67,7 +67,57 @@ typedef struct
 
 class CommandManager
 {
+
 private:
+
+  typedef struct
+  {
+    control_channel_t *rc;
+    control_channel_t *onboard;
+    control_channel_t *combined;
+  } mux_t;
+
+  mux_t muxes[4] =
+  {
+    {&rc_command_.x, &offboard_command_.x, &combined_command_.x},
+    {&rc_command_.y, &offboard_command_.y, &combined_command_.y},
+    {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
+    {&rc_command_.F, &offboard_command_.F, &combined_command_.F}
+  };
+
+  control_t rc_command_ =
+  {
+    0,
+    {false, ANGLE, 0.0},
+    {false, ANGLE, 0.0},
+    {false, RATE, 0.0},
+    {false, THROTTLE, 0.0}
+  };
+  control_t offboard_command_ =
+  {
+    0,
+    {false, ANGLE, 0.0},
+    {false, ANGLE, 0.0},
+    {false, RATE, 0.0},
+    {false, THROTTLE, 0.0}
+  };
+  control_t combined_command_ =
+  {
+    0,
+    {false, ANGLE, 0.0},
+    {false, ANGLE, 0.0},
+    {false, RATE, 0.0},
+    {false, THROTTLE, 0.0}
+  };
+  control_t failsafe_command_ =
+  {
+    0,
+    {true, ANGLE, 0.0},
+    {true, ANGLE, 0.0},
+    {true, RATE, 0.0},
+    {true, THROTTLE, 0.0}
+  };
+
   typedef enum
   {
     ATT_MODE_RATE,
@@ -88,83 +138,37 @@ private:
     uint32_t last_override_time;
   } rc_stick_override_t;
 
-  rc_stick_override_t rc_stick_override[3] =
+  rc_stick_override_t rc_stick_override_[3] =
   {
     { RC_STICK_X, 0 },
     { RC_STICK_Y, 0 },
     { RC_STICK_Z, 0 }
   };
 
-  typedef struct
-  {
-    control_channel_t *rc;
-    control_channel_t *onboard;
-    control_channel_t *combined;
-  } mux_t;
+  ROSflight& RF_;
+
+  bool new_command_;
+  bool rc_override_;
+
+  void do_muxing(uint8_t mux_channel);
+  bool do_roll_pitch_yaw_muxing(uint8_t channel);
+  bool do_throttle_muxing(void);
+  void do_min_throttle_muxing();
+
+  void interpret_rc(void);
+  bool stick_deviated(uint8_t channel);
 
 public:
 
-  mux_t muxes[4] =
-  {
-    {&_rc_control.x, &_offboard_control.x, &_combined_control.x},
-    {&_rc_control.y, &_offboard_control.y, &_combined_control.y},
-    {&_rc_control.z, &_offboard_control.z, &_combined_control.z},
-    {&_rc_control.F, &_offboard_control.F, &_combined_control.F}
-  };
-
-  control_t _rc_control =
-  {
-    0,
-    {false, ANGLE, 0.0},
-    {false, ANGLE, 0.0},
-    {false, RATE, 0.0},
-    {false, THROTTLE, 0.0}
-  };
-  control_t _offboard_control =
-  {
-    0,
-    {false, ANGLE, 0.0},
-    {false, ANGLE, 0.0},
-    {false, RATE, 0.0},
-    {false, THROTTLE, 0.0}
-  };
-  control_t _combined_control =
-  {
-    0,
-    {false, ANGLE, 0.0},
-    {false, ANGLE, 0.0},
-    {false, RATE, 0.0},
-    {false, THROTTLE, 0.0}
-  };
-  control_t _failsafe_control =
-  {
-    0,
-    {true, ANGLE, 0.0},
-    {true, ANGLE, 0.0},
-    {true, RATE, 0.0},
-    {true, THROTTLE, 0.0}
-  };
-
   CommandManager(ROSflight& _rf);
-  bool mux_inputs();
+  void init();
+  bool run();
   bool rc_override_active();
   bool offboard_control_active();
-  void signal_new_command();
-  void init();
-
-private:
-
-  ROSflight& RF_;
-
-  bool new_command;
-  bool rc_override;
-
-  void do_muxing(uint8_t mux_channel);
-  void do_min_throttle_muxing();
-  void interpret_rc(void);
-  bool stick_deviated(uint8_t channel);
-  bool do_roll_pitch_yaw_muxing(uint8_t channel);
-  bool do_throttle_muxing(void);
+  void set_new_offboard_command(control_t new_offboard_command);
+  void set_new_rc_command(control_t new_rc_command);
+  void override_combined_command_with_rc();
+  inline const control_t combined_control() const { return combined_command_; }
 };
 
 }

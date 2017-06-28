@@ -107,7 +107,7 @@ void Controller::run()
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_._combined_control.F.value > 0.1f) && dt < 0.01f;
+  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt < 0.01f;
 
   // Run the PID loops
   vector_t pid_output = run_pid_loops(dt, RF_.estimator_.state(), update_integrators);
@@ -116,7 +116,7 @@ void Controller::run()
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
   output_.y = pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
   output_.z = pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
-  output_.F = RF_.command_manager_._combined_control.F.value;
+  output_.F = RF_.command_manager_.combined_control().F.value;
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()
@@ -145,9 +145,10 @@ void Controller::calculate_equilbrium_torque_from_rc()
 
     // pass the rc_control through the controller
     //! @todo pass in fake combined control to run_pid_loops()
-    RF_.command_manager_._combined_control.x = RF_.command_manager_._rc_control.x;
-    RF_.command_manager_._combined_control.y = RF_.command_manager_._rc_control.y;
-    RF_.command_manager_._combined_control.z = RF_.command_manager_._rc_control.z;
+    RF_.command_manager_.combined_control().x = RF_.command_manager_._rc_control.x;
+    RF_.command_manager_.combined_control().y = RF_.command_manager_._rc_control.y;
+    RF_.command_manager_.combined_control().z = RF_.command_manager_._rc_control.z;
+//    RF_.command_manager_.override_combined_command_with_rc();
 
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
@@ -179,26 +180,26 @@ vector_t Controller::run_pid_loops(float dt, const Estimator::State& state, bool
   vector_t output;
 
   // ROLL
-  if (RF_.command_manager_._combined_control.x.type == RATE)
-    output.x = roll_rate_.run(dt, state.angular_velocity.x, RF_.command_manager_._combined_control.x.value, update_integrators);
-  else if (RF_.command_manager_._combined_control.x.type == ANGLE)
-    output.x = roll_.run(dt, state.roll, RF_.command_manager_._combined_control.x.value, update_integrators, state.angular_velocity.x);
+  if (RF_.command_manager_.combined_control().x.type == RATE)
+    output.x = roll_rate_.run(dt, state.angular_velocity.x, RF_.command_manager_.combined_control().x.value, update_integrators);
+  else if (RF_.command_manager_.combined_control().x.type == ANGLE)
+    output.x = roll_.run(dt, state.roll, RF_.command_manager_.combined_control().x.value, update_integrators, state.angular_velocity.x);
   else
-    output.x = RF_.command_manager_._combined_control.x.value;
+    output.x = RF_.command_manager_.combined_control().x.value;
 
   // PITCH
-  if (RF_.command_manager_._combined_control.y.type == RATE)
-    output.y = pitch_rate_.run(dt, state.angular_velocity.y, RF_.command_manager_._combined_control.y.value, update_integrators);
-  else if (RF_.command_manager_._combined_control.y.type == ANGLE)
-    output.y = pitch_.run(dt, state.pitch, RF_.command_manager_._combined_control.y.value, update_integrators, state.angular_velocity.y);
+  if (RF_.command_manager_.combined_control().y.type == RATE)
+    output.y = pitch_rate_.run(dt, state.angular_velocity.y, RF_.command_manager_.combined_control().y.value, update_integrators);
+  else if (RF_.command_manager_.combined_control().y.type == ANGLE)
+    output.y = pitch_.run(dt, state.pitch, RF_.command_manager_.combined_control().y.value, update_integrators, state.angular_velocity.y);
   else
-    output.y = RF_.command_manager_._combined_control.y.value;
+    output.y = RF_.command_manager_.combined_control().y.value;
 
   // YAW
-  if (RF_.command_manager_._combined_control.z.type == RATE)
-    output.z = yaw_rate_.run(dt, state.angular_velocity.z, RF_.command_manager_._combined_control.z.value, update_integrators);
+  if (RF_.command_manager_.combined_control().z.type == RATE)
+    output.z = yaw_rate_.run(dt, state.angular_velocity.z, RF_.command_manager_.combined_control().z.value, update_integrators);
   else// PASSTHROUGH
-    output.z = RF_.command_manager_._combined_control.z.value;
+    output.z = RF_.command_manager_.combined_control().z.value;
 
   return output;
 }

@@ -75,17 +75,17 @@ void CommandManager::init()
 void CommandManager::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  _rc_control.x.value = RF_.rc_.rc_stick(RC_STICK_X);
-  _rc_control.y.value = RF_.rc_.rc_stick(RC_STICK_Y);
-  _rc_control.z.value = RF_.rc_.rc_stick(RC_STICK_Z);
-  _rc_control.F.value = RF_.rc_.rc_stick(RC_STICK_F);
+  rc_command_.x.value = RF_.rc_.rc_stick(RC_STICK_X);
+  rc_command_.y.value = RF_.rc_.rc_stick(RC_STICK_Y);
+  rc_command_.z.value = RF_.rc_.rc_stick(RC_STICK_Z);
+  rc_command_.F.value = RF_.rc_.rc_stick(RC_STICK_F);
 
   // determine control mode for each channel and scale command values accordingly
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
-    _rc_control.x.type = PASSTHROUGH;
-    _rc_control.y.type = PASSTHROUGH;
-    _rc_control.z.type = PASSTHROUGH;
+    rc_command_.x.type = PASSTHROUGH;
+    rc_command_.y.type = PASSTHROUGH;
+    rc_command_.z.type = PASSTHROUGH;
   }
   else
   {
@@ -100,27 +100,27 @@ void CommandManager::interpret_rc(void)
       roll_pitch_type = (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE: ANGLE;
     }
 
-    _rc_control.x.type = roll_pitch_type;
-    _rc_control.y.type = roll_pitch_type;
+    rc_command_.x.type = roll_pitch_type;
+    rc_command_.y.type = roll_pitch_type;
 
     // Scale command to appropriate units
     switch (roll_pitch_type)
     {
     case RATE:
-      _rc_control.x.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
-      _rc_control.y.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
+      rc_command_.x.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
+      rc_command_.y.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
       break;
     case ANGLE:
-      _rc_control.x.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
-      _rc_control.y.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
+      rc_command_.x.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
+      rc_command_.y.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
     }
 
     // yaw
-    _rc_control.z.type = RATE;
-    _rc_control.z.value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
+    rc_command_.z.type = RATE;
+    rc_command_.z.value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
 
     // throttle
-    _rc_control.F.type = THROTTLE;
+    rc_command_.F.type = THROTTLE;
   }
 }
 
@@ -129,15 +129,15 @@ bool CommandManager::stick_deviated(uint8_t channel)
   uint32_t now = RF_.board_.clock_millis();
 
   // if we are still in the lag time, return true
-  if (now - rc_stick_override[channel].last_override_time < (uint32_t)RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
+  if (now - rc_stick_override_[channel].last_override_time < (uint32_t)RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
   {
     return true;
   }
   else
   {
-    if (abs(RF_.rc_.rc_stick(rc_stick_override[channel].rc_channel)) > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
+    if (abs(RF_.rc_.rc_stick(rc_stick_override_[channel].rc_channel)) > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
-      rc_stick_override[channel].last_override_time = now;
+      rc_stick_override_[channel].last_override_time = now;
       return true;
     }
     return false;
@@ -149,22 +149,22 @@ bool CommandManager::do_roll_pitch_yaw_muxing(uint8_t channel)
   //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
   if ((RF_.rc_.rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && RF_.rc_.rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
-    rc_override = true;
+    rc_override_ = true;
   }
   else // Otherwise only have RC override if the offboard channel is inactive
   {
     if (muxes[channel].onboard->active)
     {
-      rc_override = false;
+      rc_override_ = false;
     }
     else
     {
-      rc_override = true;
+      rc_override_ = true;
     }
   }
   // set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[channel].combined = rc_override ? *muxes[channel].rc : *muxes[channel].onboard;
-  return rc_override;
+  *muxes[channel].combined = rc_override_ ? *muxes[channel].rc : *muxes[channel].onboard;
+  return rc_override_;
 }
 
 bool CommandManager::do_throttle_muxing(void)
@@ -172,7 +172,7 @@ bool CommandManager::do_throttle_muxing(void)
   // Check if the override switch exists and is triggered
   if (RF_.rc_.rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
   {
-    rc_override = true;
+    rc_override_ = true;
   }
   else // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
   {
@@ -181,27 +181,27 @@ bool CommandManager::do_throttle_muxing(void)
       // Check if the parameter flag is set to have us always take the smaller throttle
       if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
       {
-        rc_override = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
+        rc_override_ = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
       }
       else
       {
-        rc_override = false;
+        rc_override_ = false;
       }
     }
     else
     {
-      rc_override = true;
+      rc_override_ = true;
     }
   }
 
   // Set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[MUX_F].combined = rc_override ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
-  return rc_override;
+  *muxes[MUX_F].combined = rc_override_ ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
+  return rc_override_;
 }
 
 bool CommandManager::rc_override_active()
 {
-  return rc_override;
+  return rc_override_;
 }
 
 bool CommandManager::offboard_control_active()
@@ -214,18 +214,33 @@ bool CommandManager::offboard_control_active()
   return false;
 }
 
-void CommandManager::signal_new_command()
+void CommandManager::set_new_offboard_command(control_t new_offboard_command)
 {
-  new_command = true;
+  new_command_ = true;
+
+  offboard_command_ = new_offboard_command;
 }
 
-bool CommandManager::mux_inputs()
+void CommandManager::set_new_rc_command(control_t new_rc_command)
+{
+  new_command_ = true;
+  rc_command_ = new_rc_command;
+}
+
+void CommandManager::override_combined_command_with_rc()
+{
+  new_command_ = true;
+  combined_command_ = rc_command_;
+}
+
+
+bool CommandManager::run()
 {
   // Check for and apply failsafe command
   if (RF_.state_manager_.state().failsafe)
   {
-    _failsafe_control.F.value = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
-    _combined_control = _failsafe_control;
+    failsafe_command_.F.value = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
+    combined_command_ = failsafe_command_;
   }
 
   else if (RF_.rc_.new_command())
@@ -234,18 +249,17 @@ bool CommandManager::mux_inputs()
     interpret_rc();
 
     // Check for offboard control timeout (100 ms)
-    if (RF_.board_.clock_micros() > _offboard_control.stamp_us + 100000)
+    if (RF_.board_.clock_micros() > offboard_command_.stamp_us + 100000)
     {
       // If it has been longer than 100 ms, then disable the offboard control
-      _offboard_control.F.active = false;
-      _offboard_control.x.active = false;
-      _offboard_control.y.active = false;
-      _offboard_control.z.active = false;
+      offboard_command_.F.active = false;
+      offboard_command_.x.active = false;
+      offboard_command_.y.active = false;
+      offboard_command_.z.active = false;
     }
 
-
     // Perform muxing
-    rc_override = false;
+    rc_override_ = false;
     for (uint8_t i = MUX_X; i <= MUX_Z; i++)
     {
       do_roll_pitch_yaw_muxing(i);
@@ -253,7 +267,7 @@ bool CommandManager::mux_inputs()
     do_throttle_muxing();
 
     // Light to indicate override
-    if (rc_override)
+    if (rc_override_)
     {
       RF_.board_.led0_on();
     }

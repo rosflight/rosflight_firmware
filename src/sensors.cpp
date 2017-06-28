@@ -64,7 +64,7 @@ void Sensors::init()
 }
 
 
-bool Sensors::update_sensors(void)
+bool Sensors::run(void)
 {
   // First, check for new IMU data
   bool new_imu_data = update_imu();
@@ -84,23 +84,24 @@ bool Sensors::update_sensors(void)
 //      {
 //        if (rf_.board_.sonar_check())
 //        {
-//          //          mavlink_log_info("FOUND SONAR", NULL);
+          //          mavlink_log_info("FOUND SONAR", NULL);
+//          volatile int debug = 1;
 //        }
 //      }
-//      if (!rf_.board_.diff_pressure_present())
-//      {
-//        if (rf_.board_.diff_pressure_check())1
-//        {
-//          //          mavlink_log_info("FOUND DIFF PRESS", NULL);
-//        }
-//      }
-      if (!rf_.board_.baro_present())
+      if (!rf_.board_.diff_pressure_present())
       {
-        if (rf_.board_.baro_check())
+        if (rf_.board_.diff_pressure_check())
         {
-          //          mavlink_log_info("FOUND BARO", NULL);
+//                    mavlink_log_info("FOUND DIFF PRESS", NULL);
         }
       }
+//      if (!rf_.board_.baro_present())
+//      {
+//        if (rf_.board_.baro_check())
+//        {
+//          //          mavlink_log_info("FOUND BARO", NULL);
+//        }
+//      }
 //      if (!rf_.board_.mag_present())
 //      {
 //        if (rf_.board_.mag_check())
@@ -113,18 +114,18 @@ bool Sensors::update_sensors(void)
 
 
   // Update whatever sensors are available
-  if (rf_.board_.baro_present())
-  {
-    rf_.board_.baro_read(&data_._baro_altitude, &data_._baro_pressure, &data_._baro_temperature);
-  }
+//  if (rf_.board_.baro_present())
+//  {
+//    rf_.board_.baro_read(&data_._baro_altitude, &data_._baro_pressure, &data_._baro_temperature);
+//  }
 
   if (rf_.board_.diff_pressure_present())
   {
     if (rf_.board_.baro_present())
     {
-      rf_.board_.diff_pressure_set_atm(data_._baro_pressure);
+      rf_.board_.diff_pressure_set_atm(data_.baro_pressure);
     }
-    rf_.board_.diff_pressure_read(&data_._diff_pressure, &data_._diff_pressure_temp, &data_._diff_pressure_velocity);
+    rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp, &data_.diff_pressure_velocity);
   }
 
 //  if (rf_.board_.sonar_present())
@@ -132,15 +133,15 @@ bool Sensors::update_sensors(void)
 //    data_._sonar_range = rf_.board_.sonar_read();
 //  }
 
-  if (rf_.board_.mag_present())
-  {
-    float mag[3];
-    rf_.board_.mag_read(mag);
-    data_._mag.x = mag[0];
-    data_._mag.y = mag[1];
-    data_._mag.z = mag[2];
-    correct_mag();
-  }
+//  if (rf_.board_.mag_present())
+//  {
+//    float mag[3];
+//    rf_.board_.mag_read(mag);
+//    data_._mag.x = mag[0];
+//    data_._mag.y = mag[1];
+//    data_._mag.z = mag[2];
+//    correct_mag();
+//  }
 
   return new_imu_data;
 }
@@ -152,7 +153,7 @@ bool Sensors::start_imu_calibration(void)
 {
   start_gyro_calibration();
 
-  calibrating_acc_flag = true;
+  calibrating_acc_flag_ = true;
   rf_.params_.set_param_float(PARAM_ACC_X_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_ACC_Z_BIAS, 0.0);
@@ -161,7 +162,7 @@ bool Sensors::start_imu_calibration(void)
 
 bool Sensors::start_gyro_calibration(void)
 {
-  calibrating_gyro_flag = true;
+  calibrating_gyro_flag_ = true;
   rf_.params_.set_param_float(PARAM_GYRO_X_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
@@ -170,7 +171,7 @@ bool Sensors::start_gyro_calibration(void)
 
 bool Sensors::gyro_calibration_complete(void)
 {
-  return !calibrating_gyro_flag;
+  return !calibrating_gyro_flag_;
 }
 
 //==================================================================
@@ -180,22 +181,22 @@ bool Sensors::update_imu(void)
   if (rf_.board_.new_imu_data())
   {
     last_imu_update_ms = rf_.board_.clock_millis();
-    if (!rf_.board_.imu_read_all(accel, &data_._imu_temperature, gyro, &data_._imu_time))
+    if (!rf_.board_.imu_read_all(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
     {
       return false;
     }
 
-    data_._accel.x = accel[0] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
-    data_._accel.y = accel[1] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
-    data_._accel.z = accel[2] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
+    data_.accel.x = accel_[0] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
+    data_.accel.y = accel_[1] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
+    data_.accel.z = accel_[2] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
 
-    data_._gyro.x = gyro[0];
-    data_._gyro.y = gyro[1];
-    data_._gyro.z = gyro[2];
+    data_.gyro.x = gyro_[0];
+    data_.gyro.y = gyro_[1];
+    data_.gyro.z = gyro_[2];
 
-    if (calibrating_acc_flag == true)
+    if (calibrating_acc_flag_ == true)
       calibrate_accel();
-    if (calibrating_gyro_flag)
+    if (calibrating_gyro_flag_)
       calibrate_gyro();
 
     correct_imu();
@@ -220,16 +221,16 @@ bool Sensors::update_imu(void)
 
 void Sensors::calibrate_gyro()
 {
-  gyro_sum.x = 0.0f;
-  gyro_sum.y = 0.0f;
-  gyro_sum.z = 0.0f;
-  gyro_sum = vector_add(gyro_sum, data_._gyro);
-  gyro_calibration_count++;
+  gyro_sum_.x = 0.0f;
+  gyro_sum_.y = 0.0f;
+  gyro_sum_.z = 0.0f;
+  gyro_sum_ = vector_add(gyro_sum_, data_.gyro);
+  gyro_calibration_count_++;
 
-  if (gyro_calibration_count > 100)
+  if (gyro_calibration_count_ > 100)
   {
     // Gyros are simple.  Just find the average during the calibration
-    vector_t gyro_bias = scalar_multiply(1.0/(float)gyro_calibration_count, gyro_sum);
+    vector_t gyro_bias = scalar_multiply(1.0/(float)gyro_calibration_count_, gyro_sum_);
 
     if (norm(gyro_bias) < 1.0)
     {
@@ -251,11 +252,11 @@ void Sensors::calibrate_gyro()
     }
 
     // reset calibration in case we do it again
-    calibrating_gyro_flag = false;
-    gyro_calibration_count = 0;
-    gyro_sum.x = 0.0f;
-    gyro_sum.y = 0.0f;
-    gyro_sum.z = 0.0f;
+    calibrating_gyro_flag_ = false;
+    gyro_calibration_count_ = 0;
+    gyro_sum_.x = 0.0f;
+    gyro_sum_.y = 0.0f;
+    gyro_sum_.z = 0.0f;
   }
 }
 
@@ -280,13 +281,13 @@ vector_t vector_min(vector_t a, vector_t b)
 
 void Sensors::calibrate_accel(void)
 {
-  acc_sum = vector_add(vector_add(acc_sum, data_._accel), gravity);
-  acc_temp_sum += data_._imu_temperature;
-  max = vector_max(max, data_._accel);
-  min = vector_min(min, data_._accel);
-  accel_calibration_count++;
+  acc_sum_ = vector_add(vector_add(acc_sum_, data_.accel), gravity_);
+  acc_temp_sum_ += data_.imu_temperature;
+  max_ = vector_max(max_, data_.accel);
+  min_ = vector_min(min_, data_.accel);
+  accel_calibration_count_++;
 
-  if (accel_calibration_count > 1000)
+  if (accel_calibration_count_ > 1000)
   {
     // The temperature bias is calculated using a least-squares regression.
     // This is computationally intensive, so it is done by the onboard computer in
@@ -303,16 +304,16 @@ void Sensors::calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count, vector_sub(acc_sum,
-                                          scalar_multiply(acc_temp_sum, accel_temp_bias)));
+    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count_, vector_sub(acc_sum_,
+                                          scalar_multiply(acc_temp_sum_, accel_temp_bias)));
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if (norm(vector_sub(max, min)) > 1.0)
+    if (norm(vector_sub(max_, min_)) > 1.0)
     {
 //      mavlink_log_error("Too much movement for IMU cal", NULL);
-      calibrating_acc_flag = false;
+      calibrating_acc_flag_ = false;
     }
     else
     {
@@ -328,7 +329,7 @@ void Sensors::calibrate_accel(void)
 
         // reset the estimated state
         rf_.estimator_.reset_state();
-        calibrating_acc_flag = false;
+        calibrating_acc_flag_ = false;
       }
       else
       {
@@ -353,50 +354,50 @@ void Sensors::calibrate_accel(void)
     }
 
     // reset calibration counters in case we do it again
-    accel_calibration_count = 0;
-    acc_sum.x = 0.0f;
-    acc_sum.y = 0.0f;
-    acc_sum.z = 0.0f;
-    acc_temp_sum = 0.0f;
-    max.x = -1000.0f;
-    max.y = -1000.0f;
-    max.z = -1000.0f;
-    min.x = 1000.0f;
-    min.y = 1000.0f;
-    min.z = 1000.0f;
+    accel_calibration_count_ = 0;
+    acc_sum_.x = 0.0f;
+    acc_sum_.y = 0.0f;
+    acc_sum_.z = 0.0f;
+    acc_temp_sum_ = 0.0f;
+    max_.x = -1000.0f;
+    max_.y = -1000.0f;
+    max_.z = -1000.0f;
+    min_.x = 1000.0f;
+    min_.y = 1000.0f;
+    min_.z = 1000.0f;
   }
 }
 
 void Sensors::correct_imu(void)
 {
   // correct according to known biases and temperature compensation
-  data_._accel.x -= rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP)*data_._imu_temperature + rf_.params_.get_param_float(
+  data_.accel.x -= rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP)*data_.imu_temperature + rf_.params_.get_param_float(
                 PARAM_ACC_X_BIAS);
-  data_._accel.y -= rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP)*data_._imu_temperature + rf_.params_.get_param_float(
+  data_.accel.y -= rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP)*data_.imu_temperature + rf_.params_.get_param_float(
                 PARAM_ACC_Y_BIAS);
-  data_._accel.z -= rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)*data_._imu_temperature + rf_.params_.get_param_float(
+  data_.accel.z -= rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)*data_.imu_temperature + rf_.params_.get_param_float(
                 PARAM_ACC_Z_BIAS);
 
-  data_._gyro.x -= rf_.params_.get_param_float(PARAM_GYRO_X_BIAS);
-  data_._gyro.y -= rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS);
-  data_._gyro.z -= rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS);
+  data_.gyro.x -= rf_.params_.get_param_float(PARAM_GYRO_X_BIAS);
+  data_.gyro.y -= rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS);
+  data_.gyro.z -= rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS);
 }
 
 void Sensors::correct_mag(void)
 {
   // correct according to known hard iron bias
-  float mag_hard_x = data_._mag.x - rf_.params_.get_param_float(PARAM_MAG_X_BIAS);
-  float mag_hard_y = data_._mag.y - rf_.params_.get_param_float(PARAM_MAG_Y_BIAS);
-  float mag_hard_z = data_._mag.z - rf_.params_.get_param_float(PARAM_MAG_Z_BIAS);
+  float mag_hard_x = data_.mag.x - rf_.params_.get_param_float(PARAM_MAG_X_BIAS);
+  float mag_hard_y = data_.mag.y - rf_.params_.get_param_float(PARAM_MAG_Y_BIAS);
+  float mag_hard_z = data_.mag.z - rf_.params_.get_param_float(PARAM_MAG_Z_BIAS);
 
   // correct according to known soft iron bias - converts to nT
-  data_._mag.x = rf_.params_.get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + rf_.params_.get_param_float(
+  data_.mag.x = rf_.params_.get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + rf_.params_.get_param_float(
              PARAM_MAG_A12_COMP)*mag_hard_y +
            rf_.params_.get_param_float(PARAM_MAG_A13_COMP)*mag_hard_z;
-  data_._mag.y = rf_.params_.get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + rf_.params_.get_param_float(
+  data_.mag.y = rf_.params_.get_param_float(PARAM_MAG_A21_COMP)*mag_hard_x + rf_.params_.get_param_float(
              PARAM_MAG_A22_COMP)*mag_hard_y +
            rf_.params_.get_param_float(PARAM_MAG_A23_COMP)*mag_hard_z;
-  data_._mag.z = rf_.params_.get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + rf_.params_.get_param_float(
+  data_.mag.z = rf_.params_.get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + rf_.params_.get_param_float(
              PARAM_MAG_A32_COMP)*mag_hard_y +
            rf_.params_.get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
 }

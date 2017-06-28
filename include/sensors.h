@@ -48,22 +48,22 @@ class Sensors
 
   struct Data
   {
-    vector_t _accel = {0, 0, 0};
-    vector_t _gyro = {0, 0, 0};
-    float _imu_temperature = 0;
-    uint64_t _imu_time = 0;
+    vector_t accel = {0, 0, 0};
+    vector_t gyro = {0, 0, 0};
+    float imu_temperature = 0;
+    uint64_t imu_time = 0;
 
-    float _diff_pressure_velocity = 0;
-    float _diff_pressure = 0;
-    float _diff_pressure_temp = 0;
+    float diff_pressure_velocity = 0;
+    float diff_pressure = 0;
+    float diff_pressure_temp = 0;
 
-    float _baro_altitude = 0;
-    float _baro_pressure = 0;
-    float _baro_temperature = 0;
+    float baro_altitude = 0;
+    float baro_pressure = 0;
+    float baro_temperature = 0;
 
-    float _sonar_range = 0;
+    float sonar_range = 0;
 
-    vector_t _mag = {0, 0, 0};
+    vector_t mag = {0, 0, 0};
   };
 
 public:
@@ -73,9 +73,7 @@ public:
 
   // function declarations
   void init();
-  bool update_sensors();
-
-  void imu_callback();
+  bool run();
 
   // Calibration Functions
   bool start_imu_calibration(void);
@@ -83,7 +81,6 @@ public:
   void start_baro_calibration(void);
   void start_airspeed_calibration(void);
   bool gyro_calibration_complete(void);
-
 
   inline bool should_send_imu_data(void)
   {
@@ -94,27 +91,20 @@ public:
     return true;
   }
 
-//  // Sensor present functions
-//  bool magnetometer_present(void);
-//  bool differential_pressure_present(void);
-//  bool barometer_present(void);
-//  bool sonar_present(void);
-
 private:
   ROSflight& rf_;
 
   Data data_;
 
-  float accel[3] = {0, 0, 0};
-  float gyro[3] = {0, 0, 0};
+  float accel_[3] = {0, 0, 0};
+  float gyro_[3] = {0, 0, 0};
 
-  bool calibrating_acc_flag = false;
-  bool calibrating_gyro_flag = false;
+  bool calibrating_acc_flag_ = false;
+  bool calibrating_gyro_flag_ = false;
   void calibrate_accel(void);
   void calibrate_gyro(void);
   void correct_imu(void);
   void correct_mag(void);
-  void imu_ISR(void);
   bool update_imu(void);
   uint32_t last_time_look_for_disarmed_sensors = 0;
   uint32_t last_imu_update_ms = 0;
@@ -123,14 +113,14 @@ private:
   bool imu_data_sent_;
 
   // IMU calibration
-  uint16_t gyro_calibration_count = 0;
-  vector_t gyro_sum = {0, 0, 0};
-  uint16_t accel_calibration_count = 0;
-  vector_t acc_sum = {0, 0, 0};
-  const vector_t gravity = {0.0f, 0.0f, 9.80665f};
-  float acc_temp_sum = 0.0f;
-  vector_t max = {-1000.0f, -1000.0f, -1000.0f};
-  vector_t min = {1000.0f, 1000.0f, 1000.0f};
+  uint16_t gyro_calibration_count_ = 0;
+  vector_t gyro_sum_ = {0, 0, 0};
+  uint16_t accel_calibration_count_ = 0;
+  vector_t acc_sum_ = {0, 0, 0};
+  const vector_t gravity_ = {0.0f, 0.0f, 9.80665f};
+  float acc_temp_sum_ = 0.0f;
+  vector_t max_ = {-1000.0f, -1000.0f, -1000.0f};
+  vector_t min_ = {1000.0f, 1000.0f, 1000.0f};
 
 };
 
