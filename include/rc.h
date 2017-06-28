@@ -29,7 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_RC_H
+#define ROSFLIGHT_FIRMWARE_RC_H
 
 #include <stdint.h>
 #include <stdbool.h>
