@@ -30,7 +30,7 @@
  */
 
 #ifndef ROSFLIGHT_FIRMWARE_BOARD_H
-#define ROSLFIGHT_FIRMWARE_BOARD_H
+#define ROSFLIGHT_FIRMWARE_BOARD_H
 
 #include <functional>
 #include <stddef.h>
