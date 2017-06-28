@@ -29,47 +29,63 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
+#define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#include "mixer.h"
 
 namespace rosflight_firmware
 {
 
 class ROSflight;
 
-class PID
-{
-public:
-  PID(ROSflight &_rf);
-  void init(float kp, float ki, float kd, float max, float min, float tau);
-  float run(float x, float x_c, float dt, bool use_derivative, float xdot =0 );
-
-private:
-  ROSflight& RF_;
-  float kp_ = 0.0;
-  float ki_ = 0.0;
-  float kd_ = 0.0;
-
-  float max_ = 1.0;
-  float min_ = -1.0;
-
-  float integrator_ = 0.0;
-  float prev_x_ = 0.0;
-  float differentiator_ = 0.0;
-  float tau_ = 0.05;
-
-};
-
 class Controller
 {
+public:
+  struct Output
+  {
+    float F;
+    float x;
+    float y;
+    float z;
+  };
+
+  Controller(ROSflight& rf);
+
+  inline const Output& output() const { return output_; }
+
+  void init();
+  void run();
+
+  void calculate_equilbrium_torque_from_rc();
+  void param_change_callback(uint16_t param_id);
 
 private:
+  class PID
+  {
+  public:
+    PID();
+    void init(float kp, float ki, float kd, float max, float min, float tau);
+    float run(float dt, float x, float x_c, bool update_integrator);
+    float run(float dt, float x, float x_c, bool update_integrator, float xdot);
 
-  Mixer::command_t outputs_;
+  private:
+    float kp_;
+    float ki_;
+    float kd_;
+
+    float max_;
+    float min_;
+
+    float integrator_;
+    float differentiator_;
+    float prev_x_;
+    float tau_;
+  };
+
+  ROSflight& RF_;
+  Output output_;
 
   PID roll_;
   PID roll_rate_;
@@ -77,18 +93,9 @@ private:
   PID pitch_rate_;
   PID yaw_rate_;
 
-  ROSflight& RF_;
-
   float prev_time;
-
-public:
-  Controller(ROSflight& _rf);
-  void run_controller();
-  void init();
-  void calculate_equilbrium_torque_from_rc();
-  void param_change_callback(uint16_t param_id);
-  inline Mixer::command_t get_outputs() {return outputs_;}
-
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_CONTROLLER_H
