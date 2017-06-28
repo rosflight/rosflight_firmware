@@ -33,7 +33,7 @@
 #define ROSFLIGHT_FIRMWARE_MAVLINK_H
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
-#include "printf.h"
+#include "nanoprintf.h"
 
 //#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 

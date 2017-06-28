@@ -47,68 +47,44 @@ class ROSflight;
 class Estimator
 {
 
-private:
-  // Controller needs direct access to these values
-  vector_t omega_ = {0.0, 0.0, 0.0};
-  float roll_ = 0.0;
-  float pitch_ = 0.0;
-  float yaw_ = 0.0;
-  quaternion_t q_ = {1.0, 0.0, 0.0, 0.0};
-
-  ROSflight& RF_;
-
-  uint64_t now_us_ = 0;
-  uint64_t last_acc_update_us_ = 0;
-
-  vector_t w1_ = {0.0, 0.0, 0.0};
-  vector_t w2_ = {0.0, 0.0, 0.0};
-  vector_t wbar_ = {0.0, 0.0, 0.0};
-  vector_t wfinal_ = {0.0, 0.0, 0.0};
-  vector_t w_acc_ = {0.0, 0.0, 0.0};
-  const vector_t g_ = {0.0f, 0.0f, -1.0f};
-  vector_t bias_ = {0.0, 0.0, 0.0};
-  quaternion_t q_tilde_ = {1.0, 0.0, 0.0, 0.0};
-  quaternion_t q_hat_ = {1.0, 0.0, 0.0, 0.0};
-  uint64_t last_time_ = 0;
-
-  vector_t accel_LPF_ = {0.0, 0.0, 0.0};
-  vector_t gyro_LPF_ = {0.0, 0.0, 0.0};
-
-  void run_LPF();
-
 public:
+  struct State
+  {
+    vector_t angular_velocity;
+    quaternion_t attitude;
+    float roll;
+    float pitch;
+    float yaw;
+    uint64_t timestamp;
+  };
 
   Estimator(ROSflight& _rf);
 
+  inline const State& state() const { return state_; }
+
+  void init();
+  void run();
   void reset_state();
   void reset_adaptive_bias();
-  void init();
-  void run_estimator();
 
-  inline float get_roll()
-  {
-    return roll_;
-  }
-  inline float get_pitch()
-  {
-    return pitch_;
-  }
-  inline float get_yaw()
-  {
-    return yaw_;
-  }
-  inline vector_t get_angular_velocity()
-  {
-    return omega_;
-  }
-  inline quaternion_t get_attitude()
-  {
-    return q_;
-  }
-  inline uint64_t get_estimator_timestamp()
-  {
-    return now_us_;
-  }
+private:
+  const vector_t g_ = {0.0f, 0.0f, -1.0f};
+
+  ROSflight& RF_;
+  State state_;
+
+  uint64_t last_time_;
+  uint64_t last_acc_update_us_;
+
+  vector_t w1_;
+  vector_t w2_;
+
+  vector_t bias_;
+
+  vector_t accel_LPF_;
+  vector_t gyro_LPF_;
+
+  void run_LPF();
 };
 
 } // namespace rosflight_firmware

@@ -29,8 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSLFIGHT_FIRMWARE_RC_H
-#define ROSFLIGHT_FIRMWARE_RC_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -116,4 +115,3 @@ private:
 
 } // namespace rosflight_firmware
 
-#endif // ROSLFLIGHT_FIRMWARE_RC_H

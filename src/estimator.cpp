@@ -41,21 +41,18 @@ Estimator::Estimator(ROSflight &_rf):
 
 void Estimator::reset_state()
 {
-  q_.w = 1.0f;
-  q_.x = 0.0f;
-  q_.y = 0.0f;
-  q_.z = 0.0f;
-  omega_.x = 0.0f;
-  omega_.y = 0.0f;
-  omega_.z = 0.0f;
-  roll_ = 0.0f;
-  pitch_ = 0.0f;
-  yaw_ = 0.0f;
+  state_.attitude.w = 1.0f;
+  state_.attitude.x = 0.0f;
+  state_.attitude.y = 0.0f;
+  state_.attitude.z = 0.0f;
 
-  q_hat_.w = 1.0f;
-  q_hat_.x = 0.0f;
-  q_hat_.y = 0.0f;
-  q_hat_.z = 0.0f;
+  state_.angular_velocity.x = 0.0f;
+  state_.angular_velocity.y = 0.0f;
+  state_.angular_velocity.z = 0.0f;
+
+  state_.roll = 0.0f;
+  state_.pitch = 0.0f;
+  state_.yaw = 0.0f;
 
   w1_.x = 0.0f;
   w1_.y = 0.0f;
@@ -68,15 +65,6 @@ void Estimator::reset_state()
   bias_.x = 0.0f;
   bias_.y = 0.0f;
   bias_.z = 0.0f;
-
-  w_acc_.x = 0.0f;
-  w_acc_.y = 0.0f;
-  w_acc_.z = 0.0f;
-
-  q_tilde_.w = 1.0f;
-  q_tilde_.x = 0.0f;
-  q_tilde_.y = 0.0f;
-  q_tilde_.z = 0.0f;
 
   accel_LPF_.x = 0;
   accel_LPF_.y = 0;
@@ -100,50 +88,51 @@ void Estimator::reset_adaptive_bias()
 void Estimator::init()
 {
   last_time_ = 0;
+  last_acc_update_us_ = 0;
   reset_state();
 }
 
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
-  vector_t raw_accel = RF_.sensors_.data().accel;
+  const vector_t& raw_accel = RF_.sensors_.data().accel;
   accel_LPF_.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*accel_LPF_.x;
   accel_LPF_.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*accel_LPF_.y;
   accel_LPF_.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*accel_LPF_.z;
 
   float alpha_gyro = RF_.params_.get_param_float(PARAM_GYRO_ALPHA);
-  vector_t raw_gyro = RF_.sensors_.data().gyro;
+  const vector_t& raw_gyro = RF_.sensors_.data().gyro;
   gyro_LPF_.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*gyro_LPF_.x;
   gyro_LPF_.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*gyro_LPF_.y;
   gyro_LPF_.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*gyro_LPF_.z;
 }
 
-
-void Estimator::run_estimator()
+void Estimator::run()
 {
   static float kp, ki;
-  now_us_ = RF_.sensors_.data().imu_time;
+  uint64_t now_us = RF_.sensors_.data().imu_time;
   if (last_time_ == 0)
   {
-    last_time_ = now_us_;
+    last_time_ = now_us;
     last_acc_update_us_ = last_time_;
     return;
   }
-  else if (now_us_ <= last_time_)
+  else if (now_us <= last_time_)
   {
     // this shouldn't happen
 //    RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-    last_time_ = now_us_;
+    last_time_ = now_us;
     return;
   }
 
 //  RF_.state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
 
-  float dt = (now_us_ - last_time_) * 1e-6f;
-  last_time_ = now_us_;
+  float dt = (now_us - last_time_) * 1e-6f;
+  last_time_ = now_us;
+  state_.timestamp = now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now_us_ < (uint64_t)RF_.params_.get_param_int(PARAM_INIT_TIME)*1000)
+  if (now_us < (uint64_t)RF_.params_.get_param_int(PARAM_INIT_TIME)*1000)
   {
     kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
@@ -160,10 +149,12 @@ void Estimator::run_estimator()
   // add in accelerometer
   float a_sqrd_norm = accel_LPF_.x*accel_LPF_.x + accel_LPF_.y*accel_LPF_.y + accel_LPF_.z*accel_LPF_.z;
 
+  vector_t w_acc;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
       && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
-    last_acc_update_us_ = now_us_;
+    last_acc_update_us_ = now_us;
+
     // Get error estimated by accelerometer measurement
     vector_t a = vector_normalize(accel_LPF_);
     // Get the quaternion from accelerometer (low-frequency measure q)
@@ -171,52 +162,54 @@ void Estimator::run_estimator()
     quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g_));
     // Get the error quaternion between observer and low-freq q
     // Below Eq. 45 Mahony Paper
-    q_tilde_ = quaternion_multiply(q_acc_inv, q_hat_);
+    quaternion_t q_tilde = quaternion_multiply(q_acc_inv, state_.attitude);
     // Correction Term of Eq. 47a and 47b Mahony Paper
     // w_acc = 2*s_tilde*v_tilde
-    w_acc_.x = -2.0f*q_tilde_.w*q_tilde_.x;
-    w_acc_.y = -2.0f*q_tilde_.w*q_tilde_.y;
-    w_acc_.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
+    w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
+    w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
+    w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
     // integrate biases from accelerometer feedback
-    // (eq 47b Mahony Paper, using correction term w_acc found above)
-    bias_.x -= ki*w_acc_.x*dt;
-    bias_.y -= ki*w_acc_.y*dt;
+    // (eq 47b Mahony Paper, using correction term w_acc found above
+    bias_.x -= ki*w_acc.x*dt;
+    bias_.y -= ki*w_acc.y*dt;
     bias_.z = 0.0;  // Don't integrate z bias, because it's unobservable
   }
   else
   {
-    w_acc_.x = 0.0f;
-    w_acc_.y = 0.0f;
-    w_acc_.z = 0.0f;
+    w_acc.x = 0.0f;
+    w_acc.y = 0.0f;
+    w_acc.z = 0.0f;
   }
 
   // Pull out Gyro measurements
+  vector_t wbar;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
     // Quadratic Integration (Eq. 14 Casey Paper)
     // this integration step adds 12 us on the STM32F10x chips
-    wbar_ = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2_), scalar_multiply(8.0f/12.0f,w1_)),
+    wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2_), scalar_multiply(8.0f/12.0f,w1_)),
                       scalar_multiply(5.0f/12.0f,gyro_LPF_));
     w2_ = w1_;
     w1_ = gyro_LPF_;
   }
   else
   {
-    wbar_ = gyro_LPF_;
+    wbar = gyro_LPF_;
   }
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
-  wfinal_ = vector_add(vector_sub(wbar_, bias_), scalar_multiply(kp, w_acc_));
+  vector_t wfinal = vector_add(vector_sub(wbar, bias_), scalar_multiply(kp, w_acc));
+
 
   // Propagate Dynamics (only if we've moved)
-  float sqrd_norm_w = sqrd_norm(wfinal_);
+  float sqrd_norm_w = sqrd_norm(wfinal);
   if (sqrd_norm_w > 0.0f)
   {
-    float p = wfinal_.x;
-    float q = wfinal_.y;
-    float r = wfinal_.z;
+    float p = wfinal.x;
+    float q = wfinal.y;
+    float r = wfinal.z;
 
     if (RF_.params_.get_param_int(PARAM_FILTER_USE_MAT_EXP))
     {
@@ -228,41 +221,38 @@ void Estimator::run_estimator()
       quaternion_t qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);
       float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
-      qhat_np1.w = t1*q_hat_.w   + t2*(- p*q_hat_.x - q*q_hat_.y - r*q_hat_.z);
-      qhat_np1.x = t1*q_hat_.x   + t2*(p*q_hat_.w             + r*q_hat_.y - q*q_hat_.z);
-      qhat_np1.y = t1*q_hat_.y   + t2*(q*q_hat_.w - r*q_hat_.x             + p*q_hat_.z);
-      qhat_np1.z = t1*q_hat_.z   + t2*(r*q_hat_.w + q*q_hat_.x - p*q_hat_.y);
-      q_hat_ = quaternion_normalize(qhat_np1);
+      qhat_np1.w = t1*state_.attitude.w + t2*(-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z);
+      qhat_np1.x = t1*state_.attitude.x + t2*( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z);
+      qhat_np1.y = t1*state_.attitude.y + t2*( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z);
+      qhat_np1.z = t1*state_.attitude.z + t2*( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y);
+      state_.attitude = quaternion_normalize(qhat_np1);
     }
     else
     {
       // Euler Integration
       // (Eq. 47a Mahony Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5f * (- p*q_hat_.x - q*q_hat_.y - r*q_hat_.z),
-                           0.5f * (p*q_hat_.w             + r*q_hat_.y - q*q_hat_.z),
-                           0.5f * (q*q_hat_.w - r*q_hat_.x             + p*q_hat_.z),
-                           0.5f * (r*q_hat_.w + q*q_hat_.x - p*q_hat_.y)
+      quaternion_t qdot = {0.5f * (-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z),
+                           0.5f * ( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z),
+                           0.5f * ( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z),
+                           0.5f * ( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y)
                           };
-      q_hat_.w += qdot.w*dt;
-      q_hat_.x += qdot.x*dt;
-      q_hat_.y += qdot.y*dt;
-      q_hat_.z += qdot.z*dt;
-      q_hat_ = quaternion_normalize(q_hat_);
+      state_.attitude.w += qdot.w*dt;
+      state_.attitude.x += qdot.x*dt;
+      state_.attitude.y += qdot.y*dt;
+      state_.attitude.z += qdot.z*dt;
+      state_.attitude = quaternion_normalize(state_.attitude);
     }
   }
 
-  // Save attitude estimate
-  q_ = q_hat_;
-
   // Extract Euler Angles for controller
-  euler_from_quat(q_, &roll_, &pitch_, &yaw_);
+  euler_from_quat(state_.attitude, &state_.roll, &state_.pitch, &state_.yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
-  omega_ = vector_sub(gyro_LPF_, bias_);
+  state_.angular_velocity = vector_sub(gyro_LPF_, bias_);
 
   // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
   // then trigger an unhealthy estimator error
-  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us_ > 500000 + last_acc_update_us_)
+  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_)
   {
     RF_.state_manager_.set_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }
