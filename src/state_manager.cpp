@@ -103,9 +103,14 @@ void StateManager::set_event(StateManager::Event event)
     switch (event)
     {
     case EVENT_ERROR:
-    case EVENT_RC_LOST:
       state_.error = true;
       fsm_state_ = FSM_STATE_ERROR;
+      break;
+    case EVENT_RC_LOST:
+      state_.error = true;
+      state_.failsafe = true;
+      fsm_state_ = FSM_STATE_ERROR;
+      set_error(ERROR_RC_LOST);
       break;
     case EVENT_REQUEST_ARM:
       if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
@@ -126,11 +131,16 @@ void StateManager::set_event(StateManager::Event event)
   case FSM_STATE_ERROR:
     switch (event)
     {
+    case EVENT_RC_FOUND:
+      state_.failsafe = false;
+      clear_error(ERROR_RC_LOST);
+      break;
     case EVENT_NO_ERROR:
       state_.error = false;
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     }
+    break;
 
   case FSM_STATE_CALIBRATING:
     switch (event)
@@ -142,7 +152,21 @@ void StateManager::set_event(StateManager::Event event)
     case EVENT_CALIBRATION_FAILED:
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
+    case EVENT_RC_LOST:
+      state_.error = true;
+      state_.failsafe = true;
+      fsm_state_ = FSM_STATE_ERROR;
+      set_error(ERROR_RC_LOST);
+      break;
+    case EVENT_ERROR:
+      fsm_state_ = FSM_STATE_ERROR;
+      state_.error = true;
+      break;
+    case EVENT_NO_ERROR:
+      state_.error = false;
+      break;
     }
+    break;
 
   case FSM_STATE_ARMED:
     switch (event)
@@ -151,34 +175,49 @@ void StateManager::set_event(StateManager::Event event)
       state_.failsafe = true;
       RF_.mavlink_.update_status();
       fsm_state_ = FSM_STATE_FAILSAFE;
+      set_error(ERROR_RC_LOST);
       break;
     case EVENT_REQUEST_DISARM:
       state_.armed = false;
       RF_.mavlink_.update_status();
-      fsm_state_ = FSM_STATE_PREFLIGHT;
+      if (state_.error)
+        fsm_state_ = FSM_STATE_ERROR;
+      else
+        fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_ERROR:
       state_.error = true;
       break;
+    case EVENT_NO_ERROR:
+      state_.error = false;
+      break;
     }
+    break;
 
   case FSM_STATE_FAILSAFE:
     switch (event)
     {
+    case EVENT_ERROR:
+      state_.error = true;
+      break;
+    case EVENT_REQUEST_DISARM:
+      state_.armed = false;
+      fsm_state_ = FSM_STATE_ERROR;
+      break;
     case EVENT_RC_FOUND:
       RF_.mavlink_.update_status();
       state_.failsafe = false;
       fsm_state_ = FSM_STATE_ARMED;
+      clear_error(ERROR_RC_LOST);
       break;
     }
+    break;
   }
 }
 
 void StateManager::process_errors()
 {
-  if (state_.error_codes & ERROR_RC_LOST)
-    set_event(EVENT_RC_LOST);
-  else if (state_.error_codes)
+  if (state_.error_codes)
     set_event(EVENT_ERROR);
   else
     set_event(EVENT_NO_ERROR);
