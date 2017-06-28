@@ -221,6 +221,19 @@ void CommandManager::set_new_offboard_command(control_t new_offboard_command)
   _offboard_control = new_offboard_command;
 }
 
+void CommandManager::set_new_rc_command(control_t new_rc_command)
+{
+  new_command = true;
+  _rc_control = new_rc_command;
+}
+
+void CommandManager::override_combined_command_with_rc()
+{
+  new_command = true;
+  _combined_control = _rc_control;
+}
+
+
 bool CommandManager::run()
 {
   // Check for and apply failsafe command

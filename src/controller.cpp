@@ -106,37 +106,37 @@ void Controller::run()
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_._combined_control.F.value > 0.1f) && dt < 0.01f;
+  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt < 0.01f;
 
   // Based on the control types coming from the command manager, run the appropriate PID loops
 
   // ROLL
-  if (RF_.command_manager_._combined_control.x.type == RATE)
-    output_.x = roll_rate_.run(dt, RF_.estimator_.get_angular_velocity().x, RF_.command_manager_._combined_control.x.value, update_integrators);
-  else if (RF_.command_manager_._combined_control.x.type == ANGLE)
-    output_.x = roll_.run(dt, RF_.estimator_.get_roll(), RF_.command_manager_._combined_control.x.value, update_integrators, RF_.estimator_.get_angular_velocity().x);
+  if (RF_.command_manager_.combined_control().x.type == RATE)
+    output_.x = roll_rate_.run(dt, RF_.estimator_.get_angular_velocity().x, RF_.command_manager_.combined_control().x.value, update_integrators);
+  else if (RF_.command_manager_.combined_control().x.type == ANGLE)
+    output_.x = roll_.run(dt, RF_.estimator_.get_roll(), RF_.command_manager_.combined_control().x.value, update_integrators, RF_.estimator_.get_angular_velocity().x);
   else
-    output_.x = RF_.command_manager_._combined_control.x.value;
+    output_.x = RF_.command_manager_.combined_control().x.value;
 
   // PITCH
-  if (RF_.command_manager_._combined_control.y.type == RATE)
-    output_.y = pitch_rate_.run(dt, RF_.estimator_.get_angular_velocity().y, RF_.command_manager_._combined_control.y.value, update_integrators);
-  else if (RF_.command_manager_._combined_control.y.type == ANGLE)
-    output_.y = pitch_.run(dt, RF_.estimator_.get_pitch(), RF_.command_manager_._combined_control.y.value, update_integrators, RF_.estimator_.get_angular_velocity().y);
+  if (RF_.command_manager_.combined_control().y.type == RATE)
+    output_.y = pitch_rate_.run(dt, RF_.estimator_.get_angular_velocity().y, RF_.command_manager_.combined_control().y.value, update_integrators);
+  else if (RF_.command_manager_.combined_control().y.type == ANGLE)
+    output_.y = pitch_.run(dt, RF_.estimator_.get_pitch(), RF_.command_manager_.combined_control().y.value, update_integrators, RF_.estimator_.get_angular_velocity().y);
   else
-    output_.y = RF_.command_manager_._combined_control.y.value;
+    output_.y = RF_.command_manager_.combined_control().y.value;
 
   // YAW
-  if (RF_.command_manager_._combined_control.z.type == RATE)
-    output_.z = yaw_rate_.run(dt, RF_.estimator_.get_angular_velocity().z, RF_.command_manager_._combined_control.z.value, update_integrators);
+  if (RF_.command_manager_.combined_control().z.type == RATE)
+    output_.z = yaw_rate_.run(dt, RF_.estimator_.get_angular_velocity().z, RF_.command_manager_.combined_control().z.value, update_integrators);
   else// PASSTHROUGH
-    output_.z = RF_.command_manager_._combined_control.z.value;
+    output_.z = RF_.command_manager_.combined_control().z.value;
 
   // Add feedforward torques
   output_.x += RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
   output_.y += RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
   output_.z += RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
-  output_.F = RF_.command_manager_._combined_control.F.value;
+  output_.F = RF_.command_manager_.combined_control().F.value;
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()
@@ -157,9 +157,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
 
     // pass the rc_control through the controller
-    RF_.command_manager_._combined_control.x = RF_.command_manager_._rc_control.x;
-    RF_.command_manager_._combined_control.y = RF_.command_manager_._rc_control.y;
-    RF_.command_manager_._combined_control.z = RF_.command_manager_._rc_control.z;
+    RF_.command_manager_.override_combined_command_with_rc();
 
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
