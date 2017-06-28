@@ -275,44 +275,45 @@ void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const
   _offboard_control_time = RF_.board_.clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
-  // put values into standard message
-  RF_.command_manager_._offboard_control.x.value = mavlink_offboard_control.x;
-  RF_.command_manager_._offboard_control.y.value = mavlink_offboard_control.y;
-  RF_.command_manager_._offboard_control.z.value = mavlink_offboard_control.z;
-  RF_.command_manager_._offboard_control.F.value = mavlink_offboard_control.F;
+  // put values into a new command struct
+  control_t new_offboard_command;
+  new_offboard_command.x.value = mavlink_offboard_control.x;
+  new_offboard_command.y.value = mavlink_offboard_control.y;
+  new_offboard_command.z.value = mavlink_offboard_control.z;
+  new_offboard_command.F.value = mavlink_offboard_control.F;
 
   // Move flags into standard message
-  RF_.command_manager_._offboard_control.x.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE1);
-  RF_.command_manager_._offboard_control.y.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE2);
-  RF_.command_manager_._offboard_control.z.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE3);
-  RF_.command_manager_._offboard_control.F.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE4);
+  new_offboard_command.x.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE1);
+  new_offboard_command.y.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE2);
+  new_offboard_command.z.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE3);
+  new_offboard_command.F.active = !(mavlink_offboard_control.ignore & IGNORE_VALUE4);
 
   // translate modes into standard message
   switch (mavlink_offboard_control.mode)
   {
   case MODE_PASS_THROUGH:
-    RF_.command_manager_._offboard_control.x.type = PASSTHROUGH;
-    RF_.command_manager_._offboard_control.y.type = PASSTHROUGH;
-    RF_.command_manager_._offboard_control.z.type = PASSTHROUGH;
-    RF_.command_manager_._offboard_control.F.type = THROTTLE;
+    new_offboard_command.x.type = PASSTHROUGH;
+    new_offboard_command.y.type = PASSTHROUGH;
+    new_offboard_command.z.type = PASSTHROUGH;
+    new_offboard_command.F.type = THROTTLE;
     break;
   case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-    RF_.command_manager_._offboard_control.x.type = RATE;
-    RF_.command_manager_._offboard_control.y.type = RATE;
-    RF_.command_manager_._offboard_control.z.type = RATE;
-    RF_.command_manager_._offboard_control.F.type = THROTTLE;
+    new_offboard_command.x.type = RATE;
+    new_offboard_command.y.type = RATE;
+    new_offboard_command.z.type = RATE;
+    new_offboard_command.F.type = THROTTLE;
     break;
   case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
-    RF_.command_manager_._offboard_control.x.type = ANGLE;
-    RF_.command_manager_._offboard_control.y.type = ANGLE;
-    RF_.command_manager_._offboard_control.z.type = RATE;
-    RF_.command_manager_._offboard_control.F.type = THROTTLE;
+    new_offboard_command.x.type = ANGLE;
+    new_offboard_command.y.type = ANGLE;
+    new_offboard_command.z.type = RATE;
+    new_offboard_command.F.type = THROTTLE;
     break;
     // Handle error state
   }
 
   // Tell the mux that we have a new command we need to mux
-  RF_.command_manager_.signal_new_command();
+  RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 
 void Mavlink::handle_mavlink_message(void)
@@ -385,7 +386,7 @@ void Mavlink::mavlink_send_status(void)
   uint8_t control_mode = 0;
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
     control_mode = MODE_PASS_THROUGH;
-  else if (RF_.command_manager_._combined_control.x.type == ANGLE)
+  else if (RF_.command_manager_.combined_control().x.type == ANGLE)
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
   else
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
@@ -421,17 +422,17 @@ void Mavlink::mavlink_send_imu(void)
 //  if(RF_.sensors_.should_send_imu_data())
 //  {
     mavlink_message_t msg;
-    vector_t accel = RF_.sensors_.data()._accel;
-    vector_t gyro = RF_.sensors_.data()._gyro;
+    vector_t accel = RF_.sensors_.data().accel;
+    vector_t gyro = RF_.sensors_.data().gyro;
     mavlink_msg_small_imu_pack(sysid, compid, &msg,
-                               RF_.sensors_.data()._imu_time,
+                               RF_.sensors_.data().imu_time,
                                accel.x,
                                accel.y,
                                accel.z,
                                gyro.x,
                                gyro.y,
                                gyro.z,
-                               RF_.sensors_.data()._imu_temperature);
+                               RF_.sensors_.data().imu_temperature);
     send_message(msg);
 //  }
 //  else
@@ -475,9 +476,9 @@ void Mavlink::mavlink_send_diff_pressure(void)
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid, compid, &msg,
-                                   RF_.sensors_.data()._diff_pressure_velocity,
-                                   RF_.sensors_.data()._diff_pressure,
-                                   RF_.sensors_.data()._diff_pressure_temp);
+                                   RF_.sensors_.data().diff_pressure_velocity,
+                                   RF_.sensors_.data().diff_pressure,
+                                   RF_.sensors_.data().diff_pressure_temp);
     send_message(msg);
   }
 }
@@ -488,9 +489,9 @@ void Mavlink::mavlink_send_baro(void)
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid, compid, &msg,
-                                RF_.sensors_.data()._baro_altitude,
-                                RF_.sensors_.data()._baro_pressure,
-                                RF_.sensors_.data()._baro_temperature);
+                                RF_.sensors_.data().baro_altitude,
+                                RF_.sensors_.data().baro_pressure,
+                                RF_.sensors_.data().baro_temperature);
     send_message(msg);
   }
 }
@@ -502,7 +503,7 @@ void Mavlink::mavlink_send_sonar(void)
     mavlink_message_t msg;
     mavlink_msg_small_range_pack(sysid, compid, &msg,
                                  ROSFLIGHT_RANGE_SONAR,
-                                 RF_.sensors_.data()._sonar_range,
+                                 RF_.sensors_.data().sonar_range,
                                  8.0,
                                  0.25);
     send_message(msg);
@@ -515,9 +516,9 @@ void Mavlink::mavlink_send_mag(void)
   {
     mavlink_message_t msg;
     mavlink_msg_small_mag_pack(sysid, compid, &msg,
-                               RF_.sensors_.data()._mag.x,
-                               RF_.sensors_.data()._mag.y,
-                               RF_.sensors_.data()._mag.z);
+                               RF_.sensors_.data().mag.x,
+                               RF_.sensors_.data().mag.y,
+                               RF_.sensors_.data().mag.z);
     send_message(msg);
   }
 }

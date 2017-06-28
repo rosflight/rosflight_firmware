@@ -106,13 +106,13 @@ void Estimator::init()
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
-  vector_t raw_accel = RF_.sensors_.data()._accel;
+  vector_t raw_accel = RF_.sensors_.data().accel;
   _accel_LPF.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*_accel_LPF.x;
   _accel_LPF.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*_accel_LPF.y;
   _accel_LPF.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*_accel_LPF.z;
 
   float alpha_gyro = RF_.params_.get_param_float(PARAM_GYRO_ALPHA);
-  vector_t raw_gyro = RF_.sensors_.data()._gyro;
+  vector_t raw_gyro = RF_.sensors_.data().gyro;
   _gyro_LPF.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*_gyro_LPF.x;
   _gyro_LPF.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*_gyro_LPF.y;
   _gyro_LPF.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*_gyro_LPF.z;
@@ -122,7 +122,7 @@ void Estimator::run_LPF()
 void Estimator::run_estimator()
 {
   static float kp, ki;
-  now_us = RF_.sensors_.data()._imu_time;
+  now_us = RF_.sensors_.data().imu_time;
   if (last_time == 0)
   {
     last_time = now_us;

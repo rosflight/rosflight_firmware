@@ -214,12 +214,14 @@ bool CommandManager::offboard_control_active()
   return false;
 }
 
-void CommandManager::signal_new_command()
+void CommandManager::set_new_offboard_command(control_t new_offboard_command)
 {
   new_command = true;
+
+  _offboard_control = new_offboard_command;
 }
 
-bool CommandManager::mux_inputs()
+bool CommandManager::run()
 {
   // Check for and apply failsafe command
   if (RF_.state_manager_.state().failsafe)

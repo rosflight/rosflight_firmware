@@ -67,33 +67,8 @@ typedef struct
 
 class CommandManager
 {
+
 private:
-  typedef enum
-  {
-    ATT_MODE_RATE,
-    ATT_MODE_ANGLE
-  } att_mode_t;
-
-  enum
-  {
-    MUX_X,
-    MUX_Y,
-    MUX_Z,
-    MUX_F,
-  };
-
-  typedef struct
-  {
-    rc_stick_t rc_channel;
-    uint32_t last_override_time;
-  } rc_stick_override_t;
-
-  rc_stick_override_t rc_stick_override[3] =
-  {
-    { RC_STICK_X, 0 },
-    { RC_STICK_Y, 0 },
-    { RC_STICK_Z, 0 }
-  };
 
   typedef struct
   {
@@ -101,8 +76,6 @@ private:
     control_channel_t *onboard;
     control_channel_t *combined;
   } mux_t;
-
-public:
 
   mux_t muxes[4] =
   {
@@ -145,14 +118,32 @@ public:
     {true, THROTTLE, 0.0}
   };
 
-  CommandManager(ROSflight& _rf);
-  bool mux_inputs();
-  bool rc_override_active();
-  bool offboard_control_active();
-  void signal_new_command();
-  void init();
+  typedef enum
+  {
+    ATT_MODE_RATE,
+    ATT_MODE_ANGLE
+  } att_mode_t;
 
-private:
+  enum
+  {
+    MUX_X,
+    MUX_Y,
+    MUX_Z,
+    MUX_F,
+  };
+
+  typedef struct
+  {
+    rc_stick_t rc_channel;
+    uint32_t last_override_time;
+  } rc_stick_override_t;
+
+  rc_stick_override_t rc_stick_override[3] =
+  {
+    { RC_STICK_X, 0 },
+    { RC_STICK_Y, 0 },
+    { RC_STICK_Z, 0 }
+  };
 
   ROSflight& RF_;
 
@@ -165,6 +156,16 @@ private:
   bool stick_deviated(uint8_t channel);
   bool do_roll_pitch_yaw_muxing(uint8_t channel);
   bool do_throttle_muxing(void);
+
+public:
+
+  CommandManager(ROSflight& _rf);
+  bool run();
+  bool rc_override_active();
+  bool offboard_control_active();
+  void set_new_offboard_command(control_t new_offboard_command);
+  inline const control_t combined_control() const { return _combined_control; }
+  void init();
 };
 
 }
