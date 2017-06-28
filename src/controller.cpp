@@ -32,8 +32,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "controller.h"
+#include "estimator.h"
 #include "rosflight.h"
+
+#include "controller.h"
 
 namespace rosflight_firmware
 {
@@ -62,7 +64,7 @@ Controller::Controller(ROSflight& rf) :
 
 void Controller::init()
 {
-  prev_time = 0.0f;
+  prev_time_ = 0.0f;
 
   float max = RF_.params_.get_param_float(PARAM_MAX_COMMAND);
   float min = -max;
@@ -90,52 +92,30 @@ void Controller::init()
                  max, min, tau);
 }
 
-
 void Controller::run()
 {
   // Time calculation
-  if (prev_time < 0.0000001)
+  if (prev_time_ < 0.0000001)
   {
-    prev_time = RF_.estimator_.get_estimator_timestamp() * 1e-6;
+    prev_time_ = RF_.estimator_.state().timestamp * 1e-6;
     return;
   }
 
-  float now = RF_.estimator_.get_estimator_timestamp() * 1e-6;
-  float dt = now - prev_time;
-  prev_time = now;
+  float now = RF_.estimator_.state().timestamp * 1e-6;
+  float dt = now - prev_time_;
+  prev_time_ = now;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
   bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_._combined_control.F.value > 0.1f) && dt < 0.01f;
 
-  // Based on the control types coming from the command manager, run the appropriate PID loops
-
-  // ROLL
-  if (RF_.command_manager_._combined_control.x.type == RATE)
-    output_.x = roll_rate_.run(dt, RF_.estimator_.get_angular_velocity().x, RF_.command_manager_._combined_control.x.value, update_integrators);
-  else if (RF_.command_manager_._combined_control.x.type == ANGLE)
-    output_.x = roll_.run(dt, RF_.estimator_.get_roll(), RF_.command_manager_._combined_control.x.value, update_integrators, RF_.estimator_.get_angular_velocity().x);
-  else
-    output_.x = RF_.command_manager_._combined_control.x.value;
-
-  // PITCH
-  if (RF_.command_manager_._combined_control.y.type == RATE)
-    output_.y = pitch_rate_.run(dt, RF_.estimator_.get_angular_velocity().y, RF_.command_manager_._combined_control.y.value, update_integrators);
-  else if (RF_.command_manager_._combined_control.y.type == ANGLE)
-    output_.y = pitch_.run(dt, RF_.estimator_.get_pitch(), RF_.command_manager_._combined_control.y.value, update_integrators, RF_.estimator_.get_angular_velocity().y);
-  else
-    output_.y = RF_.command_manager_._combined_control.y.value;
-
-  // YAW
-  if (RF_.command_manager_._combined_control.z.type == RATE)
-    output_.z = yaw_rate_.run(dt, RF_.estimator_.get_angular_velocity().z, RF_.command_manager_._combined_control.z.value, update_integrators);
-  else// PASSTHROUGH
-    output_.z = RF_.command_manager_._combined_control.z.value;
+  // Run the PID loops
+  vector_t pid_output = run_pid_loops(dt, RF_.estimator_.state(), update_integrators);
 
   // Add feedforward torques
-  output_.x += RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
-  output_.y += RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
-  output_.z += RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
+  output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
+  output_.y = pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
+  output_.z = pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
   output_.F = RF_.command_manager_._combined_control.F.value;
 }
 
@@ -149,14 +129,22 @@ void Controller::calculate_equilbrium_torque_from_rc()
 
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
-    // and zero out previously calculate offset torques
-    RF_.estimator_.reset_state();
+    Estimator::State fake_state;
+    fake_state.angular_velocity.x = 0.0f;
+    fake_state.angular_velocity.y = 0.0f;
+    fake_state.angular_velocity.z = 0.0f;
 
-    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, 0.0);
-    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, 0.0);
-    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, 0.0);
+    fake_state.attitude.x = 0.0f;
+    fake_state.attitude.y = 0.0f;
+    fake_state.attitude.z = 0.0f;
+    fake_state.attitude.w = 1.0f;
+
+    fake_state.roll = 0.0f;
+    fake_state.pitch = 0.0f;
+    fake_state.yaw = 0.0f;
 
     // pass the rc_control through the controller
+    //! @todo pass in fake combined control to run_pid_loops()
     RF_.command_manager_._combined_control.x = RF_.command_manager_._rc_control.x;
     RF_.command_manager_._combined_control.y = RF_.command_manager_._rc_control.y;
     RF_.command_manager_._combined_control.z = RF_.command_manager_._rc_control.z;
@@ -164,12 +152,12 @@ void Controller::calculate_equilbrium_torque_from_rc()
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
     // the static offset torques
-    run();
+    vector_t pid_output = run_pid_loops(0.0f, fake_state, false);
 
     // the output from the controller is going to be the static offsets
-    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, output_.x);
-    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, output_.y);
-    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, output_.z);
+    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x);
+    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y);
+    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z);
 
     //    mavlink_log_warning("Equilibrium torques found and applied.");
     //    mavlink_log_warning("Please zero out trims on your transmitter");
@@ -183,6 +171,36 @@ void Controller::calculate_equilbrium_torque_from_rc()
 void Controller::param_change_callback(uint16_t param_id)
 {
   init();
+}
+
+vector_t Controller::run_pid_loops(float dt, const Estimator::State& state, bool update_integrators)
+{
+  // Based on the control types coming from the command manager, run the appropriate PID loops
+  vector_t output;
+
+  // ROLL
+  if (RF_.command_manager_._combined_control.x.type == RATE)
+    output.x = roll_rate_.run(dt, state.angular_velocity.x, RF_.command_manager_._combined_control.x.value, update_integrators);
+  else if (RF_.command_manager_._combined_control.x.type == ANGLE)
+    output.x = roll_.run(dt, state.roll, RF_.command_manager_._combined_control.x.value, update_integrators, state.angular_velocity.x);
+  else
+    output.x = RF_.command_manager_._combined_control.x.value;
+
+  // PITCH
+  if (RF_.command_manager_._combined_control.y.type == RATE)
+    output.y = pitch_rate_.run(dt, state.angular_velocity.y, RF_.command_manager_._combined_control.y.value, update_integrators);
+  else if (RF_.command_manager_._combined_control.y.type == ANGLE)
+    output.y = pitch_.run(dt, state.pitch, RF_.command_manager_._combined_control.y.value, update_integrators, state.angular_velocity.y);
+  else
+    output.y = RF_.command_manager_._combined_control.y.value;
+
+  // YAW
+  if (RF_.command_manager_._combined_control.z.type == RATE)
+    output.z = yaw_rate_.run(dt, state.angular_velocity.z, RF_.command_manager_._combined_control.z.value, update_integrators);
+  else// PASSTHROUGH
+    output.z = RF_.command_manager_._combined_control.z.value;
+
+  return output;
 }
 
 Controller::PID::PID() :
