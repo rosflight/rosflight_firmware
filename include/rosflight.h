@@ -1,8 +1,6 @@
 /*
+ * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
- * BSD 3-Clause License
- *
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +82,6 @@ public:
   uint32_t get_loop_time_us();
 };
 
-}
+} // namespace rosflight_firmware
 
 #endif // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H

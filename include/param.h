@@ -29,7 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_PARAM_H
+#define ROSFLIGHT_FIRMWARE_PARAM_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -350,4 +351,6 @@ public:
 
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_PARAM_H

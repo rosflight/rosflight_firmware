@@ -29,7 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
+#define ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -171,4 +172,6 @@ public:
   inline const control_t combined_control() const { return combined_command_; }
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
