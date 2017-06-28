@@ -406,14 +406,14 @@ void Mavlink::mavlink_send_attitude(void)
 {
   mavlink_message_t msg;
   mavlink_msg_attitude_quaternion_pack(sysid, compid, &msg,
-                                       RF_.estimator_.get_estimator_timestamp()/1000,
-                                       RF_.estimator_.get_attitude().w,
-                                       RF_.estimator_.get_attitude().x,
-                                       RF_.estimator_.get_attitude().y,
-                                       RF_.estimator_.get_attitude().z,
-                                       RF_.estimator_.get_angular_velocity().x,
-                                       RF_.estimator_.get_angular_velocity().y,
-                                       RF_.estimator_.get_angular_velocity().z);
+                                       RF_.estimator_.state().timestamp / 1000,
+                                       RF_.estimator_.state().attitude.w,
+                                       RF_.estimator_.state().attitude.x,
+                                       RF_.estimator_.state().attitude.y,
+                                       RF_.estimator_.state().attitude.z,
+                                       RF_.estimator_.state().angular_velocity.x,
+                                       RF_.estimator_.state().angular_velocity.y,
+                                       RF_.estimator_.state().angular_velocity.z);
   send_message(msg);
 }
 

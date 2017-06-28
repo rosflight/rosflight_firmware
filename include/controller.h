@@ -35,6 +35,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <turbovec.h>
+
+#include "command_manager.h"
+#include "estimator.h"
+
 namespace rosflight_firmware
 {
 
@@ -84,6 +89,8 @@ private:
     float tau_;
   };
 
+  vector_t run_pid_loops(float dt, const Estimator::State& state, const control_t& command, bool update_integrators);
+
   ROSflight& RF_;
   Output output_;
 
@@ -93,7 +100,7 @@ private:
   PID pitch_rate_;
   PID yaw_rate_;
 
-  float prev_time;
+  float prev_time_;
 };
 
 } // namespace rosflight_firmware

@@ -48,65 +48,41 @@ class Estimator
 {
 
 public:
+  struct State
+  {
+    vector_t angular_velocity;
+    quaternion_t attitude;
+    float roll;
+    float pitch;
+    float yaw;
+    uint64_t timestamp;
+  };
 
   Estimator(ROSflight& _rf);
 
-  // Controller needs direct access to these values
-  vector_t omega = {0.0, 0.0, 0.0};
-  float roll = 0.0;
-  float pitch = 0.0;
-  float yaw = 0.0;
-  quaternion_t q = {1.0, 0.0, 0.0, 0.0};
+  inline const State& state() const { return state_; }
 
+  void init();
+  void run();
   void reset_state();
   void reset_adaptive_bias();
-  void init();
-  void run_estimator();
-
-  inline float get_roll()
-  {
-    return roll;
-  }
-  inline float get_pitch()
-  {
-    return pitch;
-  }
-  inline float get_yaw()
-  {
-    return yaw;
-  }
-  inline vector_t get_angular_velocity()
-  {
-    return omega;
-  }
-  inline quaternion_t get_attitude()
-  {
-    return q;
-  }
-  inline uint64_t get_estimator_timestamp()
-  {
-    return now_us;
-  }
 
 private:
+  static constexpr vector_t g_ = {0.0f, 0.0f, -1.0f};
+
   ROSflight& RF_;
+  State state_;
 
-  uint64_t now_us = 0;
-  uint64_t last_acc_update_us = 0;
+  uint64_t last_time_;
+  uint64_t last_acc_update_us_;
 
-  vector_t w1 = {0.0, 0.0, 0.0};
-  vector_t w2 = {0.0, 0.0, 0.0};
-  vector_t wbar = {0.0, 0.0, 0.0};
-  vector_t wfinal = {0.0, 0.0, 0.0};
-  vector_t w_acc = {0.0, 0.0, 0.0};
-  const vector_t g = {0.0f, 0.0f, -1.0f};
-  vector_t b = {0.0, 0.0, 0.0};
-  quaternion_t q_tilde = {1.0, 0.0, 0.0, 0.0};
-  quaternion_t q_hat = {1.0, 0.0, 0.0, 0.0};
-  uint64_t last_time = 0;
+  vector_t w1_;
+  vector_t w2_;
 
-  vector_t _accel_LPF = {0.0, 0.0, 0.0};
-  vector_t _gyro_LPF = {0.0, 0.0, 0.0};
+  vector_t b_;
+
+  vector_t accel_LPF_;
+  vector_t gyro_LPF_;
 
   void run_LPF();
 };
