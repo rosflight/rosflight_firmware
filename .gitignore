@@ -10,7 +10,9 @@
 *.orig
 *.user.*
 *.o
+*.html
 /boards/*/build/
+/test/build/
 /site/
 
 param_description.md

@@ -116,3 +116,4 @@ private:
 
 } // namespace rosflight_firmware
 
+#endif // ROSLFLIGHT_FIRMWARE_RC_H

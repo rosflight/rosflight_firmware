@@ -266,11 +266,11 @@ bool RC::receive_rc()
     {
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1500;
+        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1200;
       }
       else
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1500;
+        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1800;
       }
     }
     else
