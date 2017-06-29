@@ -275,11 +275,6 @@ float turboInvSqrt(float x)
   return y;
 }
 
-float fsign(float y)
-{
-  return (0 < y) - (y < 0);
-}
-
 
 float fsat(float value, float max)
 {
