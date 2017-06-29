@@ -98,23 +98,19 @@ static void mavlink_send_heartbeat(void)
 // local function definitions
 static void mavlink_send_status(void)
 {
-  volatile uint8_t status = 0;
-  status |= (_armed_state & ARMED) ? ROSFLIGHT_STATUS_ARMED : 0x00;
-  status |= (_armed_state & FAILSAFE) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
-  status |= (rc_override_active()) ? ROSFLIGHT_STATUS_RC_OVERRIDE : 0x00;
-  status |= (offboard_control_active()) ? ROSFLIGHT_STATUS_OFFBOARD_CONTROL_ACTIVE : 0x00;
 
   uint8_t control_mode = 0;
-  if (get_param_int(PARAM_FIXED_WING))
+  if (get_param_int(PARAM_FIXED_WING) || _combined_control.x.type == PASSTHROUGH)
     control_mode = MODE_PASS_THROUGH;
-  else
-    // TODO - Support rate mode
+  else if (_combined_control.x.type == ANGLE)
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-
-
+  else
+    control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
 
   mavlink_msg_rosflight_status_send(MAVLINK_COMM_0,
-                                    status,
+                                    (_armed_state & ARMED),
+                                    (_armed_state & FAILSAFE),
+                                    rc_override_active(),
                                     _error_state,
                                     control_mode,
                                     num_sensor_errors(),
