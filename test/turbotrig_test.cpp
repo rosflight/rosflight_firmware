@@ -46,9 +46,9 @@ TEST(turbotrig_test, atan_test) {
 }
 
 TEST(turbotrig_test, atan2_test) {
-    for (float i = -1.0; i <= 1.0; i += 0.1)
+    for (float i = -100.0; i <= 100.0; i += 0.1)
     {
-        for (float j = -100.0; j <= 100.0; j += 0.0001)
+        for (float j = -1.0; j <= 1.0; j += 0.001)
         {
             if (fabs(j) > 0.0001)
             {
@@ -60,14 +60,17 @@ TEST(turbotrig_test, atan2_test) {
     }
 }
 
-//TEST(turbotrig_test, asin_test) {
-//    for (float i = -1.0; i <= 1.0; i += 0.1)
-//    {
+TEST(turbotrig_test, asin_test) {
+    for (float i = -1.0; i <= 1.0; i += 0.001)
+    {
 //        printf("i: %f, approx: %f, actual: %f, diff: %f\n",
 //               i, asin_approx(i), asin(i), fabs(asin_approx(i) - asin(i)));
-//        ASSERT_LE(fabs(asin_approx(i) - asin(i)), 0.01);
-//    }
-//}
+        if ( fabs(i) < 0.95 )
+            ASSERT_LE(fabs(asin_approx(i) - asin(i)), 0.0001);
+        else
+            ASSERT_LE(fabs(asin_approx(i) - asin(i)), 0.05);
+    }
+}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
