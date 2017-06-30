@@ -41,3 +41,10 @@ add_executable(state_machine_test
         state_machine_test.cpp
 	test_board.cpp)
 target_link_libraries(state_machine_test ${GTEST_LIBRARIES} pthread)
+
+add_executable(command_manager_test
+        ${ROSFLIGHT_SRC}
+        command_manager_test.cpp
+        test_board.cpp)
+target_link_libraries(command_manager_test ${GTEST_LIBRARIES} pthread)
+

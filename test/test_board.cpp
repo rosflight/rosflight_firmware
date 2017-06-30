@@ -34,63 +34,81 @@
 namespace rosflight_firmware
 {
 
+  void testBoard::set_rc(uint16_t *values)
+  {
+    for (int i = 0; i < 8; i++)
+    {
+      rc_values[i] = values[i];
+    }
+  }
+
+  void testBoard::set_time(uint64_t time_us)
+  {
+    time_us_ = time_us;
+  }
+
+  void testBoard::set_pwm_lost(bool lost)
+  {
+    rc_lost_ = lost;
+  }
+
 
 // setup
   void testBoard::init_board(void){}
   void testBoard::board_reset(bool bootloader){}
 
 // clock
-  uint32_t testBoard::clock_millis(){}
-  uint64_t testBoard::clock_micros(){}
+  uint32_t testBoard::clock_millis(){ return time_us_/1000; }
+  uint64_t testBoard::clock_micros(){ return time_us_; }
   void testBoard::clock_delay(uint32_t milliseconds){}
 
 // serial
   void testBoard::serial_init(uint32_t baud_rate){}
   void testBoard::serial_write(uint8_t byte){}
-  uint16_t testBoard::serial_bytes_available(void){}
+  uint16_t testBoard::serial_bytes_available(void){ return 0; }
   uint8_t testBoard::serial_read(void){}
 
 // sensors
   void testBoard::sensors_init(){}
   uint16_t testBoard::num_sensor_errors(void) {}
 
-  bool testBoard::new_imu_data(){}
+  bool testBoard::new_imu_data(){ return true; }
   void testBoard::imu_read_accel(float accel[3]){}
   void testBoard::imu_read_gyro(float gyro[3]){}
-  bool testBoard::imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time){}
+  bool testBoard::imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time){ return false; }
   float testBoard::imu_read_temperature(void){}
   void testBoard::imu_not_responding_error(void){}
 
-  bool testBoard::mag_check(void){}
-  bool testBoard::mag_present(void){}
+  bool testBoard::mag_check(void){ return false; }
+  bool testBoard::mag_present(void){ return false; }
   void testBoard::mag_read(float mag[3]){}
 
-  bool testBoard::baro_present(void){}
-  bool testBoard::baro_check(void){}
+  bool testBoard::baro_present(void){ return false; }
+  bool testBoard::baro_check(void){ return false; }
   void testBoard::baro_read(float *altitude, float *pressure, float *temperature) {}
   void testBoard::baro_calibrate(){}
 
-  bool testBoard::diff_pressure_present(void){}
-  bool testBoard::diff_pressure_check(void){}
+  bool testBoard::diff_pressure_present(void){ return false; }
+  bool testBoard::diff_pressure_check(void){ return false; }
   void testBoard::diff_pressure_set_atm(float barometric_pressure){}
   void testBoard::diff_pressure_calibrate(){}
   void testBoard::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity) {}
 
-  bool testBoard::sonar_present(void){}
-  bool testBoard::sonar_check(void){}
+  bool testBoard::sonar_present(void){ return false; }
+  bool testBoard::sonar_check(void){ return false; }
   float testBoard::sonar_read(void){}
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
   void testBoard::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm){}
-  bool testBoard::pwm_lost(){}
-  uint16_t testBoard::pwm_read(uint8_t channel){}
+  bool testBoard::pwm_lost(){ return rc_lost_; }
+  uint16_t testBoard::pwm_read(uint8_t channel){ return rc_values[channel];}
   void testBoard::pwm_write(uint8_t channel, uint16_t value){}
 
 // non-volatile memory
   void testBoard::memory_init(void){}
-  bool testBoard::memory_read(void *dest, size_t len){}
-  bool testBoard::memory_write(const void *src, size_t len){}
+  bool testBoard::memory_read(void *dest, size_t len){ return false; }
+  bool testBoard::memory_write(const void *src, size_t len){ return false; }
 
 // LEDs
   void testBoard::led0_on(void){}
