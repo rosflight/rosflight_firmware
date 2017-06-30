@@ -6,6 +6,10 @@ add_definitions(-DUSING_STDLIB_PRINTF)
 # Locate GTest
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
+
+# Find Eigen
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
  
 include_directories(../lib)
 include_directories(../lib/turbotrig)
@@ -18,6 +22,7 @@ target_link_libraries(sample ${GTEST_LIBRARIES} pthread)
 # Turbotrig test
 add_executable(turbotrig_test 
 	../lib/turbotrig/turbotrig.c
+        ../lib/turbotrig/turbovec.c
 	turbotrig_test.cpp)
 target_link_libraries(turbotrig_test ${GTEST_LIBRARIES} pthread)
 

@@ -33,15 +33,22 @@
 
 #include "math.h"
 #include "turbotrig.h"
+#include "turbovec.h"
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Dense"
 #include "printf.h"
 #include <gtest/gtest.h>
+
+#define EXPECT_VEC3_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
+                                         EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
+                                         EXPECT_LE(fabs(vec.x - eig.x()), 0.0001)
+
+#define EXPECT_SUPERCLOSE(x, y) EXPECT_LE(fabs(x -y), 0.0001)
 
 TEST(turbotrig_test, atan_test) {
     for (float i = -200.0; i <= 200.0; i += 0.001)
     {
-//        printf("i: %f, approx: %f, actual: %f, diff: %f\n",
-//               i, turboatan(i), atan(i), fabs(turboatan(i) - atan(i)));
-        ASSERT_LE(fabs(turboatan(i) - atan(i)), 0.0001);
+        EXPECT_LE(fabs(turboatan(i) - atan(i)), 0.0001);
     }
 }
 
@@ -52,9 +59,7 @@ TEST(turbotrig_test, atan2_test) {
         {
             if (fabs(j) > 0.0001)
             {
-//                printf("atan2(i: %f, j: %f), approx: %f, actual: %f, diff: %f\n",
-//                       i, j, atan2_approx(i, j), atan2(i, j), fabs(atan2_approx(i, j) - atan2(i, j)));
-                ASSERT_LE(fabs(atan2_approx(i, j) - atan2(i, j)), 0.001);
+                EXPECT_LE(fabs(atan2_approx(i, j) - atan2(i, j)), 0.001);
             }
         }
     }
@@ -63,13 +68,40 @@ TEST(turbotrig_test, atan2_test) {
 TEST(turbotrig_test, asin_test) {
     for (float i = -1.0; i <= 1.0; i += 0.001)
     {
-//        printf("i: %f, approx: %f, actual: %f, diff: %f\n",
-//               i, asin_approx(i), asin(i), fabs(asin_approx(i) - asin(i)));
         if ( fabs(i) < 0.95 )
-            ASSERT_LE(fabs(asin_approx(i) - asin(i)), 0.0001);
+            EXPECT_LE(fabs(asin_approx(i) - asin(i)), 0.0001);
         else
-            ASSERT_LE(fabs(asin_approx(i) - asin(i)), 0.05);
+            EXPECT_LE(fabs(asin_approx(i) - asin(i)), 0.05);
     }
+}
+
+TEST(turbotvec_test, vector_test) {
+  Eigen::Vector3d eig1;
+  eig1 << 1, 2, 3;
+  vector_t vec1 = {1, 2, 3};
+
+  EXPECT_VEC3_SUPERCLOSE(vec1, eig1);
+
+  // Test Vector addition
+
+  Eigen::Vector3d eig2;
+  eig2 << 2, 3, 4;
+  vector_t vec2 = {2, 3, 4};
+
+  EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
+  EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
+  EXPECT_VEC3_SUPERCLOSE(vector_normalize(vec1), eig1.normalized());
+  EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
+
+  EXPECT_SUPERCLOSE(norm(vec1), eig1.norm());
+  EXPECT_SUPERCLOSE(sqrd_norm(vec1), eig1.squaredNorm());
+
+  // Test Vector Dot Product
+  EXPECT_SUPERCLOSE(dot(vec1, vec2), (eig1.transpose() * eig2));
+
+  // Test Vector Cross Product
+  EXPECT_VEC3_SUPERCLOSE(cross(vec1, vec2), eig1.cross(eig2));
+
 }
 
 int main(int argc, char **argv) {

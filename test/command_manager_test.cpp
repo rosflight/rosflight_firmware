@@ -602,12 +602,6 @@ TEST(command_manager_test, partial_muxing_test ) {
   EXPECT_EQ(output.y.type, ANGLE);
   EXPECT_EQ(output.z.type, RATE);
   EXPECT_EQ(output.F.type, THROTTLE);
-
-
-  //
-
-
-
 }
 
 int main(int argc, char **argv) {
