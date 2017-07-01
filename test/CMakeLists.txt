@@ -8,7 +8,7 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Find Eigen
-find_package(Eigen3 REQUIRED)
+# find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
  
 include_directories(../lib)
@@ -54,4 +54,3 @@ add_executable(command_manager_test
         command_manager_test.cpp
         test_board.cpp)
 target_link_libraries(command_manager_test ${GTEST_LIBRARIES} pthread)
-
