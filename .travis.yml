@@ -36,3 +36,5 @@ script:
   - ./command_manager_test
   - cd ../..
   - make
+
+dist: "trusty"
