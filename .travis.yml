@@ -18,6 +18,7 @@ install:
   - sudo cmake CMakeLists.txt
   - sudo make 
   - sudo cp *.a /usr/lib
+  - cd "${TRAVIS_BUILD_DIR}"
 
 before_script:
   - arm-none-eabi-gcc --version
