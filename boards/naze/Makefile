@@ -85,8 +85,8 @@ ROSFLIGHT_SRC = rosflight.cpp \
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
-MATH_SRC =	turbotrig.c \
-                turbovec.c
+MATH_SRC =	turbotrig.cpp \
+                turbovec.cpp
 
 
 # Hardware Driver Source Files
@@ -122,13 +122,13 @@ CSOURCES =  $(CMSIS_SRC) \
             $(STDPERIPH_SRC) \
             $(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
             $(addprefix $(BOARD_DIR)/, $(BOARD_C_SRC)) \
-            $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) \
             $(ROSFLIGHT_DIR)/src/nanoprintf.c
 
 # Compile a list of C++ Source Files
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
                 $(addprefix $(MAVLINK_DIR)/, $(MAVLINK_SRC)) \
                 $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
+                $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) \
 
 
 # Set up Include Directoreis
