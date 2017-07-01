@@ -6,15 +6,30 @@ addons:
       - lib32bz2-1.0
       - lib32ncurses5
       - lib32z1
+      - cmake
+      - libgtest-dev
 
 before_install:
   - curl --retry 10 --retry-max-time 120 -L "https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q1-update/+download/gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2" | tar xfj -
 
 install:
   - export PATH=$PATH:$PWD/gcc-arm-none-eabi-5_3-2016q1/bin
+  - cd /usr/src/gtest
+  - sudo cmake CMakeLists.txt
+  - sudo make 
+  - sudo cp *.a /usr/lib
 
 before_script:
   - arm-none-eabi-gcc --version
 
 script:
+  - cd test
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make 
+  - ./state_machine_test
+  - ./turbotrig_test
+  - ./command_manager_test
+  - cd ../..
   - make
