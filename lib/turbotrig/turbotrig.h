@@ -42,7 +42,4 @@ float asin_approx(float x);
 // turbo-speed trig approximation
 float turboatan(float x);
 float turboasin(float x);
-int32_t turbocos(int32_t x);
-int32_t turbosin(int32_t x);
-int32_t sign(int32_t y);
 float fsign(float y);

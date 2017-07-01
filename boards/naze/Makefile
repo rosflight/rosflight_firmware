@@ -85,8 +85,8 @@ ROSFLIGHT_SRC = rosflight.cpp \
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
-MATH_SRC =	turbotrig.cpp \
-                turbovec.cpp
+MATH_SRC =  turbotrig.cpp \
+            turbovec.cpp
 
 
 # Hardware Driver Source Files
@@ -230,4 +230,3 @@ clean:
 
 flash: $(TARGET_HEX)
 		stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
-
