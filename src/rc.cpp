@@ -54,6 +54,7 @@ void RC::init()
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_7_DIRECTION);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_8_DIRECTION);
   init_rc();
+  new_command_ = false;
 }
 
 void RC::init_rc()
@@ -159,10 +160,10 @@ bool RC::check_rc_lost()
 
   if (failsafe)
     // set the RC Lost error flag
-    RF_.state_manager_.set_error(StateManager::ERROR_RC_LOST);
+    RF_.state_manager_.set_event(StateManager::EVENT_RC_LOST);
   else
     // Clear the RC Lost Error
-    RF_.state_manager_.clear_error(StateManager::ERROR_RC_LOST);
+    RF_.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
 
   return failsafe;
 }

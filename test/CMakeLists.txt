@@ -10,16 +10,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(../lib)
 include_directories(../lib/turbotrig)
 include_directories(../include)
-
-# Link runTests with what we want to test and the GTest and pthread library
-add_executable(sample sample.cpp)
-target_link_libraries(sample ${GTEST_LIBRARIES} pthread)
-
-# Turbotrig test
-add_executable(turbotrig_test 
-	../lib/turbotrig/turbotrig.c
-	turbotrig_test.cpp)
-target_link_libraries(turbotrig_test ${GTEST_LIBRARIES} pthread)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 
 set(ROSFLIGHT_SRC
@@ -33,11 +24,16 @@ set(ROSFLIGHT_SRC
     ../src/command_manager.cpp 
     ../src/rc.cpp 
     ../src/mixer.cpp
-    ../lib/turbotrig/turbotrig.c
-    ../lib/turbotrig/turbovec.c)
+    ../lib/turbotrig/turbotrig.cpp
+    ../lib/turbotrig/turbovec.cpp
+    )
 
-add_executable(state_machine_test 
+add_executable(unit_tests
         ${ROSFLIGHT_SRC}
+        command_manager_test.cpp
+        test_board.cpp
+        turbotrig_test.cpp
         state_machine_test.cpp
-	test_board.cpp)
-target_link_libraries(state_machine_test ${GTEST_LIBRARIES} pthread)
+        command_manager_test.cpp
+        )
+target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)

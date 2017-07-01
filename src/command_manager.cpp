@@ -129,13 +129,13 @@ bool CommandManager::stick_deviated(uint8_t channel)
   uint32_t now = RF_.board_.clock_millis();
 
   // if we are still in the lag time, return true
-  if (now - rc_stick_override_[channel].last_override_time < (uint32_t)RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
+  if (now  < rc_stick_override_[channel].last_override_time + RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
   {
     return true;
   }
   else
   {
-    if (abs(RF_.rc_.rc_stick(rc_stick_override_[channel].rc_channel)) > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
+    if (fabs(RF_.rc_.rc_stick(rc_stick_override_[channel].rc_channel)) > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override_[channel].last_override_time = now;
       return true;

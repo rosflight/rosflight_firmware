@@ -135,6 +135,9 @@ void StateManager::set_event(StateManager::Event event)
       state_.failsafe = false;
       clear_error(ERROR_RC_LOST);
       break;
+    case EVENT_RC_LOST:
+      state_.failsafe = true;
+      break;
     case EVENT_NO_ERROR:
       state_.error = false;
       fsm_state_ = FSM_STATE_PREFLIGHT;

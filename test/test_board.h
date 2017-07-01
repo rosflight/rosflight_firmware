@@ -40,6 +40,11 @@ namespace rosflight_firmware
 class testBoard : public Board
 {
 
+private:
+  uint16_t rc_values[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  uint64_t time_us_ = 0;
+  bool rc_lost_ = false;
+
 public:
 // setup
   void init_board(void);
@@ -108,6 +113,13 @@ public:
   void led1_on(void);
   void led1_off(void);
   void led1_toggle(void);
+
+
+
+
+  void set_rc(uint16_t* values);
+  void set_time(uint64_t time_us);
+  void set_pwm_lost(bool lost);
 
 };
 
