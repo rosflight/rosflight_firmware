@@ -152,12 +152,6 @@ static const int16_t asin_lookup_table[501] = {
 15708
 };
 
-
-int32_t sign(int32_t y)
-{
-  return (0 < y) - (y < 0);
-}
-
 float fsign(float y)
 {
   return (0.0 < y) - (y < 0.0);
@@ -232,44 +226,6 @@ float atan2_approx(float y, float x)
   {
       return arctan;
   }
-}
-
-
-int32_t turboatan_taylor(int32_t x)
-{
-  if (x > 1000)
-  {
-    return 1571-turboatan(1000000/x);
-  }
-
-  return (972*x/1000) - (((191*x*x)/1000)*x)/(1000*1000); // the weird order of operations is to prevent overflow
-}
-
-
-int32_t turbocos(int32_t x)
-{
-  return turbosin(x + 1571);
-}
-
-
-int32_t turbosin(int32_t x)
-{
-  // wrap to +/- PI
-  if (x < -3142)
-    x += 6283;
-  else if (x >  3142)
-    x -= 6283;
-
-  if (x < 0)
-  {
-    return (1273 * x)/1000 + (405 * x * x)/(1000000);
-  }
-  else
-  {
-    return (1273 * x)/1000 - (405 * x * x)/(1000000);
-  }
-
-  return x;
 }
 
 

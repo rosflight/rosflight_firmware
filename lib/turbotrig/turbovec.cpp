@@ -180,6 +180,11 @@ float turboInvSqrt(float x)
   return y;
 }
 
+float sign(float x)
+{
+  return (x > 0) - (x < 0);
+}
+
 
 float fsat(float value, float max)
 {
