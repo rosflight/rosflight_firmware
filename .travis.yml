@@ -31,9 +31,7 @@ script:
   - cd build
   - cmake ..
   - make 
-  - ./state_machine_test
-  - ./turbotrig_test
-  - ./command_manager_test
+  - ./unit_tests
   - cd ../..
   - make
 

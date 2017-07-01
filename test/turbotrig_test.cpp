@@ -81,7 +81,7 @@ TEST(turbotrig_test, asin_test) {
     }
 }
 
-TEST(turbotvec_test, vector_test) {
+TEST(turbovec_test, vector_test) {
   Eigen::Vector3d eig1;
   eig1 << 1, 2, 3;
   vector_t vec1 = {1, 2, 3};
@@ -110,7 +110,7 @@ TEST(turbotvec_test, vector_test) {
 }
 
 
-TEST(turbotvec_test, quaternion_test) {
+TEST(turbovec_test, quaternion_test) {
   Eigen::Quaternionf eig1(1.0/sqrt(2.0), 0, 0, 1.0/sqrt(2.0));
   eig1.normalize();
   quaternion_t quat1 = {eig1.w(), eig1.x(), eig1.y(), eig1.z()};

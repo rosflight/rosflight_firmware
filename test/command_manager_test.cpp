@@ -604,8 +604,3 @@ TEST(command_manager_test, partial_muxing_test ) {
   EXPECT_EQ(output.F.type, THROTTLE);
 }
 
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
