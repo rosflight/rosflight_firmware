@@ -21,9 +21,10 @@ target_link_libraries(sample ${GTEST_LIBRARIES} pthread)
 
 # Turbotrig test
 add_executable(turbotrig_test 
-	../lib/turbotrig/turbotrig.c
-        ../lib/turbotrig/turbovec.c
-	turbotrig_test.cpp)
+        ../lib/turbotrig/turbotrig.cpp
+        ../lib/turbotrig/turbovec.cpp
+        turbotrig_test.cpp
+        )
 target_link_libraries(turbotrig_test ${GTEST_LIBRARIES} pthread)
 
 
@@ -38,8 +39,9 @@ set(ROSFLIGHT_SRC
     ../src/command_manager.cpp 
     ../src/rc.cpp 
     ../src/mixer.cpp
-    ../lib/turbotrig/turbotrig.c
-    ../lib/turbotrig/turbovec.c)
+    ../lib/turbotrig/turbotrig.cpp
+    ../lib/turbotrig/turbovec.cpp
+    )
 
 add_executable(state_machine_test 
         ${ROSFLIGHT_SRC}

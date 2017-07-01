@@ -31,9 +31,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <turbotrig/turbotrig.h>
 
 #ifndef M_PI
@@ -294,6 +291,3 @@ float turboasin(float x)
   else
       return asin_lookup_table[index]/asin_scale_factor + dx * (asin_lookup_table[index] - asin_lookup_table[index - 1])/asin_scale_factor;
 }
-#ifdef __cplusplus
-}
-#endif
