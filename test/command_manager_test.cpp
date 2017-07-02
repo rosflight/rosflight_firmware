@@ -13,8 +13,14 @@ using namespace rosflight_firmware;
 // Initialize the full firmware, so that the state_manager can do its thing
 void step_firmware(ROSflight& rf, testBoard& board, uint32_t us)
 {
-  board.set_time(board.clock_micros() + us);
-  rf.rosflight_run();
+  uint64_t start_time_us = board.clock_micros();
+  float dummy_acc[3] = {0, 0, -9.80665};
+  float dummy_gyro[3] = {0, 0, 0};
+  while(board.clock_micros() < start_time_us + us)
+  {
+    board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
+    rf.rosflight_run();
+  }
 }
 
 TEST(command_manager_test, rc) {
@@ -108,10 +114,7 @@ TEST(command_manager_test, rc_arm_disarm) {
   board.set_rc(rc_values);
 //  step_firmware(rf, board, 20000);
   // Step long enough for an arm to happen
-  while (board.clock_millis() < 1200000)
-  {
-    step_firmware(rf, board, 20000);
-  }
+  step_firmware(rf, board, 1100000);
   // Check the output
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);

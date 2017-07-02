@@ -10,7 +10,8 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(../lib)
 include_directories(../lib/turbotrig)
 include_directories(../include)
-include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${EIGEN3_INCLUDE_DIRS})
+include_directories(/usr/include/eigen3)
 
 
 set(ROSFLIGHT_SRC
@@ -35,5 +36,6 @@ add_executable(unit_tests
         turbotrig_test.cpp
         state_machine_test.cpp
         command_manager_test.cpp
+        estimator_test.cpp
         )
 target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)

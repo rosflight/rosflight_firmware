@@ -52,6 +52,17 @@ namespace rosflight_firmware
     rc_lost_ = lost;
   }
 
+  void testBoard::set_imu(float *acc, float *gyro, uint64_t time_us)
+  {
+    time_us_ = time_us;
+    for (int i = 0; i < 3; i++)
+    {
+      acc_[i] = acc[i];
+      gyro_[i] = gyro[i];
+    }
+    new_imu_ = true;
+  }
+
 
 // setup
   void testBoard::init_board(void){}
@@ -72,10 +83,31 @@ namespace rosflight_firmware
   void testBoard::sensors_init(){}
   uint16_t testBoard::num_sensor_errors(void) {}
 
-  bool testBoard::new_imu_data(){ return true; }
+  bool testBoard::new_imu_data()
+  {
+    if (new_imu_)
+    {
+      new_imu_ = false;
+      return true;
+    }
+    return false;
+  }
+
+
   void testBoard::imu_read_accel(float accel[3]){}
   void testBoard::imu_read_gyro(float gyro[3]){}
-  bool testBoard::imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time){ return false; }
+  bool testBoard::imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time)
+  {
+    for (int i = 0; i < 3; i++)
+    {
+      accel[i] = acc_[i];
+      gyro[i] = gyro_[i];
+    }
+    *temperature = 25.0;
+    *time = time_us_;
+    return true;
+  }
+
   float testBoard::imu_read_temperature(void){}
   void testBoard::imu_not_responding_error(void){}
 

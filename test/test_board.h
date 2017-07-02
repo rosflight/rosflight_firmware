@@ -44,6 +44,9 @@ private:
   uint16_t rc_values[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   uint64_t time_us_ = 0;
   bool rc_lost_ = false;
+  float acc_[3] = {0, 0, 0};
+  float gyro_[3] = {0, 0, 0};
+  bool new_imu_ = false;
 
 public:
 // setup
@@ -116,7 +119,7 @@ public:
 
 
 
-
+  void set_imu(float* acc, float* gyro, uint64_t time_us);
   void set_rc(uint16_t* values);
   void set_time(uint64_t time_us);
   void set_pwm_lost(bool lost);
