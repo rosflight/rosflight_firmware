@@ -35,14 +35,14 @@
 
 namespace rosflight_firmware{
 
-void Mavlink::mavlink_send_named_value_int(const char *const name, int32_t value)
+void Mavlink::send_named_value_int(const char *const name, int32_t value)
 {
   mavlink_message_t msg;
   mavlink_msg_named_value_int_pack(sysid_, compid_, &msg, RF_->board_.clock_millis(), name, value);
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_named_value_float(const char *const name, float value)
+void Mavlink::send_named_value_float(const char *const name, float value)
 {
   mavlink_message_t msg;
   mavlink_msg_named_value_float_pack(sysid_, compid_, &msg, RF_->board_.clock_millis(), name, value);

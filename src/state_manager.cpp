@@ -234,6 +234,7 @@ void StateManager::update_leds()
   else
     RF_.board_.led1_on();
 
+  // blink slowly if in error
   if (state_.error)
   {
     if (led_blink_counter_++ > 25)
@@ -243,6 +244,7 @@ void StateManager::update_leds()
     }
   }
 
+  // blink fast if in failsafe
   if (state_.failsafe)
   {
     if (led_blink_counter_++ > 13)

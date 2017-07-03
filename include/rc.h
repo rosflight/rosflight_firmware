@@ -71,11 +71,10 @@ public:
   } rc_type_t;
 
   void init();
-  void init_rc();
   float rc_stick(rc_stick_t channel);
   bool rc_switch(int16_t channel);
   bool rc_switch_mapped(rc_switch_t channel);
-  bool receive_rc();
+  bool run();
   bool new_command();
   void param_change_callback(uint16_t param_id);
 
@@ -108,6 +107,7 @@ private:
   bool switch_values[SWITCHES_COUNT];
   float stick_values[STICKS_COUNT];
 
+  void init_rc();
   void init_switches();
   void init_sticks();
   bool check_rc_lost();

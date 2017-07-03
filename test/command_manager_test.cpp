@@ -19,7 +19,7 @@ void step_firmware(ROSflight& rf, testBoard& board, uint32_t us)
   while(board.clock_micros() < start_time_us + us)
   {
     board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
-    rf.rosflight_run();
+    rf.run();
   }
 }
 
@@ -28,7 +28,7 @@ TEST(command_manager_test, rc) {
   ROSflight rf(board);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
@@ -86,7 +86,7 @@ TEST(command_manager_test, rc_arm_disarm) {
   board.set_pwm_lost(false);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
@@ -190,7 +190,7 @@ TEST(command_manager_test, rc_failsafe_test) {
   board.set_pwm_lost(false);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
@@ -319,7 +319,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   board.set_pwm_lost(false);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
@@ -520,7 +520,7 @@ TEST(command_manager_test, partial_muxing_test ) {
   board.set_pwm_lost(false);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)

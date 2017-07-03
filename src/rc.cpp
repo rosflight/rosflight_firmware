@@ -59,7 +59,6 @@ void RC::init()
 
 void RC::init_rc()
 {
-
   init_sticks();
   init_switches();
 }
@@ -227,7 +226,7 @@ void RC::look_for_arm_disarm_signal()
 }
 
 
-bool RC::receive_rc()
+bool RC::run()
 {
   static uint32_t last_rc_receive_time = 0;
 

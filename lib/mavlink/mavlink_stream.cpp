@@ -46,7 +46,7 @@ void Mavlink::send_log_message(uint8_t severity, char *text)
 }
 
 
-void Mavlink::mavlink_send_heartbeat(void)
+void Mavlink::send_heartbeat(void)
 {
     uint8_t control_mode = 0;
   mavlink_message_t msg;
@@ -56,7 +56,7 @@ void Mavlink::mavlink_send_heartbeat(void)
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_status(void)
+void Mavlink::send_status(void)
 {
   volatile uint8_t status = 0;
   status |= (RF_->state_manager_.state().armed) ? ROSFLIGHT_STATUS_ARMED : 0x00;
@@ -83,7 +83,7 @@ void Mavlink::mavlink_send_status(void)
 }
 
 
-void Mavlink::mavlink_send_attitude(void)
+void Mavlink::send_attitude(void)
 {
   mavlink_message_t msg;
   mavlink_msg_attitude_quaternion_pack(sysid_, compid_, &msg,
@@ -98,7 +98,7 @@ void Mavlink::mavlink_send_attitude(void)
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_imu(void)
+void Mavlink::send_imu(void)
 {
   if(RF_->sensors_.should_send_imu_data())
   {
@@ -124,7 +124,7 @@ void Mavlink::mavlink_send_imu(void)
 
 }
 
-void Mavlink::mavlink_send_output_raw(void)
+void Mavlink::send_output_raw(void)
 {
   mavlink_message_t msg;
     mavlink_msg_rosflight_output_raw_pack(sysid_, compid_, &msg,
@@ -133,7 +133,7 @@ void Mavlink::mavlink_send_output_raw(void)
     send_message(msg);
 }
 
-void Mavlink::mavlink_send_rc_raw(void)
+void Mavlink::send_rc_raw(void)
 {
   mavlink_message_t msg;
   mavlink_msg_rc_channels_pack(sysid_, compid_, &msg,
@@ -151,7 +151,7 @@ void Mavlink::mavlink_send_rc_raw(void)
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_diff_pressure(void)
+void Mavlink::send_diff_pressure(void)
 {
   if (RF_->board_.diff_pressure_present())
   {
@@ -164,7 +164,7 @@ void Mavlink::mavlink_send_diff_pressure(void)
   }
 }
 
-void Mavlink::mavlink_send_baro(void)
+void Mavlink::send_baro(void)
 {
   if (RF_->board_.baro_present())
   {
@@ -177,7 +177,7 @@ void Mavlink::mavlink_send_baro(void)
   }
 }
 
-void Mavlink::mavlink_send_sonar(void)
+void Mavlink::send_sonar(void)
 {
   if (RF_->board_.sonar_present())
   {
@@ -190,7 +190,7 @@ void Mavlink::mavlink_send_sonar(void)
   }
 }
 
-void Mavlink::mavlink_send_mag(void)
+void Mavlink::send_mag(void)
 {
   if (RF_->board_.mag_present())
   {
@@ -203,9 +203,9 @@ void Mavlink::mavlink_send_mag(void)
   }
 }
 
-void Mavlink::mavlink_send_low_priority(void)
+void Mavlink::send_low_priority(void)
 {
-  mavlink_send_next_param();
+  send_next_param();
 }
 
 // function definitions
@@ -228,7 +228,7 @@ void Mavlink::set_streaming_rate(uint8_t stream_id, int16_t param_id)
   mavlink_streams_[stream_id].period_us = (RF_->params_.get_param_int(param_id) == 0 ? 0 : 1000000/RF_->params_.get_param_int(param_id));
 }
 
-void Mavlink::mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us)
+void Mavlink::stream_set_period(uint8_t stream_id, uint32_t period_us)
 {
   mavlink_streams_[stream_id].period_us = period_us;
 }

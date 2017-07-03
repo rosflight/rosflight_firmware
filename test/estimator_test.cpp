@@ -34,7 +34,7 @@ TEST(estimator_test, truth_simulation) {
   ROSflight rf(board);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   double x_freq = 1.0;
   double y_freq = 2.0;
@@ -70,7 +70,7 @@ TEST(estimator_test, truth_simulation) {
     board.set_imu(acc, gyro, (uint64_t)(t*1e6));
 
     // Run firmware
-    rf.rosflight_run();
+    rf.run();
 
     Eigen::Quaterniond eig_quat(rotation);
 
@@ -92,7 +92,7 @@ TEST(estimator_test, bias_simulation) {
   ROSflight rf(board);
 
   // Initialize the firmware
-  rf.rosflight_init();
+  rf.init();
 
   double x_freq = 1.0;
   double y_freq = 1.0;
@@ -135,7 +135,7 @@ TEST(estimator_test, bias_simulation) {
     board.set_imu(acc, gyro, (uint64_t)(t*1e6));
 
     // Run firmware
-    rf.rosflight_run();
+    rf.run();
 
     // See if bias estimate has converged
     if (t > 20.0)

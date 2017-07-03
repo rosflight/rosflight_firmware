@@ -66,12 +66,12 @@ void Mavlink::update_param(uint16_t param_id)
   }
 }
 
-void Mavlink::mavlink_handle_msg_param_request_list(void)
+void Mavlink::handle_msg_param_request_list(void)
 {
   send_params_index_ = 0;
 }
 
-void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_param_request_read(const mavlink_message_t *const msg)
 {
   mavlink_param_request_read_t read;
   mavlink_msg_param_request_read_decode(msg, &read);
@@ -85,7 +85,7 @@ void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *con
   }
 }
 
-void Mavlink::mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_param_set(const mavlink_message_t *const msg)
 {
   mavlink_param_set_t set;
   mavlink_msg_param_set_decode(msg, &set);
@@ -126,7 +126,7 @@ void Mavlink::mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
   }
 }
 
-void Mavlink::mavlink_send_next_param(void)
+void Mavlink::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT)
   {

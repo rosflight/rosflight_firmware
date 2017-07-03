@@ -82,7 +82,7 @@ void Mavlink::send_message(const mavlink_message_t &msg)
 
 void Mavlink::update_status()
 {
-  mavlink_send_status();
+  send_status();
 }
 
 
@@ -110,12 +110,12 @@ void Mavlink::update_param(uint16_t param_id)
   }
 }
 
-void Mavlink::mavlink_handle_msg_param_request_list(void)
+void Mavlink::handle_msg_param_request_list(void)
 {
   send_params_index_ = 0;
 }
 
-void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_param_request_read(const mavlink_message_t *const msg)
 {
   mavlink_param_request_read_t read;
   mavlink_msg_param_request_read_decode(msg, &read);
@@ -129,7 +129,7 @@ void Mavlink::mavlink_handle_msg_param_request_read(const mavlink_message_t *con
   }
 }
 
-void Mavlink::mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_param_set(const mavlink_message_t *const msg)
 {
   mavlink_param_set_t set;
   mavlink_msg_param_set_decode(msg, &set);
@@ -170,7 +170,7 @@ void Mavlink::mavlink_handle_msg_param_set(const mavlink_message_t *const msg)
   }
 }
 
-void Mavlink::mavlink_send_next_param(void)
+void Mavlink::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT)
   {
@@ -180,7 +180,7 @@ void Mavlink::mavlink_send_next_param(void)
 }
 
 
-void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 {
   mavlink_rosflight_cmd_t cmd;
   mavlink_msg_rosflight_cmd_decode(msg, &cmd);
@@ -200,13 +200,13 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
     switch (cmd.command)
     {
     case ROSFLIGHT_CMD_READ_PARAMS:
-      result = RF_.params_.read_params();
+      result = RF_.params_.read();
       break;
     case ROSFLIGHT_CMD_WRITE_PARAMS:
-      result = RF_.params_.write_params();
+      result = RF_.params_.write();
       break;
     case ROSFLIGHT_CMD_SET_PARAM_DEFAULTS:
-      RF_.params_.set_param_defaults();
+      RF_.params_.set_defaults();
       break;
     case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
       result = RF_.sensors_.start_imu_calibration();
@@ -254,7 +254,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   }
 }
 
-void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)
 {
   uint64_t now_us = RF_.board_.clock_micros();
 
@@ -269,7 +269,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
   }
 }
 
-void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t mavlink_offboard_control;
   offboard_control_time_ = RF_.board_.clock_micros();
@@ -321,22 +321,22 @@ void Mavlink::handle_mavlink_message(void)
   switch (in_buf_.msgid)
   {
   case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
-    mavlink_handle_msg_offboard_control(&in_buf_);
+    handle_msg_offboard_control(&in_buf_);
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-    mavlink_handle_msg_param_request_list();
+    handle_msg_param_request_list();
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-    mavlink_handle_msg_param_request_read(&in_buf_);
+    handle_msg_param_request_read(&in_buf_);
     break;
   case MAVLINK_MSG_ID_PARAM_SET:
-    mavlink_handle_msg_param_set(&in_buf_);
+    handle_msg_param_set(&in_buf_);
     break;
   case MAVLINK_MSG_ID_ROSFLIGHT_CMD:
-    mavlink_handle_msg_rosflight_cmd(&in_buf_);
+    handle_msg_rosflight_cmd(&in_buf_);
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
-    mavlink_handle_msg_timesync(&in_buf_);
+    handle_msg_timesync(&in_buf_);
     break;
   default:
     break;
@@ -363,7 +363,7 @@ void Mavlink::send_log_message(uint8_t severity, char *text)
 }
 
 
-void Mavlink::mavlink_send_heartbeat(void)
+void Mavlink::send_heartbeat(void)
 {
     uint8_t control_mode = 0;
   mavlink_message_t msg;
@@ -373,7 +373,7 @@ void Mavlink::mavlink_send_heartbeat(void)
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_status(void)
+void Mavlink::send_status(void)
 {
   if (!initialized_)
     return;
@@ -402,7 +402,7 @@ void Mavlink::mavlink_send_status(void)
 }
 
 
-void Mavlink::mavlink_send_attitude(void)
+void Mavlink::send_attitude(void)
 {
   mavlink_message_t msg;
   mavlink_msg_attitude_quaternion_pack(sysid_, compid_, &msg,
@@ -417,7 +417,7 @@ void Mavlink::mavlink_send_attitude(void)
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_imu(void)
+void Mavlink::send_imu(void)
 {
 //  if(RF_.sensors_.should_send_imu_data())
 //  {
@@ -443,7 +443,7 @@ void Mavlink::mavlink_send_imu(void)
 
 }
 
-void Mavlink::mavlink_send_output_raw(void)
+void Mavlink::send_output_raw(void)
 {
   mavlink_message_t msg;
     mavlink_msg_rosflight_output_raw_pack(sysid_, compid_, &msg,
@@ -452,7 +452,7 @@ void Mavlink::mavlink_send_output_raw(void)
     send_message(msg);
 }
 
-void Mavlink::mavlink_send_rc_raw(void)
+void Mavlink::send_rc_raw(void)
 {
   mavlink_message_t msg;
   mavlink_msg_rc_channels_pack(sysid_, compid_, &msg,
@@ -470,7 +470,7 @@ void Mavlink::mavlink_send_rc_raw(void)
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_diff_pressure(void)
+void Mavlink::send_diff_pressure(void)
 {
   if (RF_.board_.diff_pressure_present())
   {
@@ -483,7 +483,7 @@ void Mavlink::mavlink_send_diff_pressure(void)
   }
 }
 
-void Mavlink::mavlink_send_baro(void)
+void Mavlink::send_baro(void)
 {
   if (RF_.board_.baro_present())
   {
@@ -496,7 +496,7 @@ void Mavlink::mavlink_send_baro(void)
   }
 }
 
-void Mavlink::mavlink_send_sonar(void)
+void Mavlink::send_sonar(void)
 {
   if (RF_.board_.sonar_present())
   {
@@ -510,7 +510,7 @@ void Mavlink::mavlink_send_sonar(void)
   }
 }
 
-void Mavlink::mavlink_send_mag(void)
+void Mavlink::send_mag(void)
 {
   if (RF_.board_.mag_present())
   {
@@ -523,9 +523,9 @@ void Mavlink::mavlink_send_mag(void)
   }
 }
 
-void Mavlink::mavlink_send_low_priority(void)
+void Mavlink::send_low_priority(void)
 {
-  mavlink_send_next_param();
+  send_next_param();
 }
 
 // function definitions
@@ -548,20 +548,20 @@ void Mavlink::set_streaming_rate(uint8_t stream_id, int16_t param_id)
   mavlink_streams_[stream_id].period_us = (RF_.params_.get_param_int(param_id) == 0 ? 0 : 1000000/RF_.params_.get_param_int(param_id));
 }
 
-void Mavlink::mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us)
+void Mavlink::stream_set_period(uint8_t stream_id, uint32_t period_us)
 {
   mavlink_streams_[stream_id].period_us = period_us;
 }
 
 
-void Mavlink::mavlink_send_named_value_int(const char *const name, int32_t value)
+void Mavlink::send_named_value_int(const char *const name, int32_t value)
 {
   mavlink_message_t msg;
   mavlink_msg_named_value_int_pack(sysid_, compid_, &msg, RF_.board_.clock_millis(), name, value);
   send_message(msg);
 }
 
-void Mavlink::mavlink_send_named_value_float(const char *const name, float value)
+void Mavlink::send_named_value_float(const char *const name, float value)
 {
   mavlink_message_t msg;
   mavlink_msg_named_value_float_pack(sysid_, compid_, &msg, RF_.board_.clock_millis(), name, value);

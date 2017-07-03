@@ -36,7 +36,7 @@ namespace rosflight_firmware{
 
 
 // local function definitions
-void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 {
   mavlink_rosflight_cmd_t cmd;
   mavlink_msg_rosflight_cmd_decode(msg, &cmd);
@@ -110,7 +110,7 @@ void Mavlink::mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const ms
   }
 }
 
-void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)
 {
   uint64_t now_us = RF_->board_.clock_micros();
 
@@ -125,7 +125,7 @@ void Mavlink::mavlink_handle_msg_timesync(const mavlink_message_t *const msg)
   }
 }
 
-void Mavlink::mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t mavlink_offboard_control;
   offboard_control_time_ = RF_->board_.clock_micros();
@@ -176,22 +176,22 @@ void Mavlink::handle_mavlink_message(void)
   switch (in_buf_.msgid)
   {
   case MAVLINK_MSG_ID_OFFBOARD_CONTROL:
-    mavlink_handle_msg_offboard_control(&in_buf_);
+    handle_msg_offboard_control(&in_buf_);
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-    mavlink_handle_msg_param_request_list();
+    handle_msg_param_request_list();
     break;
   case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-    mavlink_handle_msg_param_request_read(&in_buf_);
+    handle_msg_param_request_read(&in_buf_);
     break;
   case MAVLINK_MSG_ID_PARAM_SET:
-    mavlink_handle_msg_param_set(&in_buf_);
+    handle_msg_param_set(&in_buf_);
     break;
   case MAVLINK_MSG_ID_ROSFLIGHT_CMD:
-    mavlink_handle_msg_rosflight_cmd(&in_buf_);
+    handle_msg_rosflight_cmd(&in_buf_);
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
-    mavlink_handle_msg_timesync(&in_buf_);
+    handle_msg_timesync(&in_buf_);
     break;
   default:
     break;
