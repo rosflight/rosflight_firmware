@@ -49,7 +49,7 @@ ROSflight::ROSflight(Board& board) :
 }
 
 // Initialization Routine
-void ROSflight::rosflight_init()
+void ROSflight::init()
 {
   // Initialize the board
   board_.init_board();
@@ -92,7 +92,7 @@ void ROSflight::rosflight_init()
 
 
 // Main loop
-void ROSflight::rosflight_run()
+void ROSflight::run()
 {
   /*********************/
   /***  Control Loop ***/
