@@ -37,48 +37,47 @@
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/Geometry"
-#include "printf.h"
 #include <gtest/gtest.h>
 
 #define EXPECT_VEC3_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
-                                         EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
-                                         EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
+  EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
+  EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
 #define EXPECT_QUAT_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.w - eig.w()), 0.0001);\
-                                         EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
-                                         EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
-                                         EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
+  EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
+  EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
+  EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
 
 #define EXPECT_SUPERCLOSE(x, y) EXPECT_LE(fabs(x -y), 0.0001)
 #define EXPECT_CLOSE(x, y) EXPECT_LE(fabs(x -y), 0.01)
 
 TEST(turbotrig_test, atan_test) {
-    for (float i = -200.0; i <= 200.0; i += 0.001)
-    {
-        EXPECT_LE(fabs(turboatan(i) - atan(i)), 0.0001);
-    }
+  for (float i = -200.0; i <= 200.0; i += 0.001)
+  {
+    EXPECT_LE(fabs(turboatan(i) - atan(i)), 0.0001);
+  }
 }
 
 TEST(turbotrig_test, atan2_test) {
-    for (float i = -100.0; i <= 100.0; i += 0.1)
+  for (float i = -100.0; i <= 100.0; i += 0.1)
+  {
+    for (float j = -1.0; j <= 1.0; j += 0.001)
     {
-        for (float j = -1.0; j <= 1.0; j += 0.001)
-        {
-            if (fabs(j) > 0.0001)
-            {
-                EXPECT_LE(fabs(atan2_approx(i, j) - atan2(i, j)), 0.001);
-            }
-        }
+      if (fabs(j) > 0.0001)
+      {
+        EXPECT_LE(fabs(atan2_approx(i, j) - atan2(i, j)), 0.001);
+      }
     }
+  }
 }
 
 TEST(turbotrig_test, asin_test) {
-    for (float i = -1.0; i <= 1.0; i += 0.001)
-    {
-        if ( fabs(i) < 0.95 )
-            EXPECT_LE(fabs(asin_approx(i) - asin(i)), 0.0001);
-        else
-            EXPECT_LE(fabs(asin_approx(i) - asin(i)), 0.05);
-    }
+  for (float i = -1.0; i <= 1.0; i += 0.001)
+  {
+    if ( fabs(i) < 0.95 )
+      EXPECT_LE(fabs(asin_approx(i) - asin(i)), 0.0001);
+    else
+      EXPECT_LE(fabs(asin_approx(i) - asin(i)), 0.05);
+  }
 }
 
 TEST(turbovec_test, vector_test) {
@@ -174,6 +173,6 @@ TEST(turbovec_test, quat_from_two_vectors_test){
 
 
 int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
