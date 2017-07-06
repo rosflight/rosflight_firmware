@@ -235,7 +235,7 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       send_message(msg);
       break;
     default:
-      log_error(this, "unsupported ROSFLIGHT CMD %d", cmd.command);
+//      log_error(this, "unsupported ROSFLIGHT CMD %d", cmd.command);
       result = false;
       break;
     }

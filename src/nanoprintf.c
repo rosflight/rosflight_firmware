@@ -140,7 +140,7 @@ static void putchw(void *putp,putcf putf,int n, char z, char *bf)
     putf(putp,ch);
 }
 
-void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
+void nano_tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
 {
   char bf[12];
 
@@ -235,11 +235,11 @@ void init_printf(void *putp, void (*putf)(void *, char))
   stdout_putp=putp;
 }
 
-void tfp_printf(const char *fmt, ...)
+void nano_tfp_printf(const char *fmt, ...)
 {
   va_list va;
   va_start(va,fmt);
-  tfp_format(stdout_putp,stdout_putf,fmt,va);
+  nano_tfp_format(stdout_putp,stdout_putf,fmt,va);
   va_end(va);
 }
 
@@ -248,11 +248,11 @@ static void putcp(void *p,char c)
   *(*((char **)p))++ = c;
 }
 
-void tfp_sprintf(char *s, const char *fmt, ...)
+void nano_tfp_sprintf(char *s, const char *fmt, ...)
 {
   va_list va;
   va_start(va,fmt);
-  tfp_format(&s,putcp,fmt,va);
+  nano_tfp_format(&s,putcp,fmt,va);
   putcp(&s,0);
   va_end(va);
 }

@@ -22,3 +22,8 @@ pages:
     - Preflight checks: user-guide/preflight-checks.md
     - Improving performance: user-guide/performance.md
     - Autonomous flight: user-guide/autonomous-flight.md
+  - Developer Guide: 
+    - Building and Flashing: developer-guide/developer.md
+    - Using a Debugger: developer-guide/debugging.md
+    - Style Guide: developer-guide/style_guide.md
+    - Contribution Guidelines: developer-guide/contribution_guidelines.md

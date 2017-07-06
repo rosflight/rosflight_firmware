@@ -33,20 +33,20 @@
 #define ROSFLIGHT_FIRMWARE_MAVLINK_H
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
-#include "nanoprintf.h"
+//#include "nanoprintf.h"
 
 //#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
-#define commlink_log(objectptr, severity, format, ...) do {\
-  char text[50]; \
-  sprintf(text, format, ##__VA_ARGS__); \
-  objectptr->send_log_message(severity, text); \
-  } while(0)
+//#define commlink_log(objectptr, severity, format, ...) do {\
+//  char text[50]; \
+//  nano_sprintf(text, format, ##__VA_ARGS__); \
+//  objectptr->send_log_message(severity, text); \
+//  } while(0)
 
-#define log_critical(objectptr, format, ...) commlink_log(objectptr, 2, format, ##__VA_ARGS__)
-#define log_error(objectptr, format, ...)    commlink_log(objectptr, 3, format, ##__VA_ARGS__)
-#define log_warning(objectptr, format, ...)  commlink_log(objectptr, 4, format, ##__VA_ARGS__)
-#define log_info(objectptr, format, ...)     commlink_log(objectptr, 6, format, ##__VA_ARGS__)
+//#define log_critical(objectptr, format, ...) commlink_log(objectptr, 2, format, ##__VA_ARGS__)
+//#define log_error(objectptr, format, ...)    commlink_log(objectptr, 3, format, ##__VA_ARGS__)
+//#define log_warning(objectptr, format, ...)  commlink_log(objectptr, 4, format, ##__VA_ARGS__)
+//#define log_info(objectptr, format, ...)     commlink_log(objectptr, 6, format, ##__VA_ARGS__)
 
 //#define mavlink_log_critical_throttle(delay_ms, format, ...) \
 //  do\
