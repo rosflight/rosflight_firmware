@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * 
+ *
  * * Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -42,7 +42,7 @@
 
 #include "param.h"
 #include "mixer.h"
-//#include "rc.h" <-- I want to include this file so I can manually specify the RC type.  But I get errors if I do
+#include "rc.h"
 
 // type definitions
 typedef struct
@@ -80,7 +80,7 @@ static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float
 static uint8_t compute_checksum(void)
 {
   uint8_t chk = 0;
-  const uint8_t * p;
+  const uint8_t *p;
 
   for (p = (const uint8_t *)&params.values; p < ((const uint8_t *)&params.values + 4*PARAMS_COUNT); p++)
     chk ^= *p;
@@ -172,9 +172,9 @@ void set_param_defaults(void)
   init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
   init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
-  init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
-  init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // Idle PWM sent to motors at zero throttle (Set above 1100 to spin when armed) | 1000 | 2000
-  init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_PWM | 0 | 1
+  init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // PWM value sent to motor ESCs at zero throttle | 1000 | 2000
+  init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // PWM value sent to motor ESCs at full throttle | 1000 | 2000
+  init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_THR | 0 | 1
 
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
@@ -191,6 +191,8 @@ void set_param_defaults(void)
   init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.888f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
 
   init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f); // Scale factor to apply to IMU measurements - Read-Only | 0.5 | 2.0
+
+  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "GYRO_CAL_ON_ARM", false); // Calibrate gyros when arming - generally only for multirotors | 0 | 1
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
@@ -248,7 +250,7 @@ void set_param_defaults(void)
   /***************************/
   /*** FRAME CONFIGURATION ***/
   /***************************/
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X); // Which mixer to choose - See Mixer documentation | 0 | 5
+  init_param_int(PARAM_MIXER, "MIXER", INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 5
 
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false); // switches on passthrough commands for fixedwing operation | 0 | 1
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0); // reverses elevator servo output | 0 | 1
@@ -333,16 +335,27 @@ void param_change_callback(param_id_t id)
     break;
 
   case PARAM_RC_TYPE:
-    init_PWM();
-    break;
   case PARAM_MOTOR_PWM_SEND_RATE:
-    init_PWM();
-    break;
   case PARAM_MOTOR_MIN_PWM:
     init_PWM();
     break;
   case PARAM_MIXER:
     init_mixing();
+    break;
+
+  case PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL:
+  case PARAM_RC_THROTTLE_OVERRIDE_CHANNEL:
+  case PARAM_RC_ATT_CONTROL_TYPE_CHANNEL:
+  case PARAM_RC_ARM_CHANNEL:
+  case PARAM_RC_X_CHANNEL:
+  case PARAM_RC_Y_CHANNEL:
+  case PARAM_RC_Z_CHANNEL:
+  case PARAM_RC_F_CHANNEL:
+  case PARAM_RC_SWITCH_5_DIRECTION:
+  case PARAM_RC_SWITCH_6_DIRECTION:
+  case PARAM_RC_SWITCH_7_DIRECTION:
+  case PARAM_RC_SWITCH_8_DIRECTION:
+    init_rc();
     break;
 
   default:

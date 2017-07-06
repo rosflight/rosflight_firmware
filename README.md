@@ -1,5 +1,7 @@
-	# ROSflight
-[![Build Status](https://travis-ci.org/byu-magicc/ROSflight.svg?branch=master)](https://travis-ci.org/byu-magicc/ROSflight) [![Documentation](https://codedocs.xyz/byu-magicc/ROSflight.svg)](https://codedocs.xyz/byu-magicc/ROSflight/)
+# ROSflight
+[![Build Status](https://travis-ci.org/rosflight/firmware.svg?branch=master)](https://travis-ci.org/rosflight/firmware)
+[![Documentation Status](https://readthedocs.org/projects/rosflight/badge/?version=latest)](http://docs.rosflight.org/en/latest/?badge=latest)
+<!--[![Documentation](https://codedocs.xyz/byu-magicc/ROSflight.svg)](https://codedocs.xyz/byu-magicc/ROSflight/) -->
 
 This is the firmware required for STM32F10x-based flight controllers (naze32, flip32 etc...) to run ROSflight.  ROSflight is a software architecture which uses a simple, inexpensive flight controller in tandem with a much more capable onboard computer running ROS.  The onboard computer is given a high-bandwidth connection to the flight controller to access sensor information and perform actuator commands at high rates.  This architectures provides direct control of lower-level functions via the embedded processor while also enabling more complicated functionality such as vision processing and optimization via the ROS middleware.  
 
@@ -14,15 +16,7 @@ These objectives will allow researchers to more easily develop, test and field U
 
 ## How to Use ##
 
-This repository is the firmware for the STM32F10x.  The ROS driver for the flashed flight controller can be found at BYU-MAGICC/fcu_io2.  To flash the firmware to a flight controller, simply follow the directions in the wiki. To get access to senors and actuators, simply install and run the ROS driver.
-
-Parameters can be retrived, set, and saved to the EEPROM in real-time using the rosservice API in fcu_io2.  They may also be set by changing the default values in param.c, then re-building and flashing the firmware which is likely the easiest method until the ROSflight Configurator is completed.
-
-Sensors are published on ROS topics after they are received from the flight controller.  To change the rate at which sensors are published, change the corresponding parameter on the FCU.
-
-Commands are accepted via the extended_command ROS topic.  
-
-See the documentation in fcu_io2 for more information regarding ExtendedCommands, accelerometer calibration, sensor publications and other ROS-specific details.
+Documentation is located at http://docs.rosflight.org.
 
 ## Implementation Details ##
 
@@ -32,23 +26,19 @@ ROSflight uses MAVlink to communicate over a USB cable.  MAVlink has primarily b
 #### Sensors
 ROSflight provides access to the onboard 6-axis gyroscope and accelerometer at up to 1000Hz.  IMU measurements are very carefully time-stamped and these stamps are accurate to within a microsecond. Using MAVlink time synchronization, this stamp is relayed to ROS, and is also accurate to within a microsecond.  However, depending on the order in which measurements are sent over the serial line, IMU messages may not be relayed at a constant rate, which means the inter-arrival time between messages may vary over time on the onboard computer.  However, the time stamps in the IMU message header are accurate and should be trusted more than the inter-arrival time.
 
-The MB1242 I2C sonar and MS4252 I2C differential pressure sensor are also currently supported, as wel as the onboard magnetometer and barometer.  These additional sensors have been tested at rates up to 50 Hz without any performance degredation.  GPS is currently not supported on the flight control board, and is instead supported via the GPS node of fcu_common and connecting a serial GPS to the onboard computer directly using an FTDI cable.  Other sensors have not been directly implemented, but could be given a little effort.  Contact us via an issue if the sensor you need is not available.
+The MB1242 I2C sonar and MS4252 I2C differential pressure sensor are also currently supported, as wel as the onboard magnetometer and barometer.  These additional sensors have been tested at rates up to 50 Hz without any performance degredation.  GPS is currently not supported on the flight control board, and should instead be connected to the onboard computer directly using an FTDI cable.  Other sensors have not been directly implemented, but could be given a little effort.  Contact us via an issue if the sensor you need is not available.
 
 #### Estimation
-Onboard estimation is performed using a quaternion-based Mahoney Filter, with the addition of a quadratic approximation of angular rates, and the use of a matrix exponential during the propagation step.  Details can be found in the documentation (doc/estimator.tex)
+Onboard estimation is performed using a quaternion-based Mahoney Filter, with the addition of a quadratic approximation of angular rates, and the use of a matrix exponential during the propagation step.  Details can be found in the documentation (reports/estimator.tex)
 
 #### Control
-Control is performed using a standard PID control scheme with default gains found in param.c. Control is performed in four modes:
+Control is performed using a standard PID control scheme with default gains found in param.c. Control is performed in three modes:
 
 1. Pass-Through - The pass-through mode is meant primarily for operating fixed-wing UAVs, and maps the four input channels directly to actuator outputs.
 
 2. Rate - Rate mode controls the angular rate of the 3 body-fixed axes, and overall throttle response.  This is much like "Acro" mode of other multirotor autopilots.  This mode is primarily meant for multirotor UAVs.
 
 3. Angle - Angle mode is another multirotor UAV control scheme in which the angle of the body-fixed x and y axes are controlled, while the z axis is controlled to a specific angular rate, and overall throttle is directly passed through.  This is nearly identical to other "Angle" modes of other multirotor autopilots.
-
-4. Altitude - Altitude mode uses feedback from the sonar and barometer to perform altitude control in addition to x and y angles, and z angular rate.
-
-More in-depth discussion and implementation details, as well as a discussion of response can be found in the documentation (doc/controller.tex).
 
 #### Process Priority
 Tasks are prioritized according to the following scheme:

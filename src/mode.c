@@ -47,6 +47,7 @@
 armed_state_t _armed_state;
 error_state_t _error_state;
 
+
 void init_mode(void)
 {
   _armed_state = 0x00;
@@ -60,11 +61,35 @@ bool arm(void)
     mavlink_log_error("Unable to arm due to error code %d", _error_state);
     return false;
   }
-  if (!(_armed_state & ARMED))
+
+  else if (get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
   {
-    _armed_state |= ARMED;
-    led1_on();
-    return true;
+    static bool started_gyro_calibration = false;
+    if (!started_gyro_calibration && !(_armed_state & ARMED))
+    {
+      start_gyro_calibration();
+      started_gyro_calibration = true;
+      return false;
+    }
+    else if (gyro_calibration_complete())
+    {
+      started_gyro_calibration = false;
+      _armed_state |= ARMED;
+      led1_on();
+      return true;
+    }
+    return false;
+  }
+
+  else
+  {
+    if (!(_armed_state & ARMED))
+    {
+      _armed_state |= ARMED;
+      led1_on();
+      return true;
+    }
+    return false;
   }
   return false;
 }
@@ -93,7 +118,7 @@ bool check_failsafe(void)
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if(pwm_read(i) < 900 || pwm_read(i) > 2100)
+      if (pwm_read(i) < 900 || pwm_read(i) > 2100)
       {
         failsafe = true;
       }
@@ -122,6 +147,10 @@ bool check_failsafe(void)
 
     // clear the RC Lost error
     _error_state &= ~(ERROR_RC_LOST);
+    if (_armed_state & ARMED)
+      led1_on();
+    else
+      led1_off();
   }
 
   return failsafe;
@@ -196,7 +225,7 @@ bool check_mode()
     {
       if (rc_switch(RC_SWITCH_ARM))
       {
-        if ( !(_armed_state & ARMED))
+        if (!(_armed_state & ARMED))
           arm();
       }
       else

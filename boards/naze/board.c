@@ -1,22 +1,22 @@
 /* BSD 3-Clause License
- * 
+ *
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * 
+ *
  * * Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -103,21 +103,21 @@ static float _gyro_scale;
 
 void sensors_init()
 {
-    // Initialize I2c
-    i2cInit(I2CDEV_2);
+  // Initialize I2c
+  i2cInit(I2CDEV_2);
 
-    while(millis() < 50);
+  while (millis() < 50);
 
-    i2cWrite(0,0,0);
-    _baro_present = ms5611_init();
-    _mag_present = hmc5883lInit(_board_revision);
-    _sonar_present = mb1242_init();
-    _diff_pressure_present = ms4525_init();
+  i2cWrite(0,0,0);
+  _baro_present = ms5611_init();
+  _mag_present = hmc5883lInit(_board_revision);
+  _sonar_present = mb1242_init();
+  _diff_pressure_present = ms4525_init();
 
-    // IMU
-    uint16_t acc1G;
-    mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
-    _accel_scale = 9.80665f/acc1G;
+  // IMU
+  uint16_t acc1G;
+  mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
+  _accel_scale = 9.80665f/acc1G;
 }
 
 void imu_register_callback(void (*callback)(void))
@@ -133,7 +133,7 @@ void imu_not_responding_error()
   sensors_init();
 }
 
-bool imu_read_all(float accel[3], float gyro[3], float* temperature)
+bool imu_read_all(float accel[3], float gyro[3], float *temperature)
 {
   // Convert to NED
   int16_t accel_raw[3];
@@ -292,7 +292,7 @@ void pwm_write(uint8_t channel, uint16_t value)
 
 bool pwm_lost()
 {
-    return ((millis() - pwmLastUpdate()) > 40);
+  return ((millis() - pwmLastUpdate()) > 40);
 }
 
 // non-volatile memory
@@ -302,22 +302,40 @@ void memory_init(void)
   initEEPROM();
 }
 
-bool memory_read(void * dest, size_t len)
+bool memory_read(void *dest, size_t len)
 {
   return readEEPROM(dest, len);
 }
 
-bool memory_write(const void * src, size_t len)
+bool memory_write(const void *src, size_t len)
 {
   return writeEEPROM(src, len);
 }
 
 // LED
 
-void led0_on(void) { LED0_ON; }
-void led0_off(void) { LED0_OFF; }
-void led0_toggle(void) { LED0_TOGGLE; }
+void led0_on(void)
+{
+  LED0_ON;
+}
+void led0_off(void)
+{
+  LED0_OFF;
+}
+void led0_toggle(void)
+{
+  LED0_TOGGLE;
+}
 
-void led1_on(void) { LED1_ON; }
-void led1_off(void) { LED1_OFF; }
-void led1_toggle(void) { LED1_TOGGLE; }
+void led1_on(void)
+{
+  LED1_ON;
+}
+void led1_off(void)
+{
+  LED1_OFF;
+}
+void led1_toggle(void)
+{
+  LED1_TOGGLE;
+}

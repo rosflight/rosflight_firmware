@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * 
+ *
  * * Neither the name of the copyright holder nor the names of its
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -78,7 +78,8 @@ typedef struct
   uint32_t last_override_time;
 } rc_stick_override_t;
 
-rc_stick_override_t rc_stick_override[] = {
+rc_stick_override_t rc_stick_override[] =
+{
   { RC_STICK_X, 0 },
   { RC_STICK_Y, 0 },
   { RC_STICK_Z, 0 }
@@ -86,9 +87,9 @@ rc_stick_override_t rc_stick_override[] = {
 
 typedef struct
 {
-  control_channel_t* rc;
-  control_channel_t* onboard;
-  control_channel_t* combined;
+  control_channel_t *rc;
+  control_channel_t *onboard;
+  control_channel_t *combined;
 } mux_t;
 
 mux_t muxes[4] =
@@ -161,7 +162,8 @@ static bool stick_deviated(mux_channel_t channel)
     return true;
   }
   else
-  { //check if the RC value for this channel has moved from center enough to trigger a RC override
+  {
+    //check if the RC value for this channel has moved from center enough to trigger a RC override
     if (fabs(rc_stick(rc_stick_override[channel].rc_channel)) > get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override[channel].last_override_time = now;
@@ -209,7 +211,8 @@ static bool do_throttle_muxing(void)
   {
     if (muxes[MUX_F].onboard->active)
     {
-      if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)) //Check if the parameter flag is set to have us always take the smaller throttle
+      //Check if the parameter flag is set to have us always take the smaller throttle
+      if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
       {
         rc_ovrd = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
       }
@@ -239,7 +242,7 @@ bool offboard_control_active()
 {
   for (int i = 0; i < 4; i++)
   {
-    if(muxes[i].onboard->active)
+    if (muxes[i].onboard->active)
       return true;
   }
   return false;
