@@ -173,36 +173,37 @@ static bool stick_deviated(mux_channel_t channel)
 
 static bool do_roll_pitch_yaw_muxing(mux_channel_t channel)
 {
+  bool rc_ovrd;
   //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
   if ((rc_switch_mapped(RC_SWITCH_ATT_OVERRIDE) && rc_switch(RC_SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
   {
-    rc_override = true;
+    rc_ovrd = true;
   }
   else //Otherwise only have RC override if the offboard channel is inactive
   {
     if (muxes[channel].onboard->active)
     {
-      rc_override = false;
+      rc_ovrd = false;
     }
     else
     {
-      rc_override = true;
+      rc_ovrd = true;
     }
   }
 
   //set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[channel].combined = rc_override ? *muxes[channel].rc : *muxes[channel].onboard;
-  return rc_override;
+  *muxes[channel].combined = rc_ovrd ? *muxes[channel].rc : *muxes[channel].onboard;
+  return rc_ovrd;
 }
 
 static bool do_throttle_muxing(void)
 {
-  bool rc_override;
+  bool rc_ovrd;
 
   //Check if the override switch exists and is triggered
   if (rc_switch_mapped(RC_SWITCH_THROTTLE_OVERRIDE) && rc_switch(RC_SWITCH_THROTTLE_OVERRIDE))
   {
-    rc_override = true;
+    rc_ovrd = true;
   }
   else //Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
   {
@@ -210,22 +211,22 @@ static bool do_throttle_muxing(void)
     {
       if (get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)) //Check if the parameter flag is set to have us always take the smaller throttle
       {
-        rc_override = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
+        rc_ovrd = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
       }
       else
       {
-        rc_override = false;
+        rc_ovrd = false;
       }
     }
     else
     {
-      rc_override = true;
+      rc_ovrd = true;
     }
   }
 
   //set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[MUX_F].combined = rc_override ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
-  return rc_override;
+  *muxes[MUX_F].combined = rc_ovrd ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
+  return rc_ovrd;
 }
 
 
@@ -277,7 +278,7 @@ bool mux_inputs()
     }
 
     // Perform muxing
-    bool rc_override = false;
+    rc_override = false;
     for (mux_channel_t i = MUX_X; i <= MUX_Z; i++)
     {
       rc_override |= do_roll_pitch_yaw_muxing(i);
