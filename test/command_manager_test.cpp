@@ -354,15 +354,16 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
     step_firmware(rf, board, 20000);
   }
 
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
   // We don't have an override channel mapped, so this should be RC
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_PRETTYCLOSE(output.x.value, -1.0);
+  EXPECT_PRETTYCLOSE(output.y.value, 0.5);
+  EXPECT_PRETTYCLOSE(output.z.value, -0.7);
+  EXPECT_PRETTYCLOSE(output.F.value, 0.9);
 
   rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
