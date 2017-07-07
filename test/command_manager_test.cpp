@@ -371,7 +371,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rc_values[4] = 1100;
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -385,7 +385,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   // flip override switch on
   rc_values[4] = 1900;
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -406,7 +406,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, -1);
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -423,7 +423,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -449,7 +449,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rc_values[2] = 1000;
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -476,11 +476,11 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
     EXPECT_PRETTYCLOSE(output.y.value, 0.5);
     EXPECT_PRETTYCLOSE(output.z.value, -0.7);
     EXPECT_PRETTYCLOSE(output.F.value, 0.9);
-    offboard_command.stamp_us = board.clock_micros();
+    offboard_command.stamp_ms = board.clock_millis();
     rf.command_manager_.set_new_offboard_command(offboard_command);
     step_firmware(rf, board, 20000);
   }
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
@@ -559,7 +559,7 @@ TEST(command_manager_test, partial_muxing_test ) {
 
   // RC is the min throttle
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   control_t output = rf.command_manager_.combined_control();
@@ -570,7 +570,7 @@ TEST(command_manager_test, partial_muxing_test ) {
   rc_values[2] = 1500;
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
@@ -584,7 +584,7 @@ TEST(command_manager_test, partial_muxing_test ) {
 
   // Now, let's disable the pitch channel on the onboard command
   offboard_command.y.active = false;
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
 
   step_firmware(rf, board, 20000);
@@ -596,7 +596,7 @@ TEST(command_manager_test, partial_muxing_test ) {
 
   // Let's change the type on the x channel
   offboard_command.x.type = RATE;
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
 
   step_firmware(rf, board, 20000);

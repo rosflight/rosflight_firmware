@@ -164,6 +164,7 @@ bool Sensors::update_imu(void)
 {
   if (rf_.board_.new_imu_data())
   {
+    rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms = rf_.board_.clock_millis();
     if (!rf_.board_.imu_read_all(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
     {

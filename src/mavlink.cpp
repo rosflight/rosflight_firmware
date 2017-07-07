@@ -272,7 +272,6 @@ void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)
 void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t mavlink_offboard_control;
-  offboard_control_time_ = RF_.board_.clock_micros();
   mavlink_msg_offboard_control_decode(msg, &mavlink_offboard_control);
 
   // put values into a new command struct
@@ -313,6 +312,7 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
   }
 
   // Tell the mux that we have a new command we need to mux
+  new_offboard_command.stamp_ms = RF_.board_.clock_millis();
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 

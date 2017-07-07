@@ -228,31 +228,29 @@ void StateManager::process_errors()
 
 void StateManager::update_leds()
 {
-  // off if disarmed, on if armed
-  if (!state_.armed)
-    RF_.board_.led1_off();
-  else
-    RF_.board_.led1_on();
-
-  // blink slowly if in error
-  if (state_.error)
-  {
-    if (led_blink_counter_++ > 25)
-    {
-      RF_.board_.led1_toggle();
-      led_blink_counter_ = 0;
-    }
-  }
-
   // blink fast if in failsafe
   if (state_.failsafe)
   {
-    if (led_blink_counter_++ > 13)
+    if (next_led_blink_ms_ < RF_.board_.clock_millis())
     {
       RF_.board_.led1_toggle();
-      led_blink_counter_ = 0;
+      next_led_blink_ms_ =  RF_.board_.clock_millis() + 100;
     }
   }
+  // blink slowly if in error
+  else if (state_.error)
+  {
+    if (next_led_blink_ms_ < RF_.board_.clock_millis())
+    {
+      RF_.board_.led1_toggle();
+      next_led_blink_ms_ =  RF_.board_.clock_millis() + 500;
+    }
+  }
+  // off if disarmed, on if armed
+  else if (!state_.armed)
+    RF_.board_.led1_off();
+  else
+    RF_.board_.led1_on();
 }
 
 } //namespace rosflight_firmware

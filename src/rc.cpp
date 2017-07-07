@@ -70,7 +70,6 @@ void RC::param_change_callback(uint16_t param_id)
 
 float RC::rc_stick(rc_stick_t channel)
 {
-  new_command_ = false;
   return stick_values[channel];
 }
 
@@ -289,7 +288,13 @@ bool RC::run()
 
 bool RC::new_command()
 {
-  return new_command_;
+  if (new_command_)
+  {
+    new_command_ = false;
+    return true;
+  }
+  else
+    return false;;
 }
 
 }
