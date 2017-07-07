@@ -23,7 +23,8 @@ pages:
     - Improving performance: user-guide/performance.md
     - Autonomous flight: user-guide/autonomous-flight.md
   - Developer Guide: 
+    - Contribution Guidelines: developer-guide/contribution_guidelines.md
     - Building and Flashing: developer-guide/developer.md
     - Using a Debugger: developer-guide/debugging.md
     - Style Guide: developer-guide/style_guide.md
-    - Contribution Guidelines: developer-guide/contribution_guidelines.md
+    - General Architecture: developer-guide/general_architecture.md
