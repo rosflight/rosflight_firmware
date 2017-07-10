@@ -168,11 +168,11 @@ bool receive_rc()
       //switch is on/off dependent on its default direction as set in the params/init_switches
       if (switches[channel].direction <  0)
       {
-        switch_values[channel] = pwm_read(switches[channel].channel) < 1150;
+        switch_values[channel] = pwm_read(switches[channel].channel) < 1250;
       }
       else
       {
-        switch_values[channel] = pwm_read(switches[channel].channel) >= 1850;
+        switch_values[channel] = pwm_read(switches[channel].channel) >= 1750;
       }
     }
     else
