@@ -6,9 +6,10 @@
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
+#include <cmath>
 
 
-#define EXPECT_CLOSE(x, y) EXPECT_LE(fabs(x - y), 0.01);
+#define EXPECT_CLOSE(x, y) EXPECT_LE(std::abs(x - y), 0.01);
 #define EXPECT_FABSCLOSE(x, y) EXPECT_LE(fabs(x) - fabs(y), 0.01)
 
 
