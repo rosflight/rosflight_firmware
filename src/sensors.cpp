@@ -35,7 +35,7 @@
 #include "sensors.h"
 #include "rosflight.h"
 
-#include <turbovec.h>
+#include <turbotrig/turbovec.h>
 
 namespace rosflight_firmware
 {

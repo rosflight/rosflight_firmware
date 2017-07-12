@@ -34,8 +34,8 @@
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
 
-#include "turbovec.h"
-#include "turbotrig.h"
+#include <turbotrig/turbovec.h>
+#include <turbotrig/turbotrig.h>
 
 
 void pfquat() __attribute__((unused));

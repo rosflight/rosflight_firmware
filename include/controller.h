@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <turbovec.h>
+#include <turbotrig/turbovec.h>
 
 #include "command_manager.h"
 #include "estimator.h"
