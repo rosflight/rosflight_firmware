@@ -102,11 +102,13 @@ For further details see source code.
 regs Kusti, 23.10.2004
 */
 
-#ifndef __NANO_PRINTF__
-#define __NANO_PRINTF__
+#ifndef ROSFLIGHT_FIRWMARE_NANO_PRINTF_H
+#define ROSFLIGHT_FIRWMARE_NANO_PRINTF_H
 
 #include <stdarg.h>
 
+namespace rosflight_firmware
+{
 namespace nanoprintf
 {
 
@@ -117,9 +119,10 @@ void tfp_sprintf(char *s, const char *fmt, ...);
 
 void tfp_format(void *putp, void (*putf)(void *,char), const char *fmt, va_list va);
 
-}
+} // namespace nanoprintf
+} // namespace rosflight_firmware
 
-#define nano_printf nanoprintf::tfp_printf
-#define nano_sprintf nanoprintf::tfp_sprintf
+#define nano_printf rosflight_firmware::nanoprintf::tfp_printf
+#define nano_sprintf rosflight_firmware::nanoprintf::tfp_sprintf
 
-#endif
+#endif // ROSFLIGHT_FIRWMARE_NANO_PRINTF_H

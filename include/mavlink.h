@@ -38,8 +38,8 @@
 //#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 #define commlink_log(objectptr, severity, format, ...) do {\
-  char text[50]; \
-  nano_sprintf(text, format, ##__VA_ARGS__); \
+  char text[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN]; \
+  rosflight_firmware::nanoprintf::tfp_sprintf(text, format, ##__VA_ARGS__); \
   objectptr->send_log_message(severity, text); \
   } while(0)
 
