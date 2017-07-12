@@ -259,25 +259,25 @@ public:
   /**
    * @brief Set all parameters to default values
    */
-  void set_param_defaults(void);
+  void set_defaults(void);
 
   /**
    * @brief Read parameter values from non-volatile memory
    * @return True if successful, false otherwise
    */
-  bool read_params(void);
+  bool read(void);
 
   /**
    * @brief Write current parameter values to non-volatile memory
    * @return True if successful, false otherwise
    */
-  bool write_params(void);
+  bool write(void);
 
   /**
    * @brief Callback for executing actions that need to be taken when a parameter value changes
    * @param id The ID of the parameter that was changed
    */
-  void param_change_callback(uint16_t id);
+  void change_callback(uint16_t id);
 
   /**
    * @brief Gets the id of a parameter from its name

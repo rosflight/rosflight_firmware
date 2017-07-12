@@ -59,7 +59,6 @@ void RC::init()
 
 void RC::init_rc()
 {
-
   init_sticks();
   init_switches();
 }
@@ -71,7 +70,6 @@ void RC::param_change_callback(uint16_t param_id)
 
 float RC::rc_stick(rc_stick_t channel)
 {
-  new_command_ = false;
   return stick_values[channel];
 }
 
@@ -121,16 +119,16 @@ void RC::init_switches()
     switches[chan].direction = 1;
     switch (chan)
     {
-    case 4:
+    case 0:
       switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
       break;
-    case 5:
+    case 1:
       switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_6_DIRECTION);
       break;
-    case 6:
+    case 2:
       switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_7_DIRECTION);
       break;
-    case 7:
+    case 3:
       switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
       break;
     }
@@ -227,7 +225,7 @@ void RC::look_for_arm_disarm_signal()
 }
 
 
-bool RC::receive_rc()
+bool RC::run()
 {
   static uint32_t last_rc_receive_time = 0;
 
@@ -290,7 +288,13 @@ bool RC::receive_rc()
 
 bool RC::new_command()
 {
-  return new_command_;
+  if (new_command_)
+  {
+    new_command_ = false;
+    return true;
+  }
+  else
+    return false;;
 }
 
 }

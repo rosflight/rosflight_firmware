@@ -1,3 +1,6 @@
+dist: "trusty"
+language: cpp
+
 addons:
   apt:
     packages:
@@ -20,19 +23,14 @@ install:
   - sudo cmake CMakeLists.txt
   - sudo make 
   - sudo cp *.a /usr/lib
-  - cd "${TRAVIS_BUILD_DIR}"
 
 before_script:
+  - cd "${TRAVIS_BUILD_DIR}"
   - arm-none-eabi-gcc --version
+  - mkdir -p test/build
 
 script:
-  - cd test
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make 
-  - ./unit_tests
-  - cd ../..
   - make
+  - cd test/build && cmake .. && make
+  - ./unit_tests
 
-dist: "trusty"

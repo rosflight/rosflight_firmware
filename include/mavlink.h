@@ -140,49 +140,49 @@ private:
     MavlinkStreamFcn send_function;
   } mavlink_stream_t;
 
-  void mavlink_handle_msg_param_request_list(void);
-  void mavlink_handle_msg_param_request_read(const mavlink_message_t *const msg);
-  void mavlink_handle_msg_param_set(const mavlink_message_t *const msg);
-  void mavlink_send_next_param(void);
+  void handle_msg_param_request_list(void);
+  void handle_msg_param_request_read(const mavlink_message_t *const msg);
+  void handle_msg_param_set(const mavlink_message_t *const msg);
+  void send_next_param(void);
 
   void handle_mavlink_message(void);
 
-  void mavlink_handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
-  void mavlink_handle_msg_timesync(const mavlink_message_t *const msg);
-  void mavlink_handle_msg_offboard_control(const mavlink_message_t *const msg);
+  void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
+  void handle_msg_timesync(const mavlink_message_t *const msg);
+  void handle_msg_offboard_control(const mavlink_message_t *const msg);
 
-  void mavlink_send_heartbeat(void);
-  void mavlink_send_status(void);
-  void mavlink_send_attitude(void);
-  void mavlink_send_imu(void);
-  void mavlink_send_output_raw(void);
-  void mavlink_send_rc_raw(void);
-  void mavlink_send_diff_pressure(void);
-  void mavlink_send_baro(void);
-  void mavlink_send_sonar(void);
-  void mavlink_send_mag(void);
-  void mavlink_send_low_priority(void);
+  void send_heartbeat(void);
+  void send_status(void);
+  void send_attitude(void);
+  void send_imu(void);
+  void send_output_raw(void);
+  void send_rc_raw(void);
+  void send_diff_pressure(void);
+  void send_baro(void);
+  void send_sonar(void);
+  void send_mag(void);
+  void send_low_priority(void);
   void send_message(const mavlink_message_t &msg);
-  void mavlink_stream_set_period(uint8_t stream_id, uint32_t period_us);
+  void stream_set_period(uint8_t stream_id, uint32_t period_us);
 
   // Debugging Utils
-  void mavlink_send_named_value_int(const char *const name, int32_t value);
-  void mavlink_send_named_value_float(const char *const name, float value);
-//  void mavlink_send_named_command_struct(const char *const name, control_t command_struct);
+  void send_named_value_int(const char *const name, int32_t value);
+  void send_named_value_float(const char *const name, float value);
+//  void send_named_command_struct(const char *const name, control_t command_struct);
 
   mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
   //  period_us    last_time_us   send_function
-    { 1000000,     0,             &rosflight_firmware::Mavlink::mavlink_send_heartbeat },
-    { 1000000,     0,             &rosflight_firmware::Mavlink::mavlink_send_status},
-    { 200000,      0,             &rosflight_firmware::Mavlink::mavlink_send_attitude },
-    { 1000,        0,             &rosflight_firmware::Mavlink::mavlink_send_imu },
-    { 200000,      0,             &rosflight_firmware::Mavlink::mavlink_send_diff_pressure },
-    { 200000,      0,             &rosflight_firmware::Mavlink::mavlink_send_baro },
-    { 100000,      0,             &rosflight_firmware::Mavlink::mavlink_send_sonar },
-    { 6250,        0,             &rosflight_firmware::Mavlink::mavlink_send_mag },
-    { 0,           0,             &rosflight_firmware::Mavlink::mavlink_send_output_raw },
-    { 0,           0,             &rosflight_firmware::Mavlink::mavlink_send_rc_raw },
-    { 5000,        0,             &rosflight_firmware::Mavlink::mavlink_send_low_priority }
+    { 1000000,     0,             &rosflight_firmware::Mavlink::send_heartbeat },
+    { 1000000,     0,             &rosflight_firmware::Mavlink::send_status},
+    { 200000,      0,             &rosflight_firmware::Mavlink::send_attitude },
+    { 1000,        0,             &rosflight_firmware::Mavlink::send_imu },
+    { 200000,      0,             &rosflight_firmware::Mavlink::send_diff_pressure },
+    { 200000,      0,             &rosflight_firmware::Mavlink::send_baro },
+    { 100000,      0,             &rosflight_firmware::Mavlink::send_sonar },
+    { 6250,        0,             &rosflight_firmware::Mavlink::send_mag },
+    { 0,           0,             &rosflight_firmware::Mavlink::send_output_raw },
+    { 0,           0,             &rosflight_firmware::Mavlink::send_rc_raw },
+    { 5000,        0,             &rosflight_firmware::Mavlink::send_low_priority }
   };
 
 

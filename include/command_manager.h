@@ -59,7 +59,7 @@ typedef struct
 
 typedef struct
 {
-  uint64_t stamp_us;
+  uint32_t stamp_ms;
   control_channel_t x;
   control_channel_t y;
   control_channel_t z;

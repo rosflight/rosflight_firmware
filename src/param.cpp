@@ -86,14 +86,14 @@ uint8_t Params::compute_checksum(void)
 void Params::init()
 {
   RF_.board_.memory_init();
-  if (!read_params())
+  if (!read())
   {
-    set_param_defaults();
-    write_params();
+    set_defaults();
+    write();
   }
 }
 
-void Params::set_param_defaults(void)
+void Params::set_defaults(void)
 {
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
@@ -252,7 +252,7 @@ void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
   callback(param_id);
 }
 
-bool Params::read_params(void)
+bool Params::read(void)
 {
   if (!RF_.board_.memory_read(&params, sizeof(params_t)))
     return false;
@@ -269,7 +269,7 @@ bool Params::read_params(void)
   return true;
 }
 
-bool Params::write_params(void)
+bool Params::write(void)
 {
   params.version = GIT_VERSION_HASH;
   params.size = sizeof(params_t);
@@ -282,7 +282,7 @@ bool Params::write_params(void)
   return true;
 }
 
-void Params::param_change_callback(uint16_t id)
+void Params::change_callback(uint16_t id)
 {
   // call the callback function
   if(callbacks[id])
@@ -320,7 +320,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
   if (id < PARAMS_COUNT && value != params.values[id])
   {
     params.values[id] = value;
-    param_change_callback(id);
+    change_callback(id);
     //    commlink_->update_param(id);
     return true;
   }
