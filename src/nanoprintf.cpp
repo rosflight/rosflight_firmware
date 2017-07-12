@@ -31,6 +31,11 @@
 
 #include "nanoprintf.h"
 
+namespace rosflight_firmware
+{
+namespace nanoprintf
+{
+
 typedef void (*putcf)(void *,char);
 static putcf stdout_putf;
 static void *stdout_putp;
@@ -256,3 +261,6 @@ void tfp_sprintf(char *s, const char *fmt, ...)
   putcp(&s,0);
   va_end(va);
 }
+
+} // namespace nanoprintf
+} // namespace rosflight_firmware

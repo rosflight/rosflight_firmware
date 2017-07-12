@@ -15,12 +15,13 @@ include_directories(/usr/include/eigen3)
 
 
 set(ROSFLIGHT_SRC
-	../src/rosflight.cpp 
+    ../src/rosflight.cpp
     ../src/param.cpp 
     ../src/sensors.cpp 
     ../src/state_manager.cpp 
     ../src/estimator.cpp 
     ../src/mavlink.cpp 
+    ../src/nanoprintf.cpp
     ../src/controller.cpp 
     ../src/command_manager.cpp 
     ../src/rc.cpp 
