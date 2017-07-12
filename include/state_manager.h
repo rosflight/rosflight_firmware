@@ -89,7 +89,7 @@ private:
   ROSflight& RF_;
   State state_;
 
-  int led_blink_counter_ = 0;
+  int next_led_blink_ms_ = 0;
 
   enum FsmState
   {

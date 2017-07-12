@@ -342,9 +342,3 @@ TEST(state_machine_test, corner_cases) {
   rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
   ASSERT_EQ(rf.state_manager_.state().armed, true);
 }
-
-
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

@@ -149,7 +149,7 @@ public:
   void init_mixing();
   void mix_output();
   void param_change_callback(uint16_t param_id);
-  inline float* get_outputs() {return raw_outputs_;}
+  inline const float* get_outputs() const {return raw_outputs_;}
 };
 
 } // namespace rosflight_firmware

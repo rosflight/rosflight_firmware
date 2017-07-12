@@ -159,7 +159,7 @@ void Estimator::run()
     vector_t a = vector_normalize(accel_LPF_);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
-    quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_vectors(a, g_));
+    quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_unit_vectors(a, g_));
     // Get the error quaternion between observer and low-freq q
     // Below Eq. 45 Mahony Paper
     quaternion_t q_tilde = quaternion_multiply(q_acc_inv, state_.attitude);

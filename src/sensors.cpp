@@ -164,6 +164,7 @@ bool Sensors::update_imu(void)
 {
   if (rf_.board_.new_imu_data())
   {
+    rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms = rf_.board_.clock_millis();
     if (!rf_.board_.imu_read_all(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
     {
@@ -322,13 +323,13 @@ void Sensors::calibrate_accel(void)
         {
 //          mavlink_log_error("Detected bad IMU accel scale value", 0);
           rf_.params_.set_param_float(PARAM_ACCEL_SCALE, 2.0 * rf_.params_.get_param_float(PARAM_ACCEL_SCALE));
-          rf_.params_.write_params();
+          rf_.params_.write();
         }
         else if (norm(accel_bias) > 6.0)
         {
 //          mavlink_log_error("Detected bad IMU accel scale value", 0);
           rf_.params_.set_param_float(PARAM_ACCEL_SCALE, 0.5 * rf_.params_.get_param_float(PARAM_ACCEL_SCALE));
-          rf_.params_.write_params();
+          rf_.params_.write();
         }
         else
         {

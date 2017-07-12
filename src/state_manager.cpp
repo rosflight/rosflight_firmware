@@ -135,6 +135,9 @@ void StateManager::set_event(StateManager::Event event)
       state_.failsafe = false;
       clear_error(ERROR_RC_LOST);
       break;
+    case EVENT_RC_LOST:
+      state_.failsafe = true;
+      break;
     case EVENT_NO_ERROR:
       state_.error = false;
       fsm_state_ = FSM_STATE_PREFLIGHT;
@@ -225,29 +228,29 @@ void StateManager::process_errors()
 
 void StateManager::update_leds()
 {
+  // blink fast if in failsafe
+  if (state_.failsafe)
+  {
+    if (next_led_blink_ms_ < RF_.board_.clock_millis())
+    {
+      RF_.board_.led1_toggle();
+      next_led_blink_ms_ =  RF_.board_.clock_millis() + 100;
+    }
+  }
+  // blink slowly if in error
+  else if (state_.error)
+  {
+    if (next_led_blink_ms_ < RF_.board_.clock_millis())
+    {
+      RF_.board_.led1_toggle();
+      next_led_blink_ms_ =  RF_.board_.clock_millis() + 500;
+    }
+  }
   // off if disarmed, on if armed
-  if (!state_.armed)
+  else if (!state_.armed)
     RF_.board_.led1_off();
   else
     RF_.board_.led1_on();
-
-  if (state_.error)
-  {
-    if (led_blink_counter_++ > 25)
-    {
-      RF_.board_.led1_toggle();
-      led_blink_counter_ = 0;
-    }
-  }
-
-  if (state_.failsafe)
-  {
-    if (led_blink_counter_++ > 13)
-    {
-      RF_.board_.led1_toggle();
-      led_blink_counter_ = 0;
-    }
-  }
 }
 
 } //namespace rosflight_firmware
