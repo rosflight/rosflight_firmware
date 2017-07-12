@@ -39,7 +39,7 @@
 
 #define commlink_log(objectptr, severity, format, ...) do {\
   char text[50]; \
-  sprintf(text, format, ##__VA_ARGS__); \
+  nano_sprintf(text, format, ##__VA_ARGS__); \
   objectptr->send_log_message(severity, text); \
   } while(0)
 
