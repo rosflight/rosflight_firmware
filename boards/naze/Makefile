@@ -133,7 +133,6 @@ CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
 
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
-                $(TURBOTRIG_DIR) \
                 $(ROSFLIGHT_DIR)/include \
                 $(ROSFLIGHT_DIR)/lib \
                 $(STDPERIPH_DIR)/inc \

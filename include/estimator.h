@@ -36,8 +36,8 @@
 #include <stdbool.h>
 #include <math.h>
 
-#include <turbovec.h>
-#include <turbotrig.h>
+#include <turbotrig/turbovec.h>
+#include <turbotrig/turbotrig.h>
 
 namespace rosflight_firmware
 {

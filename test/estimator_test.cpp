@@ -2,7 +2,7 @@
 #include "math.h"
 #include "rosflight.h"
 #include "test_board.h"
-#include "turbotrig.h"
+#include <turbotrig/turbotrig.h>
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
