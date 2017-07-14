@@ -84,9 +84,12 @@ void Naze32::serial_init(uint32_t baud_rate)
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
-void Naze32::serial_write(uint8_t byte)
+void Naze32::serial_write(const uint8_t *src, size_t len)
 {
-  serialWrite(Serial1, byte);
+  for (size_t i = 0; i < len; i++)
+  {
+    serialWrite(Serial1, src[i]);
+  }
 }
 
 uint16_t Naze32::serial_bytes_available(void)
