@@ -55,7 +55,7 @@ public:
 
 // serial
   virtual void serial_init(uint32_t baud_rate) = 0;
-  virtual void serial_write(uint8_t byte) = 0;
+  virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available(void) = 0;
   virtual uint8_t serial_read(void) = 0;
 

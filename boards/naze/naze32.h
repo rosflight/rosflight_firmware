@@ -78,7 +78,7 @@ public:
 
   // serial
   void serial_init(uint32_t baud_rate);
-  void serial_write(uint8_t byte);
+  void serial_write(const uint8_t *src, size_t len);
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
 

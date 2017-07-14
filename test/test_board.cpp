@@ -75,7 +75,7 @@ namespace rosflight_firmware
 
 // serial
   void testBoard::serial_init(uint32_t baud_rate){}
-  void testBoard::serial_write(uint8_t byte){}
+  void testBoard::serial_write(const uint8_t *src, size_t len){}
   uint16_t testBoard::serial_bytes_available(void){ return 0; }
   uint8_t testBoard::serial_read(void){}
 
