@@ -217,7 +217,7 @@ bool Naze32::mag_check(void)
 
 bool Naze32::baro_present(void)
 {
-  return ms5611_present();
+  return _baro_present;
 }
 
 void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
@@ -230,7 +230,8 @@ void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
 bool Naze32::baro_check()
 {
   ms5611_async_update();
-  return ms5611_present();
+  _baro_present = ms5611_present();
+  return _baro_present;
 }
 
 void Naze32::baro_calibrate()
@@ -240,13 +241,14 @@ void Naze32::baro_calibrate()
 
 bool Naze32::diff_pressure_present(void)
 {
-  return ms4525_present();
+  return _diff_pressure_present;
 }
 
 bool Naze32::diff_pressure_check(void)
 {
   ms4525_async_update();
-  return ms4525_present();
+  _diff_pressure_present = ms4525_present();
+  return _diff_pressure_present;
 }
 
 void Naze32::diff_pressure_calibrate()
@@ -267,19 +269,18 @@ void Naze32::diff_pressure_read(float *diff_pressure, float *temperature, float 
 
 bool Naze32::sonar_present(void)
 {
-  return mb1242_present();
+  return _sonar_present;
 }
 
 bool Naze32::sonar_check(void)
 {
-  mb1242_async_update();
-  return mb1242_present();
+  _sonar_present = sonarPresent();
+  return _sonar_present;
 }
 
 float Naze32::sonar_read(void)
 {
-  mb1242_update();
-  return mb1242_read();
+  return sonarRead(7);
 }
 
 uint16_t num_sensor_errors(void)
