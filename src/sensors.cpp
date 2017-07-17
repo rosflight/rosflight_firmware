@@ -59,78 +59,113 @@ void Sensors::init()
   {
     rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
   }
+  next_sensor_to_update_ = 0;
 }
 
 
 bool Sensors::run(void)
 {
   // First, check for new IMU data
-  bool new_imu_data = update_imu();
-
-
-  // Now, Look for disabled sensors while disarmed (poll every 0.5 seconds)
-  // These sensors need power to respond, so they might not have been
-  // detected on startup, but will be detected whenever power is applied
-  // to the 5V rail.
-  if (!rf_.state_manager_.state().armed)
+  if (update_imu())
   {
-    uint32_t now = rf_.board_.clock_millis();
-    if (now > (last_time_look_for_disarmed_sensors + 500))
-    {
-      last_time_look_for_disarmed_sensors = now;
-//      if (!rf_.board_.sonar_present())
-//      {
-//        if (rf_.board_.sonar_check())
-//        {
-          //          mavlink_log_info("FOUND SONAR", NULL);
-//          volatile int debug = 1;
-//        }
-//      }
-      if (!rf_.board_.diff_pressure_present())
-      {
-        if (rf_.board_.diff_pressure_check())
-        {
-//                    mavlink_log_info("FOUND DIFF PRESS", NULL);
-        }
-      }
-    }
+    return true;
   }
-
-
-  // Update whatever sensors are available
-  if (rf_.board_.baro_present())
+  else
   {
-    rf_.board_.baro_read(&data_.baro_altitude, &data_.baro_pressure, &data_.baro_temperature);
+    if (!rf_.state_manager_.state().armed)
+      look_for_disabled_sensors();
+
+    // Update other sensors
+    update_other_sensors();
+    return false;
   }
-
-  if (rf_.board_.diff_pressure_present())
-  {
-    if (rf_.board_.baro_present())
-    {
-      rf_.board_.diff_pressure_set_atm(data_.baro_pressure);
-    }
-    rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp, &data_.diff_pressure_velocity);
-  }
-
-//  if (rf_.board_.sonar_present())
-//  {
-//    data_._sonar_range = rf_.board_.sonar_read();
-//  }
-
-  if (rf_.board_.mag_present())
-  {
-    float mag[3];
-    rf_.board_.mag_read(mag);
-    data_.mag.x = mag[0];
-    data_.mag.y = mag[1];
-    data_.mag.z = mag[2];
-    correct_mag();
-  }
-
-  return new_imu_data;
 }
 
 
+void Sensors::update_other_sensors()
+{
+  uint32_t now = rf_.board_.clock_millis();
+  switch (next_sensor_to_update_)
+  {
+  case 0:
+    if (rf_.board_.baro_present())
+    {
+      rf_.board_.baro_read(&data_.baro_altitude, &data_.baro_pressure, &data_.baro_temperature);
+    }
+    break;
+  case 1:
+    if (rf_.board_.diff_pressure_present())
+    {
+      if (rf_.board_.baro_present())
+      {
+        rf_.board_.diff_pressure_set_atm(data_.baro_pressure);
+      }
+      rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp, &data_.diff_pressure_velocity);
+    }
+    break;
+  case 2:
+    if (rf_.board_.sonar_present())
+    {
+      data_.sonar_range = rf_.board_.sonar_read();
+    }
+    break;
+  case 3:
+    if (rf_.board_.mag_present())
+    {
+      float mag[3];
+      rf_.board_.mag_read(mag);
+      data_.mag.x = mag[0];
+      data_.mag.y = mag[1];
+      data_.mag.z = mag[2];
+      correct_mag();
+    }
+    break;
+  }
+  next_sensor_to_update_ = (next_sensor_to_update_ + 1) % 4;
+}
+
+
+void Sensors::look_for_disabled_sensors()
+{
+  // Look for disabled sensors while disarmed (poll every second)
+  // These sensors need power to respond, so they might not have been
+  // detected on startup, but will be detected whenever power is applied
+  // to the 5V rail.
+  uint32_t now = rf_.board_.clock_millis();
+  if (now > (last_time_look_for_disarmed_sensors + 1000))
+  {
+    last_time_look_for_disarmed_sensors = now;
+//    if (!rf_.board_.sonar_present())
+//    {
+//      if (rf_.board_.sonar_check())
+//      {
+//        RF_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
+//        volatile int debug = 1;
+//      }
+//    }
+    if (!rf_.board_.diff_pressure_present())
+    {
+      if (rf_.board_.diff_pressure_check())
+      {
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND DIFF PRESS");
+      }
+    }
+    if (!rf_.board_.baro_present())
+    {
+      if (rf_.board_.baro_check())
+      {
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND BAROMETER");
+      }
+    }
+    if (!rf_.board_.mag_present())
+    {
+      if (rf_.board_.mag_check())
+      {
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND MAGNETOMETER");
+      }
+    }
+  }
+}
 
 
 bool Sensors::start_imu_calibration(void)
@@ -171,9 +206,9 @@ bool Sensors::update_imu(void)
       return false;
     }
 
-    data_.accel.x = accel_[0] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
-    data_.accel.y = accel_[1] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
-    data_.accel.z = accel_[2] * rf_.params_.get_param_float(PARAM_ACCEL_SCALE);
+    data_.accel.x = accel_[0];
+    data_.accel.y = accel_[1];
+    data_.accel.z = accel_[2];
 
     data_.gyro.x = gyro_[0];
     data_.gyro.y = gyro_[1];
@@ -233,7 +268,7 @@ void Sensors::calibrate_gyro()
     {
       // Tell the state manager that we just failed a gyro calibration
       rf_.state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
-      //      mavlink_log_error("Too much movement for gyro cal", NULL);
+      rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for gyro cal");
     }
 
     // reset calibration in case we do it again
@@ -297,44 +332,31 @@ void Sensors::calibrate_accel(void)
     // then don't do anything
     if (norm(vector_sub(max_, min_)) > 1.0)
     {
-//      mavlink_log_error("Too much movement for IMU cal", NULL);
+      rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for IMU cal");
       calibrating_acc_flag_ = false;
     }
     else
     {
+      // reset the estimated state
+      rf_.estimator_.reset_state();
+      calibrating_acc_flag_ = false;
+
       if (norm(accel_bias) < 3.0)
       {
         rf_.params_.set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
         rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
         rf_.params_.set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
-//        mavlink_log_info("IMU offsets captured", NULL);
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "IMU offsets captured");
 
         // clear uncalibrated IMU flag
         rf_.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
-
-        // reset the estimated state
-        rf_.estimator_.reset_state();
-        calibrating_acc_flag_ = false;
       }
       else
       {
-        // check for bad _accel_scale
-        if (norm(accel_bias) > 3.0 && norm(accel_bias) < 6.0)
-        {
-//          mavlink_log_error("Detected bad IMU accel scale value", 0);
-          rf_.params_.set_param_float(PARAM_ACCEL_SCALE, 2.0 * rf_.params_.get_param_float(PARAM_ACCEL_SCALE));
-          rf_.params_.write();
-        }
-        else if (norm(accel_bias) > 6.0)
-        {
-//          mavlink_log_error("Detected bad IMU accel scale value", 0);
-          rf_.params_.set_param_float(PARAM_ACCEL_SCALE, 0.5 * rf_.params_.get_param_float(PARAM_ACCEL_SCALE));
-          rf_.params_.write();
-        }
-        else
-        {
-
-        }
+        // This usually means the user has the FCU in the wrong orientation, or something is wrong
+        // with the board IMU (like it's a cheap chinese clone)
+        rf_.mavlink_.log(Mavlink::LOG_ERROR, "large accel bias: norm = %d.%d",
+                         (uint32_t)norm(accel_bias), (uint32_t)(norm(accel_bias)*1000)%1000);
       }
     }
 
@@ -356,12 +378,12 @@ void Sensors::calibrate_accel(void)
 void Sensors::correct_imu(void)
 {
   // correct according to known biases and temperature compensation
-  data_.accel.x -= rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP)*data_.imu_temperature + rf_.params_.get_param_float(
-                PARAM_ACC_X_BIAS);
-  data_.accel.y -= rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP)*data_.imu_temperature + rf_.params_.get_param_float(
-                PARAM_ACC_Y_BIAS);
-  data_.accel.z -= rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)*data_.imu_temperature + rf_.params_.get_param_float(
-                PARAM_ACC_Z_BIAS);
+  data_.accel.x -= rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP)*data_.imu_temperature
+                    + rf_.params_.get_param_float(PARAM_ACC_X_BIAS);
+  data_.accel.y -= rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP)*data_.imu_temperature
+                    + rf_.params_.get_param_float(PARAM_ACC_Y_BIAS);
+  data_.accel.z -= rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)*data_.imu_temperature
+                    + rf_.params_.get_param_float(PARAM_ACC_Z_BIAS);
 
   data_.gyro.x -= rf_.params_.get_param_float(PARAM_GYRO_X_BIAS);
   data_.gyro.y -= rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS);

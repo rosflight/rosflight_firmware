@@ -113,7 +113,8 @@ void RC::init_switches()
                             && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
     if (!switches[chan].mapped)
     {
-      //      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
+      // TODO use parameter name
+      RF_.mavlink_.log(Mavlink::LOG_ERROR, "invalid RC switch channel assignment: %d", switches[chan].channel);
     }
 
     switches[chan].direction = 1;

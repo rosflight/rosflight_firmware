@@ -75,7 +75,7 @@ void Mixer::init_mixing()
 
   if (mixer_choice >= NUM_MIXERS)
   {
-//    mavlink_log_error("Invalid Mixer Choice", NULL);
+    RF_.mavlink_.log(Mavlink::LOG_ERROR, "Invalid Mixer Choice");
     mixer_choice = 0;
 
     // set the invalid mixer flag
