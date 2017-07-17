@@ -73,10 +73,7 @@ void Mavlink::send_message(const mavlink_message_t &msg)
   {
     uint8_t data[MAVLINK_MAX_PACKET_LEN];
     uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
-    for (int i = 0; i < len; i++)
-    {
-      RF_.board_.serial_write(data[i]);
-    }
+    RF_.board_.serial_write(data, len);
   }
 }
 
