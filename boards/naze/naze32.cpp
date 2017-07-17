@@ -280,7 +280,7 @@ bool Naze32::sonar_check(void)
 
 float Naze32::sonar_read(void)
 {
-  return sonarRead(7);
+  return sonarRead(6);
 }
 
 uint16_t num_sensor_errors(void)
