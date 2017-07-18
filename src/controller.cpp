@@ -126,7 +126,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
   if (!(RF_.state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
-    //    mavlink_log_warning("Capturing equilbrium offsets from RC");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Capturing equilbrium offsets from RC");
 
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
@@ -155,12 +155,12 @@ void Controller::calculate_equilbrium_torque_from_rc()
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y);
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z);
 
-    //    mavlink_log_warning("Equilibrium torques found and applied.");
-    //    mavlink_log_warning("Please zero out trims on your transmitter");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Equilibrium torques found and applied.");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Please zero out trims on your transmitter");
   }
   else
   {
-    //    mavlink_log_warning("Cannot perform equilbirum offset calibration while armed");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
   }
 }
 
@@ -230,7 +230,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
     differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
-                          + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+        + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
   }
   else
@@ -261,10 +261,10 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   // If there is an integrator term and we are updating integrators
   if ((ki_ > 0.0f) && update_integrator)
   {
-      // integrate
-      integrator_ += error * dt;
-      // calculate I term
-      i_term = ki_ * integrator_;
+    // integrate
+    integrator_ += error * dt;
+    // calculate I term
+    i_term = ki_ * integrator_;
   }
 
   // sum three terms

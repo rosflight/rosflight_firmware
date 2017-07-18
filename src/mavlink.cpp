@@ -232,7 +232,7 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       send_message(msg);
       break;
     default:
-      log_error(this, "unsupported ROSFLIGHT CMD %d", cmd.command);
+      log(LOG_ERROR, "unsupported ROSFLIGHT CMD %d", cmd.command);
       result = false;
       break;
     }
@@ -350,7 +350,18 @@ void Mavlink::receive(void)
   }
 }
 
-void Mavlink::send_log_message(uint8_t severity, char *text)
+void Mavlink::log(uint8_t severity, const char *fmt, ...)
+{
+  // Convert the format string to a raw char array
+  va_list args;
+  va_start(args, fmt);
+  char text[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN];
+  rosflight_firmware::nanoprintf::tfp_sprintf(text, fmt, args);
+  va_end(args);
+  send_log_message(severity, text);
+}
+
+void Mavlink::send_log_message(uint8_t severity, const char* text)
 {
   mavlink_message_t msg;
   mavlink_msg_statustext_pack(RF_.params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
@@ -362,7 +373,7 @@ void Mavlink::send_log_message(uint8_t severity, char *text)
 
 void Mavlink::send_heartbeat(void)
 {
-    uint8_t control_mode = 0;
+  uint8_t control_mode = 0;
   mavlink_message_t msg;
   mavlink_msg_heartbeat_pack(RF_.params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                              RF_.params_.get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
@@ -416,37 +427,37 @@ void Mavlink::send_attitude(void)
 
 void Mavlink::send_imu(void)
 {
-//  if(RF_.sensors_.should_send_imu_data())
-//  {
-    mavlink_message_t msg;
-    vector_t accel = RF_.sensors_.data().accel;
-    vector_t gyro = RF_.sensors_.data().gyro;
-    mavlink_msg_small_imu_pack(sysid_, compid_, &msg,
-                               RF_.sensors_.data().imu_time,
-                               accel.x,
-                               accel.y,
-                               accel.z,
-                               gyro.x,
-                               gyro.y,
-                               gyro.z,
-                               RF_.sensors_.data().imu_temperature);
-    send_message(msg);
-//  }
-//  else
-//  {
-    // Otherwise, wait and signal that we still need to send IMU
-//    mavlink_streams[STREAM_ID_IMU].next_time_us -= mavlink_streams[STREAM_ID_IMU].period_us;
-//  }
+  //  if(RF_.sensors_.should_send_imu_data())
+  //  {
+  mavlink_message_t msg;
+  vector_t accel = RF_.sensors_.data().accel;
+  vector_t gyro = RF_.sensors_.data().gyro;
+  mavlink_msg_small_imu_pack(sysid_, compid_, &msg,
+                             RF_.sensors_.data().imu_time,
+                             accel.x,
+                             accel.y,
+                             accel.z,
+                             gyro.x,
+                             gyro.y,
+                             gyro.z,
+                             RF_.sensors_.data().imu_temperature);
+  send_message(msg);
+  //  }
+  //  else
+  //  {
+  // Otherwise, wait and signal that we still need to send IMU
+  //    mavlink_streams[STREAM_ID_IMU].next_time_us -= mavlink_streams[STREAM_ID_IMU].period_us;
+  //  }
 
 }
 
 void Mavlink::send_output_raw(void)
 {
   mavlink_message_t msg;
-    mavlink_msg_rosflight_output_raw_pack(sysid_, compid_, &msg,
-                                      RF_.board_.clock_millis(),
-                                      RF_.mixer_.get_outputs());
-    send_message(msg);
+  mavlink_msg_rosflight_output_raw_pack(sysid_, compid_, &msg,
+                                        RF_.board_.clock_millis(),
+                                        RF_.mixer_.get_outputs());
+  send_message(msg);
 }
 
 void Mavlink::send_rc_raw(void)

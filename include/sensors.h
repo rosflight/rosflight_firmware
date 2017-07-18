@@ -99,11 +99,14 @@ private:
 
   bool calibrating_acc_flag_ = false;
   bool calibrating_gyro_flag_ = false;
+  uint8_t next_sensor_to_update_ = 0;
   void calibrate_accel(void);
   void calibrate_gyro(void);
   void correct_imu(void);
   void correct_mag(void);
   bool update_imu(void);
+  void update_other_sensors(void);
+  void look_for_disabled_sensors(void);
   uint32_t last_time_look_for_disarmed_sensors = 0;
   uint32_t last_imu_update_ms = 0;
 
