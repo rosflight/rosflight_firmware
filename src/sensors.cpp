@@ -135,14 +135,13 @@ void Sensors::look_for_disabled_sensors()
   if (now > (last_time_look_for_disarmed_sensors + 1000))
   {
     last_time_look_for_disarmed_sensors = now;
-//    if (!rf_.board_.sonar_present())
-//    {
-//      if (rf_.board_.sonar_check())
-//      {
-//        RF_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
-//        volatile int debug = 1;
-//      }
-//    }
+    if (!rf_.board_.sonar_present())
+    {
+      if (rf_.board_.sonar_check())
+      {
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
+      }
+    }
     if (!rf_.board_.diff_pressure_present())
     {
       if (rf_.board_.diff_pressure_check())
