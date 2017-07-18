@@ -445,6 +445,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
+  rf.params_.set_param_int(PARAM_RC_SWITCH_5_DIRECTION, 1);
 
   // ensure that the override switch is off
   rc_values[4] = CHN_LOW;

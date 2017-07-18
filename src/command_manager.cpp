@@ -47,7 +47,7 @@ typedef enum
 
 typedef struct
 {
-  RC::rc_stick_t rc_channel;
+  RC::Stick rc_channel;
   uint32_t last_override_time;
 } rc_stick_override_t;
 
@@ -75,10 +75,10 @@ void CommandManager::init()
 void CommandManager::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  rc_command_.x.value = RF_.rc_.rc_stick(RC::STICK_X);
-  rc_command_.y.value = RF_.rc_.rc_stick(RC::STICK_Y);
-  rc_command_.z.value = RF_.rc_.rc_stick(RC::STICK_Z);
-  rc_command_.F.value = RF_.rc_.rc_stick(RC::STICK_F);
+  rc_command_.x.value = RF_.rc_.stick(RC::STICK_X);
+  rc_command_.y.value = RF_.rc_.stick(RC::STICK_Y);
+  rc_command_.z.value = RF_.rc_.stick(RC::STICK_Z);
+  rc_command_.F.value = RF_.rc_.stick(RC::STICK_F);
 
   // determine control mode for each channel and scale command values accordingly
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
@@ -91,9 +91,9 @@ void CommandManager::interpret_rc(void)
   {
     // roll and pitch
     control_type_t roll_pitch_type;
-    if (RF_.rc_.rc_switch_mapped(RC::SWITCH_ATT_TYPE))
+    if (RF_.rc_.switch_mapped(RC::SWITCH_ATT_TYPE))
     {
-      roll_pitch_type = RF_.rc_.rc_switch(RC::SWITCH_ATT_TYPE) ? ANGLE : RATE;
+      roll_pitch_type = RF_.rc_.switch_on(RC::SWITCH_ATT_TYPE) ? ANGLE : RATE;
     }
     else
     {
@@ -124,7 +124,7 @@ void CommandManager::interpret_rc(void)
   }
 }
 
-bool CommandManager::stick_deviated(uint8_t channel)
+bool CommandManager::stick_deviated(MuxChannel channel)
 {
   uint32_t now = RF_.board_.clock_millis();
 
@@ -135,7 +135,8 @@ bool CommandManager::stick_deviated(uint8_t channel)
   }
   else
   {
-    if (fabs(RF_.rc_.rc_stick(rc_stick_override_[channel].rc_channel)) > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
+    if (fabs(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
+          > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override_[channel].last_override_time = now;
       return true;
@@ -144,11 +145,12 @@ bool CommandManager::stick_deviated(uint8_t channel)
   }
 }
 
-bool CommandManager::do_roll_pitch_yaw_muxing(uint8_t channel)
+bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
 {
   bool override_this_channel = false;
   //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
-  if ((RF_.rc_.rc_switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.rc_switch(RC::SWITCH_ATT_OVERRIDE)) || stick_deviated(channel))
+  if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
+        || stick_deviated(channel))
   {
     override_this_channel = true;
   }
@@ -172,7 +174,7 @@ bool CommandManager::do_throttle_muxing(void)
 {
   bool override_this_channel = false;
   // Check if the override switch exists and is triggered
-  if (RF_.rc_.rc_switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.rc_switch(RC::SWITCH_THROTTLE_OVERRIDE))
+  if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE))
   {
     override_this_channel = true;
   }
@@ -263,12 +265,10 @@ bool CommandManager::run()
     }
 
     // Perform muxing
-    rc_override_ = false;
-    for (uint8_t i = MUX_X; i <= MUX_Z; i++)
-    {
-      rc_override_ |= do_roll_pitch_yaw_muxing(i);
-    }
-    do_throttle_muxing();
+    rc_override_  = do_roll_pitch_yaw_muxing(MUX_X);
+    rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Y);
+    rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Z);
+    rc_override_ |= do_throttle_muxing();
 
     // Light to indicate override
     if (rc_override_)
