@@ -94,9 +94,7 @@ namespace rosflight_firmware
   }
 
 
-  void testBoard::imu_read_accel(float accel[3]){}
-  void testBoard::imu_read_gyro(float gyro[3]){}
-  bool testBoard::imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time)
+  bool testBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -108,7 +106,6 @@ namespace rosflight_firmware
     return true;
   }
 
-  float testBoard::imu_read_temperature(void){}
   void testBoard::imu_not_responding_error(void){}
 
   bool testBoard::mag_check(void){ return false; }

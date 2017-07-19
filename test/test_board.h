@@ -69,10 +69,7 @@ public:
   uint16_t num_sensor_errors(void) ;
 
   bool new_imu_data();
-  void imu_read_accel(float accel[3]);
-  void imu_read_gyro(float gyro[3]);
-  bool imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time);
-  float imu_read_temperature(void);
+  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time);
   void imu_not_responding_error(void);
 
   bool mag_check(void);
