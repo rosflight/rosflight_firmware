@@ -142,6 +142,9 @@ void StateManager::set_event(StateManager::Event event)
       state_.error = false;
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
+    case EVENT_REQUEST_ARM:
+      RF_.mavlink_.log(Mavlink::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
+      break;
     }
     break;
 

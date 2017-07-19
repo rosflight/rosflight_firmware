@@ -65,6 +65,7 @@ void Mavlink::init()
   RF_.params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
+  log(Mavlink::LOG_INFO, "Booting");
 }
 
 void Mavlink::send_message(const mavlink_message_t &msg)
@@ -480,7 +481,7 @@ void Mavlink::send_rc_raw(void)
 
 void Mavlink::send_diff_pressure(void)
 {
-  if (RF_.board_.diff_pressure_present())
+  if (RF_.sensors_.data().diff_pressure_present_)
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid_, compid_, &msg,
@@ -493,7 +494,7 @@ void Mavlink::send_diff_pressure(void)
 
 void Mavlink::send_baro(void)
 {
-  if (RF_.board_.baro_present())
+  if (RF_.sensors_.data().baro_present_)
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid_, compid_, &msg,
@@ -506,7 +507,7 @@ void Mavlink::send_baro(void)
 
 void Mavlink::send_sonar(void)
 {
-  if (RF_.board_.sonar_present())
+  if (RF_.sensors_.data().sonar_present_)
   {
     mavlink_message_t msg;
     mavlink_msg_small_range_pack(sysid_, compid_, &msg,
@@ -520,7 +521,7 @@ void Mavlink::send_sonar(void)
 
 void Mavlink::send_mag(void)
 {
-  if (RF_.board_.mag_present())
+  if (RF_.sensors_.data().mag_present_)
   {
     mavlink_message_t msg;
     mavlink_msg_small_mag_pack(sysid_, compid_, &msg,
@@ -540,7 +541,7 @@ void Mavlink::send_low_priority(void)
 void Mavlink::stream()
 {
   uint64_t time_us = RF_.board_.clock_micros();
-  for (int i = 0; i < STREAM_COUNT; i++)
+   for (int i = 0; i < STREAM_COUNT; i++)
   {
     if (time_us >= mavlink_streams_[i].next_time_us)
     {

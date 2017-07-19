@@ -50,10 +50,6 @@ private:
 
   std::function<void(void)> imu_callback_;
 
-  bool _baro_present = false;
-  bool _mag_present = false;
-  bool _sonar_present = false;
-  bool _diff_pressure_present = false;
   int _board_revision = 2;
 
   float _accel_scale = 1.0;
@@ -95,21 +91,14 @@ public:
   void imu_not_responding_error();
 
   bool mag_check(void);
-  bool mag_present(void);
   void mag_read(float mag[3]);
 
   bool baro_check();
-  bool baro_present(void);
-  void baro_read(float *altitude, float *pressure, float *temperature); // TODO move altitude calculation outside this function
-  void baro_calibrate();
+  void baro_read(float *pressure, float *temperature); // TODO move altitude calculation outside this function
 
-  bool diff_pressure_present(void);
   bool diff_pressure_check(void);
-  void diff_pressure_set_atm(float barometric_pressure);
-  void diff_pressure_calibrate();
-  void diff_pressure_read(float *diff_pressure, float *temperature, float *velocity); // TODO move velocity calculation outside this function
+  void diff_pressure_read(float *diff_pressure, float *temperature); // TODO move velocity calculation outside this function
 
-  bool sonar_present(void);
   bool sonar_check(void);
   float sonar_read(void);
 

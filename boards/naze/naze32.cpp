@@ -113,10 +113,10 @@ void Naze32::sensors_init()
     while(millis() < 50);
 
     i2cWrite(0,0,0);
-    _baro_present = ms5611_init();
-    _mag_present = hmc5883lInit(_board_revision);
-    _sonar_present = mb1242_init();
-    _diff_pressure_present = ms4525_init();
+    ms5611_init();
+    hmc5883lInit(_board_revision);
+    mb1242_init();
+    ms4525_init();
 
     // IMU
     uint16_t acc1G;
@@ -192,11 +192,6 @@ void Naze32::imu_not_responding_error(void)
   sensors_init();
 }
 
-bool Naze32::mag_present(void)
-{
-  return _mag_present;
-}
-
 void Naze32::mag_read(float mag[3])
 {
   // Convert to NED
@@ -212,70 +207,36 @@ void Naze32::mag_read(float mag[3])
 bool Naze32::mag_check(void)
 {
 //  _mag_present = hmc5883lInit(_board_revision);
-  return _mag_present;
+  return hmc5883l_present(_board_revision);
 }
 
-bool Naze32::baro_present(void)
-{
-  return _baro_present;
-}
-
-void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
+void Naze32::baro_read(float *pressure, float *temperature)
 {
   ms5611_async_update();
-  ms5611_async_read(altitude, pressure, temperature);
-  (*altitude) *= -1.0; // Convert to NED
+  ms5611_async_read(pressure, temperature);
 }
 
 bool Naze32::baro_check()
 {
   ms5611_async_update();
-  _baro_present = ms5611_present();
-  return _baro_present;
-}
-
-void Naze32::baro_calibrate()
-{
-  ms5611_start_calibration();
-}
-
-bool Naze32::diff_pressure_present(void)
-{
-  return _diff_pressure_present;
+  return ms5611_present();
 }
 
 bool Naze32::diff_pressure_check(void)
 {
   ms4525_async_update();
-  _diff_pressure_present = ms4525_present();
-  return _diff_pressure_present;
+  return ms4525_present();
 }
 
-void Naze32::diff_pressure_calibrate()
-{
-  ms4525_start_calibration();
-}
-
-void Naze32::diff_pressure_set_atm(float barometric_pressure)
-{
-  ms4525_set_atm((uint32_t) barometric_pressure);
-}
-
-void Naze32::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity)
+void Naze32::diff_pressure_read(float *diff_pressure, float *temperature)
 {
   ms4525_async_update();
-  ms4525_async_read(diff_pressure, temperature, velocity);
-}
-
-bool Naze32::sonar_present(void)
-{
-  return _sonar_present;
+  ms4525_async_read(diff_pressure, temperature);
 }
 
 bool Naze32::sonar_check(void)
 {
-  _sonar_present = sonarPresent();
-  return _sonar_present;
+  return sonarPresent();
 }
 
 float Naze32::sonar_read(void)

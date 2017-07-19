@@ -31,11 +31,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "sensors.h"
 #include "rosflight.h"
 
 #include <turbotrig/turbovec.h>
+#include <turbotrig/turbotrig.h>
 
 namespace rosflight_firmware
 {
@@ -60,6 +62,9 @@ void Sensors::init()
     rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
   }
   next_sensor_to_update_ = 0;
+
+  float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
+  ground_pressure_ = 101325.0*pow((1-2.25577e-5 * alt), 5.25588);
 }
 
 
@@ -88,29 +93,27 @@ void Sensors::update_other_sensors()
   switch (next_sensor_to_update_)
   {
   case 0:
-    if (rf_.board_.baro_present())
+    if (data_.baro_present_)
     {
-      rf_.board_.baro_read(&data_.baro_altitude, &data_.baro_pressure, &data_.baro_temperature);
+      rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
+      correct_baro();
     }
     break;
   case 1:
-    if (rf_.board_.diff_pressure_present())
+    if (data_.diff_pressure_present_)
     {
-      if (rf_.board_.baro_present())
-      {
-        rf_.board_.diff_pressure_set_atm(data_.baro_pressure);
-      }
-      rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp, &data_.diff_pressure_velocity);
+      rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp);
+      correct_diff_pressure();
     }
     break;
   case 2:
-    if (rf_.board_.sonar_present())
+    if (data_.sonar_present_)
     {
       data_.sonar_range = rf_.board_.sonar_read();
     }
     break;
   case 3:
-    if (rf_.board_.mag_present())
+    if (data_.mag_present_)
     {
       float mag[3];
       rf_.board_.mag_read(mag);
@@ -135,37 +138,40 @@ void Sensors::look_for_disabled_sensors()
   if (now > (last_time_look_for_disarmed_sensors + 1000))
   {
     last_time_look_for_disarmed_sensors = now;
-    if (!rf_.board_.sonar_present())
+    if (!data_.sonar_present_)
     {
       if (rf_.board_.sonar_check())
       {
+        data_.sonar_present_ = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
       }
     }
-    if (!rf_.board_.diff_pressure_present())
+    if (!data_.diff_pressure_present_)
     {
       if (rf_.board_.diff_pressure_check())
       {
+        data_.diff_pressure_present_ = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND DIFF PRESS");
       }
     }
-    if (!rf_.board_.baro_present())
+    if (!data_.baro_present_)
     {
       if (rf_.board_.baro_check())
       {
+        data_.baro_present_ = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND BAROMETER");
       }
     }
-    if (!rf_.board_.mag_present())
+    if (!data_.mag_present_)
     {
       if (rf_.board_.mag_check())
       {
+        data_.mag_present_ = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND MAGNETOMETER");
       }
     }
   }
 }
-
 
 bool Sensors::start_imu_calibration(void)
 {
@@ -184,6 +190,20 @@ bool Sensors::start_gyro_calibration(void)
   rf_.params_.set_param_float(PARAM_GYRO_X_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0);
+  return true;
+}
+
+bool Sensors::start_baro_calibration()
+{
+  baro_calibrated_ = false;
+  rf_.params_.set_param_float(PARAM_BARO_BIAS, 0.0f);
+  return true;
+}
+
+bool Sensors::start_diff_pressure_calibration()
+{
+  diff_pressure_calibrated_ = false;
+  rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, 0.0f);
   return true;
 }
 
@@ -374,6 +394,40 @@ void Sensors::calibrate_accel(void)
   }
 }
 
+void Sensors::calibrate_baro()
+{
+  baro_calibration_count++;
+
+  if(baro_calibration_count > 256)
+  {
+    rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 127.0f);
+    baro_calibrated_ = true;
+    baro_calibration_sum_ = 0.0f;
+    baro_calibration_count = 0;
+  }
+  else if (baro_calibration_count > 128)
+  {
+    baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
+  }
+}
+
+void Sensors::calibrate_diff_pressure()
+{
+  diff_pressure_calibration_count++;
+
+  if(diff_pressure_calibration_count > 256)
+  {
+    rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_sum_ / 127.0f);
+    diff_pressure_calibrated_ = true;
+    diff_pressure_calibration_sum_ = 0.0f;
+    diff_pressure_calibration_count = 0;
+  }
+  else if (diff_pressure_calibration_count > 128)
+  {
+    diff_pressure_calibration_sum_ += data_.diff_pressure;
+  }
+}
+
 void Sensors::correct_imu(void)
 {
   // correct according to known biases and temperature compensation
@@ -406,6 +460,25 @@ void Sensors::correct_mag(void)
   data_.mag.z = rf_.params_.get_param_float(PARAM_MAG_A31_COMP)*mag_hard_x + rf_.params_.get_param_float(
              PARAM_MAG_A32_COMP)*mag_hard_y +
            rf_.params_.get_param_float(PARAM_MAG_A33_COMP)*mag_hard_z;
+}
+
+void Sensors::correct_baro(void)
+{
+  if (!baro_calibrated_)
+    calibrate_baro();
+  data_.baro_pressure -= rf_.params_.get_param_float(PARAM_BARO_BIAS);
+  data_.baro_altitude = fast_alt(data_.baro_pressure);
+}
+
+void Sensors::correct_diff_pressure()
+{
+  if (!diff_pressure_calibrated_)
+    calibrate_diff_pressure();
+  data_.diff_pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
+  float atm = 101325.0f;
+  if (data_.baro_present_)
+    atm = data_.baro_pressure;
+  data_.diff_pressure_velocity = fsign(data_.diff_pressure) * 24.574f/turboInvSqrt((fabs(data_.diff_pressure) * data_.diff_pressure_temp  /  atm));
 }
 
 } // namespace rosflight_firmware

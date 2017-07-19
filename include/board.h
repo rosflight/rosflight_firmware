@@ -71,23 +71,14 @@ public:
   virtual void imu_not_responding_error(void) = 0;
 
   virtual bool mag_check(void) = 0;
-  virtual bool mag_present(void) = 0;
   virtual void mag_read(float mag[3]) = 0;
 
-  virtual bool baro_present(void) = 0;
   virtual bool baro_check(void) = 0;
-  virtual void baro_read(float *altitude, float *pressure,
-                         float *temperature) = 0; // TODO move altitude calculation outside this function
-  virtual void baro_calibrate() = 0;
+  virtual void baro_read(float *pressure, float *temperature) = 0;
 
-  virtual bool diff_pressure_present(void) = 0;
   virtual bool diff_pressure_check(void) = 0;
-  virtual void diff_pressure_set_atm(float barometric_pressure) = 0;
-  virtual void diff_pressure_calibrate() = 0;
-  virtual void diff_pressure_read(float *diff_pressure, float *temperature,
-                                  float *velocity) = 0; // TODO move velocity calculation outside this function
+  virtual void diff_pressure_read(float *diff_pressure, float *temperature) = 0;
 
-  virtual bool sonar_present(void) = 0;
   virtual bool sonar_check(void) = 0;
   virtual float sonar_read(void) = 0;
 

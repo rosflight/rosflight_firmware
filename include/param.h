@@ -152,6 +152,11 @@ enum : uint16_t
   PARAM_MAG_Y_BIAS,
   PARAM_MAG_Z_BIAS,
 
+  PARAM_BARO_BIAS,
+  PARAM_GROUND_LEVEL,
+
+  PARAM_DIFF_PRESS_BIAS,
+
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
