@@ -17,12 +17,14 @@ function print_result() {
 }
 
 echo_blue "Test 1: Build firmware"
+make clean
 make
 print_result $?
 
 echo_blue "Test 2: Build test suite"
 mkdir -p test/build
 cd test/build
+rm -rf *
 cmake .. && make
 print_result $?
 
