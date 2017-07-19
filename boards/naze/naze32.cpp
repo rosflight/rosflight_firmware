@@ -134,27 +134,7 @@ bool Naze32::new_imu_data()
   return mpu6050_new_data();
 }
 
-void Naze32::imu_read_accel(float accel[3])
-{
-  // Convert to NED
-  int16_t accel_raw[3];
-//  mpu6050_read_accel(accel_raw);
-  accel[0] = accel_raw[0] * _accel_scale;
-  accel[1] = -accel_raw[1] * _accel_scale;
-  accel[2] = -accel_raw[2] * _accel_scale;
-}
-
-void Naze32::imu_read_gyro(float gyro[3])
-{
-  //  Convert to NED
-  int16_t gyro_raw[3];
-//  mpu6050_read_gyro(gyro_raw);
-  gyro[0] = gyro_raw[0] * _gyro_scale;
-  gyro[1] = -gyro_raw[1] * _gyro_scale;
-  gyro[2] = -gyro_raw[2] * _gyro_scale;
-}
-
-bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
     volatile int16_t gyro_raw[3], accel_raw[3];
     volatile int16_t raw_temp;
@@ -175,13 +155,6 @@ bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uin
       return false;
     }
     else return true;
-}
-
-float Naze32::imu_read_temperature(void)
-{
-  int16_t temperature_raw;
-//  mpu6050_read_temperature(&temperature_raw);
-  return temperature_raw/340.0f + 36.53f;
 }
 
 void Naze32::imu_not_responding_error(void)

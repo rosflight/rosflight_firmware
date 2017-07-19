@@ -82,12 +82,8 @@ public:
   void sensors_init();
   uint16_t num_sensor_errors(void);
 
-
   bool new_imu_data();
-  void imu_read_accel(float accel[3]);
-  void imu_read_gyro(float gyro[3]);
-  bool imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t* time_us);
-  float imu_read_temperature(void);
+  bool imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us);
   void imu_not_responding_error();
 
   bool mag_check(void);
@@ -122,9 +118,6 @@ public:
   void led1_on(void);
   void led1_off(void);
   void led1_toggle(void);
-
-  // required to convert std::function to raw function pointer
-  inline void call_imu_callback() const { imu_callback_(); }
 };
 
 }
