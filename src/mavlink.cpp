@@ -213,10 +213,10 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       result = RF_.sensors_.start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      RF_.sensors_.calibrate_baro();
+      RF_.sensors_.start_baro_calibration();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      RF_.sensors_.calibrate_diff_pressure();
+      RF_.sensors_.start_diff_pressure_calibration();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       RF_.controller_.calculate_equilbrium_torque_from_rc();
@@ -247,7 +247,6 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
-    // wait for ack to send
     RF_.board_.clock_delay(20);
     RF_.board_.board_reset(reboot_to_bootloader_flag);
   }
@@ -310,7 +309,7 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
     // Handle error state
   }
 
-  // Tell the mux that we have a new command we need to mux
+  // Tell the command_manager that we have a new command we need to mux
   new_offboard_command.stamp_ms = RF_.board_.clock_millis();
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
