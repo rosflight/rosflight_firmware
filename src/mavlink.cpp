@@ -213,10 +213,10 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       result = RF_.sensors_.start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      RF_.board_.baro_calibrate();
+      RF_.sensors_.calibrate_baro();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      RF_.board_.diff_pressure_calibrate();
+      RF_.sensors_.calibrate_diff_pressure();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       RF_.controller_.calculate_equilbrium_torque_from_rc();
@@ -247,6 +247,7 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 
   if (reboot_flag || reboot_to_bootloader_flag)
   {
+    // wait for ack to send
     RF_.board_.clock_delay(20);
     RF_.board_.board_reset(reboot_to_bootloader_flag);
   }

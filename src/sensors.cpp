@@ -257,7 +257,8 @@ bool Sensors::update_imu(void)
   }
 }
 
-
+//======================================================================
+// Calibration Functions
 void Sensors::calibrate_gyro()
 {
   gyro_sum_.x = 0.0f;
@@ -428,6 +429,9 @@ void Sensors::calibrate_diff_pressure()
   }
 }
 
+
+//======================================================
+// Correction Functions (These apply calibration constants)
 void Sensors::correct_imu(void)
 {
   // correct according to known biases and temperature compensation
