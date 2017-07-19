@@ -93,27 +93,27 @@ void Sensors::update_other_sensors()
   switch (next_sensor_to_update_)
   {
   case 0:
-    if (data_.baro_present_)
+    if (data_.baro_present)
     {
       rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
       correct_baro();
     }
     break;
   case 1:
-    if (data_.diff_pressure_present_)
+    if (data_.diff_pressure_present)
     {
       rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp);
       correct_diff_pressure();
     }
     break;
   case 2:
-    if (data_.sonar_present_)
+    if (data_.sonar_present)
     {
       data_.sonar_range = rf_.board_.sonar_read();
     }
     break;
   case 3:
-    if (data_.mag_present_)
+    if (data_.mag_present)
     {
       float mag[3];
       rf_.board_.mag_read(mag);
@@ -135,38 +135,38 @@ void Sensors::look_for_disabled_sensors()
   // detected on startup, but will be detected whenever power is applied
   // to the 5V rail.
   uint32_t now = rf_.board_.clock_millis();
-  if (now > (last_time_look_for_disarmed_sensors + 1000))
+  if (now > (last_time_look_for_disarmed_sensors_ + 1000))
   {
-    last_time_look_for_disarmed_sensors = now;
-    if (!data_.sonar_present_)
+    last_time_look_for_disarmed_sensors_ = now;
+    if (!data_.sonar_present)
     {
       if (rf_.board_.sonar_check())
       {
-        data_.sonar_present_ = true;
+        data_.sonar_present = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
       }
     }
-    if (!data_.diff_pressure_present_)
+    if (!data_.diff_pressure_present)
     {
       if (rf_.board_.diff_pressure_check())
       {
-        data_.diff_pressure_present_ = true;
+        data_.diff_pressure_present = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND DIFF PRESS");
       }
     }
-    if (!data_.baro_present_)
+    if (!data_.baro_present)
     {
       if (rf_.board_.baro_check())
       {
-        data_.baro_present_ = true;
+        data_.baro_present = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND BAROMETER");
       }
     }
-    if (!data_.mag_present_)
+    if (!data_.mag_present)
     {
       if (rf_.board_.mag_check())
       {
-        data_.mag_present_ = true;
+        data_.mag_present = true;
         rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND MAGNETOMETER");
       }
     }
@@ -219,7 +219,7 @@ bool Sensors::update_imu(void)
   if (rf_.board_.new_imu_data())
   {
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
-    last_imu_update_ms = rf_.board_.clock_millis();
+    last_imu_update_ms_ = rf_.board_.clock_millis();
     if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
     {
       return false;
@@ -244,10 +244,10 @@ bool Sensors::update_imu(void)
   else
   {
     // if we have lost 1000 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms + 1000)
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
     {
       // Tell the board to fix it
-      last_imu_update_ms = rf_.board_.clock_millis();
+      last_imu_update_ms_ = rf_.board_.clock_millis();
       rf_.board_.imu_not_responding_error();
 
       // Indicate an IMU error
@@ -397,16 +397,16 @@ void Sensors::calibrate_accel(void)
 
 void Sensors::calibrate_baro()
 {
-  baro_calibration_count++;
+  baro_calibration_count_++;
 
-  if(baro_calibration_count > 256)
+  if(baro_calibration_count_ > 256)
   {
     rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 127.0f);
     baro_calibrated_ = true;
     baro_calibration_sum_ = 0.0f;
-    baro_calibration_count = 0;
+    baro_calibration_count_ = 0;
   }
-  else if (baro_calibration_count > 128)
+  else if (baro_calibration_count_ > 128)
   {
     baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
   }
@@ -414,16 +414,16 @@ void Sensors::calibrate_baro()
 
 void Sensors::calibrate_diff_pressure()
 {
-  diff_pressure_calibration_count++;
+  diff_pressure_calibration_count_++;
 
-  if(diff_pressure_calibration_count > 256)
+  if(diff_pressure_calibration_count_ > 256)
   {
     rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_sum_ / 127.0f);
     diff_pressure_calibrated_ = true;
     diff_pressure_calibration_sum_ = 0.0f;
-    diff_pressure_calibration_count = 0;
+    diff_pressure_calibration_count_ = 0;
   }
-  else if (diff_pressure_calibration_count > 128)
+  else if (diff_pressure_calibration_count_ > 128)
   {
     diff_pressure_calibration_sum_ += data_.diff_pressure;
   }
@@ -480,7 +480,7 @@ void Sensors::correct_diff_pressure()
     calibrate_diff_pressure();
   data_.diff_pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
   float atm = 101325.0f;
-  if (data_.baro_present_)
+  if (data_.baro_present)
     atm = data_.baro_pressure;
   data_.diff_pressure_velocity = fsign(data_.diff_pressure) * 24.574f/turboInvSqrt((fabs(data_.diff_pressure) * data_.diff_pressure_temp  /  atm));
 }

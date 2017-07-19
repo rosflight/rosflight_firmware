@@ -90,10 +90,10 @@ public:
   void mag_read(float mag[3]);
 
   bool baro_check();
-  void baro_read(float *pressure, float *temperature); // TODO move altitude calculation outside this function
+  void baro_read(float *pressure, float *temperature);
 
   bool diff_pressure_check(void);
-  void diff_pressure_read(float *diff_pressure, float *temperature); // TODO move velocity calculation outside this function
+  void diff_pressure_read(float *diff_pressure, float *temperature);
 
   bool sonar_check(void);
   float sonar_read(void);

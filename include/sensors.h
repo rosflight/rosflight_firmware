@@ -63,10 +63,10 @@ class Sensors
 
     vector_t mag = {0, 0, 0};
 
-    bool baro_present_ = false;
-    bool mag_present_ = false;
-    bool sonar_present_ = false;
-    bool diff_pressure_present_ = false;
+    bool baro_present = false;
+    bool mag_present = false;
+    bool sonar_present = false;
+    bool diff_pressure_present = false;
   };
 
 public:
@@ -116,8 +116,8 @@ private:
   bool update_imu(void);
   void update_other_sensors(void);
   void look_for_disabled_sensors(void);
-  uint32_t last_time_look_for_disarmed_sensors = 0;
-  uint32_t last_imu_update_ms = 0;
+  uint32_t last_time_look_for_disarmed_sensors_ = 0;
+  uint32_t last_imu_update_ms_ = 0;
 
   bool new_imu_data_;
   bool imu_data_sent_;
@@ -135,12 +135,12 @@ private:
   // Baro Calibration
   bool baro_calibrated_ = false;
   float ground_pressure_ = 0.0f;
-  uint16_t baro_calibration_count = 0;
+  uint16_t baro_calibration_count_ = 0;
   float baro_calibration_sum_ = 0.0f;
 
   // Diff Pressure Calibration
   bool diff_pressure_calibrated_ = false;
-  uint16_t diff_pressure_calibration_count = 0;
+  uint16_t diff_pressure_calibration_count_ = 0;
   float diff_pressure_calibration_sum_ = 0.0f;
 };
 
