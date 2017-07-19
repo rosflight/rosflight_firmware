@@ -113,10 +113,10 @@ void Naze32::sensors_init()
     while(millis() < 50);
 
     i2cWrite(0,0,0);
-    _baro_present = ms5611_init();
-    _mag_present = hmc5883lInit(_board_revision);
-    _sonar_present = mb1242_init();
-    _diff_pressure_present = ms4525_init();
+    ms5611_init();
+    hmc5883lInit(_board_revision);
+    mb1242_init();
+    ms4525_init();
 
     // IMU
     uint16_t acc1G;
@@ -134,27 +134,7 @@ bool Naze32::new_imu_data()
   return mpu6050_new_data();
 }
 
-void Naze32::imu_read_accel(float accel[3])
-{
-  // Convert to NED
-  int16_t accel_raw[3];
-//  mpu6050_read_accel(accel_raw);
-  accel[0] = accel_raw[0] * _accel_scale;
-  accel[1] = -accel_raw[1] * _accel_scale;
-  accel[2] = -accel_raw[2] * _accel_scale;
-}
-
-void Naze32::imu_read_gyro(float gyro[3])
-{
-  //  Convert to NED
-  int16_t gyro_raw[3];
-//  mpu6050_read_gyro(gyro_raw);
-  gyro[0] = gyro_raw[0] * _gyro_scale;
-  gyro[1] = -gyro_raw[1] * _gyro_scale;
-  gyro[2] = -gyro_raw[2] * _gyro_scale;
-}
-
-bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
     volatile int16_t gyro_raw[3], accel_raw[3];
     volatile int16_t raw_temp;
@@ -177,24 +157,12 @@ bool Naze32::imu_read_all(float accel[3], float* temperature, float gyro[3], uin
     else return true;
 }
 
-float Naze32::imu_read_temperature(void)
-{
-  int16_t temperature_raw;
-//  mpu6050_read_temperature(&temperature_raw);
-  return temperature_raw/340.0f + 36.53f;
-}
-
 void Naze32::imu_not_responding_error(void)
 {
   // If the IMU is not responding, then we need to change where we look for the
   // interrupt
   _board_revision = (_board_revision < 4) ? 5 : 2;
   sensors_init();
-}
-
-bool Naze32::mag_present(void)
-{
-  return _mag_present;
 }
 
 void Naze32::mag_read(float mag[3])
@@ -212,70 +180,36 @@ void Naze32::mag_read(float mag[3])
 bool Naze32::mag_check(void)
 {
 //  _mag_present = hmc5883lInit(_board_revision);
-  return _mag_present;
+  return hmc5883l_present(_board_revision);
 }
 
-bool Naze32::baro_present(void)
-{
-  return _baro_present;
-}
-
-void Naze32::baro_read(float *altitude, float *pressure, float *temperature)
+void Naze32::baro_read(float *pressure, float *temperature)
 {
   ms5611_async_update();
-  ms5611_async_read(altitude, pressure, temperature);
-  (*altitude) *= -1.0; // Convert to NED
+  ms5611_async_read(pressure, temperature);
 }
 
 bool Naze32::baro_check()
 {
   ms5611_async_update();
-  _baro_present = ms5611_present();
-  return _baro_present;
-}
-
-void Naze32::baro_calibrate()
-{
-  ms5611_start_calibration();
-}
-
-bool Naze32::diff_pressure_present(void)
-{
-  return _diff_pressure_present;
+  return ms5611_present();
 }
 
 bool Naze32::diff_pressure_check(void)
 {
   ms4525_async_update();
-  _diff_pressure_present = ms4525_present();
-  return _diff_pressure_present;
+  return ms4525_present();
 }
 
-void Naze32::diff_pressure_calibrate()
-{
-  ms4525_start_calibration();
-}
-
-void Naze32::diff_pressure_set_atm(float barometric_pressure)
-{
-  ms4525_set_atm((uint32_t) barometric_pressure);
-}
-
-void Naze32::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity)
+void Naze32::diff_pressure_read(float *diff_pressure, float *temperature)
 {
   ms4525_async_update();
-  ms4525_async_read(diff_pressure, temperature, velocity);
-}
-
-bool Naze32::sonar_present(void)
-{
-  return _sonar_present;
+  ms4525_async_read(diff_pressure, temperature);
 }
 
 bool Naze32::sonar_check(void)
 {
-  _sonar_present = sonarPresent();
-  return _sonar_present;
+  return sonarPresent();
 }
 
 float Naze32::sonar_read(void)

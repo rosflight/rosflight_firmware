@@ -43,3 +43,6 @@ float asin_approx(float x);
 float turboatan(float x);
 float turboasin(float x);
 float fsign(float y);
+
+// turbo-speed approximation of (1.0 - pow(pressure/101325.0, 0.1902631)) * 39097.63
+float fast_alt(float x);

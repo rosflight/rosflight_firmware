@@ -65,6 +65,7 @@ void Mavlink::init()
   RF_.params_.add_callback(std::bind(&Mavlink::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
+  log(Mavlink::LOG_INFO, "Booting");
 }
 
 void Mavlink::send_message(const mavlink_message_t &msg)
@@ -212,10 +213,10 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       result = RF_.sensors_.start_gyro_calibration();
       break;
     case ROSFLIGHT_CMD_BARO_CALIBRATION:
-      RF_.board_.baro_calibrate();
+      result = RF_.sensors_.start_baro_calibration();
       break;
     case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
-      RF_.board_.diff_pressure_calibrate();
+      result = RF_.sensors_.start_diff_pressure_calibration();
       break;
     case ROSFLIGHT_CMD_RC_CALIBRATION:
       RF_.controller_.calculate_equilbrium_torque_from_rc();
@@ -232,7 +233,7 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       send_message(msg);
       break;
     default:
-      log(LOG_ERROR, "unsupported ROSFLIGHT CMD %d", cmd.command);
+      log(LOG_ERROR, "Unsupported ROSFLIGHT CMD %d", cmd.command);
       result = false;
       break;
     }
@@ -308,7 +309,7 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
     // Handle error state
   }
 
-  // Tell the mux that we have a new command we need to mux
+  // Tell the command_manager that we have a new command we need to mux
   new_offboard_command.stamp_ms = RF_.board_.clock_millis();
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
@@ -480,7 +481,7 @@ void Mavlink::send_rc_raw(void)
 
 void Mavlink::send_diff_pressure(void)
 {
-  if (RF_.board_.diff_pressure_present())
+  if (RF_.sensors_.data().diff_pressure_present)
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid_, compid_, &msg,
@@ -493,7 +494,7 @@ void Mavlink::send_diff_pressure(void)
 
 void Mavlink::send_baro(void)
 {
-  if (RF_.board_.baro_present())
+  if (RF_.sensors_.data().baro_present)
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid_, compid_, &msg,
@@ -506,7 +507,7 @@ void Mavlink::send_baro(void)
 
 void Mavlink::send_sonar(void)
 {
-  if (RF_.board_.sonar_present())
+  if (RF_.sensors_.data().sonar_present)
   {
     mavlink_message_t msg;
     mavlink_msg_small_range_pack(sysid_, compid_, &msg,
@@ -520,7 +521,7 @@ void Mavlink::send_sonar(void)
 
 void Mavlink::send_mag(void)
 {
-  if (RF_.board_.mag_present())
+  if (RF_.sensors_.data().mag_present)
   {
     mavlink_message_t msg;
     mavlink_msg_small_mag_pack(sysid_, compid_, &msg,

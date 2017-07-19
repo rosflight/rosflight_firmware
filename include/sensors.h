@@ -62,6 +62,11 @@ class Sensors
     float sonar_range = 0;
 
     vector_t mag = {0, 0, 0};
+
+    bool baro_present = false;
+    bool mag_present = false;
+    bool sonar_present = false;
+    bool diff_pressure_present = false;
   };
 
 public:
@@ -76,8 +81,8 @@ public:
   // Calibration Functions
   bool start_imu_calibration(void);
   bool start_gyro_calibration(void);
-  void start_baro_calibration(void);
-  void start_airspeed_calibration(void);
+  bool start_baro_calibration(void);
+  bool start_diff_pressure_calibration(void);
   bool gyro_calibration_complete(void);
 
   inline bool should_send_imu_data(void)
@@ -102,13 +107,17 @@ private:
   uint8_t next_sensor_to_update_ = 0;
   void calibrate_accel(void);
   void calibrate_gyro(void);
+  void calibrate_baro(void);
+  void calibrate_diff_pressure(void);
   void correct_imu(void);
   void correct_mag(void);
+  void correct_baro(void);
+  void correct_diff_pressure(void);
   bool update_imu(void);
   void update_other_sensors(void);
   void look_for_disabled_sensors(void);
-  uint32_t last_time_look_for_disarmed_sensors = 0;
-  uint32_t last_imu_update_ms = 0;
+  uint32_t last_time_look_for_disarmed_sensors_ = 0;
+  uint32_t last_imu_update_ms_ = 0;
 
   bool new_imu_data_;
   bool imu_data_sent_;
@@ -123,6 +132,16 @@ private:
   vector_t max_ = {-1000.0f, -1000.0f, -1000.0f};
   vector_t min_ = {1000.0f, 1000.0f, 1000.0f};
 
+  // Baro Calibration
+  bool baro_calibrated_ = false;
+  float ground_pressure_ = 0.0f;
+  uint16_t baro_calibration_count_ = 0;
+  float baro_calibration_sum_ = 0.0f;
+
+  // Diff Pressure Calibration
+  bool diff_pressure_calibrated_ = false;
+  uint16_t diff_pressure_calibration_count_ = 0;
+  float diff_pressure_calibration_sum_ = 0.0f;
 };
 
 } // namespace rosflight_firmware
