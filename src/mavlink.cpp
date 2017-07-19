@@ -386,11 +386,6 @@ void Mavlink::send_status(void)
 {
   if (!initialized_)
     return;
-  volatile uint8_t status = 0;
-  status |= (RF_.state_manager_.state().armed) ? ROSFLIGHT_STATUS_ARMED : 0x00;
-  status |= (RF_.state_manager_.state().failsafe) ? ROSFLIGHT_STATUS_IN_FAILSAFE : 0x00;
-  status |= (RF_.command_manager_.rc_override_active()) ? ROSFLIGHT_STATUS_RC_OVERRIDE : 0x00;
-  status |= (RF_.command_manager_.offboard_control_active()) ? ROSFLIGHT_STATUS_OFFBOARD_CONTROL_ACTIVE : 0x00;
 
   uint8_t control_mode = 0;
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
@@ -402,7 +397,10 @@ void Mavlink::send_status(void)
 
   mavlink_message_t msg;
   mavlink_msg_rosflight_status_pack(RF_.params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
-                                    status,
+                                    RF_.state_manager_.state().armed,
+                                    RF_.state_manager_.state().failsafe,
+                                    RF_.command_manager_.rc_override_active(),
+                                    RF_.command_manager_.offboard_control_active(),
                                     RF_.state_manager_.state().error_codes,
                                     control_mode,
                                     RF_.board_.num_sensor_errors(),
