@@ -112,21 +112,14 @@ namespace rosflight_firmware
   void testBoard::imu_not_responding_error(void){}
 
   bool testBoard::mag_check(void){ return false; }
-  bool testBoard::mag_present(void){ return false; }
   void testBoard::mag_read(float mag[3]){}
 
-  bool testBoard::baro_present(void){ return false; }
   bool testBoard::baro_check(void){ return false; }
-  void testBoard::baro_read(float *altitude, float *pressure, float *temperature) {}
-  void testBoard::baro_calibrate(){}
+  void testBoard::baro_read(float *pressure, float *temperature) {}
 
-  bool testBoard::diff_pressure_present(void){ return false; }
   bool testBoard::diff_pressure_check(void){ return false; }
-  void testBoard::diff_pressure_set_atm(float barometric_pressure){}
-  void testBoard::diff_pressure_calibrate(){}
-  void testBoard::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity) {}
+  void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
 
-  bool testBoard::sonar_present(void){ return false; }
   bool testBoard::sonar_check(void){ return false; }
   float testBoard::sonar_read(void){}
 
