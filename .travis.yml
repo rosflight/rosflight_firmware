@@ -27,10 +27,7 @@ install:
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
   - arm-none-eabi-gcc --version
-  - mkdir -p test/build
 
 script:
-  - make
-  - cd test/build && cmake .. && make
-  - ./unit_tests
+  - ./run_tests.sh
 
