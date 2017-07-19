@@ -44,23 +44,23 @@ class RC
 {
 
 public:
-  typedef enum
+  enum Stick
   {
     STICK_X,
     STICK_Y,
     STICK_Z,
     STICK_F,
     STICKS_COUNT
-  } rc_stick_t;
+  };
 
-  typedef enum
+  enum Switch
   {
     SWITCH_ARM,
     SWITCH_ATT_OVERRIDE,
     SWITCH_THROTTLE_OVERRIDE,
     SWITCH_ATT_TYPE,
     SWITCHES_COUNT
-  } rc_switch_t;
+  };
 
   RC(ROSflight& _rf);
 
@@ -71,9 +71,9 @@ public:
   } rc_type_t;
 
   void init();
-  float rc_stick(rc_stick_t channel);
-  bool rc_switch(int16_t channel);
-  bool rc_switch_mapped(rc_switch_t channel);
+  float stick(Stick channel);
+  bool switch_on(Switch channel);
+  bool switch_mapped(Switch channel);
   bool run();
   bool new_command();
   void param_change_callback(uint16_t param_id);

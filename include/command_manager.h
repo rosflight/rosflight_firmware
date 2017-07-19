@@ -125,7 +125,7 @@ private:
     ATT_MODE_ANGLE
   } att_mode_t;
 
-  enum
+  enum MuxChannel
   {
     MUX_X,
     MUX_Y,
@@ -135,7 +135,7 @@ private:
 
   typedef struct
   {
-    RC::rc_stick_t rc_channel;
+    RC::Stick rc_channel;
     uint32_t last_override_time;
   } rc_stick_override_t;
 
@@ -151,13 +151,12 @@ private:
   bool new_command_;
   bool rc_override_;
 
-  void do_muxing(uint8_t mux_channel);
-  bool do_roll_pitch_yaw_muxing(uint8_t channel);
+  bool do_roll_pitch_yaw_muxing(MuxChannel channel);
   bool do_throttle_muxing(void);
   void do_min_throttle_muxing();
 
   void interpret_rc(void);
-  bool stick_deviated(uint8_t channel);
+  bool stick_deviated(MuxChannel channel);
 
 public:
 
