@@ -397,18 +397,24 @@ void Sensors::calibrate_accel(void)
 
 void Sensors::calibrate_baro()
 {
-  baro_calibration_count_++;
+  if (rf_.board_.clock_millis() > last_baro_cal_iter_ms + 20)
+  {
+    baro_calibration_count_++;
 
-  if(baro_calibration_count_ > 256)
-  {
-    rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 127.0f);
-    baro_calibrated_ = true;
-    baro_calibration_sum_ = 0.0f;
-    baro_calibration_count_ = 0;
-  }
-  else if (baro_calibration_count_ > 128)
-  {
-    baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
+    // calibrate pressure reading to where it should be
+    if(baro_calibration_count_ >= 256)
+    {
+      rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 127.0f);
+      baro_calibration_sum_ = 0.0f;
+      baro_calibration_count_ = 0;
+      baro_calibrated_ = true;
+    }
+
+    else if (baro_calibration_count_ >= 128)
+    {
+      baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
+    }
+    last_baro_cal_iter_ms = rf_.board_.clock_millis();
   }
 }
 
@@ -471,7 +477,7 @@ void Sensors::correct_baro(void)
   if (!baro_calibrated_)
     calibrate_baro();
   data_.baro_pressure -= rf_.params_.get_param_float(PARAM_BARO_BIAS);
-  data_.baro_altitude = fast_alt(data_.baro_pressure);
+  data_.baro_altitude = fast_alt(data_.baro_pressure) - rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
 }
 
 void Sensors::correct_diff_pressure()

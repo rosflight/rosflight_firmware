@@ -136,6 +136,7 @@ private:
   bool baro_calibrated_ = false;
   float ground_pressure_ = 0.0f;
   uint16_t baro_calibration_count_ = 0;
+  uint32_t last_baro_cal_iter_ms = 0;
   float baro_calibration_sum_ = 0.0f;
 
   // Diff Pressure Calibration
