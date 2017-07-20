@@ -543,8 +543,12 @@ void Mavlink::stream()
   {
     if (time_us >= mavlink_streams_[i].next_time_us)
     {
-      // if we took too long, set the last_time_us to be where it should have been
-      mavlink_streams_[i].next_time_us += mavlink_streams_[i].period_us;
+      // If you fall behind, skip messages
+      do
+      {
+        mavlink_streams_[i].next_time_us += mavlink_streams_[i].period_us;
+      } while(mavlink_streams_[i].next_time_us < time_us);
+
       (this->*mavlink_streams_[i].send_function)();
     }
   }
