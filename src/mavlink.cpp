@@ -541,7 +541,7 @@ void Mavlink::stream()
   uint64_t time_us = RF_.board_.clock_micros();
   for (int i = 0; i < STREAM_COUNT; i++)
   {
-    if (time_us >= mavlink_streams_[i].next_time_us)
+    if (mavlink_streams_[i].period_us > 0 && time_us >= mavlink_streams_[i].next_time_us)
     {
       // if we took too long, set the last_time_us to be where it should have been
       mavlink_streams_[i].next_time_us += mavlink_streams_[i].period_us;
