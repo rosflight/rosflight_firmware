@@ -66,11 +66,32 @@ typedef struct
 } mux_t;
 
 CommandManager::CommandManager(ROSflight& _rf) :
-  RF_(_rf)
+  RF_(_rf),
+  failsafe_command_(multirotor_failsafe_command_)
 {}
 
 void CommandManager::init()
-{}
+{
+  RF_.params_.add_callback(std::bind(&CommandManager::param_change_callback, this, std::placeholders::_1), PARAM_FIXED_WING);
+  RF_.params_.add_callback(std::bind(&CommandManager::param_change_callback, this, std::placeholders::_1), PARAM_FAILSAFE_THROTTLE);
+
+  init_failsafe();
+}
+
+void CommandManager::param_change_callback(uint16_t param_id)
+{
+  init_failsafe();
+}
+
+void CommandManager::init_failsafe()
+{
+  multirotor_failsafe_command_.F.value = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
+
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING))
+    failsafe_command_ = fixedwing_failsafe_command_;
+  else
+    failsafe_command_ = multirotor_failsafe_command_;
+}
 
 void CommandManager::interpret_rc(void)
 {
@@ -86,6 +107,7 @@ void CommandManager::interpret_rc(void)
     rc_command_.x.type = PASSTHROUGH;
     rc_command_.y.type = PASSTHROUGH;
     rc_command_.z.type = PASSTHROUGH;
+    rc_command_.F.type = THROTTLE;
   }
   else
   {
@@ -221,7 +243,6 @@ bool CommandManager::offboard_control_active()
 void CommandManager::set_new_offboard_command(control_t new_offboard_command)
 {
   new_command_ = true;
-
   offboard_command_ = new_offboard_command;
 }
 
@@ -245,10 +266,8 @@ bool CommandManager::run()
   // Check for and apply failsafe command
   if (RF_.state_manager_.state().failsafe)
   {
-    failsafe_command_.F.value = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
     combined_command_ = failsafe_command_;
   }
-
   else if (RF_.rc_.new_command())
   {
     // Read RC
