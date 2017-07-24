@@ -48,6 +48,8 @@ class Estimator
 {
 
 public:
+  quaternion_t q_tilde;
+  quaternion_t q_acc_inv;
   struct State
   {
     vector_t angular_velocity;
@@ -83,6 +85,8 @@ private:
 
   vector_t accel_LPF_;
   vector_t gyro_LPF_;
+
+  vector_t w_acc_;
 
   void run_LPF();
 };

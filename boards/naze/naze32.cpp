@@ -173,8 +173,8 @@ void Naze32::mag_read(float mag[3])
   hmc5883l_request_async_update();
   hmc5883l_async_read(raw_mag);
   mag[0] = (float)raw_mag[0];
-  mag[1] = -(float)raw_mag[1];
-  mag[2] = -(float)raw_mag[2];
+  mag[1] = (float)raw_mag[1];
+  mag[2] = (float)raw_mag[2];
 }
 
 bool Naze32::mag_check(void)

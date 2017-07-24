@@ -110,8 +110,8 @@ void Params::set_defaults(void)
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 200); // Rate of attitude stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500); // Rate of IMU stream (Hz) | 0 | 1000
-  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 75); // Rate of magnetometer stream (Hz) | 0 | 75
-  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 100); // Rate of barometer stream (Hz) | 0 | 100
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 50); // Rate of magnetometer stream (Hz) | 0 | 75
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
@@ -164,17 +164,17 @@ void Params::set_defaults(void)
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
-  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f); // estimator proportional gain - See estimator documentation | 0 | 10.0
-  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f); // estimator integral gain - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 2.0f); // estimator proportional gain - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.2f); // estimator integral gain - See estimator documentation | 0 | 1.0
 
-  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 0); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
-  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 0); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
+  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
+  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
   init_param_int(PARAM_FILTER_USE_ACC, "FILTER_USE_ACC", 1);  // Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | 0 | 1
 
-  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "CAL_GYRO_ARM", false); // True if desired to calibrate gyros on arm | 0 | 1
+  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "CAL_GYRO_ARM", true); // True if desired to calibrate gyros on arm | 0 | 1
 
   init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.3f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.3f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.5f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0

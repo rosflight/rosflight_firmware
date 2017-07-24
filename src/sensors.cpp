@@ -243,8 +243,8 @@ bool Sensors::update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
+    // if we have lost 10 IMU messages then something is wrong
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 10)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
