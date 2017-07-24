@@ -110,12 +110,21 @@ private:
     {false, RATE, 0.0},
     {false, THROTTLE, 0.0}
   };
-  control_t failsafe_command_ =
+
+  control_t multirotor_failsafe_command_ =
   {
     0,
     {true, ANGLE, 0.0},
     {true, ANGLE, 0.0},
     {true, RATE, 0.0},
+    {true, THROTTLE, 0.0}
+  };
+  control_t fixedwing_failsafe_command_ =
+  {
+    0,
+    {true, PASSTHROUGH, 0.0},
+    {true, PASSTHROUGH, 0.0},
+    {true, PASSTHROUGH, 0.0},
     {true, THROTTLE, 0.0}
   };
 
@@ -150,6 +159,11 @@ private:
 
   bool new_command_;
   bool rc_override_;
+
+  control_t& failsafe_command_;
+
+  void param_change_callback(uint16_t param_id);
+  void init_failsafe();
 
   bool do_roll_pitch_yaw_muxing(MuxChannel channel);
   bool do_throttle_muxing(void);
