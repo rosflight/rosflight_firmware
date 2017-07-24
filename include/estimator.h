@@ -57,7 +57,7 @@ public:
     float roll;
     float pitch;
     float yaw;
-    uint64_t timestamp;
+    uint64_t timestamp_us;
   };
 
   Estimator(ROSflight& _rf);

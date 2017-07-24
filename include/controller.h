@@ -101,7 +101,7 @@ private:
   PID pitch_rate_;
   PID yaw_rate_;
 
-  uint64_t prev_time_;
+  uint64_t prev_time_us_;
 };
 
 } // namespace rosflight_firmware
