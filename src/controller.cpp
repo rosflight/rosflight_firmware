@@ -173,7 +173,7 @@ void Controller::param_change_callback(uint16_t param_id)
   init();
 }
 
-vector_t Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
+vector_t Controller::run_pid_loops(int32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   vector_t output;
@@ -274,7 +274,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   }
 
   // sum three terms
-  float u = p_term - d_term; // + iterm;
+  float u = p_term - d_term + iterm;
 
   // Integrator anti-windup
   //// Include reference to Dr. Beard's notes here
