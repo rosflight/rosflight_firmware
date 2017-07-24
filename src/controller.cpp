@@ -65,7 +65,7 @@ Controller::Controller(ROSflight& rf) :
 
 void Controller::init()
 {
-  prev_time_ = 0.0f;
+  prev_time_us_ = 0;
 
   float max = RF_.params_.get_param_float(PARAM_MAX_COMMAND);
   float min = -max;
@@ -96,19 +96,19 @@ void Controller::init()
 void Controller::run()
 {
   // Time calculation
-  if (prev_time_ < 1)
+  if (prev_time_us_ < 1)
   {
-    prev_time_ = RF_.estimator_.state().timestamp;
+    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
 
-  int32_t dt_us = (RF_.estimator_.state().timestamp - prev_time_);
+  int32_t dt_us = (RF_.estimator_.state().timestamp_us - prev_time_us_);
   if ( dt_us < 0 )
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
     return;
   }
-  prev_time_ = RF_.estimator_.state().timestamp;
+  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
@@ -274,7 +274,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   }
 
   // sum three terms
-  float u = p_term - d_term + iterm;
+  float u = p_term - d_term + i_term;
 
   // Integrator anti-windup
   //// Include reference to Dr. Beard's notes here

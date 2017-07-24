@@ -303,7 +303,7 @@ TEST(estimator_test, all_features) {
     0.4, // yamp
     1.0, // zamp
     30.0, // tmax
-    0.0280459 // error_limit
+    0.0297890 // error_limit
   };
 
   // Initialize the firmware

@@ -74,6 +74,8 @@ void Estimator::reset_state()
   gyro_LPF_.y = 0;
   gyro_LPF_.z = 0;
 
+  state_.timestamp_us = RF_.board_.clock_micros();
+
   // Clear the unhealthy estimator flag
   RF_.state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
 }
@@ -134,7 +136,7 @@ void Estimator::run()
 
   float dt = (now_us - last_time_) * 1e-6f;
   last_time_ = now_us;
-  state_.timestamp = now_us;
+  state_.timestamp_us = now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
   if (now_us < (uint64_t)RF_.params_.get_param_int(PARAM_INIT_TIME)*1000)
