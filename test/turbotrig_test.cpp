@@ -106,6 +106,31 @@ TEST(turbovec_test, vector_test) {
 
   // Test Vector Cross Product
   EXPECT_VEC3_SUPERCLOSE(cross(vec1, vec2), eig1.cross(eig2));
+
+  // Test the troublesome part of the estimator
+  vector_t a = {0, 0, -9.80665};
+  Eigen::Vector3d a_eig;
+  a_eig << 0, 0, -9.80665;
+
+  vector_t g = {0, 0, -1};
+  Eigen::Vector3d g_eig;
+  g_eig << 0, 0, -1;
+
+  a = vector_normalize(a);
+  a_eig = a_eig.normalized();
+  EXPECT_VEC3_SUPERCLOSE(a, a_eig);
+
+  // Do the math in quat from two unit vectors
+  double w = 1.0 + a_eig.transpose()*g_eig;
+  Eigen::Vector3d xyz = a_eig.cross(g_eig);
+  EXPECT_VEC3_SUPERCLOSE(cross(a, g), xyz);
+  Eigen::Quaterniond q_eig(w, xyz(0), xyz(1), xyz(2));
+  q_eig.normalize();
+  EXPECT_QUAT_SUPERCLOSE(quat_from_two_unit_vectors(a, g), q_eig);
+
+  // Check the q_acc_inv math
+  quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_unit_vectors(a, g));
+  EXPECT_QUAT_SUPERCLOSE(q_acc_inv, q_eig.inverse());
 }
 
 

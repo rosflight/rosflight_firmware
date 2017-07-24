@@ -109,7 +109,7 @@ void Estimator::run_LPF()
 
 void Estimator::run()
 {
-  static float kp, ki;
+  float kp, ki;
   uint64_t now_us = RF_.sensors_.data().imu_time;
   if (last_time_ == 0)
   {
@@ -152,15 +152,15 @@ void Estimator::run()
   run_LPF();
 
   // add in accelerometer
-  float a_sqrd_norm = accel_LPF_.x*accel_LPF_.x + accel_LPF_.y*accel_LPF_.y + accel_LPF_.z*accel_LPF_.z;
+  float a_sqrd_norm = sqrd_norm(accel_LPF_);
 
   vector_t w_acc;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
-      && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
+      && a_sqrd_norm < 1.1f*1.1f*9.80665f*9.80665f && a_sqrd_norm > 0.9f*0.9f*9.80665f*9.80665f)
   {
-    last_acc_update_us_ = now_us;
-
     // Get error estimated by accelerometer measurement
+    last_acc_update_us_ = now_us;
+    // turn measurement into a unit vector
     vector_t a = vector_normalize(accel_LPF_);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
@@ -187,12 +187,13 @@ void Estimator::run()
     w_acc.z = 0.0f;
   }
 
-  // Pull out Gyro measurements
+
+  // Handle Gyro Measurements
   vector_t wbar;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
-    // Quadratic Integration (Eq. 14 Casey Paper)
-    // this integration step adds 12 us on the STM32F10x chips
+    // Quadratic Interpolation (Eq. 14 Casey Paper)
+    // this step adds 12 us on the STM32F10x chips
     wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2_), scalar_multiply(8.0f/12.0f,w1_)),
                       scalar_multiply(5.0f/12.0f,gyro_LPF_));
     w2_ = w1_;
@@ -206,7 +207,6 @@ void Estimator::run()
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
   vector_t wfinal = vector_add(vector_sub(wbar, bias_), scalar_multiply(kp, w_acc));
-
 
   // Propagate Dynamics (only if we've moved)
   float sqrd_norm_w = sqrd_norm(wfinal);
@@ -246,6 +246,14 @@ void Estimator::run()
       state_.attitude.y += qdot.y*dt;
       state_.attitude.z += qdot.z*dt;
       state_.attitude = quaternion_normalize(state_.attitude);
+    }
+    // Make sure the quaternion is canoncial (w is always positive)
+    if (state_.attitude.w < 0.0f)
+    {
+      state_.attitude.w *= -1.0f;
+      state_.attitude.x *= -1.0f;
+      state_.attitude.y *= -1.0f;
+      state_.attitude.z *= -1.0f;
     }
   }
 

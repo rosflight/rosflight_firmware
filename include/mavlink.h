@@ -107,7 +107,6 @@ private:
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
-  void send_named_value_float(const char *const name, float value);
   //  void send_named_command_struct(const char *const name, control_t command_struct);
 
   mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
@@ -145,6 +144,8 @@ public:
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
   void log(uint8_t severity, const char *fmt, ...);
+
+  void send_named_value_float(const char *const name, float value);
 };
 
 } // namespace rosflight_firmware
