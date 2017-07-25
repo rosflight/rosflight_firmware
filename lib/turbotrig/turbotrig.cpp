@@ -156,7 +156,7 @@ static const int32_t max_pressure = 106598;
 static const int32_t min_pressure = 69681;
 static const int16_t num_entries = 500;
 static const int16_t dx = 73;
-static const int16_t lookup_table[500] = {
+static const int16_t alt_lookup_table[500] = {
 30467,  30384,  30301,  30218,  30135,  30052,  29970,  29887,  29804,  29722,
 29639,  29557,  29474,  29392,  29310,  29227,  29145,  29063,  28981,  28899,
 28818,  28736,  28654,  28573,  28491,  28410,  28328,  28247,  28166,  28084,
