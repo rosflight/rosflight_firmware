@@ -171,6 +171,22 @@ TEST(turbovec_test, quat_from_two_vectors_test){
   EXPECT_CLOSE(quat2.z, quat_test.z);
 }
 
+TEST(turbotrig_test, fast_alt_test) {
+
+  //out of bounds
+  EXPECT_EQ(fast_alt(69681), 0.0);
+  EXPECT_EQ(fast_alt(106598), 0.0);
+
+  //all valid int values
+  float trueResult = 0.0;
+  for (int i = 69682; i < 106597; i++) {
+    trueResult = (float)((1.0 - pow((float)i/101325, 0.190284)) * 145366.45) * (float)0.3048;
+    EXPECT_LE(fabs(fast_alt(i) - trueResult), .15);
+    //arbitrarily chose <= .15m since fast_alt isn't accurate enough for EXPECT_CLOSE,
+    //but being within .15 meters of the correct result seems pretty good to me
+  }
+}
+
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
