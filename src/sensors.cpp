@@ -64,7 +64,7 @@ void Sensors::init()
   next_sensor_to_update_ = 0;
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
-  ground_pressure_ = 101325.0*pow((1-2.25577e-5 * alt), 5.25588);
+  ground_pressure_ = 101325.0f*(float)pow((1-2.25694e-5 * alt), 5.2553);
 }
 
 
