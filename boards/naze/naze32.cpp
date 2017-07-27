@@ -179,8 +179,7 @@ void Naze32::mag_read(float mag[3])
 
 bool Naze32::mag_check(void)
 {
-//  _mag_present = hmc5883lInit(_board_revision);
-  return hmc5883l_present(_board_revision);
+  return hmc5883l_present();
 }
 
 void Naze32::baro_read(float *pressure, float *temperature)
