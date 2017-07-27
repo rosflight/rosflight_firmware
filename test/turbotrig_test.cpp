@@ -42,13 +42,29 @@
 #define EXPECT_VEC3_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
   EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
   EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
-#define EXPECT_QUAT_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.w - eig.w()), 0.0001);\
-  EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
-  EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
-  EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
+#define EXPECT_QUAT_SUPERCLOSE(q, q_eig) { \
+  double e1 = quaternion_error(q_eig, q); \
+  q_eig.coeffs() *= -1.0; \
+  double e2 = quaternion_error(q_eig, q); \
+  double error = (e1 < e2) ? e1 : e2; \
+  EXPECT_LE(error, 0.0001); \
+}
 
 #define EXPECT_SUPERCLOSE(x, y) EXPECT_LE(fabs(x -y), 0.0001)
 #define EXPECT_CLOSE(x, y) EXPECT_LE(fabs(x -y), 0.01)
+
+double quaternion_error(Eigen::Quaternionf q_eig, quaternion_t q)
+{
+  Eigen::Quaternionf est_quat(q.w, q.x, q.y, q.z);
+  Eigen::Quaternionf q_tilde = q_eig * est_quat.inverse();
+  if(q_tilde.vec().norm() < 0.000001)
+    return 0;
+  else
+  {
+    Eigen::Vector3f v_tilde = atan2(q_tilde.vec().norm(), q_tilde.w())*q_tilde.vec()/q_tilde.vec().norm();
+    return v_tilde.norm();
+  }
+}
 
 TEST(turbotrig_test, atan_test) {
   for (float i = -200.0; i <= 200.0; i += 0.001)
@@ -81,7 +97,7 @@ TEST(turbotrig_test, asin_test) {
 }
 
 TEST(turbovec_test, vector_test) {
-  Eigen::Vector3d eig1;
+  Eigen::Vector3f eig1;
   eig1 << 1, 2, 3;
   vector_t vec1 = {1, 2, 3};
 
@@ -89,7 +105,7 @@ TEST(turbovec_test, vector_test) {
 
   // Test Vector addition
 
-  Eigen::Vector3d eig2;
+  Eigen::Vector3f eig2;
   eig2 << 2, 3, 4;
   vector_t vec2 = {2, 3, 4};
 
@@ -109,11 +125,11 @@ TEST(turbovec_test, vector_test) {
 
   // Test the troublesome part of the estimator
   vector_t a = {0, 0, -9.80665};
-  Eigen::Vector3d a_eig;
+  Eigen::Vector3f a_eig;
   a_eig << 0, 0, -9.80665;
 
   vector_t g = {0, 0, -1};
-  Eigen::Vector3d g_eig;
+  Eigen::Vector3f g_eig;
   g_eig << 0, 0, -1;
 
   a = vector_normalize(a);
@@ -122,9 +138,9 @@ TEST(turbovec_test, vector_test) {
 
   // Do the math in quat from two unit vectors
   double w = 1.0 + a_eig.transpose()*g_eig;
-  Eigen::Vector3d xyz = a_eig.cross(g_eig);
+  Eigen::Vector3f xyz = a_eig.cross(g_eig);
   EXPECT_VEC3_SUPERCLOSE(cross(a, g), xyz);
-  Eigen::Quaterniond q_eig(w, xyz(0), xyz(1), xyz(2));
+  Eigen::Quaternionf q_eig(w, xyz(0), xyz(1), xyz(2));
   q_eig.normalize();
   EXPECT_QUAT_SUPERCLOSE(quat_from_two_unit_vectors(a, g), q_eig);
 
