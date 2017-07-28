@@ -267,7 +267,8 @@ void Estimator::run()
 
   // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
   // then trigger an unhealthy estimator error
-  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_)
+  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_
+      && RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
     RF_.state_manager_.set_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }
