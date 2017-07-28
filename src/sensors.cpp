@@ -261,9 +261,6 @@ bool Sensors::update_imu(void)
 // Calibration Functions
 void Sensors::calibrate_gyro()
 {
-  gyro_sum_.x = 0.0f;
-  gyro_sum_.y = 0.0f;
-  gyro_sum_.z = 0.0f;
   gyro_sum_ = vector_add(gyro_sum_, data_.gyro);
   gyro_calibration_count_++;
 
