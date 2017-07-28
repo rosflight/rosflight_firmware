@@ -158,7 +158,7 @@ void Estimator::run()
 
   vector_t w_acc;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
-      && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
+      && a_sqrd_norm < 1.1f*1.1f*9.80665f*9.80665f && a_sqrd_norm > 0.9f*0.9f*9.80665f*9.80665f)
   {
     // Get error estimated by accelerometer measurement
     last_acc_update_us_ = now_us;
