@@ -404,7 +404,7 @@ void Sensors::calibrate_baro()
     // calibrate pressure reading to where it should be
     if(baro_calibration_count_ >= 256)
     {
-      rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 127.0f);
+      rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 128.0f);
       baro_calibration_sum_ = 0.0f;
       baro_calibration_count_ = 0;
       baro_calibrated_ = true;
