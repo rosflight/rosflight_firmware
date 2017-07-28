@@ -102,15 +102,16 @@ void StateManager::set_event(StateManager::Event event)
   case FSM_STATE_PREFLIGHT:
     switch (event)
     {
+    case EVENT_RC_FOUND:
+      clear_error(ERROR_RC_LOST);
+      state_.failsafe = false;
+      break;
+    case EVENT_RC_LOST:
+      set_error(ERROR_RC_LOST);
+      break;
     case EVENT_ERROR:
       state_.error = true;
       fsm_state_ = FSM_STATE_ERROR;
-      break;
-    case EVENT_RC_LOST:
-      state_.error = true;
-      state_.failsafe = true;
-      fsm_state_ = FSM_STATE_ERROR;
-      set_error(ERROR_RC_LOST);
       break;
     case EVENT_REQUEST_ARM:
       if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
@@ -132,11 +133,8 @@ void StateManager::set_event(StateManager::Event event)
     switch (event)
     {
     case EVENT_RC_FOUND:
-      state_.failsafe = false;
       clear_error(ERROR_RC_LOST);
-      break;
-    case EVENT_RC_LOST:
-      state_.failsafe = true;
+      state_.failsafe = false;
       break;
     case EVENT_NO_ERROR:
       state_.error = false;
@@ -159,9 +157,6 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_RC_LOST:
-      state_.error = true;
-      state_.failsafe = true;
-      fsm_state_ = FSM_STATE_ERROR;
       set_error(ERROR_RC_LOST);
       break;
     case EVENT_ERROR:

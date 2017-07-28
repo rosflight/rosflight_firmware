@@ -282,10 +282,10 @@ TEST(command_manager_test, rc_failsafe_test) {
   // Disarmed Failsafe
   //=================================================
 
-  // Let's go into failsafe while disarmed
+  // Let's lose rc while disarmed
   board.set_pwm_lost(true);
   step_firmware(rf, board, 20000);
-  // Check the output - This should be the failsafe control
+  // Check the output - This should be the last rc value
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
   EXPECT_PRETTYCLOSE(output.x.value, 0.0*max_roll);
@@ -294,15 +294,15 @@ TEST(command_manager_test, rc_failsafe_test) {
   EXPECT_EQ(output.z.type, RATE);
   EXPECT_PRETTYCLOSE(output.z.value, 0.0*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, failsafe_throttle);
+  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
 
-  // We should also be disarmed, in failsafe and in error
+  // We should also be disarmed and in error
   EXPECT_EQ(rf.state_manager_.state().armed, false);
-  EXPECT_EQ(rf.state_manager_.state().failsafe, true);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
   EXPECT_EQ(rf.state_manager_.state().error, true);
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
 
-  // Lets clear the failsafe
+  // Lets regain rc
   board.set_pwm_lost(false);
   board.set_rc(rc_values);
   step_firmware(rf, board, 20000);
