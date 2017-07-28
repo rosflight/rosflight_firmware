@@ -233,7 +233,7 @@ bool Sensors::update_imu(void)
     data_.gyro.y = gyro_[1];
     data_.gyro.z = gyro_[2];
 
-    if (calibrating_acc_flag_ == true)
+    if (calibrating_acc_flag_)
       calibrate_accel();
     if (calibrating_gyro_flag_)
       calibrate_gyro();
@@ -267,7 +267,7 @@ void Sensors::calibrate_gyro()
   gyro_sum_ = vector_add(gyro_sum_, data_.gyro);
   gyro_calibration_count_++;
 
-  if (gyro_calibration_count_ > 100)
+  if (gyro_calibration_count_ > 1000)
   {
     // Gyros are simple.  Just find the average during the calibration
     vector_t gyro_bias = scalar_multiply(1.0/(float)gyro_calibration_count_, gyro_sum_);

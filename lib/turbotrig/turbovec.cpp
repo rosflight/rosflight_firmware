@@ -145,11 +145,21 @@ vector_t rotate_vector(quaternion_t q, vector_t v)
 
 quaternion_t quat_from_two_unit_vectors(vector_t u, vector_t v)
 {
-  // https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
-  float w = 1.0 + dot(u, v);
-  vector_t xyz = cross(u, v);
-  quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
-  return quaternion_normalize(q);
+  // Adapted From the Ogre3d source code
+  // https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h?fileviewer=file-view-default#cl-651
+  quaternion_t out;
+  float d = dot(u, v);
+  if ( d >= 1.0f)
+  {
+    out = {1, 0, 0, 0};
+  }
+  else
+  {
+    float invs = turboInvSqrt(2*(1+d));
+    vector_t xyz = scalar_multiply(invs, cross(u, v));
+    out = {0.5f/invs, xyz.x, xyz.y, xyz.z};
+  }
+  return quaternion_normalize(out);
 }
 
 void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)

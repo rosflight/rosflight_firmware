@@ -158,7 +158,7 @@ void Estimator::run()
 
   vector_t w_acc;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
-      && a_sqrd_norm < 1.1f*1.1f*9.80665f*9.80665f && a_sqrd_norm > 0.9f*0.9f*9.80665f*9.80665f)
+      && a_sqrd_norm < 1.15f*1.15f*9.80665f*9.80665f && a_sqrd_norm > 0.85f*0.85f*9.80665f*9.80665f)
   {
     // Get error estimated by accelerometer measurement
     last_acc_update_us_ = now_us;
@@ -166,7 +166,7 @@ void Estimator::run()
     vector_t a = vector_normalize(accel_LPF_);
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
-    quaternion_t q_acc_inv = quaternion_inverse(quat_from_two_unit_vectors(a, g_));
+    quaternion_t q_acc_inv = quat_from_two_unit_vectors(g_, a);
     // Get the error quaternion between observer and low-freq q
     // Below Eq. 45 Mahony Paper
     quaternion_t q_tilde = quaternion_multiply(q_acc_inv, state_.attitude);
@@ -278,3 +278,4 @@ void Estimator::run()
 }
 
 }
+
