@@ -1,11 +1,15 @@
 #include <gtest/gtest.h>
 #include "rosflight.h"
 #include "test_board.h"
+#include "cmath"
 
-#define EXPECT_INTHESAMEBALLPARK(x, y) EXPECT_LE(fabs(x - y), 0.1)
-#define EXPECT_PRETTYCLOSE(x, y) EXPECT_LE(fabs(x - y), 0.01)
-#define EXPECT_CLOSE(x, y) EXPECT_LE(fabs(x - y), 0.001)
-#define EXPECT_BASICALLYTHESAME(x, y) EXPECT_LE(fabs(x - y), 0.00001)
+#define EXPECT_INTHESAMEBALLPARK(x, y) EXPECT_LE(std::abs(x - y), 0.1)
+#define EXPECT_PRETTYCLOSE(x, y) EXPECT_LE(std::abs(x - y), 0.01)
+#define EXPECT_CLOSE(x, y) EXPECT_LE(std::abs(x - y), 0.001)
+#define EXPECT_BASICALLYTHESAME(x, y) EXPECT_LE(std::abs(x - y), 0.00001)
+
+#define CHN_LOW 1100
+#define CHN_HIGH 1900
 
 
 using namespace rosflight_firmware;
@@ -112,9 +116,13 @@ TEST(command_manager_test, rc_arm_disarm) {
   rc_values[2] = 1000;
   rc_values[3] = 2000;
   board.set_rc(rc_values);
-//  step_firmware(rf, board, 20000);
-  // Step long enough for an arm to happen
-  step_firmware(rf, board, 1100000);
+  // Step halfway long enough to arm (shouldn't be armed yet)
+  step_firmware(rf, board, 500000);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+
+
+  // Wait the rest of the time
+  step_firmware(rf, board, 600000);
   // Check the output
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
@@ -163,7 +171,7 @@ TEST(command_manager_test, rc_arm_disarm) {
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
 
   // flip the arm switch on
-  rc_values[4] = 1900;
+  rc_values[4] = CHN_HIGH;
   board.set_rc(rc_values);
   step_firmware(rf, board, 20000);
   // we should be armed
@@ -172,13 +180,76 @@ TEST(command_manager_test, rc_arm_disarm) {
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
 
   // flip the arm switch off
-  rc_values[4] = 1100;
+  rc_values[4] = CHN_LOW;
   board.set_rc(rc_values);
   step_firmware(rf, board, 20000);
   // we should be disarmed
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().error, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+
+  // Try reversing the arm channel
+  rf.params_.set_param_int(PARAM_RC_SWITCH_5_DIRECTION, -1);
+  rc_values[4] = CHN_LOW;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 20000);
+  // we should be armed
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+
+  // now it should be off
+  rc_values[4] = CHN_HIGH;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 20000);
+  // we should be disarmed
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+
+
+  //=================================================
+  // Edge Cases
+  //=================================================
+
+  // Try to arm with the sticks
+  // Let's send an arming signal (it shouldn't work)
+  rc_values[0] = 1500;
+  rc_values[1] = 1500;
+  rc_values[2] = 1000;
+  rc_values[3] = 2000;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 1100000);
+  // Check the output
+  output = rf.command_manager_.combined_control();
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+
+  // Go back to arming with sticks
+  rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, -1);
+  rf.params_.set_param_int(PARAM_RC_SWITCH_5_DIRECTION, -1);
+
+  // try to arm with all the switches (first put all switches CHN_HIGH)
+  rc_values[0] = 1500;
+  rc_values[1] = 1500;
+  rc_values[2] = 1000;
+  rc_values[3] = 1500;
+  rc_values[4] = CHN_HIGH;
+  rc_values[5] = CHN_HIGH;
+  rc_values[6] = CHN_HIGH;
+  rc_values[7] = CHN_HIGH;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 20000);
+  // we should not be armed
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  // now all switches CHN_LOW
+  rc_values[4] = CHN_LOW;
+  rc_values[5] = CHN_LOW;
+  rc_values[6] = CHN_LOW;
+  rc_values[7] = CHN_LOW;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 20000);
+  // we should not be armed
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
 
@@ -211,10 +282,10 @@ TEST(command_manager_test, rc_failsafe_test) {
   // Disarmed Failsafe
   //=================================================
 
-  // Let's go into failsafe while disarmed
+  // Let's lose rc while disarmed
   board.set_pwm_lost(true);
   step_firmware(rf, board, 20000);
-  // Check the output - This should be the failsafe control
+  // Check the output - This should be the last rc value
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
   EXPECT_PRETTYCLOSE(output.x.value, 0.0*max_roll);
@@ -223,15 +294,15 @@ TEST(command_manager_test, rc_failsafe_test) {
   EXPECT_EQ(output.z.type, RATE);
   EXPECT_PRETTYCLOSE(output.z.value, 0.0*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, failsafe_throttle);
+  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
 
-  // We should also be disarmed, in failsafe and in error
+  // We should also be disarmed and in error
   EXPECT_EQ(rf.state_manager_.state().armed, false);
-  EXPECT_EQ(rf.state_manager_.state().failsafe, true);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
   EXPECT_EQ(rf.state_manager_.state().error, true);
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
 
-  // Lets clear the failsafe
+  // Lets regain rc
   board.set_pwm_lost(false);
   board.set_rc(rc_values);
   step_firmware(rf, board, 20000);
@@ -272,7 +343,7 @@ TEST(command_manager_test, rc_failsafe_test) {
   rc_values[0] = 1750;
   rc_values[1] = 1250;
   rc_values[2] = 1600;
-  rc_values[3] = 1100;
+  rc_values[3] = CHN_LOW;
 
   // Lost RC
   board.set_rc(rc_values);
@@ -310,6 +381,15 @@ TEST(command_manager_test, rc_failsafe_test) {
 }
 
 
+
+#define OFFBOARD_X -1.0
+#define OFFBOARD_Y 0.5
+#define OFFBOARD_Z -0.7
+#define OFFBOARD_F 0.9
+
+#define RC_X_PWM 1800
+#define RC_X ((RC_X_PWM - 1500)/500.0 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL))
+
 TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   testBoard board;
@@ -328,8 +408,6 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   }
   rc_values[2] = 1000;
 
-  float max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
-
   // Let's clear all errors in the state_manager
   rf.state_manager_.clear_error(rf.state_manager_.state().error_codes);
 
@@ -340,10 +418,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   control_t offboard_command =
   {
     20000,
-    {true, ANGLE, -1.0},
-    {true, ANGLE, 0.5},
-    {true, RATE, -0.7},
-    {true, THROTTLE, 0.9}
+    {true, ANGLE, OFFBOARD_X},
+    {true, ANGLE, OFFBOARD_Y},
+    {true, RATE,  OFFBOARD_Z},
+    {true, THROTTLE, OFFBOARD_F}
   };
 
   // First, just set an offboard command and rc, mux it and see what happens
@@ -354,38 +432,40 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
     step_firmware(rf, board, 20000);
   }
 
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
-  // We don't have an override channel mapped, so this should be RC
+  // We don't have an override channel mapped, so this should be offboard
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
 
   rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
+  rf.params_.set_param_int(PARAM_RC_SWITCH_5_DIRECTION, 1);
 
   // ensure that the override switch is off
-  rc_values[4] = 1100;
+  rc_values[4] = CHN_LOW;
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
   // This should be offboard
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, -1.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.5);
-  EXPECT_PRETTYCLOSE(output.z.value, -0.7);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.9);
+  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
 
   // flip override switch on
-  rc_values[4] = 1900;
+  rc_values[4] = CHN_HIGH;
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -406,7 +486,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, -1);
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
@@ -415,7 +495,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   EXPECT_PRETTYCLOSE(output.x.value, 0.0);
   EXPECT_PRETTYCLOSE(output.y.value, 0.0);
   EXPECT_PRETTYCLOSE(output.z.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.9);
+  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
 
 
   // Only override throttle
@@ -423,15 +503,15 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
   // Throttle should be rc
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, -1.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.5);
-  EXPECT_PRETTYCLOSE(output.z.value, -0.7);
+  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
   EXPECT_PRETTYCLOSE(output.F.value, 0.0);
 
 
@@ -444,20 +524,20 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
 
   // switch is off, but roll channel is deviated
-  rc_values[4] = 1100;
-  rc_values[0] = 1800;
-  rc_values[2] = 1000;
+  rc_values[4] = CHN_LOW;
+  rc_values[0] = RC_X_PWM;
+  rc_values[2] = 1000;  // move throttle to neutral position
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
 
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.6*max_roll);  // This channel should be overwritten
-  EXPECT_PRETTYCLOSE(output.y.value, 0.5);
-  EXPECT_PRETTYCLOSE(output.z.value, -0.7);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.9);
+  EXPECT_PRETTYCLOSE(output.x.value, RC_X);  // This channel should be overwritten
+  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
 
   //=================================================
   // RC Override Lag Test
@@ -473,14 +553,14 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   {
     output = rf.command_manager_.combined_control();
     EXPECT_PRETTYCLOSE(output.x.value, 0.0);  // This channel should be overwritten
-    EXPECT_PRETTYCLOSE(output.y.value, 0.5);
-    EXPECT_PRETTYCLOSE(output.z.value, -0.7);
-    EXPECT_PRETTYCLOSE(output.F.value, 0.9);
-    offboard_command.stamp_us = board.clock_micros();
+    EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
+    EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
+    EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+    offboard_command.stamp_ms = board.clock_millis();
     rf.command_manager_.set_new_offboard_command(offboard_command);
     step_firmware(rf, board, 20000);
   }
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
@@ -495,10 +575,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   while (board.clock_millis() < 100 + start_ms)
   {
     output = rf.command_manager_.combined_control();
-    EXPECT_PRETTYCLOSE(output.x.value, -1.0);  // Offboard Command is still valid
-    EXPECT_PRETTYCLOSE(output.y.value, 0.5);
-    EXPECT_PRETTYCLOSE(output.z.value, -0.7);
-    EXPECT_PRETTYCLOSE(output.F.value, 0.9);
+    EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);  // Offboard Command is still valid
+    EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
+    EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
+    EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
     step_firmware(rf, board, 20000);
   }
 
@@ -543,10 +623,10 @@ TEST(command_manager_test, partial_muxing_test ) {
   control_t offboard_command =
   {
     20000,
-    {true, ANGLE, -1.0},
-    {true, ANGLE, 0.5},
-    {true, RATE, -0.7},
-    {true, THROTTLE, 0.5}
+    {true, ANGLE, OFFBOARD_X},
+    {true, ANGLE, OFFBOARD_Y},
+    {true, RATE,  OFFBOARD_Z},
+    {true, THROTTLE, OFFBOARD_F}
   };
 
   // step a bunch of times to clear the "lag time" on RC
@@ -559,7 +639,7 @@ TEST(command_manager_test, partial_muxing_test ) {
 
   // RC is the min throttle
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   control_t output = rf.command_manager_.combined_control();
@@ -570,33 +650,43 @@ TEST(command_manager_test, partial_muxing_test ) {
   rc_values[2] = 1500;
 
   board.set_rc(rc_values);
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
   EXPECT_PRETTYCLOSE(output.F.value, 0.2);
-
-
 
   // Okay, remove the Min throttle setting
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
 
+  rc_values[2] = 1200;
+  offboard_command.F.value = OFFBOARD_F;
+
+  // RC is the min throttle
+  board.set_rc(rc_values);
+  offboard_command.stamp_ms = board.clock_millis();
+  rf.command_manager_.set_new_offboard_command(offboard_command);
+  step_firmware(rf, board, 20000);
+  output = rf.command_manager_.combined_control();
+  // We should get offboard command, even though RC is lower
+  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+
 
   // Now, let's disable the pitch channel on the onboard command
   offboard_command.y.active = false;
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
 
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, -1.0);
+  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
   EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, -0.7);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.2);
+  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
 
   // Let's change the type on the x channel
   offboard_command.x.type = RATE;
-  offboard_command.stamp_us = board.clock_micros();
+  offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);
 
   step_firmware(rf, board, 20000);

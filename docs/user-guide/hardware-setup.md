@@ -97,8 +97,8 @@ We currently support 5 mixer types.  The desired mixer can be chosen by setting 
 
 | mixer | value |
 |-----------------|-------|
-| Quadcopter-X | 0 |
-| Quadctoper-Plus | 1 |
+| Quadctoper-Plus | 0 |
+| Quadcopter-X | 1 |
 | Y6 | 2 |
 | X8 | 3 |
 | Fixed Wing | 4 |

@@ -31,6 +31,11 @@
 
 #include "nanoprintf.h"
 
+namespace rosflight_firmware
+{
+namespace nanoprintf
+{
+
 typedef void (*putcf)(void *,char);
 static putcf stdout_putf;
 static void *stdout_putp;
@@ -140,7 +145,7 @@ static void putchw(void *putp,putcf putf,int n, char z, char *bf)
     putf(putp,ch);
 }
 
-void nano_tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
+void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
 {
   char bf[12];
 
@@ -235,11 +240,11 @@ void init_printf(void *putp, void (*putf)(void *, char))
   stdout_putp=putp;
 }
 
-void nano_tfp_printf(const char *fmt, ...)
+void tfp_printf(const char *fmt, ...)
 {
   va_list va;
   va_start(va,fmt);
-  nano_tfp_format(stdout_putp,stdout_putf,fmt,va);
+  tfp_format(stdout_putp,stdout_putf,fmt,va);
   va_end(va);
 }
 
@@ -248,11 +253,11 @@ static void putcp(void *p,char c)
   *(*((char **)p))++ = c;
 }
 
-void nano_tfp_sprintf(char *s, const char *fmt, ...)
+void tfp_sprintf(char *s, const char *fmt, va_list va)
 {
-  va_list va;
-  va_start(va,fmt);
-  nano_tfp_format(&s,putcp,fmt,va);
+  tfp_format(&s,putcp,fmt,va);
   putcp(&s,0);
-  va_end(va);
 }
+
+} // namespace nanoprintf
+} // namespace rosflight_firmware

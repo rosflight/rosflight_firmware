@@ -33,68 +33,7 @@
 #define ROSFLIGHT_FIRMWARE_MAVLINK_H
 
 #include <mavlink/v1.0/rosflight/mavlink.h>
-//#include "nanoprintf.h"
-
-//#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
-
-//#define commlink_log(objectptr, severity, format, ...) do {\
-//  char text[50]; \
-//  nano_sprintf(text, format, ##__VA_ARGS__); \
-//  objectptr->send_log_message(severity, text); \
-//  } while(0)
-
-//#define log_critical(objectptr, format, ...) commlink_log(objectptr, 2, format, ##__VA_ARGS__)
-//#define log_error(objectptr, format, ...)    commlink_log(objectptr, 3, format, ##__VA_ARGS__)
-//#define log_warning(objectptr, format, ...)  commlink_log(objectptr, 4, format, ##__VA_ARGS__)
-//#define log_info(objectptr, format, ...)     commlink_log(objectptr, 6, format, ##__VA_ARGS__)
-
-//#define mavlink_log_critical_throttle(delay_ms, format, ...) \
-//  do\
-//  {\
-//    static uint32_t last_hit = 0; \
-//    uint32_t now = clock_millis(); \
-//    if (now - last_hit > delay_ms) \
-//    {\
-//      last_hit = now; \
-//      mavlink_log_critical(format, ##__VA_ARGS__); \
-//    }\
-//  } while(0)
-
-//#define mavlink_log_error_throttle(delay_ms, format, ...) \
-//  do\
-//  {\
-//    static uint32_t last_hit = 0; \
-//    uint32_t now = clock_millis(); \
-//    if (now - last_hit > delay_ms) \
-//    {\
-//      last_hit = now; \
-//      mavlink_log_error(format, ##__VA_ARGS__); \
-//    }\
-//  } while(0)
-
-//#define mavlink_log_warning_throttle(delay_ms, format, ...) \
-//  do\
-//  {\
-//    static uint32_t last_hit = 0; \
-//    uint32_t now = clock_millis(); \
-//    if (now - last_hit > delay_ms) \
-//    {\
-//      last_hit = now; \
-//      mavlink_log_warning(format, ##__VA_ARGS__); \
-//    }\
-//  } while(0)
-
-//#define mavlink_log_info_throttle(delay_ms, format, ...) \
-//  do\
-//  {\
-//    static uint32_t last_hit = 0; \
-//    uint32_t now = clock_millis(); \
-//    if (now - last_hit > delay_ms) \
-//    {\
-//      last_hit = now; \
-//      mavlink_log_info(format, ##__VA_ARGS__); \
-//    }\
-//  } while(0)
+#include "nanoprintf.h"
 
 namespace rosflight_firmware {
 
@@ -104,23 +43,23 @@ class Mavlink
 {
 private:
   enum
-    {
-      STREAM_ID_HEARTBEAT,
-      STREAM_ID_STATUS,
+  {
+    STREAM_ID_HEARTBEAT,
+    STREAM_ID_STATUS,
 
-      STREAM_ID_ATTITUDE,
+    STREAM_ID_ATTITUDE,
 
-      STREAM_ID_IMU,
-      STREAM_ID_DIFF_PRESSURE,
-      STREAM_ID_BARO,
-      STREAM_ID_SONAR,
-      STREAM_ID_MAG,
+    STREAM_ID_IMU,
+    STREAM_ID_DIFF_PRESSURE,
+    STREAM_ID_BARO,
+    STREAM_ID_SONAR,
+    STREAM_ID_MAG,
 
-      STREAM_ID_SERVO_OUTPUT_RAW,
-      STREAM_ID_RC_RAW,
-      STREAM_ID_LOW_PRIORITY,
-      STREAM_COUNT
-    };
+    STREAM_ID_SERVO_OUTPUT_RAW,
+    STREAM_ID_RC_RAW,
+    STREAM_ID_LOW_PRIORITY,
+    STREAM_COUNT
+  };
 
   uint32_t sysid_;
   uint32_t compid_;
@@ -163,15 +102,15 @@ private:
   void send_mag(void);
   void send_low_priority(void);
   void send_message(const mavlink_message_t &msg);
+  void send_log_message(uint8_t severity, const char *text);
   void stream_set_period(uint8_t stream_id, uint32_t period_us);
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
-  void send_named_value_float(const char *const name, float value);
-//  void send_named_command_struct(const char *const name, control_t command_struct);
+  //  void send_named_command_struct(const char *const name, control_t command_struct);
 
   mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
-  //  period_us    last_time_us   send_function
+    //  period_us    last_time_us   send_function
     { 1000000,     0,             &rosflight_firmware::Mavlink::send_heartbeat },
     { 1000000,     0,             &rosflight_firmware::Mavlink::send_status},
     { 200000,      0,             &rosflight_firmware::Mavlink::send_attitude },
@@ -187,6 +126,15 @@ private:
 
 
 public:
+
+  enum
+  {
+    LOG_INFO = 6,
+    LOG_WARNING = 4,
+    LOG_ERROR = 3,
+    LOG_CRITICAL = 2
+  };
+
   Mavlink(ROSflight &_rf);
 
   void init();
@@ -194,8 +142,10 @@ public:
   void stream();
   void update_param(uint16_t param_id);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
-  void send_log_message(uint8_t severity, char* text);
   void update_status();
+  void log(uint8_t severity, const char *fmt, ...);
+
+  void send_named_value_float(const char *const name, float value);
 };
 
 } // namespace rosflight_firmware

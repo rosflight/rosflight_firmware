@@ -65,7 +65,7 @@ Controller::Controller(ROSflight& rf) :
 
 void Controller::init()
 {
-  prev_time_ = 0.0f;
+  prev_time_us_ = 0;
 
   float max = RF_.params_.get_param_float(PARAM_MAX_COMMAND);
   float min = -max;
@@ -96,22 +96,26 @@ void Controller::init()
 void Controller::run()
 {
   // Time calculation
-  if (prev_time_ < 0.0000001)
+  if (prev_time_us_ < 1)
   {
-    prev_time_ = RF_.estimator_.state().timestamp * 1e-6;
+    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
 
-  float now = RF_.estimator_.state().timestamp * 1e-6;
-  float dt = now - prev_time_;
-  prev_time_ = now;
+  int32_t dt_us = (RF_.estimator_.state().timestamp_us - prev_time_us_);
+  if ( dt_us < 0 )
+  {
+    RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+    return;
+  }
+  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt < 0.01f;
+  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 100;
 
   // Run the PID loops
-  vector_t pid_output = run_pid_loops(dt, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
+  vector_t pid_output = run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
@@ -126,7 +130,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
   if (!(RF_.state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
-    //    mavlink_log_warning("Capturing equilbrium offsets from RC");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Capturing equilbrium offsets from RC");
 
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
@@ -148,19 +152,19 @@ void Controller::calculate_equilbrium_torque_from_rc()
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
     // the static offset torques
-    vector_t pid_output = run_pid_loops(0.0f, fake_state, RF_.command_manager_.rc_control(), false);
+    vector_t pid_output = run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x);
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y);
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z);
 
-    //    mavlink_log_warning("Equilibrium torques found and applied.");
-    //    mavlink_log_warning("Please zero out trims on your transmitter");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Equilibrium torques found and applied.");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Please zero out trims on your transmitter");
   }
   else
   {
-    //    mavlink_log_warning("Cannot perform equilbirum offset calibration while armed");
+    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
   }
 }
 
@@ -169,10 +173,12 @@ void Controller::param_change_callback(uint16_t param_id)
   init();
 }
 
-vector_t Controller::run_pid_loops(float dt, const Estimator::State& state, const control_t& command, bool update_integrators)
+vector_t Controller::run_pid_loops(int32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   vector_t output;
+
+  float dt = dt_us;
 
   // ROLL
   if (command.x.type == RATE)
@@ -193,7 +199,7 @@ vector_t Controller::run_pid_loops(float dt, const Estimator::State& state, cons
   // YAW
   if (command.z.type == RATE)
     output.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
-  else// PASSTHROUGH
+  else
     output.z = command.z.value;
 
   return output;
@@ -230,7 +236,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
     differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
-                          + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+        + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
   }
   else
@@ -244,7 +250,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
 
 float Controller::PID::run(float dt, float x, float x_c, bool update_integrator, float xdot)
 {
-  // Calculate Error (make sure to de-reference pointers)
+  // Calculate Error
   float error = x_c - x;
 
   // Initialize Terms
@@ -258,17 +264,17 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
     d_term = kd_ * xdot;
   }
 
-  // If there is an integrator term and we are updating integrators
+  //If there is an integrator term and we are updating integrators
   if ((ki_ > 0.0f) && update_integrator)
   {
-      // integrate
-      integrator_ += error * dt;
-      // calculate I term
-      i_term = ki_ * integrator_;
+    // integrate
+    integrator_ += error * dt;
+    // calculate I term
+    i_term = ki_ * integrator_;
   }
 
   // sum three terms
-  float u = p_term + i_term - d_term;
+  float u = p_term - d_term + i_term;
 
   // Integrator anti-windup
   //// Include reference to Dr. Beard's notes here

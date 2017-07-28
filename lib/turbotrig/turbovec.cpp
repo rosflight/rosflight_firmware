@@ -34,8 +34,8 @@
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
 
-#include "turbovec.h"
-#include "turbotrig.h"
+#include <turbotrig/turbovec.h>
+#include <turbotrig/turbotrig.h>
 
 
 void pfquat() __attribute__((unused));
@@ -60,9 +60,9 @@ vector_t cross(vector_t u, vector_t v)
 
 vector_t scalar_multiply(float s, vector_t v)
 {
-  vector_t out = {s*v.x,
-                  s*v.y,
-                  s *v.z
+  vector_t out = {s * v.x,
+                  s * v.y,
+                  s * v.z
                  };
   return out;
 }
@@ -102,7 +102,7 @@ vector_t vector_normalize(vector_t v)
   float recipNorm = turboInvSqrt(v.x*v.x + v.y*v.y + v.z*v.z);
   vector_t out = {recipNorm*v.x,
                   recipNorm*v.y,
-                  recipNorm *v.z
+                  recipNorm*v.z
                  };
   return out;
 }
@@ -113,8 +113,7 @@ quaternion_t quaternion_normalize(quaternion_t q)
   quaternion_t out = {recipNorm*q.w,
                       recipNorm*q.x,
                       recipNorm*q.y,
-                      recipNorm *q.z
-                     };
+                      recipNorm*q.z};
   return out;
 }
 
@@ -146,11 +145,21 @@ vector_t rotate_vector(quaternion_t q, vector_t v)
 
 quaternion_t quat_from_two_unit_vectors(vector_t u, vector_t v)
 {
-  // https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
-  float w = sqrt(sqrd_norm(u)*sqrd_norm(v)) + dot(u, v);
-  vector_t xyz = cross(u, v);
-  quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
-  return quaternion_normalize(q);
+  // Adapted From the Ogre3d source code
+  // https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h?fileviewer=file-view-default#cl-651
+  quaternion_t out;
+  float d = dot(u, v);
+  if ( d >= 1.0f)
+  {
+    out = {1, 0, 0, 0};
+  }
+  else
+  {
+    float invs = turboInvSqrt(2*(1+d));
+    vector_t xyz = scalar_multiply(invs, cross(u, v));
+    out = {0.5f/invs, xyz.x, xyz.y, xyz.z};
+  }
+  return quaternion_normalize(out);
 }
 
 void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
@@ -165,8 +174,8 @@ void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
 
 float turboInvSqrt(float x)
 {
-  long i;
-  float x2, y;
+  volatile long i;
+  volatile float x2, y;
   const float threehalfs = 1.5F;
 
   x2 = x * 0.5F;

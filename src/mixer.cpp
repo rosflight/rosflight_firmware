@@ -75,7 +75,7 @@ void Mixer::init_mixing()
 
   if (mixer_choice >= NUM_MIXERS)
   {
-//    mavlink_log_error("Invalid Mixer Choice", NULL);
+    RF_.mavlink_.log(Mavlink::LOG_ERROR, "Invalid Mixer Choice");
     mixer_choice = 0;
 
     // set the invalid mixer flag
@@ -156,9 +156,9 @@ void Mixer::mix_output()
   // Reverse Fixedwing channels just before mixing if we need to
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
-    unsaturated_outputs_[0] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    unsaturated_outputs_[1] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    unsaturated_outputs_[3] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+    commands.x *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
 
   for (int8_t i=0; i<8; i++)

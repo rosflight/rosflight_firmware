@@ -102,32 +102,27 @@ For further details see source code.
 regs Kusti, 23.10.2004
 */
 
-#ifndef __NANOO_TFP_PRINTF__
-#define __NANOO_TFP_PRINTF__
-
-//#ifndef USING_STDLIB_PRINTF
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef ROSFLIGHT_FIRWMARE_NANO_PRINTF_H
+#define ROSFLIGHT_FIRWMARE_NANO_PRINTF_H
 
 #include <stdarg.h>
 
+namespace rosflight_firmware
+{
+namespace nanoprintf
+{
+
 void init_printf(void *putp,void (*putf)(void *,char));
 
-void nano_tfp_printf(const char *fmt, ...);
-void nano_tfp_sprintf(char *s, const char *fmt, ...);
+void tfp_printf(const char *fmt, ...);
+void tfp_sprintf(char *s, const char *fmt, va_list va);
 
-void nano_tfp_format(void *putp, void (*putf)(void *,char), const char *fmt, va_list va);
+void tfp_format(void *putp, void (*putf)(void *,char), const char *fmt, va_list va);
 
-// modified by Daniel Koch <danielpkoch@gmail.com>:
-#define nano_printf nano_tfp_printf
-#define nano_sprintf nano_tfp_sprintf
+} // namespace nanoprintf
+} // namespace rosflight_firmware
 
-#ifdef __cplusplus
-}
-#endif
+#define nano_printf rosflight_firmware::nanoprintf::tfp_printf
+#define nano_sprintf rosflight_firmware::nanoprintf::tfp_sprintf
 
-//#endif
-
-#endif
+#endif // ROSFLIGHT_FIRWMARE_NANO_PRINTF_H

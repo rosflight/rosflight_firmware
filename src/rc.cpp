@@ -68,18 +68,17 @@ void RC::param_change_callback(uint16_t param_id)
   init_rc();
 }
 
-float RC::rc_stick(rc_stick_t channel)
+float RC::stick(Stick channel)
 {
-  new_command_ = false;
   return stick_values[channel];
 }
 
-bool RC::rc_switch(int16_t channel)
+bool RC::switch_on(Switch channel)
 {
   return switch_values[channel];
 }
 
-bool RC::rc_switch_mapped(rc_switch_t channel)
+bool RC::switch_mapped(Switch channel)
 {
   return switches[channel].mapped;
 }
@@ -102,23 +101,37 @@ void RC::init_sticks(void)
 
 void RC::init_switches()
 {
-  // Make sure that parameters for switch channels are correct
-  switches[SWITCH_ARM].channel               = RF_.params_.get_param_int(PARAM_RC_ARM_CHANNEL);
-  switches[SWITCH_ATT_OVERRIDE].channel      = RF_.params_.get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  switches[SWITCH_THROTTLE_OVERRIDE].channel = RF_.params_.get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  switches[SWITCH_ATT_TYPE].channel          = RF_.params_.get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-
-  for (uint8_t chan = 0; chan < (uint8_t)SWITCHES_COUNT; chan++)
+  for (uint8_t chan = 0; chan < (uint8_t) SWITCHES_COUNT; chan++)
   {
-    switches[chan].mapped = switches[chan].channel > 3
-                            && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
-    if (!switches[chan].mapped)
+    char channel_name[18];
+    switch (chan)
     {
-      //      mavlink_log_error("invalid RC switch channel assignment: %d", switches[chan].channel); // TODO use parameter name
+    case SWITCH_ARM:
+      strcpy(channel_name, "ARM");
+      switches[chan].channel = RF_.params_.get_param_int(PARAM_RC_ARM_CHANNEL);
+      break;
+    case SWITCH_ATT_OVERRIDE:
+      strcpy(channel_name, "ATTITUDE OVERRIDE");
+      switches[chan].channel = RF_.params_.get_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+      break;
+    case SWITCH_THROTTLE_OVERRIDE:
+      strcpy(channel_name, "THROTTLE OVERRIDE");
+      switches[chan].channel = RF_.params_.get_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+      break;
+    case SWITCH_ATT_TYPE:
+      strcpy(channel_name, "ATTITUDE TYPE");
+      switches[chan].channel = RF_.params_.get_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+      break;
+    default:
+      strcpy(channel_name, "INVALID");
+      switches[chan].channel = 255;
+      break;
     }
 
-    switches[chan].direction = 1;
-    switch (chan)
+    switches[chan].mapped = switches[chan].channel > 3
+                            && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
+
+    switch (switches[chan].channel)
     {
     case 4:
       switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_5_DIRECTION);
@@ -132,7 +145,15 @@ void RC::init_switches()
     case 7:
       switches[chan].direction = RF_.params_.get_param_int(PARAM_RC_SWITCH_8_DIRECTION);
       break;
+    default:
+      switches[chan].direction = 1;
+      break;
     }
+
+    if (switches[chan].mapped)
+      RF_.mavlink_.log(Mavlink::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
+    else
+      RF_.mavlink_.log(Mavlink::LOG_INFO, "%s switch not mapped", channel_name);
   }
 }
 
@@ -173,13 +194,13 @@ void RC::look_for_arm_disarm_signal()
   uint32_t dt = now_ms - prev_time_ms;
   prev_time_ms = now_ms;
   // check for arming switch
-  if (!rc_switch_mapped(SWITCH_ARM))
+  if (!switch_mapped(SWITCH_ARM))
   {
     if (!RF_.state_manager_.state().armed) // we are DISARMED
     {
       // if left stick is down and to the right
-      if ((RF_.rc_.rc_stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
-          && (RF_.rc_.rc_stick(STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
+      if ((RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
+          && (RF_.rc_.stick(STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -195,8 +216,8 @@ void RC::look_for_arm_disarm_signal()
     else // we are ARMED
     {
       // if left stick is down and to the left
-      if (RF_.rc_.rc_stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
-          && RF_.rc_.rc_stick(STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
+      if (RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
+          && RF_.rc_.stick(STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -213,7 +234,7 @@ void RC::look_for_arm_disarm_signal()
   }
   else // ARMING WITH SWITCH
   {
-    if (RF_.rc_.rc_switch(SWITCH_ARM))
+    if (RF_.rc_.switch_on(SWITCH_ARM))
     {
       if (!RF_.state_manager_.state().armed)
         RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);;
@@ -289,7 +310,13 @@ bool RC::run()
 
 bool RC::new_command()
 {
-  return new_command_;
+  if (new_command_)
+  {
+    new_command_ = false;
+    return true;
+  }
+  else
+    return false;;
 }
 
 }

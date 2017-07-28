@@ -75,7 +75,7 @@ namespace rosflight_firmware
 
 // serial
   void testBoard::serial_init(uint32_t baud_rate){}
-  void testBoard::serial_write(uint8_t byte){}
+  void testBoard::serial_write(const uint8_t *src, size_t len){}
   uint16_t testBoard::serial_bytes_available(void){ return 0; }
   uint8_t testBoard::serial_read(void){}
 
@@ -94,9 +94,7 @@ namespace rosflight_firmware
   }
 
 
-  void testBoard::imu_read_accel(float accel[3]){}
-  void testBoard::imu_read_gyro(float gyro[3]){}
-  bool testBoard::imu_read_all(float accel[3], float *temperature, float gyro[3], uint64_t* time)
+  bool testBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -108,25 +106,17 @@ namespace rosflight_firmware
     return true;
   }
 
-  float testBoard::imu_read_temperature(void){}
   void testBoard::imu_not_responding_error(void){}
 
   bool testBoard::mag_check(void){ return false; }
-  bool testBoard::mag_present(void){ return false; }
   void testBoard::mag_read(float mag[3]){}
 
-  bool testBoard::baro_present(void){ return false; }
   bool testBoard::baro_check(void){ return false; }
-  void testBoard::baro_read(float *altitude, float *pressure, float *temperature) {}
-  void testBoard::baro_calibrate(){}
+  void testBoard::baro_read(float *pressure, float *temperature) {}
 
-  bool testBoard::diff_pressure_present(void){ return false; }
   bool testBoard::diff_pressure_check(void){ return false; }
-  void testBoard::diff_pressure_set_atm(float barometric_pressure){}
-  void testBoard::diff_pressure_calibrate(){}
-  void testBoard::diff_pressure_read(float *diff_pressure, float *temperature, float *velocity) {}
+  void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
 
-  bool testBoard::sonar_present(void){ return false; }
   bool testBoard::sonar_check(void){ return false; }
   float testBoard::sonar_read(void){}
 
