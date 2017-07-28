@@ -21,6 +21,7 @@ pages:
     - RC Configuration: user-guide/rc-configuration.md
     - Preflight checks: user-guide/preflight-checks.md
     - Improving performance: user-guide/performance.md
+    - Running Gazebo Simulation: user-guide/gazebo_simulation.md
     - Autonomous flight: user-guide/autonomous-flight.md
   - Developer Guide:
     - Contribution Guidelines: developer-guide/contribution_guidelines.md
