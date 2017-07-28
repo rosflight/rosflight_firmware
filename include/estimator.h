@@ -48,8 +48,6 @@ class Estimator
 {
 
 public:
-  quaternion_t q_tilde;
-  quaternion_t q_acc_inv;
   struct State
   {
     vector_t angular_velocity;
