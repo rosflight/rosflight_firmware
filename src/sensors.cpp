@@ -44,7 +44,7 @@ namespace rosflight_firmware
 
 const float Sensors::BARO_MAX_CHANGE_RATE = 1000.0f;    // approx 100 m/s
 const float Sensors::BARO_SAMPLE_RATE = 50.0f;
-const float Sensors::DIFF_MAX_CHANGE_RATE = 30.0f;      // approx 15 m/s^2
+const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f;      // approx 15 m/s^2
 const float Sensors::DIFF_SAMPLE_RATE = 50.0f;
 const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f;    // 100 m/s
 const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
