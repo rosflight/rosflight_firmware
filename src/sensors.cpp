@@ -233,7 +233,7 @@ bool Sensors::update_imu(void)
     data_.gyro.y = gyro_[1];
     data_.gyro.z = gyro_[2];
 
-    if (calibrating_acc_flag_ == true)
+    if (calibrating_acc_flag_)
       calibrate_accel();
     if (calibrating_gyro_flag_)
       calibrate_gyro();
@@ -243,8 +243,8 @@ bool Sensors::update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
+    // if we have lost 10 IMU messages then something is wrong
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 10)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
@@ -261,13 +261,10 @@ bool Sensors::update_imu(void)
 // Calibration Functions
 void Sensors::calibrate_gyro()
 {
-  gyro_sum_.x = 0.0f;
-  gyro_sum_.y = 0.0f;
-  gyro_sum_.z = 0.0f;
   gyro_sum_ = vector_add(gyro_sum_, data_.gyro);
   gyro_calibration_count_++;
 
-  if (gyro_calibration_count_ > 100)
+  if (gyro_calibration_count_ > 1000)
   {
     // Gyros are simple.  Just find the average during the calibration
     vector_t gyro_bias = scalar_multiply(1.0/(float)gyro_calibration_count_, gyro_sum_);

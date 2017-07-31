@@ -413,7 +413,7 @@ void Mavlink::send_attitude(void)
 {
   mavlink_message_t msg;
   mavlink_msg_attitude_quaternion_pack(sysid_, compid_, &msg,
-                                       RF_.estimator_.state().timestamp / 1000,
+                                       RF_.estimator_.state().timestamp_us / 1000,
                                        RF_.estimator_.state().attitude.w,
                                        RF_.estimator_.state().attitude.x,
                                        RF_.estimator_.state().attitude.y,

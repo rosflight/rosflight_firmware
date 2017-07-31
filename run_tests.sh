@@ -25,7 +25,7 @@ echo_blue "Test 2: Build test suite"
 mkdir -p test/build
 cd test/build
 rm -rf *
-cmake .. && make
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE && make
 print_result $?
 
 echo_blue "Test 3: Run test suite"
