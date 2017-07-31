@@ -54,12 +54,15 @@ class Sensors
     float diff_pressure_velocity = 0;
     float diff_pressure = 0;
     float diff_pressure_temp = 0;
+    bool diff_pressure_valid = false;
 
     float baro_altitude = 0;
     float baro_pressure = 0;
     float baro_temperature = 0;
+    bool baro_valid = false;
 
     float sonar_range = 0;
+    bool sonar_range_valid = false;
 
     vector_t mag = {0, 0, 0};
 
@@ -93,6 +96,24 @@ public:
       imu_data_sent_ = true;
     return true;
   }
+
+  static const float BARO_MAX_CHANGE_RATE;
+  static const float BARO_SAMPLE_RATE;
+  static const float DIFF_MAX_CHANGE_RATE;
+  static const float DIFF_SAMPLE_RATE;
+  static const float SONAR_MAX_CHANGE_RATE;
+  static const float SONAR_SAMPLE_RATE;
+  class OutlierFilter
+  {
+    float max_change_;
+    float center_;
+    int window_size_;
+    bool init_ = false;
+  public:
+    OutlierFilter() {};
+    void init(float max_change_rate, float update_rate, float center);
+    bool update(float new_val, float& val);
+  };
 
 private:
   ROSflight& rf_;
@@ -143,6 +164,13 @@ private:
   bool diff_pressure_calibrated_ = false;
   uint16_t diff_pressure_calibration_count_ = 0;
   float diff_pressure_calibration_sum_ = 0.0f;
+
+  // Sensor Measurement Outlier Filters
+  OutlierFilter baro_outlier_filt_;
+  OutlierFilter diff_outlier_filt_;
+  OutlierFilter sonar_outlier_filt_;
+
+
 };
 
 } // namespace rosflight_firmware

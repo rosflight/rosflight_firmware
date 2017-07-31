@@ -42,6 +42,13 @@
 namespace rosflight_firmware
 {
 
+const float Sensors::BARO_MAX_CHANGE_RATE = 1000.0f;    // approx 100 m/s
+const float Sensors::BARO_SAMPLE_RATE = 50.0f;
+const float Sensors::DIFF_MAX_CHANGE_RATE = 30.0f;      // approx 15 m/s^2
+const float Sensors::DIFF_SAMPLE_RATE = 50.0f;
+const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f;    // 100 m/s
+const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
+
 Sensors::Sensors(ROSflight& rosflight) :
   rf_(rosflight)
 {}
@@ -65,6 +72,10 @@ void Sensors::init()
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
   ground_pressure_ = 101325.0f*(float)pow((1-2.25694e-5 * alt), 5.2553);
+
+  baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
+  diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
+  sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
 }
 
 
@@ -95,21 +106,35 @@ void Sensors::update_other_sensors()
   case 0:
     if (data_.baro_present)
     {
-      rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.baro_read(&raw_pressure, &raw_temp);
+      if (data_.baro_valid = baro_outlier_filt_.update(raw_pressure, data_.baro_pressure))
+      {
+        data_.baro_temperature = raw_temp;
+
+      }
       correct_baro();
     }
     break;
   case 1:
     if (data_.diff_pressure_present)
     {
-      rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp);
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
+      if (data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, data_.diff_pressure))
+      {
+        data_.diff_pressure_temp = raw_temp;
+
+      }
       correct_diff_pressure();
     }
     break;
   case 2:
     if (data_.sonar_present)
     {
-      data_.sonar_range = rf_.board_.sonar_read();
+      data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), data_.sonar_range);
     }
     break;
   case 3:
@@ -486,6 +511,35 @@ void Sensors::correct_diff_pressure()
   if (data_.baro_present)
     atm = data_.baro_pressure;
   data_.diff_pressure_velocity = fsign(data_.diff_pressure) * 24.574f/turboInvSqrt((fabs(data_.diff_pressure) * data_.diff_pressure_temp  /  atm));
+}
+
+void Sensors::OutlierFilter::init(float max_change_rate, float update_rate, float center)
+{
+  max_change_ = max_change_rate / update_rate;
+  window_size_ = 1;
+  center_ = center;
+  init_ = true;
+}
+
+bool Sensors::OutlierFilter::update(float new_val, float& val)
+{
+  float diff = new_val - center_;
+  if (fabs(diff) < window_size_ * max_change_)
+  {
+    val = new_val;
+
+    center_ += fsign(diff) * fmin(max_change_, fabs(diff));
+    if (window_size_ > 1)
+    {
+      window_size_--;
+    }
+    return true;
+  }
+  else
+  {
+    window_size_++;
+    return false;
+  }
 }
 
 } // namespace rosflight_firmware
