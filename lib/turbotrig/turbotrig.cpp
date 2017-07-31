@@ -211,7 +211,7 @@ static const int16_t alt_lookup_table[500] = {
 
 float fsign(float y)
 {
-  return (0.0 < y) - (y < 0.0);
+  return (0.0f < y) - (y < 0.0f);
 }
 
 float asin_approx(float x)

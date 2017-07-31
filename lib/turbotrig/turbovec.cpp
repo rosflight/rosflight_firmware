@@ -189,17 +189,11 @@ float turboInvSqrt(float x)
   return y;
 }
 
-float sign(float x)
-{
-  return (x > 0) - (x < 0);
-}
-
-
 float fsat(float value, float max)
 {
-  if (abs(value) > abs(max))
+  if (fabs(value) > fabs(max))
   {
-    value = max*sign(value);
+    value = max*fsign(value);
   }
   return value;
 }
