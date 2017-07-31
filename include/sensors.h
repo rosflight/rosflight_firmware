@@ -157,12 +157,13 @@ private:
   bool baro_calibrated_ = false;
   float ground_pressure_ = 0.0f;
   uint16_t baro_calibration_count_ = 0;
-  uint32_t last_baro_cal_iter_ms = 0;
+  uint32_t last_baro_cal_iter_ms_ = 0;
   float baro_calibration_sum_ = 0.0f;
 
   // Diff Pressure Calibration
   bool diff_pressure_calibrated_ = false;
   uint16_t diff_pressure_calibration_count_ = 0;
+  uint32_t last_diff_pressure_cal_iter_ms_ = 0;
   float diff_pressure_calibration_sum_ = 0.0f;
 
   // Sensor Measurement Outlier Filters

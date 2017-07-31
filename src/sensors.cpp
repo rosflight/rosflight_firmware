@@ -419,7 +419,7 @@ void Sensors::calibrate_accel(void)
 
 void Sensors::calibrate_baro()
 {
-  if (rf_.board_.clock_millis() > last_baro_cal_iter_ms + 20)
+  if (rf_.board_.clock_millis() > last_baro_cal_iter_ms_ + 20)
   {
     baro_calibration_count_++;
 
@@ -436,24 +436,28 @@ void Sensors::calibrate_baro()
     {
       baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
     }
-    last_baro_cal_iter_ms = rf_.board_.clock_millis();
+    last_baro_cal_iter_ms_ = rf_.board_.clock_millis();
   }
 }
 
 void Sensors::calibrate_diff_pressure()
 {
-  diff_pressure_calibration_count_++;
+  if (rf_.board_.clock_millis() > last_diff_pressure_cal_iter_ms_ + 20)
+  {
+    diff_pressure_calibration_count_++;
 
-  if(diff_pressure_calibration_count_ > 256)
-  {
-    rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_sum_ / 127.0f);
-    diff_pressure_calibrated_ = true;
-    diff_pressure_calibration_sum_ = 0.0f;
-    diff_pressure_calibration_count_ = 0;
-  }
-  else if (diff_pressure_calibration_count_ > 128)
-  {
-    diff_pressure_calibration_sum_ += data_.diff_pressure;
+    if(diff_pressure_calibration_count_ >= 256)
+    {
+      rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_sum_ / 128.0f);
+      diff_pressure_calibration_sum_ = 0.0f;
+      diff_pressure_calibration_count_ = 0;
+      diff_pressure_calibrated_ = true;
+    }
+    else if (diff_pressure_calibration_count_ >= 128)
+    {
+      diff_pressure_calibration_sum_ += data_.diff_pressure;
+    }
+    last_diff_pressure_cal_iter_ms_ = rf_.board_.clock_millis();
   }
 }
 
