@@ -96,7 +96,7 @@ void Controller::init()
 void Controller::run()
 {
   // Time calculation
-  if (prev_time_us_ < 1)
+  if (prev_time_us_ == 0)
   {
     prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
@@ -106,9 +106,9 @@ void Controller::run()
   if ( dt_us < 0 )
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
-  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
@@ -173,7 +173,7 @@ void Controller::param_change_callback(uint16_t param_id)
   init();
 }
 
-vector_t Controller::run_pid_loops(int32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
+vector_t Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   vector_t output;
