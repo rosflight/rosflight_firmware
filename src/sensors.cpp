@@ -119,9 +119,8 @@ void Sensors::update_other_sensors()
       if (data_.baro_valid = baro_outlier_filt_.update(raw_pressure, data_.baro_pressure))
       {
         data_.baro_temperature = raw_temp;
-
+        correct_baro();
       }
-      correct_baro();
     }
     break;
   case 1:
@@ -133,9 +132,8 @@ void Sensors::update_other_sensors()
       if (data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, data_.diff_pressure))
       {
         data_.diff_pressure_temp = raw_temp;
-
+        correct_diff_pressure();
       }
-      correct_diff_pressure();
     }
     break;
   case 2:
