@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * Copyright (c) 2017, James Jackson, Daniel Koch, and Craig Bidstrup,
+ * BYU MAGICC Lab
  *
  * All rights reserved.
  *
@@ -48,6 +49,12 @@ const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f;      // approx 15 m/s^2
 const float Sensors::DIFF_SAMPLE_RATE = 50.0f;
 const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f;    // 100 m/s
 const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
+
+const int Sensors::SENSOR_CAL_DELAY_CYCLES = 128;
+const int Sensors::SENSOR_CAL_CYCLES = 127;
+
+const float Sensors::BARO_MAX_CALIBRATION_VARIANCE = 5.0;   // standard dev about 0.2 m
+const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 20.0;   // standard dev about 3 m/s
 
 Sensors::Sensors(ROSflight& rosflight) :
   rf_(rosflight)
@@ -220,6 +227,9 @@ bool Sensors::start_gyro_calibration(void)
 
 bool Sensors::start_baro_calibration()
 {
+  baro_calibration_mean_ = 0.0f;
+  baro_calibration_var_ = 0.0f;
+  baro_calibration_count_ = 0;
   baro_calibrated_ = false;
   rf_.params_.set_param_float(PARAM_BARO_BIAS, 0.0f);
   return true;
@@ -424,17 +434,27 @@ void Sensors::calibrate_baro()
     baro_calibration_count_++;
 
     // calibrate pressure reading to where it should be
-    if(baro_calibration_count_ >= 256)
+    if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES + SENSOR_CAL_CYCLES)
     {
-      rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 128.0f);
-      baro_calibration_sum_ = 0.0f;
+      // if sample variance within acceptable range, flag calibration as done
+      // else reset cal variables and start over
+      if (baro_calibration_var_ < BARO_MAX_CALIBRATION_VARIANCE)
+      {
+        rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_mean_);
+        baro_calibrated_ = true;
+      }
+      baro_calibration_mean_ = 0.0f;
+      baro_calibration_var_ = 0.0f;
       baro_calibration_count_ = 0;
-      baro_calibrated_ = true;
     }
 
-    else if (baro_calibration_count_ >= 128)
+    else if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES)
     {
-      baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
+      float measurement = data_.baro_pressure - ground_pressure_;
+      float delta = measurement - baro_calibration_mean_;
+      baro_calibration_mean_ += delta / (baro_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
+      float delta2 = measurement - baro_calibration_mean_;
+      baro_calibration_var_ += delta * delta2 / (SENSOR_CAL_CYCLES - 1);
     }
     last_baro_cal_iter_ms_ = rf_.board_.clock_millis();
   }
@@ -446,16 +466,26 @@ void Sensors::calibrate_diff_pressure()
   {
     diff_pressure_calibration_count_++;
 
-    if(diff_pressure_calibration_count_ >= 256)
+    if(diff_pressure_calibration_count_ > SENSOR_CAL_DELAY_CYCLES + SENSOR_CAL_CYCLES)
     {
-      rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_sum_ / 128.0f);
-      diff_pressure_calibration_sum_ = 0.0f;
+      // if sample variance within acceptable range, flag calibration as done
+      // else reset cal variables and start over
+      if (diff_pressure_calibration_var_ < DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE)
+      {
+        rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_mean_);
+        diff_pressure_calibrated_ = true;
+      }
+      diff_pressure_calibration_mean_ = 0.0f;
+      diff_pressure_calibration_var_ = 0.0f;
       diff_pressure_calibration_count_ = 0;
-      diff_pressure_calibrated_ = true;
     }
-    else if (diff_pressure_calibration_count_ >= 128)
+    else if (diff_pressure_calibration_count_ > SENSOR_CAL_DELAY_CYCLES)
     {
-      diff_pressure_calibration_sum_ += data_.diff_pressure;
+      diff_pressure_calibration_mean_ += data_.diff_pressure;
+      float delta = data_.diff_pressure - diff_pressure_calibration_mean_;
+      diff_pressure_calibration_mean_ += delta / (diff_pressure_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
+      float delta2 = data_.diff_pressure - diff_pressure_calibration_mean_;
+      diff_pressure_calibration_var_ += delta * delta2 / (SENSOR_CAL_CYCLES - 1);
     }
     last_diff_pressure_cal_iter_ms_ = rf_.board_.clock_millis();
   }

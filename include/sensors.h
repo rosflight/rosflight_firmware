@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * Copyright (c) 2017, James Jackson, Daniel Koch, and Craig Bidstrup,
+ * BYU MAGICC Lab
  *
  * All rights reserved.
  *
@@ -103,6 +104,10 @@ public:
   static const float DIFF_SAMPLE_RATE;
   static const float SONAR_MAX_CHANGE_RATE;
   static const float SONAR_SAMPLE_RATE;
+  static const int SENSOR_CAL_DELAY_CYCLES;
+  static const int SENSOR_CAL_CYCLES;
+  static const float BARO_MAX_CALIBRATION_VARIANCE;
+  static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
   class OutlierFilter
   {
     float max_change_;
@@ -158,13 +163,15 @@ private:
   float ground_pressure_ = 0.0f;
   uint16_t baro_calibration_count_ = 0;
   uint32_t last_baro_cal_iter_ms_ = 0;
-  float baro_calibration_sum_ = 0.0f;
+  float baro_calibration_mean_ = 0.0f;
+  float baro_calibration_var_ = 0.0f;
 
   // Diff Pressure Calibration
   bool diff_pressure_calibrated_ = false;
   uint16_t diff_pressure_calibration_count_ = 0;
   uint32_t last_diff_pressure_cal_iter_ms_ = 0;
-  float diff_pressure_calibration_sum_ = 0.0f;
+  float diff_pressure_calibration_mean_ = 0.0f;
+  float diff_pressure_calibration_var_ = 0.0f;
 
   // Sensor Measurement Outlier Filters
   OutlierFilter baro_outlier_filt_;
