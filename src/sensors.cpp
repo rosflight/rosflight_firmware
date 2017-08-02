@@ -441,6 +441,10 @@ void Sensors::calibrate_baro()
         rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_mean_);
         baro_calibrated_ = true;
       }
+      else
+      {
+        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for barometer cal");
+      }
       baro_calibration_mean_ = 0.0f;
       baro_calibration_var_ = 0.0f;
       baro_calibration_count_ = 0;
@@ -472,6 +476,10 @@ void Sensors::calibrate_diff_pressure()
       {
         rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_mean_);
         diff_pressure_calibrated_ = true;
+      }
+      else
+      {
+        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for diff pressure cal");
       }
       diff_pressure_calibration_mean_ = 0.0f;
       diff_pressure_calibration_var_ = 0.0f;
