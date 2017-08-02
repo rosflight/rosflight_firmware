@@ -45,14 +45,31 @@ class Mixer
 {
 
 public:
+  //enum
+  //{
+  //  QUADCOPTER_PLUS,
+  //  QUADCOPTER_X,
+  //  Y6,
+  //  X8,
+  //  FIXEDWING,
+  //  ESC_CALIBRATION,
+  //  NUM_MIXERS,
+  //  INVALID_MIXER = 255
+  //};
+
   enum
   {
+    ESC_CALIBRATION,
     QUADCOPTER_PLUS,
     QUADCOPTER_X,
+    HEX_PLUS,
+    HEX_X,
+    OCTO_PLUS,
+    OCTO_X,
     Y6,
     X8,
+    TRICOPTER,
     FIXEDWING,
-    ESC_CALIBRATION,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
@@ -80,9 +97,17 @@ private:
   float raw_outputs_[8];
   float unsaturated_outputs_[8];
 
-
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
+
+  const mixer_t esc_calibration_mixing =
+  {
+    {M, M, M, M, M, M, NONE, NONE},
+    { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   1.0f, 1.0f}, // F Mix
+    { 0.0f,   0.0f,    0.0f,    0.0f,    0.0f,    0.0f,   0.0f, 0.0f}, // X Mix
+    { 0.0f,   0.0f,    0.0f,    0.0f,    0.0f,    0.0f,   0.0f, 0.0f}, // X Mix
+    { 0.0f,   0.0f,    0.0f,    0.0f,    0.0f,    0.0f,   0.0f, 0.0f}, // X Mix
+  };
 
   const mixer_t quadcopter_plus_mixing =
   {
@@ -104,24 +129,25 @@ private:
     { 1.0f, -1.0f, 1.0f,-1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
-  const mixer_t fixedwing_mixing =
+  // figure out how motor numbering works on octocopter_plus and fix this matrix accordinly
+  const mixer_t octocopter_plus_mixing =
   {
-    {S, S, M, S, S, M, NONE, NONE},
+    {M, M, M, M, M, M, M, M}, // output_type
 
-    { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-    { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+    { 1.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
+    { 0.0f, -1.0f,  0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+    { 1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    {-1.0f,  1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
   const mixer_t X8_mixing =
   {
     {M, M, M, M, M, M, M, M},
 
-    { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   1.0f,  1.0f}, // F Mix
-    {-1.0f,  -1.0f,   -1.0f,   -1.0f,    1.0f,    1.0f,   1.0f,  1.0f}, // X Mix
-    { 1.0f,   1.0f,   -1.0f,   -1.0f,   -1.0f,   -1.0f,   1.0f,  1.0f}, // Y Mix
-    { 1.0f,  -1.0f,   -1.0f,    1.0f,    1.0f,   -1.0f,  -1.0f,  1.0f}  // Z Mix
+    { 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, 1.0f}, // F Mix
+    {-1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f, 1.0f}, // X Mix
+    { 1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, 1.0f}, // Y Mix
+    { 1.0f, -1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f, 1.0f}  // Z Mix
   };
 
   const mixer_t Y6_mixing =
@@ -133,13 +159,14 @@ private:
     { 1.0f,  -1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,   0.0f, 0.0f}  // Z Mix
   };
 
-  const mixer_t esc_calibration_mixing =
+  const mixer_t fixedwing_mixing =
   {
-    {M, M, M, M, M, M, NONE, NONE},
-    { 1.0f,   1.0f,    1.0f,    1.0f,    1.0f,    1.0f,   1.0f, 1.0f}, // F Mix
-    { 0.0f,   0.0f,    0.0f,    0.0f,    0.0f,    0.0f,   0.0f, 0.0f}, // X Mix
-    { 0.0f,   0.0f,    0.0f,    0.0f,    0.0f,    0.0f,   0.0f, 0.0f}, // X Mix
-    { 0.0f,   0.0f,    0.0f,    0.0f,    0.0f,    0.0f,   0.0f, 0.0f}, // X Mix
+    {S, S, M, S, S, M, NONE, NONE},
+
+    { 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+    { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+    { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
 
@@ -147,12 +174,17 @@ private:
 
   const mixer_t *array_of_mixers_[NUM_MIXERS] =
   {
+    &esc_calibration_mixing,
     &quadcopter_plus_mixing,
     &quadcopter_x_mixing,
+    &hex_plus_mixing,
+    &hex_x_mixing,
+    &octocopter_plus_mixing,
+    &octocopter_x_mixing,
     &Y6_mixing,
     &X8_mixing,
+    &tricopter_mixing,
     &fixedwing_mixing,
-    &esc_calibration_mixing,
   };
 
 public:
