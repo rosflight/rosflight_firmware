@@ -129,14 +129,14 @@ private:
     { 1.0f, -1.0f, 1.0f,-1.0f,  0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
-  // figure out how motor numbering works on octocopter_plus and fix this matrix accordinly
+  // how are the spin directions of the motors determined?
   const mixer_t octocopter_plus_mixing =
   {
     {M, M, M, M, M, M, M, M}, // output_type
 
     { 1.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
-    { 0.0f, -1.0f,  0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    { 1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    { 0.0f, -0.707f,  -1.0f,  -0.707f, 0.0f, 0.707f, 1.0f, 0.707f}, // X Mix
+    { 1.0f,  0.707f, 0.0f,  0.707f, -1.0f, -0.707f, 0.0f, -0.707f}, // Y Mix
     {-1.0f,  1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
