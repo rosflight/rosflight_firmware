@@ -43,7 +43,7 @@
 namespace rosflight_firmware
 {
 
-const float Sensors::BARO_MAX_CHANGE_RATE = 1000.0f;    // approx 100 m/s
+const float Sensors::BARO_MAX_CHANGE_RATE = 200.0f;    // approx 200 m/s
 const float Sensors::BARO_SAMPLE_RATE = 50.0f;
 const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f;      // approx 15 m/s^2
 const float Sensors::DIFF_SAMPLE_RATE = 50.0f;
@@ -53,8 +53,8 @@ const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
 const int Sensors::SENSOR_CAL_DELAY_CYCLES = 128;
 const int Sensors::SENSOR_CAL_CYCLES = 127;
 
-const float Sensors::BARO_MAX_CALIBRATION_VARIANCE = 5.0;   // standard dev about 0.2 m
-const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 20.0;   // standard dev about 3 m/s
+const float Sensors::BARO_MAX_CALIBRATION_VARIANCE = 25.0;   // standard dev about 0.2 m
+const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 100.0;   // standard dev about 3 m/s
 
 Sensors::Sensors(ROSflight& rosflight) :
   rf_(rosflight)
@@ -235,6 +235,9 @@ bool Sensors::start_baro_calibration()
 
 bool Sensors::start_diff_pressure_calibration()
 {
+  diff_pressure_calibration_mean_ = 0.0f;
+  diff_pressure_calibration_var_ = 0.0f;
+  diff_pressure_calibration_count_ = 0;
   diff_pressure_calibrated_ = false;
   rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, 0.0f);
   return true;
@@ -440,6 +443,7 @@ void Sensors::calibrate_baro()
       {
         rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_mean_);
         baro_calibrated_ = true;
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "Baro Cal successful!");
       }
       else
       {
@@ -476,6 +480,7 @@ void Sensors::calibrate_diff_pressure()
       {
         rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_mean_);
         diff_pressure_calibrated_ = true;
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "Airspeed Cal Successful!");
       }
       else
       {
@@ -487,7 +492,6 @@ void Sensors::calibrate_diff_pressure()
     }
     else if (diff_pressure_calibration_count_ > SENSOR_CAL_DELAY_CYCLES)
     {
-      diff_pressure_calibration_mean_ += data_.diff_pressure;
       float delta = data_.diff_pressure - diff_pressure_calibration_mean_;
       diff_pressure_calibration_mean_ += delta / (diff_pressure_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
       float delta2 = data_.diff_pressure - diff_pressure_calibration_mean_;
@@ -580,6 +584,7 @@ bool Sensors::OutlierFilter::update(float new_val, float& val)
     window_size_++;
     return false;
   }
+  // val = new_val;
 }
 
 } // namespace rosflight_firmware
