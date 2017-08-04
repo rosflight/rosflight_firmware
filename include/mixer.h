@@ -137,10 +137,9 @@ private:
 		{	1.0f,   1.0f,		 1.0f,	 1.0f,	   1.0f,	 1.0f,  	1.0f,	 1.0f},	//	F	Mix
 		{	0.0f,  -0.707f, -1.0f,  -0.707f,	 0.0f,	 0.707f,	1.0f,	 0.707f},	//	X	Mix
 		{	1.0f,		0.707f,  0.0f,	 0.707f,  -1.0f,  -0.707f,	0.0f,	-0.707f},	//	Y	Mix
-		{-1.0f,		1.0f,   -1.0f,	 1.0f,     0.0f,	 0.0f,  	0.0f,	 0.0f}		//	Z	Mix
+		{ 1.0f,  -1.0f,    1.0f,	-1.0f,     1.0f,  -1.0f,  	1.0f, -1.0f}		//	Z	Mix
   };
 
-  // TODO: figure out how z mixing works
   const mixer_t octocopter_x_mixing =
   {
     {M, M, M, M, M, M, M, M}, // output_type
@@ -148,17 +147,17 @@ private:
     { 1.0f,		 1.0f,		 1.0f,     1.0f,		1.0f,	   1.0f,	  1.0f,	  1.0f}, // F Mix
     {-0.414f,	-1.0f,    -1.0f,	  -0.414f,	0.414f,	 1.0f,	  1.0f,	  0.414}, // X Mix
     { 1.0f,	   0.414f,	-0.414f,  -1.0f,   -1.0f,	  -0.414f,	0.414f,	1.0}, // Y Mix
-    {-1.0f,		 1.0f,    -1.0f,     1.0f,    0.0f,	   0.0f,   	0.0f, 	0.0f}  // Z Mix
+    { 1.0f,   -1.0f,     1.0f,    -1.0f,    1.0f,   -1.0f,  	1.0f,  -1.0f}  // Z Mix
   };
 
   const mixer_t X8_mixing =
   {
     {M, M, M, M, M, M, M, M}, // output_type
 
-    { 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, 1.0f}, // F Mix
-    {-1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f, 1.0f}, // X Mix
-    { 1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, 1.0f}, // Y Mix
-    { 1.0f, -1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f, 1.0f}  // Z Mix
+    { 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f}, // F Mix
+    {-1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f}, // X Mix
+    { 1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f}, // Y Mix
+    { 1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f}  // Z Mix
   };
 
   // Why are there values greater than 1 in the Y mixing array?
