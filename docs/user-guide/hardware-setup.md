@@ -95,18 +95,22 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 We currently support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
 
-| mixer | value |
-|-----------------|-------|
-| Quadctoper-Plus | 0 |
-| Quadcopter-X | 1 |
-| Y6 | 2 |
-| X8 | 3 |
-| Fixed Wing | 4 |
+| # | Mixer |
+|---|---------|
+| 0 | ESC calibration |
+| 1 | Quad + |
+| 2 | Quad X |
+| 3 | Hex + |
+| 4 | Hex X |
+| 5 | Octo + |
+| 6 | Octo X |
+| 7 | Y6 |
+| 8 | X8 |
+| 9 | Tricopter |
+| 10 | Fixed wing (traditional AETR) |
 
 The associated motor layouts are shown below for each mixer
 
-![Mixer_1](images/mixer_1.png)
+![Mixer_1](images/mixers_1.png)
 
-![Mixer_2](images/mixer_2.png)
-
-![Mixer_3](images/mixer_3.png)
+![Mixer_2](images/mixers_2.png)
