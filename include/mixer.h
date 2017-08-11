@@ -45,31 +45,20 @@ class Mixer
 {
 
 public:
-  //enum
-  //{
-  //  QUADCOPTER_PLUS,
-  //  QUADCOPTER_X,
-  //  Y6,
-  //  X8,
-  //  FIXEDWING,
-  //  ESC_CALIBRATION,
-  //  NUM_MIXERS,
-  //  INVALID_MIXER = 255
-  //};
 
   enum
   {
-    ESC_CALIBRATION,
-    QUADCOPTER_PLUS,
-    QUADCOPTER_X,
-    HEX_PLUS,
-    HEX_X,
-    OCTO_PLUS,
-    OCTO_X,
-    Y6,
-    X8,
-    TRICOPTER,
-    FIXEDWING,
+    ESC_CALIBRATION = 0,
+    QUADCOPTER_PLUS = 1,
+    QUADCOPTER_X = 2,
+    HEX_PLUS = 3,
+    HEX_X = 4,
+    OCTO_PLUS = 5,
+    OCTO_X = 6,
+    Y6 = 7,
+    X8 = 8,
+    TRICOPTER = 9,
+    FIXEDWING = 10,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
