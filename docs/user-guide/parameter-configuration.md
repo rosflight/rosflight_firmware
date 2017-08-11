@@ -128,10 +128,10 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | PID_YAW_RATE_D | Yaw Rate Derivative Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_ROLL_ANG_P | Roll Angle Proporitional Gain | float |  0.15f | 0.0 | 1000.0 |
 | PID_ROLL_ANG_I | Roll Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
-| PID_ROLL_ANG_D | Roll Angle Derivative Gain | float |  0.07f | 0.0 | 1000.0 |
+| PID_ROLL_ANG_D | Roll Angle Derivative Gain | float |  0.05f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_P | Pitch Angle Proporitional Gain | float |  0.15f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_I | Pitch Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
-| PID_PITCH_ANG_D | Pitch Angle Derivative Gain | float |  0.07f | 0.0 | 1000.0 |
+| PID_PITCH_ANG_D | Pitch Angle Derivative Gain | float |  0.05f | 0.0 | 1000.0 |
 | X_EQ_TORQUE | Equilibrium torque added to output of controller on x axis | float |  0.0f | -1.0 | 1.0 |
 | Y_EQ_TORQUE | Equilibrium torque added to output of controller on y axis | float |  0.0f | -1.0 | 1.0 |
 | Z_EQ_TORQUE | Equilibrium torque added to output of controller on z axis | float |  0.0f | -1.0 | 1.0 |
@@ -143,8 +143,8 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | MOTOR_MAX_PWM | PWM value sent to motor ESCs at full throttle | int |  2000 | 1000 | 2000 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_THR | int |  true | 0 | 1 |
 | FILTER_INIT_T | Time in ms to initialize estimator | int |  3000 | 0 | 100000 |
-| FILTER_KP | estimator proportional gain - See estimator documentation | float |  2.0f | 0 | 10.0 |
-| FILTER_KI | estimator integral gain - See estimator documentation | float |  0.2f | 0 | 1.0 |
+| FILTER_KP | estimator proportional gain - See estimator documentation | float |  0.5f | 0 | 10.0 |
+| FILTER_KI | estimator integral gain - See estimator documentation | float |  0.05f | 0 | 1.0 |
 | FILTER_QUAD_INT | Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | int |  1 | 0 | 1 |
 | FILTER_MAT_EXP | 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | int |  1 | 0 | 1 |
 | FILTER_USE_ACC | Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | int |  1 | 0 | 1 |
