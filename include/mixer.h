@@ -158,16 +158,6 @@ private:
     { 1.0f,   -1.0f,    1.0f,   -1.0f,   1.0f,  -1.0f,    1.0f,  -1.0f}   // Z Mix
   };
 
-  const mixer_t X8_mixing =
-  {
-    {M, M, M, M, M, M, M, M}, // output_type
-
-    { 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f}, // F Mix
-    {-1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f}, // X Mix
-    { 1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f}, // Y Mix
-    { 1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f}  // Z Mix
-  };
-
   const mixer_t Y6_mixing =
   {
     {M, M, M, M, M, M, NONE, NONE}, // output_type
@@ -178,6 +168,16 @@ private:
     { 1.0f,  -1.0f,    1.0f,   -1.0f,    1.0f,   -1.0f,   0.0f, 0.0f}  // Z Mix
   };
 
+  const mixer_t X8_mixing =
+  {
+    {M, M, M, M, M, M, M, M}, // output_type
+
+    { 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f}, // F Mix
+    {-1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f}, // X Mix
+    { 1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f}, // Y Mix
+    { 1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f}  // Z Mix
+  };
+  
   const mixer_t tricopter_mixing =
   {
     {M, M, M, S, NONE, NONE, NONE, NONE}, // output_type
