@@ -35,9 +35,7 @@ ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www
 Additional Sensors you may want for your ROSflight setup include:
 
 * Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
-* GPS – Venus GPS – [$50 on Sparkfun](https://www.sparkfun.com/products/11058)
-    - Requires FTDI USB-UART Converter – [$6 on Amazon](https://www.amazon.com/Blue3D-Ft232rl-Serial-Adapter-Arduino/dp/B012YUANZK/ref=sr_1_9?ie=UTF8&qid=1490068223&sr=8-9&keywords=FTDI+USB+converter)
-    - and Ceramic Antenna [$12 on Sparkfun](https://www.sparkfun.com/products/177)
+* GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/511-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
 
