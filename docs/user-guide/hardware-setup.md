@@ -34,10 +34,11 @@ ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www
 
 Additional Sensors you may want for your ROSflight setup include:
 
-* Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
+* Sonar – MB1030 – [$25 on MaxBotix](https://www.maxbotix.com/Ultrasonic_Sensors/MB1030.htm)
 * GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/511-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
+The I2C sonar (MB124X) is also supported, but PWM sonars are preferred.
 
 ## Vibration Isolation
 
