@@ -132,6 +132,9 @@ void StateManager::set_event(StateManager::Event event)
   case FSM_STATE_ERROR:
     switch (event)
     {
+    case EVENT_RC_LOST:
+      set_error(ERROR_RC_LOST); // sometimes redundant, but reports RC lost error if another error got reported first
+      break;
     case EVENT_RC_FOUND:
       clear_error(ERROR_RC_LOST);
       state_.failsafe = false;
