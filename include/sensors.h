@@ -123,6 +123,15 @@ private:
     bool update(float new_val, float *val);
   };
 
+  enum LowPrioritySensors
+  {
+    BAROMETER,
+    DIFF_PRESSURE,
+    SONAR,
+    MAGNETOMETER,
+    NUM_LOW_PRIORITY_SENSORS
+  };
+
   ROSflight& rf_;
 
   Data data_;
@@ -132,7 +141,7 @@ private:
 
   bool calibrating_acc_flag_ = false;
   bool calibrating_gyro_flag_ = false;
-  uint8_t next_sensor_to_update_ = 0;
+  LowPrioritySensors next_sensor_to_update_ = BAROMETER;
   void calibrate_accel(void);
   void calibrate_gyro(void);
   void calibrate_baro(void);
