@@ -34,12 +34,11 @@ ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www
 
 Additional Sensors you may want for your ROSflight setup include:
 
-* Sonar – MB1242 – [$40 on MaxBotix](http://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
-* GPS – Venus GPS – [$50 on Sparkfun](https://www.sparkfun.com/products/11058)
-    - Requires FTDI USB-UART Converter – [$6 on Amazon](https://www.amazon.com/Blue3D-Ft232rl-Serial-Adapter-Arduino/dp/B012YUANZK/ref=sr_1_9?ie=UTF8&qid=1490068223&sr=8-9&keywords=FTDI+USB+converter)
-    - and Ceramic Antenna [$12 on Sparkfun](https://www.sparkfun.com/products/177)
+* Sonar – MB1030 – [$25 on MaxBotix](https://www.maxbotix.com/Ultrasonic_Sensors/MB1030.htm)
+* GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/511-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
+The I2C sonar (MB124X) is also supported, but PWM sonars are preferred.
 
 ## Vibration Isolation
 
@@ -93,20 +92,25 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 # Motor layouts
 
-We currently support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
+The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
 
-| mixer | value |
-|-----------------|-------|
-| Quadctoper-Plus | 0 |
-| Quadcopter-X | 1 |
-| Y6 | 2 |
-| X8 | 3 |
-| Fixed Wing | 4 |
+| # | Mixer |
+|---|---------|
+| 0 | ESC calibration |
+| 1 | Quad + |
+| 2 | Quad X |
+| 3 | Hex + |
+| 4 | Hex X |
+| 5 | Octo + |
+| 6 | Octo X |
+| 7 | Y6 |
+| 8 | X8 |
+| 9 | Tricopter |
+| 10 | Fixed wing (traditional AETR) |
 
-The associated motor layouts are shown below for each mixer
+The associated motor layouts are shown below for each mixer.
+The _ESC calibration_ mixer outputs the throttle command equally to each motor, and can be used for calibrating the ESCs.
 
-![Mixer_1](images/mixer_1.png)
+![Mixer_1](images/mixers_1.png)
 
-![Mixer_2](images/mixer_2.png)
-
-![Mixer_3](images/mixer_3.png)
+![Mixer_2](images/mixers_2.png)

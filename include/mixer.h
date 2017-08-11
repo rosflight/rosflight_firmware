@@ -177,15 +177,15 @@ private:
     { 1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f}, // Y Mix
     { 1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f}  // Z Mix
   };
-  
+
   const mixer_t tricopter_mixing =
   {
     {M, M, M, S, NONE, NONE, NONE, NONE}, // output_type
 
-    { 1.0f,   1.0f,    1.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-    {-1.0f,   0.0f,    1.0f,   0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    { 0.667f, 0.667f, -1.333f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    { 0.0f,   0.0f,    0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
+    { 1.0f,   0.0f, 1.0f,    1.0f,   0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+    {-1.0f,   0.0f, 0.0f,    1.0f,   0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+    { 0.667f, 0.0f, 0.667f, -1.333f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    { 0.0f,   1.0f, 0.0f,    0.0f,   0.0f, 0.0f, 0.0f, 0.0f}  // Z Mix
   };
 
   const mixer_t fixedwing_mixing =
