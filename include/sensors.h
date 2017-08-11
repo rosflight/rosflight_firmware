@@ -29,47 +29,122 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <turbotrig/turbovec.h>
+#ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
+#define ROSFLIGHT_FIRMWARE_SENSORS_H
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <turbotrig/turbovec.h>
 
-// global variable declarations
-extern vector_t _accel;
-extern vector_t _gyro;
-extern float _imu_temperature;
-extern uint64_t _imu_time;
-extern bool _imu_sent;
+namespace rosflight_firmware
+{
 
-extern bool _diff_pressure_present;
-extern float _diff_pressure_velocity, _diff_pressure, _diff_pressure_temp;
+class ROSflight;
 
-extern bool _baro_present;
-extern float _baro_altitude;
-extern float _baro_pressure;
-extern float _baro_temperature;
+class Sensors
+{
 
-extern bool _sonar_present;
-extern float _sonar_range;
+  struct Data
+  {
+    vector_t accel = {0, 0, 0};
+    vector_t gyro = {0, 0, 0};
+    float imu_temperature = 0;
+    uint64_t imu_time = 0;
 
-extern bool _mag_present;
-extern vector_t _mag;
+    float diff_pressure_velocity = 0;
+    float diff_pressure = 0;
+    float diff_pressure_temp = 0;
 
-// function declarations
-void init_sensors(void);
-bool update_sensors();
+    float baro_altitude = 0;
+    float baro_pressure = 0;
+    float baro_temperature = 0;
 
-bool start_imu_calibration(void);
-bool start_gyro_calibration(void);
-void start_baro_calibration(void);
-void start_airspeed_calibration(void);
-bool gyro_calibration_complete(void);
+    float sonar_range = 0;
 
-#ifdef __cplusplus
-}
-#endif
+    vector_t mag = {0, 0, 0};
+
+    bool baro_present = false;
+    bool mag_present = false;
+    bool sonar_present = false;
+    bool diff_pressure_present = false;
+  };
+
+public:
+  Sensors(ROSflight& rosflight);
+
+  inline const Data& data() const { return data_; }
+
+  // function declarations
+  void init();
+  bool run();
+
+  // Calibration Functions
+  bool start_imu_calibration(void);
+  bool start_gyro_calibration(void);
+  bool start_baro_calibration(void);
+  bool start_diff_pressure_calibration(void);
+  bool gyro_calibration_complete(void);
+
+  inline bool should_send_imu_data(void)
+  {
+    if (imu_data_sent_)
+      return false;
+    else
+      imu_data_sent_ = true;
+    return true;
+  }
+
+private:
+  ROSflight& rf_;
+
+  Data data_;
+
+  float accel_[3] = {0, 0, 0};
+  float gyro_[3] = {0, 0, 0};
+
+  bool calibrating_acc_flag_ = false;
+  bool calibrating_gyro_flag_ = false;
+  uint8_t next_sensor_to_update_ = 0;
+  void calibrate_accel(void);
+  void calibrate_gyro(void);
+  void calibrate_baro(void);
+  void calibrate_diff_pressure(void);
+  void correct_imu(void);
+  void correct_mag(void);
+  void correct_baro(void);
+  void correct_diff_pressure(void);
+  bool update_imu(void);
+  void update_other_sensors(void);
+  void look_for_disabled_sensors(void);
+  uint32_t last_time_look_for_disarmed_sensors_ = 0;
+  uint32_t last_imu_update_ms_ = 0;
+
+  bool new_imu_data_;
+  bool imu_data_sent_;
+
+  // IMU calibration
+  uint16_t gyro_calibration_count_ = 0;
+  vector_t gyro_sum_ = {0, 0, 0};
+  uint16_t accel_calibration_count_ = 0;
+  vector_t acc_sum_ = {0, 0, 0};
+  const vector_t gravity_ = {0.0f, 0.0f, 9.80665f};
+  float acc_temp_sum_ = 0.0f;
+  vector_t max_ = {-1000.0f, -1000.0f, -1000.0f};
+  vector_t min_ = {1000.0f, 1000.0f, 1000.0f};
+
+  // Baro Calibration
+  bool baro_calibrated_ = false;
+  float ground_pressure_ = 0.0f;
+  uint16_t baro_calibration_count_ = 0;
+  uint32_t last_baro_cal_iter_ms = 0;
+  float baro_calibration_sum_ = 0.0f;
+
+  // Diff Pressure Calibration
+  bool diff_pressure_calibrated_ = false;
+  uint16_t diff_pressure_calibration_count_ = 0;
+  float diff_pressure_calibration_sum_ = 0.0f;
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_SENSORS_H

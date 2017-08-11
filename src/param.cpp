@@ -37,47 +37,38 @@
 
 #include "board.h"
 #include "mavlink.h"
-#include "mavlink_param.h"
-#include "mavlink_stream.h"
+#include "mixer.h"
 
 #include "param.h"
-#include "mixer.h"
-#include "rc.h"
 
-// type definitions
-typedef struct
+#include "rosflight.h"
+
+namespace rosflight_firmware
 {
-  uint32_t version;
-  uint16_t size;
-  uint8_t magic_be;                       // magic number, should be 0xBE
 
-  int32_t values[PARAMS_COUNT];
-  char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
-  param_type_t types[PARAMS_COUNT];
-
-  uint8_t magic_ef;                       // magic number, should be 0xEF
-  uint8_t chk;                            // XOR checksum
-} params_t;
-
-// global variable definitions
-static params_t params;
+Params::Params(ROSflight& _rf) :
+  RF_(_rf)
+{
+  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
+    callbacks[id] = NULL;
+}
 
 // local function definitions
-static void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
+void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
   params.values[id] = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
-static void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
+void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
   params.values[id] = *((int32_t *) &value);
   params.types[id] = PARAM_TYPE_FLOAT;
 }
 
-static uint8_t compute_checksum(void)
+uint8_t Params::compute_checksum(void)
 {
   uint8_t chk = 0;
   const uint8_t *p;
@@ -93,20 +84,17 @@ static uint8_t compute_checksum(void)
 }
 
 // function definitions
-void init_params(void)
+void Params::init()
 {
-  memory_init();
-  if (!read_params())
+  RF_.board_.memory_init();
+  if (!read())
   {
-    set_param_defaults();
-    write_params();
+    set_defaults();
+    write();
   }
-
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-    param_change_callback((param_id_t) id);
 }
 
-void set_param_defaults(void)
+void Params::set_defaults(void)
 {
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
@@ -120,44 +108,40 @@ void set_param_defaults(void)
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1); // Rate of heartbeat streaming (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status streaming (Hz) | 0 | 1000
 
-  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 100); // Rate of attitude stream (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 200); // Rate of attitude stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500); // Rate of IMU stream (Hz) | 0 | 1000
-  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 75); // Rate of magnetometer stream (Hz) | 0 | 75
-  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 100); // Rate of barometer stream (Hz) | 0 | 100
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 50); // Rate of magnetometer stream (Hz) | 0 | 75
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
-  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_OUTPUT", 50); // Rate of raw output stream | 0 |  490
+  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50
 
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
   /********************************/
-  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0.0 | 1.0
+  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0 | 1.0
 
   init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f); // Roll Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_D, "PID_ROLL_RATE_D", 0.000f); // Rall Rate Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_ROLL_RATE_TRIM, "ROLL_RATE_TRIM", 0.0f); // Roll Rate Trim - See RC calibration | -1000.0 | 1000.0
 
   init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);  // Pitch Rate Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.0000f); // Pitch Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_D, "PID_PITCH_RATE_D", 0.0000f); // Pitch Rate Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PITCH_RATE_TRIM, "PITCH_RATE_TRIM", 0.0f); // Pitch Rate Trim - See RC calibration | -1000.0 | 1000.0
 
   init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.25f);   // Yaw Rate Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);  // Yaw Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_D, "PID_YAW_RATE_D", 0.0f);  // Yaw Rate Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_YAW_RATE_TRIM, "YAW_RATE_TRIM", 0.0f);  // Yaw Rate Trim - See RC calibration | -1000.0 | 1000.0
 
   init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);   // Roll Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);   // Roll Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_ROLL_ANGLE_TRIM, "ROLL_TRIM", 0.0f);  // Roll Angle Trim - See RC calibration | -1000.0 | 1000.0
+
   init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PITCH_ANGLE_TRIM, "PITCH_TRIM", 0.0f);  // Pitch Angle Trim - See RC calibration | -1000.0 | 1000.0
 
   init_param_float(PARAM_X_EQ_TORQUE, "X_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on x axis | -1.0 | 1.0
   init_param_float(PARAM_Y_EQ_TORQUE, "Y_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on y axis | -1.0 | 1.0
@@ -180,19 +164,17 @@ void set_param_defaults(void)
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
-  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 1.0f); // estimator proportional gain - See estimator documentation | 0 | 10.0
-  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.1f); // estimator integral gain - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 2.0f); // estimator proportional gain - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.2f); // estimator integral gain - See estimator documentation | 0 | 1.0
 
-  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 0); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
-  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 0); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
+  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
+  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
   init_param_int(PARAM_FILTER_USE_ACC, "FILTER_USE_ACC", 1);  // Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | 0 | 1
 
-  init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.888f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.888f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
+  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "CAL_GYRO_ARM", false); // True if desired to calibrate gyros on arm | 0 | 1
 
-  init_param_float(PARAM_ACCEL_SCALE, "ACCEL_SCALE", 1.0f); // Scale factor to apply to IMU measurements - Read-Only | 0.5 | 2.0
-
-  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "GYRO_CAL_ON_ARM", false); // Calibrate gyros when arming - generally only for multirotors | 0 | 1
+  init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.3f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.5f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
@@ -216,6 +198,11 @@ void set_param_defaults(void)
   init_param_float(PARAM_MAG_X_BIAS,  "MAG_X_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_Y_BIAS,  "MAG_Y_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_Z_BIAS,  "MAG_Z_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
+
+  init_param_float(PARAM_BARO_BIAS, "BARO_BIAS", 0.0f); // Barometer measurement bias (Pa) | 0 | inf
+  init_param_float(PARAM_GROUND_LEVEL, "GROUND_LEVEL", 1387.0f); // Altitude of ground level (m) | -1000 | 10000
+
+  init_param_float(PARAM_DIFF_PRESS_BIAS, "DIFF_PRESS_BIAS", 0.0f); // Differential Pressure Bias (Pa) | -10 | 10
 
   /************************/
   /*** RC CONFIGURATION ***/
@@ -250,7 +237,7 @@ void set_param_defaults(void)
   /***************************/
   /*** FRAME CONFIGURATION ***/
   /***************************/
-  init_param_int(PARAM_MIXER, "MIXER", INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 5
+  init_param_int(PARAM_MIXER, "MIXER", Mixer::INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 5
 
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false); // switches on passthrough commands for fixedwing operation | 0 | 1
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0); // reverses elevator servo output | 0 | 1
@@ -260,12 +247,18 @@ void set_param_defaults(void)
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check | 0 | 0.5
+  init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
 }
 
-bool read_params(void)
+void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
 {
-  if (!memory_read(&params, sizeof(params_t)))
+  callbacks[param_id] = callback;
+  callback(param_id);
+}
+
+bool Params::read(void)
+{
+  if (!RF_.board_.memory_read(&params, sizeof(params_t)))
     return false;
 
   if (params.version != GIT_VERSION_HASH)
@@ -280,7 +273,7 @@ bool read_params(void)
   return true;
 }
 
-bool write_params(void)
+bool Params::write(void)
 {
   params.version = GIT_VERSION_HASH;
   params.size = sizeof(params_t);
@@ -288,83 +281,19 @@ bool write_params(void)
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
 
-  if (!memory_write(&params, sizeof(params_t)))
+  if (!RF_.board_.memory_write(&params, sizeof(params_t)))
     return false;
   return true;
 }
 
-void param_change_callback(param_id_t id)
+void Params::change_callback(uint16_t id)
 {
-  switch (id)
-  {
-  case PARAM_SYSTEM_ID:
-    mavlink_system.sysid = get_param_int(PARAM_SYSTEM_ID);
-    break;
-  case PARAM_STREAM_HEARTBEAT_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_HEARTBEAT, get_param_int(PARAM_STREAM_HEARTBEAT_RATE));
-    break;
-  case PARAM_STREAM_STATUS_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_STATUS, get_param_int(PARAM_STREAM_STATUS_RATE));
-    break;
-
-  case PARAM_STREAM_ATTITUDE_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_ATTITUDE, get_param_int(PARAM_STREAM_ATTITUDE_RATE));
-    break;
-
-  case PARAM_STREAM_IMU_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_IMU, get_param_int(PARAM_STREAM_IMU_RATE));
-    break;
-  case PARAM_STREAM_AIRSPEED_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_DIFF_PRESSURE, get_param_int(PARAM_STREAM_AIRSPEED_RATE));
-    break;
-  case PARAM_STREAM_SONAR_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_SONAR, get_param_int(PARAM_STREAM_SONAR_RATE));
-    break;
-  case  PARAM_STREAM_BARO_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_BARO, get_param_int(PARAM_STREAM_BARO_RATE));
-    break;
-  case  PARAM_STREAM_MAG_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_MAG, get_param_int(PARAM_STREAM_MAG_RATE));
-    break;
-
-  case PARAM_STREAM_OUTPUT_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_OUTPUT_RAW, get_param_int(PARAM_STREAM_OUTPUT_RAW_RATE));
-    break;
-  case PARAM_STREAM_RC_RAW_RATE:
-    mavlink_stream_set_rate(MAVLINK_STREAM_ID_RC_RAW, get_param_int(PARAM_STREAM_RC_RAW_RATE));
-    break;
-
-  case PARAM_RC_TYPE:
-  case PARAM_MOTOR_PWM_SEND_RATE:
-  case PARAM_MOTOR_MIN_PWM:
-    init_PWM();
-    break;
-  case PARAM_MIXER:
-    init_mixing();
-    break;
-
-  case PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL:
-  case PARAM_RC_THROTTLE_OVERRIDE_CHANNEL:
-  case PARAM_RC_ATT_CONTROL_TYPE_CHANNEL:
-  case PARAM_RC_ARM_CHANNEL:
-  case PARAM_RC_X_CHANNEL:
-  case PARAM_RC_Y_CHANNEL:
-  case PARAM_RC_Z_CHANNEL:
-  case PARAM_RC_F_CHANNEL:
-  case PARAM_RC_SWITCH_5_DIRECTION:
-  case PARAM_RC_SWITCH_6_DIRECTION:
-  case PARAM_RC_SWITCH_7_DIRECTION:
-  case PARAM_RC_SWITCH_8_DIRECTION:
-    init_rc();
-    break;
-
-  default:
-    // no action needed for this parameter
-    break;
-  }
+  // call the callback function
+  if(callbacks[id])
+    callbacks[id](id);
 }
 
-param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
+uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 {
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
   {
@@ -384,56 +313,37 @@ param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH])
     }
 
     if (match)
-      return (param_id_t) id;
+      return (uint16_t) id;
   }
 
   return PARAMS_COUNT;
 }
 
-int get_param_int(param_id_t id)
-{
-  return params.values[id];
-}
-
-float get_param_float(param_id_t id)
-{
-  return *(float *) &params.values[id];
-}
-
-char *get_param_name(param_id_t id)
-{
-  return params.names[id];
-}
-
-param_type_t get_param_type(param_id_t id)
-{
-  return params.types[id];
-}
-
-bool set_param_int(param_id_t id, int32_t value)
+bool Params::set_param_int(uint16_t id, int32_t value)
 {
   if (id < PARAMS_COUNT && value != params.values[id])
   {
     params.values[id] = value;
-    param_change_callback(id);
-    mavlink_send_param(id);
+    change_callback(id);
+    RF_.mavlink_.update_param(id);
     return true;
   }
   return false;
 }
 
-bool set_param_float(param_id_t id, float value)
+bool Params::set_param_float(uint16_t id, float value)
 {
   return set_param_int(id, *(int32_t *) &value);
 }
 
-bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value)
+bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  param_id_t id = lookup_param_id(name);
+  uint16_t id = lookup_param_id(name);
   return set_param_int(id, value);
 }
 
-bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
+bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
 {
   return set_param_by_name_int(name, *(int32_t *) &value);
+}
 }

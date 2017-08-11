@@ -29,98 +29,106 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-
-#include <turbovec.h>
-
-#include "board.h"
-#include "estimator.h"
-#include "mavlink.h"
-#include "mavlink_param.h"
-#include "mavlink_receive.h"
-#include "mavlink_stream.h"
-#include "mavlink_util.h"
-#include "mode.h"
-#include "param.h"
-#include "sensors.h"
-#include "controller.h"
-#include "mixer.h"
-#include "rc.h"
-
 #include "rosflight.h"
 
-// Initialization Routine
-void rosflight_init(void)
+namespace rosflight_firmware
 {
-  init_board();
-  init_mode();
+
+ROSflight::ROSflight(Board& board) :
+  board_(board),
+  sensors_(*this),
+  state_manager_(*this),
+  controller_(*this),
+  estimator_(*this),
+  params_(*this),
+  mixer_(*this),
+  rc_(*this),
+  mavlink_(*this),
+  command_manager_(*this)
+{
+}
+
+// Initialization Routine
+void ROSflight::init()
+{
+  // Initialize the board
+  board_.init_board();
+
+  // Initialize the arming finite state machine
+  state_manager_.init();
 
   // Read EEPROM to get initial params
-  init_params();
+  params_.init();
 
-  // Initialize MAVlink Communication
-  init_mavlink();
+  // Initialize Mixer
+  mixer_.init();
 
   /***********************/
   /***  Hardware Setup ***/
   /***********************/
 
   // Initialize PWM and RC
-  init_PWM();
-  init_rc();
+  rc_.init();
+
+  // Initialize MAVlink Communication
+  mavlink_.init();
 
   // Initialize Sensors
-  init_sensors();
+  sensors_.init();
 
   /***********************/
   /***  Software Setup ***/
   /***********************/
 
-  // Initialize Motor Mixing
-  init_mixing();
-
-  // Initizlie Controller
-  init_controller();
-
   // Initialize Estimator
-  init_estimator();
+  estimator_.init();
+
+  // Initialize Controller
+  controller_.init();
+
+  // Initialize the command muxer
+  command_manager_.init();
 }
 
 
 // Main loop
-void rosflight_run()
+void ROSflight::run()
 {
   /*********************/
   /***  Control Loop ***/
   /*********************/
-  if (update_sensors()) // 595 | 591 | 590 us
+  uint64_t start = board_.clock_micros();
+  if (sensors_.run())
   {
     // If I have new IMU data, then perform control
-    run_estimator(); //  212 | 195 us (acc and gyro only, not exp propagation no quadratic integration)
-    run_controller(); // 278 | 271
-    mix_output(); // 16 | 13 us
-
-    // Calculate loop time (from when IMU was captured to now)
-    _loop_time_us = clock_micros() - _current_state.now_us;
+    estimator_.run();
+    controller_.run();
+    mixer_.mix_output();
+    loop_time_us = board_.clock_micros() - start;
   }
 
   /*********************/
   /***  Post-Process ***/
   /*********************/
-  // internal timers figure out what and when to send
-  mavlink_stream(clock_micros()); // 165 | 27 | 2
+//  // internal timers figure out what and when to send
+  mavlink_.stream();
 
   // receive mavlink messages
-  mavlink_receive(); // 159 | 1 | 1
+  mavlink_.receive();
 
-  // update the armed_states, an internal timer runs this at a fixed rate
-  check_mode(); // 108 | 1 | 1
+  // update the state machine, an internal timer runs this at a fixed rate
+  state_manager_.run();
 
   // get RC, an internal timer runs this every 20 ms (50 Hz)
-  receive_rc(); // 42 | 2 | 1
+  rc_.run();
 
   // update commands (internal logic tells whether or not we should do anything or not)
-  mux_inputs(); // 6 | 1 | 1
+  command_manager_.run();
+}
+
+uint32_t ROSflight::get_loop_time_us()
+{
+  return loop_time_us;
+}
+
 }

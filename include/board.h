@@ -29,72 +29,79 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ROSFLIGHT_FIRMWARE_BOARD_H
+#define ROSFLIGHT_FIRMWARE_BOARD_H
+
+#include <functional>
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 
+namespace rosflight_firmware
+{
+
+class Board
+{
+
+public:
 // setup
-void init_board(void);
-void board_reset(bool bootloader);
+  virtual void init_board(void) = 0;
+  virtual void board_reset(bool bootloader) = 0;
 
 // clock
-uint32_t clock_millis();
-uint64_t clock_micros();
-void clock_delay(uint32_t milliseconds);
+  virtual uint32_t clock_millis() = 0;
+  virtual uint64_t clock_micros() = 0;
+  virtual void clock_delay(uint32_t milliseconds) = 0;
 
 // serial
-void serial_init(uint32_t baud_rate);
-void serial_write(uint8_t byte);
-uint16_t serial_bytes_available(void);
-uint8_t serial_read(void);
+  virtual void serial_init(uint32_t baud_rate) = 0;
+  virtual void serial_write(const uint8_t *src, size_t len) = 0;
+  virtual uint16_t serial_bytes_available(void) = 0;
+  virtual uint8_t serial_read(void) = 0;
 
 // sensors
-void sensors_init();
+  virtual void sensors_init() = 0;
+  virtual uint16_t num_sensor_errors(void)  = 0;
 
-void imu_register_callback(void (*callback)(void));
-void imu_read_accel(float accel[3]);
-void imu_read_gyro(float gyro[3]);
-float imu_read_temperature(void);
-bool imu_read_all(float accel[3], float gyro[3], float *temperature);
-void imu_not_responding_error();
+  virtual bool new_imu_data() = 0;
+  virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time) = 0;
+  virtual void imu_not_responding_error(void) = 0;
 
-bool mag_check(void);
-bool mag_present(void);
-void mag_read(float mag[3]);
+  virtual bool mag_check(void) = 0;
+  virtual void mag_read(float mag[3]) = 0;
 
-bool baro_present(void);
-void baro_read(float *altitude, float *pressure, float *temperature); // TODO move altitude calculation outside this function
-void baro_calibrate();
+  virtual bool baro_check(void) = 0;
+  virtual void baro_read(float *pressure, float *temperature) = 0;
 
-bool diff_pressure_present(void);
-bool diff_pressure_check(void);
-void diff_pressure_set_atm(float barometric_pressure);
-void diff_pressure_calibrate();
-void diff_pressure_read(float *diff_pressure, float *temperature, float *velocity); // TODO move velocity calculation outside this function
+  virtual bool diff_pressure_check(void) = 0;
+  virtual void diff_pressure_read(float *diff_pressure, float *temperature) = 0;
 
-bool sonar_present(void);
-bool sonar_check(void);
-float sonar_read(void);
-
-uint16_t num_sensor_errors(void);
+  virtual bool sonar_check(void) = 0;
+  virtual float sonar_read(void) = 0;
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
-bool pwm_lost();
-uint16_t pwm_read(uint8_t channel);
-void pwm_write(uint8_t channel, uint16_t value);
+  virtual void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm) = 0;
+  virtual bool pwm_lost() = 0;
+  virtual uint16_t pwm_read(uint8_t channel) = 0;
+  virtual void pwm_write(uint8_t channel, uint16_t value) = 0;
 
 // non-volatile memory
-void memory_init(void);
-bool memory_read(void *dest, size_t len);
-bool memory_write(const void *src, size_t len);
+  virtual void memory_init(void) = 0;
+  virtual bool memory_read(void *dest, size_t len) = 0;
+  virtual bool memory_write(const void *src, size_t len) = 0;
 
 // LEDs
-void led0_on(void);
-void led0_off(void);
-void led0_toggle(void);
+  virtual void led0_on(void) = 0;
+  virtual void led0_off(void) = 0;
+  virtual void led0_toggle(void) = 0;
 
-void led1_on(void);
-void led1_off(void);
-void led1_toggle(void);
+  virtual void led1_on(void) = 0;
+  virtual void led1_off(void) = 0;
+  virtual void led1_toggle(void) = 0;
+
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSLFIGHT_FIRMWARE_BOARD_H

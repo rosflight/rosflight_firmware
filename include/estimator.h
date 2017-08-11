@@ -28,34 +28,67 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-#include <turbotrig/turbovec.h>
+#ifndef ROSFLIGHT_FIRMWARE_ESTIMATOR_H
+#define ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
-typedef struct
+#include <turbotrig/turbovec.h>
+#include <turbotrig/turbotrig.h>
+
+namespace rosflight_firmware
 {
-  quaternion_t q;
-  vector_t omega;
-  float roll;
-  float pitch;
-  float yaw;
-  float altitude;
-  uint64_t now_us;
 
-} state_t;
+class ROSflight;
 
-extern state_t _current_state;
+class Estimator
+{
 
-void reset_state();
-void reset_adaptive_bias();
-void init_estimator();
-void run_estimator();
-#ifdef __cplusplus
-}
-#endif
+public:
+  struct State
+  {
+    vector_t angular_velocity;
+    quaternion_t attitude;
+    float roll;
+    float pitch;
+    float yaw;
+    uint64_t timestamp_us;
+  };
+
+  Estimator(ROSflight& _rf);
+
+  inline const State& state() const { return state_; }
+
+  void init();
+  void run();
+  void reset_state();
+  void reset_adaptive_bias();
+
+private:
+  const vector_t g_ = {0.0f, 0.0f, -1.0f};
+
+  ROSflight& RF_;
+  State state_;
+
+  uint64_t last_time_;
+  uint64_t last_acc_update_us_;
+
+  vector_t w1_;
+  vector_t w2_;
+
+  vector_t bias_;
+
+  vector_t accel_LPF_;
+  vector_t gyro_LPF_;
+
+  vector_t w_acc_;
+
+  void run_LPF();
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_ESTIMATOR_H

@@ -29,24 +29,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef ROSFLIGHT_FIRMWARE_PARAM_H
+#define ROSFLIGHT_FIRMWARE_PARAM_H
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <functional>
 
-#include "mavlink.h"
+#ifndef GIT_VERSION_HASH
+#define GIT_VERSION_HASH 0x00
+//#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
+#endif
 
-#define PARAMS_NAME_LENGTH MAVLINK_MSG_PARAM_SET_FIELD_PARAM_ID_LEN
+#ifndef GIT_VERSION_STRING
+#define GIT_VERSION_STRING "empty"
+#endif
 
-typedef enum
+namespace rosflight_firmware
+{
+
+enum : uint16_t
 {
   /******************************/
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
-  PARAM_BAUD_RATE,
+  PARAM_BAUD_RATE = 0,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -73,27 +80,22 @@ typedef enum
   PARAM_PID_ROLL_RATE_P,
   PARAM_PID_ROLL_RATE_I,
   PARAM_PID_ROLL_RATE_D,
-  PARAM_ROLL_RATE_TRIM,
 
   PARAM_PID_PITCH_RATE_P,
   PARAM_PID_PITCH_RATE_I,
   PARAM_PID_PITCH_RATE_D,
-  PARAM_PITCH_RATE_TRIM,
 
   PARAM_PID_YAW_RATE_P,
   PARAM_PID_YAW_RATE_I,
   PARAM_PID_YAW_RATE_D,
-  PARAM_YAW_RATE_TRIM,
 
   PARAM_PID_ROLL_ANGLE_P,
   PARAM_PID_ROLL_ANGLE_I,
   PARAM_PID_ROLL_ANGLE_D,
-  PARAM_ROLL_ANGLE_TRIM,
 
   PARAM_PID_PITCH_ANGLE_P,
   PARAM_PID_PITCH_ANGLE_I,
   PARAM_PID_PITCH_ANGLE_D,
-  PARAM_PITCH_ANGLE_TRIM,
 
   PARAM_X_EQ_TORQUE,
   PARAM_Y_EQ_TORQUE,
@@ -127,8 +129,6 @@ typedef enum
   PARAM_GYRO_ALPHA,
   PARAM_ACC_ALPHA,
 
-  PARAM_ACCEL_SCALE,
-
   PARAM_GYRO_X_BIAS,
   PARAM_GYRO_Y_BIAS,
   PARAM_GYRO_Z_BIAS,
@@ -151,6 +151,11 @@ typedef enum
   PARAM_MAG_X_BIAS,
   PARAM_MAG_Y_BIAS,
   PARAM_MAG_Z_BIAS,
+
+  PARAM_BARO_BIAS,
+  PARAM_GROUND_LEVEL,
+
+  PARAM_DIFF_PRESS_BIAS,
 
   /************************/
   /*** RC CONFIGURATION ***/
@@ -199,115 +204,156 @@ typedef enum
 
   // keep track of size of params array
   PARAMS_COUNT
-} param_id_t;
+};
 
-typedef enum uint8_t
+typedef enum
 {
   PARAM_TYPE_INT32,
   PARAM_TYPE_FLOAT,
   PARAM_TYPE_INVALID
 } param_type_t;
 
-// function declarations
+class ROSflight;
+class Params
+{
 
-/**
- * @brief Initialize parameter values
- */
-void init_params(void);
+public:
+  static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
 
-/**
- * @brief Set all parameters to default values
- */
-void set_param_defaults(void);
+private:
+  typedef struct
+  {
+    uint32_t version;
+    uint16_t size;
+    uint8_t magic_be;                       // magic number, should be 0xBE
 
-/**
- * @brief Read parameter values from non-volatile memory
- * @return True if successful, false otherwise
- */
-bool read_params(void);
+    int32_t values[PARAMS_COUNT];
+    char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
+    param_type_t types[PARAMS_COUNT];
 
-/**
- * @brief Write current parameter values to non-volatile memory
- * @return True if successful, false otherwise
- */
-bool write_params(void);
+    uint8_t magic_ef;                       // magic number, should be 0xEF
+    uint8_t chk;                            // XOR checksum
+  } params_t;
 
-/**
- * @brief Callback for executing actions that need to be taken when a parameter value changes
- * @param id The ID of the parameter that was changed
- */
-void param_change_callback(param_id_t id);
+  std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
 
-/**
- * @brief Gets the id of a parameter from its name
- * @param name The name of the parameter
- * @return The ID of the parameter if the name is valid, PARAMS_COUNT otherwise (invalid ID)
- */
-param_id_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
+  params_t params;
+  ROSflight& RF_;
 
-/**
- * @brief Get the value of an integer parameter by id
- * @param id The ID of the parameter
- * @return The value of the parameter
- */
-int get_param_int(param_id_t id);
+  void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
+  void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
+  uint8_t compute_checksum(void);
 
-/**
- * @brief Get the value of a floating point parameter by id
- * @param id The ID of the parameter
- * @return The value of the parameter
- */
-float get_param_float(param_id_t id);
 
-/**
- * @brief Get the name of a parameter
- * @param id The ID of the parameter
- * @return The name of the parameter
- */
-char *get_param_name(param_id_t id);
+public:
+  Params(ROSflight& _rf);
 
-/**
- * @brief Get the type of a parameter
- * @param id The ID of the parameter
- * @return The type of the parameter
- * This returns one of three possible types
- * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
- * See line 165
- */
-param_type_t get_param_type(param_id_t id);
+  void add_callback(std::function<void(int)> callback, uint16_t param_id);
 
-/**
- * @brief Sets the value of a parameter by ID and calls the parameter change callback
- * @param id The ID of the parameter
- * @param value The new value
- * @return True if a parameter value was changed, false otherwise
- */
-bool set_param_int(param_id_t id, int32_t value);
 
-/**
- * @brief Sets the value of a floating point parameter by ID and calls the parameter callback
- * @param id The ID of the parameter
- * @param value The new value
- * @return  True if a parameter was changed, false otherwise
- */
-bool set_param_float(param_id_t id, float value);
 
-/**
- * @brief Sets the value of a parameter by name and calls the parameter change callback
- * @param name The name of the parameter
- * @param value The new value
- * @return True if a parameter value was changed, false otherwise
- */
-bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value);
+  // function declarations
 
-/**
- * @brief Sets the value of a floating point parameter by name and calls the parameter change callback
- * @param name The name of the parameter
- * @param value The new value
- * @return True if a parameter value was changed, false otherwise
- */
-bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
+  /**
+   * @brief Initialize parameter values
+   */
+  void init();
 
-#ifdef __cplusplus
-}
-#endif
+  /**
+   * @brief Set all parameters to default values
+   */
+  void set_defaults(void);
+
+  /**
+   * @brief Read parameter values from non-volatile memory
+   * @return True if successful, false otherwise
+   */
+  bool read(void);
+
+  /**
+   * @brief Write current parameter values to non-volatile memory
+   * @return True if successful, false otherwise
+   */
+  bool write(void);
+
+  /**
+   * @brief Callback for executing actions that need to be taken when a parameter value changes
+   * @param id The ID of the parameter that was changed
+   */
+  void change_callback(uint16_t id);
+
+  /**
+   * @brief Gets the id of a parameter from its name
+   * @param name The name of the parameter
+   * @return The ID of the parameter if the name is valid, PARAMS_COUNT otherwise (invalid ID)
+   */
+  uint16_t lookup_param_id(const char name[PARAMS_NAME_LENGTH]);
+
+  /**
+   * @brief Get the value of an integer parameter by id
+   * @param id The ID of the parameter
+   * @return The value of the parameter
+   */
+  inline const int get_param_int(uint16_t id) const { return params.values[id]; }
+
+  /**
+   * @brief Get the value of a floating point parameter by id
+   * @param id The ID of the parameter
+   * @return The value of the parameter
+   */
+  inline const float get_param_float(uint16_t id) const { return *(float *) &params.values[id]; }
+
+  /**
+   * @brief Get the name of a parameter
+   * @param id The ID of the parameter
+   * @return The name of the parameter
+   */
+  inline const char *get_param_name(uint16_t id) const { return params.names[id]; }
+
+  /**
+   * @brief Get the type of a parameter
+   * @param id The ID of the parameter
+   * @return The type of the parameter
+   * This returns one of three possible types
+   * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
+   * See line 165
+   */
+  inline const param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
+
+  /**
+   * @brief Sets the value of a parameter by ID and calls the parameter change callback
+   * @param id The ID of the parameter
+   * @param value The new value
+   * @return True if a parameter value was changed, false otherwise
+   */
+  bool set_param_int(uint16_t id, int32_t value);
+
+  /**
+   * @brief Sets the value of a floating point parameter by ID and calls the parameter callback
+   * @param id The ID of the parameter
+   * @param value The new value
+   * @return  True if a parameter was changed, false otherwise
+   */
+  bool set_param_float(uint16_t id, float value);
+
+  /**
+   * @brief Sets the value of a parameter by name and calls the parameter change callback
+   * @param name The name of the parameter
+   * @param value The new value
+   * @return True if a parameter value was changed, false otherwise
+   */
+  bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value);
+
+  /**
+   * @brief Sets the value of a floating point parameter by name and calls the parameter change callback
+   * @param name The name of the parameter
+   * @param value The new value
+   * @return True if a parameter value was changed, false otherwise
+   */
+  bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
+
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_PARAM_H

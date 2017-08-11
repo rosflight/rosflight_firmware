@@ -28,23 +28,82 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
+#define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "mux.h"
-#include "param.h"
+#include <turbotrig/turbovec.h>
 
-void run_controller();
-void init_controller();
-void calculate_equilbrium_torque_from_rc();
+#include "command_manager.h"
+#include "estimator.h"
 
+namespace rosflight_firmware
+{
 
-#ifdef __cplusplus
-}
-#endif
+class ROSflight;
+
+class Controller
+{
+public:
+  struct Output
+  {
+    float F;
+    float x;
+    float y;
+    float z;
+  };
+
+  Controller(ROSflight& rf);
+
+  inline const Output& output() const { return output_; }
+
+  void init();
+  void run();
+
+  void calculate_equilbrium_torque_from_rc();
+  void param_change_callback(uint16_t param_id);
+
+private:
+  class PID
+  {
+  public:
+    PID();
+    void init(float kp, float ki, float kd, float max, float min, float tau);
+    float run(float dt, float x, float x_c, bool update_integrator);
+    float run(float dt, float x, float x_c, bool update_integrator, float xdot);
+
+  private:
+    float kp_;
+    float ki_;
+    float kd_;
+
+    float max_;
+    float min_;
+
+    float integrator_;
+    float differentiator_;
+    float prev_x_;
+    float tau_;
+  };
+
+  ROSflight& RF_;
+
+  vector_t run_pid_loops(uint32_t dt, const Estimator::State& state, const control_t& command, bool update_integrators);
+
+  Output output_;
+
+  PID roll_;
+  PID roll_rate_;
+  PID pitch_;
+  PID pitch_rate_;
+  PID yaw_rate_;
+
+  uint64_t prev_time_us_;
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_CONTROLLER_H

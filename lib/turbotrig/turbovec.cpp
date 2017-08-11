@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2017, James Jackson BYU MAGICC Lab, Provo UT
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,117 +32,13 @@
  */
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
-#include "turbovec.h"
-#include "turbotrig.h"
+#include <turbotrig/turbovec.h>
+#include <turbotrig/turbotrig.h>
 
 
 void pfquat() __attribute__((unused));
-
-int32_t int_dot(intvec_t v1, intvec_t v2)
-{
-  return (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z)/1000;
-}
-
-intvec_t int_cross(intvec_t u, intvec_t v)
-{
-  intvec_t out;
-  out.x = (u.y*v.z - u.z*v.y)/1000;
-  out.y = (u.z*v.x - u.x*v.z)/1000;
-  out.z = (u.x*v.y - u.y*v.x)/1000;
-  return out;
-}
-
-intvec_t int_scalar_multiply(int32_t s, intvec_t v)
-{
-  intvec_t out;
-  out.x = (s*v.x)/1000;
-  out.y = (s*v.y)/1000;
-  out.z = (s*v.z)/1000;
-  return out;
-}
-
-intvec_t int_vector_add(intvec_t u, intvec_t v)
-{
-  intvec_t out;
-  out.x = u.x + v.x;
-  out.y = u.y + v.y;
-  out.z = u.z + v.z;
-  return out;
-}
-
-intvec_t int_vector_sub(intvec_t u, intvec_t v)
-{
-  intvec_t out;
-  out.x = u.x - v.x;
-  out.y = u.y - v.y;
-  out.z = u.z - v.z;
-  return out;
-}
-
-int32_t int_sqrd_norm(intvec_t v)
-{
-  return v.x*v.x + v.y*v.y + v.z*v.z;
-}
-
-intvec_t int_vector_normalize(intvec_t v)
-{
-  float recipNorm = turboInvSqrt((v.x*v.x + v.y*v.y + v.z*v.z)/1000000.0);
-  return int_scalar_multiply((int32_t)(1000*recipNorm), v);
-}
-
-intquat_t int_quaternion_normalize(intquat_t q)
-{
-  float recipNorm = turboInvSqrt((q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z) / 1000000.0);
-  int32_t intRecipNorm = (int32_t)(recipNorm*1000);
-  intquat_t out;
-  out.w = (intRecipNorm*q.w)/1000;
-  out.x = (intRecipNorm*q.x)/1000;
-  out.y = (intRecipNorm*q.y)/1000;
-  out.z = (intRecipNorm*q.z)/1000;
-  return out;
-}
-
-intquat_t int_quaternion_multiply(intquat_t q1, intquat_t q2)
-{
-  int32_t s1 = q1.w;
-  int32_t s2 = q2.w;
-
-  intvec_t v1 = {q1.x, q1.y, q2.z};
-  intvec_t v2 = {q2.x, q2.y, q2.z};
-
-  int32_t w = (s1*s2)/1000 - int_dot(v1, v2);
-  // xyz = s1*v2 + s2*v1 - v1 x v2)
-  intvec_t xyz = int_vector_sub(int_vector_add(int_scalar_multiply(s1, v2), int_scalar_multiply(s2,v1)), int_cross(v1,
-                                v2));
-  intquat_t q = {w, xyz.x, xyz.y, xyz.z};
-  return int_quaternion_normalize(q);
-}
-
-
-intquat_t int_quaternion_inverse(intquat_t q)
-{
-
-  intquat_t out = {q.w, -1*q.x, -1*q.y, -1*q.z};
-  return out;
-}
-
-intquat_t int_quaternion_from_two_vectors(intvec_t u, intvec_t v)
-{
-  u = int_vector_normalize(u);
-  v = int_vector_normalize(v);
-
-  intvec_t half = int_vector_normalize(int_vector_add(u,v));
-
-  int32_t w = int_dot(u, half);
-  intvec_t xyz = int_cross(u,v);
-  intquat_t q = {w, xyz.x, xyz.y, xyz.z};
-  return int_quaternion_normalize(q);
-}
 
 
 /**************************************/
@@ -153,18 +51,18 @@ float dot(vector_t v1, vector_t v2)
 
 vector_t cross(vector_t u, vector_t v)
 {
-  vector_t out = {u.y *v.z - u.z*v.y,
-                  u.z *v.x - u.x*v.z,
-                  u.x *v.y - u.y *v.x
+  vector_t out = {u.y * v.z - u.z * v.y,
+                  u.z * v.x - u.x * v.z,
+                  u.x * v.y - u.y * v.x
                  };
   return out;
 }
 
 vector_t scalar_multiply(float s, vector_t v)
 {
-  vector_t out = {s*v.x,
-                  s*v.y,
-                  s *v.z
+  vector_t out = {s * v.x,
+                  s * v.y,
+                  s * v.z
                  };
   return out;
 }
@@ -204,7 +102,7 @@ vector_t vector_normalize(vector_t v)
   float recipNorm = turboInvSqrt(v.x*v.x + v.y*v.y + v.z*v.z);
   vector_t out = {recipNorm*v.x,
                   recipNorm*v.y,
-                  recipNorm *v.z
+                  recipNorm*v.z
                  };
   return out;
 }
@@ -215,8 +113,7 @@ quaternion_t quaternion_normalize(quaternion_t q)
   quaternion_t out = {recipNorm*q.w,
                       recipNorm*q.x,
                       recipNorm*q.y,
-                      recipNorm *q.z
-                     };
+                      recipNorm*q.z};
   return out;
 }
 
@@ -238,12 +135,31 @@ quaternion_t quaternion_inverse(quaternion_t q)
   return q;
 }
 
-quaternion_t quat_from_two_vectors(vector_t u, vector_t v)
+vector_t rotate_vector(quaternion_t q, vector_t v)
 {
-  float w = 1.0f + dot(u, v);
-  vector_t xyz = cross(u, v);
-  quaternion_t q = {w, xyz.x, xyz.y, xyz.z};
-  return quaternion_normalize(q);
+  vector_t out = { (1.0f - 2.0f*q.y*q.y - 2.0f*q.z*q.z) * v.x + (2.0f*(q.x*q.y + q.w*q.z))*v.y + 2.0f*(q.x*q.z - q.w*q.y)*v.z,
+                   (2.0f*(q.x*q.y - q.w*q.z)) * v.x + (1.0f - 2.0f*q.x*q.x - 2.0f*q.z*q.z) * v.y + 2.0f*(q.y*q.z + q.w*q.x)*v.z,
+                   (2.0f*(q.x*q.z + q.w*q.y)) * v.x + 2.0f*(q.y*q.z - q.w*q.x)*v.y + (1.0f - 2.0f*q.x*q.x - 2.0f*q.y*q.y)*v.z};
+  return out;
+}
+
+quaternion_t quat_from_two_unit_vectors(vector_t u, vector_t v)
+{
+  // Adapted From the Ogre3d source code
+  // https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h?fileviewer=file-view-default#cl-651
+  quaternion_t out;
+  float d = dot(u, v);
+  if ( d >= 1.0f)
+  {
+    out = {1, 0, 0, 0};
+  }
+  else
+  {
+    float invs = turboInvSqrt(2*(1+d));
+    vector_t xyz = scalar_multiply(invs, cross(u, v));
+    out = {0.5f/invs, xyz.x, xyz.y, xyz.z};
+  }
+  return quaternion_normalize(out);
 }
 
 void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
@@ -258,8 +174,8 @@ void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
 
 float turboInvSqrt(float x)
 {
-  long i;
-  float x2, y;
+  volatile long i;
+  volatile float x2, y;
   const float threehalfs = 1.5F;
 
   x2 = x * 0.5F;
@@ -273,30 +189,11 @@ float turboInvSqrt(float x)
   return y;
 }
 
-float fsign(float y)
-{
-  return (0 < y) - (y < 0);
-}
-
-
 float fsat(float value, float max)
 {
-  if (abs(value) > abs(max))
+  if (fabs(value) > fabs(max))
   {
-    value = max*sign(value);
+    value = max*fsign(value);
   }
   return value;
 }
-
-
-int32_t sat(int32_t value, int32_t max)
-{
-  if (abs(value) > abs(max))
-  {
-    value = max*sign(value);
-  }
-  return value;
-}
-#ifdef __cplusplus
-}
-#endif

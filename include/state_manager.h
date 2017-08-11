@@ -28,36 +28,85 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_STATE_MANAGER_H
+#define ROSFLIGHT_FIRMWARE_STATE_MANAGER_H
 
-typedef enum
+#include <stdint.h>
+
+namespace rosflight_firmware
 {
-  ARMED = 0x01,
-  FAILSAFE = 0x2,
-} armed_state_t;
-extern armed_state_t _armed_state;
 
+class ROSflight;
 
-typedef enum
+class StateManager
 {
-  ERROR_NONE = 0x00,
-  ERROR_INVALID_MIXER = 0x01,
-  ERROR_IMU_NOT_RESPONDING = 0x02,
-  ERROR_RC_LOST = 0x04,
-  ERROR_UNHEALTHY_ESTIMATOR = 0x08,
-  ERROR_TIME_GOING_BACKWARDS = 0x10,
-  ERROR_UNCALIBRATED_IMU = 0x20,
-} error_state_t;
-extern error_state_t _error_state;
 
-void init_mode(void);
-bool check_mode();
+public:
+  struct State
+  {
+    bool armed;
+    bool failsafe;
+    bool error;
+    uint16_t error_codes;
+  };
 
-#ifdef __cplusplus
-}
-#endif
+  enum Event
+  {
+    EVENT_INITIALIZED,
+    EVENT_REQUEST_ARM,
+    EVENT_REQUEST_DISARM,
+    EVENT_RC_LOST,
+    EVENT_RC_FOUND,
+    EVENT_ERROR,
+    EVENT_NO_ERROR,
+    EVENT_CALIBRATION_COMPLETE,
+    EVENT_CALIBRATION_FAILED,
+  };
 
+  enum
+  {
+    ERROR_NONE = 0x0000,
+    ERROR_INVALID_MIXER = 0x0001,
+    ERROR_IMU_NOT_RESPONDING = 0x0002,
+    ERROR_RC_LOST = 0x0004,
+    ERROR_UNHEALTHY_ESTIMATOR = 0x0008,
+    ERROR_TIME_GOING_BACKWARDS = 0x0010,
+    ERROR_UNCALIBRATED_IMU = 0x0020,
+  };
+
+  StateManager(ROSflight& parent);
+  void init();
+  void run();
+
+  inline const State& state() const { return state_; }
+
+  void set_event(Event event);
+  void set_error(uint16_t error);
+  void clear_error(uint16_t error);
+
+private:
+  ROSflight& RF_;
+  State state_;
+
+  int next_led_blink_ms_ = 0;
+
+  enum FsmState
+  {
+    FSM_STATE_INIT,
+    FSM_STATE_PREFLIGHT,
+    FSM_STATE_ARMED,
+    FSM_STATE_ERROR,
+    FSM_STATE_FAILSAFE,
+    FSM_STATE_CALIBRATING
+  };
+
+  FsmState fsm_state_;
+  void process_errors();
+
+  void update_leds();
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_STATE_MANAGER_H

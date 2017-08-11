@@ -29,17 +29,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSFLIGHT_H_
-#define ROSFLIGHT_H_
+#ifndef ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
+#define ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 
-/**
- * @brief Main initialization routine for the ROSflight autopilot flight stack
- */
-void rosflight_init(void);
+#include "board.h"
+#include "param.h"
+#include "sensors.h"
+#include "estimator.h"
+#include "rc.h"
+#include "controller.h"
+#include "mavlink.h"
+#include "mixer.h"
+#include "state_manager.h"
+#include "command_manager.h"
 
-/**
- * @brief Main loop for the ROSflight autopilot flight stack
- */
-void rosflight_run(void);
+namespace rosflight_firmware
+{
 
-#endif // ROSFLIGHT_H_
+class ROSflight
+{
+
+private:
+
+
+public:
+  ROSflight(Board& board);
+
+  Board& board_;
+  Mavlink mavlink_;
+
+  Params params_;
+  StateManager state_manager_;
+  Sensors sensors_;
+  Estimator estimator_;
+  CommandManager command_manager_;
+  Mixer mixer_;
+  Controller controller_;
+  RC rc_;
+
+  uint32_t loop_time_us;
+
+  /**
+  * @brief Main initialization routine for the ROSflight autopilot flight stack
+  */
+  void init();
+
+  /**
+  * @brief Main loop for the ROSflight autopilot flight stack
+  */
+  void run();
+
+  uint32_t get_loop_time_us();
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H

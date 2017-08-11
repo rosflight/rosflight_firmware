@@ -29,19 +29,125 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef ROSFLIGHT_FIRMWARE_MAVLINK_H
+#define ROSFLIGHT_FIRMWARE_MAVLINK_H
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-#include <mavlink/v1.0/mavlink_types.h>
-#pragma GCC diagnostic pop
-
-#define MAVLINK_USE_CONVENIENCE_FUNCTIONS
-extern mavlink_system_t mavlink_system;
-void comm_send_ch(mavlink_channel_t chan, uint8_t ch);
-
-// this needs to be include after the above declarations
 #include <mavlink/v1.0/rosflight/mavlink.h>
+#include "nanoprintf.h"
 
-// function declarations
-void init_mavlink(void);
+namespace rosflight_firmware {
+
+class ROSflight;
+
+class Mavlink
+{
+private:
+  enum
+  {
+    STREAM_ID_HEARTBEAT,
+    STREAM_ID_STATUS,
+
+    STREAM_ID_ATTITUDE,
+
+    STREAM_ID_IMU,
+    STREAM_ID_DIFF_PRESSURE,
+    STREAM_ID_BARO,
+    STREAM_ID_SONAR,
+    STREAM_ID_MAG,
+
+    STREAM_ID_SERVO_OUTPUT_RAW,
+    STREAM_ID_RC_RAW,
+    STREAM_ID_LOW_PRIORITY,
+    STREAM_COUNT
+  };
+
+  uint32_t sysid_;
+  uint32_t compid_;
+  uint64_t offboard_control_time_;
+  ROSflight& RF_;
+  uint8_t send_params_index_;
+  mavlink_message_t in_buf_;
+  mavlink_status_t status_;
+  bool initialized_;
+
+  typedef  void (Mavlink::*MavlinkStreamFcn)(void);
+
+  typedef struct
+  {
+    uint32_t period_us;
+    uint64_t next_time_us;
+    MavlinkStreamFcn send_function;
+  } mavlink_stream_t;
+
+  void handle_msg_param_request_list(void);
+  void handle_msg_param_request_read(const mavlink_message_t *const msg);
+  void handle_msg_param_set(const mavlink_message_t *const msg);
+  void send_next_param(void);
+
+  void handle_mavlink_message(void);
+
+  void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
+  void handle_msg_timesync(const mavlink_message_t *const msg);
+  void handle_msg_offboard_control(const mavlink_message_t *const msg);
+
+  void send_heartbeat(void);
+  void send_status(void);
+  void send_attitude(void);
+  void send_imu(void);
+  void send_output_raw(void);
+  void send_rc_raw(void);
+  void send_diff_pressure(void);
+  void send_baro(void);
+  void send_sonar(void);
+  void send_mag(void);
+  void send_low_priority(void);
+  void send_message(const mavlink_message_t &msg);
+  void send_log_message(uint8_t severity, const char *text);
+  void stream_set_period(uint8_t stream_id, uint32_t period_us);
+
+  // Debugging Utils
+  void send_named_value_int(const char *const name, int32_t value);
+  //  void send_named_command_struct(const char *const name, control_t command_struct);
+
+  mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
+    //  period_us    last_time_us   send_function
+    { 1000000,     0,             &rosflight_firmware::Mavlink::send_heartbeat },
+    { 1000000,     0,             &rosflight_firmware::Mavlink::send_status},
+    { 200000,      0,             &rosflight_firmware::Mavlink::send_attitude },
+    { 1000,        0,             &rosflight_firmware::Mavlink::send_imu },
+    { 200000,      0,             &rosflight_firmware::Mavlink::send_diff_pressure },
+    { 200000,      0,             &rosflight_firmware::Mavlink::send_baro },
+    { 100000,      0,             &rosflight_firmware::Mavlink::send_sonar },
+    { 6250,        0,             &rosflight_firmware::Mavlink::send_mag },
+    { 0,           0,             &rosflight_firmware::Mavlink::send_output_raw },
+    { 0,           0,             &rosflight_firmware::Mavlink::send_rc_raw },
+    { 5000,        0,             &rosflight_firmware::Mavlink::send_low_priority }
+  };
+
+
+public:
+
+  enum
+  {
+    LOG_INFO = 6,
+    LOG_WARNING = 4,
+    LOG_ERROR = 3,
+    LOG_CRITICAL = 2
+  };
+
+  Mavlink(ROSflight &_rf);
+
+  void init();
+  void receive(void);
+  void stream();
+  void update_param(uint16_t param_id);
+  void set_streaming_rate(uint8_t stream_id, int16_t param_id);
+  void update_status();
+  void log(uint8_t severity, const char *fmt, ...);
+
+  void send_named_value_float(const char *const name, float value);
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_MAVLINK_H

@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab, Provo UT
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

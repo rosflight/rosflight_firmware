@@ -28,76 +28,92 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef RC_H_
-#define RC_H_
+
+#ifndef ROSFLIGHT_FIRMWARE_RC_H
+#define ROSFLIGHT_FIRMWARE_RC_H
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "param.h"
-
-#include "mux.h"
-
-typedef enum
+namespace rosflight_firmware
 {
-  RC_STICK_X,
-  RC_STICK_Y,
-  RC_STICK_Z,
-  RC_STICK_F,
-  RC_STICKS_COUNT
-} rc_stick_t;
 
-typedef enum
+class ROSflight;
+
+class RC
 {
-  RC_SWITCH_ARM,
-  RC_SWITCH_ATT_OVERRIDE,
-  RC_SWITCH_THROTTLE_OVERRIDE,
-  RC_SWITCH_ATT_TYPE,
-  RC_SWITCHES_COUNT
-} rc_switch_t;
 
-typedef enum
-{
-  PARALLEL_PWM,
-  CPPM,
-} rc_type_t;
+public:
+  enum Stick
+  {
+    STICK_X,
+    STICK_Y,
+    STICK_Z,
+    STICK_F,
+    STICKS_COUNT
+  };
 
-/**
- * @brief Initialize the RC sticks and switches.
- *
- * Assign channels and other values to the RC sticks and switches based on input parameters.
- */
-void init_rc(void);
+  enum Switch
+  {
+    SWITCH_ARM,
+    SWITCH_ATT_OVERRIDE,
+    SWITCH_THROTTLE_OVERRIDE,
+    SWITCH_ATT_TYPE,
+    SWITCHES_COUNT
+  };
 
-/**
- * @brief Get current stick value for the given channel.
- * @param  channel The stick channel whose value you wish to retrieve.
- * @return         Normalized float of the current stick value of the channel.
- */
-float rc_stick(rc_stick_t channel);
+  RC(ROSflight& _rf);
 
-/**
- * @brief Get the current switch value for the given channel.
- * @param  channel The switch channel whose value you wish to retrieve.
- * @return         True if the switch is mapped and in its on state, otherwise false.
- */
-bool rc_switch(rc_switch_t channel);
+  typedef enum
+  {
+    PARALLEL_PWM,
+    CPPM,
+  } rc_type_t;
 
-/**
- * @brief Check if the given switch is mapped to an RC channel
- * @param  channel The switch type to check.
- * @return         True if this switch type was mapped to a valid RC channel, otherwise false.
- */
-bool rc_switch_mapped(rc_switch_t channel);
+  void init();
+  float stick(Stick channel);
+  bool switch_on(Switch channel);
+  bool switch_mapped(Switch channel);
+  bool run();
+  bool new_command();
+  void param_change_callback(uint16_t param_id);
 
-/**
- * @brief Receive new RC data and update local data members.
- *
- *  Maps channeled inputs from the RC controller to their proper data member values within this
- *  class every 20ms. Upon update, signals to the mux that a new command is waiting.
- *
- * @return False if it hasn't been 20ms since the last update, otherwise true.
- */
-bool receive_rc();
+private:
+  ROSflight& RF_;
 
-#endif
+  typedef struct
+  {
+    uint8_t channel;
+    int8_t direction;
+    bool mapped;
+  } rc_switch_config_t;
+
+  typedef struct
+  {
+    uint8_t channel;
+    bool one_sided;
+  } rc_stick_config_t;
+
+  bool new_command_;
+
+  uint32_t time_of_last_stick_deviation = 0;
+  uint32_t time_sticks_have_been_in_arming_position_ms = 0;
+  uint32_t prev_time_ms = 0;
+  uint32_t last_rc_receive_time = 0;
+
+  rc_stick_config_t sticks[STICKS_COUNT];
+  rc_switch_config_t switches[SWITCHES_COUNT];
+
+  bool switch_values[SWITCHES_COUNT];
+  float stick_values[STICKS_COUNT];
+
+  void init_rc();
+  void init_switches();
+  void init_sticks();
+  bool check_rc_lost();
+  void look_for_arm_disarm_signal();
+};
+
+} // namespace rosflight_firmware
+
+#endif // ROSLFLIGHT_FIRMWARE_RC_H
