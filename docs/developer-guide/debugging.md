@@ -65,7 +65,7 @@ Then, for convenience, I normally create a script to run openocd for me.  Here i
 ``` bash
 #!/bin/bash
 
-cd /opt/openocd/0.10.0-201610281609/bin
+cd /opt/openocd/0.10.0-201701241841/bin
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg
 ```
 
@@ -103,7 +103,7 @@ Now, we're going to configure a new "Kit" for ARM development (this allows you t
 ### Tell QtCreator where to find the compiler (GCC)
 
 * Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C++.  
-* Name the new compiler "G++ ARM" (or something) 
+* Name the new compiler "G++ ARM" (or something)
 * Point the compiler path to where you just installed your fresh GCC.
 * The path for G++ `/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-g++`
 
@@ -163,7 +163,7 @@ Plug in the debugger and start openocd (you'll need sudo privileges)
 
 ### Build the Correct Example Code
 
-* Import Existing Project 
+* Import Existing Project
 * Open the root of the firmware
 * Do _**not**_ add .creator files to the Git repository
 
