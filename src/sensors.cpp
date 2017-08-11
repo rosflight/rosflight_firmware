@@ -116,7 +116,8 @@ void Sensors::update_other_sensors()
       float raw_pressure;
       float raw_temp;
       rf_.board_.baro_read(&raw_pressure, &raw_temp);
-      if (data_.baro_valid = baro_outlier_filt_.update(raw_pressure, data_.baro_pressure))
+      data_.baro_valid = baro_outlier_filt_.update(raw_pressure, &data_.baro_pressure);
+      if (data_.baro_valid)
       {
         data_.baro_temperature = raw_temp;
         correct_baro();
@@ -129,7 +130,8 @@ void Sensors::update_other_sensors()
       float raw_pressure;
       float raw_temp;
       rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
-      if (data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, data_.diff_pressure))
+      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
+      if (data_.diff_pressure_valid)
       {
         data_.diff_pressure_temp = raw_temp;
         correct_diff_pressure();
@@ -139,7 +141,7 @@ void Sensors::update_other_sensors()
   case 2:
     if (data_.sonar_present)
     {
-      data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), data_.sonar_range);
+      data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), &data_.sonar_range);
     }
     break;
   case 3:
@@ -565,12 +567,12 @@ void Sensors::OutlierFilter::init(float max_change_rate, float update_rate, floa
   init_ = true;
 }
 
-bool Sensors::OutlierFilter::update(float new_val, float& val)
+bool Sensors::OutlierFilter::update(float new_val, float *val)
 {
   float diff = new_val - center_;
   if (fabs(diff) < window_size_ * max_change_)
   {
-    val = new_val;
+    *val = new_val;
 
     center_ += fsign(diff) * fmin(max_change_, fabs(diff));
     if (window_size_ > 1)
@@ -584,7 +586,6 @@ bool Sensors::OutlierFilter::update(float new_val, float& val)
     window_size_++;
     return false;
   }
-  // val = new_val;
 }
 
 } // namespace rosflight_firmware

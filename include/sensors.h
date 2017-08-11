@@ -44,7 +44,7 @@ class ROSflight;
 
 class Sensors
 {
-
+public:
   struct Data
   {
     vector_t accel = {0, 0, 0};
@@ -73,7 +73,6 @@ class Sensors
     bool diff_pressure_present = false;
   };
 
-public:
   Sensors(ROSflight& rosflight);
 
   inline const Data& data() const { return data_; }
@@ -98,6 +97,7 @@ public:
     return true;
   }
 
+private:
   static const float BARO_MAX_CHANGE_RATE;
   static const float BARO_SAMPLE_RATE;
   static const float DIFF_MAX_CHANGE_RATE;
@@ -108,19 +108,21 @@ public:
   static const int SENSOR_CAL_CYCLES;
   static const float BARO_MAX_CALIBRATION_VARIANCE;
   static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
+
   class OutlierFilter
   {
+  private:
     float max_change_;
     float center_;
     int window_size_;
     bool init_ = false;
+
   public:
     OutlierFilter() {};
     void init(float max_change_rate, float update_rate, float center);
-    bool update(float new_val, float& val);
+    bool update(float new_val, float *val);
   };
 
-private:
   ROSflight& rf_;
 
   Data data_;
@@ -177,7 +179,6 @@ private:
   OutlierFilter baro_outlier_filt_;
   OutlierFilter diff_outlier_filt_;
   OutlierFilter sonar_outlier_filt_;
-
 
 };
 
