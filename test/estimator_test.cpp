@@ -1,3 +1,6 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Werror-strict-overflow"
+
 #include <gtest/gtest.h>
 #include "math.h"
 #include "rosflight.h"
@@ -416,3 +419,6 @@ TEST(estimator_test, moving_bias_sim) {
   printf("estimated_bias = %.7f, %.7f\n", bias.x, bias.y);
 #endif
 }
+
+#pragma GCC diagnostic pop
+
