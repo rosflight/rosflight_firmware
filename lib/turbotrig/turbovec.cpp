@@ -172,6 +172,10 @@ void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
 }
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+
 float turboInvSqrt(float x)
 {
   volatile long i;
@@ -189,6 +193,8 @@ float turboInvSqrt(float x)
   return y;
 }
 
+#pragma GCC diagnostic pop
+
 float fsat(float value, float max)
 {
   if (fabs(value) > fabs(max))
@@ -197,3 +203,4 @@ float fsat(float value, float max)
   }
   return value;
 }
+

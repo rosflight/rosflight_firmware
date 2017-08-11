@@ -135,6 +135,8 @@ void CommandManager::interpret_rc(void)
     case ANGLE:
       rc_command_.x.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
       rc_command_.y.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
+    default:
+      break;
     }
 
     // yaw

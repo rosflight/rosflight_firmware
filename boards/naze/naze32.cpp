@@ -29,8 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+
 extern "C"
 {
+
 #include <breezystm32.h>
 #include "flash.h"
 extern void SetSysClock(bool overclock);
@@ -40,6 +44,7 @@ void WWDG_IRQHandler()
   volatile int debug = 1;
 }
 }
+
 
 #include "naze32.h"
 
@@ -294,3 +299,5 @@ void Naze32::led1_off(void) { LED1_OFF; }
 void Naze32::led1_toggle(void) { LED1_TOGGLE; }
 
 }
+
+#pragma GCC diagnostic pop

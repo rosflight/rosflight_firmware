@@ -31,6 +31,12 @@
 
 #include "nanoprintf.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+
+
 namespace rosflight_firmware
 {
 namespace nanoprintf
@@ -259,5 +265,8 @@ void tfp_sprintf(char *s, const char *fmt, va_list va)
   putcp(&s,0);
 }
 
+
 } // namespace nanoprintf
 } // namespace rosflight_firmware
+
+# pragma GCC diagnostic pop

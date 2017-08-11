@@ -54,7 +54,7 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
 #endif
 
   double max_error = 0.0;
-  double t = 0.0;
+  volatile double t = 0.0;
   while(t < tmax)
   {
     // euler integration of S03 (probably a better way that isn't so intensive)
@@ -63,7 +63,7 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
     double step = t + dt;
     while (t < step)
     {
-      double p =  x_amp*sin(x_freq/(2.0*M_PI)*t);
+      double p = x_amp*sin(x_freq/(2.0*M_PI)*t);
       double q = y_amp*sin(y_freq/(2.0*M_PI)*t);
       double r = z_amp*sin(z_freq/(2.0*M_PI)*t);
 
@@ -78,15 +78,15 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
     Eigen::Vector3d y_acc = rotation.transpose() * gravity;
 
     // Create gyro measurement
-    double p =  x_amp*sin(x_freq/(2.0*M_PI)*t);
+    double p = x_amp*sin(x_freq/(2.0*M_PI)*t);
     double q = y_amp*sin(y_freq/(2.0*M_PI)*t);
     double r = z_amp*sin(z_freq/(2.0*M_PI)*t);
 
-    float acc[3] = {(float)y_acc(0), (float)y_acc(1), (float)y_acc(2)};
-    float gyro[3] = {(float)p, (float)q, (float)r};
+    float acc[3] = {static_cast<float>(y_acc(0)), static_cast<float>(y_acc(1)), static_cast<float>(y_acc(2))};
+    float gyro[3] = {static_cast<float>(p), static_cast<float>(q), static_cast<float>(r)};
 
     // Simulate measurements
-    board.set_imu(acc, gyro, (uint64_t)(t*1e6));
+    board.set_imu(acc, gyro, static_cast<uint64_t>(t*1e6));
 
     // Run firmware
     rf.run();

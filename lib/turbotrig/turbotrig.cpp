@@ -233,16 +233,16 @@ float turboatan(float x)
     return M_PI/2.0 - turboatan(1.0/x);
   }
 
-  float t = (x - atan_min_x)/(float)(atan_max_x - atan_min_x) * (float)atan_num_entries;
-  int16_t index = (int)t;
-  float dx = t - index;
+  float t = (x - atan_min_x)/static_cast<float>(atan_max_x - atan_min_x) * static_cast<float>(atan_num_entries);
+  int16_t index = static_cast<int16_t>(t);
+  float delta_x = t - index;
 
   if (index >= atan_num_entries)
       return atan_lookup_table[atan_num_entries-1]/atan_scale_factor;
   else if (index < atan_num_entries - 1)
-      return atan_lookup_table[index]/atan_scale_factor + dx * (atan_lookup_table[index + 1] - atan_lookup_table[index])/atan_scale_factor;
+      return atan_lookup_table[index]/atan_scale_factor + delta_x * (atan_lookup_table[index + 1] - atan_lookup_table[index])/atan_scale_factor;
   else
-      return atan_lookup_table[index]/atan_scale_factor + dx * (atan_lookup_table[index] - atan_lookup_table[index - 1])/atan_scale_factor;
+      return atan_lookup_table[index]/atan_scale_factor + delta_x * (atan_lookup_table[index] - atan_lookup_table[index - 1])/atan_scale_factor;
 }
 
 
@@ -293,16 +293,16 @@ float turboasin(float x)
     return -1.0*turboasin(-1.0*x);
   }
 
-  float t = (x - asin_min_x)/(float)(asin_max_x - asin_min_x) * (float)asin_num_entries;
-  int16_t index = (int)t;
-  float dx = t - index;
+  float t = (x - asin_min_x)/static_cast<float>(asin_max_x - asin_min_x) * static_cast<float>(asin_num_entries);
+  int16_t index = static_cast<int16_t>(t);
+  float delta_x = t - index;
 
   if (index >= asin_num_entries)
       return asin_lookup_table[500]/asin_scale_factor;
   else if (index < asin_num_entries - 1)
-      return asin_lookup_table[index]/asin_scale_factor + dx * (asin_lookup_table[index + 1] - asin_lookup_table[index])/asin_scale_factor;
+      return asin_lookup_table[index]/asin_scale_factor + delta_x * (asin_lookup_table[index + 1] - asin_lookup_table[index])/asin_scale_factor;
   else
-      return asin_lookup_table[index]/asin_scale_factor + dx * (asin_lookup_table[index] - asin_lookup_table[index - 1])/asin_scale_factor;
+      return asin_lookup_table[index]/asin_scale_factor + delta_x * (asin_lookup_table[index] - asin_lookup_table[index - 1])/asin_scale_factor;
 }
 
 float fast_alt(float press)
@@ -310,9 +310,9 @@ float fast_alt(float press)
 
   if(press < max_pressure && press > min_pressure)
   {
-    float t = (float)num_entries*(press - (float)min_pressure) / (float)(max_pressure - min_pressure);
-    int16_t index = (uint16_t)t;
-    float dp = t - (float)index;
+    float t = static_cast<float>(num_entries)*(press - static_cast<float>(min_pressure)) / static_cast<float>(max_pressure - min_pressure);
+    int16_t index = static_cast<int16_t>(t);
+    float dp = t - static_cast<float>(index);
 
     float out = 0.0;
 

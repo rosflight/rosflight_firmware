@@ -64,10 +64,13 @@ void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], in
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
-  params.values[id] = *((int32_t *) &value);
+  params.values[id] = reinterpret_cast<int32_t &>(value);
   params.types[id] = PARAM_TYPE_FLOAT;
 }
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 uint8_t Params::compute_checksum(void)
 {
   uint8_t chk = 0;
@@ -82,6 +85,7 @@ uint8_t Params::compute_checksum(void)
 
   return chk;
 }
+#pragma GCC diagnostic pop
 
 // function definitions
 void Params::init()
@@ -313,7 +317,7 @@ uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
     }
 
     if (match)
-      return (uint16_t) id;
+      return id;
   }
 
   return PARAMS_COUNT;
@@ -333,7 +337,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
 
 bool Params::set_param_float(uint16_t id, float value)
 {
-  return set_param_int(id, *(int32_t *) &value);
+  return set_param_int(id, reinterpret_cast<int32_t &>(value));
 }
 
 bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -344,6 +348,6 @@ bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t 
 
 bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
 {
-  return set_param_by_name_int(name, *(int32_t *) &value);
+  return set_param_by_name_int(name, reinterpret_cast<int32_t &>(value));
 }
 }

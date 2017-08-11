@@ -294,14 +294,17 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline const int get_param_int(uint16_t id) const { return params.values[id]; }
+  inline int get_param_int(uint16_t id) const { return params.values[id]; }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline const float get_param_float(uint16_t id) const { return *(float *) &params.values[id]; }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+  inline float get_param_float(uint16_t id) const { return reinterpret_cast<const float &>(params.values[id]); }
+#pragma GCC diagnostic pop
 
   /**
    * @brief Get the name of a parameter
@@ -318,7 +321,7 @@ public:
    * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
    * See line 165
    */
-  inline const param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
+  inline param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
 
   /**
    * @brief Sets the value of a parameter by ID and calls the parameter change callback
