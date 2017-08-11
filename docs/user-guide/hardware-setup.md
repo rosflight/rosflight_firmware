@@ -92,7 +92,7 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 # Motor layouts
 
-We currently support 5 mixer types.  The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
+The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
 
 | # | Mixer |
 |---|---------|
@@ -108,7 +108,8 @@ We currently support 5 mixer types.  The desired mixer can be chosen by setting 
 | 9 | Tricopter |
 | 10 | Fixed wing (traditional AETR) |
 
-The associated motor layouts are shown below for each mixer
+The associated motor layouts are shown below for each mixer.
+The _ESC calibration_ mixer outputs the throttle command equally to each motor, and can be used for calibrating the ESCs.
 
 ![Mixer_1](images/mixers_1.png)
 
