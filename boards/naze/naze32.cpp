@@ -208,36 +208,35 @@ void Naze32::diff_pressure_read(float *diff_pressure, float *temperature)
 
 bool Naze32::sonar_check(void)
 {
-  if (sonarPresent())
+  mb1242_async_update();
+  if (mb1242_present())
   {
-    sonar_type = PWM_SONAR;
+    sonar_type = SONAR_I2C;
+    return true;
+  }
+  else if (sonarPresent())
+  {
+    sonar_type = SONAR_PWM;
     return true;
   }
   else
   {
-    mb1242_async_update();
-    if (mb1242_present())
-    {
-      sonar_type = I2C_SONAR;
-      return true;
-    }
-    else
-    {
-      sonar_type = SONAR_NONE;
-      return false;
-    }
+    sonar_type = SONAR_NONE;
+    return false;
   }
 }
 
 float Naze32::sonar_read(void)
 {
-  if (sonar_type == PWM_SONAR)
-    return sonarRead(6);
-  else
+  if (sonar_type == SONAR_I2C)
   {
     mb1242_async_update();
     return mb1242_async_read();
   }
+  else if (sonar_type == SONAR_PWM)
+    return sonarRead(6);
+  else
+    return 0.0f;
 }
 
 uint16_t num_sensor_errors(void)

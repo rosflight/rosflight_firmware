@@ -58,8 +58,8 @@ private:
   enum
   {
     SONAR_NONE,
-    I2C_SONAR,
-    PWM_SONAR
+    SONAR_I2C,
+    SONAR_PWM
   };
   uint8_t sonar_type = SONAR_NONE;
 
