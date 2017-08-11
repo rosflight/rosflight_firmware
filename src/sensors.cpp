@@ -75,7 +75,7 @@ void Sensors::init()
   {
     rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
   }
-  next_sensor_to_update_ = 0;
+  next_sensor_to_update_ = BAROMETER;
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
   ground_pressure_ = 101325.0f*(float)pow((1-2.25694e-5 * alt), 5.2553);
@@ -110,7 +110,7 @@ void Sensors::update_other_sensors()
   uint32_t now = rf_.board_.clock_millis();
   switch (next_sensor_to_update_)
   {
-  case 0:
+  case LowPrioritySensors::BAROMETER:
     if (data_.baro_present)
     {
       float raw_pressure;
@@ -124,7 +124,7 @@ void Sensors::update_other_sensors()
       }
     }
     break;
-  case 1:
+  case LowPrioritySensors::DIFF_PRESSURE:
     if (data_.diff_pressure_present)
     {
       float raw_pressure;
@@ -138,13 +138,13 @@ void Sensors::update_other_sensors()
       }
     }
     break;
-  case 2:
+  case LowPrioritySensors::SONAR:
     if (data_.sonar_present)
     {
       data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), &data_.sonar_range);
     }
     break;
-  case 3:
+  case LowPrioritySensors::MAGNETOMETER:
     if (data_.mag_present)
     {
       float mag[3];
@@ -156,7 +156,7 @@ void Sensors::update_other_sensors()
     }
     break;
   }
-  next_sensor_to_update_ = (next_sensor_to_update_ + 1) % 4;
+  next_sensor_to_update_ = (LowPrioritySensors) ((next_sensor_to_update_ + 1) % NUM_LOW_PRIORITY_SENSORS);
 }
 
 
