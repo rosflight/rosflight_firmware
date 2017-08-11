@@ -97,10 +97,7 @@ Because ROSflight ships with default parameters for multirotors, you will probab
 
 # Description of all Parameters
 
-This is a list of all parameters on ROSflight, their types, default values, and minimum and maximum recommended setting.
-
-
-# Parameter descriptions
+This is a list of all parameters on ROSflight, their types, default values, and minimum and maximum recommended setting:
 
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
@@ -198,7 +195,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | RC_MAX_ROLLRATE | Maximum roll rate command sent by full stick deflection of RC sticks | float |  3.14159f | 0.0 | 9.42477796077 |
 | RC_MAX_PITCHRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  3.14159f | 0.0 | 3.14159 |
 | RC_MAX_YAWRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  1.507f | 0.0 | 3.14159 |
-| MIXER | Which mixer to choose - See Mixer documentation | int |  Mixer::INVALID_MIXER | 0 | 5 |
+| MIXER | Which mixer to choose - See Mixer documentation | int | 255 | 0 | 10 |
 | FIXED_WING | switches on passthrough commands for fixedwing operation | int |  false | 0 | 1 |
 | ELEVATOR_REV | reverses elevator servo output | int |  0 | 0 | 1 |
 | AIL_REV | reverses aileron servo output | int |  0 | 0 | 1 |
