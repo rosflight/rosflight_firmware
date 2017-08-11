@@ -139,10 +139,10 @@ void Sensors::update_other_sensors()
     }
     break;
   case LowPrioritySensors::SONAR:
-    if (data_.sonar_present)
-    {
-      data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), &data_.sonar_range);
-    }
+//    if (data_.sonar_present)
+//    {
+//      data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), &data_.sonar_range);
+//    }
     break;
   case LowPrioritySensors::MAGNETOMETER:
     if (data_.mag_present)
@@ -170,14 +170,14 @@ void Sensors::look_for_disabled_sensors()
   if (now > (last_time_look_for_disarmed_sensors_ + 1000))
   {
     last_time_look_for_disarmed_sensors_ = now;
-    if (!data_.sonar_present)
-    {
-      if (rf_.board_.sonar_check())
-      {
-        data_.sonar_present = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
-      }
-    }
+//    if (!data_.sonar_present)
+//    {
+//      if (rf_.board_.sonar_check())
+//      {
+//        data_.sonar_present = true;
+//        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
+//      }
+//    }
     if (!data_.diff_pressure_present)
     {
       if (rf_.board_.diff_pressure_check())
