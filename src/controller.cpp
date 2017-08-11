@@ -176,33 +176,33 @@ void Controller::param_change_callback(uint16_t param_id)
 vector_t Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
-  vector_t output;
+  vector_t out;
 
   float dt = dt_us;
 
   // ROLL
   if (command.x.type == RATE)
-    output.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
+    out.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
   else if (command.x.type == ANGLE)
-    output.x = roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
+    out.x = roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
   else
-    output.x = command.x.value;
+    out.x = command.x.value;
 
   // PITCH
   if (command.y.type == RATE)
-    output.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
+    out.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
   else if (command.y.type == ANGLE)
-    output.y = pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
+    out.y = pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
   else
-    output.y = command.y.value;
+    out.y = command.y.value;
 
   // YAW
   if (command.z.type == RATE)
-    output.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
+    out.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
   else
-    output.z = command.z.value;
+    out.z = command.z.value;
 
-  return output;
+  return out;
 }
 
 Controller::PID::PID() :
