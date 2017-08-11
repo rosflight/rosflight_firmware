@@ -479,7 +479,7 @@ void Mavlink::send_rc_raw(void)
 
 void Mavlink::send_diff_pressure(void)
 {
-  if (RF_.sensors_.data().diff_pressure_present)
+  if (RF_.sensors_.data().diff_pressure_valid)
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid_, compid_, &msg,
@@ -492,7 +492,7 @@ void Mavlink::send_diff_pressure(void)
 
 void Mavlink::send_baro(void)
 {
-  if (RF_.sensors_.data().baro_present)
+  if (RF_.sensors_.data().baro_valid)
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid_, compid_, &msg,
@@ -505,7 +505,7 @@ void Mavlink::send_baro(void)
 
 void Mavlink::send_sonar(void)
 {
-  if (RF_.sensors_.data().sonar_present)
+  if (RF_.sensors_.data().sonar_range_valid)
   {
     mavlink_message_t msg;
     mavlink_msg_small_range_pack(sysid_, compid_, &msg,

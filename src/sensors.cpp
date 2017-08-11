@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * Copyright (c) 2017, James Jackson, Daniel Koch, and Craig Bidstrup,
+ * BYU MAGICC Lab
  *
  * All rights reserved.
  *
@@ -42,6 +43,19 @@
 namespace rosflight_firmware
 {
 
+const float Sensors::BARO_MAX_CHANGE_RATE = 200.0f;    // approx 200 m/s
+const float Sensors::BARO_SAMPLE_RATE = 50.0f;
+const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f;      // approx 15 m/s^2
+const float Sensors::DIFF_SAMPLE_RATE = 50.0f;
+const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f;    // 100 m/s
+const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
+
+const int Sensors::SENSOR_CAL_DELAY_CYCLES = 128;
+const int Sensors::SENSOR_CAL_CYCLES = 127;
+
+const float Sensors::BARO_MAX_CALIBRATION_VARIANCE = 25.0;   // standard dev about 0.2 m
+const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 100.0;   // standard dev about 3 m/s
+
 Sensors::Sensors(ROSflight& rosflight) :
   rf_(rosflight)
 {}
@@ -65,6 +79,10 @@ void Sensors::init()
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
   ground_pressure_ = 101325.0f*(float)pow((1-2.25694e-5 * alt), 5.2553);
+
+  baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
+  diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
+  sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
 }
 
 
@@ -95,21 +113,35 @@ void Sensors::update_other_sensors()
   case 0:
     if (data_.baro_present)
     {
-      rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
-      correct_baro();
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.baro_read(&raw_pressure, &raw_temp);
+      data_.baro_valid = baro_outlier_filt_.update(raw_pressure, &data_.baro_pressure);
+      if (data_.baro_valid)
+      {
+        data_.baro_temperature = raw_temp;
+        correct_baro();
+      }
     }
     break;
   case 1:
     if (data_.diff_pressure_present)
     {
-      rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp);
-      correct_diff_pressure();
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
+      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
+      if (data_.diff_pressure_valid)
+      {
+        data_.diff_pressure_temp = raw_temp;
+        correct_diff_pressure();
+      }
     }
     break;
   case 2:
     if (data_.sonar_present)
     {
-      data_.sonar_range = rf_.board_.sonar_read();
+      data_.sonar_range_valid = sonar_outlier_filt_.update(rf_.board_.sonar_read(), &data_.sonar_range);
     }
     break;
   case 3:
@@ -195,6 +227,9 @@ bool Sensors::start_gyro_calibration(void)
 
 bool Sensors::start_baro_calibration()
 {
+  baro_calibration_mean_ = 0.0f;
+  baro_calibration_var_ = 0.0f;
+  baro_calibration_count_ = 0;
   baro_calibrated_ = false;
   rf_.params_.set_param_float(PARAM_BARO_BIAS, 0.0f);
   return true;
@@ -202,6 +237,9 @@ bool Sensors::start_baro_calibration()
 
 bool Sensors::start_diff_pressure_calibration()
 {
+  diff_pressure_calibration_mean_ = 0.0f;
+  diff_pressure_calibration_var_ = 0.0f;
+  diff_pressure_calibration_count_ = 0;
   diff_pressure_calibrated_ = false;
   rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, 0.0f);
   return true;
@@ -394,41 +432,74 @@ void Sensors::calibrate_accel(void)
 
 void Sensors::calibrate_baro()
 {
-  if (rf_.board_.clock_millis() > last_baro_cal_iter_ms + 20)
+  if (rf_.board_.clock_millis() > last_baro_cal_iter_ms_ + 20)
   {
     baro_calibration_count_++;
 
     // calibrate pressure reading to where it should be
-    if(baro_calibration_count_ >= 256)
+    if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES + SENSOR_CAL_CYCLES)
     {
-      rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_sum_ / 128.0f);
-      baro_calibration_sum_ = 0.0f;
+      // if sample variance within acceptable range, flag calibration as done
+      // else reset cal variables and start over
+      if (baro_calibration_var_ < BARO_MAX_CALIBRATION_VARIANCE)
+      {
+        rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_mean_);
+        baro_calibrated_ = true;
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "Baro Cal successful!");
+      }
+      else
+      {
+        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for barometer cal");
+      }
+      baro_calibration_mean_ = 0.0f;
+      baro_calibration_var_ = 0.0f;
       baro_calibration_count_ = 0;
-      baro_calibrated_ = true;
     }
 
-    else if (baro_calibration_count_ >= 128)
+    else if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES)
     {
-      baro_calibration_sum_ += (data_.baro_pressure - ground_pressure_);
+      float measurement = data_.baro_pressure - ground_pressure_;
+      float delta = measurement - baro_calibration_mean_;
+      baro_calibration_mean_ += delta / (baro_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
+      float delta2 = measurement - baro_calibration_mean_;
+      baro_calibration_var_ += delta * delta2 / (SENSOR_CAL_CYCLES - 1);
     }
-    last_baro_cal_iter_ms = rf_.board_.clock_millis();
+    last_baro_cal_iter_ms_ = rf_.board_.clock_millis();
   }
 }
 
 void Sensors::calibrate_diff_pressure()
 {
-  diff_pressure_calibration_count_++;
+  if (rf_.board_.clock_millis() > last_diff_pressure_cal_iter_ms_ + 20)
+  {
+    diff_pressure_calibration_count_++;
 
-  if(diff_pressure_calibration_count_ > 256)
-  {
-    rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_sum_ / 127.0f);
-    diff_pressure_calibrated_ = true;
-    diff_pressure_calibration_sum_ = 0.0f;
-    diff_pressure_calibration_count_ = 0;
-  }
-  else if (diff_pressure_calibration_count_ > 128)
-  {
-    diff_pressure_calibration_sum_ += data_.diff_pressure;
+    if(diff_pressure_calibration_count_ > SENSOR_CAL_DELAY_CYCLES + SENSOR_CAL_CYCLES)
+    {
+      // if sample variance within acceptable range, flag calibration as done
+      // else reset cal variables and start over
+      if (diff_pressure_calibration_var_ < DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE)
+      {
+        rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_mean_);
+        diff_pressure_calibrated_ = true;
+        rf_.mavlink_.log(Mavlink::LOG_INFO, "Airspeed Cal Successful!");
+      }
+      else
+      {
+        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for diff pressure cal");
+      }
+      diff_pressure_calibration_mean_ = 0.0f;
+      diff_pressure_calibration_var_ = 0.0f;
+      diff_pressure_calibration_count_ = 0;
+    }
+    else if (diff_pressure_calibration_count_ > SENSOR_CAL_DELAY_CYCLES)
+    {
+      float delta = data_.diff_pressure - diff_pressure_calibration_mean_;
+      diff_pressure_calibration_mean_ += delta / (diff_pressure_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
+      float delta2 = data_.diff_pressure - diff_pressure_calibration_mean_;
+      diff_pressure_calibration_var_ += delta * delta2 / (SENSOR_CAL_CYCLES - 1);
+    }
+    last_diff_pressure_cal_iter_ms_ = rf_.board_.clock_millis();
   }
 }
 
@@ -486,6 +557,35 @@ void Sensors::correct_diff_pressure()
   if (data_.baro_present)
     atm = data_.baro_pressure;
   data_.diff_pressure_velocity = fsign(data_.diff_pressure) * 24.574f/turboInvSqrt((fabs(data_.diff_pressure) * data_.diff_pressure_temp  /  atm));
+}
+
+void Sensors::OutlierFilter::init(float max_change_rate, float update_rate, float center)
+{
+  max_change_ = max_change_rate / update_rate;
+  window_size_ = 1;
+  center_ = center;
+  init_ = true;
+}
+
+bool Sensors::OutlierFilter::update(float new_val, float *val)
+{
+  float diff = new_val - center_;
+  if (fabs(diff) < window_size_ * max_change_)
+  {
+    *val = new_val;
+
+    center_ += fsign(diff) * fmin(max_change_, fabs(diff));
+    if (window_size_ > 1)
+    {
+      window_size_--;
+    }
+    return true;
+  }
+  else
+  {
+    window_size_++;
+    return false;
+  }
 }
 
 } // namespace rosflight_firmware
