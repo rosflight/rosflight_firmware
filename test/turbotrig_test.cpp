@@ -198,7 +198,8 @@ TEST(turbovec_test, vector_test) {
 
     EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
     EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
-    EXPECT_VEC3_SUPERCLOSE(vector_normalize(vec1), eig1.normalized());
+    Eigen::Vector3f eig1_normed = eig1.normalized();
+    EXPECT_VEC3_SUPERCLOSE(vector_normalize(vec1), eig1_normed);
     EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
 
     EXPECT_SUPERCLOSE(norm(vec1), eig1.norm());
