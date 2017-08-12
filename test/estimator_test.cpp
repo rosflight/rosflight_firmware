@@ -1,6 +1,3 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-overflow"
-
 #include <gtest/gtest.h>
 #include "math.h"
 #include "rosflight.h"
@@ -399,8 +396,8 @@ TEST(estimator_test, moving_bias_sim) {
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
-  rf.params_.set_param_float(PARAM_FILTER_KP, 2.0f);
-  rf.params_.set_param_float(PARAM_FILTER_KI, 0.2f);
+  rf.params_.set_param_float(PARAM_FILTER_KP, 0.5f);
+  rf.params_.set_param_float(PARAM_FILTER_KI, 0.05f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_X_BIAS, true_bias.x);
@@ -413,12 +410,9 @@ TEST(estimator_test, moving_bias_sim) {
   vector_t bias = vector_sub(rf.estimator_.state().angular_velocity, rf.sensors_.data().gyro);
   vector_t error_vec = vector_sub(bias, true_bias);
   float error_mag = norm(error_vec);
-  EXPECT_LE(error_mag, 0.01);
+  EXPECT_LE(error_mag, params[7]);
 
 #ifdef DEBUG
   printf("estimated_bias = %.7f, %.7f\n", bias.x, bias.y);
 #endif
 }
-
-#pragma GCC diagnostic pop
-
