@@ -38,6 +38,7 @@
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/Geometry"
 #include <gtest/gtest.h>
+#include <stdio.h>
 
 vector_t random_vectors[25] = {
   { -0.0376278050814 , 0.471775699711 , -0.336572370974 },
@@ -199,7 +200,10 @@ TEST(turbovec_test, vector_test) {
     EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
     EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
     Eigen::Vector3f eig1_normed = eig1.normalized();
-    EXPECT_VEC3_SUPERCLOSE(vector_normalize(vec1), eig1_normed);
+    vector_t vec1_normed = vector_normalize(vec1);
+    EXPECT_VEC3_SUPERCLOSE(vec1_normed, eig1_normed);
+    std::printf("vec1.x = %f, vec1.y = %f, vec1.z = %f", vec1_normed.x,   vec1_normed.y,   vec1_normed.z);
+    std::printf("eig1.x = %f, eig1.y = %f, eig1.z = %f", eig1_normed.x(), eig1_normed.y(), eig1_normed.z());
     EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
 
     EXPECT_SUPERCLOSE(norm(vec1), eig1.norm());
