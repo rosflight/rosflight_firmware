@@ -31,7 +31,236 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <turbotrig/turbotrig.h>
+#include <turbotrig/turbomath.h>
+
+namespace turbomath
+{
+
+vector::vector(float x_, float y_, float z_)
+{
+  x = x_;
+  y = y_;
+  z = z_;
+}
+
+
+float vector::norm()
+{
+  return 1.0/inv_sqrt(x*x + y*y + z*z);
+}
+
+
+float vector::sqrd_norm()
+{
+  return x*x + y*y + z*z;
+}
+
+
+vector& vector::normalize()
+{
+  float recip_norm = inv_sqrt(x*x + y*y + z*z);
+  x *= recip_norm;
+  y *= recip_norm;
+  z *= recip_norm;
+  return *this;
+}
+
+
+vector vector::normalized()
+{
+  float recip_norm = inv_sqrt(x*x + y*y + z*z);
+  vector out(x * recip_norm, y*recip_norm, z*recip_norm);
+  return out;
+}
+
+
+vector vector::operator+(const vector v)
+{
+  vector out(x + v.x, y + v.y, z + v.z);
+  return out;
+}
+
+
+vector vector::operator-(const vector v)
+{
+  vector out(x - v.x, y - v.y, z - v.z);
+  return out;
+}
+
+
+vector& vector::operator +=(const vector v)
+{
+  x += v.x;
+  y += v.y;
+  z += v.z;
+  return *this;
+}
+
+
+vector& vector::operator -=(const vector v)
+{
+  x -= v.x;
+  y -= v.y;
+  z -= v.z;
+  return *this;
+}
+
+
+vector vector::operator *(const float s)
+{
+  vector out(x*s, y*s, z*s);
+  return out;
+}
+
+
+vector vector::operator /(const float s)
+{
+  vector out(x/s, y/s, z/s);
+  return out;
+}
+
+
+vector& vector::operator *=(const float s)
+{
+  x *= s;
+  y *= s;
+  z *= s;
+  return *this;
+}
+
+
+vector& vector::operator /=(const float s)
+{
+  x /= s;
+  y /= s;
+  z /= s;
+  return *this;
+}
+
+
+float vector::dot(vector v)
+{
+  return x*v.x + y*v.y + z*v.z;
+}
+
+
+vector vector::cross(vector v)
+{
+  vector out( y * v.z - z * v.y,
+                     z * v.x - x * v.z,
+                     x * v.y - y * v.x);
+  return out;
+}
+
+quaternion::quaternion()
+{
+  w = 1.0f;
+  x = 0.0f;
+  y = 0.0f;
+  z = 0.0f;
+}
+
+quaternion::quaternion(float w_, float x_, float y_, float z_)
+{
+  w = w_;
+  x = x_;
+  y = y_;
+  z = z_;
+}
+
+quaternion& quaternion::normalize()
+{
+  float recip_norm = inv_sqrt(w*w + x*x + y*y + z*z);
+  w *= recip_norm;
+  x *= recip_norm;
+  y *= recip_norm;
+  z *= recip_norm;
+  return *this;
+}
+
+quaternion quaternion::operator *(quaternion q)
+{
+  quaternion q_out(w*q.w - x*q.x - y*q.y - z*q.z,
+                   w*q.x + x*q.w - y*q.z + z*q.y,
+                   w*q.y + x*q.z + y*q.w - z*q.x,
+                   w*q.z - x*q.y + y*q.x + z*q.w);
+  return q_out;
+}
+
+quaternion& quaternion::operator *=(quaternion q)
+{
+  quaternion q_out(w*q.w - x*q.x - y*q.y - z*q.z,
+                   w*q.x + x*q.w - y*q.z + z*q.y,
+                   w*q.y + x*q.z + y*q.w - z*q.x,
+                   w*q.z - x*q.y + y*q.x + z*q.w);
+  w = q_out.w;
+  x = q_out.x;
+  y = q_out.y;
+  z = q_out.z;
+  return *this;
+}
+
+vector quaternion::rotate(vector v)
+{
+    vector out((1.0f - 2.0f*y*y - 2.0f*z*z) * v.x + (2.0f*(x*y + w*z))*v.y + 2.0f*(x*z - w*y)*v.z,
+               (2.0f*(x*y - w*z)) * v.x + (1.0f - 2.0f*x*x - 2.0f*z*z) * v.y + 2.0f*(y*z + w*x)*v.z,
+               (2.0f*(x*z + w*y)) * v.x + 2.0f*(y*z - w*x)*v.y + (1.0f - 2.0f*x*x - 2.0f*y*y)*v.z);
+    return out;
+}
+
+vector quaternion::operator *(vector v)
+{
+    vector out((1.0f - 2.0f*y*y - 2.0f*z*z) * v.x + (2.0f*(x*y + w*z))*v.y + 2.0f*(x*z - w*y)*v.z,
+               (2.0f*(x*y - w*z)) * v.x + (1.0f - 2.0f*x*x - 2.0f*z*z) * v.y + 2.0f*(y*z + w*x)*v.z,
+               (2.0f*(x*z + w*y)) * v.x + 2.0f*(y*z - w*x)*v.y + (1.0f - 2.0f*x*x - 2.0f*y*y)*v.z);
+    return out;
+}
+
+quaternion quaternion::inverse()
+{
+  quaternion out(w, -x, -y, -z);
+  return out;
+}
+
+quaternion& quaternion::invert()
+{
+  x *= -1.0f;
+  y *= -1.0f;
+  z *= -1.0f;
+  return *this;
+}
+
+quaternion& quaternion::from_two_unit_vectors(vector u, vector v)
+{
+  // Adapted From the Ogre3d source code
+  // https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h?fileviewer=file-view-default#cl-651
+  float d = u.dot(v);
+  if ( d >= 1.0f)
+  {
+    w = 1.0f;
+    x = 0.0f;
+    y = 0.0f;
+    z = 0.0f;
+    return *this;
+  }
+  else
+  {
+    float invs = inv_sqrt(2.0f*(1.0f+d));
+    vector xyz = u.cross(v)*invs;
+    w = 0.5f/invs;
+    x = xyz.x;
+    y = xyz.y;
+    z = xyz.z;
+  }
+  normalize();
+  return *this;
+}
+
+
+
+} // namespace turbomath
+
+namespace turbo = turbomath;
 
 #ifndef M_PI
 #define M_PI 3.14159265359
@@ -209,28 +438,23 @@ static const int16_t alt_lookup_table[500] = {
 -3707,  -3766,  -3825,  -3885,  -3944,  -4003,  -4062,  -4121,  -4180,  -4239
 };
 
-float fsign(float y)
+float turbo::fsign(float y)
 {
   return (0.0f < y) - (y < 0.0f);
 }
 
-float asin_approx(float x)
-{
-  return turboasin(x);
-}
 
-
-float turboatan(float x)
+float turbo::atan(float x)
 {
   // atan is symmetric
   if (x < 0)
   {
-    return -1.0*turboatan(-1.0*x);
+    return -1.0*turbo::atan(-1.0*x);
   }
   // This uses a sweet identity to wrap the domain of atan onto (0,1)
   if (x > 1.0)
   {
-    return M_PI/2.0 - turboatan(1.0/x);
+    return M_PI/2.0 - turbo::atan(1.0/x);
   }
 
   float t = (x - atan_min_x)/static_cast<float>(atan_max_x - atan_min_x) * static_cast<float>(atan_num_entries);
@@ -246,7 +470,7 @@ float turboatan(float x)
 }
 
 
-float atan2_approx(float y, float x)
+float turbo::atan2(float y, float x)
 {
   // algorithm from wikipedia: https://en.wikipedia.org/wiki/Atan2
   if (x == 0.0)
@@ -265,7 +489,7 @@ float atan2_approx(float y, float x)
     }
   }
 
-  float arctan = turboatan(y/x);
+  float arctan = turbo::atan(y/x);
 
   if (x < 0.0)
   {
@@ -286,11 +510,11 @@ float atan2_approx(float y, float x)
 }
 
 
-float turboasin(float x)
+float turbo::asin(float x)
 {
   if (x < 0.0)
   {
-    return -1.0*turboasin(-1.0*x);
+    return -1.0*turbo::asin(-1.0*x);
   }
 
   float t = (x - asin_min_x)/static_cast<float>(asin_max_x - asin_min_x) * static_cast<float>(asin_num_entries);
@@ -305,7 +529,7 @@ float turboasin(float x)
       return asin_lookup_table[index]/asin_scale_factor + delta_x * (asin_lookup_table[index] - asin_lookup_table[index - 1])/asin_scale_factor;
 }
 
-float fast_alt(float press)
+float turbo::alt(float press)
 {
 
   if(press < max_pressure && press > min_pressure)
@@ -330,3 +554,37 @@ float fast_alt(float press)
   else
     return 0.0;
 }
+
+float turbo::fabs(float x)
+{
+  if (x < 0)
+    return -x;
+  else
+    return x;
+
+}
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+
+float turbo::inv_sqrt(float x)
+{
+  volatile long i;
+  volatile float x2, y;
+  const float threehalfs = 1.5F;
+
+  x2 = x * 0.5F;
+  y  = x;
+  i  = * (long *) &y;                         // evil floating point bit level hacking
+  i  = 0x5f3759df - (i >> 1);
+  y  = * (float *) &i;
+  y  = y * (threehalfs - (x2 * y * y));       // 1st iteration
+  y  = y * (threehalfs - (x2 * y * y));       // 2nd iteration, this can be removed
+
+  return turbo::fabs(y);
+}
+
+#pragma GCC diagnostic pop

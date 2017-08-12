@@ -35,14 +35,68 @@
 
 #include <stdint.h>
 
+namespace turbomath
+{
+
+class vector
+{
+public:
+  float x;
+  float y;
+  float z;
+
+  float norm();
+  float sqrd_norm();
+  vector &normalize();
+  vector normalized();
+
+  vector(float x_, float y_, float z_);
+  float dot(vector v);
+  vector cross(vector v);
+
+  vector operator* (const float s);
+  vector operator/ (const float s);
+  vector& operator*= (const float s);
+  vector& operator/= (const float s);
+  vector operator+ (const vector v);
+  vector operator- (const vector v);
+  vector& operator+= (const vector v);
+  vector& operator-= (const vector v);
+};
+
+class quaternion
+{
+public:
+  float w;
+  float x;
+  float y;
+  float z;
+  quaternion();
+  quaternion(float w_, float x_, float y_, float z_);
+  quaternion(vector u, vector v);
+  vector rotate(vector v);
+  vector operator* (vector v);
+  quaternion& normalize();
+  quaternion operator* (quaternion q);
+  quaternion& operator*= (quaternion q);
+  quaternion inverse();
+  quaternion& invert();
+  quaternion& from_two_unit_vectors(vector u, vector v);
+};
+
 // float-based wrappers
-float atan2_approx(float y, float x);
-float asin_approx(float x);
+float atan2(float y, float x);
+float asin(float x);
 
 // turbo-speed trig approximation
-float turboatan(float x);
-float turboasin(float x);
+float atan(float x);
 float fsign(float y);
 
 // turbo-speed approximation of (1.0 - pow(pressure/101325.0, 0.1902631)) * 39097.63
-float fast_alt(float x);
+// Used for calculating altitude in m from atmospheric pressure in Pa
+float alt(float x);
+
+float inv_sqrt(float x);
+float fabs(float x);
+
+}
