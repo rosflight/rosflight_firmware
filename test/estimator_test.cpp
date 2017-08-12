@@ -1,5 +1,5 @@
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Werror-strict-overflow"
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
 
 #include <gtest/gtest.h>
 #include "math.h"
