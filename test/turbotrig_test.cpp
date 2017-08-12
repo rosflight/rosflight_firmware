@@ -201,9 +201,9 @@ TEST(turbovec_test, vector_test) {
     EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
     Eigen::Vector3f eig1_normed = eig1.normalized();
     vector_t vec1_normed = vector_normalize(vec1);
+    std::printf("vec1.x = %f, vec1.y = %f, vec1.z = %f\n", vec1_normed.x,   vec1_normed.y,   vec1_normed.z);
+    std::printf("eig1.x = %f, eig1.y = %f, eig1.z = %f\n", eig1_normed.x(), eig1_normed.y(), eig1_normed.z());
     EXPECT_VEC3_SUPERCLOSE(vec1_normed, eig1_normed);
-    std::printf("vec1.x = %f, vec1.y = %f, vec1.z = %f", vec1_normed.x,   vec1_normed.y,   vec1_normed.z);
-    std::printf("eig1.x = %f, eig1.y = %f, eig1.z = %f", eig1_normed.x(), eig1_normed.y(), eig1_normed.z());
     EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
 
     EXPECT_SUPERCLOSE(norm(vec1), eig1.norm());
