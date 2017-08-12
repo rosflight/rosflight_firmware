@@ -190,7 +190,7 @@ float turboInvSqrt(float x)
   y  = y * (threehalfs - (x2 * y * y));       // 1st iteration
   y  = y * (threehalfs - (x2 * y * y));       // 2nd iteration, this can be removed
 
-  return y;
+  return fabs(y);
 }
 
 #pragma GCC diagnostic pop
@@ -203,4 +203,3 @@ float fsat(float value, float max)
   }
   return value;
 }
-

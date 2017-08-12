@@ -96,9 +96,10 @@ quaternion_t random_quaternions[25] = {
   { 0.0979109306209 , 0.121890109199 , 0.126418158551 , 0.242200145606 }};
 
 
-#define EXPECT_VEC3_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
-  EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
-  EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
+#define EXPECT_VEC3_SUPERCLOSE(vec, eig) \
+  EXPECT_NEAR(vec.x, eig.x(), 0.0001);\
+  EXPECT_NEAR(vec.y, eig.y(), 0.0001);\
+  EXPECT_NEAR(vec.z, eig.z(), 0.0001)
 #define EXPECT_QUAT_SUPERCLOSE(q, q_eig) { \
   double e1 = quaternion_error(q_eig, q); \
   q_eig.coeffs() *= -1.0; \
@@ -125,9 +126,9 @@ quaternion_t random_quaternions[25] = {
   ASSERT_LE(error, 0.0001); \
 }
 
-#define EXPECT_SUPERCLOSE(x, y) EXPECT_LE(fabs(x -y), 0.0001)
-#define ASSERT_SUPERCLOSE(x, y) ASSERT_LE(fabs(x -y), 0.0001)
-#define EXPECT_CLOSE(x, y) EXPECT_LE(fabs(x -y), 0.01)
+#define EXPECT_SUPERCLOSE(x, y) EXPECT_NEAR(x, y, 0.0001)
+#define ASSERT_SUPERCLOSE(x, y) ASSERT_NEAR(x, y, 0.0001)
+#define EXPECT_CLOSE(x, y) ASSERT_NEAR(x, y, 0.01)
 
 double quaternion_error(Eigen::Quaternionf q_eig, quaternion_t q)
 {
@@ -194,20 +195,20 @@ TEST(turbovec_test, vector_test) {
     Eigen::Vector3f eig2, eig1;
     eig1 << vec1.x, vec1.y, vec1.z;
     eig2 << vec2.x, vec2.y, vec2.z;
+
+    // Test data type
     EXPECT_VEC3_SUPERCLOSE(vec1, eig1);
     EXPECT_VEC3_SUPERCLOSE(vec2, eig2);
 
-    EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
-    EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
-    Eigen::Vector3f eig1_normed = eig1.normalized();
-    vector_t vec1_normed = vector_normalize(vec1);
-    std::printf("vec1.x = %f, vec1.y = %f, vec1.z = %f\n", vec1_normed.x,   vec1_normed.y,   vec1_normed.z);
-    std::printf("eig1.x = %f, eig1.y = %f, eig1.z = %f\n", eig1_normed.x(), eig1_normed.y(), eig1_normed.z());
-    EXPECT_VEC3_SUPERCLOSE(vec1_normed, eig1_normed);
-    EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
-
+    // Test norming operations
+    EXPECT_VEC3_SUPERCLOSE(vector_normalize(vec1), eig1.normalized());
     EXPECT_SUPERCLOSE(norm(vec1), eig1.norm());
     EXPECT_SUPERCLOSE(sqrd_norm(vec1), eig1.squaredNorm());
+
+    // Test add, subtract and multiply
+    EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
+    EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
+    EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
 
     // Test Vector Dot Product
     EXPECT_SUPERCLOSE(dot(vec1, vec2), (eig1.transpose() * eig2));
