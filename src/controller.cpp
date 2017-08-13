@@ -115,7 +115,7 @@ void Controller::run()
   bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 100;
 
   // Run the PID loops
-  vector_t pid_output = run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
+  turbomath::vector pid_output = run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
@@ -152,7 +152,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
     // the static offset torques
-    vector_t pid_output = run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
+    turbomath::vector pid_output = run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x);
@@ -173,10 +173,10 @@ void Controller::param_change_callback(uint16_t param_id)
   init();
 }
 
-vector_t Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
+turbomath::vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
-  vector_t out;
+  turbomath::vector out;
 
   float dt = dt_us;
 

@@ -1,27 +1,14 @@
-#include <gtest/gtest.h>
+#include "common.h"
 #include "math.h"
 #include "rosflight.h"
 #include "test_board.h"
-#include <turbotrig/turbotrig.h>
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
 #include <cmath>
 #include <fstream>
 
 //#define DEBUG
 
-
-#define EXPECT_CLOSE(x, y) EXPECT_LE(std::abs(x - y), 0.01);
-#define EXPECT_FABSCLOSE(x, y) EXPECT_LE(fabs(x) - fabs(y), 0.01)
-
-double quaternion_error(Eigen::Quaterniond q_eig, quaternion_t q)
-{
-  Eigen::Quaterniond est_quat(q.w, q.x, q.y, q.z);
-  Eigen::Quaterniond q_tilde = q_eig * est_quat.inverse();
-  Eigen::Vector3d v_tilde = atan2(q_tilde.vec().norm(), q_tilde.w())*q_tilde.vec()/q_tilde.vec().norm();
-  return v_tilde.norm();
-}
+namespace turbo = turbomath;
 
 using namespace rosflight_firmware;
 
@@ -91,17 +78,26 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
     // Run firmware
     rf.run();
 
-    Eigen::Quaterniond eig_quat(rotation);
-    quaternion_t estimate = rf.estimator_.state().attitude;
+    Eigen::Quaternionf eig_quat(rotation.cast<float>());
+    turbo::quaternion estimate = rf.estimator_.state().attitude;
+    if (eig_quat.w() < 0.0)
+    {
+      eig_quat.coeffs() *= -1.0;
+    }
 
     double pos_error = quaternion_error(eig_quat, estimate);
     eig_quat.coeffs() *= -1.0;
     double neg_error = quaternion_error(eig_quat, estimate);
-    double error = (pos_error < neg_error) ? pos_error : neg_error;
 
+    double error = 0.0;
     if (pos_error < neg_error)
     {
+      error = pos_error;
       eig_quat.coeffs() *= -1.0;
+    }
+    else
+    {
+      error = neg_error;
     }
 
     // output to file for plotting
@@ -131,13 +127,13 @@ TEST(estimator_test, linear_gyro_integration) {
 
   std::vector<double> params = {
     10.0, // xfreq
-    0.1, // yfreq
-    0.5, // zfreq
-    1.5, // xamp
-    0.4, // yamp
+    5.0, // yfreq
+    0.3, // zfreq
+    1.0, // xamp
+    0.75, // yamp
     1.0, // zamp
     30.0, // tmax
-    0.000505487 // error_limit
+    0.0003932 // error_limit
   };
 
   // Initialize the firmware
@@ -171,7 +167,7 @@ TEST(estimator_test, quadratic_gyro_integration) {
     0.4, // yamp
     1.0, // zamp
     30.0, // tmax
-    0.0000389 // error_limit
+    0.0000363 // error_limit
   };
 
 
@@ -205,7 +201,7 @@ TEST(estimator_test, mat_exp_integration) {
     0.4, // yamp
     1.0, // zamp
     30.0, // tmax
-    0.0005028 // error_limit
+    0.0005029 // error_limit
   };
 
   // Initialize the firmware
@@ -236,7 +232,7 @@ TEST(estimator_test, mat_exp_quad_int) {
     0.4, // yamp
     1.0, // zamp
     30.0, // tmax
-    0.0280459 // error_limit
+    0.0000403 // error_limit
   };
 
   // Initialize the firmware
@@ -346,7 +342,7 @@ TEST(estimator_test, level_bias_sim) {
   // Initialize the firmware
   rf.init();
 
-  vector_t true_bias = {0.25, -0.15, 0.0};
+  turbo::vector true_bias = {0.25, -0.15, 0.0};
 
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
@@ -362,9 +358,9 @@ TEST(estimator_test, level_bias_sim) {
   run_estimator_test("level_bias_sim.csv", rf, board, params);
 
   // Check bias at the end
-  vector_t bias = vector_sub(rf.estimator_.state().angular_velocity, rf.sensors_.data().gyro);
-  vector_t error_vec = vector_sub(bias, true_bias);
-  float error_mag = norm(error_vec);
+  turbo::vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
+  turbo::vector error_vec = bias - true_bias;
+  float error_mag = error_vec.norm();
   EXPECT_LE(error_mag, 0.001);
 
 #ifdef DEBUG
@@ -391,7 +387,7 @@ TEST(estimator_test, moving_bias_sim) {
   // Initialize the firmware
   rf.init();
 
-  vector_t true_bias = {0.01, -0.005, 0.0};
+  turbo::vector true_bias(0.01, -0.005, 0.0);
 
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
@@ -407,9 +403,9 @@ TEST(estimator_test, moving_bias_sim) {
   run_estimator_test("moving_bias_sim.csv", rf, board, params);
 
   // Check bias at the end
-  vector_t bias = vector_sub(rf.estimator_.state().angular_velocity, rf.sensors_.data().gyro);
-  vector_t error_vec = vector_sub(bias, true_bias);
-  float error_mag = norm(error_vec);
+  turbo::vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
+  turbo::vector error_vec = bias - true_bias;
+  float error_mag = error_vec.norm();
   EXPECT_LE(error_mag, params[7]);
 
 #ifdef DEBUG

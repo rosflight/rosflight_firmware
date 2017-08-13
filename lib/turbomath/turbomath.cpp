@@ -31,10 +31,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <turbotrig/turbomath.h>
+#include <turbomath/turbomath.h>
 
 namespace turbomath
 {
+
+vector::vector()
+{
+  x = 0.0f;
+  y = 0.0f;
+  z = 0.0f;
+}
 
 vector::vector(float x_, float y_, float z_)
 {
@@ -44,13 +51,13 @@ vector::vector(float x_, float y_, float z_)
 }
 
 
-float vector::norm()
+float vector::norm() const
 {
   return 1.0/inv_sqrt(x*x + y*y + z*z);
 }
 
 
-float vector::sqrd_norm()
+float vector::sqrd_norm() const
 {
   return x*x + y*y + z*z;
 }
@@ -66,7 +73,7 @@ vector& vector::normalize()
 }
 
 
-vector vector::normalized()
+vector vector::normalized() const
 {
   float recip_norm = inv_sqrt(x*x + y*y + z*z);
   vector out(x * recip_norm, y*recip_norm, z*recip_norm);
@@ -74,14 +81,14 @@ vector vector::normalized()
 }
 
 
-vector vector::operator+(const vector v)
+vector vector::operator+(const vector v) const
 {
   vector out(x + v.x, y + v.y, z + v.z);
   return out;
 }
 
 
-vector vector::operator-(const vector v)
+vector vector::operator-(const vector v) const
 {
   vector out(x - v.x, y - v.y, z - v.z);
   return out;
@@ -106,14 +113,14 @@ vector& vector::operator -=(const vector v)
 }
 
 
-vector vector::operator *(const float s)
+vector vector::operator *(const float s) const
 {
   vector out(x*s, y*s, z*s);
   return out;
 }
 
 
-vector vector::operator /(const float s)
+vector vector::operator /(const float s) const
 {
   vector out(x/s, y/s, z/s);
   return out;
@@ -138,13 +145,13 @@ vector& vector::operator /=(const float s)
 }
 
 
-float vector::dot(vector v)
+float vector::dot(const vector v) const
 {
   return x*v.x + y*v.y + z*v.z;
 }
 
 
-vector vector::cross(vector v)
+vector vector::cross(const vector v) const
 {
   vector out( y * v.z - z * v.y,
                      z * v.x - x * v.z,
@@ -168,6 +175,11 @@ quaternion::quaternion(float w_, float x_, float y_, float z_)
   z = z_;
 }
 
+quaternion::quaternion(const vector u, const vector v)
+{
+  from_two_unit_vectors(u, v);
+}
+
 quaternion& quaternion::normalize()
 {
   float recip_norm = inv_sqrt(w*w + x*x + y*y + z*z);
@@ -178,7 +190,7 @@ quaternion& quaternion::normalize()
   return *this;
 }
 
-quaternion quaternion::operator *(quaternion q)
+quaternion quaternion::operator *(const quaternion q) const
 {
   quaternion q_out(w*q.w - x*q.x - y*q.y - z*q.z,
                    w*q.x + x*q.w - y*q.z + z*q.y,
@@ -187,7 +199,7 @@ quaternion quaternion::operator *(quaternion q)
   return q_out;
 }
 
-quaternion& quaternion::operator *=(quaternion q)
+quaternion& quaternion::operator *=(const quaternion q)
 {
   quaternion q_out(w*q.w - x*q.x - y*q.y - z*q.z,
                    w*q.x + x*q.w - y*q.z + z*q.y,
@@ -200,7 +212,7 @@ quaternion& quaternion::operator *=(quaternion q)
   return *this;
 }
 
-vector quaternion::rotate(vector v)
+vector quaternion::rotate(const vector v) const
 {
     vector out((1.0f - 2.0f*y*y - 2.0f*z*z) * v.x + (2.0f*(x*y + w*z))*v.y + 2.0f*(x*z - w*y)*v.z,
                (2.0f*(x*y - w*z)) * v.x + (1.0f - 2.0f*x*x - 2.0f*z*z) * v.y + 2.0f*(y*z + w*x)*v.z,
@@ -208,7 +220,7 @@ vector quaternion::rotate(vector v)
     return out;
 }
 
-vector quaternion::operator *(vector v)
+vector quaternion::operator *(const vector v) const
 {
     vector out((1.0f - 2.0f*y*y - 2.0f*z*z) * v.x + (2.0f*(x*y + w*z))*v.y + 2.0f*(x*z - w*y)*v.z,
                (2.0f*(x*y - w*z)) * v.x + (1.0f - 2.0f*x*x - 2.0f*z*z) * v.y + 2.0f*(y*z + w*x)*v.z,
@@ -216,7 +228,7 @@ vector quaternion::operator *(vector v)
     return out;
 }
 
-quaternion quaternion::inverse()
+quaternion quaternion::inverse() const
 {
   quaternion out(w, -x, -y, -z);
   return out;
@@ -230,7 +242,7 @@ quaternion& quaternion::invert()
   return *this;
 }
 
-quaternion& quaternion::from_two_unit_vectors(vector u, vector v)
+quaternion& quaternion::from_two_unit_vectors(const vector u, const vector v)
 {
   // Adapted From the Ogre3d source code
   // https://bitbucket.org/sinbad/ogre/src/9db75e3ba05c/OgreMain/include/OgreVector3.h?fileviewer=file-view-default#cl-651
@@ -254,6 +266,13 @@ quaternion& quaternion::from_two_unit_vectors(vector u, vector v)
   }
   normalize();
   return *this;
+}
+
+void quaternion::get_RPY(float& roll, float& pitch, float& yaw) const
+{
+  roll = turbomath::atan2(2.0f * (w*x + y*z), 1.0f - 2.0f * (x*x + y*y));
+  pitch = turbomath::asin(2.0f*(w*y - z*x));
+  yaw = turbomath::atan2(2.0f * (w*z + x*y), 1.0f - 2.0f * (y*y + z*z));
 }
 
 

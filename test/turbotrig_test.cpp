@@ -32,12 +32,7 @@
  */
 
 #include "math.h"
-#include <turbotrig/turbomath.h>
-//#include <turbotrig/turbovec.h>
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/Geometry"
-#include <gtest/gtest.h>
+#include "common.h"
 #include <stdio.h>
 
 namespace turbo = turbomath;
@@ -97,70 +92,6 @@ turbo::quaternion random_quaternions[25] = {
   turbo::quaternion( -0.177027678376 , 0.214558558928 , -0.992910369554 , 0.592964390132 ),
   turbo::quaternion( 0.0979109306209 , 0.121890109199 , 0.126418158551 , 0.242200145606 )};
 
-
-#define EXPECT_VEC3_SUPERCLOSE(vec, eig) \
-  EXPECT_NEAR((vec).x, (eig).x(), 0.0001);\
-  EXPECT_NEAR((vec).y, (eig).y(), 0.0001);\
-  EXPECT_NEAR((vec).z, (eig).z(), 0.0001)
-#define EXPECT_QUAT_SUPERCLOSE(q, q_eig) { \
-  double e1 = quaternion_error((q_eig), (q)); \
-  Eigen::Quaternionf q_eig_neg = q_eig; \
-  q_eig_neg.coeffs() *= -1.0; \
-  double e2 = quaternion_error(q_eig_neg, (q)); \
-  double error = (e1 < e2) ? e1 : e2; \
-  EXPECT_LE(error, 0.0001); \
-  }
-#define ASSERT_QUAT_SUPERCLOSE(q, q_eig) { \
-  double e1 = quaternion_error((q_eig), (q)); \
-  Eigen::Quaternionf q_eig_neg = q_eig; \
-  q_eig_neg.coeffs() *= -1.0; \
-  double e2 = quaternion_error(q_eig_neg, (q)); \
-  double error = (e1 < e2) ? e1 : e2; \
-  EXPECT_LE(error, 0.0001); \
-  }
-
-#define ASSERT_TURBOQUAT_SUPERCLOSE(q, q2) { \
-  double e1 = quaternion_error(q, q2); \
-  turbomath::quaternion q2_neg = q2; \
-  q2_neg.w *= -1.0; \
-  q2_neg.x *= -1.0; \
-  q2_neg.y *= -1.0; \
-  q2_neg.z *= -1.0; \
-  double e2 = quaternion_error(q, q2_neg); \
-  double error = (e1 < e2) ? e1 : e2; \
-  ASSERT_LE(error, 0.0001); \
-  }
-
-#define EXPECT_SUPERCLOSE(x, y) EXPECT_NEAR(x, y, 0.0001)
-#define ASSERT_SUPERCLOSE(x, y) ASSERT_NEAR(x, y, 0.0001)
-#define EXPECT_CLOSE(x, y) ASSERT_NEAR(x, y, 0.01)
-
-double quaternion_error(Eigen::Quaternionf q_eig, turbo::quaternion q)
-{
-  Eigen::Quaternionf est_quat(q.w, q.x, q.y, q.z);
-  Eigen::Quaternionf q_tilde = q_eig * est_quat.inverse();
-  if(q_tilde.vec().norm() < 0.000001)
-    return 0;
-  else
-  {
-    Eigen::Vector3f v_tilde = atan2(q_tilde.vec().norm(), q_tilde.w())*q_tilde.vec()/q_tilde.vec().norm();
-    return v_tilde.norm();
-  }
-}
-
-double quaternion_error(turbo::quaternion q0, turbo::quaternion q)
-{
-  Eigen::Quaternionf est_quat(q.w, q.x, q.y, q.z);
-  Eigen::Quaternionf q_eig(q0.w, q0.x, q0.y, q0.z);
-  Eigen::Quaternionf q_tilde = q_eig * est_quat.inverse();
-  if(q_tilde.vec().norm() < 0.000001)
-    return 0;
-  else
-  {
-    Eigen::Vector3f v_tilde = atan2(q_tilde.vec().norm(), q_tilde.w())*q_tilde.vec()/q_tilde.vec().norm();
-    return v_tilde.norm();
-  }
-}
 
 TEST(turbotrig_test, atan_test) {
   for (float i = -200.0; i <= 200.0; i += 0.001)
@@ -331,11 +262,4 @@ TEST(turbovec_test, quat_from_two_vectors_test){
     ASSERT_SUPERCLOSE(vec5.y, vec4.y);
     ASSERT_SUPERCLOSE(vec5.z, vec4.z);
   }
-}
-
-
-
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

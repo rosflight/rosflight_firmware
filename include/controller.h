@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <turbotrig/turbovec.h>
+#include <turbomath/turbomath.h>
 
 #include "command_manager.h"
 #include "estimator.h"
@@ -91,7 +91,7 @@ private:
 
   ROSflight& RF_;
 
-  vector_t run_pid_loops(uint32_t dt, const Estimator::State& state, const control_t& command, bool update_integrators);
+  turbomath::vector run_pid_loops(uint32_t dt, const Estimator::State& state, const control_t& command, bool update_integrators);
 
   Output output_;
 

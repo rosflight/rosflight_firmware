@@ -45,21 +45,23 @@ public:
   float y;
   float z;
 
-  float norm();
-  float sqrd_norm();
-  vector &normalize();
-  vector normalized();
-
+  vector();
   vector(float x_, float y_, float z_);
-  float dot(vector v);
-  vector cross(vector v);
 
-  vector operator* (const float s);
-  vector operator/ (const float s);
+  float norm() const;
+  float sqrd_norm() const;
+  vector &normalize();
+  vector normalized() const;
+
+  float dot(const vector v) const;
+  vector cross(const vector v) const;
+
+  vector operator* (const float s) const;
+  vector operator/ (const float s) const;
   vector& operator*= (const float s);
   vector& operator/= (const float s);
-  vector operator+ (const vector v);
-  vector operator- (const vector v);
+  vector operator+ (const vector v) const;
+  vector operator- (const vector v) const;
   vector& operator+= (const vector v);
   vector& operator-= (const vector v);
 };
@@ -73,15 +75,16 @@ public:
   float z;
   quaternion();
   quaternion(float w_, float x_, float y_, float z_);
-  quaternion(vector u, vector v);
-  vector rotate(vector v);
-  vector operator* (vector v);
+  quaternion(const vector u, const vector v);
+  vector rotate(const vector v) const;
+  vector operator* (const vector v) const;
   quaternion& normalize();
-  quaternion operator* (quaternion q);
-  quaternion& operator*= (quaternion q);
-  quaternion inverse();
+  quaternion operator* (const quaternion q) const;
+  quaternion& operator*= (const quaternion q);
+  quaternion inverse() const;
   quaternion& invert();
-  quaternion& from_two_unit_vectors(vector u, vector v);
+  quaternion& from_two_unit_vectors(const vector u, const vector v);
+  void get_RPY(float& roll, float& pitch, float& yaw) const;
 };
 
 // float-based wrappers

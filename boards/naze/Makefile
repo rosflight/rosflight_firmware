@@ -52,7 +52,7 @@ A2L=arm-none-eabi-addr2line
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
 ROSFLIGHT_DIR   = ../..
-TURBOTRIG_DIR   = $(ROSFLIGHT_DIR)/lib/turbotrig
+TURBOMATH_DIR   = $(ROSFLIGHT_DIR)/lib/turbomath
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
 STDPERIPH_DIR	= $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
@@ -84,9 +84,8 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 mixer.cpp
 
 # Math Source Files
-VPATH :=	$(VPATH):$(TURBOTRIG_DIR)
-MATH_SRC =  turbotrig.cpp \
-            turbovec.cpp
+VPATH :=	$(VPATH):$(TURBOMATH_DIR)
+MATH_SRC =  turbomath.cpp
 
 
 # Hardware Driver Source Files
@@ -128,7 +127,7 @@ CSOURCES =  $(CMSIS_SRC) \
 CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
                 $(addprefix $(MAVLINK_DIR)/, $(MAVLINK_SRC)) \
                 $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
-                $(addprefix $(TURBOTRIG_DIR)/, $(MATH_SRC)) \
+                $(addprefix $(TURBOMATH_DIR)/, $(MATH_SRC)) \
 
 
 # Set up Include Directoreis
