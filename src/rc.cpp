@@ -151,9 +151,9 @@ void RC::init_switches()
     }
 
     if (switches[chan].mapped)
-      RF_.mavlink_.log(Mavlink::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
+      RF_.comm_manager_.log(CommManager::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
     else
-      RF_.mavlink_.log(Mavlink::LOG_INFO, "%s switch not mapped", channel_name);
+      RF_.comm_manager_.log(CommManager::LOG_INFO, "%s switch not mapped", channel_name);
   }
 }
 

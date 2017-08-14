@@ -39,6 +39,7 @@
 #include "rc.h"
 #include "controller.h"
 #include "mavlink.h"
+#include "comm_manager.h"
 #include "mixer.h"
 #include "state_manager.h"
 #include "command_manager.h"
@@ -57,6 +58,7 @@ public:
 
   Board& board_;
   Mavlink mavlink_;
+  CommManager comm_manager_;
 
   Params params_;
   StateManager state_manager_;

@@ -325,7 +325,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
   {
     params.values[id] = value;
     change_callback(id);
-    RF_.mavlink_.update_param(id);
+    RF_.comm_manager_.send_param_value(id);
     return true;
   }
   return false;

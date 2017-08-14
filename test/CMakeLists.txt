@@ -21,6 +21,7 @@ set(ROSFLIGHT_SRC
     ../src/mavlink.cpp
     ../src/nanoprintf.cpp
     ../src/controller.cpp
+    ../src/comm_manager.cpp
     ../src/command_manager.cpp
     ../src/rc.cpp
     ../src/mixer.cpp
