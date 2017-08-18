@@ -79,14 +79,19 @@ private:
   uint8_t send_params_index_;
   bool initialized_;
 
-  typedef  void (CommManager::*CommManagerStreamFcn)(void);
-
-  typedef struct
+  class Stream
   {
-    uint32_t period_us;
-    uint64_t next_time_us;
-    CommManagerStreamFcn send_function;
-  } mavlink_stream_t;
+  public:
+    Stream(uint32_t period_us, std::function<void(void)> send_function);
+
+    void stream(uint64_t now_us);
+    void set_rate(uint32_t rate_hz);
+
+  private:
+    uint32_t period_us_;
+    uint64_t next_time_us_;
+    std::function<void(void)> send_function_;
+  };
 
   void update_system_id(uint16_t param_id);
 
@@ -115,19 +120,18 @@ private:
 
   void send_next_param(void);
 
-  mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
-    //  period_us    last_time_us   send_function
-    { 1000000,     0,             &rosflight_firmware::CommManager::send_heartbeat },
-    { 1000000,     0,             &rosflight_firmware::CommManager::send_status},
-    { 200000,      0,             &rosflight_firmware::CommManager::send_attitude },
-    { 1000,        0,             &rosflight_firmware::CommManager::send_imu },
-    { 200000,      0,             &rosflight_firmware::CommManager::send_diff_pressure },
-    { 200000,      0,             &rosflight_firmware::CommManager::send_baro },
-    { 100000,      0,             &rosflight_firmware::CommManager::send_sonar },
-    { 6250,        0,             &rosflight_firmware::CommManager::send_mag },
-    { 0,           0,             &rosflight_firmware::CommManager::send_output_raw },
-    { 0,           0,             &rosflight_firmware::CommManager::send_rc_raw },
-    { 5000,        0,             &rosflight_firmware::CommManager::send_low_priority }
+  Stream streams_[STREAM_COUNT] = {
+    Stream(1000000, std::bind(&CommManager::send_heartbeat, this)),
+    Stream(1000000, std::bind(&CommManager::send_status, this)),
+    Stream(200000,  std::bind(&CommManager::send_attitude, this)),
+    Stream(1000,    std::bind(&CommManager::send_imu, this)),
+    Stream(200000,  std::bind(&CommManager::send_diff_pressure, this)),
+    Stream(200000,  std::bind(&CommManager::send_baro, this)),
+    Stream(100000,  std::bind(&CommManager::send_sonar, this)),
+    Stream(6250,    std::bind(&CommManager::send_mag, this)),
+    Stream(0,       std::bind(&CommManager::send_output_raw, this)),
+    Stream(0,       std::bind(&CommManager::send_rc_raw, this)),
+    Stream(5000,    std::bind(&CommManager::send_low_priority, this)),
   };
 
 public:

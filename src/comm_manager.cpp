@@ -444,22 +444,13 @@ void CommManager::stream()
   uint64_t time_us = RF_.board_.clock_micros();
   for (int i = 0; i < STREAM_COUNT; i++)
   {
-    if (mavlink_streams_[i].period_us > 0 && time_us >= mavlink_streams_[i].next_time_us)
-    {
-      // If you fall behind, skip messages
-      do
-      {
-        mavlink_streams_[i].next_time_us += mavlink_streams_[i].period_us;
-      } while(mavlink_streams_[i].next_time_us < time_us);
-
-      (this->*mavlink_streams_[i].send_function)();
-    }
+    streams_[i].stream(time_us);
   }
 }
 
 void CommManager::set_streaming_rate(uint8_t stream_id, int16_t param_id)
 {
-  mavlink_streams_[stream_id].period_us = (RF_.params_.get_param_int(param_id) == 0 ? 0 : 1000000/RF_.params_.get_param_int(param_id));
+  streams_[stream_id].set_rate(RF_.params_.get_param_int(param_id));
 }
 
 void CommManager::send_named_value_int(const char *const name, int32_t value)
@@ -479,6 +470,32 @@ void CommManager::send_next_param(void)
     send_param_value((uint16_t) send_params_index_);
     send_params_index_++;
   }
+}
+
+CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :
+  period_us_(period_us),
+  next_time_us_(0),
+  send_function_(send_function)
+{}
+
+void CommManager::Stream::stream(uint64_t now_us)
+{
+  if (period_us_ > 0 && now_us >= next_time_us_)
+  {
+    // if you fall behind, skip messages
+    do
+    {
+      next_time_us_ += period_us_;
+    }
+    while(next_time_us_ < now_us);
+
+    send_function_();
+  }
+}
+
+void CommManager::Stream::set_rate(uint32_t rate_hz)
+{
+  period_us_ = (rate_hz == 0) ? 0 : 1000000/rate_hz;
 }
 
 //void Mavlink::mavlink_send_named_command_struct(const char *const name, control_t command_struct)
