@@ -233,7 +233,7 @@ float turboatan(float x)
     return M_PI/2.0 - turboatan(1.0/x);
   }
 
-  float t = (x - atan_min_x)/static_cast<float>(atan_max_x - atan_min_x) * static_cast<float>(atan_num_entries);
+  float t = (x - atan_min_x)/(atan_max_x - atan_min_x) * static_cast<float>(atan_num_entries);
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
@@ -293,7 +293,7 @@ float turboasin(float x)
     return -1.0*turboasin(-1.0*x);
   }
 
-  float t = (x - asin_min_x)/static_cast<float>(asin_max_x - asin_min_x) * static_cast<float>(asin_num_entries);
+  float t = (x - asin_min_x)/(asin_max_x - asin_min_x) * static_cast<float>(asin_num_entries);
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
