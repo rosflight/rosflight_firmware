@@ -132,14 +132,14 @@ static char a2i(char ch, char **src,int base,int *nump)
   return ch;
 }
 
-static void putchw(void *putp,putcf putf,int n, char z, char *bf)
+static void putchw(void *putp, putcf putf, int n, char z, char *bf)
 {
   char fc=z? '0' : ' ';
   char ch;
   char *p=bf;
-  while (*p++ && n > 0)
+  while (*p++ && n != 0)
     n--;
-  while (n-- > 0)
+  while (n-- != 0)
     putf(putp,fc);
   while ((ch= *bf++))
     putf(putp,ch);
