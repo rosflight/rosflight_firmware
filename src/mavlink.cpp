@@ -157,11 +157,6 @@ void Mavlink::handle_msg_param_set(const mavlink_message_t *const msg)
         switch (candidate_type)
         {
         case PARAM_TYPE_INT32:
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-          RF_.params_.set_param_int(id, reinterpret_cast<const int32_t &>(set.param_value));
-#pragma GCC diagnostic pop
-          break;
         case PARAM_TYPE_FLOAT:
           RF_.params_.set_param_float(id, set.param_value);
           break;
