@@ -31,12 +31,6 @@
 
 #include "nanoprintf.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wstrict-overflow"
-
-
 namespace rosflight_firmware
 {
 namespace nanoprintf
@@ -177,7 +171,7 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
       }
       if (ch>='0' && ch<='9')
       {
-        ch=a2i(ch, (char **)&fmt, 10, &w);
+        ch=a2i(ch, const_cast<char **>(&fmt), 10, &w);
       }
 #ifdef 	PRINTF_LONG_SUPPORT
       if (ch=='l')
@@ -223,7 +217,7 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
         putchw(putp,putf,w,lz,bf);
         break;
       case 'c' :
-        putf(putp,(char)(va_arg(va, int)));
+        putf(putp,static_cast<char>(va_arg(va, int)));
         break;
       case 's' :
         putchw(putp,putf,w,0,va_arg(va, char *));
@@ -256,7 +250,7 @@ void tfp_printf(const char *fmt, ...)
 
 static void putcp(void *p,char c)
 {
-  *(*((char **)p))++ = c;
+  *(*(static_cast<char **>(p)))++ = c;
 }
 
 void tfp_sprintf(char *s, const char *fmt, va_list va)
@@ -268,5 +262,3 @@ void tfp_sprintf(char *s, const char *fmt, va_list va)
 
 } // namespace nanoprintf
 } // namespace rosflight_firmware
-
-# pragma GCC diagnostic pop
