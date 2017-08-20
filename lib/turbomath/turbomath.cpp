@@ -476,7 +476,7 @@ float turbo::atan(float x)
     return M_PI/2.0 - turbo::atan(1.0/x);
   }
 
-  float t = (x - atan_min_x)/static_cast<float>(atan_max_x - atan_min_x) * static_cast<float>(atan_num_entries);
+  float t = (x - atan_min_x)/(atan_max_x - atan_min_x) * static_cast<float>(atan_num_entries);
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
@@ -536,7 +536,7 @@ float turbo::asin(float x)
     return -1.0*turbo::asin(-1.0*x);
   }
 
-  float t = (x - asin_min_x)/static_cast<float>(asin_max_x - asin_min_x) * static_cast<float>(asin_num_entries);
+  float t = (x - asin_min_x)/(asin_max_x - asin_min_x) * static_cast<float>(asin_num_entries);
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
@@ -583,27 +583,19 @@ float turbo::fabs(float x)
 
 }
 
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-
 float turbo::inv_sqrt(float x)
 {
-  volatile long i;
-  volatile float x2, y;
+  volatile float x2;
+  volatile turbo::float_converter_t y, i;
   const float threehalfs = 1.5F;
 
   x2 = x * 0.5F;
-  y  = x;
-  i  = * (long *) &y;                         // evil floating point bit level hacking
-  i  = 0x5f3759df - (i >> 1);
-  y  = * (float *) &i;
-  y  = y * (threehalfs - (x2 * y * y));       // 1st iteration
-  y  = y * (threehalfs - (x2 * y * y));       // 2nd iteration, this can be removed
+  y.fvalue  = x;
+  i.ivalue  = y.ivalue;                             // evil floating point bit level hacking
+  i.ivalue  = 0x5f3759df - (i.ivalue >> 1);
+  y.fvalue = i.fvalue;
+  y.fvalue  = y.fvalue * (threehalfs - (x2 * y.fvalue * y.fvalue));       // 1st iteration
+  y.fvalue  = y.fvalue * (threehalfs - (x2 * y.fvalue * y.fvalue));       // 2nd iteration, this can be removed
 
-  return turbo::fabs(y);
+  return turbo::fabs(y.fvalue);
 }
-
-#pragma GCC diagnostic pop

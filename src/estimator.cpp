@@ -138,7 +138,7 @@ void Estimator::run()
   state_.timestamp_us = now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)*1000))
+  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
   {
     kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;

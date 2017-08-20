@@ -221,13 +221,19 @@ public:
   static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
 
 private:
+  union param_value_t
+  {
+    float fvalue;
+    int32_t ivalue;
+  };
+
   typedef struct
   {
     uint32_t version;
     uint16_t size;
     uint8_t magic_be;                       // magic number, should be 0xBE
 
-    int32_t values[PARAMS_COUNT];
+    param_value_t values[PARAMS_COUNT];
     char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
     param_type_t types[PARAMS_COUNT];
 
@@ -294,17 +300,14 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline int get_param_int(uint16_t id) const { return params.values[id]; }
+  inline int get_param_int(uint16_t id) const { return params.values[id].ivalue; }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-  inline float get_param_float(uint16_t id) const { return reinterpret_cast<const float &>(params.values[id]); }
-#pragma GCC diagnostic pop
+  inline float get_param_float(uint16_t id) const { return params.values[id].fvalue; }
 
   /**
    * @brief Get the name of a parameter

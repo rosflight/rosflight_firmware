@@ -274,7 +274,7 @@ bool RC::run()
     }
     else
     {
-      stick_values[channel] = static_cast<float>(2*(pwm - 1500)) / (1000.0);
+      stick_values[channel] = static_cast<float>(2*(pwm - 1500)) / (1000.0f);
     }
   }
 

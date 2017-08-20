@@ -102,4 +102,11 @@ float alt(float x);
 float inv_sqrt(float x);
 float fabs(float x);
 
+
+union float_converter_t
+{
+  float fvalue;
+  int32_t ivalue;
+};
+
 }
