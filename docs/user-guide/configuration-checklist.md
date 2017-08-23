@@ -29,6 +29,7 @@ The following checklists should help you get a new vehicle set up for the first 
           1. Drop the throttle to minimum
       1. Set the `MIXER` parameter back to the appropriate value for your vehicle (see the [Hardware Setup](/user-guide/hardware-setup) page)
       1. Set `ARM_SPIN_MOTORS` back to `1`
+  1. You'll most likely want to set the `CAL_GYRO_ARM` param to `1` to enable calibrating gyros before arming
   1. Set the `RC_ATT_MODE` parameter to set RC control mode (`0` for rate mode, `1` for angle mode [default])
   1. Set torque offsets as described in the _RC trim calculation_ section of the [Improving Performance](/user-guide/performance) page
   1. Tune the controller gains as described in the _Multirotor gain tuning_ section of the [Improving Performance](/user-guide/performance) page
