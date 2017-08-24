@@ -36,15 +36,15 @@ namespace rosflight_firmware
 
 ROSflight::ROSflight(Board& board) :
   board_(board),
-  sensors_(*this),
-  state_manager_(*this),
+  mavlink_(*this),
+  params_(*this),
+  command_manager_(*this),
   controller_(*this),
   estimator_(*this),
-  params_(*this),
   mixer_(*this),
   rc_(*this),
-  mavlink_(*this),
-  command_manager_(*this)
+  sensors_(*this),
+  state_manager_(*this)
 {
 }
 
@@ -105,6 +105,12 @@ void ROSflight::run()
     controller_.run();
     mixer_.mix_output();
     loop_time_us = board_.clock_micros() - start;
+    static uint8_t throttle = 0;
+    if (throttle++ > 100)
+    {
+      throttle = 0;
+      mavlink_.log(Mavlink::LOG_INFO, "Testing %d.%dms", loop_time_us/1000, loop_time_us%1000);
+    }
   }
 
   /*********************/

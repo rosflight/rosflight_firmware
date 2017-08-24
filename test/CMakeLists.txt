@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 2.6)
 
 add_definitions(-std=c++11)
 
+# Strict Compilation
+set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
+  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
+  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
+  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel"
+  ${CMAKE_CXX_FLAGS})
+
 # Locate GTest
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -10,7 +17,6 @@ include_directories(../include)
 include_directories(../lib)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 include_directories(/usr/include/eigen3)
-
 
 set(ROSFLIGHT_SRC
     ../src/rosflight.cpp

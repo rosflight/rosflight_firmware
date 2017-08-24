@@ -31,6 +31,9 @@
 
 #include "test_board.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 namespace rosflight_firmware
 {
 
@@ -77,11 +80,11 @@ namespace rosflight_firmware
   void testBoard::serial_init(uint32_t baud_rate){}
   void testBoard::serial_write(const uint8_t *src, size_t len){}
   uint16_t testBoard::serial_bytes_available(void){ return 0; }
-  uint8_t testBoard::serial_read(void){}
+  uint8_t testBoard::serial_read(void){return 0;}
 
 // sensors
   void testBoard::sensors_init(){}
-  uint16_t testBoard::num_sensor_errors(void) {}
+  uint16_t testBoard::num_sensor_errors(void) {return 0;}
 
   bool testBoard::new_imu_data()
   {
@@ -118,7 +121,7 @@ namespace rosflight_firmware
   void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
 
   bool testBoard::sonar_check(void){ return false; }
-  float testBoard::sonar_read(void){}
+  float testBoard::sonar_read(void){return 0;}
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
@@ -142,3 +145,6 @@ namespace rosflight_firmware
   void testBoard::led1_toggle(void){}
 
 } // namespace rosflight_firmware
+
+#pragma GCC diagnostic pop
+

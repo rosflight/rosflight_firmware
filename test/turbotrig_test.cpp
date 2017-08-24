@@ -38,6 +38,7 @@
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/Geometry"
 #include <gtest/gtest.h>
+#include <stdio.h>
 
 vector_t random_vectors[25] = {
   { -0.0376278050814 , 0.471775699711 , -0.336572370974 },
@@ -95,9 +96,10 @@ quaternion_t random_quaternions[25] = {
   { 0.0979109306209 , 0.121890109199 , 0.126418158551 , 0.242200145606 }};
 
 
-#define EXPECT_VEC3_SUPERCLOSE(vec, eig) EXPECT_LE(fabs(vec.x - eig.x()), 0.0001);\
-  EXPECT_LE(fabs(vec.y - eig.y()), 0.0001);\
-  EXPECT_LE(fabs(vec.z - eig.z()), 0.0001)
+#define EXPECT_VEC3_SUPERCLOSE(vec, eig) \
+  EXPECT_NEAR(vec.x, eig.x(), 0.0001);\
+  EXPECT_NEAR(vec.y, eig.y(), 0.0001);\
+  EXPECT_NEAR(vec.z, eig.z(), 0.0001)
 #define EXPECT_QUAT_SUPERCLOSE(q, q_eig) { \
   double e1 = quaternion_error(q_eig, q); \
   q_eig.coeffs() *= -1.0; \
@@ -124,9 +126,9 @@ quaternion_t random_quaternions[25] = {
   ASSERT_LE(error, 0.0001); \
 }
 
-#define EXPECT_SUPERCLOSE(x, y) EXPECT_LE(fabs(x -y), 0.0001)
-#define ASSERT_SUPERCLOSE(x, y) ASSERT_LE(fabs(x -y), 0.0001)
-#define EXPECT_CLOSE(x, y) EXPECT_LE(fabs(x -y), 0.01)
+#define EXPECT_SUPERCLOSE(x, y) EXPECT_NEAR(x, y, 0.0001)
+#define ASSERT_SUPERCLOSE(x, y) ASSERT_NEAR(x, y, 0.0001)
+#define EXPECT_CLOSE(x, y) ASSERT_NEAR(x, y, 0.01)
 
 double quaternion_error(Eigen::Quaternionf q_eig, quaternion_t q)
 {
@@ -193,16 +195,20 @@ TEST(turbovec_test, vector_test) {
     Eigen::Vector3f eig2, eig1;
     eig1 << vec1.x, vec1.y, vec1.z;
     eig2 << vec2.x, vec2.y, vec2.z;
+
+    // Test data type
     EXPECT_VEC3_SUPERCLOSE(vec1, eig1);
     EXPECT_VEC3_SUPERCLOSE(vec2, eig2);
 
-    EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
-    EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
+    // Test norming operations
     EXPECT_VEC3_SUPERCLOSE(vector_normalize(vec1), eig1.normalized());
-    EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
-
     EXPECT_SUPERCLOSE(norm(vec1), eig1.norm());
     EXPECT_SUPERCLOSE(sqrd_norm(vec1), eig1.squaredNorm());
+
+    // Test add, subtract and multiply
+    EXPECT_VEC3_SUPERCLOSE(vector_add(vec1, vec2), (eig1 + eig2));
+    EXPECT_VEC3_SUPERCLOSE(vector_sub(vec1, vec2), (eig1 - eig2));
+    EXPECT_VEC3_SUPERCLOSE(scalar_multiply(5.0, vec1), 5.0*eig1);
 
     // Test Vector Dot Product
     EXPECT_SUPERCLOSE(dot(vec1, vec2), (eig1.transpose() * eig2));
@@ -292,7 +298,7 @@ TEST(turbotrig_test, fast_alt_test) {
   //all valid int values
   float trueResult = 0.0;
   for (int i = 69682; i < 106597; i++) {
-    trueResult = (float)((1.0 - pow((float)i/101325, 0.190284)) * 145366.45) * (float)0.3048;
+    trueResult = static_cast<float>((1.0 - pow(static_cast<float>(i)/101325, 0.190284)) * 145366.45) * static_cast<float>(0.3048);
     EXPECT_LE(fabs(fast_alt(i) - trueResult), .15);
     //arbitrarily chose <= .15m since fast_alt isn't accurate enough for EXPECT_CLOSE,
     //but being within .15 meters of the correct result seems pretty good to me

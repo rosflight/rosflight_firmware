@@ -609,8 +609,6 @@ TEST(command_manager_test, partial_muxing_test ) {
   }
   rc_values[2] = 1000;
 
-  float max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
-
   // Let's clear all errors in the state_manager
   rf.state_manager_.clear_error(rf.state_manager_.state().error_codes);
 

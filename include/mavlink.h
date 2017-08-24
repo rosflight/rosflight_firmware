@@ -32,7 +32,14 @@
 #ifndef ROSFLIGHT_FIRMWARE_MAVLINK_H
 #define ROSFLIGHT_FIRMWARE_MAVLINK_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #include <mavlink/v1.0/rosflight/mavlink.h>
+
+# pragma GCC diagnostic pop
 #include "nanoprintf.h"
 
 namespace rosflight_firmware {
@@ -151,3 +158,4 @@ public:
 } // namespace rosflight_firmware
 
 #endif // ROSFLIGHT_FIRMWARE_MAVLINK_H
+
