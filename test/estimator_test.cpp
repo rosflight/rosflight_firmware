@@ -19,6 +19,10 @@ double sign(double y)
 
 double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board, std::vector<double> params)
 {
+#ifndef DEBUG
+  (void) filename;
+#endif
+
   double x_freq = params[0];
   double y_freq = params[1];
   double z_freq = params[2];
@@ -26,7 +30,6 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
   double y_amp = params[4];
   double z_amp = params[5];
   double tmax = params[6];
-  double error_limit = params[7];
 
   double dt = 0.001;
 

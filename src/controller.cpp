@@ -170,6 +170,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
 
 void Controller::param_change_callback(uint16_t param_id)
 {
+  (void) param_id; // suppress unused parameter warning
   init();
 }
 
