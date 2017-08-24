@@ -376,7 +376,6 @@ void Mavlink::send_log_message(uint8_t severity, const char* text)
 
 void Mavlink::send_heartbeat(void)
 {
-  uint8_t control_mode = 0;
   mavlink_message_t msg;
   mavlink_msg_heartbeat_pack(RF_.params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                              RF_.params_.get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,

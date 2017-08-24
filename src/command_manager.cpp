@@ -80,6 +80,7 @@ void CommandManager::init()
 
 void CommandManager::param_change_callback(uint16_t param_id)
 {
+  (void) param_id; // suppress unused parameter warning
   init_failsafe();
 }
 

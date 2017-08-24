@@ -107,7 +107,6 @@ bool Sensors::run(void)
 
 void Sensors::update_other_sensors()
 {
-  uint32_t now = rf_.board_.clock_millis();
   switch (next_sensor_to_update_)
   {
   case LowPrioritySensors::BAROMETER:

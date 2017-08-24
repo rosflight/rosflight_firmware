@@ -39,10 +39,6 @@ extern "C"
 #include "flash.h"
 extern void SetSysClock(bool overclock);
 
-void WWDG_IRQHandler()
-{
-  volatile int debug = 1;
-}
 }
 
 
