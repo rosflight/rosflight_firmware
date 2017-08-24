@@ -31,6 +31,9 @@
 
 #include "test_board.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 namespace rosflight_firmware
 {
 
@@ -142,3 +145,6 @@ namespace rosflight_firmware
   void testBoard::led1_toggle(void){}
 
 } // namespace rosflight_firmware
+
+#pragma GCC diagnostic pop
+
