@@ -14,14 +14,14 @@ ROSflight is designed to accomplish the following objectives:
 
 These objectives will allow researchers to more easily develop, test and field UAV code by prioritizing offboard control, good documentation and robust development tools.
 
-## How to Use and Implementation Details ##
+## How to Use ##
 
-Read our documentation located at [docs.rosflight.org](http://docs.rosflight.org) which includes a getting started guide and detailed descriptions of algorithms used in the firmware.
+Read our documentation located at [docs.rosflight.org](http://docs.rosflight.org) which includes a getting started guide .
 
 ## Getting Help ##
 
 For questions on getting started please join us at [discuss.rosflight.org](https://discuss.rosflight.org/)
 
-## Bug Reports and Feature Request ##
+## Bug Reports and Feature Requests ##
 
 Please submit an issue on this repository
