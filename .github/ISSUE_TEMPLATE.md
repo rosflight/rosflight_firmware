@@ -1,6 +1,6 @@
 Issue Guidelines:
 
-Please only create issues regarding bug reports, feature requests, and anything which would cause direct change to code.  Questions, general discussion and other discussion topics should be redirected to [discuss.rosflight.org]
+Please only create issues regarding bug reports, feature requests, and anything which would cause direct change to code.  Questions, general discussion and other discussion topics should be redirected to [discuss.rosflight.org](discuss.rosflight.org)
 
 Bug reports should include all information related to reproducing the bug. This includes:
 
