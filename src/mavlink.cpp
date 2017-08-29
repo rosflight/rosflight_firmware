@@ -430,8 +430,8 @@ void Mavlink::send_imu(void)
   //  if(RF_.sensors_.should_send_imu_data())
   //  {
   mavlink_message_t msg;
-  turbomath::vector accel = RF_.sensors_.data().accel;
-  turbomath::vector gyro = RF_.sensors_.data().gyro;
+  turbomath::Vector accel = RF_.sensors_.data().accel;
+  turbomath::Vector gyro = RF_.sensors_.data().gyro;
   mavlink_msg_small_imu_pack(sysid_, compid_, &msg,
                              RF_.sensors_.data().imu_time,
                              accel.x,
@@ -619,4 +619,3 @@ void Mavlink::send_named_value_float(const char *const name, float value)
 
 
 }
-
