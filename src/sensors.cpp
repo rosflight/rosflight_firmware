@@ -281,8 +281,9 @@ bool Sensors::update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
+    // if we have lost 10 IMU messages then something is wrong
+    int imu_timeout = rf_.state_manager_.state().armed ? 10 : 1000;
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + imu_timeout)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
