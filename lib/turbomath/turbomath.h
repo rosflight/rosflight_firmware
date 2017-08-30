@@ -84,7 +84,7 @@ public:
   Quaternion inverse() const;
   Quaternion& invert();
   Quaternion& from_two_unit_vectors(const Vector& u, const Vector& v);
-  void get_RPY(float& roll, float& pitch, float& yaw) const;
+  void get_RPY(float *roll, float *pitch, float *yaw) const;
 
   Vector operator* (const Vector& v) const;
   Quaternion operator* (const Quaternion& q) const;

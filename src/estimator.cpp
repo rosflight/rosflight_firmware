@@ -257,7 +257,7 @@ void Estimator::run()
   }
 
   // Extract Euler Angles for controller
-  state_.attitude.get_RPY(state_.roll, state_.pitch, state_.yaw);
+  state_.attitude.get_RPY(&state_.roll, &state_.pitch, &state_.yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
   state_.angular_velocity = gyro_LPF_ - bias_;
