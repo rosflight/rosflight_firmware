@@ -281,8 +281,14 @@ bool Sensors::update_imu(void)
   }
   else
   {
+<<<<<<< ccd34b0ac849d6ae295dcbee4da2ef06a19f228f
     // if we have lost 1000 IMU messages then something is wrong
     if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
+=======
+    // if we have lost 10 IMU messages then something is wrong
+    int imu_timeout = rf_.state_manager_.state().armed ? 10 : 1000;
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + imu_timeout)
+>>>>>>> added fc_orientation parameters and fix IMU not responding error always being printed when disarmed
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
