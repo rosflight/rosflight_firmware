@@ -105,12 +105,6 @@ void ROSflight::run()
     controller_.run();
     mixer_.mix_output();
     loop_time_us = board_.clock_micros() - start;
-    static uint8_t throttle = 0;
-    if (throttle++ > 100)
-    {
-      throttle = 0;
-      mavlink_.log(Mavlink::LOG_INFO, "Testing %d.%dms", loop_time_us/1000, loop_time_us%1000);
-    }
   }
 
   /*********************/
