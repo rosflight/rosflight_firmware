@@ -246,14 +246,6 @@ void Estimator::run()
       state_.attitude.z += qdot.z*dt;
       state_.attitude.normalize();
     }
-    // Make sure the quaternion is canonical (w is always positive)
-    if (state_.attitude.w < 0.0f)
-    {
-      state_.attitude.w *= -1.0f;
-      state_.attitude.x *= -1.0f;
-      state_.attitude.y *= -1.0f;
-      state_.attitude.z *= -1.0f;
-    }
   }
 
   // Extract Euler Angles for controller

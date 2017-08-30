@@ -49,6 +49,7 @@ public:
   {
     turbomath::Vector accel = {0, 0, 0};
     turbomath::Vector gyro = {0, 0, 0};
+    turbomath::Quaternion fcu_orientation = {1, 0, 0, 0};
     float imu_temperature = 0;
     uint64_t imu_time = 0;
 
