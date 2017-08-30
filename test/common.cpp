@@ -1,6 +1,6 @@
 #include "common.h"
 
-double quaternion_error(Eigen::Quaternionf q_eig, turbomath::quaternion q)
+double quaternion_error(Eigen::Quaternionf q_eig, turbomath::Quaternion q)
 {
   Eigen::Quaternionf est_quat(q.w, q.x, q.y, q.z);
   Eigen::Quaternionf q_tilde = q_eig * est_quat.inverse();
@@ -13,7 +13,7 @@ double quaternion_error(Eigen::Quaternionf q_eig, turbomath::quaternion q)
   }
 }
 
-double quaternion_error(turbomath::quaternion q0, turbomath::quaternion q)
+double quaternion_error(turbomath::Quaternion q0, turbomath::Quaternion q)
 {
   Eigen::Quaternionf est_quat(q.w, q.x, q.y, q.z);
   Eigen::Quaternionf q_eig(q0.w, q0.x, q0.y, q0.z);
