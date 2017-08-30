@@ -49,8 +49,8 @@ class Estimator
 public:
   struct State
   {
-    turbomath::vector angular_velocity;
-    turbomath::quaternion attitude;
+    turbomath::Vector angular_velocity;
+    turbomath::Quaternion attitude;
     float roll;
     float pitch;
     float yaw;
@@ -67,7 +67,7 @@ public:
   void reset_adaptive_bias();
 
 private:
-  const turbomath::vector g_ = {0.0f, 0.0f, -1.0f};
+  const turbomath::Vector g_ = {0.0f, 0.0f, -1.0f};
 
   ROSflight& RF_;
   State state_;
@@ -75,15 +75,15 @@ private:
   uint64_t last_time_;
   uint64_t last_acc_update_us_;
 
-  turbomath::vector w1_;
-  turbomath::vector w2_;
+  turbomath::Vector w1_;
+  turbomath::Vector w2_;
 
-  turbomath::vector bias_;
+  turbomath::Vector bias_;
 
-  turbomath::vector accel_LPF_;
-  turbomath::vector gyro_LPF_;
+  turbomath::Vector accel_LPF_;
+  turbomath::Vector gyro_LPF_;
 
-  turbomath::vector w_acc_;
+  turbomath::Vector w_acc_;
 
   void run_LPF();
 };

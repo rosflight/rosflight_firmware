@@ -305,7 +305,7 @@ void Sensors::calibrate_gyro()
   if (gyro_calibration_count_ > 1000)
   {
     // Gyros are simple.  Just find the average during the calibration
-    turbomath::vector gyro_bias = gyro_sum_ / static_cast<float>(gyro_calibration_count_);
+    turbomath::Vector gyro_bias = gyro_sum_ / static_cast<float>(gyro_calibration_count_);
 
     if (gyro_bias.norm() < 1.0)
     {
@@ -335,22 +335,18 @@ void Sensors::calibrate_gyro()
   }
 }
 
-turbomath::vector vector_max(turbomath::vector a, turbomath::vector b)
+turbomath::Vector vector_max(turbomath::Vector a, turbomath::Vector b)
 {
-  turbomath::vector out = {a.x > b.x ? a.x : b.x,
-                  a.y > b.y ? a.y : b.y,
-                  a.z > b.z ? a.z : b.z
-                 };
-  return out;
+  return turbomath::Vector(a.x > b.x ? a.x : b.x,
+                           a.y > b.y ? a.y : b.y,
+                           a.z > b.z ? a.z : b.z);
 }
 
-turbomath::vector vector_min(turbomath::vector a, turbomath::vector b)
+turbomath::Vector vector_min(turbomath::Vector a, turbomath::Vector b)
 {
-  turbomath::vector out = {a.x < b.x ? a.x : b.x,
-                  a.y < b.y ? a.y : b.y,
-                  a.z < b.z ? a.z : b.z
-                 };
-  return out;
+  return turbomath::Vector(a.x < b.x ? a.x : b.x,
+                           a.y < b.y ? a.y : b.y,
+                           a.z < b.z ? a.z : b.z);
 }
 
 
@@ -367,7 +363,7 @@ void Sensors::calibrate_accel(void)
     // The temperature bias is calculated using a least-squares regression.
     // This is computationally intensive, so it is done by the onboard computer in
     // fcu_io and shipped over to the flight controller.
-    turbomath::vector accel_temp_bias =
+    turbomath::Vector accel_temp_bias =
     {
       rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP),
       rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP),
@@ -379,7 +375,7 @@ void Sensors::calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    turbomath::vector accel_bias = (acc_sum_ - (accel_temp_bias * acc_temp_sum_)) /
+    turbomath::Vector accel_bias = (acc_sum_ - (accel_temp_bias * acc_temp_sum_)) /
                                     static_cast<float>(accel_calibration_count_);
 
     // Sanity Check -

@@ -8,8 +8,6 @@
 
 //#define DEBUG
 
-namespace turbo = turbomath;
-
 using namespace rosflight_firmware;
 
 double sign(double y)
@@ -82,7 +80,7 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
     rf.run();
 
     Eigen::Quaternionf eig_quat(rotation.cast<float>());
-    turbo::quaternion estimate = rf.estimator_.state().attitude;
+    turbomath::Quaternion estimate = rf.estimator_.state().attitude;
     if (eig_quat.w() < 0.0)
     {
       eig_quat.coeffs() *= -1.0;
@@ -345,7 +343,7 @@ TEST(estimator_test, level_bias_sim) {
   // Initialize the firmware
   rf.init();
 
-  turbo::vector true_bias = {0.25, -0.15, 0.0};
+  turbomath::Vector true_bias = {0.25, -0.15, 0.0};
 
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
@@ -361,8 +359,8 @@ TEST(estimator_test, level_bias_sim) {
   run_estimator_test("level_bias_sim.csv", rf, board, params);
 
   // Check bias at the end
-  turbo::vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
-  turbo::vector error_vec = bias - true_bias;
+  turbomath::Vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
+  turbomath::Vector error_vec = bias - true_bias;
   float error_mag = error_vec.norm();
   EXPECT_LE(error_mag, 0.001);
 
@@ -390,7 +388,7 @@ TEST(estimator_test, moving_bias_sim) {
   // Initialize the firmware
   rf.init();
 
-  turbo::vector true_bias(0.01, -0.005, 0.0);
+  turbomath::Vector true_bias(0.01, -0.005, 0.0);
 
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
@@ -406,8 +404,8 @@ TEST(estimator_test, moving_bias_sim) {
   run_estimator_test("moving_bias_sim.csv", rf, board, params);
 
   // Check bias at the end
-  turbo::vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
-  turbo::vector error_vec = bias - true_bias;
+  turbomath::Vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
+  turbomath::Vector error_vec = bias - true_bias;
   float error_mag = error_vec.norm();
   EXPECT_LE(error_mag, params[7]);
 

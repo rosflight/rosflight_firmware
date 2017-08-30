@@ -29,7 +29,7 @@
 
 #define ASSERT_TURBOQUAT_SUPERCLOSE(q, q2) { \
   double e1 = quaternion_error(q, q2); \
-  turbomath::quaternion q2_neg = q2; \
+  turbomath::Quaternion q2_neg = q2; \
   q2_neg.w *= -1.0; \
   q2_neg.x *= -1.0; \
   q2_neg.y *= -1.0; \
@@ -50,5 +50,5 @@
 #define ASSERT_CLOSE(x, y) ASSERT_NEAR(x, y, 0.01)
 #define ASSERT_INTHESAMEBALLPARK(x, y) ASSERT_NEAR(x, y, 0.1)
 
-double quaternion_error(turbomath::quaternion q0, turbomath::quaternion q);
-double quaternion_error(Eigen::Quaternionf q_eig, turbomath::quaternion q);
+double quaternion_error(turbomath::Quaternion q0, turbomath::Quaternion q);
+double quaternion_error(Eigen::Quaternionf q_eig, turbomath::Quaternion q);

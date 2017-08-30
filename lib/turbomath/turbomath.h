@@ -31,60 +31,64 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef TURBOMATH_TURBOMATH_H
+#define TURBOMATH_TURBOMATH_H
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace turbomath
 {
 
-class vector
+class Vector
 {
 public:
   float x;
   float y;
   float z;
 
-  vector();
-  vector(float x_, float y_, float z_);
+  Vector();
+  Vector(float x_, float y_, float z_);
 
   float norm() const;
   float sqrd_norm() const;
-  vector &normalize();
-  vector normalized() const;
+  Vector& normalize();
+  Vector normalized() const;
 
-  float dot(const vector v) const;
-  vector cross(const vector v) const;
+  float dot(const Vector& v) const;
+  Vector cross(const Vector& v) const;
 
-  vector operator* (const float s) const;
-  vector operator/ (const float s) const;
-  vector& operator*= (const float s);
-  vector& operator/= (const float s);
-  vector operator+ (const vector v) const;
-  vector operator- (const vector v) const;
-  vector& operator+= (const vector v);
-  vector& operator-= (const vector v);
+  Vector operator* (float s) const;
+  Vector operator/ (float s) const;
+  Vector& operator*= (float s);
+  Vector& operator/= (float s);
+  Vector operator+ (const Vector& v) const;
+  Vector operator- (const Vector& v) const;
+  Vector& operator+= (const Vector& v);
+  Vector& operator-= (const Vector& v);
 };
 
-class quaternion
+class Quaternion
 {
 public:
   float w;
   float x;
   float y;
   float z;
-  quaternion();
-  quaternion(float w_, float x_, float y_, float z_);
-  quaternion(const vector u, const vector v);
-  vector rotate(const vector v) const;
-  vector operator* (const vector v) const;
-  quaternion& normalize();
-  quaternion operator* (const quaternion q) const;
-  quaternion& operator*= (const quaternion q);
-  quaternion inverse() const;
-  quaternion& invert();
-  quaternion& from_two_unit_vectors(const vector u, const vector v);
-  void get_RPY(float& roll, float& pitch, float& yaw) const;
+
+  Quaternion();
+  Quaternion(float w_, float x_, float y_, float z_);
+  Quaternion(const Vector& u, const Vector& v);
+
+  Vector rotate(const Vector& v) const;
+  Quaternion& normalize();
+  Quaternion inverse() const;
+  Quaternion& invert();
+  Quaternion& from_two_unit_vectors(const Vector& u, const Vector& v);
+  void get_RPY(float *roll, float *pitch, float *yaw) const;
+
+  Vector operator* (const Vector& v) const;
+  Quaternion operator* (const Quaternion& q) const;
+  Quaternion& operator*= (const Quaternion& q);
 };
 
 // float-based wrappers
@@ -102,11 +106,12 @@ float alt(float x);
 float inv_sqrt(float x);
 float fabs(float x);
 
-
 union float_converter_t
 {
   float fvalue;
   int32_t ivalue;
 };
 
-}
+} // namespace turbomath
+
+#endif // TURBOMATH_TURBOMATH_H
