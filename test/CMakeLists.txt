@@ -30,12 +30,13 @@ set(ROSFLIGHT_SRC
     ../src/command_manager.cpp
     ../src/rc.cpp
     ../src/mixer.cpp
-    ../lib/turbotrig/turbotrig.cpp
-    ../lib/turbotrig/turbovec.cpp
+    ../lib/turbomath/turbomath.cpp
     )
 
 add_executable(unit_tests
         ${ROSFLIGHT_SRC}
+        common.h
+        common.cpp
         command_manager_test.cpp
         test_board.cpp
         turbotrig_test.cpp

@@ -31,18 +31,87 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifndef TURBOMATH_TURBOMATH_H
+#define TURBOMATH_TURBOMATH_H
 
-#include <stdint.h>
+#include <cstdint>
+
+namespace turbomath
+{
+
+class Vector
+{
+public:
+  float x;
+  float y;
+  float z;
+
+  Vector();
+  Vector(float x_, float y_, float z_);
+
+  float norm() const;
+  float sqrd_norm() const;
+  Vector& normalize();
+  Vector normalized() const;
+
+  float dot(const Vector& v) const;
+  Vector cross(const Vector& v) const;
+
+  Vector operator* (float s) const;
+  Vector operator/ (float s) const;
+  Vector& operator*= (float s);
+  Vector& operator/= (float s);
+  Vector operator+ (const Vector& v) const;
+  Vector operator- (const Vector& v) const;
+  Vector& operator+= (const Vector& v);
+  Vector& operator-= (const Vector& v);
+};
+
+class Quaternion
+{
+public:
+  float w;
+  float x;
+  float y;
+  float z;
+
+  Quaternion();
+  Quaternion(float w_, float x_, float y_, float z_);
+  Quaternion(const Vector& u, const Vector& v);
+
+  Vector rotate(const Vector& v) const;
+  Quaternion& normalize();
+  Quaternion inverse() const;
+  Quaternion& invert();
+  Quaternion& from_two_unit_vectors(const Vector& u, const Vector& v);
+  void get_RPY(float *roll, float *pitch, float *yaw) const;
+
+  Vector operator* (const Vector& v) const;
+  Quaternion operator* (const Quaternion& q) const;
+  Quaternion& operator*= (const Quaternion& q);
+};
 
 // float-based wrappers
-float atan2_approx(float y, float x);
-float asin_approx(float x);
+float atan2(float y, float x);
+float asin(float x);
 
 // turbo-speed trig approximation
-float turboatan(float x);
-float turboasin(float x);
+float atan(float x);
 float fsign(float y);
 
 // turbo-speed approximation of (1.0 - pow(pressure/101325.0, 0.1902631)) * 39097.63
-float fast_alt(float x);
+// Used for calculating altitude in m from atmospheric pressure in Pa
+float alt(float x);
+
+float inv_sqrt(float x);
+float fabs(float x);
+
+union float_converter_t
+{
+  float fvalue;
+  int32_t ivalue;
+};
+
+} // namespace turbomath
+
+#endif // TURBOMATH_TURBOMATH_H
