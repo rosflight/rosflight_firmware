@@ -157,7 +157,7 @@ Quaternion::Quaternion(const Vector& u, const Vector& v)
   from_two_unit_vectors(u, v);
 }
 
-Quaternion::Quaternion(const float& roll, const float& pitch, const float& yaw)
+Quaternion::Quaternion(float roll, float pitch, float yaw)
 {
   from_RPY(roll, pitch, yaw);
 }
@@ -250,7 +250,7 @@ Quaternion& Quaternion::from_two_unit_vectors(const Vector& u, const Vector& v)
   return *this;
 }
 
-Quaternion& Quaternion::from_RPY(const float &roll, const float &pitch, const float &yaw)
+Quaternion& Quaternion::from_RPY(float roll, float pitch, float yaw)
 {
   // p 259 of "Small unmanned aircraft: Theory and Practice" by Randy Beard and Tim McLain
   float cp = turbomath::cos(roll/2.0);
@@ -266,15 +266,6 @@ Quaternion& Quaternion::from_RPY(const float &roll, const float &pitch, const fl
   z = ss*ct*cp - cs*st*sp;
 
   normalize();
-
-  if (w < 0.0)
-  {
-      x *= -1.0;
-      y *= -1.0;
-      z *= -1.0;
-      w *= -1.0;
-  }
-
   return *this;
 }
 
