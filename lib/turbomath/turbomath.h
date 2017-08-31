@@ -67,6 +67,10 @@ public:
   Vector& operator-= (const Vector& v);
 };
 
+inline Vector operator* (float s, const Vector& v) { return v * s; }
+inline Vector operator/ (float s, const Vector& v) { return v / s; }
+
+
 class Quaternion
 {
 public:
@@ -78,12 +82,14 @@ public:
   Quaternion();
   Quaternion(float w_, float x_, float y_, float z_);
   Quaternion(const Vector& u, const Vector& v);
+  Quaternion(float roll, float pitch, float yaw);
 
   Vector rotate(const Vector& v) const;
   Quaternion& normalize();
   Quaternion inverse() const;
   Quaternion& invert();
   Quaternion& from_two_unit_vectors(const Vector& u, const Vector& v);
+  Quaternion& from_RPY(float roll, float pitch, float yaw);
   void get_RPY(float *roll, float *pitch, float *yaw) const;
 
   Vector operator* (const Vector& v) const;
@@ -92,10 +98,10 @@ public:
 };
 
 // float-based wrappers
-float atan2(float y, float x);
+float cos(float x);
+float sin(float x);
 float asin(float x);
-
-// turbo-speed trig approximation
+float atan2(float y, float x);
 float atan(float x);
 float fsign(float y);
 

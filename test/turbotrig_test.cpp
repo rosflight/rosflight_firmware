@@ -94,9 +94,18 @@ turbomath::Quaternion random_quaternions[25] = {
 TEST(turbotrig_test, atan_test) {
   for (float i = -200.0; i <= 200.0; i += 0.001)
   {
-    EXPECT_LE(fabs(turbomath::atan(i) - atan(i)), 0.0001);
+    EXPECT_NEAR(turbomath::atan(i), atan(i), 0.0001);
   }
 }
+
+TEST(turbotrig_test, sin_cos_test) {
+  for (float i = -200.0; i <= 200.0; i += 0.001)
+  {
+    EXPECT_NEAR(turbomath::sin(i), sin(i), 0.0002);
+    EXPECT_NEAR(turbomath::cos(i), cos(i), 0.0002);
+  }
+}
+
 
 TEST(turbotrig_test, atan2_test) {
   for (float i = -100.0; i <= 100.0; i += 0.1)
@@ -105,7 +114,7 @@ TEST(turbotrig_test, atan2_test) {
     {
       if (fabs(j) > 0.0001)
       {
-        EXPECT_LE(fabs(turbomath::atan2(i, j) - atan2(i, j)), 0.001);
+        EXPECT_NEAR(turbomath::atan2(i, j), atan2(i, j), 0.001);
       }
     }
   }
@@ -115,9 +124,9 @@ TEST(turbotrig_test, asin_test) {
   for (float i = -1.0; i <= 1.0; i += 0.001)
   {
     if ( fabs(i) < 0.95 )
-      EXPECT_LE(fabs(turbomath::asin(i) - asin(i)), 0.0001);
+      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.0001);
     else
-      EXPECT_LE(fabs(turbomath::asin(i) - asin(i)), 0.05);
+      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.2);
   }
 }
 
@@ -125,13 +134,13 @@ TEST(turbotrig_test, fast_alt_test) {
 
   //out of bounds
   EXPECT_EQ(turbomath::alt(69681), 0.0);
-  EXPECT_EQ(turbomath::alt(106598), 0.0);
+  EXPECT_EQ(turbomath::alt(10700), 0.0);
 
   //all valid int values
   float trueResult = 0.0;
   for (int i = 69682; i < 106597; i++) {
     trueResult = static_cast<float>((1.0 - pow(static_cast<float>(i)/101325, 0.190284)) * 145366.45) * static_cast<float>(0.3048);
-    EXPECT_LE(fabs(turbomath::alt(i) - trueResult), .15);
+    EXPECT_NEAR(turbomath::alt(i), trueResult, .15);
     //arbitrarily chose <= .15m since fast_alt isn't accurate enough for EXPECT_CLOSE,
     //but being within .15 meters of the correct result seems pretty good to me
   }
@@ -226,6 +235,23 @@ TEST(turbovec_test, quaternion_test) {
     // And rotate back
     turbomath::Vector vec3 = quat1.inverse() * vec2;
     EXPECT_VEC3_SUPERCLOSE(vec3, veig1);
+
+    // Convert to and from euler angles
+    float p, t, s;
+    quat1.get_RPY(&p, &t, &s);
+
+    turbomath::Quaternion quat3(p, t, s);
+    Eigen::Vector3f ihat(1, 0, 0);
+    Eigen::Vector3f jhat(0, 1, 0);
+    Eigen::Vector3f khat(0, 0, 1);
+
+    Eigen::Quaternionf eig3 = Eigen::AngleAxisf(s, khat) * Eigen::AngleAxisf(t, jhat) * Eigen::AngleAxisf(p, ihat);
+
+    EXPECT_QUAT_SUPERCLOSE(quat3, eig3);
+    EXPECT_SUPERCLOSE(quat1.w, quat3.w);
+    EXPECT_SUPERCLOSE(quat1.x, quat3.x);
+    EXPECT_SUPERCLOSE(quat1.y, quat3.y);
+    EXPECT_SUPERCLOSE(quat1.z, quat3.z);
   }
 }
 
@@ -261,3 +287,4 @@ TEST(turbovec_test, quat_from_two_vectors_test){
     ASSERT_SUPERCLOSE(vec5.z, vec4.z);
   }
 }
+

@@ -21,7 +21,7 @@
 \documentclass[paper=a4, fontsize=11pt]{scrartcl} % A4 paper and 11pt font size
 
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
-\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+% \usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
 \usepackage[english]{babel} % English language/hyphenation
 \usepackage{amsmath,amsfonts,amsthm} % Math packages
 
@@ -124,7 +124,7 @@ Euler angles represent rotations about three different axes, usually, the z, y, 
 		\dot{\theta} \\
 		\dot{\psi} \\
 	\end{bmatrix}
-	= 
+	=
 	\begin{bmatrix}
 		1 & \sin(\phi) \tan(\theta) & \cos(\phi)\tan(\theta) \\
 		0 & \cos(\phi)              & -\sin(\phi) \\
@@ -139,7 +139,7 @@ Euler angles represent rotations about three different axes, usually, the z, y, 
 
 Note the large number of trigonometric functions associated with this propagation.  In a complementary filter, this will be evaluated at every measurement, and the non-linear coupling between $\bm{\omega}$  and the attitude becomes very expensive, particularly on embedded processors.
 
-Another shortcoming of euler angles is known as ``gimbal lock''.  Gimbal lock occurs at the ``singularity'' of the euler angle representation, or pointing directly up or down.  The problem occurs because there is more than one way to represent this particular rotation.  There are some steps one can take to handle these issues, but it is a fundamental problem associated with using euler angles, and motivates the other attitude representations. 
+Another shortcoming of euler angles is known as ``gimbal lock''.  Gimbal lock occurs at the ``singularity'' of the euler angle representation, or pointing directly up or down.  The problem occurs because there is more than one way to represent this particular rotation.  There are some steps one can take to handle these issues, but it is a fundamental problem associated with using euler angles, and motivates the other attitude representations.
 
 \subsection{Rotation Matrix}
 
@@ -149,15 +149,15 @@ Rotation matrices, are often used in attitude estimation, because they do not su
 	\dot{R} = \lfloor\bm{\omega}\rfloor R
 \end{equation}
 
-where $\lfloor \bm{\omega} \rfloor$ is the skew-symmetric matrix of $\bm{\omega}$, and is related to calculating the cross product. 
+where $\lfloor \bm{\omega} \rfloor$ is the skew-symmetric matrix of $\bm{\omega}$, and is related to calculating the cross product.
 
 \begin{equation}
-	\lfloor\bm{\omega}\rfloor = 
+	\lfloor\bm{\omega}\rfloor =
 	\begin{bmatrix}
 		0 & -r & q \\
 		r & 0 & -p \\
-		-q & p & 0 
-	\end{bmatrix} 
+		-q & p & 0
+	\end{bmatrix}
 \end{equation}
   This propagation step is linear with respect to the angular rates, which simplifies calculation significantly.
 
@@ -192,7 +192,7 @@ and converting back to euler angles is done via the following;
 
 \subsection{Quaternions}
 
-Quaternions are a number system which extends complex numbers.  They have four elements, commonly known as $w$, $x$, $y$, and $z$.  The last three elements can be though of as describing an axis, $\beta$ about which a rotation occurred, while the first element, $w$ can be though of as describing the amount of rotation $\alpha$ about that axis. (see eq~\ref{eq:euler_to_axis_angle}). While this may seem straight-forward, quaternions are normalized so that they can form a group.  (That is, a quaternion multiplied by a quaternion is a quaternion), so they end up being really difficult for a human being to interpret just by looking at the values.  However, they provide some amazing computational efficiencies, most of which comes from the following special mathematics associated with quaternions.  
+Quaternions are a number system which extends complex numbers.  They have four elements, commonly known as $w$, $x$, $y$, and $z$.  The last three elements can be though of as describing an axis, $\beta$ about which a rotation occurred, while the first element, $w$ can be though of as describing the amount of rotation $\alpha$ about that axis. (see eq~\ref{eq:euler_to_axis_angle}). While this may seem straight-forward, quaternions are normalized so that they can form a group.  (That is, a quaternion multiplied by a quaternion is a quaternion), so they end up being really difficult for a human being to interpret just by looking at the values.  However, they provide some amazing computational efficiencies, most of which comes from the following special mathematics associated with quaternions.
 
 First, just the definition of a quaternion:
 
@@ -201,17 +201,17 @@ First, just the definition of a quaternion:
 				q_w \\
 				q_x \\
 				q_y \\
-				q_z 
-			 \end{bmatrix} 
+				q_z
+			 \end{bmatrix}
 		   = \begin{bmatrix}
 				\cos(\alpha/2) \\
 				\sin(\alpha/2)\cos(\beta_x) \\
 				\sin(\alpha/2)\cos(\beta_y) \\
-				\sin(\alpha/2)\cos(\beta_y) 
+				\sin(\alpha/2)\cos(\beta_y)
 			 \end{bmatrix}
 			 = \begin{bmatrix}
 			   s \\
-			   \bm{v}_x \\ 
+			   \bm{v}_x \\
 			   \bm{v}_y \\
 			   \bm{v}_z
 			 \end{bmatrix}
@@ -222,7 +222,7 @@ and second, some formulas to convert to and from euler angles.
 
 
 \begin{equation}
-	\bm{q} = 
+	\bm{q} =
 	  \begin{bmatrix}
 	  	\cos(\theta/2)\cos(\theta/2)\cos(\psi/2) + \sin(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
 	  	\sin(\theta/2)\cos(\theta/2)\cos(\psi/2) - \cos(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
@@ -241,7 +241,7 @@ and second, some formulas to convert to and from euler angles.
 	\begin{bmatrix}
 		\textrm{atan2}\left( 2\left(q_wq_x + q_yq_z\right),1-2\left(q_x^2+q_y^2\right) \right) \\
 		\textrm{sin}^{-1}\left( 2 \left( q_wq_y - q_zq_x \right)  \right) \\
-		\textrm{atan2}\left( 2 \left( q_wq_z + q_xq_y \right), 1 - 2 \left( q_y^2 q_z^2 \right)  \right) 
+		\textrm{atan2}\left( 2 \left( q_wq_z + q_xq_y \right), 1 - 2 \left( q_y^2 q_z^2 \right)  \right)
 	\end{bmatrix}
 	\label{eq:euler_from_quat}
 \end{equation}
@@ -262,14 +262,14 @@ To take the ``inverse'' of a quaternion is simply to multiply $s$ or $\bm{v}$ by
 				-q_w \\
 				q_x \\
 				q_y \\
-				q_z 
-			 \end{bmatrix} 
+				q_z
+			 \end{bmatrix}
 			 	= \begin{bmatrix}
 				q_w \\
 				-q_x \\
 				-q_y \\
-				-q_z 
-			 \end{bmatrix} 
+				-q_z
+			 \end{bmatrix}
 \end{equation}
 
 and to find the difference between two quaternions, just quaternion multiply the inverse of one quaternion with the other.
@@ -292,8 +292,8 @@ where $\bm{q_{\omega}}$ is the pure quaternion created from angular rates.
 				0 \\
 				p \\
 				q \\
-				r 
-			 \end{bmatrix} 
+				r
+			 \end{bmatrix}
 \end{equation}
 
 What this means is that, like rotation matrices, quaternion dynamics are \textit{linear} with respect to angular rates, as opposed to euler angles, which are non-linear, and they take less computation than rotation matrices because they have fewer terms.  Casey et al.~\cite{Casey2013} performed a study comparing all three of the above representations, and found that complementary filters using an euler angle representation took \textbf{12 times} longer to compute on average than a quaternion-based filter.  Quaternions were also about 20\% more efficient when compared with rotation matrices.  For these reasons, ROSflight uses quaternions in its filter.
@@ -319,7 +319,7 @@ where $\bm{q}_{\omega}$ is the pure quaternion formed from a composite $\bm{\ome
 \begin{equation}
 \begin{aligned}
 	\bm{q}_{\omega} &= \textrm{p}\left(\bar{\bm{\omega}} - \hat{\bm{b}} + k_P\wacc\right) \\
-	&= \textrm{p}\left( \bm{\omega}_{comp} \right) 
+	&= \textrm{p}\left( \bm{\omega}_{comp} \right)
 	\label{eq:q_omega}
 \end{aligned}
 \end{equation}
@@ -336,7 +336,7 @@ where $\bm{q}_{\omega}$ is the pure quaternion formed from a composite $\bm{\ome
 $\wacc$ can be described as the error in the attitude as predicted by the accelerometer.  To calculate $\wacc$ the quaternion describing the rotation between the accelerometer estimate and the inertial frame, $\qmeas$, is first calculated
 \begin{equation}
 \begin{aligned}
-	\avec &= 
+	\avec &=
 		\begin{bmatrix}
 			a_x \\
 			a_y \\
@@ -362,7 +362,7 @@ $\wacc$ can be described as the error in the attitude as predicted by the accele
 \newcommand{\vtilde}{\tilde{\bm{v}}}
 Next, the quaternion error between the estimate $\qhat$ and the accelerometer measure $\qmeas$ is calculated.
 \begin{equation}
-	\qtilde = \qmeas^{-1} \otimes \qhat = 
+	\qtilde = \qmeas^{-1} \otimes \qhat =
 		\begin{bmatrix}
 			\tilde{s}\\
 			\vtilde
@@ -443,4 +443,3 @@ Control is performed according to euler angle estimates, and to reduce the compu
 
 
 \end{document}
-
