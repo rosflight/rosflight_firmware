@@ -67,6 +67,10 @@ public:
   Vector& operator-= (const Vector& v);
 };
 
+inline Vector operator* (float s, Vector v) { return v * s; }
+inline Vector operator/ (float s, Vector v) { return v / s; }
+
+
 class Quaternion
 {
 public:
@@ -85,7 +89,7 @@ public:
   Quaternion inverse() const;
   Quaternion& invert();
   Quaternion& from_two_unit_vectors(const Vector& u, const Vector& v);
-  Quaternion& from_RPY(const float& roll, const float& pitch, const float& yaw);
+  Quaternion& from_RPY(float roll, float pitch, float yaw);
   void get_RPY(float *roll, float *pitch, float *yaw) const;
 
   Vector operator* (const Vector& v) const;
