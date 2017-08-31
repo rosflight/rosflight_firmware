@@ -67,8 +67,8 @@ public:
   Vector& operator-= (const Vector& v);
 };
 
-inline Vector operator* (float s, Vector v) { return v * s; }
-inline Vector operator/ (float s, Vector v) { return v / s; }
+inline Vector operator* (float s, const Vector& v) { return v * s; }
+inline Vector operator/ (float s, const Vector& v) { return v / s; }
 
 
 class Quaternion
