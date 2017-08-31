@@ -299,6 +299,9 @@ bool Sensors::update_imu(void)
   else
   {
     // if we have lost 10 IMU messages then something is wrong
+    // However, because we look for disabled sensors while disarmed,
+    // we get IMU timeouts, which last for at least 10 ms.  Therefore
+    // we have an adjustable imu_timeout.
     int imu_timeout = rf_.state_manager_.state().armed ? 10 : 1000;
     if (rf_.board_.clock_millis() > last_imu_update_ms_ + imu_timeout)
     {
