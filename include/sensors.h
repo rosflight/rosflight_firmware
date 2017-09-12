@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * Copyright (c) 2017, James Jackson, Daniel Koch, and Craig Bidstrup,
+ * BYU MAGICC Lab
  *
  * All rights reserved.
  *
@@ -43,7 +44,7 @@ class ROSflight;
 
 class Sensors
 {
-
+public:
   struct Data
   {
     vector_t accel = {0, 0, 0};
@@ -54,12 +55,15 @@ class Sensors
     float diff_pressure_velocity = 0;
     float diff_pressure = 0;
     float diff_pressure_temp = 0;
+    bool diff_pressure_valid = false;
 
     float baro_altitude = 0;
     float baro_pressure = 0;
     float baro_temperature = 0;
+    bool baro_valid = false;
 
     float sonar_range = 0;
+    bool sonar_range_valid = false;
 
     vector_t mag = {0, 0, 0};
 
@@ -69,7 +73,6 @@ class Sensors
     bool diff_pressure_present = false;
   };
 
-public:
   Sensors(ROSflight& rosflight);
 
   inline const Data& data() const { return data_; }
@@ -95,6 +98,40 @@ public:
   }
 
 private:
+  static const float BARO_MAX_CHANGE_RATE;
+  static const float BARO_SAMPLE_RATE;
+  static const float DIFF_MAX_CHANGE_RATE;
+  static const float DIFF_SAMPLE_RATE;
+  static const float SONAR_MAX_CHANGE_RATE;
+  static const float SONAR_SAMPLE_RATE;
+  static const int SENSOR_CAL_DELAY_CYCLES;
+  static const int SENSOR_CAL_CYCLES;
+  static const float BARO_MAX_CALIBRATION_VARIANCE;
+  static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
+
+  class OutlierFilter
+  {
+  private:
+    float max_change_;
+    float center_;
+    int window_size_;
+    bool init_ = false;
+
+  public:
+    OutlierFilter() {};
+    void init(float max_change_rate, float update_rate, float center);
+    bool update(float new_val, float *val);
+  };
+
+  enum LowPrioritySensors
+  {
+    BAROMETER,
+    DIFF_PRESSURE,
+    SONAR,
+    MAGNETOMETER,
+    NUM_LOW_PRIORITY_SENSORS
+  };
+
   ROSflight& rf_;
 
   Data data_;
@@ -104,7 +141,7 @@ private:
 
   bool calibrating_acc_flag_ = false;
   bool calibrating_gyro_flag_ = false;
-  uint8_t next_sensor_to_update_ = 0;
+  LowPrioritySensors next_sensor_to_update_ = BAROMETER;
   void calibrate_accel(void);
   void calibrate_gyro(void);
   void calibrate_baro(void);
@@ -136,13 +173,22 @@ private:
   bool baro_calibrated_ = false;
   float ground_pressure_ = 0.0f;
   uint16_t baro_calibration_count_ = 0;
-  uint32_t last_baro_cal_iter_ms = 0;
-  float baro_calibration_sum_ = 0.0f;
+  uint32_t last_baro_cal_iter_ms_ = 0;
+  float baro_calibration_mean_ = 0.0f;
+  float baro_calibration_var_ = 0.0f;
 
   // Diff Pressure Calibration
   bool diff_pressure_calibrated_ = false;
   uint16_t diff_pressure_calibration_count_ = 0;
-  float diff_pressure_calibration_sum_ = 0.0f;
+  uint32_t last_diff_pressure_cal_iter_ms_ = 0;
+  float diff_pressure_calibration_mean_ = 0.0f;
+  float diff_pressure_calibration_var_ = 0.0f;
+
+  // Sensor Measurement Outlier Filters
+  OutlierFilter baro_outlier_filt_;
+  OutlierFilter diff_outlier_filt_;
+  OutlierFilter sonar_outlier_filt_;
+
 };
 
 } // namespace rosflight_firmware

@@ -29,17 +29,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+
 extern "C"
 {
+
 #include <breezystm32.h>
 #include "flash.h"
 extern void SetSysClock(bool overclock);
 
-void WWDG_IRQHandler()
-{
-  volatile int debug = 1;
 }
-}
+
 
 #include "naze32.h"
 
@@ -106,22 +107,22 @@ uint8_t Naze32::serial_read(void)
 
 void Naze32::sensors_init()
 {
-    _board_revision = 2;
-    // Initialize I2c
-    i2cInit(I2CDEV_2);
+  _board_revision = 2;
+  // Initialize I2c
+  i2cInit(I2CDEV_2);
 
-    while(millis() < 50);
+  while(millis() < 50);
 
-    i2cWrite(0,0,0);
-    ms5611_init();
-    hmc5883lInit(_board_revision);
-    mb1242_init();
-    ms4525_init();
+  i2cWrite(0,0,0);
+  ms5611_init();
+  hmc5883lInit(_board_revision);
+  mb1242_init();
+  ms4525_init();
 
-    // IMU
-    uint16_t acc1G;
-    mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
-    _accel_scale = 9.80665f/acc1G;
+  // IMU
+  uint16_t acc1G;
+  mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
+  _accel_scale = 9.80665f/acc1G;
 }
 
 uint16_t Naze32::num_sensor_errors(void)
@@ -136,25 +137,25 @@ bool Naze32::new_imu_data()
 
 bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
-    volatile int16_t gyro_raw[3], accel_raw[3];
-    volatile int16_t raw_temp;
-    mpu6050_async_read_all(accel_raw, &raw_temp, gyro_raw, time_us);
+  volatile int16_t gyro_raw[3], accel_raw[3];
+  volatile int16_t raw_temp;
+  mpu6050_async_read_all(accel_raw, &raw_temp, gyro_raw, time_us);
 
-    accel[0] = accel_raw[0] * _accel_scale;
-    accel[1] = -accel_raw[1] * _accel_scale;
-    accel[2] = -accel_raw[2] * _accel_scale;
+  accel[0] = accel_raw[0] * _accel_scale;
+  accel[1] = -accel_raw[1] * _accel_scale;
+  accel[2] = -accel_raw[2] * _accel_scale;
 
-    gyro[0] = gyro_raw[0] * _gyro_scale;
-    gyro[1] = -gyro_raw[1] * _gyro_scale;
-    gyro[2] = -gyro_raw[2] * _gyro_scale;
+  gyro[0] = gyro_raw[0] * _gyro_scale;
+  gyro[1] = -gyro_raw[1] * _gyro_scale;
+  gyro[2] = -gyro_raw[2] * _gyro_scale;
 
-    (*temperature) = (float)raw_temp/340.0f + 36.53f;
+  (*temperature) = (float)raw_temp/340.0f + 36.53f;
 
-    if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0)
-    {
-      return false;
-    }
-    else return true;
+  if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0)
+  {
+    return false;
+  }
+  else return true;
 }
 
 void Naze32::imu_not_responding_error(void)
@@ -169,7 +170,7 @@ void Naze32::mag_read(float mag[3])
 {
   // Convert to NED
   int16_t raw_mag[3];
-//  hmc5883l_update();
+  //  hmc5883l_update();
   hmc5883l_request_async_update();
   hmc5883l_async_read(raw_mag);
   mag[0] = (float)raw_mag[0];
@@ -208,12 +209,35 @@ void Naze32::diff_pressure_read(float *diff_pressure, float *temperature)
 
 bool Naze32::sonar_check(void)
 {
-  return sonarPresent();
+  mb1242_async_update();
+  if (mb1242_present())
+  {
+    sonar_type = SONAR_I2C;
+    return true;
+  }
+  else if (sonarPresent())
+  {
+    sonar_type = SONAR_PWM;
+    return true;
+  }
+  else
+  {
+    sonar_type = SONAR_NONE;
+    return false;
+  }
 }
 
 float Naze32::sonar_read(void)
 {
-  return sonarRead(6);
+  if (sonar_type == SONAR_I2C)
+  {
+    mb1242_async_update();
+    return mb1242_async_read();
+  }
+  else if (sonar_type == SONAR_PWM)
+    return sonarRead(6);
+  else
+    return 0.0f;
 }
 
 uint16_t num_sensor_errors(void)
@@ -240,7 +264,7 @@ void Naze32::pwm_write(uint8_t channel, uint16_t value)
 
 bool Naze32::pwm_lost()
 {
-    return ((millis() - pwmLastUpdate()) > 40);
+  return ((millis() - pwmLastUpdate()) > 40);
 }
 
 // non-volatile memory
@@ -271,3 +295,5 @@ void Naze32::led1_off(void) { LED1_OFF; }
 void Naze32::led1_toggle(void) { LED1_TOGGLE; }
 
 }
+
+#pragma GCC diagnostic pop

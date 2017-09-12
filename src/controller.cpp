@@ -96,7 +96,7 @@ void Controller::init()
 void Controller::run()
 {
   // Time calculation
-  if (prev_time_us_ < 1)
+  if (prev_time_us_ == 0)
   {
     prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
@@ -106,9 +106,9 @@ void Controller::run()
   if ( dt_us < 0 )
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
-  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
@@ -170,39 +170,40 @@ void Controller::calculate_equilbrium_torque_from_rc()
 
 void Controller::param_change_callback(uint16_t param_id)
 {
+  (void) param_id; // suppress unused parameter warning
   init();
 }
 
-vector_t Controller::run_pid_loops(int32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
+vector_t Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
-  vector_t output;
+  vector_t out;
 
   float dt = dt_us;
 
   // ROLL
   if (command.x.type == RATE)
-    output.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
+    out.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
   else if (command.x.type == ANGLE)
-    output.x = roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
+    out.x = roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
   else
-    output.x = command.x.value;
+    out.x = command.x.value;
 
   // PITCH
   if (command.y.type == RATE)
-    output.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
+    out.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
   else if (command.y.type == ANGLE)
-    output.y = pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
+    out.y = pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
   else
-    output.y = command.y.value;
+    out.y = command.y.value;
 
   // YAW
   if (command.z.type == RATE)
-    output.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
+    out.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
   else
-    output.z = command.z.value;
+    out.z = command.z.value;
 
-  return output;
+  return out;
 }
 
 Controller::PID::PID() :

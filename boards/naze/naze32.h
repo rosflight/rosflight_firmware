@@ -55,6 +55,14 @@ private:
   float _accel_scale = 1.0;
   float _gyro_scale = 1.0;
 
+  enum
+  {
+    SONAR_NONE,
+    SONAR_I2C,
+    SONAR_PWM
+  };
+  uint8_t sonar_type = SONAR_NONE;
+
 
 
 public:

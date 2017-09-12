@@ -128,7 +128,6 @@ void Estimator::run()
   }
   else if (now_us  == last_time_)
   {
-    volatile int debug = 1;
     return;
   }
 
@@ -139,7 +138,7 @@ void Estimator::run()
   state_.timestamp_us = now_us;
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now_us < (uint64_t)RF_.params_.get_param_int(PARAM_INIT_TIME)*1000)
+  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
   {
     kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
@@ -267,7 +266,8 @@ void Estimator::run()
 
   // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
   // then trigger an unhealthy estimator error
-  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_)
+  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_
+      && !RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
     RF_.state_manager_.set_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }

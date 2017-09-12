@@ -171,35 +171,34 @@ void euler_from_quat(quaternion_t q, float *phi, float *theta, float *psi)
                       1.0f - 2.0f * (q.y*q.y + q.z*q.z));
 }
 
+union float_converter_t
+{
+  float fvalue;
+  int32_t ivalue;
+};
 
 float turboInvSqrt(float x)
 {
-  volatile long i;
-  volatile float x2, y;
+  volatile float x2;
+  volatile float_converter_t y, i;
   const float threehalfs = 1.5F;
 
   x2 = x * 0.5F;
-  y  = x;
-  i  = * (long *) &y;                         // evil floating point bit level hacking
-  i  = 0x5f3759df - (i >> 1);
-  y  = * (float *) &i;
-  y  = y * (threehalfs - (x2 * y * y));       // 1st iteration
-  y  = y * (threehalfs - (x2 * y * y));       // 2nd iteration, this can be removed
+  y.fvalue  = x;
+  i.ivalue  = y.ivalue;                             // evil floating point bit level hacking
+  i.ivalue  = 0x5f3759df - (i.ivalue >> 1);
+  y.fvalue = i.fvalue;
+  y.fvalue  = y.fvalue * (threehalfs - (x2 * y.fvalue * y.fvalue));       // 1st iteration
+  y.fvalue  = y.fvalue * (threehalfs - (x2 * y.fvalue * y.fvalue));       // 2nd iteration, this can be removed
 
-  return y;
+  return fabs(y.fvalue);
 }
-
-float sign(float x)
-{
-  return (x > 0) - (x < 0);
-}
-
 
 float fsat(float value, float max)
 {
-  if (abs(value) > abs(max))
+  if (fabs(value) > fabs(max))
   {
-    value = max*sign(value);
+    value = max*fsign(value);
   }
   return value;
 }

@@ -118,9 +118,9 @@ void Mavlink::handle_msg_param_request_read(const mavlink_message_t *const msg)
   mavlink_param_request_read_t read;
   mavlink_msg_param_request_read_decode(msg, &read);
 
-  if (read.target_system == (uint8_t) RF_.params_.get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
+  if (read.target_system == static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID))) // TODO check if component id matches?
   {
-    uint16_t id = (read.param_index < 0) ? RF_.params_.lookup_param_id(read.param_id) : (uint16_t) read.param_index;
+    uint16_t id = (read.param_index < 0) ? RF_.params_.lookup_param_id(read.param_id) : static_cast<uint16_t>(read.param_index);
 
     if (id < PARAMS_COUNT)
       update_param(id);
@@ -132,7 +132,7 @@ void Mavlink::handle_msg_param_set(const mavlink_message_t *const msg)
   mavlink_param_set_t set;
   mavlink_msg_param_set_decode(msg, &set);
 
-  if (set.target_system == (uint8_t) RF_.params_.get_param_int(PARAM_SYSTEM_ID)) // TODO check if component id matches?
+  if (set.target_system == static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID))) // TODO check if component id matches?
   {
     uint16_t id = RF_.params_.lookup_param_id(set.param_id);
 
@@ -157,10 +157,10 @@ void Mavlink::handle_msg_param_set(const mavlink_message_t *const msg)
         switch (candidate_type)
         {
         case PARAM_TYPE_INT32:
-          RF_.params_.set_param_int(id, *(int32_t *) &set.param_value);
-          break;
         case PARAM_TYPE_FLOAT:
           RF_.params_.set_param_float(id, set.param_value);
+          break;
+        default:
           break;
         }
       }
@@ -172,7 +172,7 @@ void Mavlink::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT)
   {
-    update_param((uint16_t) send_params_index_);
+    update_param(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
   }
 }
@@ -228,9 +228,9 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
       reboot_to_bootloader_flag = true;
       break;
     case ROSFLIGHT_CMD_SEND_VERSION:
-      mavlink_message_t msg;
-      mavlink_msg_rosflight_version_pack(sysid_, compid_, &msg, GIT_VERSION_STRING);
-      send_message(msg);
+      mavlink_message_t out_msg;
+      mavlink_msg_rosflight_version_pack(sysid_, compid_, &out_msg, GIT_VERSION_STRING);
+      send_message(out_msg);
       break;
     default:
       log(LOG_ERROR, "Unsupported ROSFLIGHT CMD %d", cmd.command);
@@ -261,9 +261,9 @@ void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)
 
   if (tsync.tc1 == 0) // check that this is a request, not a response
   {
-    mavlink_message_t msg;
-    mavlink_msg_timesync_pack(sysid_, compid_, &msg, (int64_t) now_us*1000, tsync.ts1);
-    send_message(msg);
+    mavlink_message_t out_msg;
+    mavlink_msg_timesync_pack(sysid_, compid_, &out_msg, static_cast<int64_t>(now_us)*1000, tsync.ts1);
+    send_message(out_msg);
   }
 }
 
@@ -306,7 +306,9 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
     new_offboard_command.z.type = RATE;
     new_offboard_command.F.type = THROTTLE;
     break;
+  default:
     // Handle error state
+    break;
   }
 
   // Tell the command_manager that we have a new command we need to mux
@@ -374,7 +376,6 @@ void Mavlink::send_log_message(uint8_t severity, const char* text)
 
 void Mavlink::send_heartbeat(void)
 {
-  uint8_t control_mode = 0;
   mavlink_message_t msg;
   mavlink_msg_heartbeat_pack(RF_.params_.get_param_int(PARAM_SYSTEM_ID), 0, &msg,
                              RF_.params_.get_param_int(PARAM_FIXED_WING) ? MAV_TYPE_FIXED_WING : MAV_TYPE_QUADROTOR,
@@ -479,7 +480,7 @@ void Mavlink::send_rc_raw(void)
 
 void Mavlink::send_diff_pressure(void)
 {
-  if (RF_.sensors_.data().diff_pressure_present)
+  if (RF_.sensors_.data().diff_pressure_valid)
   {
     mavlink_message_t msg;
     mavlink_msg_diff_pressure_pack(sysid_, compid_, &msg,
@@ -492,7 +493,7 @@ void Mavlink::send_diff_pressure(void)
 
 void Mavlink::send_baro(void)
 {
-  if (RF_.sensors_.data().baro_present)
+  if (RF_.sensors_.data().baro_valid)
   {
     mavlink_message_t msg;
     mavlink_msg_small_baro_pack(sysid_, compid_, &msg,
@@ -505,7 +506,7 @@ void Mavlink::send_baro(void)
 
 void Mavlink::send_sonar(void)
 {
-  if (RF_.sensors_.data().sonar_present)
+  if (RF_.sensors_.data().sonar_range_valid)
   {
     mavlink_message_t msg;
     mavlink_msg_small_range_pack(sysid_, compid_, &msg,

@@ -57,31 +57,32 @@ Params::Params(ROSflight& _rf) :
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
-  params.values[id] = value;
+  params.values[id].ivalue = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
   memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
-  params.values[id] = *((int32_t *) &value);
+  params.values[id].fvalue = value;
   params.types[id] = PARAM_TYPE_FLOAT;
 }
 
 uint8_t Params::compute_checksum(void)
 {
   uint8_t chk = 0;
-  const uint8_t *p;
+  const char *p;
 
-  for (p = (const uint8_t *)&params.values; p < ((const uint8_t *)&params.values + 4*PARAMS_COUNT); p++)
+  for (p = reinterpret_cast<const char *>(&params.values); p < reinterpret_cast<const char *>(&params.values) + 4*PARAMS_COUNT; p++)
     chk ^= *p;
-  for (p = (const uint8_t *)&params.names; p < ((const uint8_t *)&params.names + PARAMS_COUNT*PARAMS_NAME_LENGTH); p++)
+  for (p = reinterpret_cast<const char *>(&params.names); p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT*PARAMS_NAME_LENGTH; p++)
     chk ^= *p;
-  for (p = (const uint8_t *)&params.types; p < ((const uint8_t *)&params.types + PARAMS_COUNT); p++)
+  for (p = reinterpret_cast<const char *>(&params.types); p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++)
     chk ^= *p;
 
   return chk;
 }
+
 
 // function definitions
 void Params::init()
@@ -137,11 +138,11 @@ void Params::set_defaults(void)
 
   init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);   // Roll Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);   // Roll Angle Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.07f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.05f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
 
   init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proporitional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.07f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.05f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
 
   init_param_float(PARAM_X_EQ_TORQUE, "X_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on x axis | -1.0 | 1.0
   init_param_float(PARAM_Y_EQ_TORQUE, "Y_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on y axis | -1.0 | 1.0
@@ -164,8 +165,8 @@ void Params::set_defaults(void)
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
-  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 2.0f); // estimator proportional gain - See estimator documentation | 0 | 10.0
-  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.2f); // estimator integral gain - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 0.5f); // estimator proportional gain - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.05f); // estimator integral gain - See estimator documentation | 0 | 1.0
 
   init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
   init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
@@ -237,7 +238,7 @@ void Params::set_defaults(void)
   /***************************/
   /*** FRAME CONFIGURATION ***/
   /***************************/
-  init_param_int(PARAM_MIXER, "MIXER", Mixer::INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 5
+  init_param_int(PARAM_MIXER, "MIXER", Mixer::INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 10
 
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false); // switches on passthrough commands for fixedwing operation | 0 | 1
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0); // reverses elevator servo output | 0 | 1
@@ -313,7 +314,7 @@ uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
     }
 
     if (match)
-      return (uint16_t) id;
+      return id;
   }
 
   return PARAMS_COUNT;
@@ -321,9 +322,9 @@ uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 
 bool Params::set_param_int(uint16_t id, int32_t value)
 {
-  if (id < PARAMS_COUNT && value != params.values[id])
+  if (id < PARAMS_COUNT && value != params.values[id].ivalue)
   {
-    params.values[id] = value;
+    params.values[id].ivalue = value;
     change_callback(id);
     RF_.mavlink_.update_param(id);
     return true;
@@ -333,7 +334,14 @@ bool Params::set_param_int(uint16_t id, int32_t value)
 
 bool Params::set_param_float(uint16_t id, float value)
 {
-  return set_param_int(id, *(int32_t *) &value);
+  if (id < PARAMS_COUNT && value != params.values[id].fvalue)
+  {
+    params.values[id].fvalue = value;
+    change_callback(id);
+    RF_.mavlink_.update_param(id);
+    return true;
+  }
+  return false;
 }
 
 bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -344,6 +352,6 @@ bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t 
 
 bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
 {
-  return set_param_by_name_int(name, *(int32_t *) &value);
+  return set_param_by_name_int(name, reinterpret_cast<int32_t &>(value));
 }
 }
