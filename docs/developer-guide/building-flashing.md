@@ -1,10 +1,10 @@
-# Developer Documentation
+# Building and Flashing the firmware
 
-These documents are designed to help developers get up and running with developing new features and understanding the internals of the firmware.  As of version 0.1, development is only supported on Ubuntu Linux 16.04.
+These documents are designed to help developers get up and running with developing new features and understanding the internals of the firmware.  Development is currently supported only on Ubuntu Linux 16.04.
 
-## Building Firmware from source
+## Building firmware from source
 
-To build the firmware, you will need the latest version of the ARM embedded toolchain.  This can be done with the following commands:
+To build the firmware, you will need the latest version of the ARM embedded toolchain.  This can be obtained with the following commands:
 
 ``` bash
 sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
@@ -20,7 +20,7 @@ cd firmware
 make
 ```
 
-## Flashing Newly Built Firmware
+## Flashing newly built firmware
 
 Install the stm32flash utility
 
@@ -35,7 +35,7 @@ rm -rf stm32flash-code
 Then put the board in bootloader mode (short the boot pins while cycling power) and type `make flash`
 
 
-## Building and Running Unit Tests
+## Building and running unit tests
 
 Contributions will need to pass our continuous integration unit tests before merging.  To test your contributions against these tests, you'll first need to install Eigen and gtest
 
@@ -57,5 +57,3 @@ cmake ..
 make
 ./unit_tests
 ```
-
-

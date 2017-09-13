@@ -4,16 +4,16 @@ All documentation for the entire ROSflight stack (both firmware and ROS code) be
 
 ## Install mkdocs and latex support
 
-This is easy
+This is easy:
 
 ``` bash
 sudo apt install mkdocs
 sudo pip3 install https://github.com/mitya57/python-markdown-math/archive/master.zip
 ```
 
-(You don't have use to the global pip if you have python environments working, but for beginners, this is the most simple way to do it)
+(You don't have use to the global pip if you have python environments working, but for beginners, this is the simplest way to do it)
 
-## Begin hosting readthedocs server
+## Run the mkdocs server
 
 Just type
 
@@ -36,9 +36,9 @@ Now, as you make changes to the documentation, you should be able to see it on y
 To add a new page to the documentation, just check out the mkdocs.yaml file in the root of the firmware directory, you should be able to figure it out from there.
 
 ## Adding latex
-The syntax for adding latex inline is `\( x \)` which renders as \(x \).  For adding a block, it's
+The syntax for adding latex math inline is `\( x \)` which renders as \(x \).  For adding a block, it's
 
-```
+``` latex
 $$ E = mc^2 $$
 ```
 which renders as

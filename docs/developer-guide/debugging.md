@@ -8,17 +8,19 @@ _**It appears that perhaps debugging only works with Ubuntu 16.04 because of som
 
 ## Add User to Dailout Group
 
-first, make sure you are in the `dailout` group
+First, make sure you are in the `dailout` group:
 
-`sudo adduser <user_name> dialout`
+``` bash
+sudo adduser $USER dialout
+```
 
-log out and log back in
+Log out and back in for changes to take effect.
 
 ## Install QtCreator 4.1.0
 
-For some reason, the QtCreator bundled with 16.04 is unstable.  4.2.0 messes up ROS workspace, so the most recent stable build for use with ROS and debugging is 4.1.0.  Download it from [here](https://download.qt.io/official_releases/qtcreator/4.1/4.1.0/installer_source/linux_gcc_64_rhel66/qtcreator.7z).
+For some reason, the QtCreator bundled with 16.04 is unstable.  4.2.0 messes up ROS workspaces, so the most recent stable build for use with ROS and debugging is 4.1.0.  Download it from [here](https://download.qt.io/official_releases/qtcreator/4.1/4.1.0/installer_source/linux_gcc_64_rhel66/qtcreator.7z).
 
-This downloads a `.7z` file, which requires `p7zip` to extract.  After downloading extract and install qtcreator
+This downloads a `.7z` file, which requires `p7zip` to extract.  After downloading extract and install qtcreator:
 
 ```bash
 sudo apt-get install p7zip-full
@@ -34,7 +36,7 @@ sudo ln -s /opt/qtcreator/bin/qtcreator /usr/bin/.
 
 If you want the icon to appear in your unity menu, create the following file as /usr/share/applications/qtcreator.desktop
 
-```.bash
+```
 [Desktop Entry]
 Exec=bash -i -c qtcreator %F
 Icon=qtcreator
@@ -61,7 +63,6 @@ sudo mv openocd /opt/.
 
 Then, for convenience, I normally create a script to run openocd for me.  Here is my `start_openocd_f1` script
 
-
 ``` bash
 #!/bin/bash
 
@@ -69,11 +70,11 @@ cd /opt/openocd/0.10.0-201701241841/bin
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg
 ```
 
-Which, I move to the `/usr/local/bin` directory so I can call it from anywhere
+which I move to the `~/.local/bin` directory so I can call it from anywhere:
 
 ``` bash
-sudo chmod +x start_openocd_f1
-sudo mv start_openocd_f1 /usr/local/bin/.
+chmod +x start_openocd_f1
+mv start_openocd_f1 ~/.local/bin
 ```
 
 ## Install ARM compiler and 32-bit Dependencies
