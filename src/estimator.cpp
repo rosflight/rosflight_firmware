@@ -97,13 +97,13 @@ void Estimator::init()
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
-  const vector_t& raw_accel = RF_.sensors_.data().accel;
+  const turbomath::Vector& raw_accel = RF_.sensors_.data().accel;
   accel_LPF_.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*accel_LPF_.x;
   accel_LPF_.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*accel_LPF_.y;
   accel_LPF_.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*accel_LPF_.z;
 
   float alpha_gyro = RF_.params_.get_param_float(PARAM_GYRO_ALPHA);
-  const vector_t& raw_gyro = RF_.sensors_.data().gyro;
+  const turbomath::Vector& raw_gyro = RF_.sensors_.data().gyro;
   gyro_LPF_.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*gyro_LPF_.x;
   gyro_LPF_.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*gyro_LPF_.y;
   gyro_LPF_.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*gyro_LPF_.z;
@@ -153,22 +153,22 @@ void Estimator::run()
   run_LPF();
 
   // add in accelerometer
-  float a_sqrd_norm = sqrd_norm(accel_LPF_);
+  float a_sqrd_norm = accel_LPF_.sqrd_norm();
 
-  vector_t w_acc;
+  turbomath::Vector w_acc;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
       && a_sqrd_norm < 1.1f*1.1f*9.80665f*9.80665f && a_sqrd_norm > 0.9f*0.9f*9.80665f*9.80665f)
   {
     // Get error estimated by accelerometer measurement
     last_acc_update_us_ = now_us;
     // turn measurement into a unit vector
-    vector_t a = vector_normalize(accel_LPF_);
+    turbomath::Vector a = accel_LPF_.normalized();
     // Get the quaternion from accelerometer (low-frequency measure q)
     // (Not in either paper)
-    quaternion_t q_acc_inv = quat_from_two_unit_vectors(g_, a);
+    turbomath::Quaternion q_acc_inv(g_, a);
     // Get the error quaternion between observer and low-freq q
     // Below Eq. 45 Mahony Paper
-    quaternion_t q_tilde = quaternion_multiply(q_acc_inv, state_.attitude);
+    turbomath::Quaternion q_tilde = q_acc_inv * state_.attitude;
     // Correction Term of Eq. 47a and 47b Mahony Paper
     // w_acc = 2*s_tilde*v_tilde
     w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
@@ -190,13 +190,12 @@ void Estimator::run()
 
 
   // Handle Gyro Measurements
-  vector_t wbar;
+  turbomath::Vector wbar;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_QUAD_INT))
   {
     // Quadratic Interpolation (Eq. 14 Casey Paper)
     // this step adds 12 us on the STM32F10x chips
-    wbar = vector_add(vector_add(scalar_multiply(-1.0f/12.0f,w2_), scalar_multiply(8.0f/12.0f,w1_)),
-                      scalar_multiply(5.0f/12.0f,gyro_LPF_));
+    wbar = (w2_/-12.0f) + w1_*(8.0f/12.0f) + gyro_LPF_ * (5.0f/12.0f);
     w2_ = w1_;
     w1_ = gyro_LPF_;
   }
@@ -207,10 +206,10 @@ void Estimator::run()
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
-  vector_t wfinal = vector_add(vector_sub(wbar, bias_), scalar_multiply(kp, w_acc));
+  turbomath::Vector wfinal = wbar - bias_ + w_acc * kp;
 
   // Propagate Dynamics (only if we've moved)
-  float sqrd_norm_w = sqrd_norm(wfinal);
+  float sqrd_norm_w = wfinal.sqrd_norm();
   if (sqrd_norm_w > 0.0f)
   {
     float p = wfinal.x;
@@ -224,45 +223,36 @@ void Estimator::run()
       // (Eq. 12 Casey Paper)
       // This adds 90 us on STM32F10x chips
       float norm_w = sqrt(sqrd_norm_w);
-      quaternion_t qhat_np1;
+      turbomath::Quaternion qhat_np1;
       float t1 = cos((norm_w*dt)/2.0f);
       float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
       qhat_np1.w = t1*state_.attitude.w + t2*(-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z);
       qhat_np1.x = t1*state_.attitude.x + t2*( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z);
       qhat_np1.y = t1*state_.attitude.y + t2*( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z);
       qhat_np1.z = t1*state_.attitude.z + t2*( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y);
-      state_.attitude = quaternion_normalize(qhat_np1);
+      state_.attitude = qhat_np1.normalize();
     }
     else
     {
       // Euler Integration
       // (Eq. 47a Mahony Paper), but this is pretty straight-forward
-      quaternion_t qdot = {0.5f * (-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z),
-                           0.5f * ( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z),
-                           0.5f * ( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z),
-                           0.5f * ( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y)
-                          };
+      turbomath::Quaternion qdot(0.5f * (-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z),
+                                 0.5f * ( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z),
+                                 0.5f * ( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z),
+                                 0.5f * ( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y));
       state_.attitude.w += qdot.w*dt;
       state_.attitude.x += qdot.x*dt;
       state_.attitude.y += qdot.y*dt;
       state_.attitude.z += qdot.z*dt;
-      state_.attitude = quaternion_normalize(state_.attitude);
-    }
-    // Make sure the quaternion is canoncial (w is always positive)
-    if (state_.attitude.w < 0.0f)
-    {
-      state_.attitude.w *= -1.0f;
-      state_.attitude.x *= -1.0f;
-      state_.attitude.y *= -1.0f;
-      state_.attitude.z *= -1.0f;
+      state_.attitude.normalize();
     }
   }
 
   // Extract Euler Angles for controller
-  euler_from_quat(state_.attitude, &state_.roll, &state_.pitch, &state_.yaw);
+  state_.attitude.get_RPY(&state_.roll, &state_.pitch, &state_.yaw);
 
   // Save off adjust gyro measurements with estimated biases for control
-  state_.angular_velocity = vector_sub(gyro_LPF_, bias_);
+  state_.angular_velocity = gyro_LPF_ - bias_;
 
   // If it has been more than 0.5 seconds since the acc update ran and we are supposed to be getting them
   // then trigger an unhealthy estimator error
@@ -277,5 +267,4 @@ void Estimator::run()
   }
 }
 
-}
-
+} // namespace rosflight_firmware

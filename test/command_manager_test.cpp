@@ -1,12 +1,7 @@
-#include <gtest/gtest.h>
+#include "common.h"
 #include "rosflight.h"
 #include "test_board.h"
 #include "cmath"
-
-#define EXPECT_INTHESAMEBALLPARK(x, y) EXPECT_LE(std::abs(x - y), 0.1)
-#define EXPECT_PRETTYCLOSE(x, y) EXPECT_LE(std::abs(x - y), 0.01)
-#define EXPECT_CLOSE(x, y) EXPECT_LE(std::abs(x - y), 0.001)
-#define EXPECT_BASICALLYTHESAME(x, y) EXPECT_LE(std::abs(x - y), 0.00001)
 
 #define CHN_LOW 1100
 #define CHN_HIGH 1900
@@ -55,13 +50,13 @@ TEST(command_manager_test, rc) {
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0);
+  EXPECT_CLOSE(output.x.value, 0.0);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
+  EXPECT_CLOSE(output.y.value, 0.0);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0);
+  EXPECT_CLOSE(output.z.value, 0.0);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.F.value, 0.0);
 
   rc_values[0] = 2000;
   rc_values[1] = 1000;
@@ -72,13 +67,13 @@ TEST(command_manager_test, rc) {
 
   output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.x.value, 1.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 1.0*max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.y.value, -1.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, -1.0*max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_PRETTYCLOSE(output.z.value, -0.5*max_yawrate);
+  EXPECT_CLOSE(output.z.value, -0.5*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.5);
+  EXPECT_CLOSE(output.F.value, 0.5);
 }
 
 
@@ -126,13 +121,13 @@ TEST(command_manager_test, rc_arm_disarm) {
   // Check the output
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 0.0*max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, 0.0*max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_PRETTYCLOSE(output.z.value, 1.0*max_yawrate);
+  EXPECT_CLOSE(output.z.value, 1.0*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.F.value, 0.0);
 
   // See that we are armed
   EXPECT_EQ(rf.state_manager_.state().armed, true);
@@ -288,13 +283,13 @@ TEST(command_manager_test, rc_failsafe_test) {
   // Check the output - This should be the last rc value
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 0.0*max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, 0.0*max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0*max_yawrate);
+  EXPECT_CLOSE(output.z.value, 0.0*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.F.value, 0.0);
 
   // We should also be disarmed and in error
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -307,10 +302,10 @@ TEST(command_manager_test, rc_failsafe_test) {
   board.set_rc(rc_values);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0*max_roll);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0*max_pitch);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0*max_yawrate);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.x.value, 0.0*max_roll);
+  EXPECT_CLOSE(output.y.value, 0.0*max_pitch);
+  EXPECT_CLOSE(output.z.value, 0.0*max_yawrate);
+  EXPECT_CLOSE(output.F.value, 0.0);
 
   // We should still be disarmed, but no failsafe or error
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -352,13 +347,13 @@ TEST(command_manager_test, rc_failsafe_test) {
   // Check the output - This should be the failsafe control
   output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 0.0*max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, 0.0*max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0*max_yawrate);
+  EXPECT_CLOSE(output.z.value, 0.0*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, failsafe_throttle);
+  EXPECT_CLOSE(output.F.value, failsafe_throttle);
 
   // We should still be armed, but now in failsafe
   EXPECT_EQ(rf.state_manager_.state().armed, true);
@@ -371,13 +366,13 @@ TEST(command_manager_test, rc_failsafe_test) {
   // Check the output - This should be our rc control
   output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.x.value, 0.5*max_roll);
+  EXPECT_CLOSE(output.x.value, 0.5*max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_PRETTYCLOSE(output.y.value, -0.5*max_pitch);
+  EXPECT_CLOSE(output.y.value, -0.5*max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_PRETTYCLOSE(output.z.value, -0.8*max_yawrate);
+  EXPECT_CLOSE(output.z.value, -0.8*max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.6);
+  EXPECT_CLOSE(output.F.value, 0.6);
 }
 
 
@@ -438,10 +433,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // We don't have an override channel mapped, so this should be offboard
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
   rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
   rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
@@ -457,10 +452,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // This should be offboard
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
   // flip override switch on
   rc_values[4] = CHN_HIGH;
@@ -471,10 +466,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // This should be RC
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.x.value, 0.0);
+  EXPECT_CLOSE(output.y.value, 0.0);
+  EXPECT_CLOSE(output.z.value, 0.0);
+  EXPECT_CLOSE(output.F.value, 0.0);
 
 
   //=================================================
@@ -492,10 +487,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // Throttle should be offboard
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.x.value, 0.0);
+  EXPECT_CLOSE(output.y.value, 0.0);
+  EXPECT_CLOSE(output.z.value, 0.0);
+  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
 
   // Only override throttle
@@ -509,10 +504,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // Throttle should be rc
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_CLOSE(output.F.value, 0.0);
 
 
   //=================================================
@@ -534,10 +529,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   step_firmware(rf, board, 20000);
 
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, RC_X);  // This channel should be overwritten
-  EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.x.value, RC_X);  // This channel should be overwritten
+  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
+  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
   //=================================================
   // RC Override Lag Test
@@ -552,10 +547,10 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   while (board.clock_millis() < rf.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME) + start_ms)
   {
     output = rf.command_manager_.combined_control();
-    EXPECT_PRETTYCLOSE(output.x.value, 0.0);  // This channel should be overwritten
-    EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
-    EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-    EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+    EXPECT_CLOSE(output.x.value, 0.0);  // This channel should be overwritten
+    EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
+    EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+    EXPECT_CLOSE(output.F.value, OFFBOARD_F);
     offboard_command.stamp_ms = board.clock_millis();
     rf.command_manager_.set_new_offboard_command(offboard_command);
     step_firmware(rf, board, 20000);
@@ -564,7 +559,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, -1.0);  // This channel should no longer be overwritten
+  EXPECT_CLOSE(output.x.value, -1.0);  // This channel should no longer be overwritten
 
 
   //=================================================
@@ -575,19 +570,19 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   while (board.clock_millis() < 100 + start_ms)
   {
     output = rf.command_manager_.combined_control();
-    EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);  // Offboard Command is still valid
-    EXPECT_PRETTYCLOSE(output.y.value, OFFBOARD_Y);
-    EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-    EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+    EXPECT_CLOSE(output.x.value, OFFBOARD_X);  // Offboard Command is still valid
+    EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
+    EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+    EXPECT_CLOSE(output.F.value, OFFBOARD_F);
     step_firmware(rf, board, 20000);
   }
 
   // Offboard command has timed out -> revert to RC
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.x.value, 0.0);
+  EXPECT_CLOSE(output.y.value, 0.0);
+  EXPECT_CLOSE(output.z.value, 0.0);
+  EXPECT_CLOSE(output.F.value, 0.0);
 }
 
 
@@ -641,7 +636,7 @@ TEST(command_manager_test, partial_muxing_test ) {
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.F.value, 0.2);
+  EXPECT_CLOSE(output.F.value, 0.2);
 
   // Now, offboard is the min throttle
   offboard_command.F.value = 0.2;
@@ -652,7 +647,7 @@ TEST(command_manager_test, partial_muxing_test ) {
   rf.command_manager_.set_new_offboard_command(offboard_command);
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.F.value, 0.2);
+  EXPECT_CLOSE(output.F.value, 0.2);
 
   // Okay, remove the Min throttle setting
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
@@ -667,7 +662,7 @@ TEST(command_manager_test, partial_muxing_test ) {
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
   // We should get offboard command, even though RC is lower
-  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
 
   // Now, let's disable the pitch channel on the onboard command
@@ -677,10 +672,10 @@ TEST(command_manager_test, partial_muxing_test ) {
 
   step_firmware(rf, board, 20000);
   output = rf.command_manager_.combined_control();
-  EXPECT_PRETTYCLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_PRETTYCLOSE(output.y.value, 0.0);
-  EXPECT_PRETTYCLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_PRETTYCLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_CLOSE(output.y.value, 0.0);
+  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
+  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
   // Let's change the type on the x channel
   offboard_command.x.type = RATE;
