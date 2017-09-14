@@ -8,7 +8,7 @@ _**It appears that perhaps debugging only works with Ubuntu 16.04 because of som
 
 ## Add User to Dailout Group
 
-First, make sure you are in the `dailout` group:
+First, make sure you are in the `dialout` group:
 
 ``` bash
 sudo adduser $USER dialout
@@ -79,7 +79,7 @@ mv start_openocd_f1 ~/.local/bin
 
 ## Install ARM compiler and 32-bit Dependencies
 
-Follow the guide in [Compiling Firmware](developer.md) to install the compiler.
+Follow the guide in [Building and Flashing](/developer-guide/building-flashing.md) to install the compiler.
 
 QtCreator also needs 32-bit python bindings to run GDB
 
