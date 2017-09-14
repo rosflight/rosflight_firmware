@@ -126,6 +126,8 @@ void StateManager::set_event(StateManager::Event event)
         fsm_state_ = FSM_STATE_ARMED;
       }
       break;
+    default:
+      break;
     }
     break;
 
@@ -145,6 +147,8 @@ void StateManager::set_event(StateManager::Event event)
       break;
     case EVENT_REQUEST_ARM:
       RF_.mavlink_.log(Mavlink::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
+      break;
+    default:
       break;
     }
     break;
@@ -168,6 +172,8 @@ void StateManager::set_event(StateManager::Event event)
       break;
     case EVENT_NO_ERROR:
       state_.error = false;
+      break;
+    default:
       break;
     }
     break;
@@ -195,6 +201,8 @@ void StateManager::set_event(StateManager::Event event)
     case EVENT_NO_ERROR:
       state_.error = false;
       break;
+    default:
+      break;
     }
     break;
 
@@ -214,7 +222,11 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_ARMED;
       clear_error(ERROR_RC_LOST);
       break;
+    default:
+      break;
     }
+    break;
+  default:
     break;
   }
 }

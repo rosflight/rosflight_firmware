@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "common.h"
 
 #include "rosflight.h"
 #include "test_board.h"

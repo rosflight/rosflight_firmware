@@ -36,15 +36,15 @@ namespace rosflight_firmware
 
 ROSflight::ROSflight(Board& board) :
   board_(board),
-  sensors_(*this),
-  state_manager_(*this),
+  mavlink_(*this),
+  params_(*this),
+  command_manager_(*this),
   controller_(*this),
   estimator_(*this),
-  params_(*this),
   mixer_(*this),
   rc_(*this),
-  mavlink_(*this),
-  command_manager_(*this)
+  sensors_(*this),
+  state_manager_(*this)
 {
 }
 

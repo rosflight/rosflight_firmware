@@ -80,6 +80,7 @@ void CommandManager::init()
 
 void CommandManager::param_change_callback(uint16_t param_id)
 {
+  (void) param_id; // suppress unused parameter warning
   init_failsafe();
 }
 
@@ -135,6 +136,8 @@ void CommandManager::interpret_rc(void)
     case ANGLE:
       rc_command_.x.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
       rc_command_.y.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
+    default:
+      break;
     }
 
     // yaw
