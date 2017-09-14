@@ -16,9 +16,9 @@ pages:
     - Getting started: user-guide/getting-started.md
     - Hardware setup: user-guide/hardware-setup.md
     - Autopilot setup: user-guide/autopilot-setup.md
+    - RC Configuration: user-guide/rc-configuration.md
     - ROS setup: user-guide/ros-setup.md
     - Parameter Configuration: user-guide/parameter-configuration.md
-    - RC Configuration: user-guide/rc-configuration.md
     - Preflight checks: user-guide/preflight-checks.md
     - Improving performance: user-guide/performance.md
     - Running Gazebo Simulation: user-guide/gazebo_simulation.md
