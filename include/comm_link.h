@@ -35,7 +35,7 @@
 #include <cstdint>
 #include <functional>
 
-#include <turbotrig/turbovec.h>
+#include <turbomath/turbomath.h>
 
 #include "param.h"
 
@@ -52,19 +52,19 @@ public:
 
   virtual void send_attitude_quaternion(uint8_t system_id,
                                         uint64_t timestamp_us,
-                                        quaternion_t attitude,
-                                        vector_t angular_velocity) = 0;
+                                        const turbomath::Quaternion &attitude,
+                                        const turbomath::Vector &angular_velocity) = 0;
   virtual void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) = 0;
   virtual void send_command_ack(uint8_t system_id, uint8_t command /* TODO enum */, bool success) = 0;
   virtual void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) = 0;
   virtual void send_heartbeat(uint8_t system_id, bool fixed_wing) = 0;
   virtual void send_imu(uint8_t system_id,
                         uint64_t timestamp_us,
-                        vector_t accel,
-                        vector_t gyro,
+                        const turbomath::Vector &accel,
+                        const turbomath::Vector &gyro,
                         float temperature) = 0;
   virtual void send_log_message(uint8_t system_id, /* TODO enum type */uint8_t severity, const char * text) = 0;
-  virtual void send_mag(uint8_t system_id, vector_t mag) = 0;
+  virtual void send_mag(uint8_t system_id, const turbomath::Vector &mag) = 0;
   virtual void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) = 0;
   virtual void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) = 0;
   virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) = 0;

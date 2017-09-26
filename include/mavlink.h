@@ -58,15 +58,18 @@ public:
 
   void send_attitude_quaternion(uint8_t system_id,
                                 uint64_t timestamp_us,
-                                quaternion_t attitude,
-                                vector_t angular_velocity) override;
+                                const turbomath::Quaternion &attitude,
+                                const turbomath::Vector &angular_velocity) override;
   void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) override;
   void send_command_ack(uint8_t system_id, uint8_t command /* TODO enum */, bool success) override;
   void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) override;
   void send_heartbeat(uint8_t system_id, bool fixed_wing) override;
-  void send_imu(uint8_t system_id, uint64_t timestamp_us, vector_t accel, vector_t gyro, float temperature) override;
+  void send_imu(uint8_t system_id, uint64_t timestamp_us,
+                const turbomath::Vector &accel,
+                const turbomath::Vector &gyro,
+                float temperature) override;
   void send_log_message(uint8_t system_id, /* TODO enum type */uint8_t severity, const char * text) override;
-  void send_mag(uint8_t system_id, vector_t mag) override;
+  void send_mag(uint8_t system_id, const turbomath::Vector &mag) override;
   void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) override;
   void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) override;
   void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) override;
@@ -112,4 +115,3 @@ private:
 } // namespace rosflight_firmware
 
 #endif // ROSFLIGHT_FIRMWARE_MAVLINK_H
-

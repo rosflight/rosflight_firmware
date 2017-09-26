@@ -96,7 +96,7 @@ private:
   void update_system_id(uint16_t param_id);
 
   void param_request_list_callback(uint8_t target_system);
-  void param_request_read_callback(uint8_t target_system, const char* const param_name, uint16_t param_index);
+  void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index);
   void param_set_callback(uint8_t target_system, const char* const param_name, float param_value, param_type_t param_type);
   void rosflight_command_callback(uint8_t command);
   void timesync_callback(int64_t tc1, int64_t ts1);

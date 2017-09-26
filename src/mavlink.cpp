@@ -58,8 +58,8 @@ void Mavlink::receive(void)
 
 void Mavlink::send_attitude_quaternion(uint8_t system_id,
                               uint64_t timestamp_us,
-                              quaternion_t attitude,
-                              vector_t angular_velocity)
+                              const turbomath::Quaternion &attitude,
+                              const turbomath::Vector &angular_velocity)
 {
   mavlink_message_t msg;
   mavlink_msg_attitude_quaternion_pack(system_id, compid_, &msg,
@@ -106,7 +106,10 @@ void Mavlink::send_heartbeat(uint8_t system_id, bool fixed_wing)
   send_message(msg);
 }
 
-void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, vector_t accel, vector_t gyro, float temperature)
+void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us,
+                       const turbomath::Vector &accel,
+                       const turbomath::Vector &gyro,
+                       float temperature)
 {
   mavlink_message_t msg;
   mavlink_msg_small_imu_pack(system_id, compid_, &msg,
@@ -128,7 +131,7 @@ void Mavlink::send_log_message(uint8_t system_id, /* TODO enum type */uint8_t se
   send_message(msg);
 }
 
-void Mavlink::send_mag(uint8_t system_id, vector_t mag)
+void Mavlink::send_mag(uint8_t system_id, const turbomath::Vector &mag)
 {
   mavlink_message_t msg;
   mavlink_msg_small_mag_pack(system_id, compid_, &msg, mag.x, mag.y, mag.z);
@@ -201,6 +204,7 @@ void Mavlink::send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16
 
 void Mavlink::send_sonar(uint8_t system_id, /* TODO enum type*/uint8_t type, float range, float max_range, float min_range)
 {
+  (void) type;
   mavlink_message_t msg;
   mavlink_msg_small_range_pack(system_id, compid_, &msg, /* TODO */ROSFLIGHT_RANGE_SONAR, range, max_range, min_range);
   send_message(msg);

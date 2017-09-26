@@ -76,7 +76,7 @@ void CommManager::init()
                                                   std::placeholders::_2));
   comm_link_.init();
 
-  sysid_ = (uint8_t) RF_.params_.get_param_int(PARAM_SYSTEM_ID);
+  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
 
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
@@ -120,7 +120,8 @@ void CommManager::init()
 
 void CommManager::update_system_id(uint16_t param_id)
 {
-  sysid_ = (uint8_t) RF_.params_.get_param_int(PARAM_SYSTEM_ID);
+  (void) param_id;
+  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
 }
 
 void CommManager::update_status()
@@ -137,7 +138,7 @@ void CommManager::send_param_value(uint16_t param_id)
                                 RF_.params_.get_param_name(param_id),
                                 RF_.params_.get_param_float(param_id),
                                 RF_.params_.get_param_type(param_id),
-                                (uint16_t) PARAMS_COUNT);
+                                static_cast<uint16_t>(PARAMS_COUNT));
   }
 }
 
@@ -147,11 +148,11 @@ void CommManager::param_request_list_callback(uint8_t target_system)
     send_params_index_ = 0;
 }
 
-void CommManager::param_request_read_callback(uint8_t target_system, const char* const param_name, uint16_t param_index)
+void CommManager::param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index)
 {
   if (target_system == sysid_)
   {
-    uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name) : (uint16_t) param_index;
+    uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name) : static_cast<uint16_t>(param_index);
 
     if (id < PARAMS_COUNT)
       send_param_value(id);
@@ -175,6 +176,9 @@ void CommManager::param_set_callback(uint8_t target_system, const char* const pa
           break;
         case PARAM_TYPE_FLOAT:
           RF_.params_.set_param_float(id, param_value);
+          break;
+        default:
+          // TODO
           break;
         }
       }
@@ -252,7 +256,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
   uint64_t now_us = RF_.board_.clock_micros();
 
   if (tc1 == 0) // check that this is a request, not a response
-    comm_link_.send_timesync(sysid_, (int64_t) now_us*1000, ts1);
+    comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us)*1000, ts1);
 }
 
 void CommManager::offboard_control_callback(uint8_t mode, uint8_t ignore, float x, float y, float z, float F)
@@ -291,7 +295,9 @@ void CommManager::offboard_control_callback(uint8_t mode, uint8_t ignore, float 
     new_offboard_command.z.type = RATE;
     new_offboard_command.F.type = THROTTLE;
     break;
+  default:
     // Handle error state
+    break;
   }
 
   // Tell the command_manager that we have a new command we need to mux
@@ -318,7 +324,7 @@ void CommManager::log(uint8_t severity, const char *fmt, ...)
 
 void CommManager::send_heartbeat(void)
 {
-  comm_link_.send_heartbeat(sysid_, RF_.params_.get_param_int(PARAM_FIXED_WING));
+  comm_link_.send_heartbeat(sysid_, static_cast<bool>(RF_.params_.get_param_int(PARAM_FIXED_WING)));
 }
 
 void CommManager::send_status(void)
@@ -467,7 +473,7 @@ void CommManager::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT)
   {
-    send_param_value((uint16_t) send_params_index_);
+    send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
   }
 }
