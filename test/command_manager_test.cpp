@@ -400,6 +400,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // Initialize the firmware
   rf.init();
+  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
 
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
@@ -696,4 +697,3 @@ TEST(command_manager_test, partial_muxing_test ) {
   EXPECT_EQ(output.z.type, RATE);
   EXPECT_EQ(output.F.type, THROTTLE);
 }
-
