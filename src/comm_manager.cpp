@@ -54,11 +54,14 @@ void CommManager::init()
                                                             std::placeholders::_1,
                                                             std::placeholders::_2,
                                                             std::placeholders::_3));
-  comm_link_.register_param_set_callback(std::bind(&CommManager::param_set_callback,
-                                                   this, std::placeholders::_1,
-                                                   std::placeholders::_2,
-                                                   std::placeholders::_3,
-                                                   std::placeholders::_4));
+  comm_link_.register_param_set_int_callback(std::bind(&CommManager::param_set_int_callback,
+                                                       this, std::placeholders::_1,
+                                                       std::placeholders::_2,
+                                                       std::placeholders::_3));
+  comm_link_.register_param_set_float_callback(std::bind(&CommManager::param_set_float_callback,
+                                                         this, std::placeholders::_1,
+                                                         std::placeholders::_2,
+                                                         std::placeholders::_3));
   comm_link_.register_offboard_control_callback(std::bind(&CommManager::offboard_control_callback,
                                                 this,
                                                 std::placeholders::_1,
@@ -133,12 +136,25 @@ void CommManager::send_param_value(uint16_t param_id)
 {
   if (param_id < PARAMS_COUNT)
   {
-    comm_link_.send_param_value(sysid_,
-                                param_id,
-                                RF_.params_.get_param_name(param_id),
-                                RF_.params_.get_param_float(param_id),
-                                RF_.params_.get_param_type(param_id),
-                                static_cast<uint16_t>(PARAMS_COUNT));
+    switch (RF_.params_.get_param_type(param_id))
+    {
+    case PARAM_TYPE_INT32:
+      comm_link_.send_param_value_int(sysid_,
+                                      param_id,
+                                      RF_.params_.get_param_name(param_id),
+                                      RF_.params_.get_param_int(param_id),
+                                      static_cast<uint16_t>(PARAMS_COUNT));
+      break;
+    case PARAM_TYPE_FLOAT:
+      comm_link_.send_param_value_float(sysid_,
+                                        param_id,
+                                        RF_.params_.get_param_name(param_id),
+                                        RF_.params_.get_param_float(param_id),
+                                        static_cast<uint16_t>(PARAMS_COUNT));
+      break;
+    default:
+      break;
+    }
   }
 }
 
@@ -159,29 +175,28 @@ void CommManager::param_request_read_callback(uint8_t target_system, const char*
   }
 }
 
-void CommManager::param_set_callback(uint8_t target_system, const char* const param_name, float param_value, param_type_t param_type)
+void CommManager::param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value)
 {
   if (target_system == sysid_)
   {
     uint16_t id = RF_.params_.lookup_param_id(param_name);
 
-    if (id < PARAMS_COUNT)
+    if (id < PARAMS_COUNT && RF_.params_.get_param_type(id) == PARAM_TYPE_INT32)
     {
-      if (param_type == RF_.params_.get_param_type(id))
-      {
-        switch (param_type)
-        {
-        case PARAM_TYPE_INT32:
-          RF_.params_.set_param_int(id, *(int32_t *) &param_value);
-          break;
-        case PARAM_TYPE_FLOAT:
-          RF_.params_.set_param_float(id, param_value);
-          break;
-        default:
-          // TODO
-          break;
-        }
-      }
+      RF_.params_.set_param_int(id, param_value);
+    }
+  }
+}
+
+void CommManager::param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value)
+{
+  if (target_system == sysid_)
+  {
+    uint16_t id = RF_.params_.lookup_param_id(param_name);
+
+    if (id < PARAMS_COUNT && RF_.params_.get_param_type(id) == PARAM_TYPE_FLOAT)
+    {
+      RF_.params_.set_param_float(id, param_value);
     }
   }
 }

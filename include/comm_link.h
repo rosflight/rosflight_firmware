@@ -68,12 +68,16 @@ public:
   virtual void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) = 0;
   virtual void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) = 0;
   virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) = 0;
-  virtual void send_param_value(uint8_t system_id,
-                        uint16_t index, // TODO enum type
-                        const char *const name,
-                        float value,
-                        param_type_t type,
-                        uint16_t param_count) = 0;
+  virtual void send_param_value_int(uint8_t system_id,
+                                    uint16_t index, // TODO enum type
+                                    const char *const name,
+                                    int32_t value,
+                                    uint16_t param_count) = 0;
+  virtual void send_param_value_float(uint8_t system_id,
+                                      uint16_t index, // TODO enum type
+                                      const char *const name,
+                                      float value,
+                                      uint16_t param_count) = 0;
   virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) = 0;
   virtual void send_sonar(uint8_t system_id, /* TODO enum type*/uint8_t type, float range, float max_range, float min_range) = 0;
   virtual void send_status(uint8_t system_id,
@@ -102,12 +106,18 @@ public:
     param_request_read_callback_ = callback;
   }
 
-  void register_param_set_callback(std::function<void(uint8_t /* target_system */,
-                                                      const char * const /* param_name */,
-                                                      float /* param_value */,
-                                                      param_type_t /* param_type */)> callback)
+  void register_param_set_int_callback(std::function<void(uint8_t /* target_system */,
+                                                          const char * const /* param_name */,
+                                                          int32_t /* param_value */)> callback)
   {
-    param_set_callback_ = callback;
+    param_set_int_callback_ = callback;
+  }
+
+  void register_param_set_float_callback(std::function<void(uint8_t /* target_system */,
+                                                            const char * const /* param_name */,
+                                                            float /* param_value */)> callback)
+  {
+    param_set_float_callback_ = callback;
   }
 
   void register_offboard_control_callback(std::function<void(uint8_t /* mode */,
@@ -133,7 +143,8 @@ public:
 protected:
   std::function<void(uint8_t)> param_request_list_callback_;
   std::function<void(uint8_t, const char * const, uint16_t)> param_request_read_callback_;
-  std::function<void(uint8_t, const char * const, float, param_type_t)> param_set_callback_;
+  std::function<void(uint8_t, const char * const, int32_t)> param_set_int_callback_;
+  std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
 
   std::function<void(uint8_t, uint8_t, float, float, float, float)> offboard_control_callback_;
   std::function<void(uint8_t)> rosflight_command_callback_;

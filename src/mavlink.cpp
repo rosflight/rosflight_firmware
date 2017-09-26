@@ -159,28 +159,28 @@ void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const fl
   send_message(msg);
 }
 
-void Mavlink::send_param_value(uint8_t system_id,
-                      uint16_t index, // TODO enum type
-                      const char *const name,
-                      float value,
-                      param_type_t type,
-                      uint16_t param_count)
+void Mavlink::send_param_value_int(uint8_t system_id,
+                                   uint16_t index, // TODO enum type
+                                   const char *const name,
+                                   int32_t value,
+                                   uint16_t param_count)
 {
-  MAV_PARAM_TYPE mav_param_type;
-  switch (type)
-  {
-  case PARAM_TYPE_INT32:
-    mav_param_type = MAV_PARAM_TYPE_INT32;
-    break;
-  case PARAM_TYPE_FLOAT:
-    mav_param_type = MAV_PARAM_TYPE_REAL32;
-    break;
-  default:
-    return;
-  }
+  mavlink_param_union_t param;
+  param.param_int32 = value;
 
   mavlink_message_t msg;
-  mavlink_msg_param_value_pack(system_id, 0, &msg, name, value, mav_param_type, param_count, index);
+  mavlink_msg_param_value_pack(system_id, 0, &msg, name, param.param_float, MAV_PARAM_TYPE_INT32, param_count, index);
+  send_message(msg);
+}
+
+void Mavlink::send_param_value_float(uint8_t system_id,
+                                     uint16_t index, // TODO enum type
+                                     const char *const name,
+                                     float value,
+                                     uint16_t param_count)
+{
+  mavlink_message_t msg;
+  mavlink_msg_param_value_pack(system_id, 0, &msg, name, value, MAV_PARAM_TYPE_REAL32, param_count, index);
   send_message(msg);
 }
 
@@ -276,21 +276,22 @@ void Mavlink::handle_msg_param_set(const mavlink_message_t *const msg)
   mavlink_param_set_t set;
   mavlink_msg_param_set_decode(msg, &set);
 
-  param_type_t candidate_type;
-  switch (set.param_type)
+  mavlink_param_union_t param;
+  param.param_float = set.param_value;
+  param.type = set.param_type;
+
+  switch (param.type)
   {
   case MAV_PARAM_TYPE_INT32:
-    candidate_type = PARAM_TYPE_INT32;
+    param_set_int_callback_(set.target_system, set.param_id, param.param_int32);
     break;
   case MAV_PARAM_TYPE_REAL32:
-    candidate_type = PARAM_TYPE_FLOAT;
+    param_set_float_callback_(set.target_system, set.param_id, param.param_float);
     break;
   default:
-    candidate_type = PARAM_TYPE_INVALID;
+    // unsupported parameter type
     break;
   }
-
-  param_set_callback_(set.target_system, set.param_id, set.param_value, candidate_type);
 }
 
 void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)

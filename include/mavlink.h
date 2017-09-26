@@ -73,12 +73,16 @@ public:
   void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) override;
   void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) override;
   void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) override;
-  void send_param_value(uint8_t system_id,
-                        uint16_t index, // TODO enum type
-                        const char *const name,
-                        float value,
-                        param_type_t type,
-                        uint16_t param_count) override;
+  void send_param_value_int(uint8_t system_id,
+                            uint16_t index, // TODO enum type
+                            const char *const name,
+                            int32_t value,
+                            uint16_t param_count) override;
+  void send_param_value_float(uint8_t system_id,
+                              uint16_t index, // TODO enum type
+                              const char *const name,
+                              float value,
+                              uint16_t param_count) override;
   void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) override;
   void send_sonar(uint8_t system_id, /* TODO enum type*/uint8_t type, float range, float max_range, float min_range) override;
   void send_status(uint8_t system_id,

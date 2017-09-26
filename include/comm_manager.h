@@ -97,7 +97,8 @@ private:
 
   void param_request_list_callback(uint8_t target_system);
   void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index);
-  void param_set_callback(uint8_t target_system, const char* const param_name, float param_value, param_type_t param_type);
+  void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value);
+  void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value);
   void rosflight_command_callback(uint8_t command);
   void timesync_callback(int64_t tc1, int64_t ts1);
   void offboard_control_callback(uint8_t mode, uint8_t ignore, float x, float y, float z, float F);
