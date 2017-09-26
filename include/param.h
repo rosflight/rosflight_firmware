@@ -221,13 +221,19 @@ public:
   static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
 
 private:
+  union param_value_t
+  {
+    float fvalue;
+    int32_t ivalue;
+  };
+
   typedef struct
   {
     uint32_t version;
     uint16_t size;
     uint8_t magic_be;                       // magic number, should be 0xBE
 
-    int32_t values[PARAMS_COUNT];
+    param_value_t values[PARAMS_COUNT];
     char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
     param_type_t types[PARAMS_COUNT];
 
@@ -294,14 +300,14 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline const int get_param_int(uint16_t id) const { return params.values[id]; }
+  inline int get_param_int(uint16_t id) const { return params.values[id].ivalue; }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline const float get_param_float(uint16_t id) const { return *(float *) &params.values[id]; }
+  inline float get_param_float(uint16_t id) const { return params.values[id].fvalue; }
 
   /**
    * @brief Get the name of a parameter
@@ -318,7 +324,7 @@ public:
    * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
    * See line 165
    */
-  inline const param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
+  inline param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
 
   /**
    * @brief Sets the value of a parameter by ID and calls the parameter change callback

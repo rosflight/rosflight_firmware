@@ -65,6 +65,7 @@ void RC::init_rc()
 
 void RC::param_change_callback(uint16_t param_id)
 {
+  (void) param_id; // suppress unused parameter warning
   init_rc();
 }
 
@@ -101,7 +102,7 @@ void RC::init_sticks(void)
 
 void RC::init_switches()
 {
-  for (uint8_t chan = 0; chan < (uint8_t) SWITCHES_COUNT; chan++)
+  for (uint8_t chan = 0; chan < static_cast<uint8_t>(SWITCHES_COUNT); chan++)
   {
     char channel_name[18];
     switch (chan)
@@ -249,8 +250,6 @@ void RC::look_for_arm_disarm_signal()
 
 bool RC::run()
 {
-  static uint32_t last_rc_receive_time = 0;
-
   uint32_t now = RF_.board_.clock_millis();
 
   // if it has been more than 20ms then look for new RC values and parse them
@@ -267,21 +266,21 @@ bool RC::run()
 
 
   // read and normalize stick values
-  for (uint8_t channel = 0; channel < (uint8_t)STICKS_COUNT; channel++)
+  for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
     uint16_t pwm = RF_.board_.pwm_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
-      stick_values[channel] = ((float)(pwm - 1000)) / 1000.0f;
+      stick_values[channel] = (static_cast<float>(pwm - 1000)) / 1000.0f;
     }
     else
     {
-      stick_values[channel] = (float)(2*(pwm - 1500)) / (1000.0);
+      stick_values[channel] = static_cast<float>(2*(pwm - 1500)) / (1000.0f);
     }
   }
 
   // read and interpret switch values
-  for (uint8_t channel = 0; channel < (uint8_t)SWITCHES_COUNT; channel++)
+  for (uint8_t channel = 0; channel < static_cast<uint8_t>(SWITCHES_COUNT); channel++)
   {
     if (switches[channel].mapped)
     {

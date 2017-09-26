@@ -37,8 +37,7 @@
 #include "sensors.h"
 #include "rosflight.h"
 
-#include <turbotrig/turbovec.h>
-#include <turbotrig/turbotrig.h>
+#include <turbomath/turbomath.h>
 
 namespace rosflight_firmware
 {
@@ -78,7 +77,7 @@ void Sensors::init()
   next_sensor_to_update_ = BAROMETER;
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
-  ground_pressure_ = 101325.0f*(float)pow((1-2.25694e-5 * alt), 5.2553);
+  ground_pressure_ = 101325.0f*static_cast<float>(pow((1-2.25694e-5 * alt), 5.2553));
 
   baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
@@ -107,7 +106,6 @@ bool Sensors::run(void)
 
 void Sensors::update_other_sensors()
 {
-  uint32_t now = rf_.board_.clock_millis();
   switch (next_sensor_to_update_)
   {
   case LowPrioritySensors::BAROMETER:
@@ -155,8 +153,10 @@ void Sensors::update_other_sensors()
       correct_mag();
     }
     break;
+  default:
+    break;
   }
-  next_sensor_to_update_ = (LowPrioritySensors) ((next_sensor_to_update_ + 1) % NUM_LOW_PRIORITY_SENSORS);
+  next_sensor_to_update_ = static_cast<LowPrioritySensors>((next_sensor_to_update_ + 1) % NUM_LOW_PRIORITY_SENSORS);
 }
 
 
@@ -299,15 +299,15 @@ bool Sensors::update_imu(void)
 // Calibration Functions
 void Sensors::calibrate_gyro()
 {
-  gyro_sum_ = vector_add(gyro_sum_, data_.gyro);
+  gyro_sum_ += data_.gyro;
   gyro_calibration_count_++;
 
   if (gyro_calibration_count_ > 1000)
   {
     // Gyros are simple.  Just find the average during the calibration
-    vector_t gyro_bias = scalar_multiply(1.0/(float)gyro_calibration_count_, gyro_sum_);
+    turbomath::Vector gyro_bias = gyro_sum_ / static_cast<float>(gyro_calibration_count_);
 
-    if (norm(gyro_bias) < 1.0)
+    if (gyro_bias.norm() < 1.0)
     {
       rf_.params_.set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       rf_.params_.set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
@@ -335,28 +335,24 @@ void Sensors::calibrate_gyro()
   }
 }
 
-vector_t vector_max(vector_t a, vector_t b)
+turbomath::Vector vector_max(turbomath::Vector a, turbomath::Vector b)
 {
-  vector_t out = {a.x > b.x ? a.x : b.x,
-                  a.y > b.y ? a.y : b.y,
-                  a.z > b.z ? a.z : b.z
-                 };
-  return out;
+  return turbomath::Vector(a.x > b.x ? a.x : b.x,
+                           a.y > b.y ? a.y : b.y,
+                           a.z > b.z ? a.z : b.z);
 }
 
-vector_t vector_min(vector_t a, vector_t b)
+turbomath::Vector vector_min(turbomath::Vector a, turbomath::Vector b)
 {
-  vector_t out = {a.x < b.x ? a.x : b.x,
-                  a.y < b.y ? a.y : b.y,
-                  a.z < b.z ? a.z : b.z
-                 };
-  return out;
+  return turbomath::Vector(a.x < b.x ? a.x : b.x,
+                           a.y < b.y ? a.y : b.y,
+                           a.z < b.z ? a.z : b.z);
 }
 
 
 void Sensors::calibrate_accel(void)
 {
-  acc_sum_ = vector_add(vector_add(acc_sum_, data_.accel), gravity_);
+  acc_sum_ = acc_sum_ + data_.accel + gravity_;
   acc_temp_sum_ += data_.imu_temperature;
   max_ = vector_max(max_, data_.accel);
   min_ = vector_min(min_, data_.accel);
@@ -367,7 +363,7 @@ void Sensors::calibrate_accel(void)
     // The temperature bias is calculated using a least-squares regression.
     // This is computationally intensive, so it is done by the onboard computer in
     // fcu_io and shipped over to the flight controller.
-    vector_t accel_temp_bias =
+    turbomath::Vector accel_temp_bias =
     {
       rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP),
       rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP),
@@ -379,13 +375,13 @@ void Sensors::calibrate_accel(void)
     // Which is why this line is so confusing. What we are doing, is first removing
     // the contribution of temperature to the measurements during the calibration,
     // Then we are dividing by the number of measurements.
-    vector_t accel_bias = scalar_multiply(1.0/(float)accel_calibration_count_, vector_sub(acc_sum_,
-                                          scalar_multiply(acc_temp_sum_, accel_temp_bias)));
+    turbomath::Vector accel_bias = (acc_sum_ - (accel_temp_bias * acc_temp_sum_)) /
+                                    static_cast<float>(accel_calibration_count_);
 
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
-    if (norm(vector_sub(max_, min_)) > 1.0)
+    if ((max_- min_).norm() > 1.0)
     {
       rf_.comm_manager_.log(CommManager::LOG_ERROR, "Too much movement for IMU cal");
       calibrating_acc_flag_ = false;
@@ -396,7 +392,7 @@ void Sensors::calibrate_accel(void)
       rf_.estimator_.reset_state();
       calibrating_acc_flag_ = false;
 
-      if (norm(accel_bias) < 3.0)
+      if (accel_bias.norm() < 3.0)
       {
         rf_.params_.set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
         rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
@@ -411,7 +407,8 @@ void Sensors::calibrate_accel(void)
         // This usually means the user has the FCU in the wrong orientation, or something is wrong
         // with the board IMU (like it's a cheap chinese clone)
         rf_.comm_manager_.log(CommManager::LOG_ERROR, "large accel bias: norm = %d.%d",
-                         (uint32_t)norm(accel_bias), (uint32_t)(norm(accel_bias)*1000)%1000);
+                              static_cast<uint32_t>(accel_bias.norm()),
+                              static_cast<uint32_t>(accel_bias.norm()*1000)%1000);
       }
     }
 
@@ -545,7 +542,7 @@ void Sensors::correct_baro(void)
   if (!baro_calibrated_)
     calibrate_baro();
   data_.baro_pressure -= rf_.params_.get_param_float(PARAM_BARO_BIAS);
-  data_.baro_altitude = fast_alt(data_.baro_pressure) - rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
+  data_.baro_altitude = turbomath::alt(data_.baro_pressure) - rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
 }
 
 void Sensors::correct_diff_pressure()
@@ -556,7 +553,8 @@ void Sensors::correct_diff_pressure()
   float atm = 101325.0f;
   if (data_.baro_present)
     atm = data_.baro_pressure;
-  data_.diff_pressure_velocity = fsign(data_.diff_pressure) * 24.574f/turboInvSqrt((fabs(data_.diff_pressure) * data_.diff_pressure_temp  /  atm));
+  data_.diff_pressure_velocity = turbomath::fsign(data_.diff_pressure) * 24.574f /
+      turbomath::inv_sqrt((turbomath::fabs(data_.diff_pressure) * data_.diff_pressure_temp  /  atm));
 }
 
 void Sensors::OutlierFilter::init(float max_change_rate, float update_rate, float center)
@@ -574,7 +572,7 @@ bool Sensors::OutlierFilter::update(float new_val, float *val)
   {
     *val = new_val;
 
-    center_ += fsign(diff) * fmin(max_change_, fabs(diff));
+    center_ += turbomath::fsign(diff) * fmin(max_change_, turbomath::fabs(diff));
     if (window_size_ > 1)
     {
       window_size_--;

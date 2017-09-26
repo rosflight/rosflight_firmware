@@ -175,7 +175,7 @@ void Mavlink::send_param_value(uint8_t system_id,
   default:
     return;
   }
-  
+
   mavlink_message_t msg;
   mavlink_msg_param_value_pack(system_id, 0, &msg, name, value, mav_param_type, param_count, index);
   send_message(msg);

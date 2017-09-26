@@ -132,14 +132,14 @@ static char a2i(char ch, char **src,int base,int *nump)
   return ch;
 }
 
-static void putchw(void *putp,putcf putf,int n, char z, char *bf)
+static void putchw(void *putp, putcf putf, int n, char z, char *bf)
 {
   char fc=z? '0' : ' ';
   char ch;
   char *p=bf;
-  while (*p++ && n > 0)
+  while (*p++ && n != 0)
     n--;
-  while (n-- > 0)
+  while (n-- != 0)
     putf(putp,fc);
   while ((ch= *bf++))
     putf(putp,ch);
@@ -171,7 +171,7 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
       }
       if (ch>='0' && ch<='9')
       {
-        ch=a2i(ch, (char **)&fmt, 10, &w);
+        ch=a2i(ch, const_cast<char **>(&fmt), 10, &w);
       }
 #ifdef 	PRINTF_LONG_SUPPORT
       if (ch=='l')
@@ -217,7 +217,7 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va)
         putchw(putp,putf,w,lz,bf);
         break;
       case 'c' :
-        putf(putp,(char)(va_arg(va, int)));
+        putf(putp,static_cast<char>(va_arg(va, int)));
         break;
       case 's' :
         putchw(putp,putf,w,0,va_arg(va, char *));
@@ -250,7 +250,7 @@ void tfp_printf(const char *fmt, ...)
 
 static void putcp(void *p,char c)
 {
-  *(*((char **)p))++ = c;
+  *(*(static_cast<char **>(p)))++ = c;
 }
 
 void tfp_sprintf(char *s, const char *fmt, va_list va)
@@ -258,6 +258,7 @@ void tfp_sprintf(char *s, const char *fmt, va_list va)
   tfp_format(&s,putcp,fmt,va);
   putcp(&s,0);
 }
+
 
 } // namespace nanoprintf
 } // namespace rosflight_firmware

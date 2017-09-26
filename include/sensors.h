@@ -35,7 +35,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <turbotrig/turbovec.h>
+#include <turbomath/turbomath.h>
 
 namespace rosflight_firmware
 {
@@ -47,8 +47,9 @@ class Sensors
 public:
   struct Data
   {
-    vector_t accel = {0, 0, 0};
-    vector_t gyro = {0, 0, 0};
+    turbomath::Vector accel = {0, 0, 0};
+    turbomath::Vector gyro = {0, 0, 0};
+    turbomath::Quaternion fcu_orientation = {1, 0, 0, 0};
     float imu_temperature = 0;
     uint64_t imu_time = 0;
 
@@ -65,7 +66,7 @@ public:
     float sonar_range = 0;
     bool sonar_range_valid = false;
 
-    vector_t mag = {0, 0, 0};
+    turbomath::Vector mag = {0, 0, 0};
 
     bool baro_present = false;
     bool mag_present = false;
@@ -161,13 +162,13 @@ private:
 
   // IMU calibration
   uint16_t gyro_calibration_count_ = 0;
-  vector_t gyro_sum_ = {0, 0, 0};
+  turbomath::Vector gyro_sum_ = {0, 0, 0};
   uint16_t accel_calibration_count_ = 0;
-  vector_t acc_sum_ = {0, 0, 0};
-  const vector_t gravity_ = {0.0f, 0.0f, 9.80665f};
+  turbomath::Vector acc_sum_ = {0, 0, 0};
+  const turbomath::Vector gravity_ = {0.0f, 0.0f, 9.80665f};
   float acc_temp_sum_ = 0.0f;
-  vector_t max_ = {-1000.0f, -1000.0f, -1000.0f};
-  vector_t min_ = {1000.0f, 1000.0f, 1000.0f};
+  turbomath::Vector max_ = {-1000.0f, -1000.0f, -1000.0f};
+  turbomath::Vector min_ = {1000.0f, 1000.0f, 1000.0f};
 
   // Baro Calibration
   bool baro_calibrated_ = false;
