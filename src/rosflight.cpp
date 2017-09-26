@@ -34,10 +34,9 @@
 namespace rosflight_firmware
 {
 
-ROSflight::ROSflight(Board& board) :
+ROSflight::ROSflight(Board& board, CommLink& comm_link) :
   board_(board),
-  mavlink_(*this),
-  comm_manager_(*this, mavlink_),
+  comm_manager_(*this, comm_link),
   params_(*this),
   command_manager_(*this),
   controller_(*this),

@@ -45,7 +45,7 @@ namespace rosflight_firmware
 class CommLink
 {
 public:
-  virtual void init() = 0;
+  virtual void init(uint32_t baud_rate) = 0;
   virtual void receive() = 0;
 
   // send functions

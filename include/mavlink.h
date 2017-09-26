@@ -36,24 +36,21 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #pragma GCC diagnostic ignored "-Wcast-align"
-
 #include <mavlink/v1.0/rosflight/mavlink.h>
-
 # pragma GCC diagnostic pop
-#include "nanoprintf.h"
 
 #include "comm_link.h"
 
 namespace rosflight_firmware
 {
 
-class ROSflight;
+class Board;
 
 class Mavlink : public CommLink
 {
 public:
-  Mavlink(ROSflight& rf);
-  void init() override;
+  Mavlink(Board& board);
+  void init(uint32_t baud_rate) override;
   void receive() override;
 
   void send_attitude_quaternion(uint8_t system_id,
@@ -108,7 +105,7 @@ private:
   void handle_msg_timesync(const mavlink_message_t *const msg);
   void handle_mavlink_message(void);
 
-  ROSflight& RF_;
+  Board& board_;
 
   uint32_t compid_ = 250;
   mavlink_message_t in_buf_;

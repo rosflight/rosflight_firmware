@@ -1,6 +1,7 @@
 #include "common.h"
 #include "math.h"
 #include "rosflight.h"
+#include "mavlink.h"
 #include "test_board.h"
 #include "eigen3/unsupported/Eigen/MatrixFunctions"
 #include <cmath>
@@ -124,7 +125,8 @@ double run_estimator_test(std::string filename, ROSflight& rf, testBoard& board,
 
 TEST(estimator_test, linear_gyro_integration) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   std::vector<double> params = {
     10.0, // xfreq
@@ -158,7 +160,8 @@ TEST(estimator_test, linear_gyro_integration) {
 
 TEST(estimator_test, quadratic_gyro_integration) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   std::vector<double> params = {
     10.0, // xfreq
@@ -192,7 +195,8 @@ TEST(estimator_test, quadratic_gyro_integration) {
 
 TEST(estimator_test, mat_exp_integration) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   std::vector<double> params = {
     10.0, // xfreq
@@ -223,7 +227,8 @@ TEST(estimator_test, mat_exp_integration) {
 
 TEST(estimator_test, mat_exp_quad_int) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   std::vector<double> params = {
     10.0, // xfreq
@@ -256,7 +261,8 @@ TEST(estimator_test, mat_exp_quad_int) {
 
 TEST(estimator_test, accel) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   std::vector<double> params = {
     10.0, // xfreq
@@ -290,7 +296,8 @@ TEST(estimator_test, accel) {
 
 TEST(estimator_test, all_features) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   std::vector<double> params = {
     10.0, // xfreq
@@ -326,7 +333,8 @@ TEST(estimator_test, all_features) {
 
 TEST(estimator_test, level_bias_sim) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
 
   std::vector<double> params = {
@@ -371,7 +379,8 @@ TEST(estimator_test, level_bias_sim) {
 
 TEST(estimator_test, moving_bias_sim) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
 
   std::vector<double> params = {

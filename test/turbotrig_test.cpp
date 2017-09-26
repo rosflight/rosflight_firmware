@@ -287,4 +287,3 @@ TEST(turbovec_test, quat_from_two_vectors_test){
     ASSERT_SUPERCLOSE(vec5.z, vec4.z);
   }
 }
-

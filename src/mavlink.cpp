@@ -30,28 +30,28 @@
  */
 #include <cstdint>
 
-#include "rosflight.h"
+#include "board.h"
 
 #include "mavlink.h"
 
 namespace rosflight_firmware
 {
 
-Mavlink::Mavlink(ROSflight& rf) :
-  RF_(rf)
+Mavlink::Mavlink(Board& board) :
+  board_(board)
 {}
 
-void Mavlink::init()
+void Mavlink::init(uint32_t baud_rate)
 {
-  RF_.board_.serial_init(RF_.params_.get_param_int(PARAM_BAUD_RATE));
+  board_.serial_init(baud_rate);
   initialized_ = true;
 }
 
 void Mavlink::receive(void)
 {
-  while (RF_.board_.serial_bytes_available())
+  while (board_.serial_bytes_available())
   {
-    if (mavlink_parse_char(MAVLINK_COMM_0, RF_.board_.serial_read(), &in_buf_, &status_))
+    if (mavlink_parse_char(MAVLINK_COMM_0, board_.serial_read(), &in_buf_, &status_))
       handle_mavlink_message();
   }
 }
@@ -253,7 +253,7 @@ void Mavlink::send_message(const mavlink_message_t &msg)
   {
     uint8_t data[MAVLINK_MAX_PACKET_LEN];
     uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
-    RF_.board_.serial_write(data, len);
+    board_.serial_write(data, len);
   }
 }
 

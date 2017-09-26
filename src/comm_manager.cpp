@@ -77,7 +77,7 @@ void CommManager::init()
                                                   this,
                                                   std::placeholders::_1,
                                                   std::placeholders::_2));
-  comm_link_.init();
+  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)));
 
   sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
 

@@ -1,6 +1,7 @@
 #include "common.h"
 
 #include "rosflight.h"
+#include "mavlink.h"
 #include "test_board.h"
 
 using namespace rosflight_firmware;
@@ -9,7 +10,8 @@ TEST(state_machine_test, error_check) {
 
   // Initialize the full firmware, so that the state_manager can do its thing
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Initialize just a subset of the modules
   // (some modules set errors when they initialize)
@@ -84,7 +86,8 @@ TEST(state_machine_test, error_check) {
 TEST(state_machine_test, arm_check) {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Initialize just a subset of the modules
   // (some modules set errors when they initialize)
@@ -215,7 +218,8 @@ TEST(state_machine_test, arm_check) {
 TEST(state_machine_test, failsafe_check) {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Initialize just a subset of the modules
   // (some modules set errors when they initialize)
@@ -298,7 +302,8 @@ TEST(state_machine_test, failsafe_check) {
 TEST(state_machine_test, corner_cases) {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Initialize just a subset of the modules
   // (some modules set errors when they initialize)
