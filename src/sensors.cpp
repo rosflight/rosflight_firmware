@@ -307,7 +307,8 @@ bool Sensors::update_imu(void)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
-      rf_.board_.imu_not_responding_error();
+      if (!rf_.state_manager_.state().armed)
+        rf_.board_.imu_not_responding_error();
 
       // Indicate an IMU error
       rf_.state_manager_.set_error(StateManager::ERROR_IMU_NOT_RESPONDING);
