@@ -12,11 +12,12 @@ sudo apt update
 sudo apt install lib32ncurses5 lib32tinfo5 libc6-i386 gcc-arm-embedded
 ```
 
-Then, simply clone the repository and build
+Then, simply clone the repository, pull down the submodules, and build:
 
 ``` bash
 git clone https://github.com/rosflight/firmware
 cd firmware
+git submodule update --init --recursive
 make
 ```
 
