@@ -52,6 +52,7 @@ A2L=arm-none-eabi-addr2line
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
 ROSFLIGHT_DIR   = ../..
+MAVLINK_DIR = $(ROSFLIGHT_DIR)/comms/mavlink
 TURBOMATH_DIR   = $(ROSFLIGHT_DIR)/lib/turbomath
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
@@ -70,6 +71,10 @@ BOARD_C_SRC = flash.c
 BOARD_CXX_SRC =	naze32.cpp \
                 main.cpp
 
+# MAVLink source files
+VPATH := $(MAVLINK_DIR)
+MAVLINK_SRC = mavlink.cpp
+
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC = rosflight.cpp \
@@ -77,7 +82,6 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 sensors.cpp \
                 state_manager.cpp \
                 estimator.cpp \
-                mavlink.cpp \
                 controller.cpp \
                 comm_manager.cpp \
                 command_manager.cpp \
@@ -134,6 +138,7 @@ CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
                 $(ROSFLIGHT_DIR)/include \
+                $(MAVLINK_DIR) \
                 $(ROSFLIGHT_DIR)/lib \
                 $(STDPERIPH_DIR)/inc \
                 $(CMSIS_DIR)/CM3/CoreSupport \

@@ -15,6 +15,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(../include)
 include_directories(../lib)
+include_directories(../comms/mavlink)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 include_directories(/usr/include/eigen3)
 
@@ -24,15 +25,17 @@ set(ROSFLIGHT_SRC
     ../src/sensors.cpp
     ../src/state_manager.cpp
     ../src/estimator.cpp
-    ../src/mavlink.cpp
     ../src/nanoprintf.cpp
     ../src/controller.cpp
     ../src/comm_manager.cpp
     ../src/command_manager.cpp
     ../src/rc.cpp
     ../src/mixer.cpp
+    ../comms/mavlink/mavlink.cpp
     ../lib/turbomath/turbomath.cpp
     )
+
+
 
 add_executable(unit_tests
         ${ROSFLIGHT_SRC}
