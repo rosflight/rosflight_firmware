@@ -256,6 +256,7 @@ bool Sensors::update_imu(void)
 {
   if (rf_.board_.new_imu_data())
   {
+    rf_.board_.led0_on();
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
     if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
@@ -281,12 +282,13 @@ bool Sensors::update_imu(void)
   }
   else
   {
-    // if we have lost 10 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 10)
+    // if we have lost 1000 IMU messages then something is wrong
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
-      rf_.board_.imu_not_responding_error();
+      if (!rf_.state_manager_.state().armed)
+        rf_.board_.imu_not_responding_error();
 
       // Indicate an IMU error
       rf_.state_manager_.set_error(StateManager::ERROR_IMU_NOT_RESPONDING);
@@ -446,7 +448,9 @@ void Sensors::calibrate_baro()
       }
       else
       {
-        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for barometer cal");
+        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for barometer cal, var: %d.%d",
+                         static_cast<int32_t>(baro_calibration_var_),
+                         static_cast<int32_t>(baro_calibration_var_*1000.)%1000);
       }
       baro_calibration_mean_ = 0.0f;
       baro_calibration_var_ = 0.0f;

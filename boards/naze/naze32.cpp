@@ -107,7 +107,6 @@ uint8_t Naze32::serial_read(void)
 
 void Naze32::sensors_init()
 {
-  _board_revision = 2;
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
@@ -160,8 +159,7 @@ bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_
 
 void Naze32::imu_not_responding_error(void)
 {
-  // If the IMU is not responding, then we need to change where we look for the
-  // interrupt
+  // If the IMU is not responding, then we need to change where we look for the interrupt
   _board_revision = (_board_revision < 4) ? 5 : 2;
   sensors_init();
 }
