@@ -110,7 +110,7 @@ void ROSflight::run()
   /*********************/
   /***  Post-Process ***/
   /*********************/
-//  // internal timers figure out what and when to send
+  // internal timers figure out what and when to send
   comm_manager_.stream();
 
   // receive mavlink messages
