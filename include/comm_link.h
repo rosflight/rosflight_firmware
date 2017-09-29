@@ -45,6 +45,30 @@ namespace rosflight_firmware
 class CommLink
 {
 public:
+
+  enum class LogSeverity
+  {
+    LOG_INFO,
+    LOG_WARNING,
+    LOG_ERROR,
+    LOG_CRITICAL
+  };
+
+  enum class Command
+  {
+    COMMAND_READ_PARAMS,
+    COMMAND_WRITE_PARAMS,
+    COMMAND_SET_PARAM_DEFAULTS,
+    COMMAND_ACCEL_CALIBRATION,
+    COMMAND_GYRO_CALIBRATION,
+    COMMAND_BARO_CALIBRATION,
+    COMMAND_AIRSPEED_CALIBRATION,
+    COMMAND_RC_CALIBRATION,
+    COMMAND_REBOOT,
+    COMMAND_REBOOT_TO_BOOTLOADER,
+    COMMAND_SEND_VERSION
+  };
+
   virtual void init(uint32_t baud_rate) = 0;
   virtual void receive() = 0;
 
@@ -55,7 +79,7 @@ public:
                                         const turbomath::Quaternion &attitude,
                                         const turbomath::Vector &angular_velocity) = 0;
   virtual void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) = 0;
-  virtual void send_command_ack(uint8_t system_id, uint8_t command /* TODO enum */, bool success) = 0;
+  virtual void send_command_ack(uint8_t system_id, Command command, bool success) = 0;
   virtual void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) = 0;
   virtual void send_heartbeat(uint8_t system_id, bool fixed_wing) = 0;
   virtual void send_imu(uint8_t system_id,
@@ -63,18 +87,18 @@ public:
                         const turbomath::Vector &accel,
                         const turbomath::Vector &gyro,
                         float temperature) = 0;
-  virtual void send_log_message(uint8_t system_id, /* TODO enum type */uint8_t severity, const char * text) = 0;
+  virtual void send_log_message(uint8_t system_id, LogSeverity severity, const char * text) = 0;
   virtual void send_mag(uint8_t system_id, const turbomath::Vector &mag) = 0;
   virtual void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) = 0;
   virtual void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) = 0;
   virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) = 0;
   virtual void send_param_value_int(uint8_t system_id,
-                                    uint16_t index, // TODO enum type
+                                    uint16_t index,
                                     const char *const name,
                                     int32_t value,
                                     uint16_t param_count) = 0;
   virtual void send_param_value_float(uint8_t system_id,
-                                      uint16_t index, // TODO enum type
+                                      uint16_t index,
                                       const char *const name,
                                       float value,
                                       uint16_t param_count) = 0;
@@ -130,9 +154,9 @@ public:
     offboard_control_callback_ = callback;
   }
 
-  void register_rosflight_command_callback(std::function<void(uint8_t /* command */)> callback)
+  void register_command_callback(std::function<void(Command)> callback)
   {
-    rosflight_command_callback_ = callback;
+    command_callback_ = callback;
   }
 
   void register_timesync_callback(std::function<void(int64_t /* tc1 */, int64_t /* ts1 */)> callback)
@@ -147,7 +171,7 @@ protected:
   std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
 
   std::function<void(uint8_t, uint8_t, float, float, float, float)> offboard_control_callback_;
-  std::function<void(uint8_t)> rosflight_command_callback_;
+  std::function<void(Command)> command_callback_;
   std::function<void(int64_t, int64_t)> timesync_callback_;
 };
 

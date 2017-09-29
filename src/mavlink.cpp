@@ -81,12 +81,49 @@ void Mavlink::send_baro(uint8_t system_id, float altitude, float pressure, float
   send_message(msg);
 }
 
-void Mavlink::send_command_ack(uint8_t system_id, uint8_t command /* TODO enum */, bool success)
+void Mavlink::send_command_ack(uint8_t system_id, Command command, bool success)
 {
+  ROSFLIGHT_CMD rosflight_cmd = ROSFLIGHT_CMD_ENUM_END;
+  switch (command)
+  {
+  case CommLink::Command::COMMAND_READ_PARAMS:
+    rosflight_cmd = ROSFLIGHT_CMD_READ_PARAMS;
+    break;
+  case CommLink::Command::COMMAND_WRITE_PARAMS:
+    rosflight_cmd = ROSFLIGHT_CMD_WRITE_PARAMS;
+    break;
+  case CommLink::Command::COMMAND_SET_PARAM_DEFAULTS:
+    rosflight_cmd = ROSFLIGHT_CMD_SET_PARAM_DEFAULTS;
+    break;
+  case CommLink::Command::COMMAND_ACCEL_CALIBRATION:
+    rosflight_cmd = ROSFLIGHT_CMD_ACCEL_CALIBRATION;
+    break;
+  case CommLink::Command::COMMAND_GYRO_CALIBRATION:
+    rosflight_cmd = ROSFLIGHT_CMD_GYRO_CALIBRATION;
+    break;
+  case CommLink::Command::COMMAND_BARO_CALIBRATION:
+    rosflight_cmd = ROSFLIGHT_CMD_BARO_CALIBRATION;
+    break;
+  case CommLink::Command::COMMAND_AIRSPEED_CALIBRATION:
+    rosflight_cmd = ROSFLIGHT_CMD_AIRSPEED_CALIBRATION;
+    break;
+  case CommLink::Command::COMMAND_RC_CALIBRATION:
+    rosflight_cmd = ROSFLIGHT_CMD_RC_CALIBRATION;
+    break;
+  case CommLink::Command::COMMAND_REBOOT:
+    rosflight_cmd = ROSFLIGHT_CMD_REBOOT;
+    break;
+  case CommLink::Command::COMMAND_REBOOT_TO_BOOTLOADER:
+    rosflight_cmd = ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER;
+    break;
+  case CommLink::Command::COMMAND_SEND_VERSION:
+    rosflight_cmd = ROSFLIGHT_CMD_SEND_VERSION;
+    break;
+  }
+
   mavlink_message_t msg;
   mavlink_msg_rosflight_cmd_ack_pack(system_id, compid_, &msg,
-                                     command,
-                                     (success) ? ROSFLIGHT_CMD_SUCCESS : ROSFLIGHT_CMD_FAILED);
+                                     rosflight_cmd, (success) ? ROSFLIGHT_CMD_SUCCESS : ROSFLIGHT_CMD_FAILED);
   send_message(msg);
 }
 
@@ -124,10 +161,27 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us,
   send_message(msg);
 }
 
-void Mavlink::send_log_message(uint8_t system_id, /* TODO enum type */uint8_t severity, const char * text)
+void Mavlink::send_log_message(uint8_t system_id, LogSeverity severity, const char * text)
 {
+  MAV_SEVERITY mavlink_severity = MAV_SEVERITY_ENUM_END;
+  switch (severity)
+  {
+  case CommLink::LogSeverity::LOG_INFO:
+    mavlink_severity = MAV_SEVERITY_INFO;
+    break;
+  case CommLink::LogSeverity::LOG_WARNING:
+    mavlink_severity = MAV_SEVERITY_WARNING;
+    break;
+  case CommLink::LogSeverity::LOG_ERROR:
+    mavlink_severity = MAV_SEVERITY_ERROR;
+    break;
+  case CommLink::LogSeverity::LOG_CRITICAL:
+    mavlink_severity = MAV_SEVERITY_CRITICAL;
+    break;
+  }
+
   mavlink_message_t msg;
-  mavlink_msg_statustext_pack(system_id, compid_, &msg, severity, text);
+  mavlink_msg_statustext_pack(system_id, compid_, &msg, static_cast<uint8_t>(mavlink_severity), text);
   send_message(msg);
 }
 
@@ -160,7 +214,7 @@ void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const fl
 }
 
 void Mavlink::send_param_value_int(uint8_t system_id,
-                                   uint16_t index, // TODO enum type
+                                   uint16_t index,
                                    const char *const name,
                                    int32_t value,
                                    uint16_t param_count)
@@ -174,7 +228,7 @@ void Mavlink::send_param_value_int(uint8_t system_id,
 }
 
 void Mavlink::send_param_value_float(uint8_t system_id,
-                                     uint16_t index, // TODO enum type
+                                     uint16_t index,
                                      const char *const name,
                                      float value,
                                      uint16_t param_count)
@@ -298,7 +352,52 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
 {
   mavlink_rosflight_cmd_t cmd;
   mavlink_msg_rosflight_cmd_decode(msg, &cmd);
-  rosflight_command_callback_(cmd.command);
+
+  CommLink::Command command;
+  switch (cmd.command)
+  {
+  case ROSFLIGHT_CMD_READ_PARAMS:
+    command = CommLink::Command::COMMAND_READ_PARAMS;
+    break;
+  case ROSFLIGHT_CMD_WRITE_PARAMS:
+    command = CommLink::Command::COMMAND_WRITE_PARAMS;
+    break;
+  case ROSFLIGHT_CMD_SET_PARAM_DEFAULTS:
+    command = CommLink::Command::COMMAND_SET_PARAM_DEFAULTS;
+    break;
+  case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
+    command = CommLink::Command::COMMAND_ACCEL_CALIBRATION;
+    break;
+  case ROSFLIGHT_CMD_GYRO_CALIBRATION:
+    command = CommLink::Command::COMMAND_GYRO_CALIBRATION;
+    break;
+  case ROSFLIGHT_CMD_BARO_CALIBRATION:
+    command = CommLink::Command::COMMAND_BARO_CALIBRATION;
+    break;
+  case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
+    command = CommLink::Command::COMMAND_AIRSPEED_CALIBRATION;
+    break;
+  case ROSFLIGHT_CMD_RC_CALIBRATION:
+    command = CommLink::Command::COMMAND_RC_CALIBRATION;
+    break;
+  case ROSFLIGHT_CMD_REBOOT:
+    command = CommLink::Command::COMMAND_REBOOT;
+    break;
+  case ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER:
+    command = CommLink::Command::COMMAND_REBOOT_TO_BOOTLOADER;
+    break;
+  case ROSFLIGHT_CMD_SEND_VERSION:
+    command = CommLink::Command::COMMAND_SEND_VERSION;
+    break;
+  default: // unsupported command; report failure then return without calling command callback
+    mavlink_message_t out_msg;
+    mavlink_msg_rosflight_cmd_ack_pack(msg->sysid, compid_, &out_msg, cmd.command, ROSFLIGHT_CMD_FAILED);
+    send_message(out_msg);
+    // log(LogSeverity::LOG_ERROR, "Unsupported ROSFLIGHT CMD %d", command);
+    return;
+  }
+
+  command_callback_(command);
 }
 
 void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)

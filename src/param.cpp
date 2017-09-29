@@ -36,7 +36,6 @@
 #include <string.h>
 
 #include "board.h"
-#include "mavlink.h"
 #include "mixer.h"
 
 #include "param.h"

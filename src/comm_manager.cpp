@@ -30,7 +30,6 @@
  */
 #include <cstdint>
 
-#include "mavlink.h"
 #include "rosflight.h"
 
 namespace rosflight_firmware
@@ -70,9 +69,9 @@ void CommManager::init()
                                                 std::placeholders::_4,
                                                 std::placeholders::_5,
                                                 std::placeholders::_6));
-  comm_link_.register_rosflight_command_callback(std::bind(&CommManager::rosflight_command_callback,
-                                                           this,
-                                                           std::placeholders::_1));
+  comm_link_.register_command_callback(std::bind(&CommManager::command_callback,
+                                                 this,
+                                                 std::placeholders::_1));
   comm_link_.register_timesync_callback(std::bind(&CommManager::timesync_callback,
                                                   this,
                                                   std::placeholders::_1,
@@ -118,7 +117,7 @@ void CommManager::init()
                            PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
-  log(/* TODO LogSeverity::*/LOG_INFO, "Booting");
+  log(CommLink::LogSeverity::LOG_INFO, "Booting");
 }
 
 void CommManager::update_system_id(uint16_t param_id)
@@ -201,9 +200,9 @@ void CommManager::param_set_float_callback(uint8_t target_system, const char* co
   }
 }
 
-void CommManager::rosflight_command_callback(uint8_t command)
+void CommManager::command_callback(CommLink::Command command)
 {
-  uint8_t result;
+  bool result;
   bool reboot_flag = false;
   bool reboot_to_bootloader_flag = false;
 
@@ -217,42 +216,38 @@ void CommManager::rosflight_command_callback(uint8_t command)
     result = true;
     switch (command)
     {
-    case ROSFLIGHT_CMD_READ_PARAMS:
+    case CommLink::Command::COMMAND_READ_PARAMS:
       result = RF_.params_.read();
       break;
-    case ROSFLIGHT_CMD_WRITE_PARAMS:
+    case CommLink::Command::COMMAND_WRITE_PARAMS:
       result = RF_.params_.write();
       break;
-    case ROSFLIGHT_CMD_SET_PARAM_DEFAULTS:
+    case CommLink::Command::COMMAND_SET_PARAM_DEFAULTS:
       RF_.params_.set_defaults();
       break;
-    case ROSFLIGHT_CMD_ACCEL_CALIBRATION:
+    case CommLink::Command::COMMAND_ACCEL_CALIBRATION:
       result = RF_.sensors_.start_imu_calibration();
       break;
-    case ROSFLIGHT_CMD_GYRO_CALIBRATION:
+    case CommLink::Command::COMMAND_GYRO_CALIBRATION:
       result = RF_.sensors_.start_gyro_calibration();
       break;
-    case ROSFLIGHT_CMD_BARO_CALIBRATION:
+    case CommLink::Command::COMMAND_BARO_CALIBRATION:
       result = RF_.sensors_.start_baro_calibration();
       break;
-    case ROSFLIGHT_CMD_AIRSPEED_CALIBRATION:
+    case CommLink::Command::COMMAND_AIRSPEED_CALIBRATION:
       result = RF_.sensors_.start_diff_pressure_calibration();
       break;
-    case ROSFLIGHT_CMD_RC_CALIBRATION:
+    case CommLink::Command::COMMAND_RC_CALIBRATION:
       RF_.controller_.calculate_equilbrium_torque_from_rc();
       break;
-    case ROSFLIGHT_CMD_REBOOT:
+    case CommLink::Command::COMMAND_REBOOT:
       reboot_flag = true;
       break;
-    case ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER:
+    case CommLink::Command::COMMAND_REBOOT_TO_BOOTLOADER:
       reboot_to_bootloader_flag = true;
       break;
-    case ROSFLIGHT_CMD_SEND_VERSION:
+    case CommLink::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
-      break;
-    default:
-      log(LOG_ERROR, "Unsupported ROSFLIGHT CMD %d", command);
-      result = false;
       break;
     }
   }
@@ -326,12 +321,12 @@ void CommManager::receive(void)
   comm_link_.receive();
 }
 
-void CommManager::log(uint8_t severity, const char *fmt, ...)
+void CommManager::log(CommLink::LogSeverity severity, const char *fmt, ...)
 {
   // Convert the format string to a raw char array
   va_list args;
   va_start(args, fmt);
-  char text[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN];
+  char text[50];
   rosflight_firmware::nanoprintf::tfp_sprintf(text, fmt, args);
   va_end(args);
   comm_link_.send_log_message(sysid_, severity, text);
@@ -556,4 +551,4 @@ void CommManager::Stream::set_rate(uint32_t rate_hz)
 //  send_message(msg);
 //}
 
-}
+} // namespace rosflight_firmware

@@ -146,7 +146,7 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_REQUEST_ARM:
-      RF_.comm_manager_.log(CommManager::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
+      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
       break;
     default:
       break;

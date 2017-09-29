@@ -99,7 +99,7 @@ private:
   void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index);
   void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value);
   void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value);
-  void rosflight_command_callback(uint8_t command);
+  void command_callback(CommLink::Command command);
   void timesync_callback(int64_t tc1, int64_t ts1);
   void offboard_control_callback(uint8_t mode, uint8_t ignore, float x, float y, float z, float F);
 
@@ -137,14 +137,6 @@ private:
 
 public:
 
-  enum
-  {
-    LOG_INFO = 6,
-    LOG_WARNING = 4,
-    LOG_ERROR = 3,
-    LOG_CRITICAL = 2
-  };
-
   CommManager(ROSflight& rf, CommLink& comm_link);
 
   void init();
@@ -153,7 +145,7 @@ public:
   void send_param_value(uint16_t param_id);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
-  void log(uint8_t severity, const char *fmt, ...);
+  void log(CommLink::LogSeverity severity, const char *fmt, ...);
 
   void send_named_value_float(const char *const name, float value);
 };
