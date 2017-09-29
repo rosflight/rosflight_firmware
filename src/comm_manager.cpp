@@ -63,12 +63,7 @@ void CommManager::init()
                                                          std::placeholders::_3));
   comm_link_.register_offboard_control_callback(std::bind(&CommManager::offboard_control_callback,
                                                 this,
-                                                std::placeholders::_1,
-                                                std::placeholders::_2,
-                                                std::placeholders::_3,
-                                                std::placeholders::_4,
-                                                std::placeholders::_5,
-                                                std::placeholders::_6));
+                                                std::placeholders::_1));
   comm_link_.register_command_callback(std::bind(&CommManager::command_callback,
                                                  this,
                                                  std::placeholders::_1));
@@ -269,44 +264,41 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
     comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us)*1000, ts1);
 }
 
-void CommManager::offboard_control_callback(uint8_t mode, uint8_t ignore, float x, float y, float z, float F)
+void CommManager::offboard_control_callback(const CommLink::OffboardControl& control)
 {
   // put values into a new command struct
   control_t new_offboard_command;
-  new_offboard_command.x.value = x;
-  new_offboard_command.y.value = y;
-  new_offboard_command.z.value = z;
-  new_offboard_command.F.value = F;
+  new_offboard_command.x.value = control.x.value;
+  new_offboard_command.y.value = control.y.value;
+  new_offboard_command.z.value = control.z.value;
+  new_offboard_command.F.value = control.F.value;
 
   // Move flags into standard message
-  new_offboard_command.x.active = !(ignore & IGNORE_VALUE1);
-  new_offboard_command.y.active = !(ignore & IGNORE_VALUE2);
-  new_offboard_command.z.active = !(ignore & IGNORE_VALUE3);
-  new_offboard_command.F.active = !(ignore & IGNORE_VALUE4);
+  new_offboard_command.x.active = control.x.valid;
+  new_offboard_command.y.active = control.y.valid;
+  new_offboard_command.z.active = control.z.valid;
+  new_offboard_command.F.active = control.F.valid;
 
   // translate modes into standard message
-  switch (mode)
+  switch (control.mode)
   {
-  case MODE_PASS_THROUGH:
+  case CommLink::OffboardControl::Mode::PASS_THROUGH:
     new_offboard_command.x.type = PASSTHROUGH;
     new_offboard_command.y.type = PASSTHROUGH;
     new_offboard_command.z.type = PASSTHROUGH;
     new_offboard_command.F.type = THROTTLE;
     break;
-  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+  case CommLink::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
     new_offboard_command.x.type = RATE;
     new_offboard_command.y.type = RATE;
     new_offboard_command.z.type = RATE;
     new_offboard_command.F.type = THROTTLE;
     break;
-  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
+  case CommLink::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
     new_offboard_command.x.type = ANGLE;
     new_offboard_command.y.type = ANGLE;
     new_offboard_command.z.type = RATE;
     new_offboard_command.F.type = THROTTLE;
-    break;
-  default:
-    // Handle error state
     break;
   }
 

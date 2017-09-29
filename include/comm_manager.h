@@ -101,7 +101,7 @@ private:
   void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value);
   void command_callback(CommLink::Command command);
   void timesync_callback(int64_t tc1, int64_t ts1);
-  void offboard_control_callback(uint8_t mode, uint8_t ignore, float x, float y, float z, float F);
+  void offboard_control_callback(const CommLink::OffboardControl& control);
 
   void send_heartbeat(void);
   void send_status(void);

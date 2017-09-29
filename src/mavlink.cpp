@@ -411,7 +411,35 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
 {
   mavlink_offboard_control_t ctrl;
   mavlink_msg_offboard_control_decode(msg, &ctrl);
-  offboard_control_callback_(ctrl.mode, ctrl.ignore, ctrl.x, ctrl.y, ctrl.z, ctrl.F);
+
+  CommLink::OffboardControl control;
+  switch (ctrl.mode)
+  {
+  case MODE_PASS_THROUGH:
+    control.mode = CommLink::OffboardControl::Mode::PASS_THROUGH;
+    break;
+  case MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+    control.mode = CommLink::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
+    break;
+  case MODE_ROLL_PITCH_YAWRATE_THROTTLE:
+    control.mode = CommLink::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE;
+    break;
+  default:
+    // invalid mode; ignore message and return without calling callback
+    return;
+  }
+
+  control.x.value = ctrl.x;
+  control.y.value = ctrl.y;
+  control.z.value = ctrl.z;
+  control.F.value = ctrl.F;
+
+  control.x.valid = !(ctrl.ignore & IGNORE_VALUE1);
+  control.y.valid = !(ctrl.ignore & IGNORE_VALUE2);
+  control.z.valid = !(ctrl.ignore & IGNORE_VALUE3);
+  control.F.valid = !(ctrl.ignore & IGNORE_VALUE4);
+
+  offboard_control_callback_(control);
 }
 
 void Mavlink::handle_mavlink_message(void)

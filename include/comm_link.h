@@ -69,6 +69,28 @@ public:
     COMMAND_SEND_VERSION
   };
 
+  struct OffboardControl
+  {
+    enum class Mode
+    {
+      PASS_THROUGH,
+      ROLLRATE_PITCHRATE_YAWRATE_THROTTLE,
+      ROLL_PITCH_YAWRATE_THROTTLE
+    };
+
+    struct Channel
+    {
+      float value;
+      bool valid;
+    };
+
+    Mode mode;
+    Channel x;
+    Channel y;
+    Channel z;
+    Channel F;
+  };
+
   virtual void init(uint32_t baud_rate) = 0;
   virtual void receive() = 0;
 
@@ -144,12 +166,7 @@ public:
     param_set_float_callback_ = callback;
   }
 
-  void register_offboard_control_callback(std::function<void(uint8_t /* mode */,
-                                                             uint8_t /* ignore */,
-                                                             float /* x */,
-                                                             float /* y */,
-                                                             float /* z */,
-                                                             float /* F */)> callback)
+  void register_offboard_control_callback(std::function<void(const OffboardControl&)> callback)
   {
     offboard_control_callback_ = callback;
   }
@@ -170,7 +187,7 @@ protected:
   std::function<void(uint8_t, const char * const, int32_t)> param_set_int_callback_;
   std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
 
-  std::function<void(uint8_t, uint8_t, float, float, float, float)> offboard_control_callback_;
+  std::function<void(const OffboardControl)> offboard_control_callback_;
   std::function<void(Command)> command_callback_;
   std::function<void(int64_t, int64_t)> timesync_callback_;
 };
