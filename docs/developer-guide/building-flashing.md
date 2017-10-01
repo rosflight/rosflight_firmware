@@ -7,7 +7,7 @@ These documents are designed to help developers get up and running with developi
 To build the firmware, you will need the latest version of the ARM embedded toolchain.  We have had issues with compatability between versions of the gcc compiler.  Sometimes, the latest version works, and other times it does not.  To be safe, install version `5_4-2016q3`.  It appears that version 6 is not working.  The following commands will install the 32-bit dependencies, download the compiler and install it to the /opt/ directory.  It also adds it to the `PATH`
 
 ``` bash
-udo apt install -y lib32ncurses5
+sudo apt install -y lib32ncurses5
 wget https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q3-update/+download/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
 tar -xvf gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
 sudo mv gcc-arm-none-eabi-5_4-2016q3 /opt/.
