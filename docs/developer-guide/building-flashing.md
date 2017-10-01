@@ -4,7 +4,7 @@ These documents are designed to help developers get up and running with developi
 
 ## Building firmware from source
 
-To build the firmware, you will need the latest version of the ARM embedded toolchain.  We have had issues with compatability between versions of the firmware.  Sometimes, the latest version works, and other times it does not.  To be safe, install version `5_4-2016q3`.  It appears that version 6 is not working.  The following commands will install the 32-bit dependencies, download the compiler and install it to the /opt/ directory.  It also adds it to the `PATH`
+To build the firmware, you will need the latest version of the ARM embedded toolchain.  We have had issues with compatability between versions of the gcc compiler.  Sometimes, the latest version works, and other times it does not.  To be safe, install version `5_4-2016q3`.  It appears that version 6 is not working.  The following commands will install the 32-bit dependencies, download the compiler and install it to the /opt/ directory.  It also adds it to the `PATH`
 
 ``` bash
 udo apt install -y lib32ncurses5
