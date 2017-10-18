@@ -32,17 +32,8 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
-extern "C"
-{
 
-#include <breezystm32.h>
-#include "flash.h"
-extern void SetSysClock(bool overclock);
-
-}
-
-
-#include "naze32.h"
+#include "revo.h"
 
 namespace rosflight_firmware {
 

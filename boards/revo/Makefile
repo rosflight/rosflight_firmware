@@ -116,38 +116,38 @@ VCP_SRC = $(notdir $(wildcard $(VCP_DIR)/*.c))
 
 # Make a list of source files and includes
 VPATH := $(VPATH):$(AIRBOURNE_SRC_DIR)
-AIRBOURNE_SRCS = $(AIRBOURNE_SRC_DIR)/gpio.cpp \
-             		 $(AIRBOURNE_SRC_DIR)/drv_spi.cpp \
-             		 $(AIRBOURNE_SRC_DIR)/vcp.cpp \
-             		 $(AIRBOURNE_SRC_DIR)/drv_led.cpp \
-             		 $(AIRBOURNE_SRC_DIR)/mpu6000.cpp \
-								 $(AIRBOURNE_SRC_DIR)/advanced.cpp \
-								 $(AIRBOURNE_SRC_DIR)/drv_i2c.cpp \
-								 $(AIRBOURNE_SRC_DIR)/drv_pwm_out.cpp \
-								 $(AIRBOURNE_SRC_DIR)/eeprom.cpp \
-								 $(AIRBOURNE_SRC_DIR)/hmc5883l.cpp \
-								 $(AIRBOURNE_SRC_DIR)/ms56110.cpp \
-								 $(AIRBOURNE_SRC_DIR)/rc_ppm.cpp \
-								 $(AIRBOURNE_SRC_DIR)/uart.cpp
+AIRBOURNE_SRCS = gpio.cpp \
+                 drv_spi.cpp \
+                 vcp.cpp \
+                 drv_led.cpp \
+                 mpu6000.cpp \
+                 advanced.cpp \
+                 drv_i2c.cpp \
+                 drv_pwm_out.cpp \
+                 eeprom.cpp \
+                 hmc5883l.cpp \
+                 ms5611.cpp \
+                 rc_ppm.cpp \
+                 uart.cpp
 
 
 # board-specific source files
 VPATH		:= $(VPATH):$(BOARD_DIR)
-BOARD_CXX_SRC =	naze32.cpp \
+BOARD_CXX_SRC =	revo.cpp \
 								main.cpp
 
 # ROSflight source files
-VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
+VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)/src
 ROSFLIGHT_SRC = rosflight.cpp \
-               param.cpp \
-               sensors.cpp \
-               state_manager.cpp \
-               estimator.cpp \
-               mavlink.cpp \
-               controller.cpp \
-               command_manager.cpp \
-               rc.cpp \
-               mixer.cpp
+                param.cpp \
+                sensors.cpp \
+                state_manager.cpp \
+                estimator.cpp \
+                mavlink.cpp \
+                controller.cpp \
+                command_manager.cpp \
+                rc.cpp \
+                mixer.cpp
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOMATH_DIR)

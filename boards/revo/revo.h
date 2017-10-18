@@ -35,7 +35,7 @@
 
 extern "C"
 {
-#include <breezystm32.h>
+#include <revo_f4.h>
 }
 
 #include "board.h"
