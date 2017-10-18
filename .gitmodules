@@ -4,3 +4,6 @@
 [submodule "boards/naze/lib/breezystm32"]
 	path = boards/naze/lib/breezystm32
 	url = https://github.com/rosflight/BreezySTM32.git
+[submodule "boards/revo/lib/airbourne_f4"]
+	path = boards/revo/lib/airbourne_f4
+	url = https://github.com/rosflight/airbourne_f4.git
