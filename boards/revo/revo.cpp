@@ -32,256 +32,205 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
-
 #include "revo.h"
 
 namespace rosflight_firmware {
 
-Naze32::Naze32(){}
+Revo::Revo() :
+  i2c_(I2C1),
+  spi_(SPI1),
+  imu_(&spi_),
+  mag_(&i2c_),
+  baro_(&i2c_),
+  warn_(LED1_GPIO, LED1_PIN),
+  info_(LED2_GPIO, LED2_PIN)
+{}
 
-void Naze32::init_board(void)
+void Revo::init_board(void)
 {
-  // Configure clock, this figures out HSE for hardware autodetect
-  SetSysClock(0);
   systemInit();
   _board_revision = 2;
 }
 
-void Naze32::board_reset(bool bootloader)
+void Revo::board_reset(bool bootloader)
 {
-  systemReset(bootloader);
+//  systemReset(bootloader);
 }
 
 // clock
 
-uint32_t Naze32::clock_millis()
+uint32_t Revo::clock_millis()
 {
   return millis();
 }
 
-uint64_t Naze32::clock_micros()
+uint64_t Revo::clock_micros()
 {
   return micros();
 }
 
-void Naze32::clock_delay(uint32_t milliseconds)
+void Revo::clock_delay(uint32_t milliseconds)
 {
   delay(milliseconds);
 }
 
 // serial
-
-void Naze32::serial_init(uint32_t baud_rate)
+void Revo::serial_init(uint32_t baud_rate)
 {
-  Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
-void Naze32::serial_write(const uint8_t *src, size_t len)
+void Revo::serial_write(const uint8_t *src, size_t len)
 {
   for (size_t i = 0; i < len; i++)
   {
-    serialWrite(Serial1, src[i]);
+    vcp_.write(src, len);
   }
 }
 
-uint16_t Naze32::serial_bytes_available(void)
+uint16_t Revo::serial_bytes_available(void)
 {
-  return serialTotalBytesWaiting(Serial1);
+  return vcp_.rx_bytes_waiting();
 }
 
-uint8_t Naze32::serial_read(void)
+uint8_t Revo::serial_read(void)
 {
-  return serialRead(Serial1);
+  return vcp_.read_byte();
 }
 
 // sensors
 
-void Naze32::sensors_init()
+void Revo::sensors_init()
 {
-  // Initialize I2c
-  i2cInit(I2CDEV_2);
-
   while(millis() < 50);
-
-  i2cWrite(0,0,0);
-  ms5611_init();
-  hmc5883lInit(_board_revision);
-  mb1242_init();
-  ms4525_init();
-
-  // IMU
-  uint16_t acc1G;
-  mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
-  _accel_scale = 9.80665f/acc1G;
+  i2c_.write(0,0,0);
 }
 
-uint16_t Naze32::num_sensor_errors(void)
+uint16_t Revo::num_sensor_errors(void)
 {
-  return i2cGetErrorCounter();
+  return i2c_.num_errors();
 }
 
-bool Naze32::new_imu_data()
+bool Revo::new_imu_data()
 {
-  return mpu6050_new_data();
+  return imu_.new_data();
 }
 
-bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
-  volatile int16_t gyro_raw[3], accel_raw[3];
-  volatile int16_t raw_temp;
-  mpu6050_async_read_all(accel_raw, &raw_temp, gyro_raw, time_us);
+  imu_.read(accel, gyro, temperature, time_us);
 
-  accel[0] = accel_raw[0] * _accel_scale;
-  accel[1] = -accel_raw[1] * _accel_scale;
-  accel[2] = -accel_raw[2] * _accel_scale;
+  accel[0] = accel[0];
+  accel[1] = -accel[1];
+  accel[2] = -accel[2];
 
-  gyro[0] = gyro_raw[0] * _gyro_scale;
-  gyro[1] = -gyro_raw[1] * _gyro_scale;
-  gyro[2] = -gyro_raw[2] * _gyro_scale;
+  gyro[0] = gyro[0];
+  gyro[1] = -gyro[1];
+  gyro[2] = -gyro[2];
 
-  (*temperature) = (float)raw_temp/340.0f + 36.53f;
-
-  if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0)
-  {
-    return false;
-  }
-  else return true;
+  return true;
 }
 
-void Naze32::imu_not_responding_error(void)
+void Revo::imu_not_responding_error(void)
 {
   // If the IMU is not responding, then we need to change where we look for the interrupt
   _board_revision = (_board_revision < 4) ? 5 : 2;
   sensors_init();
 }
 
-void Naze32::mag_read(float mag[3])
+void Revo::mag_read(float mag[3])
 {
-  // Convert to NED
-  int16_t raw_mag[3];
-  //  hmc5883l_update();
-  hmc5883l_request_async_update();
-  hmc5883l_async_read(raw_mag);
-  mag[0] = (float)raw_mag[0];
-  mag[1] = (float)raw_mag[1];
-  mag[2] = (float)raw_mag[2];
+  mag_.update();
+  mag_.read(mag);
 }
 
-bool Naze32::mag_check(void)
+bool Revo::mag_check(void)
 {
-  return hmc5883l_present();
+  return mag_.present();
 }
 
-void Naze32::baro_read(float *pressure, float *temperature)
+void Revo::baro_read(float *pressure, float *temperature)
 {
-  ms5611_async_update();
-  ms5611_async_read(pressure, temperature);
+  baro_.update();
+  baro_.read(pressure, temperature);
 }
 
-bool Naze32::baro_check()
+bool Revo::baro_check()
 {
-  ms5611_async_update();
-  return ms5611_present();
+  baro_.update();
+  return baro_.present();
 }
 
-bool Naze32::diff_pressure_check(void)
+bool Revo::diff_pressure_check(void)
 {
-  ms4525_async_update();
-  return ms4525_present();
+  return false;
 }
 
-void Naze32::diff_pressure_read(float *diff_pressure, float *temperature)
+void Revo::diff_pressure_read(float *diff_pressure, float *temperature)
 {
-  ms4525_async_update();
-  ms4525_async_read(diff_pressure, temperature);
+  return;
 }
 
-bool Naze32::sonar_check(void)
+bool Revo::sonar_check(void)
 {
-  mb1242_async_update();
-  if (mb1242_present())
-  {
-    sonar_type = SONAR_I2C;
-    return true;
-  }
-  else if (sonarPresent())
-  {
-    sonar_type = SONAR_PWM;
-    return true;
-  }
-  else
-  {
-    sonar_type = SONAR_NONE;
-    return false;
-  }
+  return false;
 }
 
-float Naze32::sonar_read(void)
+float Revo::sonar_read(void)
 {
-  if (sonar_type == SONAR_I2C)
-  {
-    mb1242_async_update();
-    return mb1242_async_read();
-  }
-  else if (sonar_type == SONAR_PWM)
-    return sonarRead(6);
-  else
-    return 0.0f;
-}
-
-uint16_t num_sensor_errors(void)
-{
-  return i2cGetErrorCounter();
+  return 0.0;
 }
 
 // PWM
 
-void Naze32::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
+void Revo::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
 {
-  pwmInit(cppm, false, false, refresh_rate, idle_pwm);
+  for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
+  {
+    esc_out_[i].init(&pwm_config[i], refresh_rate, PWM_MAX_US, PWM_MIN_US);
+    esc_out_[i].writeUs(idle_pwm);
+  }
 }
 
-uint16_t Naze32::pwm_read(uint8_t channel)
+uint16_t Revo::pwm_read(uint8_t channel)
 {
-  return pwmRead(channel);
+  return rc_.read(channel);
 }
 
-void Naze32::pwm_write(uint8_t channel, uint16_t value)
+void Revo::pwm_write(uint8_t channel, uint16_t value)
 {
-  pwmWriteMotor(channel, value);
+  esc_out_[channel].writeUs(value);
 }
 
-bool Naze32::pwm_lost()
+bool Revo::pwm_lost()
 {
-  return ((millis() - pwmLastUpdate()) > 40);
+  return rc_.lost();
 }
 
 // non-volatile memory
 
-void Naze32::memory_init(void)
+void Revo::memory_init(void)
 {
-  initEEPROM();
 }
 
-bool Naze32::memory_read(void * dest, size_t len)
+bool Revo::memory_read(void * dest, size_t len)
 {
-  return readEEPROM(dest, len);
+  return memory_read(dest, len);
 }
 
-bool Naze32::memory_write(const void * src, size_t len)
+bool Revo::memory_write(const void * src, size_t len)
 {
-  return writeEEPROM(src, len);
+  return memory_write(src, len);
 }
 
 // LED
 
-void Naze32::led0_on(void) { LED0_ON; }
-void Naze32::led0_off(void) { LED0_OFF; }
-void Naze32::led0_toggle(void) { LED0_TOGGLE; }
+void Revo::led0_on(void) { info_.on(); }
+void Revo::led0_off(void) { info_.off(); }
+void Revo::led0_toggle(void) { info_.toggle(); }
 
-void Naze32::led1_on(void) { LED1_ON; }
-void Naze32::led1_off(void) { LED1_OFF; }
-void Naze32::led1_toggle(void) { LED1_TOGGLE; }
+void Revo::led1_on(void) { warn_.on(); }
+void Revo::led1_off(void) { warn_.off(); }
+void Revo::led1_toggle(void) { warn_.toggle(); }
 
 }
 

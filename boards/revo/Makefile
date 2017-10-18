@@ -146,6 +146,7 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 mavlink.cpp \
                 controller.cpp \
                 command_manager.cpp \
+                nanoprintf.cpp \
                 rc.cpp \
                 mixer.cpp
 
@@ -182,15 +183,6 @@ INCLUDE_DIRS =  $(AIRBOURNE_SRC_DIR) \
                 $(PRINTF_DIR) \
                 $(VCP_DIR)
 
-$(info ******* CSOURCES *********)
-$(info $(CSOURCES))
-
-
-$(info ******* CXXSOURCES *********)
-$(info $(CXXSOURCES))
-
-$(info ******** VPATH *******)
-$(info $(VPATH))
 #################################
 # Object List
 #################################

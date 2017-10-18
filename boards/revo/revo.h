@@ -33,20 +33,39 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern "C"
-{
 #include <revo_f4.h>
-}
+
+#include "vcp.h"
+#include "drv_i2c.h"
+#include "drv_spi.h"
+#include "mpu6000.h"
+#include "ms5611.h"
+#include "eeprom.h"
+#include "hmc5883l.h"
+#include "rc_ppm.h"
+#include "drv_pwm_out.h"
+#include "drv_led.h"
 
 #include "board.h"
 
 namespace rosflight_firmware {
 
-class Naze32 : public Board
+class Revo : public Board
 {
 
 private:
-  serialPort_t *Serial1;
+  VCP vcp_;
+  I2C i2c_;
+  SPI spi_;
+  MPU6000 imu_;
+  HMC5883L mag_;
+  MS5611 baro_;
+
+  RC_PPM rc_;
+  PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
+  LED warn_;
+  LED info_;
+
 
   std::function<void(void)> imu_callback_;
 
@@ -66,7 +85,7 @@ private:
 
 
 public:
-  Naze32();
+  Revo();
 
   bool new_imu_data_;
   uint64_t imu_time_us_;
