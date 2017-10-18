@@ -14,6 +14,7 @@
 /boards/*/build/
 /test/build/
 /site/
+/boards/*/obj/
 *.idea*
 
 param_description.md
