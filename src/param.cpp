@@ -49,8 +49,8 @@ namespace rosflight_firmware
 Params::Params(ROSflight& _rf) :
   RF_(_rf)
 {
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-    callbacks[id] = NULL;
+//  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
+//    callbacks[id] = NULL;
 }
 
 // local function definitions
@@ -253,8 +253,8 @@ void Params::set_defaults(void)
 
 void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
 {
-  callbacks[param_id] = callback;
-  callback(param_id);
+//  callbacks[param_id] = callback;
+//  callback(param_id);
 }
 
 bool Params::read(void)
@@ -290,8 +290,8 @@ bool Params::write(void)
 void Params::change_callback(uint16_t id)
 {
   // call the callback function
-  if(callbacks[id])
-    callbacks[id](id);
+//  if(callbacks[id])
+//    callbacks[id](id);
 }
 
 uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])

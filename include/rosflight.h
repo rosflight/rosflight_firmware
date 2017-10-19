@@ -53,7 +53,7 @@ private:
 
 
 public:
-  ROSflight(Board& board);
+  ROSflight(Board &_board);
 
   Board& board_;
   Mavlink mavlink_;

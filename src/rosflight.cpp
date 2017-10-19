@@ -34,8 +34,8 @@
 namespace rosflight_firmware
 {
 
-ROSflight::ROSflight(Board& board) :
-  board_(board),
+ROSflight::ROSflight(Board& _board) :
+  board_(_board),
   mavlink_(*this),
   params_(*this),
   command_manager_(*this),
@@ -51,9 +51,6 @@ ROSflight::ROSflight(Board& board) :
 // Initialization Routine
 void ROSflight::init()
 {
-  // Initialize the board
-  board_.init_board();
-
   // Initialize the arming finite state machine
   state_manager_.init();
 
@@ -97,14 +94,14 @@ void ROSflight::run()
   /*********************/
   /***  Control Loop ***/
   /*********************/
-  uint64_t start = board_.clock_micros();
+//  uint64_t start = board_.clock_micros();
   if (sensors_.run())
   {
     // If I have new IMU data, then perform control
     estimator_.run();
     controller_.run();
     mixer_.mix_output();
-    loop_time_us = board_.clock_micros() - start;
+//    loop_time_us = board_.clock_micros() - start;
   }
 
   /*********************/

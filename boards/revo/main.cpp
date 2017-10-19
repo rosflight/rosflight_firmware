@@ -33,16 +33,32 @@
 #include "rosflight.h"
 //#include "mavlink.h"
 
+extern "C"
+{
+void WWDG_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void UsageFault_IRQHandler(void)
+{
+  volatile int debug =1 ;
+}
+}
+
 int main(void)
 {
   rosflight_firmware::Revo board;
-  rosflight_firmware::ROSflight firmware(board);
+  board.init_board();
+//  rosflight_firmware::ROSflight firmware(board);
 
-  firmware.init();
+//  firmware.init();
 
   while(1)
   {
-    firmware.run();
+//    firmware.run();
+    board.led0_toggle();
+    board.clock_delay(100);
   }
   return 0;
 }

@@ -241,7 +241,7 @@ private:
     uint8_t chk;                            // XOR checksum
   } params_t;
 
-  std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
+//  std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
 
   params_t params;
   ROSflight& RF_;
