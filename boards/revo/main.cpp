@@ -40,17 +40,143 @@ void WWDG_IRQHandler(void)
   volatile int debug = 1;
 }
 
-void UsageFault_IRQHandler(void)
+void UsageFault_Handler(void)
 {
   volatile int debug =1 ;
 }
+
+void USART6_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void USART3_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void USART2_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void USART1_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void UART5_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void UART4_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM8_UP_TIM13_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+
+void TIM8_TRG_COM_TIM14_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM1_TRG_COM_TIM11_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM8_CC_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM1_CC_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM8_BRK_TIM12_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM1_BRK_TIM9_IRQHandler(void)
+{
+  volatile int debug = 1;
+}
+
+void TIM7_IRQHandler()
+{
+  volatile int debug = 1;
+}
+
+void TIM5_IRQHandler()
+{
+  volatile int debug = 1;
+}
+
+void TIM4_IRQHandler()
+{
+  volatile int debug = 1;
+}
+
+void TIM2_IRQHandler()
+{
+  volatile int debug = 1;
+}
+
+void TIM6_DAC_IRQHandler()
+{
+  volatile int debug = 1;
+}
+
+void TAMP_STAMP_IRQHandler()
+{
+  volatile int debug = 1;
+}
+
+void SPI3_IRQHandler(){}
+void SPI2_IRQHandler(){}
+void SPI1_IRQHandler(){}
+void SDIO_IRQHandler(){}
+void RTC_WKUP_IRQHandler(){}
+void RTC_Alarm_IRQHandler(){}
+void RCC_IRQHandler(){}
+void PVD_IRQHandler(){}
+void OTG_HS_WKUP_IRQHandler(){}
+void OTG_HS_IRQHandler(){}
+void OTG_HS_EP1_OUT_IRQHandler(){}
+void OTG_HS_EP1_IN_IRQHandler(){}
+void MemManage_Handler(){}
+void I2C3_EV_IRQHandler(){}
+void I2C3_ER_IRQHandler(){}
+void HardFault_Handler(){}
 }
 
 int main(void)
 {
   rosflight_firmware::Revo board;
   board.init_board();
-//  rosflight_firmware::ROSflight firmware(board);
+
+  int i = 0;
+  while (i < 10)
+  {
+    board.clock_delay(10);
+    i += 1;
+  }
+
+  rosflight_firmware::ROSflight firmware(board);
 
 //  firmware.init();
 
@@ -62,3 +188,4 @@ int main(void)
   }
   return 0;
 }
+
