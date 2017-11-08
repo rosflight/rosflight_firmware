@@ -4,19 +4,24 @@ These documents are designed to help developers get up and running with developi
 
 ## Building firmware from source
 
-To build the firmware, you will need the latest version of the ARM embedded toolchain.  This can be obtained with the following commands:
+To build the firmware, you will need the latest version of the ARM embedded toolchain.  We have had issues with compatability between versions of the gcc compiler.  Sometimes, the latest version works, and other times it does not.  To be safe, install version `5_4-2016q3`.  It appears that version 6 is not working.  The following commands will install the 32-bit dependencies, download the compiler and install it to the /opt/ directory.  It also adds it to the `PATH`
 
 ``` bash
-sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
-sudo apt update
-sudo apt install lib32ncurses5 lib32tinfo5 libc6-i386 gcc-arm-embedded
+sudo apt install -y lib32ncurses5
+wget https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q3-update/+download/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
+tar -xvf gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
+sudo mv gcc-arm-none-eabi-5_4-2016q3 /opt/.
+echo "export PATH=\$PATH:/opt/gcc-arm-none-eabi-5_4-2016q3/bin" >> ~/.bashrc
+rm -rf gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
+
 ```
 
-Then, simply clone the repository and build
+Then, simply clone the repository, pull down the submodules, and build:
 
 ``` bash
 git clone https://github.com/rosflight/firmware
 cd firmware
+git submodule update --init --recursive
 make
 ```
 

@@ -30,10 +30,15 @@ catkin_make
 
 source ~/catkin_ws/devel/setup.bash
 ```
-In order to ensure that ROS uses this workspace, you can add the last line (`source ~/catkin_ws/devel/setup.bash`) to your `~/.bashrc` file or its equivalent on other systems. Next download the source code into your workspace,
+In order to ensure that ROS uses this workspace, you can add the last line (`source ~/catkin_ws/devel/setup.bash`) to your `~/.bashrc` file or its equivalent on other systems. Next download the source code into your workspace
 ```bash
 cd ~/catkin_ws/src
 git clone https://github.com/rosflight/rosflight.git
+```
+pull down the submodules (there is a triple-layer submodule setup in the `rosflight` metapackage, so you have to remember the `--recursive` argument)
+```bash
+cd rosflight
+git submodule --init --recursive
 ```
 install dependencies,
 ```bash

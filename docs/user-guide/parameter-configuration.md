@@ -188,14 +188,14 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | SWITCH_8_DIR | RC switch 8 toggle direction | int |  1 | -1 | 1 |
 | RC_OVRD_DEV | RC stick deviation from center for overrride | float |  0.1 | 0.0 | 1.0 |
 | OVRD_LAG_TIME | RC stick deviation lag time before returning control (ms) | int |  1000 | 0 | 100000 |
-| MIN_THROTTLE | Take minimum throttle between RC and computer at all times | int |  false | 0 | 1 |
+| MIN_THROTTLE | Take minimum throttle between RC and computer at all times | int |  true | 0 | 1 |
 | RC_ATT_MODE | Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | int |  1 | 0 | 1 |
 | RC_MAX_ROLL | Maximum roll angle command sent by full deflection of RC sticks | float |  0.786f | 0.0 | 3.14159 |
 | RC_MAX_PITCH | Maximum pitch angle command sent by full stick deflection of RC sticks | float |  0.786f | 0.0 | 3.14159 |
 | RC_MAX_ROLLRATE | Maximum roll rate command sent by full stick deflection of RC sticks | float |  3.14159f | 0.0 | 9.42477796077 |
 | RC_MAX_PITCHRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  3.14159f | 0.0 | 3.14159 |
 | RC_MAX_YAWRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  1.507f | 0.0 | 3.14159 |
-| MIXER | Which mixer to choose - See Mixer documentation | int | 255 | 0 | 10 |
+| MIXER | Which mixer to choose - See Mixer documentation | int |  Mixer::INVALID_MIXER | 0 | 10 |
 | FIXED_WING | switches on passthrough commands for fixedwing operation | int |  false | 0 | 1 |
 | ELEVATOR_REV | reverses elevator servo output | int |  0 | 0 | 1 |
 | AIL_REV | reverses aileron servo output | int |  0 | 0 | 1 |
