@@ -114,3 +114,20 @@ The _ESC calibration_ mixer outputs the throttle command equally to each motor, 
 ![Mixer_1](images/mixers_1.png)
 
 ![Mixer_2](images/mixers_2.png)
+
+# Important Mixer Setup Tip
+
+Refer to the table below to ensure motors and servos are connected to the proper channel on the naze. In the Mixer Layout column, M refers to Motors, S refers to servo, and N refers to not connected. Channel 1 is the far left item in the Mixer Layout Column.
+ 
+| Mixing | Mixer Layout |
+|--------|--------------|
+| Quad-Plus | {M, M, M, M, N, N, N, N} |
+| Quad-X | {M, M, M, M, N, N, N, N} |
+| Hex-Plus | {M, M, M, M, M, M, M, M} |
+| Hex-X | {M, M, M, M, M, M, M, M} |
+| Octo-Plus | {M, M, M, M, M, M, M, M} |
+| Octo-X | {M, M, M, M, M, M, M, M} |
+| Y6 | {M, M, M, M, M, M, N, N} |
+| Y8 | {M, M, M, M, M, M, M, M} |
+| Tricopter | {M, M, M, S, N, N, N, N} |
+| Fixed Wing | {S, S, M, S, S, M, N, N} |
