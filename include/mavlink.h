@@ -94,6 +94,7 @@ private:
   void handle_mavlink_message(void);
 
   void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
+  void handle_msg_aux_command(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
   void handle_msg_offboard_control(const mavlink_message_t *const msg);
 

@@ -252,6 +252,19 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
   }
 }
 
+void handle_msg_aux_command(const mavlink_message_t *const msg)
+{
+  mavlink_aux_command_t cmd;
+  mavlink_msg_aux_command_decode(msg, &cmd);
+
+  // write the pwm values to the motors
+  for (int i = 0; i < 14; i++)
+  {
+    // mavlink message has value array of floats, but pwm_write expects uint16_t
+    
+  }
+}
+
 void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)
 {
   uint64_t now_us = RF_.board_.clock_micros();
