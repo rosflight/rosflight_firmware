@@ -86,9 +86,6 @@ private:
   float raw_outputs_[8];
   float unsaturated_outputs_[8];
 
-  void write_motor(uint8_t index, float value);
-  void write_servo(uint8_t index, float value);
-
   const mixer_t esc_calibration_mixing =
   {
     {M, M, M, M, M, M, NONE, NONE},
@@ -223,6 +220,8 @@ public:
   void init_mixing();
   void mix_output();
   void param_change_callback(uint16_t param_id);
+  void write_motor(uint8_t index, float value);
+  void write_servo(uint8_t index, float value);
   inline const float* get_outputs() const {return raw_outputs_;}
 };
 
