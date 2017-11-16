@@ -252,26 +252,26 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
   }
 }
 
-void handle_msg_aux_command(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_aux_cmd(const mavlink_message_t *const msg)
 {
-  mavlink_aux_command_t cmd;
-  mavlink_msg_aux_command_decode(msg, &cmd);
+  mavlink_aux_cmd_t cmd;
+  mavlink_msg_aux_cmd_decode(msg, &cmd);
 
   // write the pwm values to the motors
   for (int i = 0; i < 14; i++)
   {
-    switch (cmd.channel_mode)
+    switch (cmd.channel_mode[i])
     {
     case MODE_DISABLE:
       // Channel is either not used or is controlled by the mixer
       break;
     case MODE_SERVO:
       // PWM value should be mapped to servo position
-      RF_.board_.write_servo(i, cmd.value[i]);
+      RF_.mixer_.write_servo(i, cmd.value[i]);
       break;
     case MODE_MOTOR:
       // PWM value should be mapped to motor speed
-      RF_.board_.write_motor(i, cmd.value[i])
+      RF_.mixer_.write_motor(i, cmd.value[i]);
       break;
     default:
       // Log an error if the an unsupported channel mode is caught
