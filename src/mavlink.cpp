@@ -260,8 +260,24 @@ void handle_msg_aux_command(const mavlink_message_t *const msg)
   // write the pwm values to the motors
   for (int i = 0; i < 14; i++)
   {
-    // mavlink message has value array of floats, but pwm_write expects uint16_t
-    
+    switch (cmd.channel_mode)
+    {
+    case MODE_DISABLE:
+      // Channel is either not used or is controlled by the mixer
+      break;
+    case MODE_SERVO:
+      // PWM value should be mapped to servo position
+      RF_.board_.write_servo(i, cmd.value[i]);
+      break;
+    case MODE_MOTOR:
+      // PWM value should be mapped to motor speed
+      RF_.board_.write_motor(i, cmd.value[i])
+      break;
+    default:
+      // Log an error if the an unsupported channel mode is caught
+      log(LOG_ERROR, "Unsupported AUX_CMD_CHANNEL_MODE %d", cmd.channel_mode[i]);
+      break;
+    }
   }
 }
 
