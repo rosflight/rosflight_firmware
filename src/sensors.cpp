@@ -61,6 +61,10 @@ Sensors::Sensors(ROSflight& rosflight) :
 
 void Sensors::init()
 {
+  rf_.params_.add_callback(std::bind(&Sensors::param_change_callback, this, std::placeholders::_1), PARAM_FC_ROLL);
+  rf_.params_.add_callback(std::bind(&Sensors::param_change_callback, this, std::placeholders::_1), PARAM_FC_PITCH);
+  rf_.params_.add_callback(std::bind(&Sensors::param_change_callback, this, std::placeholders::_1), PARAM_FC_YAW);
+
   new_imu_data_ = false;
 
   // clear the IMU read error
@@ -82,6 +86,15 @@ void Sensors::init()
   baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
+}
+
+void Sensors::param_change_callback(uint16_t param_id)
+{
+  (void) param_id; // suppress unused parameter warning
+  float roll = rf_.params_.get_param_float(PARAM_FC_ROLL);
+  float pitch = rf_.params_.get_param_float(PARAM_FC_PITCH);
+  float yaw = rf_.params_.get_param_float(PARAM_FC_YAW);
+  data_.fcu_orientation = turbomath::Quaternion(roll, pitch, yaw);
 }
 
 
@@ -267,9 +280,13 @@ bool Sensors::update_imu(void)
     data_.accel.y = accel_[1];
     data_.accel.z = accel_[2];
 
+    data_.accel = data_.fcu_orientation * data_.accel;
+
     data_.gyro.x = gyro_[0];
     data_.gyro.y = gyro_[1];
     data_.gyro.z = gyro_[2];
+
+    data_.gyro = data_.fcu_orientation * data_.gyro;
 
     if (calibrating_acc_flag_)
       calibrate_accel();
@@ -281,8 +298,12 @@ bool Sensors::update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
+    // if we have lost 10 IMU messages then something is wrong
+    // However, because we look for disabled sensors while disarmed,
+    // we get IMU timeouts, which last for at least 10 ms.  Therefore
+    // we have an adjustable imu_timeout.
+    int imu_timeout = rf_.state_manager_.state().armed ? 10 : 1000;
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + imu_timeout)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
