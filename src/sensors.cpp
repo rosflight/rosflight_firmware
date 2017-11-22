@@ -71,13 +71,8 @@ void Sensors::init()
   rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
   rf_.board_.sensors_init();
 
-  // See if the IMU is uncalibrated, and throw an error if it is
-  if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
-      rf_.params_.get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
-      rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
-  {
-    rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
-  }
+  init_imu();
+
   next_sensor_to_update_ = BAROMETER;
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
@@ -88,13 +83,27 @@ void Sensors::init()
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
 }
 
+void Sensors::init_imu()
+{
+  // Quaternion to compensate for FCU orientation
+  float roll = rf_.params_.get_param_float(PARAM_FC_ROLL) * 0.017453293;
+  float pitch = rf_.params_.get_param_float(PARAM_FC_PITCH) * 0.017453293;
+  float yaw = rf_.params_.get_param_float(PARAM_FC_YAW) * 0.017453293;
+  data_.fcu_orientation = turbomath::Quaternion(roll, pitch, yaw);
+
+  // See if the IMU is uncalibrated, and throw an error if it is
+  if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
+      rf_.params_.get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
+      rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
+  {
+    rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
+  }
+}
+
 void Sensors::param_change_callback(uint16_t param_id)
 {
   (void) param_id; // suppress unused parameter warning
-  float roll = rf_.params_.get_param_float(PARAM_FC_ROLL);
-  float pitch = rf_.params_.get_param_float(PARAM_FC_PITCH);
-  float yaw = rf_.params_.get_param_float(PARAM_FC_YAW);
-  data_.fcu_orientation = turbomath::Quaternion(roll, pitch, yaw);
+  init_imu();
 }
 
 
