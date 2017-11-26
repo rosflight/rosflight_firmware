@@ -28,7 +28,7 @@
 
 TARGET	?= rosflight
 
-DEBUG ?= GDB
+DEBUG ?= 
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
