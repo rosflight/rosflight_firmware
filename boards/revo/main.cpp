@@ -169,14 +169,7 @@ int main(void)
   rosflight_firmware::Revo board;
   board.init_board();
 
-  int i = 0;
-  while (i < 10)
-  {
-    board.clock_delay(10);
-    i += 1;
-  }
-
-  rosflight_firmware::ROSflight firmware(board);
+//  rosflight_firmware::ROSflight firmware(board);
 
 //  firmware.init();
 

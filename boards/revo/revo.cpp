@@ -36,16 +36,11 @@
 
 namespace rosflight_firmware {
 
-Revo::Revo()
-{
-  volatile int debug = 1;
-}
-
 void Revo::init_board(void)
 {
   systemInit();
-//  warn_.init(LED1_GPIO, LED1_PIN);
-//  info_.init(LED2_GPIO, LED2_PIN);
+  warn_.init(LED1_GPIO, LED1_PIN);
+  info_.init(LED2_GPIO, LED2_PIN);
 }
 
 void Revo::board_reset(bool bootloader)
@@ -67,7 +62,7 @@ uint64_t Revo::clock_micros()
 
 void Revo::clock_delay(uint32_t milliseconds)
 {
-//  delay(milliseconds);
+  delay(milliseconds);
 }
 
 // serial
@@ -232,21 +227,21 @@ bool Revo::memory_write(const void * src, size_t len)
 
 // LED
 
-//void Revo::led0_on(void) { info_.on(); }
-//void Revo::led0_off(void) { info_.off(); }
-//void Revo::led0_toggle(void) { info_.toggle(); }
+void Revo::led0_on(void) { info_.on(); }
+void Revo::led0_off(void) { info_.off(); }
+void Revo::led0_toggle(void) { info_.toggle(); }
 
-//void Revo::led1_on(void) { warn_.on(); }
-//void Revo::led1_off(void) { warn_.off(); }
-//void Revo::led1_toggle(void) { warn_.toggle(); }
+void Revo::led1_on(void) { warn_.on(); }
+void Revo::led1_off(void) { warn_.off(); }
+void Revo::led1_toggle(void) { warn_.toggle(); }
 
-void Revo::led0_on(void) { /*info_.on();*/ }
-void Revo::led0_off(void) { /*info_.off();*/ }
-void Revo::led0_toggle(void) { /*info_.toggle();*/ }
+//void Revo::led0_on(void) { /*info_.on();*/ }
+//void Revo::led0_off(void) { /*info_.off();*/ }
+//void Revo::led0_toggle(void) { /*info_.toggle();*/ }
 
-void Revo::led1_on(void) { /*warn_.on();*/ }
-void Revo::led1_off(void) {/* warn_.off();*/ }
-void Revo::led1_toggle(void) { /*warn_.toggle();*/ }
+//void Revo::led1_on(void) { /*warn_.on();*/ }
+//void Revo::led1_off(void) {/* warn_.off();*/ }
+//void Revo::led1_toggle(void) { /*warn_.toggle();*/ }
 
 }
 

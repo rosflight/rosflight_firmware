@@ -44,7 +44,7 @@
 //#include "hmc5883l.h"
 //#include "rc_ppm.h"
 //#include "drv_pwm_out.h"
-//#include "drv_led.h"
+#include "drv_led.h"
 
 #include "board.h"
 
@@ -63,8 +63,8 @@ private:
 
 //  RC_PPM rc_;
 //  PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
-//  LED warn_;
-//  LED info_;
+  LED warn_;
+  LED info_;
 
 
 //  std::function<void(void)> imu_callback_;
@@ -85,7 +85,7 @@ private:
 
 
 public:
-  Revo();
+  Revo() {}
 
   bool new_imu_data_;
   uint64_t imu_time_us_;
