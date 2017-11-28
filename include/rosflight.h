@@ -38,7 +38,8 @@
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
-#include "mavlink.h"
+#include "comm_link.h"
+#include "comm_manager.h"
 #include "mixer.h"
 #include "state_manager.h"
 #include "command_manager.h"
@@ -53,10 +54,10 @@ private:
 
 
 public:
-  ROSflight(Board& board);
+  ROSflight(Board& board, CommLink& comm_link);
 
   Board& board_;
-  Mavlink mavlink_;
+  CommManager comm_manager_;
 
   Params params_;
 

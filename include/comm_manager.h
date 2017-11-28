@@ -29,27 +29,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSFLIGHT_FIRMWARE_MAVLINK_H
-#define ROSFLIGHT_FIRMWARE_MAVLINK_H
+#ifndef ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
+#define ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wcast-align"
+#include <cstdint>
+#include <functional>
 
-#include <mavlink/v1.0/rosflight/mavlink.h>
-
-# pragma GCC diagnostic pop
+#include "comm_link.h"
 #include "nanoprintf.h"
 
-namespace rosflight_firmware {
+namespace rosflight_firmware
+{
 
 class ROSflight;
 
-class Mavlink
+class CommManager
 {
 private:
-  enum
+  enum StreamId
   {
     STREAM_ID_HEARTBEAT,
     STREAM_ID_STATUS,
@@ -68,34 +65,43 @@ private:
     STREAM_COUNT
   };
 
-  uint32_t sysid_;
-  uint32_t compid_;
+  enum OffboardControlMode
+  {
+    MODE_PASS_THROUGH,
+    MODE_ROLL_PITCH_YAWRATE_THROTTLE,
+    MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE
+  };
+
+  uint8_t sysid_;
   uint64_t offboard_control_time_;
   ROSflight& RF_;
+  CommLink& comm_link_;
   uint8_t send_params_index_;
-  mavlink_message_t in_buf_;
-  mavlink_status_t status_;
   bool initialized_;
 
-  typedef  void (Mavlink::*MavlinkStreamFcn)(void);
-
-  typedef struct
+  class Stream
   {
-    uint32_t period_us;
-    uint64_t next_time_us;
-    MavlinkStreamFcn send_function;
-  } mavlink_stream_t;
+  public:
+    Stream(uint32_t period_us, std::function<void(void)> send_function);
 
-  void handle_msg_param_request_list(void);
-  void handle_msg_param_request_read(const mavlink_message_t *const msg);
-  void handle_msg_param_set(const mavlink_message_t *const msg);
-  void send_next_param(void);
+    void stream(uint64_t now_us);
+    void set_rate(uint32_t rate_hz);
 
-  void handle_mavlink_message(void);
+  private:
+    uint32_t period_us_;
+    uint64_t next_time_us_;
+    std::function<void(void)> send_function_;
+  };
 
-  void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
-  void handle_msg_timesync(const mavlink_message_t *const msg);
-  void handle_msg_offboard_control(const mavlink_message_t *const msg);
+  void update_system_id(uint16_t param_id);
+
+  void param_request_list_callback(uint8_t target_system);
+  void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index);
+  void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value);
+  void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value);
+  void command_callback(CommLink::Command command);
+  void timesync_callback(int64_t tc1, int64_t ts1);
+  void offboard_control_callback(const CommLink::OffboardControl& control);
 
   void send_heartbeat(void);
   void send_status(void);
@@ -108,54 +114,42 @@ private:
   void send_sonar(void);
   void send_mag(void);
   void send_low_priority(void);
-  void send_message(const mavlink_message_t &msg);
-  void send_log_message(uint8_t severity, const char *text);
-  void stream_set_period(uint8_t stream_id, uint32_t period_us);
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
   //  void send_named_command_struct(const char *const name, control_t command_struct);
 
-  mavlink_stream_t mavlink_streams_[STREAM_COUNT] = {
-    //  period_us    last_time_us   send_function
-    { 1000000,     0,             &rosflight_firmware::Mavlink::send_heartbeat },
-    { 1000000,     0,             &rosflight_firmware::Mavlink::send_status},
-    { 200000,      0,             &rosflight_firmware::Mavlink::send_attitude },
-    { 1000,        0,             &rosflight_firmware::Mavlink::send_imu },
-    { 200000,      0,             &rosflight_firmware::Mavlink::send_diff_pressure },
-    { 200000,      0,             &rosflight_firmware::Mavlink::send_baro },
-    { 100000,      0,             &rosflight_firmware::Mavlink::send_sonar },
-    { 6250,        0,             &rosflight_firmware::Mavlink::send_mag },
-    { 0,           0,             &rosflight_firmware::Mavlink::send_output_raw },
-    { 0,           0,             &rosflight_firmware::Mavlink::send_rc_raw },
-    { 5000,        0,             &rosflight_firmware::Mavlink::send_low_priority }
-  };
+  void send_next_param(void);
 
+  Stream streams_[STREAM_COUNT] = {
+    Stream(1000000, std::bind(&CommManager::send_heartbeat, this)),
+    Stream(1000000, std::bind(&CommManager::send_status, this)),
+    Stream(200000,  std::bind(&CommManager::send_attitude, this)),
+    Stream(1000,    std::bind(&CommManager::send_imu, this)),
+    Stream(200000,  std::bind(&CommManager::send_diff_pressure, this)),
+    Stream(200000,  std::bind(&CommManager::send_baro, this)),
+    Stream(100000,  std::bind(&CommManager::send_sonar, this)),
+    Stream(6250,    std::bind(&CommManager::send_mag, this)),
+    Stream(0,       std::bind(&CommManager::send_output_raw, this)),
+    Stream(0,       std::bind(&CommManager::send_rc_raw, this)),
+    Stream(5000,    std::bind(&CommManager::send_low_priority, this)),
+  };
 
 public:
 
-  enum
-  {
-    LOG_INFO = 6,
-    LOG_WARNING = 4,
-    LOG_ERROR = 3,
-    LOG_CRITICAL = 2
-  };
-
-  Mavlink(ROSflight &_rf);
+  CommManager(ROSflight& rf, CommLink& comm_link);
 
   void init();
   void receive(void);
   void stream();
-  void update_param(uint16_t param_id);
+  void send_param_value(uint16_t param_id);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
-  void log(uint8_t severity, const char *fmt, ...);
+  void log(CommLink::LogSeverity severity, const char *fmt, ...);
 
   void send_named_value_float(const char *const name, float value);
 };
 
 } // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_MAVLINK_H
-
+#endif // ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
