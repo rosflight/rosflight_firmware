@@ -31,12 +31,13 @@
 
 #include "naze32.h"
 #include "rosflight.h"
-//#include "mavlink.h"
+#include "mavlink.h"
 
 int main(void)
 {
   rosflight_firmware::Naze32 board;
-  rosflight_firmware::ROSflight firmware(board);
+  rosflight_firmware::Mavlink mavlink(board);
+  rosflight_firmware::ROSflight firmware(board, mavlink);
 
   firmware.init();
 

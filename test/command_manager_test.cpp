@@ -1,6 +1,7 @@
 #include "common.h"
 #include "rosflight.h"
 #include "test_board.h"
+#include "mavlink.h"
 #include "cmath"
 
 #define CHN_LOW 1100
@@ -24,7 +25,8 @@ void step_firmware(ROSflight& rf, testBoard& board, uint32_t us)
 
 TEST(command_manager_test, rc) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Initialize the firmware
   rf.init();
@@ -79,7 +81,8 @@ TEST(command_manager_test, rc) {
 
 TEST(command_manager_test, rc_arm_disarm) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Make sure that rc is hooked up
   board.set_pwm_lost(false);
@@ -250,7 +253,8 @@ TEST(command_manager_test, rc_arm_disarm) {
 
 TEST(command_manager_test, rc_failsafe_test) {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Make sure that rc is hooked up
   board.set_pwm_lost(false);
@@ -388,7 +392,8 @@ TEST(command_manager_test, rc_failsafe_test) {
 TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Make sure that rc is hooked up
   board.set_pwm_lost(false);
@@ -590,7 +595,8 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 TEST(command_manager_test, partial_muxing_test ) {
 
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   // Make sure that rc is hooked up
   board.set_pwm_lost(false);

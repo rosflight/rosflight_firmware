@@ -34,9 +34,9 @@
 namespace rosflight_firmware
 {
 
-ROSflight::ROSflight(Board& board) :
+ROSflight::ROSflight(Board& board, CommLink& comm_link) :
   board_(board),
-  mavlink_(*this),
+  comm_manager_(*this, comm_link),
   params_(*this),
   command_manager_(*this),
   controller_(*this),
@@ -71,7 +71,7 @@ void ROSflight::init()
   rc_.init();
 
   // Initialize MAVlink Communication
-  mavlink_.init();
+  comm_manager_.init();
 
   // Initialize Sensors
   sensors_.init();
@@ -111,10 +111,10 @@ void ROSflight::run()
   /***  Post-Process ***/
   /*********************/
   // internal timers figure out what and when to send
-  mavlink_.stream();
+  comm_manager_.stream();
 
   // receive mavlink messages
-  mavlink_.receive();
+  comm_manager_.receive();
 
   // update the state machine, an internal timer runs this at a fixed rate
   state_manager_.run();
