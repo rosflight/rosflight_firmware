@@ -91,6 +91,24 @@ public:
     Channel F;
   };
 
+  struct AuxCommand
+  {
+    enum class Type
+    {
+      DISABLED,
+      SERVO,
+      MOTOR
+    };
+
+    struct AuxChannel
+    {
+      Type type;
+      float value;
+    };
+
+    AuxChannel[14] cmd_array;
+  }
+
   virtual void init(uint32_t baud_rate) = 0;
   virtual void receive() = 0;
 
