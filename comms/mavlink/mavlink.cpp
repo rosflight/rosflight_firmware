@@ -405,27 +405,32 @@ void Mavlink::handle_msg_rosflight_aux_cmd(const mavlink_message_t *const msg)
   mavlink_rosflight_aux_cmd_t cmd;
   mavlink_msg_rosflight_aux_cmd_decode(msg, &cmd);
 
-  CommLink::AuxCommand CommAuxCmd;
+  CommLink::AuxCommand command;
   // Repack mavlink message into CommLink::AuxCommand
   for (int i = 0; i < 14; i++)
   {
     switch (cmd.type_array[i])
     {
     case DISABLED:
-      CommAuxCmd.cmd_array[i].type = DISABLED;
+      command.cmd_array[i].type = CommLink::AuxCommand::Type::DISABLED;
       break;
     case SERVO:
-      CommAuxCmd.cmd_array[i].type = SERVO;
+      command.cmd_array[i].type = CommLink::AuxCommand::Type::SERVO;
       break;
     case MOTOR:
-      CommAuxCmd.cmd_array[i].type = MOTOR;
+      command.cmd_array[i].type = CommLink::AuxCommand::Type::MOTOR;
       break;
-    //default:
-      // Log an error if the an unsupported channel mode is caught
-      // log(LOG_ERROR, "Unsupported AUX_CMD_CHANNEL_MODE %d", cmd.channel_mode[i]);
-      //break;
+    default:
+      // Invalid channel mode; log an error and return with calling callback
+      // log(CommLink::LogSeverity::LOG_ERROR, "Unsupported AUX_CMD_CHANNEL_MODE %d", cmd.type_array[i]);
+      return;
     }
+
+    command.cmd_array[i].value = cmd.aux_cmd_array[i];
   }
+
+  // call callback after all channels have been repacked
+  aux_command_callback_(command);
 }
 
 void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)

@@ -307,6 +307,26 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 
+void CommManager::aux_command_callback_(const CommLink::AuxCommand &command)
+{
+  for (int i = 0; i < 14; i++) {
+    switch (command.cmd_array[i].type)
+    {
+    case CommLink::AuxCommand::Type::DISABLED:
+      // Channel is either not used or is controlled by the mixer
+      break;
+    case CommLink::AuxCommand::Type::SERVO:
+      // PWM value should be mapped to servo position
+      RF_.mixer_.write_servo(i, command.cmd_array[i].value);
+      break;
+    case CommLink::AuxCommand::Type::MOTOR:
+      // PWM value should be mapped to motor speed
+      RF_.mixer_.write_motor(i, command.cmd_array[i].value);
+      break;
+    }
+  }
+}
+
 // function definitions
 void CommManager::receive(void)
 {
