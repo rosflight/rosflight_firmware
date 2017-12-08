@@ -147,6 +147,14 @@ void Mixer::write_servo(uint8_t index, float value)
   RF_.board_.pwm_write(index, raw_outputs_[index] * 500 + 1500);
 }
 
+void Mixer::set_new_aux_command(aux_command_t new_aux_command)
+{
+  for (uint8_t i = 0; i < 14; i++)
+  {
+    aux_command_.channel[i].type = new_aux_command.channel[i].type;
+    aux_command_.channel[i].value = new_aux_command.channel[i].value;
+  }
+}
 
 void Mixer::mix_output()
 {
@@ -184,9 +192,25 @@ void Mixer::mix_output()
     scale_factor = 1.0/max_output;
   }
 
+  // Perform Motor Output Scaling
+  for (uint8_t i = 0; i < 8; i++)
+  {
+      // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
+      unsaturated_outputs_[i] *= scale_factor;
+  }
+
+  // Insert AUX Commands (Does not override mixer values)
+  for (uint8_t i = 0; i < 14; i++)
+  {
+      // If used by mixer, skip
+      if (/* condition */) {
+        /* code */
+      }
+      // Else, write aux command value
+  }
 
 
-  for (int8_t i=0; i<8; i++)
+  for (int8_t i=0; i<14; i++)
   {
     // Write output to motors
     if (mixer_to_use_->output_type[i] == S)
@@ -195,8 +219,6 @@ void Mixer::mix_output()
     }
     else if (mixer_to_use_->output_type[i] == M)
     {
-      // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
-      unsaturated_outputs_[i] *= scale_factor;
       write_motor(i, unsaturated_outputs_[i]);
     }
   }

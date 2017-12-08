@@ -80,11 +80,23 @@ public:
     float z[8];
   } mixer_t;
 
+  typedef struct
+  {
+    output_type_t type;
+    float value;
+  } aux_channel_t;
+
+  typedef struct
+  {
+    aux_channel_t channel[14];
+  } aux_command_t;
+
 private:
   ROSflight& RF_;
 
-  float raw_outputs_[8];
-  float unsaturated_outputs_[8];
+  float raw_outputs_[14];
+  float unsaturated_outputs_[14];
+  aux_command_t aux_command_;
 
   const mixer_t esc_calibration_mixing =
   {
@@ -222,6 +234,7 @@ public:
   void param_change_callback(uint16_t param_id);
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
+  void set_new_aux_command(aux_command_t new_aux_command);
   inline const float* get_outputs() const {return raw_outputs_;}
 };
 
