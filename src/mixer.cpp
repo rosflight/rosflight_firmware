@@ -199,25 +199,37 @@ void Mixer::mix_output()
       unsaturated_outputs_[i] *= scale_factor;
   }
 
-  // Insert AUX Commands (Does not override mixer values)
+  // Insert AUX Commands, and assemble combined_output_types array (Does not override mixer values)
   for (uint8_t i = 0; i < 14; i++)
   {
-      // If used by mixer, skip
-      if (/* condition */) {
-        /* code */
+      // For the first 8 channels, only write aux_command to channels the mixer is not using
+      if (i < 8 && (mixer_to_use_->output_type[i] == NONE))
+      {
+        unsaturated_outputs_[i] = aux_command_.channel[i].value;
+        combined_output_type_[i] = aux_command_.channel[i].type;
       }
-      // Else, write aux command value
+      // Get output_type for channels used by the mixer
+      else if (i < 8 && (mixer_to_use_->output_type[i] != NONE))
+      {
+        combined_output_type_[i] = mixer_to_use_->output_type[i];
+      }
+      // The other 8 channels are never used by the mixer
+      else if (i >= 8)
+      {
+        unsaturated_outputs_[i] = aux_command_.channel[i].value;
+        combined_output_type_[i] = aux_command_.channel[i].type;
+      }
   }
 
 
   for (int8_t i=0; i<14; i++)
   {
     // Write output to motors
-    if (mixer_to_use_->output_type[i] == S)
+    if (combined_output_type_[i] == S)
     {
       write_servo(i, unsaturated_outputs_[i]);
     }
-    else if (mixer_to_use_->output_type[i] == M)
+    else if (combined_output_type_[i] == M)
     {
       write_motor(i, unsaturated_outputs_[i]);
     }

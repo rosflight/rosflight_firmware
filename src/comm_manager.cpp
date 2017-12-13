@@ -309,25 +309,25 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
 
 void CommManager::aux_command_callback_(const CommLink::AuxCommand &command)
 {
-  aux_channel_t new_aux_command;
+  Mixer::aux_command_t new_aux_command;
 
   for (int i = 0; i < 14; i++) {
     switch (command.cmd_array[i].type)
     {
     case CommLink::AuxCommand::Type::DISABLED:
       // Channel is either not used or is controlled by the mixer
-      new_aux_command_.channel[i].type = NONE;
-      new_aux_command_.channel[i].value = 0;
+      new_aux_command.channel[i].type = Mixer::NONE;
+      new_aux_command.channel[i].value = 0;
       break;
     case CommLink::AuxCommand::Type::SERVO:
       // PWM value should be mapped to servo position
-      new_aux_command_.channel[i].type = S;
-      new_aux_command_.channel[i].value = command.cmd_array[i].value;
+      new_aux_command.channel[i].type = Mixer::S;
+      new_aux_command.channel[i].value = command.cmd_array[i].value;
       break;
     case CommLink::AuxCommand::Type::MOTOR:
       // PWM value should be mapped to motor speed
-      new_aux_command_.channel[i].type = M;
-      new_aux_command_.channel[i].value = command.cmd_array[i].value;
+      new_aux_command.channel[i].type = Mixer::M;
+      new_aux_command.channel[i].value = command.cmd_array[i].value;
       break;
     }
   }

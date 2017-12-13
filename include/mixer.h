@@ -97,6 +97,7 @@ private:
   float raw_outputs_[14];
   float unsaturated_outputs_[14];
   aux_command_t aux_command_;
+  output_type_t combined_output_type_[14];
 
   const mixer_t esc_calibration_mixing =
   {
