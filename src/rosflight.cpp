@@ -34,93 +34,94 @@
 namespace rosflight_firmware
 {
 
-ROSflight::ROSflight(Board& _board) :
-  board_(_board),
-  mavlink_(*this),
-  params_(*this),
-  command_manager_(*this),
-  controller_(*this),
-  estimator_(*this),
-  mixer_(*this),
-  rc_(*this),
-  sensors_(*this),
-  state_manager_(*this)
+ROSflight::ROSflight(Board& _board)
+  :
+  board_(_board)
+//  mavlink_(*this),
+//  params_(*this),
+//  command_manager_(*this),
+//  controller_(*this),
+//  estimator_(*this),
+//  mixer_(*this),
+//  rc_(*this),
+//  sensors_(*this),
+//  state_manager_(*this)
 {
 }
 
 // Initialization Routine
 void ROSflight::init()
 {
-  // Initialize the arming finite state machine
-  state_manager_.init();
+//  // Initialize the arming finite state machine
+//  state_manager_.init();
 
-  // Read EEPROM to get initial params
-  params_.init();
+//  // Read EEPROM to get initial params
+//  params_.init();
 
-  // Initialize Mixer
-  mixer_.init();
+//  // Initialize Mixer
+//  mixer_.init();
 
-  /***********************/
-  /***  Hardware Setup ***/
-  /***********************/
+//  /***********************/
+//  /***  Hardware Setup ***/
+//  /***********************/
 
-  // Initialize PWM and RC
-  rc_.init();
+//  // Initialize PWM and RC
+//  rc_.init();
 
-  // Initialize MAVlink Communication
-  mavlink_.init();
+//  // Initialize MAVlink Communication
+//  mavlink_.init();
 
-  // Initialize Sensors
-  sensors_.init();
+//  // Initialize Sensors
+//  sensors_.init();
 
-  /***********************/
-  /***  Software Setup ***/
-  /***********************/
+//  /***********************/
+//  /***  Software Setup ***/
+//  /***********************/
 
-  // Initialize Estimator
-  estimator_.init();
+//  // Initialize Estimator
+//  estimator_.init();
 
-  // Initialize Controller
-  controller_.init();
+//  // Initialize Controller
+//  controller_.init();
 
-  // Initialize the command muxer
-  command_manager_.init();
+//  // Initialize the command muxer
+//  command_manager_.init();
 }
 
 
 // Main loop
 void ROSflight::run()
 {
-  /*********************/
-  /***  Control Loop ***/
-  /*********************/
-//  uint64_t start = board_.clock_micros();
-  if (sensors_.run())
-  {
-    // If I have new IMU data, then perform control
-    estimator_.run();
-    controller_.run();
-    mixer_.mix_output();
-//    loop_time_us = board_.clock_micros() - start;
-  }
+//  /*********************/
+//  /***  Control Loop ***/
+//  /*********************/
+////  uint64_t start = board_.clock_micros();
+//  if (sensors_.run())
+//  {
+//    // If I have new IMU data, then perform control
+//    estimator_.run();
+//    controller_.run();
+//    mixer_.mix_output();
+////    loop_time_us = board_.clock_micros() - start;
+//  }
 
-  /*********************/
-  /***  Post-Process ***/
-  /*********************/
-  // internal timers figure out what and when to send
-  mavlink_.stream();
+//  /*********************/
+//  /***  Post-Process ***/
+//  /*********************/
+//  // internal timers figure out what and when to send
+//  mavlink_.stream();
 
-  // receive mavlink messages
-  mavlink_.receive();
+//  // receive mavlink messages
+//  mavlink_.receive();
 
-  // update the state machine, an internal timer runs this at a fixed rate
-  state_manager_.run();
+//  // update the state machine, an internal timer runs this at a fixed rate
+//  state_manager_.run();
 
-  // get RC, an internal timer runs this every 20 ms (50 Hz)
-  rc_.run();
+//  // get RC, an internal timer runs this every 20 ms (50 Hz)
+//  rc_.run();
 
-  // update commands (internal logic tells whether or not we should do anything or not)
-  command_manager_.run();
+//  // update commands (internal logic tells whether or not we should do anything or not)
+//  command_manager_.run();
 }
 
 uint32_t ROSflight::get_loop_time_us()

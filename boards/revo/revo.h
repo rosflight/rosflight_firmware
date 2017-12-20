@@ -85,7 +85,7 @@ private:
 
 
 public:
-  Revo() {}
+  Revo();
 
   bool new_imu_data_;
   uint64_t imu_time_us_;

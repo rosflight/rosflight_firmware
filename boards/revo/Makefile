@@ -116,7 +116,8 @@ VCP_SRC = $(notdir $(wildcard $(VCP_DIR)/*.c))
 
 # Make a list of source files and includes
 VPATH := $(VPATH):$(AIRBOURNE_SRC_DIR)
-AIRBOURNE_SRCS = gpio.cpp \
+AIRBOURNE_SRCS = drv_led.cpp \
+                 gpio.cpp \
                  drv_spi.cpp \
                  vcp.cpp \
                  drv_led.cpp \
@@ -138,17 +139,18 @@ BOARD_CXX_SRC =	revo.cpp \
 
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)/src
-ROSFLIGHT_SRC = rosflight.cpp \
-                param.cpp \
-                sensors.cpp \
-                state_manager.cpp \
-                estimator.cpp \
-                mavlink.cpp \
-                controller.cpp \
-                command_manager.cpp \
-                nanoprintf.cpp \
-                rc.cpp \
-                mixer.cpp
+ROSFLIGHT_SRC = rosflight.cpp
+
+#                param.cpp \
+#                sensors.cpp \
+#                state_manager.cpp \
+#                estimator.cpp \
+#                mavlink.cpp \
+#                controller.cpp \
+#                command_manager.cpp \
+#                nanoprintf.cpp \
+#                rc.cpp \
+#                mixer.cpp
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOMATH_DIR)
@@ -156,18 +158,19 @@ MATH_SRC =  turbomath.cpp
 
 CSOURCES =  $(CMSIS_SRC) \
             $(STDPERIPH_SRC) \
+            $(PROCESSOR_SRC) \
+            $(AIRBOURNE_SRC_DIR)/system.c \
+            $(AIRBOURNE_SRC_DIR)/system_stm32f4xx.c \
+            $(VCP_SRC) \
             $(USBCORE_SRC) \
             $(USBOTG_SRC) \
             $(USBCDC_SRC) \
-            $(PROCESSOR_SRC) \
-            $(VCP_SRC) \
-            $(AIRBOURNE_SRC_DIR)/system.c \
-            $(AIRBOURNE_SRC_DIR)/system_stm32f4xx.c
+
 
 CXXSOURCES = $(AIRBOURNE_SRCS) \
 						 $(ROSFLIGHT_SRC) \
-						 $(BOARD_CXX_SRC) \
-						 $(MATH_SRC)
+             $(BOARD_CXX_SRC) \
+             $(MATH_SRC)
 
 INCLUDE_DIRS =  $(AIRBOURNE_SRC_DIR) \
                 $(AIRBOURNE_ROOT)/inc \
@@ -203,6 +206,7 @@ ifeq ($(DEBUG), GDB)
 $(info ************  BUILDING DEBUG SYMBOLS ************)
 DEBUG_FLAGS = -ggdb3
 OPTIMIZE = -O0
+LTO_FLAGS =
 else
 $(info ************  BUILDING RELEASE ************)
 DEBUG_FLAGS = -g0

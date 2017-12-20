@@ -56,17 +56,17 @@ public:
   ROSflight(Board &_board);
 
   Board& board_;
-  Mavlink mavlink_;
+//  Mavlink mavlink_;
 
-  Params params_;
+//  Params params_;
 
-  CommandManager command_manager_;
-  Controller controller_;
-  Estimator estimator_;
-  Mixer mixer_;
-  RC rc_;
-  Sensors sensors_;
-  StateManager state_manager_;
+//  CommandManager command_manager_;
+//  Controller controller_;
+//  Estimator estimator_;
+//  Mixer mixer_;
+//  RC rc_;
+//  Sensors sensors_;
+//  StateManager state_manager_;
 
   uint32_t loop_time_us;
 
