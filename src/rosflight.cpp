@@ -36,56 +36,56 @@ namespace rosflight_firmware
 
 ROSflight::ROSflight(Board& _board)
   :
-  board_(_board)
-//  mavlink_(*this),
-//  params_(*this),
-//  command_manager_(*this),
-//  controller_(*this),
-//  estimator_(*this),
-//  mixer_(*this),
-//  rc_(*this),
-//  sensors_(*this),
-//  state_manager_(*this)
+  board_(_board),
+  mavlink_(*this),
+  params_(*this),
+  command_manager_(*this),
+  controller_(*this),
+  estimator_(*this),
+  mixer_(*this),
+  rc_(*this),
+  sensors_(*this),
+  state_manager_(*this)
 {
 }
 
 // Initialization Routine
 void ROSflight::init()
 {
-//  // Initialize the arming finite state machine
-//  state_manager_.init();
+  // Initialize the arming finite state machine
+  state_manager_.init();
 
-//  // Read EEPROM to get initial params
-//  params_.init();
+  // Read EEPROM to get initial params
+  params_.init();
 
-//  // Initialize Mixer
-//  mixer_.init();
+  // Initialize Mixer
+  mixer_.init();
 
-//  /***********************/
-//  /***  Hardware Setup ***/
-//  /***********************/
+  /***********************/
+  /***  Hardware Setup ***/
+  /***********************/
 
-//  // Initialize PWM and RC
-//  rc_.init();
+  // Initialize PWM and RC
+  rc_.init();
 
-//  // Initialize MAVlink Communication
-//  mavlink_.init();
+  // Initialize MAVlink Communication
+  mavlink_.init();
 
-//  // Initialize Sensors
-//  sensors_.init();
+  // Initialize Sensors
+  sensors_.init();
 
-//  /***********************/
-//  /***  Software Setup ***/
-//  /***********************/
+  /***********************/
+  /***  Software Setup ***/
+  /***********************/
 
-//  // Initialize Estimator
-//  estimator_.init();
+  // Initialize Estimator
+  estimator_.init();
 
-//  // Initialize Controller
-//  controller_.init();
+  // Initialize Controller
+  controller_.init();
 
-//  // Initialize the command muxer
-//  command_manager_.init();
+  // Initialize the command muxer
+  command_manager_.init();
 }
 
 

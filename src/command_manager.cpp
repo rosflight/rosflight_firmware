@@ -160,7 +160,7 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   }
   else
   {
-    if (fabs(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
+    if (fabsf(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
           > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override_[channel].last_override_time = now;

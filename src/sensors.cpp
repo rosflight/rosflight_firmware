@@ -569,11 +569,11 @@ void Sensors::OutlierFilter::init(float max_change_rate, float update_rate, floa
 bool Sensors::OutlierFilter::update(float new_val, float *val)
 {
   float diff = new_val - center_;
-  if (fabs(diff) < window_size_ * max_change_)
+  if (fabsf(diff) < window_size_ * max_change_)
   {
     *val = new_val;
 
-    center_ += turbomath::fsign(diff) * fmin(max_change_, turbomath::fabs(diff));
+    center_ += turbomath::fsign(diff) * fminf(max_change_, fabsf(diff));
     if (window_size_ > 1)
     {
       window_size_--;

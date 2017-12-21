@@ -139,18 +139,17 @@ BOARD_CXX_SRC =	revo.cpp \
 
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)/src
-ROSFLIGHT_SRC = rosflight.cpp
-
-#                param.cpp \
-#                sensors.cpp \
-#                state_manager.cpp \
-#                estimator.cpp \
-#                mavlink.cpp \
-#                controller.cpp \
-#                command_manager.cpp \
-#                nanoprintf.cpp \
-#                rc.cpp \
-#                mixer.cpp
+ROSFLIGHT_SRC = rosflight.cpp \
+                mavlink.cpp \
+                param.cpp \
+                sensors.cpp \
+                state_manager.cpp \
+                estimator.cpp \
+                controller.cpp \
+                command_manager.cpp \
+                nanoprintf.cpp \
+                rc.cpp \
+                mixer.cpp
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOMATH_DIR)
