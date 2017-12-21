@@ -48,11 +48,11 @@ int main(void)
 {
   board.init_board();
 
-  firmware.init();
+//  firmware.init();
 
   while(1)
   {
-    firmware.run();
+//    firmware.run();
     board.led0_toggle();
     board.clock_delay(100);
   }
