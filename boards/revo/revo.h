@@ -54,33 +54,33 @@ class Revo : public Board
 {
 
 private:
-  VCP vcp_;
-  I2C i2c_;
-  SPI spi_;
-  MPU6000 imu_;
-  HMC5883L mag_;
-  MS5611 baro_;
+    VCP vcp_;
+    I2C i2c_;
+    SPI spi_;
+    MPU6000 imu_;
+    HMC5883L mag_;
+    MS5611 baro_;
 
-  RC_PPM rc_;
-  PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
-  LED warn_;
-  LED info_;
+    RC_PPM rc_;
+    PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
+    LED warn_;
+    LED info_;
 
 
-  std::function<void(void)> imu_callback_;
+    std::function<void(void)> imu_callback_;
 
-  int _board_revision = 2;
+    int _board_revision = 2;
 
-  float _accel_scale = 1.0;
-  float _gyro_scale = 1.0;
+    float _accel_scale = 1.0;
+    float _gyro_scale = 1.0;
 
-  enum
-  {
-    SONAR_NONE,
-    SONAR_I2C,
-    SONAR_PWM
-  };
-  uint8_t sonar_type = SONAR_NONE;
+    enum
+    {
+      SONAR_NONE,
+      SONAR_I2C,
+      SONAR_PWM
+    };
+    uint8_t sonar_type = SONAR_NONE;
 
 
 

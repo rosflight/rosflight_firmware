@@ -31,27 +31,29 @@
 
 #include "revo.h"
 #include "rosflight.h"
-//#include "mavlink.h"
 
-static rosflight_firmware::Revo board;
-static rosflight_firmware::ROSflight firmware(board);
+class Test
+{
+public:
+  int thing1;
+  Test(){}
+};
 
-extern "C"
-{
-void WWDG_IRQHandler()
-{
-  int debug = 1;
-}
-}
 
 int main(void)
 {
+//  char test[100][16];
+//  int debug = 1;
+//  Test test_thing;
+  rosflight_firmware::Revo board;
   board.init_board();
+  rosflight_firmware::ROSflight firmware(board);
 
 //  firmware.init();
 
   while(1)
   {
+//    debug++;
 //    firmware.run();
     board.led0_toggle();
     board.clock_delay(100);
