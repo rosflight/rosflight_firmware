@@ -72,6 +72,7 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
+  vcp_.init();
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
@@ -102,7 +103,7 @@ void Revo::sensors_init()
   mag_.init(&i2c_);
   baro_.init(&i2c_);
   while(millis() < 50);
-  i2c_.write(0,0,0);
+//  i2c_.write(0,0,0);
 }
 
 uint16_t Revo::num_sensor_errors(void)

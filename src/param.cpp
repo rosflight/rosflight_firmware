@@ -48,8 +48,8 @@ namespace rosflight_firmware
 Params::Params(ROSflight& _rf) :
   RF_(_rf)
 {
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-    callbacks[id] = NULL;
+//  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
+//    callbacks[id] = NULL;
 }
 
 // local function definitions
@@ -252,8 +252,8 @@ void Params::set_defaults(void)
 
 void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
 {
-  callbacks[param_id] = callback;
-  callback(param_id);
+//  callbacks[param_id] = callback;
+//  callback(param_id);
 }
 
 bool Params::read(void)
@@ -289,8 +289,8 @@ bool Params::write(void)
 void Params::change_callback(uint16_t id)
 {
   // call the callback function
-  if(callbacks[id])
-    callbacks[id](id);
+//  if(callbacks[id])
+//    callbacks[id](id);
 }
 
 uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
@@ -325,7 +325,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
   {
     params.values[id].ivalue = value;
     change_callback(id);
-    RF_.comm_manager_.send_param_value(id);
+//    RF_.mavlink_.send_param_value(id);
     return true;
   }
   return false;
@@ -337,7 +337,7 @@ bool Params::set_param_float(uint16_t id, float value)
   {
     params.values[id].fvalue = value;
     change_callback(id);
-    RF_.comm_manager_.send_param_value(id);
+//    RF_.mavlink_.send_param_value(id);
     return true;
   }
   return false;

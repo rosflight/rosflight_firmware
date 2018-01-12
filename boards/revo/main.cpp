@@ -32,31 +32,18 @@
 #include "revo.h"
 #include "rosflight.h"
 
-class Test
-{
-public:
-  int thing1;
-  Test(){}
-};
-
 
 int main(void)
 {
-//  char test[100][16];
-//  int debug = 1;
-//  Test test_thing;
-  rosflight_firmware::Revo board;
+  static rosflight_firmware::Revo board;
+  static rosflight_firmware::ROSflight firmware(board);
   board.init_board();
-  rosflight_firmware::ROSflight firmware(board);
 
-//  firmware.init();
+  firmware.init();
 
   while(1)
   {
-//    debug++;
-//    firmware.run();
-    board.led0_toggle();
-    board.clock_delay(100);
+    firmware.run();
   }
   return 0;
 }

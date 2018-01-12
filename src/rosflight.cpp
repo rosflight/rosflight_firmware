@@ -92,36 +92,36 @@ void ROSflight::init()
 // Main loop
 void ROSflight::run()
 {
-//  /*********************/
-//  /***  Control Loop ***/
-//  /*********************/
-////  uint64_t start = board_.clock_micros();
-//  if (sensors_.run())
-//  {
-//    // If I have new IMU data, then perform control
-//    estimator_.run();
-//    controller_.run();
-//    mixer_.mix_output();
-////    loop_time_us = board_.clock_micros() - start;
-//  }
+  /*********************/
+  /***  Control Loop ***/
+  /*********************/
+  uint64_t start = board_.clock_micros();
+  if (sensors_.run())
+  {
+    // If I have new IMU data, then perform control
+    estimator_.run();
+    controller_.run();
+    mixer_.mix_output();
+    loop_time_us = board_.clock_micros() - start;
+  }
 
-//  /*********************/
-//  /***  Post-Process ***/
-//  /*********************/
-//  // internal timers figure out what and when to send
-//  mavlink_.stream();
+  /*********************/
+  /***  Post-Process ***/
+  /*********************/
+  // internal timers figure out what and when to send
+  mavlink_.stream();
 
-//  // receive mavlink messages
-//  mavlink_.receive();
+  // receive mavlink messages
+  mavlink_.receive();
 
-//  // update the state machine, an internal timer runs this at a fixed rate
-//  state_manager_.run();
+  // update the state machine, an internal timer runs this at a fixed rate
+  state_manager_.run();
 
-//  // get RC, an internal timer runs this every 20 ms (50 Hz)
-//  rc_.run();
+  // get RC, an internal timer runs this every 20 ms (50 Hz)
+  rc_.run();
 
-//  // update commands (internal logic tells whether or not we should do anything or not)
-//  command_manager_.run();
+  // update commands (internal logic tells whether or not we should do anything or not)
+  command_manager_.run();
 }
 
 uint32_t ROSflight::get_loop_time_us()
