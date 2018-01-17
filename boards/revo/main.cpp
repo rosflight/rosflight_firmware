@@ -31,12 +31,14 @@
 
 #include "revo.h"
 #include "rosflight.h"
+#include "mavlink.h"
 
 
 int main(void)
 {
   static rosflight_firmware::Revo board;
-  static rosflight_firmware::ROSflight firmware(board);
+  static rosflight_firmware::Mavlink mavlink(board);
+  static rosflight_firmware::ROSflight firmware(board, mavlink);
   board.init_board();
 
   firmware.init();

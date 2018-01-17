@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_board.h"
+#include "mavlink.h"
 #include "rosflight.h"
 
 using namespace rosflight_firmware;
@@ -10,7 +11,8 @@ using namespace rosflight_firmware;
 TEST(parameters_test, default_parameters_test)
 {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   rf.init();
 

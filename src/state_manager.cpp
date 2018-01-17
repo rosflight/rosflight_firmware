@@ -69,7 +69,7 @@ void StateManager::set_error(uint16_t error)
 
   // Tell the FSM that we have had an error change
   process_errors();
-  RF_.mavlink_.update_status();
+  RF_.comm_manager_.update_status();
 }
 
 void StateManager::clear_error(uint16_t error)
@@ -84,7 +84,7 @@ void StateManager::clear_error(uint16_t error)
     process_errors();
 
     // Send a status update (for logging)
-    RF_.mavlink_.update_status();
+    RF_.comm_manager_.update_status();
   }
 }
 
@@ -122,7 +122,7 @@ void StateManager::set_event(StateManager::Event event)
       else
       {
         state_.armed = true;
-        RF_.mavlink_.update_status();
+        RF_.comm_manager_.update_status();
         fsm_state_ = FSM_STATE_ARMED;
       }
       break;
@@ -146,7 +146,7 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_REQUEST_ARM:
-      RF_.mavlink_.log(Mavlink::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
+      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
       break;
     default:
       break;
@@ -183,13 +183,13 @@ void StateManager::set_event(StateManager::Event event)
     {
     case EVENT_RC_LOST:
       state_.failsafe = true;
-      RF_.mavlink_.update_status();
+      RF_.comm_manager_.update_status();
       fsm_state_ = FSM_STATE_FAILSAFE;
       set_error(ERROR_RC_LOST);
       break;
     case EVENT_REQUEST_DISARM:
       state_.armed = false;
-      RF_.mavlink_.update_status();
+      RF_.comm_manager_.update_status();
       if (state_.error)
         fsm_state_ = FSM_STATE_ERROR;
       else
@@ -217,7 +217,7 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_ERROR;
       break;
     case EVENT_RC_FOUND:
-      RF_.mavlink_.update_status();
+      RF_.comm_manager_.update_status();
       state_.failsafe = false;
       fsm_state_ = FSM_STATE_ARMED;
       clear_error(ERROR_RC_LOST);

@@ -77,10 +77,7 @@ void Revo::serial_init(uint32_t baud_rate)
 
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
-  for (size_t i = 0; i < len; i++)
-  {
-    vcp_.write(src, len);
-  }
+  vcp_.write(src, len);
 }
 
 uint16_t Revo::serial_bytes_available(void)

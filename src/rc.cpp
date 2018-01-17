@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <cstring>
+
 #include "rc.h"
 #include "rosflight.h"
 
@@ -152,9 +154,9 @@ void RC::init_switches()
     }
 
     if (switches[chan].mapped)
-      RF_.mavlink_.log(Mavlink::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
+      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
     else
-      RF_.mavlink_.log(Mavlink::LOG_INFO, "%s switch not mapped", channel_name);
+      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "%s switch not mapped", channel_name);
   }
 }
 

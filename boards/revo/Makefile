@@ -56,6 +56,7 @@ AIRBOURNE_SRC_DIR = $(AIRBOURNE_ROOT)/src
 BOARD_DIR				  = .
 ROSFLIGHT_DIR     = ../..
 TURBOMATH_DIR     = $(ROSFLIGHT_DIR)/lib/turbomath
+MAVLINK_DIR       = $(ROSFLIGHT_DIR)/comms/mavlink
 CMSIS_DIR     		= $(AIRBOURNE_ROOT)/lib/CMSIS
 STDPERIPH_DIR			= $(AIRBOURNE_ROOT)/lib/STM32F4xx_StdPeriph_Driver
 USBCORE_DIR   		= $(AIRBOURNE_ROOT)/lib/STM32_USB_Device_Library/Core
@@ -135,19 +136,22 @@ AIRBOURNE_SRCS = drv_led.cpp \
 # board-specific source files
 VPATH		:= $(VPATH):$(BOARD_DIR)
 BOARD_CXX_SRC =	revo.cpp \
-								main.cpp
+                main.cpp
+
+# MAVLink source files
+VPATH := $(VPATH):$(MAVLINK_DIR)
+MAVLINK_SRC = mavlink.cpp
 
 # ROSflight source files
-VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)/src
+VPATH		:= $(VPATH):$(ROSFLIGHT_DIR):$(ROSFLIGHT_DIR)/src
 ROSFLIGHT_SRC = rosflight.cpp \
-                mavlink.cpp \
                 param.cpp \
                 sensors.cpp \
                 state_manager.cpp \
                 estimator.cpp \
                 controller.cpp \
+                comm_manager.cpp \
                 command_manager.cpp \
-                nanoprintf.cpp \
                 rc.cpp \
                 mixer.cpp
 
@@ -155,27 +159,31 @@ ROSFLIGHT_SRC = rosflight.cpp \
 VPATH :=	$(VPATH):$(TURBOMATH_DIR)
 MATH_SRC =  turbomath.cpp
 
+# Make a list of source files and includes
+VPATH := $(VPATH):$(SRC_DIR)
 CSOURCES =  $(CMSIS_SRC) \
             $(STDPERIPH_SRC) \
-            $(PROCESSOR_SRC) \
-            $(AIRBOURNE_SRC_DIR)/system.c \
-            $(AIRBOURNE_SRC_DIR)/system_stm32f4xx.c \
-            $(VCP_SRC) \
             $(USBCORE_SRC) \
             $(USBOTG_SRC) \
             $(USBCDC_SRC) \
-
+            $(PROCESSOR_SRC) \
+            $(VCP_SRC) \
+            $(AIRBOURNE_SRC_DIR)/system.c \
+            $(AIRBOURNE_SRC_DIR)/system_stm32f4xx.c \
+            $(ROSFLIGHT_DIR)/src/nanoprintf.c
 
 CXXSOURCES = $(AIRBOURNE_SRCS) \
 						 $(ROSFLIGHT_SRC) \
              $(BOARD_CXX_SRC) \
-             $(MATH_SRC)
+             $(MATH_SRC) \
+             $(MAVLINK_SRC)
 
 INCLUDE_DIRS =  $(AIRBOURNE_SRC_DIR) \
                 $(AIRBOURNE_ROOT)/inc \
 								$(ROSFLIGHT_DIR)/include \
 								$(ROSFLIGHT_DIR)/lib \
                 $(STDPERIPH_DIR)/inc \
+                $(MAVLINK_DIR) \
                 $(USBOTG_DIR)/inc \
                 $(USBCORE_DIR)/inc \
                 $(USBCDC_DIR)/inc \
