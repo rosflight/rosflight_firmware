@@ -197,6 +197,7 @@ OBJECTS+=$(addsuffix .o,$(addprefix $(BIN_DIR)/$(TARGET)/,$(basename $(CXXSOURCE
 #################################
 TARGET_ELF=$(BIN_DIR)/$(TARGET).elf
 TARGET_HEX=$(BIN_DIR)/$(TARGET).hex
+TARGET_BIN=$(BIN_DIR)/$(TARGET).bin
 
 #################################
 # Debug Config
@@ -233,6 +234,9 @@ LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.spe
 #################################
 # Build
 #################################
+$(TARGET_BIN): $(TARGET_HEX)
+	$(CP) -I ihex -O binary $< $@
+
 $(TARGET_HEX): $(TARGET_ELF)
 	$(CP) -O ihex --set-start 0x8000000 $< $@
 
@@ -264,6 +268,5 @@ $(BIN_DIR)/$(TARGET)/%.o: %.s
 clean:
 	rm -f $(OBJECTS) $(TARGET_ELF) $(TARGET_HEX) $(BIN_DIR)/output.map
 
-flash: $(TARGET_HEX)
-	stty -F $(SERIAL_DEVICE) raw speed 921600 -crtscts cs8 -parenb -cstopb -ixon
-	stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)
+flash: $(TARGET_BIN)
+	dfu-util -a 0 -s 0x08000000 -D $(TARGET_BIN)
