@@ -58,6 +58,7 @@ public:
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available(void) = 0;
   virtual uint8_t serial_read(void) = 0;
+  virtual void serial_flush() = 0;
 
 // sensors
   virtual void sensors_init() = 0;

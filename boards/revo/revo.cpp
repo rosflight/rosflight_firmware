@@ -90,6 +90,11 @@ uint8_t Revo::serial_read(void)
   return vcp_.read_byte();
 }
 
+void Revo::serial_flush()
+{
+  vcp_.flush();
+}
+
 // sensors
 
 void Revo::sensors_init()

@@ -45,32 +45,13 @@ CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
 // function definitions
 void CommManager::init()
 {
-  comm_link_.register_param_request_list_callback(std::bind(&CommManager::param_request_list_callback,
-                                                            this,
-                                                            std::placeholders::_1));
-  comm_link_.register_param_request_read_callback(std::bind(&CommManager::param_request_read_callback,
-                                                            this,
-                                                            std::placeholders::_1,
-                                                            std::placeholders::_2,
-                                                            std::placeholders::_3));
-  comm_link_.register_param_set_int_callback(std::bind(&CommManager::param_set_int_callback,
-                                                       this, std::placeholders::_1,
-                                                       std::placeholders::_2,
-                                                       std::placeholders::_3));
-  comm_link_.register_param_set_float_callback(std::bind(&CommManager::param_set_float_callback,
-                                                         this, std::placeholders::_1,
-                                                         std::placeholders::_2,
-                                                         std::placeholders::_3));
-  comm_link_.register_offboard_control_callback(std::bind(&CommManager::offboard_control_callback,
-                                                this,
-                                                std::placeholders::_1));
-  comm_link_.register_command_callback(std::bind(&CommManager::command_callback,
-                                                 this,
-                                                 std::placeholders::_1));
-  comm_link_.register_timesync_callback(std::bind(&CommManager::timesync_callback,
-                                                  this,
-                                                  std::placeholders::_1,
-                                                  std::placeholders::_2));
+  comm_link_.register_param_request_list_callback(std::bind(&CommManager::param_request_list_callback, this, std::placeholders::_1));
+  comm_link_.register_param_request_read_callback(std::bind(&CommManager::param_request_read_callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+  comm_link_.register_param_set_int_callback(std::bind(&CommManager::param_set_int_callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+  comm_link_.register_param_set_float_callback(std::bind(&CommManager::param_set_float_callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+  comm_link_.register_offboard_control_callback(std::bind(&CommManager::offboard_control_callback, this, std::placeholders::_1));
+  comm_link_.register_command_callback(std::bind(&CommManager::command_callback, this, std::placeholders::_1));
+  comm_link_.register_timesync_callback(std::bind(&CommManager::timesync_callback, this, std::placeholders::_1, std::placeholders::_2));
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)));
 
   sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
@@ -80,36 +61,16 @@ void CommManager::init()
 
   // Register Param change callbacks
   RF_.params_.add_callback(std::bind(&CommManager::update_system_id, this, std::placeholders::_1), PARAM_SYSTEM_ID);
-
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate,
-                                     this,
-                                     STREAM_ID_HEARTBEAT,
-                                     std::placeholders::_1),
-                           PARAM_STREAM_HEARTBEAT_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1),
-                           PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_IMU, std::placeholders::_1),
-                           PARAM_STREAM_IMU_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1),
-                           PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate,
-                                     this,
-                                     STREAM_ID_DIFF_PRESSURE,
-                                     std::placeholders::_1),
-                           PARAM_STREAM_AIRSPEED_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_BARO, std::placeholders::_1),
-                           PARAM_STREAM_BARO_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_SONAR, std::placeholders::_1),
-                           PARAM_STREAM_SONAR_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1),
-                           PARAM_STREAM_MAG_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate,
-                                     this,
-                                     STREAM_ID_SERVO_OUTPUT_RAW,
-                                     std::placeholders::_1),
-                           PARAM_STREAM_OUTPUT_RAW_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1),
-                           PARAM_STREAM_RC_RAW_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_HEARTBEAT, std::placeholders::_1),PARAM_STREAM_HEARTBEAT_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1), PARAM_STREAM_ATTITUDE_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_IMU, std::placeholders::_1), PARAM_STREAM_IMU_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1), PARAM_STREAM_ATTITUDE_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_DIFF_PRESSURE, std::placeholders::_1), PARAM_STREAM_AIRSPEED_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_BARO, std::placeholders::_1), PARAM_STREAM_BARO_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_SONAR, std::placeholders::_1), PARAM_STREAM_SONAR_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1), PARAM_STREAM_MAG_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_SERVO_OUTPUT_RAW, std::placeholders::_1), PARAM_STREAM_OUTPUT_RAW_RATE);
+  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1), PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
   log(CommLink::LogSeverity::LOG_INFO, "Booting");
@@ -254,6 +215,7 @@ void CommManager::command_callback(CommLink::Command command)
     RF_.board_.clock_delay(20);
     RF_.board_.board_reset(reboot_to_bootloader_flag);
   }
+  RF_.board_.serial_flush();
 }
 
 void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
@@ -454,6 +416,7 @@ void CommManager::stream()
   {
     streams_[i].stream(time_us);
   }
+  RF_.board_.serial_flush();
 }
 
 void CommManager::set_streaming_rate(uint8_t stream_id, int16_t param_id)

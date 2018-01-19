@@ -121,17 +121,17 @@ private:
   void send_next_param(void);
 
   Stream streams_[STREAM_COUNT] = {
-    Stream(1000000, std::bind(&CommManager::send_heartbeat, this)),
+    Stream(0, std::bind(&CommManager::send_heartbeat, this)),
     Stream(0, std::bind(&CommManager::send_status, this)),
-    Stream(0,  std::bind(&CommManager::send_attitude, this)),
-    Stream(1000000,    std::bind(&CommManager::send_imu, this)),
-    Stream(0,  std::bind(&CommManager::send_diff_pressure, this)),
-    Stream(0,  std::bind(&CommManager::send_baro, this)),
-    Stream(0,  std::bind(&CommManager::send_sonar, this)),
-    Stream(0,    std::bind(&CommManager::send_mag, this)),
-    Stream(0,       std::bind(&CommManager::send_output_raw, this)),
-    Stream(0,       std::bind(&CommManager::send_rc_raw, this)),
-    Stream(0,    std::bind(&CommManager::send_low_priority, this)),
+    Stream(0, std::bind(&CommManager::send_attitude, this)),
+    Stream(0, std::bind(&CommManager::send_imu, this)),
+    Stream(0, std::bind(&CommManager::send_diff_pressure, this)),
+    Stream(0, std::bind(&CommManager::send_baro, this)),
+    Stream(0, std::bind(&CommManager::send_sonar, this)),
+    Stream(0, std::bind(&CommManager::send_mag, this)),
+    Stream(0, std::bind(&CommManager::send_output_raw, this)),
+    Stream(0, std::bind(&CommManager::send_rc_raw, this)),
+    Stream(0, std::bind(&CommManager::send_low_priority, this)),
   };
 
 public:

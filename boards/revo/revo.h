@@ -104,6 +104,7 @@ public:
   void serial_write(const uint8_t *src, size_t len);
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
+  void serial_flush(void);
 
   // sensors
   void sensors_init();
