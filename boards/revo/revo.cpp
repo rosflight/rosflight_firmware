@@ -53,7 +53,6 @@ void Revo::board_reset(bool bootloader)
 }
 
 // clock
-
 uint32_t Revo::clock_millis()
 {
   return millis();
@@ -184,12 +183,11 @@ float Revo::sonar_read(void)
 }
 
 // PWM
-
 void Revo::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
 {
   for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
   {
-    esc_out_[i].init(&pwm_config[i], refresh_rate, PWM_MAX_US, PWM_MIN_US);
+    esc_out_[i].init(&pwm_config[i], refresh_rate, 2000, 1000);
     esc_out_[i].writeUs(idle_pwm);
   }
 }
@@ -226,7 +224,6 @@ bool Revo::memory_write(const void * src, size_t len)
 }
 
 // LED
-
 void Revo::led0_on(void) { info_.on(); }
 void Revo::led0_off(void) { info_.off(); }
 void Revo::led0_toggle(void) { info_.toggle(); }
@@ -234,15 +231,6 @@ void Revo::led0_toggle(void) { info_.toggle(); }
 void Revo::led1_on(void) { warn_.on(); }
 void Revo::led1_off(void) { warn_.off(); }
 void Revo::led1_toggle(void) { warn_.toggle(); }
-
-//void Revo::led0_on(void) { /*info_.on();*/ }
-//void Revo::led0_off(void) { /*info_.off();*/ }
-//void Revo::led0_toggle(void) { /*info_.toggle();*/ }
-
-//void Revo::led1_on(void) { /*warn_.on();*/ }
-//void Revo::led1_off(void) {/* warn_.off();*/ }
-//void Revo::led1_toggle(void) { /*warn_.toggle();*/ }
-
 }
 
 #pragma GCC diagnostic pop

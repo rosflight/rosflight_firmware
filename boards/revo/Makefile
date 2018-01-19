@@ -117,15 +117,15 @@ VCP_SRC = $(notdir $(wildcard $(VCP_DIR)/*.c))
 
 # Make a list of source files and includes
 VPATH := $(VPATH):$(AIRBOURNE_SRC_DIR)
-AIRBOURNE_SRCS = drv_led.cpp \
+AIRBOURNE_SRCS = led.cpp \
                  gpio.cpp \
-                 drv_spi.cpp \
+                 spi.cpp \
                  vcp.cpp \
-                 drv_led.cpp \
+                 led.cpp \
                  mpu6000.cpp \
                  advanced.cpp \
-                 drv_i2c.cpp \
-                 drv_pwm_out.cpp \
+                 i2c.cpp \
+                 pwm.cpp \
                  eeprom.cpp \
                  hmc5883l.cpp \
                  ms5611.cpp \
@@ -179,7 +179,7 @@ CXXSOURCES = $(AIRBOURNE_SRCS) \
              $(MAVLINK_SRC)
 
 INCLUDE_DIRS =  $(AIRBOURNE_SRC_DIR) \
-                $(AIRBOURNE_ROOT)/inc \
+                $(AIRBOURNE_ROOT)/include \
 								$(ROSFLIGHT_DIR)/include \
 								$(ROSFLIGHT_DIR)/lib \
                 $(STDPERIPH_DIR)/inc \

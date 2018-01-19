@@ -36,15 +36,15 @@
 #include <revo_f4.h>
 
 #include "vcp.h"
-#include "drv_i2c.h"
-#include "drv_spi.h"
+#include "i2c.h"
+#include "spi.h"
 #include "mpu6000.h"
 #include "ms5611.h"
 #include "eeprom.h"
 #include "hmc5883l.h"
 #include "rc_ppm.h"
-#include "drv_pwm_out.h"
-#include "drv_led.h"
+#include "pwm.h"
+#include "led.h"
 
 #include "board.h"
 
