@@ -99,7 +99,7 @@ void Revo::serial_flush()
 void Revo::sensors_init()
 {
   i2c_.init(I2C1);
-  spi_.init(SPI1);
+  spi_.init(&spi_config[MPU6000_SPI]);
   imu_.init(&spi_);
   mag_.init(&i2c_);
   baro_.init(&i2c_);
