@@ -120,15 +120,16 @@ bool Revo::new_imu_data()
 
 bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
-  imu_.read(accel, gyro, temperature, time_us);
+  float read_accel[3], read_gyro[3];
+  imu_.read(read_accel, read_gyro, temperature, time_us);
 
-  accel[0] = accel[0];
-  accel[1] = -accel[1];
-  accel[2] = -accel[2];
+  accel[0] = -read_accel[1];
+  accel[1] = -read_accel[0];
+  accel[2] = -read_accel[2];
 
-  gyro[0] = gyro[0];
-  gyro[1] = -gyro[1];
-  gyro[2] = -gyro[2];
+  gyro[0] = -read_gyro[1];
+  gyro[1] = -read_gyro[0];
+  gyro[2] = -read_gyro[2];
 
   return true;
 }
@@ -190,6 +191,7 @@ void Revo::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
     esc_out_[i].init(&pwm_config[i], refresh_rate, 2000, 1000);
     esc_out_[i].writeUs(idle_pwm);
   }
+  rc_.init(&pwm_config[RC_PPM_PIN]);
 }
 
 uint16_t Revo::pwm_read(uint8_t channel)
@@ -208,19 +210,18 @@ bool Revo::pwm_lost()
 }
 
 // non-volatile memory
-
 void Revo::memory_init(void)
 {
 }
 
 bool Revo::memory_read(void * dest, size_t len)
 {
-  return false;
+  memory_read(dest, len);
 }
 
 bool Revo::memory_write(const void * src, size_t len)
 {
-  return false;
+  memory_write(src, len);
 }
 
 // LED

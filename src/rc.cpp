@@ -174,7 +174,7 @@ bool RC::check_rc_lost()
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_.board_.pwm_read(i) < 900 || RF_.board_.pwm_read(i) > 2100)
+      if (RF_.board_.pwm_read(i) != 0 && (RF_.board_.pwm_read(i) < 900 || RF_.board_.pwm_read(i) > 2100))
       {
         failsafe = true;
       }
