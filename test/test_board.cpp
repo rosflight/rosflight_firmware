@@ -81,6 +81,7 @@ namespace rosflight_firmware
   void testBoard::serial_write(const uint8_t *src, size_t len){}
   uint16_t testBoard::serial_bytes_available(void){ return 0; }
   uint8_t testBoard::serial_read(void){return 0;}
+  void testBoard::serial_flush(void){}
 
 // sensors
   void testBoard::sensors_init(){}
@@ -147,4 +148,3 @@ namespace rosflight_firmware
 } // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop
-

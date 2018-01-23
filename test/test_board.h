@@ -32,7 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_TEST_BOARD_H
 #define ROSFLIGHT_FIRMWARE_TEST_BOARD_H
 
-#include "board.h" 
+#include "board.h"
 
 namespace rosflight_firmware
 {
@@ -63,6 +63,7 @@ public:
   void serial_write(const uint8_t *src, size_t len);
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
+  void serial_flush(void);
 
 // sensors
   void sensors_init();
