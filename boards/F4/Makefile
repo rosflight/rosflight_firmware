@@ -30,7 +30,7 @@ TARGET = rosflight
 
 BOARD ?= REVO
 
-DEBUG ?= 
+DEBUG ?=
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
@@ -168,9 +168,9 @@ CSOURCES =  $(CMSIS_SRC) \
             $(USBCDC_SRC) \
             $(PROCESSOR_SRC) \
             $(VCP_SRC) \
-            $(AIRBOURNE_SRC_DIR)/system.c \
-            $(AIRBOURNE_SRC_DIR)/system_stm32f4xx.c \
-            $(ROSFLIGHT_DIR)/src/nanoprintf.c
+            system.c \
+            system_stm32f4xx.c \
+            nanoprintf.c
 
 CXXSOURCES = $(AIRBOURNE_SRCS) \
 						 $(ROSFLIGHT_SRC) \
@@ -281,7 +281,7 @@ $(BIN_DIR)/$(TARGET)/%.o: %.s
 .PHONY: all flash clean
 
 clean:
-	rm -f $(OBJECTS) $(TARGET_ELF) $(TARGET_HEX) $(BIN_DIR)/output.map
+	rm -rf $(OBJECTS) $(BIN_DIR)
 
 flash: $(TARGET_BIN)
 	dfu-util -a 0 -s 0x08000000 -D $(TARGET_BIN)

@@ -28,7 +28,7 @@
 
 TARGET	?= rosflight
 
-DEBUG ?= 
+DEBUG ?=
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
@@ -66,17 +66,17 @@ BIN_DIR		= $(ROOT)/build
 #################################
 
 # board-specific source files
-VPATH		:= $(BOARD_DIR)
+VPATH		:= $(VPATH):$(BOARD_DIR)
 BOARD_C_SRC = flash.c
 BOARD_CXX_SRC =	naze32.cpp \
                 main.cpp
 
 # MAVLink source files
-VPATH := $(MAVLINK_DIR)
+VPATH := $(VPATH):$(MAVLINK_DIR)
 MAVLINK_SRC = mavlink.cpp
 
 # ROSflight source files
-VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
+VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)/src
 ROSFLIGHT_SRC = rosflight.cpp \
                 param.cpp \
                 sensors.cpp \
@@ -86,7 +86,8 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 comm_manager.cpp \
                 command_manager.cpp \
                 rc.cpp \
-                mixer.cpp
+                mixer.cpp \
+								nanoprintf.cpp
 
 # Math Source Files
 VPATH :=	$(VPATH):$(TURBOMATH_DIR)
@@ -124,15 +125,14 @@ STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 # Compile a list of C source files
 CSOURCES =  $(CMSIS_SRC) \
             $(STDPERIPH_SRC) \
-            $(addprefix $(BREEZY_DIR)/, $(BREEZY_SRC)) \
-            $(addprefix $(BOARD_DIR)/, $(BOARD_C_SRC)) \
-            $(ROSFLIGHT_DIR)/src/nanoprintf.c
+            $(BREEZY_SRC) \
+            $(BOARD_C_SRC)
 
 # Compile a list of C++ Source Files
-CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
-                $(addprefix $(MAVLINK_DIR)/, $(MAVLINK_SRC)) \
-                $(addprefix $(BOARD_DIR)/, $(BOARD_CXX_SRC)) \
-                $(addprefix $(TURBOMATH_DIR)/, $(MATH_SRC)) \
+CXXSOURCES =    $(ROSFLIGHT_SRC) \
+                $(MAVLINK_SRC) \
+                $(BOARD_CXX_SRC) \
+                $(MATH_SRC) \
 
 
 # Set up Include Directoreis
@@ -236,7 +236,7 @@ $(OBJECT_DIR)/$(TARGET)/%.o: %.s
 .PHONY: all flash clean
 
 clean:
-		rm -f $(OBJECTS) $(TARGET_ELF) $(TARGET_HEX) $(BIN_DIR)/output.map
+		rm -rf $(OBJECTS) $(OBJECT_DIR)
 
 flash: $(TARGET_HEX)
 		stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 921600 $(SERIAL_DEVICE)

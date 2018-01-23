@@ -31,27 +31,52 @@
 
 # You probably shouldn't modify anything below here!
 
-TARGET = rosflight
-
 # Compile-time options
-BOARD   ?= naze
+BOARD  ?= REVO
 
 # Debugger options, must be empty or GDB
 DEBUG ?=
 
-# Serial port/device for flashing
-SERIAL_DEVICE	?= /dev/ttyUSB0
+# List of valid boards (update with new boards)
+VALID_F1_BOARDS = NAZE
+VALID_F4_BOARDS = REVO
 
-PARALLEL_JOBS	?= 4
+# Make sure that the supplied board is supported, and if so,
+# set the proper board directory
+ifeq ($(BOARD),$(filter $(BOARD),$(VALID_F4_BOARDS)))
+PROC_DIR=F4
+endif
+
+ifeq ($(BOARD),$(filter $(BOARD),$(VALID_F1_BOARDS)))
+PROC_DIR=F1
+endif
+
+ifeq ($(PROC_DIR),)
+$(info Invalid BOARD: $(BOARD))
+$(info =================================)
+$(info VALID F1 BOARDS:)
+$(info $(VALID_F1_BOARDS))
+$(info =================================)
+$(info VALID F4 BOARDS:)
+$(info $(VALID_F4_BOARDS))
+$(info =================================)
+else
+$(info Building ROSflight $(PROC_DIR))
+endif
+
+# Serial port/device for flashing
+SERIAL_DEVICE	?= /dev/ttyACM0
+
+# Set proper number of jobs for the computer
+PARALLEL_JOBS	:= $(shell grep -c ^processor /proc/cpuinfo)
 
 # Build configuration
-BOARD_DIR = boards/$(BOARD)
+BOARD_DIR = boards/$(PROC_DIR)
 
 .PHONY: all flash clean
 
-
 all:
-		cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE)
+		cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE)
 
 clean:
 		cd $(BOARD_DIR) && make clean

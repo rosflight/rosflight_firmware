@@ -103,6 +103,11 @@ uint8_t Naze32::serial_read(void)
   return serialRead(Serial1);
 }
 
+void Naze32::serial_flush()
+{
+  return;
+}
+
 // sensors
 
 void Naze32::sensors_init()
