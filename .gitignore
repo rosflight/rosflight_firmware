@@ -12,6 +12,7 @@
 *.o
 *.html
 /boards/*/build/
+/boards/*/obj/
 /test/build/
 /site/
 /boards/*/obj/
