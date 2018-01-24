@@ -38,7 +38,7 @@
 
 #ifndef GIT_VERSION_HASH
 #define GIT_VERSION_HASH 0x00
-//#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
+#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
 #endif
 
 #ifndef GIT_VERSION_STRING

@@ -103,6 +103,7 @@ void Revo::sensors_init()
   imu_.init(&spi_);
   mag_.init(&i2c_);
   baro_.init(&i2c_);
+
   while(millis() < 50);
 //  i2c_.write(0,0,0);
 }
@@ -212,16 +213,17 @@ bool Revo::pwm_lost()
 // non-volatile memory
 void Revo::memory_init(void)
 {
+  eeprom_init();
 }
 
 bool Revo::memory_read(void * dest, size_t len)
 {
-  memory_read(dest, len);
+  return eeprom_read(dest, len);
 }
 
 bool Revo::memory_write(const void * src, size_t len)
 {
-  memory_write(src, len);
+  return eeprom_write(src, len);
 }
 
 // LED
