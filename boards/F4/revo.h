@@ -40,8 +40,9 @@
 #include "spi.h"
 #include "mpu6000.h"
 #include "ms5611.h"
-#include "eeprom.h"
+#include "M25P16.h"
 #include "hmc5883l.h"
+#include "ms4525.h"
 #include "rc_ppm.h"
 #include "pwm.h"
 #include "led.h"
@@ -55,16 +56,20 @@ class Revo : public Board
 
 private:
     VCP vcp_;
-    I2C i2c_;
-    SPI spi_;
+    I2C int_i2c_;
+    I2C ext_i2c_;
+    SPI spi1_;
+    SPI spi3_;
     MPU6000 imu_;
     HMC5883L mag_;
     MS5611 baro_;
+    MS4525 airspeed_;
 
     RC_PPM rc_;
     PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
-    LED warn_;
-    LED info_;
+    LED led2_;
+    LED led1_;
+    M25P16 flash_;
 
 
     std::function<void(void)> imu_callback_;

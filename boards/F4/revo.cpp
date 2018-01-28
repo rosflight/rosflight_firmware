@@ -43,13 +43,18 @@ Revo::Revo()
 void Revo::init_board(void)
 {
   systemInit();
-  warn_.init(LED1_GPIO, LED1_PIN);
-  info_.init(LED2_GPIO, LED2_PIN);
+  led2_.init(LED2_GPIO, LED2_PIN);
+  led1_.init(LED1_GPIO, LED1_PIN);
+
+  int_i2c_.init(&i2c_config[MAG_I2C]);
+  ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+  spi1_.init(&spi_config[MPU6000_SPI]);
+  spi3_.init(&spi_config[FLASH_SPI]);
 }
 
 void Revo::board_reset(bool bootloader)
 {
-//  systemReset(bootloader);
+  NVIC_SystemReset();
 }
 
 // clock
@@ -95,28 +100,24 @@ void Revo::serial_flush()
 }
 
 // sensors
-
 void Revo::sensors_init()
 {
-  i2c_.init(I2C1);
-  spi_.init(&spi_config[MPU6000_SPI]);
-  imu_.init(&spi_);
-  mag_.init(&i2c_);
-  baro_.init(&i2c_);
+  imu_.init(&spi1_);
+  mag_.init(&int_i2c_);
+  baro_.init(&int_i2c_);
+  airspeed_.init(&ext_i2c_);
 
-  while(millis() < 50);
-//  i2c_.write(0,0,0);
+  while(millis() < 50); // wait for sensors to boot up
 }
 
 uint16_t Revo::num_sensor_errors(void)
 {
-  return i2c_.num_errors();
+  return int_i2c_.num_errors();
 }
 
 bool Revo::new_imu_data()
 {
   return imu_.new_data();
-  return 0;
 }
 
 bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
@@ -137,7 +138,6 @@ bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t*
 
 void Revo::imu_not_responding_error(void)
 {
-  // If the IMU is not responding, then we need to change where we look for the interrupt
   sensors_init();
 }
 
@@ -149,6 +149,7 @@ void Revo::mag_read(float mag[3])
 
 bool Revo::mag_check(void)
 {
+  mag_.update();
   return mag_.present();
 }
 
@@ -166,12 +167,14 @@ bool Revo::baro_check()
 
 bool Revo::diff_pressure_check(void)
 {
-  return false;
+  airspeed_.update();
+  return airspeed_.present();
 }
 
 void Revo::diff_pressure_read(float *diff_pressure, float *temperature)
 {
-  return;
+  airspeed_.update();
+  airspeed_.read(diff_pressure, temperature);
 }
 
 bool Revo::sonar_check(void)
@@ -213,27 +216,27 @@ bool Revo::pwm_lost()
 // non-volatile memory
 void Revo::memory_init(void)
 {
-  eeprom_init();
+  return flash_.init(&spi3_);
 }
 
-bool Revo::memory_read(void * dest, size_t len)
+bool Revo::memory_read(void * data, size_t len)
 {
-  return eeprom_read(dest, len);
+  return flash_.read_config((uint8_t*)data, len);
 }
 
-bool Revo::memory_write(const void * src, size_t len)
+bool Revo::memory_write(const void * data, size_t len)
 {
-  return eeprom_write(src, len);
+  return flash_.write_config((uint8_t*)data, len);
 }
 
 // LED
-void Revo::led0_on(void) { info_.on(); }
-void Revo::led0_off(void) { info_.off(); }
-void Revo::led0_toggle(void) { info_.toggle(); }
+void Revo::led0_on(void) { led1_.on(); }
+void Revo::led0_off(void) { led1_.off(); }
+void Revo::led0_toggle(void) { led1_.toggle(); }
 
-void Revo::led1_on(void) { warn_.on(); }
-void Revo::led1_off(void) { warn_.off(); }
-void Revo::led1_toggle(void) { warn_.toggle(); }
+void Revo::led1_on(void) { led2_.on(); }
+void Revo::led1_off(void) { led2_.off(); }
+void Revo::led1_toggle(void) { led2_.toggle(); }
 }
 
 #pragma GCC diagnostic pop
