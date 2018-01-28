@@ -2,9 +2,11 @@
 
 Debugging a naze32 is easiest with an ST-Link V2.  You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator and the in-circuit debugger.
 
-_** We have had reports of problems with cheap clones of ST-Links not connecting.  Consider yourself warned. **_
+!!! warning
+    We have had reports of problems with cheap clones of ST-Links not connecting.
 
-_**It appears that perhaps debugging only works with Ubuntu 16.04 because of some issues with gdb-py and the "textinfo" tool in 14.04.**_
+!!! warning
+    It appears that perhaps debugging only works with Ubuntu 16.04 because of some issues with gdb-py and the "textinfo" tool in 14.04.
 
 ## Add User to Dailout Group
 
@@ -16,7 +18,7 @@ sudo adduser $USER dialout
 
 Log out and back in for changes to take effect.
 
-## Install QtCreator 4.1.0
+## Install QtCreator
 
 For some reason, the QtCreator bundled with 16.04 is unstable.  4.2.0 messes up ROS workspaces, so the most recent stable build for use with ROS and debugging is 4.1.0.  Download it from [here](https://download.qt.io/official_releases/qtcreator/4.1/4.1.0/installer_source/linux_gcc_64_rhel66/qtcreator.7z).
 
@@ -65,16 +67,25 @@ Then, for convenience, I normally create a script to run openocd for me.  Here i
 
 ``` bash
 #!/bin/bash
-
 cd /opt/openocd/0.10.0-201701241841/bin
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg
 ```
 
-which I move to the `~/.local/bin` directory so I can call it from anywhere:
+Here is my `start_openocd_f4` script
+
+``` bash
+#!/bin/bash
+cd /opt/openocd/0.10.0-5-20171110-1117/bin
+./openocd -f interface/stlink-v2.cfg -f target/stm32f4x.cfg
+```
+
+I move these the `usr/local/bin` directory so I can call it from anywhere:
 
 ``` bash
 chmod +x start_openocd_f1
-mv start_openocd_f1 ~/.local/bin
+chmod +x start_openocd_f4
+mv start_openocd_f1 usr/local/bin
+mv start_openocd_f4 usr/local/bin
 ```
 
 ## Install ARM compiler and 32-bit Dependencies
@@ -103,14 +114,14 @@ Now, we're going to configure a new "Kit" for ARM development (this allows you t
 
 ### Tell QtCreator where to find the compiler (GCC)
 
-* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C++.  
+* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C++.
 * Name the new compiler "G++ ARM" (or something)
 * Point the compiler path to where you just installed your fresh GCC.
 * The path for G++ `/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-g++`
 
 Do the same for GCC (if you are going to be doing any C-only code)
 
-* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C.  
+* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C.
 * Name the compiler (I named my compiler "GCC ARM)
 * The path for GCC is `/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-gcc`
 

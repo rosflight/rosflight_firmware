@@ -1,19 +1,23 @@
-# ROSflight firmware code architecture
+# Code Architecture
 
 The firmware is divided into two main components: the _ROSflight library_, and a collection of _board implementations_.
-This division is intended to allow the same core flight code to run on any processor or platform, either an embedded flight controller (such as the Naze32) or a desktop environment for a software-in-the-loop (SIL) simulation. The interface between these two components is called the _hardware abstraction layer_.
+This division is intended to allow the same core flight code to run on any processor or platform, either an embedded flight controller (such as the Naze32 or Revo) or a desktop environment for a software-in-the-loop (SIL) simulation. The interface between these two components is called the _hardware abstraction layer_.
 This architecture is illustrated in the following diagram:
 
 ![hardware abstraction layer](images/HAL.svg)
+
+## ROSflight Core Library
 
 The ROSflight library consists of all the code in the `include` and `src` directories of the firmware repository.
 This includes the code for the what is termed the "flight stack," which consists of the core components (such as the estimator, controller, communication link, etc.) required for flight.
 It also includes the interface definition for the hardware abstraction layer, which is defined by the abstract `Board` class in `include/board.h`.
 External libraries (such as MAVLink) are contained in the `lib` folder.
 
+## Board Abstraction
+
 The board implementations are contained in the `boards` directory, with each board contained in its own subdirectory (e.g. `boards/naze`).
 Each board implementation is required to provide an implementation of the hardware abstraction layer interface, which is passed by reference to the flight stack.
-The Naze32 implementation in the `boards/naze` shows how this is done for an embedded flight controller.
+The Revo implementation in the `boards/F4` shows how this is done for an embedded flight controller.
 Examples of board implementations for SIL simulation are found in the `rosflight_firmware` and `rosflight_sim` ROS packages available [here](https://github.com/rosflight/rosflight).
 
 The flight stack is encapsulated in the `ROSflight` class defined at `include/rosflight.h`.

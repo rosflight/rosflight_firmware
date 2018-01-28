@@ -28,7 +28,10 @@ Some things to keep in mind as you design or build your MAV.
 
 ## Flight Controller
 
-ROSflight is best supported on the flip32+ from [readytoflyquads.com](http://www.readytoflyquads.com/the-flip32-187).  It works on any variant of the naze32 flight controller, but the flip32 has the convenience of having through-hole boot pins.  The naze32 and flip32 have identical schematics, they differ only in the layout of the board. We have seen some problems using off-brand versions of the naze32 or flip32 because there are fake versions of accelerometers which can mess with the firmware; try to avoid those if you can.
+ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  It works on most variants of the revo and naze32 flight controller.  Configuring a new board is relatively straight-forward, assuming that the board uses an STM32F4xx or STM32F1xx processor.
+
+!!! warning
+    We have seen some problems using off-brand versions of flight controllers because there are fake versions of accelerometers which can mess with the firmware; try to avoid those if you can.
 
 ## External Sensors
 
@@ -38,13 +41,13 @@ Additional Sensors you may want for your ROSflight setup include:
 * GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/511-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
-The I2C sonar (MB124X) is also supported, but PWM sonars are preferred.
+The I2C sonar (MB124X) is also supported, but PWM sonars are preferred (https://www.adafruit.com/product/982?gclid=CjwKCAiA47DTBRAUEiwA4luU2QSNTXTLpAU6YI31w_cgVRXgiTB6v326aibrkUAaLYFRMMUWjI5uSBoCm80QAvD_BwE).
 
 ## Vibration Isolation
 
 It is really important to isolate your flight controller from vibrations from propellers and motors.  We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV.  You may also want to try adding mass to the flight control board.  We have accomplished this by gluing steel washers to the fiberglass mounting plate.
 
-![Vibration Isloation](images/vibration_isolation.png)  
+![Vibration Isloation](images/vibration_isolation.png)
 
 You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the flight control board.  The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
 
@@ -68,15 +71,15 @@ You will need Wi-Fi to communicate with your MAV when it is in the air.  ROS com
 
 For RC Control, you will need a transmitter with between 6 and 8 channels.  Any additional channels will be wasted.  We require RC control for safe operation, and only support arming and disarming via RC control.
 
-As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. Support for serial RC (Spektrum Sattelites) is expected in future releases. A recommended RC setup is described below, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
+As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. A recommended RC setup is described below, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
 
-* Transmitter – [Spektrum DX8 $300 at Horizon Hobby](http://www.horizonhobby.com/dx8-transmitter-only-mode-2-spmr8000)
-* Receiver – [Orange Rx 8Ch PPM $22 on HobbyKing](https://hobbyking.com/en_us/orangerx-r820x-v2-6ch-2-4ghz-dsm2-dsmx-comp-full-range-rx-w-sat-div-ant-f-safe-cppm.html/?___store=en_us)
+* Transmitter – [FrSky Taranis QX7 ($105 on getfpv.com)](https://www.getfpv.com/frsky-taranis-q-x7-2-4ghz-16ch-transmitter-white.html)
+* Receiver – [FrSky D4R-II (24.99 on getfpv.com)](https://www.getfpv.com/frsky-d4r-ii-4ch-2-4ghz-accst-receiver-w-telemetry.html)
 
 
 ## Laptop or Base Station Computer
 
-You will need a laptop which can run Ubuntu 16.04 and ROS to communicate with the MAV over WiFi.  If you are new to Linux, I would recommend dual booting your computer rather than using VirtualBox.
+You will need a laptop which can run Ubuntu 16.04 and ROS to communicate with the MAV over WiFi.  If you are new to Linux, and want to also use windows, I would recommend dual booting your computer rather than using a virtual machine.
 
 ## Joystick
 
@@ -92,7 +95,7 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 # Motor layouts
 
-The desired mixer can be chosen by setting the the "MIXER" parameter to the following values:
+The desired mixer can be chosen by setting the the `MIXER` parameter to the following values:
 
 | # | Mixer |
 |---|---------|
@@ -109,7 +112,7 @@ The desired mixer can be chosen by setting the the "MIXER" parameter to the foll
 | 10 | Fixed wing (traditional AETR) |
 
 The associated motor layouts are shown below for each mixer.
-The _ESC calibration_ mixer outputs the throttle command equally to each motor, and can be used for calibrating the ESCs.
+The **ESC calibration** mixer directly outputs the throttle command equally to each motor, and can be used for calibrating the ESCs.
 
 ![Mixer_1](images/mixers_1.png)
 

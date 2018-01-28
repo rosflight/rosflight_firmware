@@ -4,7 +4,7 @@ These documents are designed to help developers get up and running with developi
 
 ## Building firmware from source
 
-To build the firmware, you will need the latest version of the ARM embedded toolchain.  We have had issues with compatability between versions of the gcc compiler.  Sometimes, the latest version works, and other times it does not.  To be safe, install version `5_4-2016q3`.  It appears that version 6 is not working.  The following commands will install the 32-bit dependencies, download the compiler and install it to the /opt/ directory.  It also adds it to the `PATH`
+To build the firmware, you will need the latest version of the ARM embedded toolchain.
 
 ``` bash
 sudo apt install -y lib32ncurses5
@@ -25,7 +25,35 @@ git submodule update --init --recursive
 make
 ```
 
-## Flashing newly built firmware
+## Flashing newly built firmware (F4)
+
+### Configure your machine to recognize the flight controller
+Be sure your user is in the `dialout` and `plugdev` group so you have access to the serial ports
+``` bash
+sudo usermod -a -G plugdev <username>
+sudo usermod -a -G dialout <username>
+```
+Disable the modem-manager (sometimes linux thinks the device is a modem)
+``` bash
+sudo systemctl stop ModemManager.service
+```
+
+!!! tip
+    dfu-util auto-detects F4-based boards.  Try `dfu-util` -ls to make sure your board is in bootloader mode
+
+
+### F4
+
+Install the dfu-util utility
+
+``` bash
+sudo apt install dfu-util
+```
+
+Then put the board in bootloader mode (short the boot pins while cycling power) and type `make flash`
+
+
+### F1
 
 Install the stm32flash utility
 
@@ -36,9 +64,6 @@ sudo make install
 cd ..
 rm -rf stm32flash-code
 ```
-
-Then put the board in bootloader mode (short the boot pins while cycling power) and type `make flash`
-
 
 ## Building and running unit tests
 
