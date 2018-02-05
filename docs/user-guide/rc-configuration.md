@@ -1,6 +1,6 @@
 # Binding your Transmitter to your Receiver
 
-We have had the most success using PPM receivers.  Parallel PWM recievers are also supported, but they actually require more effort on the part of the flight controller and can occasionally cause I2C errors.
+As of version 1.0, ROSflight only supports PPM receiver outputs. If your transmitter/receiver setup only supports PWM output, we recommend using a PPM receiver such as the one [here](https://www.getfpv.com/holybro-ppm-encoder-module.html).
 
 Follow the instructions in your user manual to bind your transmitter to your RC receiver.  You may also be able to find a guide on YouTube with instructions, just search for your particular transmitter and recevier model.
 
