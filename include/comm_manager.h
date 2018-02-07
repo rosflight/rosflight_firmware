@@ -147,6 +147,7 @@ public:
   void update_status();
   void log(CommLink::LogSeverity severity, const char *fmt, ...);
 
+  void send_parameter_list();
   void send_named_value_float(const char *const name, float value);
 };
 
