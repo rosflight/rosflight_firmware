@@ -36,6 +36,7 @@
 #include <revo_f4.h>
 
 #include "vcp.h"
+#include "uart.h"
 #include "i2c.h"
 #include "spi.h"
 #include "mpu6000.h"
@@ -46,6 +47,7 @@
 #include "rc_ppm.h"
 #include "pwm.h"
 #include "led.h"
+#include "serial.h"
 
 #include "board.h"
 
@@ -56,6 +58,8 @@ class Revo : public Board
 
 private:
     VCP vcp_;
+    UART uart_;
+    Serial* current_serial_;
     I2C int_i2c_;
     I2C ext_i2c_;
     SPI spi1_;
@@ -64,6 +68,8 @@ private:
     HMC5883L mag_;
     MS5611 baro_;
     MS4525 airspeed_;
+
+    Serial* serial_interfaces_[2];
 
     RC_PPM rc_;
     PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
@@ -110,6 +116,8 @@ public:
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
   void serial_flush(void);
+  Serial* get_serial_interfaces(void);
+  uint8_t get_serial_count(void);
 
   // sensors
   void sensors_init();

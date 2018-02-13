@@ -36,7 +36,7 @@
 
 namespace rosflight_firmware {
 
-Revo::Revo()
+Revo::Revo() : uart_(UART1)
 {
 }
 
@@ -50,6 +50,12 @@ void Revo::init_board(void)
   ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
+
+  serial_interfaces_[0]=&vcp_;
+  serial_interfaces_[1]=&uart_;
+
+  this->current_serial_=&uart_;
+  //this->current_serial_=&vcp;
 }
 
 void Revo::board_reset(bool bootloader)
@@ -76,28 +82,40 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
+  uart_.init_UART(baud_rate);
   vcp_.init();
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
-  vcp_.write(src, len);
+  current_serial_->write(src, len);
 }
 
 uint16_t Revo::serial_bytes_available(void)
 {
-  return vcp_.rx_bytes_waiting();
+  return current_serial_->rx_bytes_waiting();
 }
 
 uint8_t Revo::serial_read(void)
 {
-  return vcp_.read_byte();
+  return current_serial_->read_byte();
 }
 
 void Revo::serial_flush()
 {
-  vcp_.flush();
+  current_serial_->flush();
 }
+
+Serial* Revo::get_serial_interfaces()
+{
+    return serial_interfaces_;
+}
+
+uint8_t Revo::get_serial_count()
+{
+    return 2;
+}
+
 
 // sensors
 void Revo::sensors_init()
