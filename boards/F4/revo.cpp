@@ -36,7 +36,7 @@
 
 namespace rosflight_firmware {
 
-Revo::Revo() : uart_(UART1)
+Revo::Revo()
 {
 }
 
@@ -82,7 +82,7 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init_UART(baud_rate);
+  uart_.init(&uart_config[0], baud_rate);
   vcp_.init();
 }
 
@@ -106,7 +106,7 @@ void Revo::serial_flush()
   current_serial_->flush();
 }
 
-Serial* Revo::get_serial_interfaces()
+Serial** Revo::get_serial_interfaces()
 {
     return serial_interfaces_;
 }

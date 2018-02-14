@@ -48,6 +48,7 @@
 #include "pwm.h"
 #include "led.h"
 #include "serial.h"
+#include "system.h"
 
 #include "board.h"
 
@@ -116,7 +117,7 @@ public:
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
   void serial_flush(void);
-  Serial* get_serial_interfaces(void);
+  Serial** get_serial_interfaces(void);
   uint8_t get_serial_count(void);
 
   // sensors
