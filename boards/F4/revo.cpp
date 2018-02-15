@@ -39,6 +39,10 @@ namespace rosflight_firmware {
 Revo::Revo()
 {
 }
+Revo::~Revo()
+{
+
+}
 
 void Revo::init_board(void)
 {
