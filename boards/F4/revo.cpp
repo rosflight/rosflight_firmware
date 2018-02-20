@@ -59,7 +59,7 @@ void Revo::init_board(void)
   serial_interfaces_[1]=&uart_;
 
   this->current_serial_=&uart_;
-  //this->current_serial_=&vcp;
+  //this->current_serial_=&vcp;    //uncomment this to switch to VCP
 }
 
 void Revo::board_reset(bool bootloader)
