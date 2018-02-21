@@ -221,7 +221,7 @@ void Revo::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 
 void Revo::pwm_write(uint8_t channel, float value)
 {
-  esc_out_[channel].writeUs(value);
+  esc_out_[channel].write(value);
 }
 
 bool Revo::rc_lost()

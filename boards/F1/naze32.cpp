@@ -270,7 +270,7 @@ float Naze32::rc_read(uint8_t channel)
 
 void Naze32::pwm_write(uint8_t channel, float value)
 {
-  pwmWriteMotor(channel, value);
+  pwmWriteMotor(channel, static_cast<uint16_t>(value * 1000) + 1000);
 }
 
 bool Naze32::rc_lost()
