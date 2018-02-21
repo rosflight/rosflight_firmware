@@ -44,6 +44,7 @@ RC::RC(ROSflight &_rf) :
 void RC::init()
 {
   init_rc();
+  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
