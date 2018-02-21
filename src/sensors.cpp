@@ -82,6 +82,7 @@ void Sensors::init()
   baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
+  int_start_us_ = rf_.board_.clock_micros();
 }
 
 
@@ -259,10 +260,9 @@ bool Sensors::update_imu(void)
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
     if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
-    {
       return false;
-    }
 
+    // Move data into local copy
     data_.accel.x = accel_[0];
     data_.accel.y = accel_[1];
     data_.accel.z = accel_[2];
@@ -276,7 +276,15 @@ bool Sensors::update_imu(void)
     if (calibrating_gyro_flag_)
       calibrate_gyro();
 
+    // Apply bias correction
     correct_imu();
+
+    // Integrate for filtered IMU
+    float dt = (data_.imu_time - prev_imu_read_time_us_) * 1e-6;
+    accel_int_ += dt * data_.accel;
+    gyro_int_ += dt * data_.gyro;
+    prev_imu_read_time_us_ = data_.imu_time;
+
     return true;
   }
   else
@@ -294,6 +302,18 @@ bool Sensors::update_imu(void)
     }
     return false;
   }
+}
+
+
+void Sensors::get_filtered_IMU_(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us)
+{
+  float delta_t = (data_.imu_time - int_start_us_)*1e-6;
+  accel = accel_int_ / delta_t;
+  gyro = gyro_int_ / delta_t;
+  accel_int_ *= 0.0;
+  gyro_int_ *= 0.0;
+  int_start_us_ = data_.imu_time;
+  stamp_us = data_.imu_time;
 }
 
 //======================================================================

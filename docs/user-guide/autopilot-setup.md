@@ -17,6 +17,10 @@ sudo usermod -a -G dialout <username>
 ``` bash
 sudo systemctl stop ModemManager.service
 ```
+* Add the custom udev rule so linux handles the flight controller properly
+``` bash
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"') | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
+```
 * Load the firmware and flash using cleanflight configurator
     * Open the configurator, open firmware flasher.  Connect your flight controller, and make sure that you have selected the right port (or DFU in the case of F4-based boards).  Then select "Load Firmware (Local)" and  select your .hex file you downloaded earlier.
 ![cleanflight_gui_1](images/cleanflight_configurator-1.png)
@@ -40,7 +44,7 @@ You can also use dfu-util to flash firmware.  This is helpful if you need (or pr
 ``` bash
 sudo apt install dfu-util
 ```
-* Make sure you are in the dialout and plugdev group (same instructions as above)
+* Make sure you are in the dialout and plugdev group, and add the udev rule (same instructions as above)
 * Short boot pins, restart the board (by unplugging and plugging back in)
 * Download the latest rosflight-F4.bin file [here](https://github.com/rosflight/firmware/releases).
 * Flash the firmware to the device

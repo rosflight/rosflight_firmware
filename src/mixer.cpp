@@ -44,7 +44,6 @@ Mixer::Mixer(ROSflight &_rf) :
 void Mixer::init()
 {
   RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_PWM_SEND_RATE);
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_MIN_PWM);
   RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
   RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MIXER);
 
@@ -93,14 +92,9 @@ void Mixer::init_mixing()
 
 void Mixer::init_PWM()
 {
-  bool useCPPM = false;
-  if (RF_.params_.get_param_int(PARAM_RC_TYPE) == 1)
-  {
-    useCPPM = true;
-  }
   int16_t motor_refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
-  int16_t off_pwm = RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_.board_.pwm_init(useCPPM, motor_refresh_rate, off_pwm);
+  int16_t off_pwm = 1000;
+  RF_.board_.pwm_init(motor_refresh_rate, off_pwm);
 }
 
 
@@ -127,9 +121,7 @@ void Mixer::write_motor(uint8_t index, float value)
     value = 0.0;
   }
   raw_outputs_[index] = value;
-  int32_t pwm_us = value * (RF_.params_.get_param_int(PARAM_MOTOR_MAX_PWM) - RF_.params_.get_param_int(
-                              PARAM_MOTOR_MIN_PWM)) + RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_.board_.pwm_write(index, pwm_us);
+  RF_.board_.pwm_write(index, raw_outputs_[index]);
 }
 
 
@@ -144,7 +136,7 @@ void Mixer::write_servo(uint8_t index, float value)
     value = -1.0;
   }
   raw_outputs_[index] = value;
-  RF_.board_.pwm_write(index, raw_outputs_[index] * 500 + 1500);
+  RF_.board_.pwm_write(index, raw_outputs_[index] * 0.5 + 0.5);
 }
 
 

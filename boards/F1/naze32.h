@@ -63,7 +63,9 @@ private:
   };
   uint8_t sonar_type = SONAR_NONE;
 
-
+  rc_type_t rc_type_ = RC_TYPE_PPM;
+  uint32_t pwm_refresh_rate_ = 490;
+  uint16_t pwm_idle_pwm_ = 1000;
 
 public:
   Naze32();
@@ -109,10 +111,12 @@ public:
 
   // PWM
   // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
-  bool pwm_lost();
-  uint16_t pwm_read(uint8_t channel);
-  void pwm_write(uint8_t channel, uint16_t value);
+  void rc_init(rc_type_t rc_type);
+  bool rc_lost();
+  float rc_read(uint8_t channel);
+
+  void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm);
+  void pwm_write(uint8_t channel, float value);
 
   // non-volatile memory
   void memory_init(void);

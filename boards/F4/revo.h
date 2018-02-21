@@ -44,7 +44,9 @@
 #include "M25P16.h"
 #include "hmc5883l.h"
 #include "ms4525.h"
+#include "rc_base.h"
 #include "rc_ppm.h"
+#include "rc_sbus.h"
 #include "pwm.h"
 #include "led.h"
 #include "serial.h"
@@ -72,12 +74,16 @@ private:
 
     Serial* serial_interfaces_[2];
 
-    RC_PPM rc_;
+    RC_PPM rc_ppm_;
+    RC_SBUS rc_sbus_;
+    UART sbus_uart_;
+    GPIO inv_pin_;
     PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
     LED led2_;
     LED led1_;
     M25P16 flash_;
 
+    RC_BASE* rc_ = nullptr;
 
     std::function<void(void)> imu_callback_;
 
@@ -141,12 +147,14 @@ public:
   bool sonar_check(void);
   float sonar_read(void);
 
+  // RC
+  void rc_init(rc_type_t rc_type);
+  bool rc_lost();
+  float rc_read(uint8_t channel);
+
   // PWM
-  // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
-  bool pwm_lost();
-  uint16_t pwm_read(uint8_t channel);
-  void pwm_write(uint8_t channel, uint16_t value);
+  void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm);
+  void pwm_write(uint8_t channel, float value);
 
   // non-volatile memory
   void memory_init(void);

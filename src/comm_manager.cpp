@@ -119,6 +119,11 @@ void CommManager::param_request_list_callback(uint8_t target_system)
     send_params_index_ = 0;
 }
 
+void CommManager::send_parameter_list()
+{
+  send_params_index_ = 0;
+}
+
 void CommManager::param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index)
 {
   if (target_system == sysid_)
@@ -326,19 +331,14 @@ void CommManager::send_attitude(void)
 
 void CommManager::send_imu(void)
 {
-//  if(RF_.sensors_.should_send_imu_data())
-//  {
-    comm_link_.send_imu(sysid_,
-                        RF_.sensors_.data().imu_time,
-                        RF_.sensors_.data().accel,
-                        RF_.sensors_.data().gyro,
-                        RF_.sensors_.data().imu_temperature);
-//  }
-//  else
-//  {
-//    // Otherwise, wait and signal that we still need to send IMU
-//    streams_[STREAM_ID_IMU].next_time_us_ -= streams_[STREAM_ID_IMU].period_us_;
-//  }
+  turbomath::Vector acc, gyro;
+  uint64_t stamp_us;
+  RF_.sensors_.get_filtered_IMU_(acc, gyro, stamp_us);
+  comm_link_.send_imu(sysid_,
+                      stamp_us,
+                      acc,
+                      gyro,
+                      RF_.sensors_.data().imu_temperature);
 
 }
 
@@ -352,14 +352,14 @@ void CommManager::send_output_raw(void)
 void CommManager::send_rc_raw(void)
 {
   // TODO better mechanism for retreiving RC (through RC module, not PWM-specific)
-  uint16_t channels[8] = { RF_.board_.pwm_read(0),
-                           RF_.board_.pwm_read(1),
-                           RF_.board_.pwm_read(2),
-                           RF_.board_.pwm_read(3),
-                           RF_.board_.pwm_read(4),
-                           RF_.board_.pwm_read(5),
-                           RF_.board_.pwm_read(6),
-                           RF_.board_.pwm_read(7) };
+  uint16_t channels[8] = { static_cast<uint16_t>(RF_.board_.rc_read(0)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(1)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(2)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(3)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(4)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(5)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(6)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(7)*1000) };
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 

@@ -210,29 +210,45 @@ float Revo::sonar_read(void)
 }
 
 // PWM
-void Revo::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
+void Revo::rc_init(rc_type_t rc_type)
+{
+  switch (rc_type)
+  {
+  case RC_TYPE_SBUS:
+    sbus_uart_.init(&uart_config[0], 100000, UART::MODE_8E2);
+    inv_pin_.init(SBUS_INV_GPIO, SBUS_INV_PIN, GPIO::OUTPUT);
+    rc_sbus_.init(&inv_pin_, &sbus_uart_);
+    rc_ = &rc_sbus_;
+    break;
+  case RC_TYPE_PPM:
+    rc_ppm_.init(&pwm_config[RC_PPM_PIN]);
+    rc_ = &rc_ppm_;
+    break;
+  }
+}
+
+float Revo::rc_read(uint8_t channel)
+{
+  return rc_->read(channel);
+}
+
+void Revo::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
   for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
   {
     esc_out_[i].init(&pwm_config[i], refresh_rate, 2000, 1000);
     esc_out_[i].writeUs(idle_pwm);
   }
-  rc_.init(&pwm_config[RC_PPM_PIN]);
 }
 
-uint16_t Revo::pwm_read(uint8_t channel)
+void Revo::pwm_write(uint8_t channel, float value)
 {
-  return rc_.read(channel);
+  esc_out_[channel].write(value);
 }
 
-void Revo::pwm_write(uint8_t channel, uint16_t value)
+bool Revo::rc_lost()
 {
-  esc_out_[channel].writeUs(value);
-}
-
-bool Revo::pwm_lost()
-{
-  return rc_.lost();
+  return rc_->lost();
 }
 
 // non-volatile memory
