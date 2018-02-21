@@ -61,6 +61,7 @@ void RC::init()
 
 void RC::init_rc()
 {
+  RF_.board_.rc_init(static_cast<Board::rc_type_t>(RF_.params_.get_param_int(PARAM_RC_TYPE)));
   init_sticks();
   init_switches();
 }
@@ -165,7 +166,7 @@ bool RC::check_rc_lost()
   bool failsafe = false;
 
   // If the board reports that we have lost RC, tell the state manager
-  if (RF_.board_.pwm_lost())
+  if (RF_.board_.rc_lost())
   {
     failsafe = true;
   }
@@ -174,7 +175,7 @@ bool RC::check_rc_lost()
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_.board_.rc_read(i) != 0 && (RF_.board_.rc_read(i) < -0.1 || RF_.board_.rc_read(i) > 1.1))
+      if (fabsf(RF_.board_.rc_read(i)) > 1e-8 && (RF_.board_.rc_read(i) < -0.1 || RF_.board_.rc_read(i) > 1.1))
       {
         failsafe = true;
       }

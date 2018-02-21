@@ -250,9 +250,17 @@ uint16_t num_sensor_errors(void)
 
 // PWM
 
-void Naze32::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
+void Naze32::rc_init(rc_type_t rc_type)
 {
-  pwmInit(cppm, false, false, refresh_rate, idle_pwm);
+  (void) rc_type; // TODO SBUS is not supported on F1
+  pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
+}
+
+void Naze32::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
+{
+  pwm_refresh_rate_ = refresh_rate;
+  pwm_idle_pwm_ = idle_pwm;
+  pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
 float Naze32::rc_read(uint8_t channel)
@@ -260,12 +268,12 @@ float Naze32::rc_read(uint8_t channel)
   return (float)(pwmRead(channel) - 1000)/1000.0;
 }
 
-void Naze32::pwm_write(uint8_t channel, uint16_t value)
+void Naze32::pwm_write(uint8_t channel, float value)
 {
   pwmWriteMotor(channel, value);
 }
 
-bool Naze32::pwm_lost()
+bool Naze32::rc_lost()
 {
   return ((millis() - pwmLastUpdate()) > 40);
 }

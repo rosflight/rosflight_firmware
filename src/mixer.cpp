@@ -93,14 +93,9 @@ void Mixer::init_mixing()
 
 void Mixer::init_PWM()
 {
-  bool useCPPM = false;
-  if (RF_.params_.get_param_int(PARAM_RC_TYPE) == 1)
-  {
-    useCPPM = true;
-  }
   int16_t motor_refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
   int16_t off_pwm = RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_.board_.pwm_init(useCPPM, motor_refresh_rate, off_pwm);
+  RF_.board_.pwm_init(motor_refresh_rate, off_pwm);
 }
 
 

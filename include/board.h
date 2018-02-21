@@ -44,6 +44,12 @@ class Board
 {
 
 public:
+  typedef enum
+  {
+    RC_TYPE_PPM = 0,
+    RC_TYPE_SBUS = 1
+  } rc_type_t;
+
 // setup
   virtual void init_board(void) = 0;
   virtual void board_reset(bool bootloader) = 0;
@@ -80,12 +86,14 @@ public:
   virtual bool sonar_check(void) = 0;
   virtual float sonar_read(void) = 0;
 
+// RC
+  virtual void rc_init(rc_type_t rc_type) = 0;
+  virtual bool rc_lost() = 0;
+  virtual float rc_read(uint8_t channel) = 0;
+
 // PWM
-// TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  virtual void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm) = 0;
-  virtual bool pwm_lost() = 0;
-  virtual uint16_t pwm_read(uint8_t channel) = 0;
-  virtual void pwm_write(uint8_t channel, uint16_t value) = 0;
+  virtual void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) = 0;
+  virtual void pwm_write(uint8_t channel, float value) = 0;
 
 // non-volatile memory
   virtual void memory_init(void) = 0;
