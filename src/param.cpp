@@ -248,6 +248,7 @@ void Params::set_defaults(void)
   init_param_float(PARAM_FC_PITCH, "FC_PITCH", 0.0f); // pitch angle (deg) of flight controller wrt to aircraft body | -180 | 180
   init_param_float(PARAM_FC_YAW, "FC_YAW", 0.0f); // yaw angle (deg) of flight controller wrt to aircraft body | -180 | 180
 
+
   /********************/
   /*** ARMING SETUP ***/
   /********************/
