@@ -37,6 +37,10 @@ Disable the modem-manager (sometimes linux thinks the device is a modem)
 ``` bash
 sudo systemctl stop ModemManager.service
 ```
+* Add the custom udev rule so linux handles the flight controller properly
+``` bash
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"') | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
+```
 
 !!! tip
     dfu-util auto-detects F4-based boards.  Try `dfu-util` -ls to make sure your board is in bootloader mode
