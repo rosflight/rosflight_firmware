@@ -13,6 +13,7 @@ markdown_extensions:
 pages:
   - Home: index.md
   - User Guide:
+    - Overview: user-guide/overview.md
     - Getting started: user-guide/getting-started.md
     - Hardware setup: user-guide/hardware-setup.md
     - Autopilot setup: user-guide/autopilot-setup.md
