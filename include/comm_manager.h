@@ -68,8 +68,9 @@ private:
   enum OffboardControlMode
   {
     MODE_PASS_THROUGH,
+    MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE,
     MODE_ROLL_PITCH_YAWRATE_THROTTLE,
-    MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE
+    MODE_ROLL_PITCH_YAWRATE_ALTITUDE,
   };
 
   uint8_t sysid_;
@@ -147,6 +148,7 @@ public:
   void update_status();
   void log(CommLink::LogSeverity severity, const char *fmt, ...);
 
+  void send_parameter_list();
   void send_named_value_float(const char *const name, float value);
 };
 
