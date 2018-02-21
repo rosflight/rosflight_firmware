@@ -43,7 +43,7 @@
 #include "M25P16.h"
 #include "hmc5883l.h"
 #include "ms4525.h"
-#include "rc.h"
+#include "rc_base.h"
 #include "rc_ppm.h"
 #include "rc_sbus.h"
 #include "pwm.h"

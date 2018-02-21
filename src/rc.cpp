@@ -271,7 +271,7 @@ bool RC::run()
   // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
-    uint16_t pwm = RF_.board_.rc_read(sticks[channel].channel);
+    float pwm = RF_.board_.rc_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
       stick_values[channel] = pwm;

@@ -128,7 +128,10 @@ namespace rosflight_firmware
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
   void testBoard::rc_init(rc_type_t rc_type){}
   bool testBoard::rc_lost(){ return rc_lost_; }
-  float testBoard::rc_read(uint8_t channel){ return rc_values[channel];}
+  float testBoard::rc_read(uint8_t channel)
+  {
+    return static_cast<float>(rc_values[channel] - 1000)/1000.0 ;
+  }
   void testBoard::pwm_write(uint8_t channel, float value){}
   void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
 
