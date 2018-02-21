@@ -197,6 +197,10 @@ enum : uint16_t
   PARAM_AILERON_REVERSE,
   PARAM_RUDDER_REVERSE,
 
+  PARAM_FC_ROLL,
+  PARAM_FC_PITCH,
+  PARAM_FC_YAW,
+
   /********************/
   /*** ARMING SETUP ***/
   /********************/

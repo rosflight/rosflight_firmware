@@ -80,7 +80,9 @@ public:
 
   // function declarations
   void init();
+  void init_imu();
   bool run();
+  void param_change_callback(uint16_t param_id);
 
   // Calibration Functions
   bool start_imu_calibration(void);
