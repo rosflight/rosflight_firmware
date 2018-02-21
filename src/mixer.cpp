@@ -120,7 +120,8 @@ void Mixer::write_motor(uint8_t index, float value)
   {
     value = 0.0;
   }
-  RF_.board_.pwm_write(index, value);
+  raw_outputs_[index] = value;
+  RF_.board_.pwm_write(index, raw_outputs_[index]);
 }
 
 
