@@ -89,7 +89,7 @@ public:
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
   void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm);
   bool pwm_lost();
-  uint16_t pwm_read(uint8_t channel);
+  uint16_t rc_read(uint8_t channel);
   void pwm_write(uint8_t channel, uint16_t value);
 
 // non-volatile memory

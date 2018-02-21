@@ -352,14 +352,14 @@ void CommManager::send_output_raw(void)
 void CommManager::send_rc_raw(void)
 {
   // TODO better mechanism for retreiving RC (through RC module, not PWM-specific)
-  uint16_t channels[8] = { RF_.board_.pwm_read(0),
-                           RF_.board_.pwm_read(1),
-                           RF_.board_.pwm_read(2),
-                           RF_.board_.pwm_read(3),
-                           RF_.board_.pwm_read(4),
-                           RF_.board_.pwm_read(5),
-                           RF_.board_.pwm_read(6),
-                           RF_.board_.pwm_read(7) };
+  uint16_t channels[8] = { RF_.board_.rc_read(0),
+                           RF_.board_.rc_read(1),
+                           RF_.board_.rc_read(2),
+                           RF_.board_.rc_read(3),
+                           RF_.board_.rc_read(4),
+                           RF_.board_.rc_read(5),
+                           RF_.board_.rc_read(6),
+                           RF_.board_.rc_read(7) };
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 

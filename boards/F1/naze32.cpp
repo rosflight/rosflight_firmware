@@ -255,9 +255,9 @@ void Naze32::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
   pwmInit(cppm, false, false, refresh_rate, idle_pwm);
 }
 
-uint16_t Naze32::pwm_read(uint8_t channel)
+float Naze32::rc_read(uint8_t channel)
 {
-  return pwmRead(channel);
+  return (float)(pwmRead(channel) - 1000)/1000.0;
 }
 
 void Naze32::pwm_write(uint8_t channel, uint16_t value)

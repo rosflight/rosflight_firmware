@@ -198,7 +198,7 @@ void Revo::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm)
   rc_.init(&pwm_config[RC_PPM_PIN]);
 }
 
-uint16_t Revo::pwm_read(uint8_t channel)
+float Revo::rc_read(uint8_t channel)
 {
   return rc_.read(channel);
 }

@@ -174,7 +174,7 @@ bool RC::check_rc_lost()
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_.board_.pwm_read(i) != 0 && (RF_.board_.pwm_read(i) < 900 || RF_.board_.pwm_read(i) > 2100))
+      if (RF_.board_.rc_read(i) != 0 && (RF_.board_.rc_read(i) < -0.1 || RF_.board_.rc_read(i) > 1.1))
       {
         failsafe = true;
       }
@@ -270,14 +270,14 @@ bool RC::run()
   // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
-    uint16_t pwm = RF_.board_.pwm_read(sticks[channel].channel);
+    uint16_t pwm = RF_.board_.rc_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
-      stick_values[channel] = (static_cast<float>(pwm - 1000)) / 1000.0f;
+      stick_values[channel] = pwm;
     }
     else
     {
-      stick_values[channel] = static_cast<float>(2*(pwm - 1500)) / (1000.0f);
+      stick_values[channel] = 2.0 * (pwm - 0.5);
     }
   }
 
@@ -288,11 +288,11 @@ bool RC::run()
     {
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1200;
+        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) < 0.2;
       }
       else
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1800;
+        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) >= 0.8;
       }
     }
     else
