@@ -30,7 +30,7 @@ echo_blue "Test 3: Build test suite"
 mkdir -p test/build
 cd test/build
 rm -rf *
-cmake .. -DCMAKE_BUILD_TYPE=RELEASE && make
+cmake .. -DCMAKE_BUILD_TYPE=RELEASE && make -j4 -l4
 print_result $?
 
 echo_blue "Test 4: Run test suite"
