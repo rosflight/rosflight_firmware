@@ -244,9 +244,10 @@ void Params::set_defaults(void)
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0); // reverses aileron servo output | 0 | 1
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0); // reverses rudder servo output | 0 | 1
 
-  init_param_float(PARAM_FC_ROLL, "FC_ROLL", 0.0); // roll angle (deg) of flight controller wrt to aircraft body | -180 | 180
-  init_param_float(PARAM_FC_PITCH, "FC_PITCH", 0.0); // pitch angle (deg) of flight controller wrt to aircraft body | -180 | 180
-  init_param_float(PARAM_FC_YAW, "FC_YAW", 0.0); // yaw angle (deg) of flight controller wrt to aircraft body | -180 | 180
+  init_param_float(PARAM_FC_ROLL, "FC_ROLL", 0.0f); // roll angle (deg) of flight controller wrt to aircraft body | -180 | 180
+  init_param_float(PARAM_FC_PITCH, "FC_PITCH", 0.0f); // pitch angle (deg) of flight controller wrt to aircraft body | -180 | 180
+  init_param_float(PARAM_FC_YAW, "FC_YAW", 0.0f); // yaw angle (deg) of flight controller wrt to aircraft body | -180 | 180
+
 
   /********************/
   /*** ARMING SETUP ***/
