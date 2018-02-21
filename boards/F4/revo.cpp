@@ -193,8 +193,8 @@ void Revo::rc_init(rc_type_t rc_type)
   switch (rc_type)
   {
   case RC_TYPE_SBUS:
+    sbus_uart_.init(&uart_config[0], 100000, UART::MODE_8E2);
     inv_pin_.init(SBUS_INV_GPIO, SBUS_INV_PIN, GPIO::OUTPUT);
-    sbus_uart_.init(&uart_config[SBUS_UART], 1000000, UART::MODE_8E2);
     rc_sbus_.init(&inv_pin_, &sbus_uart_);
     rc_ = &rc_sbus_;
     break;

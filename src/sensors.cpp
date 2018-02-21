@@ -310,6 +310,8 @@ void Sensors::get_filtered_IMU_(turbomath::Vector &accel, turbomath::Vector &gyr
   float delta_t = (data_.imu_time - int_start_us_)*1e-6;
   accel = accel_int_ / delta_t;
   gyro = gyro_int_ / delta_t;
+  accel_int_ *= 0.0;
+  gyro_int_ *= 0.0;
   int_start_us_ = data_.imu_time;
   stamp_us = data_.imu_time;
 }

@@ -43,6 +43,7 @@ RC::RC(ROSflight &_rf) :
 
 void RC::init()
 {
+  init_rc();
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
@@ -55,7 +56,6 @@ void RC::init()
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_6_DIRECTION);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_7_DIRECTION);
   RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_8_DIRECTION);
-  init_rc();
   new_command_ = false;
 }
 
@@ -175,7 +175,8 @@ bool RC::check_rc_lost()
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (fabsf(RF_.board_.rc_read(i)) > 1e-8 && (RF_.board_.rc_read(i) < -0.1 || RF_.board_.rc_read(i) > 1.1))
+      float pwm = RF_.board_.rc_read(i);
+      if (pwm < -0.25 || pwm > 1.25)
       {
         failsafe = true;
       }
