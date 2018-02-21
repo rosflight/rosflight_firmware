@@ -106,9 +106,9 @@ void Controller::run()
   if ( dt_us < 0 )
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
+  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
@@ -179,7 +179,7 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::Sta
   // Based on the control types coming from the command manager, run the appropriate PID loops
   turbomath::Vector out;
 
-  float dt = dt_us;
+  float dt = 1e-6*dt_us;
 
   // ROLL
   if (command.x.type == RATE)
