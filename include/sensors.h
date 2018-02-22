@@ -81,6 +81,7 @@ public:
   // function declarations
   void init();
   bool run();
+  void param_change_callback(uint16_t param_id);
 
   // Calibration Functions
   bool start_imu_calibration(void);
@@ -143,6 +144,7 @@ private:
   bool calibrating_acc_flag_ = false;
   bool calibrating_gyro_flag_ = false;
   LowPrioritySensors next_sensor_to_update_ = BAROMETER;
+  void init_imu();
   void calibrate_accel(void);
   void calibrate_gyro(void);
   void calibrate_baro(void);
