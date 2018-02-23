@@ -57,16 +57,25 @@ We'll describe each of these modules in the following sections:
 This module is in charge of keeping track of the internal state (armed status, error codes, failsafe, etc.) of the vehicle.
 While only the MAVLink data flow is illustrated on the diagram, all other modules query the state manager to determine the status and act appropriately based on that status.
 
+The operation of the state manager is defined by the following finite state machine:
+
+![state manager FSM](images/arming-fsm.svg)
+
 ### Parameter server
 This module handles all of the parameters for the flight stack.
 It supports the getting and setting of integer and floating point parameters, and the saving of these parameters to non-volatile memory.
 Setting and getting of parameters from the onboard computer is done through the MAVLink interface.
 While no other data flow lines are shown on the diagram, all of the other modules interact with the parameter server.
 
-### MAVLink
+### Comm Manager
 This module handles all serial communication between the flight controller and onboard computer.
 This includes streaming data and receiving offboard control setpoints and other commands from the computer.
 This module primarily collects data from the sensors, estimator, state manager, and parameters modules, and sends offboard control setpoints to the command manager and parameter requests to the parameter server.
+
+The actual communication protocol used is abstracted by the interface in [include/comm_link.h](https://github.com/rosflight/firmware/blob/master/include/comm_link.h).
+A new protocol can be used by implementing a wrapper around the protocol that inherits from this interface.
+Currently, only MAVLink has been implmented.
+The implementation is found in [comms/mavlink/mavlink.h](https://github.com/rosflight/firmware/blob/master/comms/mavlink/mavlink.h) and [comms/mavlink/mavlink.cpp](https://github.com/rosflight/firmware/blob/master/comms/mavlink/mavlink.cpp).
 
 ### Sensors
 This module is in charge of managing the various sensors (IMU, magnetometer, barometer, differential pressure sensor, sonar altimeter, etc.).
