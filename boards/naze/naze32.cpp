@@ -113,10 +113,15 @@ void Naze32::sensors_init()
   while(millis() < 50);
 
   i2cWrite(0,0,0);
-  ms5611_init();
+  if (bmp280_init())
+    baro_type = BARO_BMP280;
+  else if (ms5611_init())
+    baro_type = BARO_MS5611;
+
   hmc5883lInit(_board_revision);
   mb1242_init();
   ms4525_init();
+
 
   // IMU
   uint16_t acc1G;
@@ -183,14 +188,21 @@ bool Naze32::mag_check(void)
 
 void Naze32::baro_read(float *pressure, float *temperature)
 {
-  ms5611_async_update();
-  ms5611_async_read(pressure, temperature);
+  if (baro_type == BARO_BMP280)
+  {
+    bmp280_async_update();
+    bmp280_async_read(pressure, temperature);
+  }
+  else if (baro_type == BARO_MS5611)
+  {
+    ms5611_async_update();
+    ms5611_async_read(pressure, temperature);
+  }
 }
 
 bool Naze32::baro_check()
 {
-  ms5611_async_update();
-  return ms5611_present();
+  return baro_type != BARO_NONE;
 }
 
 bool Naze32::diff_pressure_check(void)
