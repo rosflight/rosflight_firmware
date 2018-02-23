@@ -290,7 +290,7 @@ bool Naze32::memory_read(void * dest, size_t len)
   return readEEPROM(dest, len);
 }
 
-bool Naze32::memory_write(const void * src, size_t len)
+bool Naze32::memory_write(void * src, size_t len)
 {
   return writeEEPROM(src, len);
 }
