@@ -222,102 +222,15 @@ TARGET_BIN=$(BIN_DIR)/$(TARGET).bin
 #################################
 ifeq ($(DEBUG), GDB)
 $(info ************  BUILDING DEBUG SYMBOLS ************)
-DEBUG_FLAGS = -ggdb3
+DEBUG_FLAGS = -g3
 OPTIMIZE = -O0
 LTO_FLAGS =
 else
 $(info ************  BUILDING RELEASE ************)
-DEBUG_FLAGS = -ggdb3
+DEBUG_FLAGS = -g0
 OPTIMIZE = -O3
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
-
-OPTIM_FLAGS = \
--fauto-inc-dec \
--fbranch-count-reg \
--fcombine-stack-adjustments \
--fcompare-elim \
--fcprop-registers \
--fdce \
--fdefer-pop \
--fdse \
--fforward-propagate \
--fguess-branch-probability \
--fif-conversion2 \
--fif-conversion \
--finline-functions-called-once \
--fipa-pure-const \
--fipa-profile \
--fipa-reference \
--fmerge-constants \
--fmove-loop-invariants \
--fomit-frame-pointer \
--freorder-blocks \
--fshrink-wrap \
--fsplit-wide-types \
--fssa-phiopt \
--ftree-bit-ccp \
--ftree-ccp \
--ftree-ch \
--ftree-coalesce-vars \
--ftree-copy-prop \
--ftree-dce \
--ftree-dominator-opts \
--ftree-dse \
--ftree-forwprop \
--ftree-fre \
--ftree-phiprop \
--ftree-sink \
--ftree-slsr \
--ftree-sra \
--ftree-pta \
--ftree-ter \
--funit-at-a-time \
--fthread-jumps \
--falign-functions  -falign-jumps \
--falign-loops  -falign-labels \
--fcaller-saves \
--fcrossjumping \
--fcse-follow-jumps  -fcse-skip-blocks \
--fdelete-null-pointer-checks \
--fdevirtualize -fdevirtualize-speculatively \
--fexpensive-optimizations \
--fgcse  -fgcse-lm \
--fhoist-adjacent-loads \
--finline-small-functions \
--findirect-inlining \
--fipa-cp \
--fipa-sra \
--fipa-icf \
--fisolate-erroneous-paths-dereference \
--flra-remat \
--foptimize-sibling-calls \
--foptimize-strlen \
--fpartial-inlining \
--fpeephole2 \
--freorder-functions \
--frerun-cse-after-loop \
--fsched-interblock  -fsched-spec \
--fschedule-insns  -fschedule-insns2 \
--fstrict-aliasing \
--ftree-builtin-call-dce \
--ftree-switch-conversion -ftree-tail-merge \
--ftree-pre \
--ftree-vrp \
--fipa-ra \
--finline-functions \
--funswitch-loops \
--fpredictive-commoning \
--fgcse-after-reload \
--ftree-loop-vectorize \
--ftree-loop-distribution \
--ftree-loop-distribute-patterns \
--floop-interchange \
--ftree-slp-vectorize \
--fvect-cost-model \
--ftree-partial-pre \
--fpeel-loops \
--fipa-cp-clone
 
 #################################
 # Flags
