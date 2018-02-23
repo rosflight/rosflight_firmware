@@ -228,7 +228,7 @@ LTO_FLAGS =
 else
 $(info ************  BUILDING RELEASE ************)
 DEBUG_FLAGS = -ggdb3
-OPTIMIZE = -O0
+OPTIMIZE = -O3
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
 
@@ -325,7 +325,7 @@ OPTIM_FLAGS = \
 
 CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
   -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
+  -Wredundant-decls -Wshadow -Wstrict-overflow=2 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
   -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
 FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
 CXX_FILE_SIZE_FLAGS = $(FILE_SIZE_FLAGS) -fno-rtti
