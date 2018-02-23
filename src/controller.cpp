@@ -106,13 +106,13 @@ void Controller::run()
   if ( dt_us < 0 )
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
+  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 100;
+  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
 
   // Run the PID loops
   turbomath::Vector pid_output = run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
@@ -130,7 +130,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
   if (!(RF_.state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
-    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Capturing equilbrium offsets from RC");
+    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Capturing equilbrium offsets from RC");
 
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
@@ -159,12 +159,12 @@ void Controller::calculate_equilbrium_torque_from_rc()
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y);
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z);
 
-    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Equilibrium torques found and applied.");
-    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Please zero out trims on your transmitter");
+    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Equilibrium torques found and applied.");
+    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Please zero out trims on your transmitter");
   }
   else
   {
-    RF_.mavlink_.log(Mavlink::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
+    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
   }
 }
 
@@ -179,7 +179,7 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::Sta
   // Based on the control types coming from the command manager, run the appropriate PID loops
   turbomath::Vector out;
 
-  float dt = dt_us;
+  float dt = 1e-6*dt_us;
 
   // ROLL
   if (command.x.type == RATE)

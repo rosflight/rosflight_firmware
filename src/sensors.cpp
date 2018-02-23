@@ -61,19 +61,18 @@ Sensors::Sensors(ROSflight& rosflight) :
 
 void Sensors::init()
 {
+  rf_.params_.add_callback(std::bind(&Sensors::param_change_callback, this, std::placeholders::_1), PARAM_FC_ROLL);
+  rf_.params_.add_callback(std::bind(&Sensors::param_change_callback, this, std::placeholders::_1), PARAM_FC_PITCH);
+  rf_.params_.add_callback(std::bind(&Sensors::param_change_callback, this, std::placeholders::_1), PARAM_FC_YAW);
+
   new_imu_data_ = false;
 
   // clear the IMU read error
   rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
   rf_.board_.sensors_init();
 
-  // See if the IMU is uncalibrated, and throw an error if it is
-  if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
-      rf_.params_.get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
-      rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
-  {
-    rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
-  }
+  init_imu();
+
   next_sensor_to_update_ = BAROMETER;
 
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
@@ -82,6 +81,29 @@ void Sensors::init()
   baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
+}
+
+void Sensors::init_imu()
+{
+  // Quaternion to compensate for FCU orientation
+  float roll = rf_.params_.get_param_float(PARAM_FC_ROLL) * 0.017453293;
+  float pitch = rf_.params_.get_param_float(PARAM_FC_PITCH) * 0.017453293;
+  float yaw = rf_.params_.get_param_float(PARAM_FC_YAW) * 0.017453293;
+  data_.fcu_orientation = turbomath::Quaternion(roll, pitch, yaw);
+
+  // See if the IMU is uncalibrated, and throw an error if it is
+  if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
+      rf_.params_.get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
+      rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS) == 0.0)
+  {
+    rf_.state_manager_.set_error(StateManager::ERROR_UNCALIBRATED_IMU);
+  }
+}
+
+void Sensors::param_change_callback(uint16_t param_id)
+{
+  (void) param_id; // suppress unused parameter warning
+  init_imu();
 }
 
 
@@ -175,7 +197,7 @@ void Sensors::look_for_disabled_sensors()
       if (rf_.board_.sonar_check())
       {
         data_.sonar_present = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND SONAR");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "FOUND SONAR");
       }
     }
     if (!data_.diff_pressure_present)
@@ -183,7 +205,7 @@ void Sensors::look_for_disabled_sensors()
       if (rf_.board_.diff_pressure_check())
       {
         data_.diff_pressure_present = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND DIFF PRESS");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "FOUND DIFF PRESS");
       }
     }
     if (!data_.baro_present)
@@ -191,7 +213,7 @@ void Sensors::look_for_disabled_sensors()
       if (rf_.board_.baro_check())
       {
         data_.baro_present = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND BAROMETER");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "FOUND BAROMETER");
       }
     }
     if (!data_.mag_present)
@@ -199,7 +221,7 @@ void Sensors::look_for_disabled_sensors()
       if (rf_.board_.mag_check())
       {
         data_.mag_present = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "FOUND MAGNETOMETER");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "FOUND MAGNETOMETER");
       }
     }
   }
@@ -267,9 +289,13 @@ bool Sensors::update_imu(void)
     data_.accel.y = accel_[1];
     data_.accel.z = accel_[2];
 
+    data_.accel = data_.fcu_orientation * data_.accel;
+
     data_.gyro.x = gyro_[0];
     data_.gyro.y = gyro_[1];
     data_.gyro.z = gyro_[2];
+
+    data_.gyro = data_.fcu_orientation * data_.gyro;
 
     if (calibrating_acc_flag_)
       calibrate_accel();
@@ -281,8 +307,12 @@ bool Sensors::update_imu(void)
   }
   else
   {
-    // if we have lost 1000 IMU messages then something is wrong
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + 1000)
+    // if we have lost 10 IMU messages then something is wrong
+    // However, because we look for disabled sensors while disarmed,
+    // we get IMU timeouts, which last for at least 10 ms.  Therefore
+    // we have an adjustable imu_timeout.
+    int imu_timeout = rf_.state_manager_.state().armed ? 10 : 1000;
+    if (rf_.board_.clock_millis() > last_imu_update_ms_ + imu_timeout)
     {
       // Tell the board to fix it
       last_imu_update_ms_ = rf_.board_.clock_millis();
@@ -324,7 +354,7 @@ void Sensors::calibrate_gyro()
     {
       // Tell the state manager that we just failed a gyro calibration
       rf_.state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
-      rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for gyro cal");
+      rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for gyro cal");
     }
 
     // reset calibration in case we do it again
@@ -384,7 +414,7 @@ void Sensors::calibrate_accel(void)
     // then don't do anything
     if ((max_- min_).norm() > 1.0)
     {
-      rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for IMU cal");
+      rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for IMU cal");
       calibrating_acc_flag_ = false;
     }
     else
@@ -398,7 +428,7 @@ void Sensors::calibrate_accel(void)
         rf_.params_.set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
         rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
         rf_.params_.set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "IMU offsets captured");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "IMU offsets captured");
 
         // clear uncalibrated IMU flag
         rf_.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
@@ -407,9 +437,9 @@ void Sensors::calibrate_accel(void)
       {
         // This usually means the user has the FCU in the wrong orientation, or something is wrong
         // with the board IMU (like it's a cheap chinese clone)
-        rf_.mavlink_.log(Mavlink::LOG_ERROR, "large accel bias: norm = %d.%d",
-                         static_cast<uint32_t>(accel_bias.norm()),
-                         static_cast<uint32_t>(accel_bias.norm()*1000)%1000);
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "large accel bias: norm = %d.%d",
+                              static_cast<uint32_t>(accel_bias.norm()),
+                              static_cast<uint32_t>(accel_bias.norm()*1000)%1000);
       }
     }
 
@@ -443,11 +473,11 @@ void Sensors::calibrate_baro()
       {
         rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_mean_);
         baro_calibrated_ = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "Baro Cal successful!");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "Baro Cal successful!");
       }
       else
       {
-        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for barometer cal");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for barometer cal");
       }
       baro_calibration_mean_ = 0.0f;
       baro_calibration_var_ = 0.0f;
@@ -480,11 +510,11 @@ void Sensors::calibrate_diff_pressure()
       {
         rf_.params_.set_param_float(PARAM_DIFF_PRESS_BIAS, diff_pressure_calibration_mean_);
         diff_pressure_calibrated_ = true;
-        rf_.mavlink_.log(Mavlink::LOG_INFO, "Airspeed Cal Successful!");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "Airspeed Cal Successful!");
       }
       else
       {
-        rf_.mavlink_.log(Mavlink::LOG_ERROR, "Too much movement for diff pressure cal");
+        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for diff pressure cal");
       }
       diff_pressure_calibration_mean_ = 0.0f;
       diff_pressure_calibration_var_ = 0.0f;

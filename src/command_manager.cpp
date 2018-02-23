@@ -306,7 +306,7 @@ bool CommandManager::run()
   // There was a change in rc_override state
   if (last_rc_override != rc_override_)
   {
-    RF_.mavlink_.update_status();
+    RF_.comm_manager_.update_status();
   }
   return true;
 }

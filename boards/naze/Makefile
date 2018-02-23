@@ -28,7 +28,7 @@
 
 TARGET	?= rosflight
 
-DEBUG ?= GDB
+DEBUG ?= 
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
@@ -52,6 +52,7 @@ A2L=arm-none-eabi-addr2line
 ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
 BOARD_DIR 	= .
 ROSFLIGHT_DIR   = ../..
+MAVLINK_DIR = $(ROSFLIGHT_DIR)/comms/mavlink
 TURBOMATH_DIR   = $(ROSFLIGHT_DIR)/lib/turbomath
 BREEZY_DIR	= lib/breezystm32
 CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
@@ -70,6 +71,10 @@ BOARD_C_SRC = flash.c
 BOARD_CXX_SRC =	naze32.cpp \
                 main.cpp
 
+# MAVLink source files
+VPATH := $(MAVLINK_DIR)
+MAVLINK_SRC = mavlink.cpp
+
 # ROSflight source files
 VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)
 ROSFLIGHT_SRC = rosflight.cpp \
@@ -77,8 +82,8 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 sensors.cpp \
                 state_manager.cpp \
                 estimator.cpp \
-                mavlink.cpp \
                 controller.cpp \
+                comm_manager.cpp \
                 command_manager.cpp \
                 rc.cpp \
                 mixer.cpp
@@ -134,6 +139,7 @@ CXXSOURCES =    $(addprefix $(ROSFLIGHT_DIR)/src/, $(ROSFLIGHT_SRC)) \
 # Set up Include Directoreis
 INCLUDE_DIRS =	$(BREEZY_DIR) \
                 $(ROSFLIGHT_DIR)/include \
+                $(MAVLINK_DIR) \
                 $(ROSFLIGHT_DIR)/lib \
                 $(STDPERIPH_DIR)/inc \
                 $(CMSIS_DIR)/CM3/CoreSupport \
@@ -188,7 +194,7 @@ GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GI
 #################################
 CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
   -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
+  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wundef -Wunused -Wvariadic-macros \
   -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
 FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
 CXX_FILE_SIZE_FLAGS = $(C_FILE_SIZE_FLAGS) -fno-rtti

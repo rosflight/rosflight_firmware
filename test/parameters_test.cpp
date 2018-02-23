@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "test_board.h"
+#include "mavlink.h"
 #include "rosflight.h"
 
 using namespace rosflight_firmware;
@@ -10,7 +11,8 @@ using namespace rosflight_firmware;
 TEST(parameters_test, default_parameters_test)
 {
   testBoard board;
-  ROSflight rf(board);
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
 
   rf.init();
 
@@ -69,5 +71,8 @@ TEST(parameters_test, default_parameters_test)
   EXPECT_PARAM_EQ_INT(PARAM_AILERON_REVERSE, 0);
   EXPECT_PARAM_EQ_INT(PARAM_ELEVATOR_REVERSE, 0);
   EXPECT_PARAM_EQ_INT(PARAM_RUDDER_REVERSE, 0);
+  EXPECT_PARAM_EQ_INT(PARAM_FC_ROLL, 0);
+  EXPECT_PARAM_EQ_INT(PARAM_FC_PITCH, 0);
+  EXPECT_PARAM_EQ_INT(PARAM_FC_YAW, 0);
   EXPECT_PARAM_EQ_FLOAT(PARAM_ARM_THRESHOLD, 0.15f);
 }
