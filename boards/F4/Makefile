@@ -227,27 +227,117 @@ OPTIMIZE = -O0
 LTO_FLAGS =
 else
 $(info ************  BUILDING RELEASE ************)
-DEBUG_FLAGS = -g0
-OPTIMIZE = -O3
+DEBUG_FLAGS = -ggdb3
+OPTIMIZE = -O0
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
+
+OPTIM_FLAGS = \
+-fauto-inc-dec \
+-fbranch-count-reg \
+-fcombine-stack-adjustments \
+-fcompare-elim \
+-fcprop-registers \
+-fdce \
+-fdefer-pop \
+-fdse \
+-fforward-propagate \
+-fguess-branch-probability \
+-fif-conversion2 \
+-fif-conversion \
+-finline-functions-called-once \
+-fipa-pure-const \
+-fipa-profile \
+-fipa-reference \
+-fmerge-constants \
+-fmove-loop-invariants \
+-fomit-frame-pointer \
+-freorder-blocks \
+-fshrink-wrap \
+-fsplit-wide-types \
+-fssa-phiopt \
+-ftree-bit-ccp \
+-ftree-ccp \
+-ftree-ch \
+-ftree-coalesce-vars \
+-ftree-copy-prop \
+-ftree-dce \
+-ftree-dominator-opts \
+-ftree-dse \
+-ftree-forwprop \
+-ftree-fre \
+-ftree-phiprop \
+-ftree-sink \
+-ftree-slsr \
+-ftree-sra \
+-ftree-pta \
+-ftree-ter \
+-funit-at-a-time \
+-fthread-jumps \
+-falign-functions  -falign-jumps \
+-falign-loops  -falign-labels \
+-fcaller-saves \
+-fcrossjumping \
+-fcse-follow-jumps  -fcse-skip-blocks \
+-fdelete-null-pointer-checks \
+-fdevirtualize -fdevirtualize-speculatively \
+-fexpensive-optimizations \
+-fgcse  -fgcse-lm \
+-fhoist-adjacent-loads \
+-finline-small-functions \
+-findirect-inlining \
+-fipa-cp \
+-fipa-sra \
+-fipa-icf \
+-fisolate-erroneous-paths-dereference \
+-flra-remat \
+-foptimize-sibling-calls \
+-foptimize-strlen \
+-fpartial-inlining \
+-fpeephole2 \
+-freorder-functions \
+-frerun-cse-after-loop \
+-fsched-interblock  -fsched-spec \
+-fschedule-insns  -fschedule-insns2 \
+-fstrict-aliasing \
+-ftree-builtin-call-dce \
+-ftree-switch-conversion -ftree-tail-merge \
+-ftree-pre \
+-ftree-vrp \
+-fipa-ra \
+-finline-functions \
+-funswitch-loops \
+-fpredictive-commoning \
+-fgcse-after-reload \
+-ftree-loop-vectorize \
+-ftree-loop-distribution \
+-ftree-loop-distribute-patterns \
+-floop-interchange \
+-ftree-slp-vectorize \
+-fvect-cost-model \
+-ftree-partial-pre \
+-fpeel-loops \
+-fipa-cp-clone
 
 #################################
 # Flags
 #################################
 
-#CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
-#  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-#  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
-#  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
+CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
+  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
+  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
+  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
 FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
 CXX_FILE_SIZE_FLAGS = $(FILE_SIZE_FLAGS) -fno-rtti
 
 MCFLAGS=-mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 DEFS=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -DTARGET_$(BOARD) -D__FPU_USED $(GIT_VARS) -DHSE_VALUE=8000000
-CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
-CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
+CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99 $(OPTIM_FLAGS)
+CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 $(OPTIM_FLAGS)
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
+
+#$(info CFLAGS = $(CFLAGS))
+#$(info CXXFLAGS = $(CXXFLAGS))
 
 #################################
 # Build

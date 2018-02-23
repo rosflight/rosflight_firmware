@@ -210,6 +210,8 @@ void CommManager::command_callback(CommLink::Command command)
     case CommLink::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
       break;
+    default:
+      break;
     }
   }
 
@@ -266,6 +268,8 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
     new_offboard_command.y.type = ANGLE;
     new_offboard_command.z.type = RATE;
     new_offboard_command.F.type = THROTTLE;
+    break;
+  default:
     break;
   }
 
