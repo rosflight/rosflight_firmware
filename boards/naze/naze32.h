@@ -63,6 +63,14 @@ private:
   };
   uint8_t sonar_type = SONAR_NONE;
 
+  enum
+  {
+    BARO_NONE,
+    BARO_BMP280,
+    BARO_MS5611
+  };
+  uint8_t baro_type = BARO_NONE;
+
 
 
 public:

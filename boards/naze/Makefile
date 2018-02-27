@@ -108,6 +108,7 @@ BREEZY_SRC = drv_gpio.c \
              drv_ms4525.c \
              drv_mb1242.c \
              drv_ms5611.c \
+             drv_bmp280.c \
              drv_hmc5883l.c \
              startup_stm32f10x_md_gcc.S
 
