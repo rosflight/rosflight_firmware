@@ -152,6 +152,10 @@ void Mixer::mix_output()
     commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
     commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
+  else if(commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE))
+  {
+      commands.z = 0.0;
+  }
 
   for (int8_t i=0; i<8; i++)
   {

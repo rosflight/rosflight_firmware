@@ -411,57 +411,57 @@ void Sensors::calibrate_accel(void)
 
   if (accel_calibration_count_ > 1000)
   {
-    // The temperature bias is calculated using a least-squares regression.
-    // This is computationally intensive, so it is done by the onboard computer in
-    // fcu_io and shipped over to the flight controller.
-    turbomath::Vector accel_temp_bias =
-    {
-      rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP),
-      rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP),
-      rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)
-    };
-
-    // Figure out the proper accel bias.
-    // We have to consider the contribution of temperature during the calibration,
-    // Which is why this line is so confusing. What we are doing, is first removing
-    // the contribution of temperature to the measurements during the calibration,
-    // Then we are dividing by the number of measurements.
-    turbomath::Vector accel_bias = (acc_sum_ - (accel_temp_bias * acc_temp_sum_)) /
-                                    static_cast<float>(accel_calibration_count_);
-
-    // Sanity Check -
-    // If the accelerometer is upside down or being spun around during the calibration,
-    // then don't do anything
-    if ((max_- min_).norm() > 1.0)
-    {
-      rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for IMU cal");
-      calibrating_acc_flag_ = false;
-    }
-    else
-    {
-      // reset the estimated state
-      rf_.estimator_.reset_state();
-      calibrating_acc_flag_ = false;
-
-      if (accel_bias.norm() < 3.0)
+      // The temperature bias is calculated using a least-squares regression.
+      // This is computationally intensive, so it is done by the onboard computer in
+      // fcu_io and shipped over to the flight controller.
+      turbomath::Vector accel_temp_bias =
       {
-        rf_.params_.set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
-        rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
-        rf_.params_.set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
-        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "IMU offsets captured");
+          rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP),
+          rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP),
+          rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)
+      };
 
-        // clear uncalibrated IMU flag
-        rf_.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
+      // Figure out the proper accel bias.
+      // We have to consider the contribution of temperature during the calibration,
+      // Which is why this line is so confusing. What we are doing, is first removing
+      // the contribution of temperature to the measurements during the calibration,
+      // Then we are dividing by the number of measurements.
+      turbomath::Vector accel_bias = (acc_sum_ - (accel_temp_bias * acc_temp_sum_)) /
+              static_cast<float>(accel_calibration_count_);
+
+      // Sanity Check -
+      // If the accelerometer is upside down or being spun around during the calibration,
+      // then don't do anything
+      if ((max_- min_).norm() > 1.0)
+      {
+          rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for IMU cal");
+          calibrating_acc_flag_ = false;
       }
       else
       {
-        // This usually means the user has the FCU in the wrong orientation, or something is wrong
-        // with the board IMU (like it's a cheap chinese clone)
-        rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "large accel bias: norm = %d.%d",
-                              static_cast<uint32_t>(accel_bias.norm()),
-                              static_cast<uint32_t>(accel_bias.norm()*1000)%1000);
+          // reset the estimated state
+          rf_.estimator_.reset_state();
+          calibrating_acc_flag_ = false;
+
+          if (accel_bias.norm() < 3.0)
+          {
+              rf_.params_.set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
+              rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
+              rf_.params_.set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
+              rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "IMU offsets captured");
+
+              // clear uncalibrated IMU flag
+              rf_.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
+          }
+          else
+          {
+              // This usually means the user has the FCU in the wrong orientation, or something is wrong
+              // with the board IMU (like it's a cheap chinese clone)
+              rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "large accel bias: norm = %d.%d",
+                                    static_cast<uint32_t>(accel_bias.norm()),
+                                    static_cast<uint32_t>(accel_bias.norm()*1000)%1000);
+          }
       }
-    }
 
     // reset calibration counters in case we do it again
     accel_calibration_count_ = 0;

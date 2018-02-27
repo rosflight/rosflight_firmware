@@ -37,9 +37,10 @@ Disable the modem-manager (sometimes linux thinks the device is a modem)
 ``` bash
 sudo systemctl stop ModemManager.service
 ```
-* Add the custom udev rule so linux handles the flight controller properly
+* Add the custom udev rule so linux handles the flight controller properly (copy the following as 45-stm32dfu.rules)
 ``` bash
-echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"') | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
+# DFU (Internal bootloader for STM32 MCUs)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"
 ```
 
 !!! tip
