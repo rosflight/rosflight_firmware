@@ -59,7 +59,7 @@ void Revo::init_board(void)
   serial_interfaces_[1]=&uart_;
 
   this->current_serial_=&uart_;
-  //this->current_serial_=&vcp;    //uncomment this to switch to VCP
+  //this->current_serial_=&vcp_;    //uncomment this to switch to VCP
 }
 
 void Revo::board_reset(bool bootloader)
@@ -86,13 +86,26 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[0], baud_rate);
+  uart_.init(&uart_config[0], 115200);
+  uint8_t hello[5];
+  hello[0]='h';
+  hello[1]='e';
+  hello[2]='l';
+  hello[3]='l';
+  hello[4]='o';
   vcp_.init();
+  uart_.write(hello,5);
+  uart_.flush();
+  uart_.put_byte('H');
+  uart_.flush();
+
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
   current_serial_->write(src, len);
+  //For testing only
+  //vcp_.write(src,len);
 }
 
 uint16_t Revo::serial_bytes_available(void)
@@ -102,7 +115,11 @@ uint16_t Revo::serial_bytes_available(void)
 
 uint8_t Revo::serial_read(void)
 {
-  return current_serial_->read_byte();
+  //For testing only
+  uint8_t byte=current_serial_->read_byte();
+  this->vcp_.write(&byte,1);
+  return byte;
+  //return current_serial_->read_byte();
 }
 
 void Revo::serial_flush()
