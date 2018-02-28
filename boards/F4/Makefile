@@ -30,7 +30,7 @@ TARGET = rosflight
 
 BOARD ?= REVO
 
-DEBUG ?=
+DEBUG ?= GDB
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
