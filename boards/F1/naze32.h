@@ -66,6 +66,13 @@ private:
   rc_type_t rc_type_ = RC_TYPE_PPM;
   uint32_t pwm_refresh_rate_ = 490;
   uint16_t pwm_idle_pwm_ = 1000;
+  enum
+  {
+    BARO_NONE,
+    BARO_BMP280,
+    BARO_MS5611
+  };
+  uint8_t baro_type = BARO_NONE;
 
 public:
   Naze32();
