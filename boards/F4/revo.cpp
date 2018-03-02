@@ -86,7 +86,10 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[0], 115200,UART::MODE_8E2);
+
+    uint8_t message[6]="init ";
+    vcp_.write(message,5);
+  uart_.init(&uart_config[0], 115200);
   uint8_t hello[6]="hello";
   vcp_.init();
   uart_.write(hello,6);
@@ -98,21 +101,31 @@ void Revo::serial_init(uint32_t baud_rate)
 
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
+
+    uint8_t message[7]="write(";
+    uint8_t message2[3]=") ";
+    vcp_.write(message,6);
+    vcp_.write(src,len);
+    vcp_.write(message2,2);
   current_serial_->write(src, len);
-  uint8_t hello[6]="hello";
-  uart_.write(hello,6);
   volatile uint8_t value=*(src+1);
+  delay(200);
   //For testing only
   //vcp_.write(src,len);
 }
 
 uint16_t Revo::serial_bytes_available(void)
 {
+    uint8_t message[6]="avail";
+    vcp_.write(message,5);
   return current_serial_->rx_bytes_waiting();
 }
 
 uint8_t Revo::serial_read(void)
 {
+
+    uint8_t message[6]="read ";
+    vcp_.write(message,5);
   //For testing only
   uint8_t byte=current_serial_->read_byte();
   this->vcp_.write(&byte,1);
@@ -122,6 +135,9 @@ uint8_t Revo::serial_read(void)
 
 void Revo::serial_flush()
 {
+
+    uint8_t message[6]="flush";
+    vcp_.write(message,5);
   current_serial_->flush();
 }
 
