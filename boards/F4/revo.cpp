@@ -86,24 +86,22 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[0], 115200);
-  uint8_t hello[5];
-  hello[0]='h';
-  hello[1]='e';
-  hello[2]='l';
-  hello[3]='l';
-  hello[4]='o';
+  uart_.init(&uart_config[0], 115200,UART::MODE_8E2);
+  uint8_t hello[6]="hello";
   vcp_.init();
-  uart_.write(hello,5);
-  uart_.flush();
-  uart_.put_byte('H');
-  uart_.flush();
+  uart_.write(hello,6);
+  vcp_.write(hello,6);
+  delay(200);
+  //uart_.flush();
 
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
   current_serial_->write(src, len);
+  uint8_t hello[6]="hello";
+  uart_.write(hello,6);
+  volatile uint8_t value=*(src+1);
   //For testing only
   //vcp_.write(src,len);
 }
@@ -229,7 +227,8 @@ float Revo::sonar_read(void)
 // PWM
 void Revo::rc_init(rc_type_t rc_type)
 {
-  switch (rc_type)
+    //Testing
+  /*switch (rc_type)
   {
   case RC_TYPE_SBUS:
     sbus_uart_.init(&uart_config[0], 100000, UART::MODE_8E2);
@@ -241,7 +240,10 @@ void Revo::rc_init(rc_type_t rc_type)
     rc_ppm_.init(&pwm_config[RC_PPM_PIN]);
     rc_ = &rc_ppm_;
     break;
-  }
+  }*/
+    rc_ppm_.init(&pwm_config[RC_PPM_PIN]);
+    rc_ = &rc_ppm_;
+    //END TESTING
 }
 
 float Revo::rc_read(uint8_t channel)
