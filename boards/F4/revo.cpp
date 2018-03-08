@@ -47,19 +47,19 @@ Revo::~Revo()
 void Revo::init_board(void)
 {
   systemInit();
-  led2_.init(LED2_GPIO, LED2_PIN);
-  led1_.init(LED1_GPIO, LED1_PIN);
+  //led2_.init(LED2_GPIO, LED2_PIN);
+  //led1_.init(LED1_GPIO, LED1_PIN);
 
-  int_i2c_.init(&i2c_config[MAG_I2C]);
-  ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
-  spi1_.init(&spi_config[MPU6000_SPI]);
-  spi3_.init(&spi_config[FLASH_SPI]);
+  //int_i2c_.init(&i2c_config[MAG_I2C]);
+  //ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+  //spi1_.init(&spi_config[MPU6000_SPI]);
+  //spi3_.init(&spi_config[FLASH_SPI]);
 
-  serial_interfaces_[0]=&vcp_;
-  serial_interfaces_[1]=&uart_;
+  //serial_interfaces_[0]=&//vcp_;
+  //serial_interfaces_[1]=&uart_;
 
   this->current_serial_=&uart_;
-  //this->current_serial_=&vcp_;    //uncomment this to switch to VCP
+  //this->current_serial_=&//vcp_;    //uncomment this to switch to VCP
 }
 
 void Revo::board_reset(bool bootloader)
@@ -86,14 +86,15 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-
-    uint8_t message[6]="init\n";
-    vcp_.write(message,5);
-  uart_.init(&uart_config[0], 115200);
+  uart_.init(&uart_config[2], 115200);
   uint8_t hello[6]="hello";
-  vcp_.init();
+  //vcp_.set_baud_rate(baud_rate);
+  //vcp_.init();
+  uint8_t message[6]="init\n";
+  //vcp_.write(message,5);
   uart_.write(hello,6);
-  vcp_.write(hello,6);
+//  //vcp_.write(hello,6);
+//  //vcp_.flush();
   delay(200);
   //uart_.flush();
 
@@ -104,12 +105,12 @@ void Revo::serial_write(const uint8_t *src, size_t len)
 
     uint8_t message[7]="write(";
     uint8_t message2[6]=") \n\n\n";
-    vcp_.write(message,6);
-    vcp_.write(src,len);
-    vcp_.write(message2,5);
+    //vcp_.write(message,6);
+    //vcp_.write(src,len);
+    //vcp_.write(message2,5);
   current_serial_->write(src, len);
   volatile uint8_t value=*(src+1);
-  delay(200);
+  //delay(200);
   //For testing only
   //vcp_.write(src,len);
 }
@@ -117,7 +118,7 @@ void Revo::serial_write(const uint8_t *src, size_t len)
 uint16_t Revo::serial_bytes_available(void)
 {
     uint8_t message[7]="avail\n";
-    vcp_.write(message,6);
+    //vcp_.write(message,6);
   return current_serial_->rx_bytes_waiting();
 }
 
@@ -125,10 +126,10 @@ uint8_t Revo::serial_read(void)
 {
 
     uint8_t message[6]="read\n";
-    vcp_.write(message,5);
+    //vcp_.write(message,5);
   //For testing only
   uint8_t byte=current_serial_->read_byte();
-  this->vcp_.write(&byte,1);
+  //vcp_.write(&byte,1);
   return byte;
   //return current_serial_->read_byte();
 }
@@ -137,7 +138,7 @@ void Revo::serial_flush()
 {
 
     uint8_t message[7]="flush\n";
-    vcp_.write(message,6);
+    //vcp_.write(message,6);
   current_serial_->flush();
 }
 
