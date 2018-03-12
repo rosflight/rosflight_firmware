@@ -47,16 +47,16 @@ Revo::~Revo()
 void Revo::init_board(void)
 {
   systemInit();
-  //led2_.init(LED2_GPIO, LED2_PIN);
-  //led1_.init(LED1_GPIO, LED1_PIN);
+  led2_.init(LED2_GPIO, LED2_PIN);
+  led1_.init(LED1_GPIO, LED1_PIN);
 
-  //int_i2c_.init(&i2c_config[MAG_I2C]);
+  int_i2c_.init(&i2c_config[MAG_I2C]);
   //ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
-  //spi1_.init(&spi_config[MPU6000_SPI]);
-  //spi3_.init(&spi_config[FLASH_SPI]);
+  spi1_.init(&spi_config[MPU6000_SPI]);
+  spi3_.init(&spi_config[FLASH_SPI]);
 
-  //serial_interfaces_[0]=&//vcp_;
-  //serial_interfaces_[1]=&uart_;
+  serial_interfaces_[0]=&vcp_;
+  serial_interfaces_[1]=&uart_;
 
   this->current_serial_=&uart_;
   //this->current_serial_=&//vcp_;    //uncomment this to switch to VCP
