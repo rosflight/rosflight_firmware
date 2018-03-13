@@ -95,7 +95,7 @@ void Revo::serial_init(uint32_t baud_rate)
   uart_.write(hello,6);
 //  //vcp_.write(hello,6);
 //  //vcp_.flush();
-  delay(200);
+  //delay(200);
   //uart_.flush();
 
 }
@@ -103,13 +103,13 @@ void Revo::serial_init(uint32_t baud_rate)
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
 
-    uint8_t message[7]="write(";
-    uint8_t message2[6]=") \n\n\n";
+    //uint8_t message[7]="write(";
+    //uint8_t message2[6]=") \n\n\n";
     //vcp_.write(message,6);
     //vcp_.write(src,len);
     //vcp_.write(message2,5);
   current_serial_->write(src, len);
-  volatile uint8_t value=*(src+1);
+ // volatile uint8_t value=*(src+1);
   //delay(200);
   //For testing only
   //vcp_.write(src,len);
@@ -159,7 +159,7 @@ void Revo::sensors_init()
   imu_.init(&spi1_);
   mag_.init(&int_i2c_);
   baro_.init(&int_i2c_);
-  airspeed_.init(&ext_i2c_);
+  //airspeed_.init(&ext_i2c_);
 
   while(millis() < 50); // wait for sensors to boot up
 }
