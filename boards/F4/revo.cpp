@@ -51,7 +51,8 @@ void Revo::init_board(void)
   led1_.init(LED1_GPIO, LED1_PIN);
 
   int_i2c_.init(&i2c_config[MAG_I2C]);
-  //ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+  //ext_i2c_.init(&i2c_config[EXTERNAL_I2C]); //Do not initialize this if using UART throught flexi port
+  //If you enable ext_i2c_ above, comment out the uart_->init in init_serial below, or change the port
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
 
@@ -59,7 +60,7 @@ void Revo::init_board(void)
   serial_interfaces_[1]=&uart_;
 
   this->current_serial_=&uart_;
-  //this->current_serial_=&//vcp_;    //uncomment this to switch to VCP
+  //this->current_serial_=&//vcp_;    //uncomment this to switch to VCP as the main output
 }
 
 void Revo::board_reset(bool bootloader)
@@ -86,59 +87,27 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[2], 115200);
-  uint8_t hello[6]="hello";
-  //vcp_.set_baud_rate(baud_rate);
-  //vcp_.init();
-  uint8_t message[6]="init\n";
-  //vcp_.write(message,5);
-  uart_.write(hello,6);
-//  //vcp_.write(hello,6);
-//  //vcp_.flush();
-  //delay(200);
-  //uart_.flush();
-
+  uart_.init(&uart_config[2], 115200);//Comment this out if using i2c on the flexi port
+  vcp_.init();
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
 {
-
-    //uint8_t message[7]="write(";
-    //uint8_t message2[6]=") \n\n\n";
-    //vcp_.write(message,6);
-    //vcp_.write(src,len);
-    //vcp_.write(message2,5);
   current_serial_->write(src, len);
- // volatile uint8_t value=*(src+1);
-  //delay(200);
-  //For testing only
-  //vcp_.write(src,len);
 }
 
 uint16_t Revo::serial_bytes_available(void)
 {
-    uint8_t message[7]="avail\n";
-    //vcp_.write(message,6);
   return current_serial_->rx_bytes_waiting();
 }
 
 uint8_t Revo::serial_read(void)
 {
-
-    uint8_t message[6]="read\n";
-    //vcp_.write(message,5);
-  //For testing only
-  uint8_t byte=current_serial_->read_byte();
-  //vcp_.write(&byte,1);
-  return byte;
-  //return current_serial_->read_byte();
+  return current_serial_->read_byte();
 }
 
 void Revo::serial_flush()
 {
-
-    uint8_t message[7]="flush\n";
-    //vcp_.write(message,6);
   current_serial_->flush();
 }
 
@@ -159,7 +128,7 @@ void Revo::sensors_init()
   imu_.init(&spi1_);
   mag_.init(&int_i2c_);
   baro_.init(&int_i2c_);
-  //airspeed_.init(&ext_i2c_);
+  //airspeed_.init(&ext_i2c_); //This must be commented out if not using the flexi port for the airspeed sensor
 
   while(millis() < 50); // wait for sensors to boot up
 }
@@ -244,8 +213,7 @@ float Revo::sonar_read(void)
 // PWM
 void Revo::rc_init(rc_type_t rc_type)
 {
-    //Testing
-  /*switch (rc_type)
+  switch (rc_type)
   {
   case RC_TYPE_SBUS:
     sbus_uart_.init(&uart_config[0], 100000, UART::MODE_8E2);
@@ -257,10 +225,7 @@ void Revo::rc_init(rc_type_t rc_type)
     rc_ppm_.init(&pwm_config[RC_PPM_PIN]);
     rc_ = &rc_ppm_;
     break;
-  }*/
-    rc_ppm_.init(&pwm_config[RC_PPM_PIN]);
-    rc_ = &rc_ppm_;
-    //END TESTING
+  }
 }
 
 float Revo::rc_read(uint8_t channel)
