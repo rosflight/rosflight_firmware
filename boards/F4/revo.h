@@ -62,7 +62,7 @@ class Revo : public Board
 private:
     VCP vcp_;
     UART uart_;
-    Serial* current_serial_;
+    Serial* current_serial_;//A pointer to the serial stream currently in use.
     I2C int_i2c_;
     I2C ext_i2c_;
     SPI spi1_;
@@ -72,7 +72,8 @@ private:
     MS5611 baro_;
     MS4525 airspeed_;
 
-    Serial* serial_interfaces_[2];
+    Serial* serial_interfaces_[2];//All serial interfaces available
+    //this excludes interfaces that are not programmed in yet
 
     RC_PPM rc_ppm_;
     RC_SBUS rc_sbus_;
@@ -124,8 +125,8 @@ public:
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
   void serial_flush(void);
-  Serial** get_serial_interfaces(void);
-  uint8_t get_serial_count(void);
+  Serial** get_serial_interfaces(void);//Returns an array of pointers to available serial interfaces
+  uint8_t get_serial_count(void);//Returns the number of available serial interfaces. Same as length of array above.
 
   // sensors
   void sensors_init();
