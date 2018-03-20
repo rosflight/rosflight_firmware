@@ -60,7 +60,7 @@ void Revo::init_board(void)
   serial_interfaces_[1]=&uart_;
 
   this->current_serial_=&uart_;
-  //this->current_serial_=&//vcp_;    //uncomment this to switch to VCP as the main output
+  //this->current_serial_=&vcp_;    //uncomment this to switch to VCP as the main output
 }
 
 void Revo::board_reset(bool bootloader)
@@ -87,8 +87,24 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[2], 115200);//Comment this out if using i2c on the flexi port
-  vcp_.init();
+  uart_.init(&uart_config[2], 460800);//Comment this out if using i2c on the flexi port
+  //For testing only
+  //*
+  uint8_t hello_string[9] = "testing\n";
+  while(true)
+  {
+      for(uint8_t temp=0;temp<=254;temp++)
+      {
+          uart_.put_byte(temp);
+      }
+      delay(100);
+      uart_.write(hello_string,8);
+      uart_.flush();
+      delay(100);
+  }
+  //*/
+  //end testing
+  //vcp_.init();
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
