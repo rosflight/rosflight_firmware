@@ -107,7 +107,8 @@ EXCLUDES	= usb_bsp_template.c \
             usb_hcd_int.c \
             usb_hcd.c \
             usb_otg.c \
-            usbd_cdc_if_template.c
+            usbd_cdc_if_template.c \
+            usbd_cdc_core_loopback.c
 USBCDC_SRC := $(filter-out ${EXCLUDES}, $(USBCDC_SRC))
 USBOTG_SRC := $(filter-out ${EXCLUDES}, $(USBOTG_SRC))
 
@@ -228,7 +229,7 @@ LTO_FLAGS =
 else
 $(info ************  BUILDING RELEASE ************)
 DEBUG_FLAGS = -g3
-OPTIMIZE = -O3
+OPTIMIZE = -O2
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 endif
 
@@ -243,10 +244,10 @@ CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra 
 FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
 CXX_FILE_SIZE_FLAGS = $(FILE_SIZE_FLAGS) -fno-rtti
 
-MCFLAGS=-mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
+MCFLAGS= -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 DEFS=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -DTARGET_$(BOARD) -D__FPU_USED $(GIT_VARS) -DHSE_VALUE=8000000
-CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99 $(OPTIM_FLAGS)
-CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 $(OPTIM_FLAGS)
+CFLAGS=-c $(MCFLAGS) $(DEFS) -O2 $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
+CXXFLAGS=-c $(MCFLAGS) $(DEFS) -O2 $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11 $(OPTIM_FLAGS)
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 #$(info CFLAGS = $(CFLAGS))

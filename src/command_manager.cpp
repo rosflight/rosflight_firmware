@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -313,3 +315,5 @@ bool CommandManager::run()
 
 
 }
+
+#pragma GCC pop_options

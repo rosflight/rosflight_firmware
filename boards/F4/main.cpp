@@ -33,7 +33,6 @@
 #include "rosflight.h"
 #include "mavlink.h"
 
-
 int main(void)
 {
   static rosflight_firmware::Revo board;
@@ -49,4 +48,3 @@ int main(void)
   }
   return 0;
 }
-

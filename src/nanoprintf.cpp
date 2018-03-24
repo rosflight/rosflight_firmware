@@ -29,6 +29,10 @@
  * OF SUCH DAMAGE.
  */
 
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 #include "nanoprintf.h"
 
 namespace rosflight_firmware
@@ -262,3 +266,5 @@ void tfp_sprintf(char *s, const char *fmt, va_list va)
 
 } // namespace nanoprintf
 } // namespace rosflight_firmware
+
+#pragma GCC pop_options

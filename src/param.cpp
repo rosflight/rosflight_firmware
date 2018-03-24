@@ -29,6 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
 #include <stdbool.h>
@@ -357,3 +360,5 @@ bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float 
   return set_param_by_name_int(name, reinterpret_cast<int32_t &>(value));
 }
 }
+
+#pragma GCC pop_options
