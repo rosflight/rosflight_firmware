@@ -87,24 +87,47 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[2], 460800);//Comment this out if using i2c on the flexi port
+  uart_.init(&uart_config[2], 115200);//Comment this out if using i2c on the flexi port
   //For testing only
-  //*
+  /*
   uint8_t hello_string[9] = "testing\n";
+  uint8_t num1='0';
+  uint8_t num2='0';
+  uint8_t num3='0';
+  uint8_t num4='0';
   while(true)
   {
       for(uint8_t temp=0;temp<=254;temp++)
       {
           uart_.put_byte(temp);
+          //uart_.flush();
       }
-      delay(100);
+      //uart_.flush();
+      //delay(100);
       uart_.write(hello_string,8);
-      uart_.flush();
+      uart_.put_byte(num4);
+      uart_.put_byte(num3);
+      uart_.put_byte(num2);
+      uart_.put_byte(num1);
+      if(++num1>'9')
+      {
+          num1='0';
+          if(++num2>'9')
+          {
+              num2='0';
+              if(++num3>'9')
+              {
+                  num3='0';
+                  num4++;
+              }
+          }
+      }
+      //uart_.flush();
       delay(100);
   }
   //*/
   //end testing
-  //vcp_.init();
+ // vcp_.init();
 }
 
 void Revo::serial_write(const uint8_t *src, size_t len)
