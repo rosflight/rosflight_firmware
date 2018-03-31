@@ -32,6 +32,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 #include "revo.h"
 
 namespace rosflight_firmware {
@@ -258,4 +261,5 @@ void Revo::led1_off(void) { led2_.off(); }
 void Revo::led1_toggle(void) { led2_.toggle(); }
 }
 
+#pragma GCC pop_options
 #pragma GCC diagnostic pop

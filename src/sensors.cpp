@@ -30,9 +30,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
@@ -641,5 +638,3 @@ bool Sensors::OutlierFilter::update(float new_val, float *val)
 }
 
 } // namespace rosflight_firmware
-
-#pragma GCC pop_options

@@ -32,7 +32,7 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "rosflight.h"
 
