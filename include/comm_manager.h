@@ -132,7 +132,7 @@ private:
     Stream(0, std::bind(&CommManager::send_mag, this)),
     Stream(0, std::bind(&CommManager::send_output_raw, this)),
     Stream(0, std::bind(&CommManager::send_rc_raw, this)),
-    Stream(20000, std::bind(&CommManager::send_low_priority, this)),
+    Stream(100000, std::bind(&CommManager::send_low_priority, this)),
   };
 
 public:

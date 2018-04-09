@@ -87,7 +87,7 @@ void Revo::clock_delay(uint32_t milliseconds)
 // serial
 void Revo::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[2], 115200);//Comment this out if using i2c on the flexi port
+  uart_.init(&uart_config[2], 57600);//Comment this out if using i2c on the flexi port
   //For testing only
   /*
   uint8_t hello_string[9] = "testing\n";
@@ -123,7 +123,7 @@ void Revo::serial_init(uint32_t baud_rate)
           }
       }
       //uart_.flush();
-      delay(100);
+      //delay(100);
   }
   //*/
   //end testing
