@@ -164,7 +164,20 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_REQUEST_ARM:
-      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "unable to arm due to error code 0x%x", state_.error_codes);
+      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm:");
+      if(state.error_codes | StateManager::ERROR_INVALID_MIXER)
+        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  Invalid mixer");
+      if(state.error_codes | StateManager::ERROR_IMU_NOT_RESPONDING)
+        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  IMU not responding");
+      if(state.error_codes | StateManager::ERROR_RC_LOST)
+        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  RC signal lost");
+      if(state.error_codes | StateManager::ERROR_UNHEALTHY_ESTIMATOR)
+        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  Unhealthy estimator");
+      if(state.error_codes | StateManager::ERROR_TIME_GOING_BACKWARDS)
+        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  Time going backwards");
+      if(state.error_codes | StateManager::ERROR_INVALID_MIXER)
+        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  IMU not calibrated");
+
       break;
     default:
       break;
