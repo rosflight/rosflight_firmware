@@ -92,9 +92,9 @@ OBJECTS+=$(addsuffix .o,$(addprefix $(BIN_DIR)/$(TARGET)/,$(basename $(CXXSOURCE
 #################################
 # Target Output Files
 #################################
-TARGET_ELF=$(BIN_DIR)_$(BUILD_TYPE)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).elf
-TARGET_HEX=$(BIN_DIR)_$(BUILD_TYPE)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).hex
-TARGET_BIN=$(BIN_DIR)_$(BUILD_TYPE)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).bin
+TARGET_ELF=$(BIN_DIR)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).elf
+TARGET_HEX=$(BIN_DIR)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).hex
+TARGET_BIN=$(BIN_DIR)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).bin
 
 #################################
 # Common Flags

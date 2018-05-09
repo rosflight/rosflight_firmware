@@ -89,7 +89,7 @@ BREEZY_SRC = drv_gpio.c \
              drv_mb1242.c \
              drv_ms5611.c \
              drv_bmp280.c \
-             drv_hmc5883l.c \       
+             drv_hmc5883l.c     
 
 # Add F1 C Sources
 CSOURCES =  $(CMSIS_SRC) \
@@ -116,8 +116,6 @@ CFLAGS+=$(MCFLAGS) $(DEFS) $(addprefix -I,$(INCLUDE_DIRS))
 CXXFLAGS+=$(MCFLAGS) $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
-$(info VPATH = $(VPATH))
-$(info ASOURCES = $(ASOURCES))
 #################################
 # Build
 #################################

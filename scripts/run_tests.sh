@@ -16,6 +16,12 @@ function print_result() {
   echo ""
 }
 
+BASENAME=`basename "$PWD"`
+
+if [ $BASENAME == "scripts" ]; then
+	cd ..
+fi
+
 echo_blue "Test 1: Build F1 firmware"
 make clean BOARD=NAZE
 make BOARD=NAZE
