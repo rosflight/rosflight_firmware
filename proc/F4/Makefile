@@ -212,4 +212,4 @@ clean:
 	rm -rf $(OBJECTS) $(BIN_DIR)
 
 flash: $(TARGET_BIN)
-	dfu-util -a 0 -s 0x08000000 -D $(TARGET_BIN)
+	dfu-util -a 0 -s 0x08000000 -D $(TARGET_BIN) -R

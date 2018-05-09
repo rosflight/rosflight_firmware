@@ -85,4 +85,4 @@ clean:
 	cd proc/F4 && make clean
 
 flash:
-	cd $(BOARD_DIR) && make flash
+	cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE) flash
