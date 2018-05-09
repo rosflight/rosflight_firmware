@@ -5,5 +5,5 @@
 	path = proc/F1/lib/breezystm32
 	url = https://github.com/rosflight/BreezySTM32.git
 [submodule "boards/revo/lib/airbourne_f4"]
-	path = proc/F4/lib/airbourned_f4
+	path = proc/F4/lib/airbourne_f4
 	url = https://github.com/rosflight/airbourne_f4.git

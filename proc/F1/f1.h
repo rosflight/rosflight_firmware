@@ -33,70 +33,49 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <revo_f4.h>
-
-#include "vcp.h"
-#include "i2c.h"
-#include "spi.h"
-#include "mpu6000.h"
-#include "ms5611.h"
-#include "M25P16.h"
-#include "hmc5883l.h"
-#include "ms4525.h"
-#include "rc_base.h"
-#include "rc_ppm.h"
-#include "rc_sbus.h"
-#include "pwm.h"
-#include "led.h"
-#include "uart.h"
+extern "C"
+{
+#include <breezystm32.h>
+}
 
 #include "board.h"
 
 namespace rosflight_firmware {
 
-class Revo : public Board
+class F1Board : public Board
 {
 
 private:
-    VCP vcp_;
-    I2C int_i2c_;
-    I2C ext_i2c_;
-    SPI spi1_;
-    SPI spi3_;
-    MPU6000 imu_;
-    HMC5883L mag_;
-    MS5611 baro_;
-    MS4525 airspeed_;
-    RC_SBUS rc_sbus_;
-    UART sbus_uart_;
-    GPIO inv_pin_;
-    RC_PPM rc_ppm_;
-    PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
-    LED led2_;
-    LED led1_;
-    M25P16 flash_;
+  serialPort_t *Serial1;
 
-    RC_BASE* rc_ = nullptr;
+  std::function<void(void)> imu_callback_;
 
-    std::function<void(void)> imu_callback_;
+  int _board_revision = 2;
 
-    int _board_revision = 2;
+  float _accel_scale = 1.0;
+  float _gyro_scale = 1.0;
 
-    float _accel_scale = 1.0;
-    float _gyro_scale = 1.0;
+  enum
+  {
+    SONAR_NONE,
+    SONAR_I2C,
+    SONAR_PWM
+  };
+  uint8_t sonar_type = SONAR_NONE;
 
-    enum
-    {
-      SONAR_NONE,
-      SONAR_I2C,
-      SONAR_PWM
-    };
-    uint8_t sonar_type = SONAR_NONE;
-
-
+  rc_type_t rc_type_ = RC_TYPE_PPM;
+  uint32_t pwm_refresh_rate_ = 490;
+  uint16_t pwm_idle_pwm_ = 1000;
+  enum
+  {
+    BARO_NONE,
+    BARO_BMP280,
+    BARO_MS5611
+  };
+  uint8_t baro_type = BARO_NONE;
 
 public:
-  Revo();
+  F1Board();
 
   bool new_imu_data_;
   uint64_t imu_time_us_;
@@ -115,7 +94,7 @@ public:
   void serial_write(const uint8_t *src, size_t len);
   uint16_t serial_bytes_available(void);
   uint8_t serial_read(void);
-  void serial_flush(void);
+  void serial_flush();
 
   // sensors
   void sensors_init();
@@ -137,13 +116,13 @@ public:
   bool sonar_check(void);
   float sonar_read(void);
 
-  // RC
+  // PWM
+  // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
   void rc_init(rc_type_t rc_type);
   bool rc_lost();
   float rc_read(uint8_t channel);
 
-  // PWM
-  void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm);
+  void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm);
   void pwm_write(uint8_t channel, float value);
 
   // non-volatile memory

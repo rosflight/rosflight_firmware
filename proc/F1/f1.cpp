@@ -42,13 +42,13 @@ extern void SetSysClock(bool overclock);
 }
 
 
-#include "naze32.h"
+#include "f1.h"
 
 namespace rosflight_firmware {
 
-Naze32::Naze32(){}
+F1Board::F1Board(){}
 
-void Naze32::init_board(void)
+void F1Board::init_board(void)
 {
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
@@ -56,36 +56,36 @@ void Naze32::init_board(void)
   _board_revision = 2;
 }
 
-void Naze32::board_reset(bool bootloader)
+void F1Board::board_reset(bool bootloader)
 {
   systemReset(bootloader);
 }
 
 // clock
 
-uint32_t Naze32::clock_millis()
+uint32_t F1Board::clock_millis()
 {
   return millis();
 }
 
-uint64_t Naze32::clock_micros()
+uint64_t F1Board::clock_micros()
 {
   return micros();
 }
 
-void Naze32::clock_delay(uint32_t milliseconds)
+void F1Board::clock_delay(uint32_t milliseconds)
 {
   delay(milliseconds);
 }
 
 // serial
 
-void Naze32::serial_init(uint32_t baud_rate)
+void F1Board::serial_init(uint32_t baud_rate)
 {
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
-void Naze32::serial_write(const uint8_t *src, size_t len)
+void F1Board::serial_write(const uint8_t *src, size_t len)
 {
   for (size_t i = 0; i < len; i++)
   {
@@ -93,24 +93,24 @@ void Naze32::serial_write(const uint8_t *src, size_t len)
   }
 }
 
-uint16_t Naze32::serial_bytes_available(void)
+uint16_t F1Board::serial_bytes_available(void)
 {
   return serialTotalBytesWaiting(Serial1);
 }
 
-uint8_t Naze32::serial_read(void)
+uint8_t F1Board::serial_read(void)
 {
   return serialRead(Serial1);
 }
 
-void Naze32::serial_flush()
+void F1Board::serial_flush()
 {
   return;
 }
 
 // sensors
 
-void Naze32::sensors_init()
+void F1Board::sensors_init()
 {
   // Initialize I2c
   i2cInit(I2CDEV_2);
@@ -134,17 +134,17 @@ void Naze32::sensors_init()
   _accel_scale = 9.80665f/acc1G;
 }
 
-uint16_t Naze32::num_sensor_errors(void)
+uint16_t F1Board::num_sensor_errors(void)
 {
   return i2cGetErrorCounter();
 }
 
-bool Naze32::new_imu_data()
+bool F1Board::new_imu_data()
 {
   return mpu6050_new_data();
 }
 
-bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool F1Board::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
   volatile int16_t gyro_raw[3], accel_raw[3];
   volatile int16_t raw_temp;
@@ -167,14 +167,14 @@ bool Naze32::imu_read(float accel[3], float* temperature, float gyro[3], uint64_
   else return true;
 }
 
-void Naze32::imu_not_responding_error(void)
+void F1Board::imu_not_responding_error(void)
 {
   // If the IMU is not responding, then we need to change where we look for the interrupt
   _board_revision = (_board_revision < 4) ? 5 : 2;
   sensors_init();
 }
 
-void Naze32::mag_read(float mag[3])
+void F1Board::mag_read(float mag[3])
 {
   // Convert to NED
   int16_t raw_mag[3];
@@ -186,12 +186,12 @@ void Naze32::mag_read(float mag[3])
   mag[2] = (float)raw_mag[2];
 }
 
-bool Naze32::mag_check(void)
+bool F1Board::mag_check(void)
 {
   return hmc5883l_present();
 }
 
-void Naze32::baro_read(float *pressure, float *temperature)
+void F1Board::baro_read(float *pressure, float *temperature)
 {
   if (baro_type == BARO_BMP280)
   {
@@ -205,24 +205,24 @@ void Naze32::baro_read(float *pressure, float *temperature)
   }
 }
 
-bool Naze32::baro_check()
+bool F1Board::baro_check()
 {
   return baro_type != BARO_NONE;
 }
 
-bool Naze32::diff_pressure_check(void)
+bool F1Board::diff_pressure_check(void)
 {
   ms4525_async_update();
   return ms4525_present();
 }
 
-void Naze32::diff_pressure_read(float *diff_pressure, float *temperature)
+void F1Board::diff_pressure_read(float *diff_pressure, float *temperature)
 {
   ms4525_async_update();
   ms4525_async_read(diff_pressure, temperature);
 }
 
-bool Naze32::sonar_check(void)
+bool F1Board::sonar_check(void)
 {
   mb1242_async_update();
   if (mb1242_present())
@@ -242,7 +242,7 @@ bool Naze32::sonar_check(void)
   }
 }
 
-float Naze32::sonar_read(void)
+float F1Board::sonar_read(void)
 {
   if (sonar_type == SONAR_I2C)
   {
@@ -262,60 +262,60 @@ uint16_t num_sensor_errors(void)
 
 // PWM
 
-void Naze32::rc_init(rc_type_t rc_type)
+void F1Board::rc_init(rc_type_t rc_type)
 {
   (void) rc_type; // TODO SBUS is not supported on F1
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
-void Naze32::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
+void F1Board::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
   pwm_refresh_rate_ = refresh_rate;
   pwm_idle_pwm_ = idle_pwm;
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
-float Naze32::rc_read(uint8_t channel)
+float F1Board::rc_read(uint8_t channel)
 {
   return (float)(pwmRead(channel) - 1000)/1000.0;
 }
 
-void Naze32::pwm_write(uint8_t channel, float value)
+void F1Board::pwm_write(uint8_t channel, float value)
 {
   pwmWriteMotor(channel, static_cast<uint16_t>(value * 1000) + 1000);
 }
 
-bool Naze32::rc_lost()
+bool F1Board::rc_lost()
 {
   return ((millis() - pwmLastUpdate()) > 40);
 }
 
 // non-volatile memory
 
-void Naze32::memory_init(void)
+void F1Board::memory_init(void)
 {
   initEEPROM();
 }
 
-bool Naze32::memory_read(void * dest, size_t len)
+bool F1Board::memory_read(void * dest, size_t len)
 {
   return readEEPROM(dest, len);
 }
 
-bool Naze32::memory_write(void * src, size_t len)
+bool F1Board::memory_write(void * src, size_t len)
 {
   return writeEEPROM(src, len);
 }
 
 // LED
 
-void Naze32::led0_on(void) { LED0_ON; }
-void Naze32::led0_off(void) { LED0_OFF; }
-void Naze32::led0_toggle(void) { LED0_TOGGLE; }
+void F1Board::led0_on(void) { LED0_ON; }
+void F1Board::led0_off(void) { LED0_OFF; }
+void F1Board::led0_toggle(void) { LED0_TOGGLE; }
 
-void Naze32::led1_on(void) { LED1_ON; }
-void Naze32::led1_off(void) { LED1_OFF; }
-void Naze32::led1_toggle(void) { LED1_TOGGLE; }
+void F1Board::led1_on(void) { LED1_ON; }
+void F1Board::led1_off(void) { LED1_OFF; }
+void F1Board::led1_toggle(void) { LED1_TOGGLE; }
 
 }
 

@@ -73,7 +73,7 @@ else
 $(info Building ROSflight $(PROC_DIR))
 endif
 
-BOARD_DIR       = boards/$(PROC_DIR)
+BOARD_DIR       = proc/$(PROC_DIR)
 
 .PHONY: all flash clean
 
@@ -81,7 +81,8 @@ all:
 	cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE)
 
 clean:
-	cd $(BOARD_DIR) && make clean
+	cd proc/F1 && make clean
+	cd proc/F4 && make clean
 
 flash:
 	cd $(BOARD_DIR) && make flash

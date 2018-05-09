@@ -35,15 +35,15 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 
-#include "revo.h"
+#include "f4.h"
 
 namespace rosflight_firmware {
 
-Revo::Revo()
+F4Board::F4Board()
 {
 }
 
-void Revo::init_board(void)
+void F4Board::init_board(void)
 {
   systemInit();
   led2_.init(LED2_GPIO, LED2_PIN);
@@ -55,57 +55,57 @@ void Revo::init_board(void)
   spi3_.init(&spi_config[FLASH_SPI]);
 }
 
-void Revo::board_reset(bool bootloader)
+void F4Board::board_reset(bool bootloader)
 {
   (void)bootloader;
   NVIC_SystemReset();
 }
 
 // clock
-uint32_t Revo::clock_millis()
+uint32_t F4Board::clock_millis()
 {
   return millis();
 }
 
-uint64_t Revo::clock_micros()
+uint64_t F4Board::clock_micros()
 {
   return micros();
 }
 
-void Revo::clock_delay(uint32_t milliseconds)
+void F4Board::clock_delay(uint32_t milliseconds)
 {
   delay(milliseconds);
 }
 
 // serial
-void Revo::serial_init(uint32_t baud_rate)
+void F4Board::serial_init(uint32_t baud_rate)
 {
   (void)baud_rate;
   vcp_.init();
 }
 
-void Revo::serial_write(const uint8_t *src, size_t len)
+void F4Board::serial_write(const uint8_t *src, size_t len)
 {
   vcp_.write(src, len);
 }
 
-uint16_t Revo::serial_bytes_available(void)
+uint16_t F4Board::serial_bytes_available(void)
 {
   return vcp_.rx_bytes_waiting();
 }
 
-uint8_t Revo::serial_read(void)
+uint8_t F4Board::serial_read(void)
 {
   return vcp_.read_byte();
 }
 
-void Revo::serial_flush()
+void F4Board::serial_flush()
 {
   vcp_.flush();
 }
 
 // sensors
-void Revo::sensors_init()
+void F4Board::sensors_init()
 {
   imu_.init(&spi1_);
   mag_.init(&int_i2c_);
@@ -115,17 +115,17 @@ void Revo::sensors_init()
   while(millis() < 50); // wait for sensors to boot up
 }
 
-uint16_t Revo::num_sensor_errors(void)
+uint16_t F4Board::num_sensor_errors(void)
 {
   return int_i2c_.num_errors();
 }
 
-bool Revo::new_imu_data()
+bool F4Board::new_imu_data()
 {
   return imu_.new_data();
 }
 
-bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool F4Board::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
   float read_accel[3], read_gyro[3];
   imu_.read(read_accel, read_gyro, temperature, time_us);
@@ -141,59 +141,59 @@ bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t*
   return true;
 }
 
-void Revo::imu_not_responding_error(void)
+void F4Board::imu_not_responding_error(void)
 {
   sensors_init();
 }
 
-void Revo::mag_read(float mag[3])
+void F4Board::mag_read(float mag[3])
 {
   mag_.update();
   mag_.read(mag);
 }
 
-bool Revo::mag_check(void)
+bool F4Board::mag_check(void)
 {
   mag_.update();
   return mag_.present();
 }
 
-void Revo::baro_read(float *pressure, float *temperature)
+void F4Board::baro_read(float *pressure, float *temperature)
 {
   baro_.update();
   baro_.read(pressure, temperature);
 }
 
-bool Revo::baro_check()
+bool F4Board::baro_check()
 {
   baro_.update();
   return baro_.present();
 }
 
-bool Revo::diff_pressure_check(void)
+bool F4Board::diff_pressure_check(void)
 {
   airspeed_.update();
   return airspeed_.present();
 }
 
-void Revo::diff_pressure_read(float *diff_pressure, float *temperature)
+void F4Board::diff_pressure_read(float *diff_pressure, float *temperature)
 {
   airspeed_.update();
   airspeed_.read(diff_pressure, temperature);
 }
 
-bool Revo::sonar_check(void)
+bool F4Board::sonar_check(void)
 {
   return false;
 }
 
-float Revo::sonar_read(void)
+float F4Board::sonar_read(void)
 {
   return 0.0;
 }
 
 // PWM
-void Revo::rc_init(rc_type_t rc_type)
+void F4Board::rc_init(rc_type_t rc_type)
 {
   switch (rc_type)
   {
@@ -211,12 +211,12 @@ void Revo::rc_init(rc_type_t rc_type)
   }
 }
 
-float Revo::rc_read(uint8_t channel)
+float F4Board::rc_read(uint8_t channel)
 {
   return rc_->read(channel);
 }
 
-void Revo::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
+void F4Board::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
   for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
   {
@@ -225,40 +225,40 @@ void Revo::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
   }
 }
 
-void Revo::pwm_write(uint8_t channel, float value)
+void F4Board::pwm_write(uint8_t channel, float value)
 {
   esc_out_[channel].write(value);
 }
 
-bool Revo::rc_lost()
+bool F4Board::rc_lost()
 {
   return rc_->lost();
 }
 
 // non-volatile memory
-void Revo::memory_init(void)
+void F4Board::memory_init(void)
 {
   return flash_.init(&spi3_);
 }
 
-bool Revo::memory_read(void * data, size_t len)
+bool F4Board::memory_read(void * data, size_t len)
 {
   return flash_.read_config((uint8_t*)data, len);
 }
 
-bool Revo::memory_write(void * data, size_t len)
+bool F4Board::memory_write(void * data, size_t len)
 {
   return flash_.write_config(reinterpret_cast<uint8_t*>(data), len);
 }
 
 // LED
-void Revo::led0_on(void) { led1_.on(); }
-void Revo::led0_off(void) { led1_.off(); }
-void Revo::led0_toggle(void) { led1_.toggle(); }
+void F4Board::led0_on(void) { led1_.on(); }
+void F4Board::led0_off(void) { led1_.off(); }
+void F4Board::led0_toggle(void) { led1_.toggle(); }
 
-void Revo::led1_on(void) { led2_.on(); }
-void Revo::led1_off(void) { led2_.off(); }
-void Revo::led1_toggle(void) { led2_.toggle(); }
+void F4Board::led1_on(void) { led2_.on(); }
+void F4Board::led1_off(void) { led2_.off(); }
+void F4Board::led1_toggle(void) { led2_.toggle(); }
 }
 
 #pragma GCC pop_options

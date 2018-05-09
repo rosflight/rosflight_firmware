@@ -51,7 +51,7 @@ VCP_DIR             = $(AIRBOURNE_ROOT)/lib/vcp
 STARTUP_DIR         = $(AIRBOURNE_ROOT)/lib/startup
 PRINTF_DIR          = $(AIRBOURNE_ROOT)/lib/printf
 BIN_DIR       		= $(BOARD_DIR)/build
-BOARD_DIR       	= $(ROSFLIGHT_ROOT)/boards/F4
+BOARD_DIR       	= $(ROSFLIGHT_ROOT)/proc/F4
 
 #################################
 # ROSflight Common Build
@@ -131,7 +131,7 @@ AIRBOURNE_SRCS = led.cpp \
 
 # board-specific source files
 VPATH           := $(VPATH):$(BOARD_DIR)
-BOARD_CXX_SRC   = revo.cpp \
+BOARD_CXX_SRC   = f4.cpp \
                   main.cpp
 
 # Make a list of source files and includes
@@ -170,6 +170,9 @@ DEFS+=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUS
 CFLAGS += $(MCFLAGS) $(addprefix -I,$(INCLUDE_DIRS))
 CXXFLAGS += $(MCFLAGS)  -O2 $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
+
+$(info VPATH = $(VPATH))
+$(info STARTUP_DIR = $(STARTUP_DIR))
 
 #################################
 # Build

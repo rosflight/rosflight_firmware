@@ -11,11 +11,9 @@
 *.user.*
 *.o
 *.html
-/boards/*/build/
-/boards/*/obj/
+/proc/*/build/
 /test/build/
 /site/
-/boards/*/obj/
 *.idea*
 
 param_description.md

@@ -29,13 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "naze32.h"
+#include "f1.h"
 #include "rosflight.h"
 #include "mavlink.h"
 
 int main(void)
 {
-  rosflight_firmware::Naze32 board;
+  rosflight_firmware::F1Board board;
   board.init_board();
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
