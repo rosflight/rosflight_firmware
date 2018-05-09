@@ -29,14 +29,23 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# You probably shouldn't modify anything below here!
-
-# Compile-time options
+#################################
+# GNU ARM Embedded Toolchain
+#################################
 BOARD  ?= REVO
 
 # Debugger options, must be empty or GDB
 DEBUG ?=
 
+# Serial port/device for flashing
+SERIAL_DEVICE	?= /dev/ttyACM0
+
+# Set proper number of jobs for the computer
+PARALLEL_JOBS	:= $(shell grep -c ^processor /proc/cpuinfo)
+
+#################################
+# Board Selection
+#################################
 # List of valid boards (update with new boards)
 VALID_F1_BOARDS = NAZE
 VALID_F4_BOARDS = REVO
@@ -64,22 +73,15 @@ else
 $(info Building ROSflight $(PROC_DIR))
 endif
 
-# Serial port/device for flashing
-SERIAL_DEVICE	?= /dev/ttyACM0
-
-# Set proper number of jobs for the computer
-PARALLEL_JOBS	:= $(shell grep -c ^processor /proc/cpuinfo)
-
-# Build configuration
-BOARD_DIR = boards/$(PROC_DIR)
+BOARD_DIR       = boards/$(PROC_DIR)
 
 .PHONY: all flash clean
 
 all:
-		cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE)
+	cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE)
 
 clean:
-		cd $(BOARD_DIR) && make clean
+	cd $(BOARD_DIR) && make clean
 
 flash:
-		cd $(BOARD_DIR) && make flash
+	cd $(BOARD_DIR) && make flash

@@ -32,47 +32,39 @@ BOARD ?= REVO
 
 DEBUG ?= GDB
 
-SERIAL_DEVICE ?= /dev/ttyUSB0
+SERIAL_DEVICE ?= /dev/ttyACM0
 
-#################################2
-# GNU ARM Embedded Toolchain
-#################################
-CC=arm-none-eabi-gcc
-CXX=arm-none-eabi-g++
-LD=arm-none-eabi-ld
-AR=arm-none-eabi-ar
-AS=arm-none-eabi-as
-CP=arm-none-eabi-objcopy
-OD=arm-none-eabi-objdump
-NM=arm-none-eabi-nm
-SIZE=arm-none-eabi-size
-A2L=arm-none-eabi-addr2line
+
 
 #################################
 # Working directories
 #################################
-AIRBOURNE_ROOT    = lib/airbourne_f4
-AIRBOURNE_SRC_DIR = $(AIRBOURNE_ROOT)/src
-BOARD_DIR				  = .
-ROSFLIGHT_DIR     = ../..
-TURBOMATH_DIR     = $(ROSFLIGHT_DIR)/lib/turbomath
-MAVLINK_DIR       = $(ROSFLIGHT_DIR)/comms/mavlink
-CMSIS_DIR     		= $(AIRBOURNE_ROOT)/lib/CMSIS
-STDPERIPH_DIR			= $(AIRBOURNE_ROOT)/lib/STM32F4xx_StdPeriph_Driver
-USBCORE_DIR   		= $(AIRBOURNE_ROOT)/lib/STM32_USB_Device_Library/Core
-USBOTG_DIR    		= $(AIRBOURNE_ROOT)/lib/STM32_USB_OTG_Driver
-USBCDC_DIR    		= $(AIRBOURNE_ROOT)/lib/STM32_USB_Device_Library/Class/cdc
-VCP_DIR       		= $(AIRBOURNE_ROOT)/lib/vcp
-STARTUP_DIR   		= $(AIRBOURNE_ROOT)/lib/startup
-PRINTF_DIR    		= $(AIRBOURNE_ROOT)/lib/printf
-BIN_DIR       		= obj
+ROSFLIGHT_ROOT		= ../..
+AIRBOURNE_ROOT      = lib/airbourne_f4
+AIRBOURNE_SRC_DIR   = $(AIRBOURNE_ROOT)/src
+CMSIS_DIR           = $(AIRBOURNE_ROOT)/lib/CMSIS
+STDPERIPH_DIR       = $(AIRBOURNE_ROOT)/lib/STM32F4xx_StdPeriph_Driver
+USBCORE_DIR         = $(AIRBOURNE_ROOT)/lib/STM32_USB_Device_Library/Core
+USBOTG_DIR          = $(AIRBOURNE_ROOT)/lib/STM32_USB_OTG_Driver
+USBCDC_DIR          = $(AIRBOURNE_ROOT)/lib/STM32_USB_Device_Library/Class/cdc
+VCP_DIR             = $(AIRBOURNE_ROOT)/lib/vcp
+STARTUP_DIR         = $(AIRBOURNE_ROOT)/lib/startup
+PRINTF_DIR          = $(AIRBOURNE_ROOT)/lib/printf
+BIN_DIR       		= $(BOARD_DIR)/build
+BOARD_DIR       	= $(ROSFLIGHT_ROOT)/boards/F4
+
+#################################
+# ROSflight Common Build
+#################################
+include $(ROSFLIGHT_ROOT)/scripts/rosflight.mk
+
 
 #################################
 # Source Files
 #################################
 VPATH := $(VPATH):$(STARTUP_DIR)
 LDSCRIPT = $(STARTUP_DIR)/stm32f405.ld
-ASOURCES = $(STARTUP_DIR)/stm32f405.s
+ASOURCES = stm32f405.s
 
 # Search path and source files for the CMSIS sources
 VPATH	 := $(VPATH):$(CMSIS_DIR)/CM4/CoreSupport
@@ -98,17 +90,17 @@ STDPERIPH_SRC := $(filter-out ${EXCLUDES}, $(STDPERIPH_SRC))
 
 
 # Search path and source files for the USB libraries and ignore files we don't need
-VPATH		:= $(VPATH):$(USBCORE_DIR)/src:$(USBOTG_DIR)/src:$(USBCDC_DIR)/src
+VPATH       := $(VPATH):$(USBCORE_DIR)/src:$(USBOTG_DIR)/src:$(USBCDC_DIR)/src
 USBCORE_SRC = $(notdir $(wildcard $(USBCORE_DIR)/src/*.c))
-USBOTG_SRC = $(notdir $(wildcard $(USBOTG_DIR)/src/*.c))
-USBCDC_SRC = $(notdir $(wildcard $(USBCDC_DIR)/src/*.c))
-EXCLUDES	= usb_bsp_template.c \
-            usb_conf_template.c \
-            usb_hcd_int.c \
-            usb_hcd.c \
-            usb_otg.c \
-            usbd_cdc_if_template.c \
-            usbd_cdc_core_loopback.c
+USBOTG_SRC  = $(notdir $(wildcard $(USBOTG_DIR)/src/*.c))
+USBCDC_SRC  = $(notdir $(wildcard $(USBCDC_DIR)/src/*.c))
+EXCLUDES    = usb_bsp_template.c \
+              usb_conf_template.c \
+              usb_hcd_int.c \
+              usb_hcd.c \
+              usb_otg.c \
+              usbd_cdc_if_template.c \
+              usbd_cdc_core_loopback.c
 USBCDC_SRC := $(filter-out ${EXCLUDES}, $(USBCDC_SRC))
 USBOTG_SRC := $(filter-out ${EXCLUDES}, $(USBOTG_SRC))
 
@@ -138,33 +130,12 @@ AIRBOURNE_SRCS = led.cpp \
 
 
 # board-specific source files
-VPATH		:= $(VPATH):$(BOARD_DIR)
-BOARD_CXX_SRC =	revo.cpp \
-                main.cpp
-
-# MAVLink source files
-VPATH := $(VPATH):$(MAVLINK_DIR)
-MAVLINK_SRC = mavlink.cpp
-
-# ROSflight source files
-VPATH		:= $(VPATH):$(ROSFLIGHT_DIR):$(ROSFLIGHT_DIR)/src
-ROSFLIGHT_SRC = rosflight.cpp \
-                param.cpp \
-                sensors.cpp \
-                state_manager.cpp \
-                estimator.cpp \
-                controller.cpp \
-                comm_manager.cpp \
-                command_manager.cpp \
-                rc.cpp \
-                mixer.cpp
-
-# Math Source Files
-VPATH :=	$(VPATH):$(TURBOMATH_DIR)
-MATH_SRC =  turbomath.cpp
+VPATH           := $(VPATH):$(BOARD_DIR)
+BOARD_CXX_SRC   = revo.cpp \
+                  main.cpp
 
 # Make a list of source files and includes
-VPATH := $(VPATH):$(SRC_DIR)
+VPATH   := $(VPATH):$(SRC_DIR)
 CSOURCES =  $(CMSIS_SRC) \
             $(STDPERIPH_SRC) \
             $(USBCORE_SRC) \
@@ -173,21 +144,14 @@ CSOURCES =  $(CMSIS_SRC) \
             $(PROCESSOR_SRC) \
             $(VCP_SRC) \
             system.c \
-            system_stm32f4xx.c \
-            nanoprintf.c
+            system_stm32f4xx.c
 
-CXXSOURCES = $(AIRBOURNE_SRCS) \
-						 $(ROSFLIGHT_SRC) \
-             $(BOARD_CXX_SRC) \
-             $(MATH_SRC) \
-             $(MAVLINK_SRC)
+CXXSOURCES += $(AIRBOURNE_SRCS) \
+              $(BOARD_CXX_SRC)
 
-INCLUDE_DIRS =  $(AIRBOURNE_SRC_DIR) \
+INCLUDE_DIRS += $(AIRBOURNE_SRC_DIR) \
                 $(AIRBOURNE_ROOT)/include \
-								$(ROSFLIGHT_DIR)/include \
-								$(ROSFLIGHT_DIR)/lib \
                 $(STDPERIPH_DIR)/inc \
-                $(MAVLINK_DIR) \
                 $(USBOTG_DIR)/inc \
                 $(USBCORE_DIR)/inc \
                 $(USBCDC_DIR)/inc \
@@ -198,60 +162,14 @@ INCLUDE_DIRS =  $(AIRBOURNE_SRC_DIR) \
                 $(VCP_DIR)
 
 #################################
-# VERSION CONTROL
-#################################
-GIT_VERSION_HASH := $(shell git rev-parse --short=8 HEAD)
-GIT_VERSION_STRING := $(shell git describe --tags --abbrev=8 --always --dirty --long)
-GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GIT_VERSION_STRING)\"
-
-#################################
-# Object List
-#################################
-OBJECTS=$(addsuffix .o,$(addprefix $(BIN_DIR)/$(TARGET)/,$(basename $(ASOURCES))))
-OBJECTS+=$(addsuffix .o,$(addprefix $(BIN_DIR)/$(TARGET)/,$(basename $(CSOURCES))))
-OBJECTS+=$(addsuffix .o,$(addprefix $(BIN_DIR)/$(TARGET)/,$(basename $(CXXSOURCES))))
-
-#################################
-# Target Output Files
-#################################
-TARGET_ELF=$(BIN_DIR)/$(TARGET).elf
-TARGET_HEX=$(BIN_DIR)/$(TARGET).hex
-TARGET_BIN=$(BIN_DIR)/$(TARGET).bin
-
-#################################
-# Debug Config
-#################################
-ifeq ($(DEBUG), GDB)
-$(info ************  BUILDING DEBUG SYMBOLS ************)
-DEBUG_FLAGS = -g3
-OPTIMIZE = -O0
-LTO_FLAGS =
-else
-$(info ************  BUILDING RELEASE ************)
-DEBUG_FLAGS = -g3
-OPTIMIZE = -O2
-LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
-endif
-
-#################################
 # Flags
 #################################
 
-CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
-  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-  -Wredundant-decls -Wshadow -Wstrict-overflow=2 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
-  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
-FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
-CXX_FILE_SIZE_FLAGS = $(FILE_SIZE_FLAGS) -fno-rtti
-
 MCFLAGS= -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
-DEFS=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -DTARGET_$(BOARD) -D__FPU_USED $(GIT_VARS) -DHSE_VALUE=8000000
-CFLAGS=-c $(MCFLAGS) $(DEFS) -O2 $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
-CXXFLAGS=-c $(MCFLAGS) $(DEFS) -O2 $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c++11
+DEFS+=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -D__FPU_USED -DHSE_VALUE=8000000
+CFLAGS += $(MCFLAGS) $(addprefix -I,$(INCLUDE_DIRS))
+CXXFLAGS += $(MCFLAGS)  -O2 $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
-
-#$(info CFLAGS = $(CFLAGS))
-#$(info CXXFLAGS = $(CXXFLAGS))
 
 #################################
 # Build

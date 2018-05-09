@@ -28,74 +28,53 @@
 
 TARGET	?= rosflight
 
-DEBUG ?=
+BOARD ?= NAZE
+
+DEBUG ?= GDB
 
 SERIAL_DEVICE ?= /dev/ttyUSB0
 
-#################################
-# GNU ARM Embedded Toolchain
-#################################
-CC=arm-none-eabi-gcc
-CXX=arm-none-eabi-g++
-LD=arm-none-eabi-ld
-AR=arm-none-eabi-ar
-AS=arm-none-eabi-as
-CP=arm-none-eabi-objcopy
-OD=arm-none-eabi-objdump
-NM=arm-none-eabi-nm
-SIZE=arm-none-eabi-size
-A2L=arm-none-eabi-addr2line
 
 #################################
 # Working directories
 #################################
-ROOT		= $(dir $(lastword $(MAKEFILE_LIST)))
-BOARD_DIR 	= .
-ROSFLIGHT_DIR   = ../..
-MAVLINK_DIR = $(ROSFLIGHT_DIR)/comms/mavlink
-TURBOMATH_DIR   = $(ROSFLIGHT_DIR)/lib/turbomath
-BREEZY_DIR	= lib/breezystm32
-CMSIS_DIR	= $(BREEZY_DIR)/lib/CMSIS
-STDPERIPH_DIR	= $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
-OBJECT_DIR	= $(ROOT)/build
-BIN_DIR		= $(ROOT)/build
+ROSFLIGHT_ROOT		= ../..
+BOARD_DIR       	= $(ROSFLIGHT_ROOT)/boards/F1
+BREEZY_DIR			= $(BOARD_DIR)/lib/breezystm32
+CMSIS_DIR			= $(BREEZY_DIR)/lib/CMSIS
+STDPERIPH_DIR		= $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
+BIN_DIR				= $(BOARD_DIR)/build
+
+
+#################################
+# ROSflight Common Build
+#################################
+include $(ROSFLIGHT_ROOT)/scripts/rosflight.mk
 
 
 #################################
 # Source Files
 #################################
+VPATH 		:=	$(VPATH):$(BREEZY_DIR)
+LDSCRIPT   	= $(BREEZY_DIR)/stm32_flash.ld
+ASOURCES   	= startup_stm32f10x_md_gcc.S
+
+# Search path and source files for the CMSIS sources
+VPATH		:= $(VPATH):$(CMSIS_DIR)/CM3/CoreSupport:$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
+CMSIS_SRC	 = $(notdir $(wildcard $(CMSIS_DIR)/CM3/CoreSupport/*.c \
+                                       $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x/*.c))
+
+# Search path and source files for the ST stdperiph library
+VPATH		:= $(VPATH):$(STDPERIPH_DIR)/src
+STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 
 # board-specific source files
-VPATH		:= $(VPATH):$(BOARD_DIR)
-BOARD_C_SRC = flash.c
-BOARD_CXX_SRC =	naze32.cpp \
-                main.cpp
-
-# MAVLink source files
-VPATH := $(VPATH):$(MAVLINK_DIR)
-MAVLINK_SRC = mavlink.cpp
-
-# ROSflight source files
-VPATH		:= $(VPATH):$(ROSFLIGHT_DIR)/src
-ROSFLIGHT_SRC = rosflight.cpp \
-                param.cpp \
-                sensors.cpp \
-                state_manager.cpp \
-                estimator.cpp \
-                controller.cpp \
-                comm_manager.cpp \
-                command_manager.cpp \
-                rc.cpp \
-                mixer.cpp \
-								nanoprintf.cpp
-
-# Math Source Files
-VPATH :=	$(VPATH):$(TURBOMATH_DIR)
-MATH_SRC =  turbomath.cpp
-
+VPATH			:= $(VPATH):$(BOARD_DIR)
+BOARD_C_SRC     = flash.c
+BOARD_CXX_SRC   = naze32.cpp \
+                  main.cpp
 
 # Hardware Driver Source Files
-VPATH :=	$(VPATH):$(BREEZY_DIR)
 BREEZY_SRC = drv_gpio.c \
              drv_i2c.c \
              drv_adc.c \
@@ -110,125 +89,62 @@ BREEZY_SRC = drv_gpio.c \
              drv_mb1242.c \
              drv_ms5611.c \
              drv_bmp280.c \
-             drv_hmc5883l.c \
-             startup_stm32f10x_md_gcc.S
+             drv_hmc5883l.c \       
 
-# Search path and source files for the CMSIS sources
-VPATH		:= $(VPATH):$(CMSIS_DIR)/CM3/CoreSupport:$(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
-CMSIS_SRC	 = $(notdir $(wildcard $(CMSIS_DIR)/CM3/CoreSupport/*.c \
-                                       $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x/*.c))
-
-# Search path and source files for the ST stdperiph library
-VPATH		:= $(VPATH):$(STDPERIPH_DIR)/src
-STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
-
-
-# Compile a list of C source files
+# Add F1 C Sources
 CSOURCES =  $(CMSIS_SRC) \
             $(STDPERIPH_SRC) \
             $(BREEZY_SRC) \
             $(BOARD_C_SRC)
 
-# Compile a list of C++ Source Files
-CXXSOURCES =    $(ROSFLIGHT_SRC) \
-                $(MAVLINK_SRC) \
-                $(BOARD_CXX_SRC) \
-                $(MATH_SRC) \
+# Add F1 CXX Sources
+CXXSOURCES +=   $(BOARD_CXX_SRC)
 
-
-# Set up Include Directoreis
-INCLUDE_DIRS =	$(BREEZY_DIR) \
-                $(ROSFLIGHT_DIR)/include \
-                $(MAVLINK_DIR) \
-                $(ROSFLIGHT_DIR)/lib \
+# Add F1 Include Directories
+INCLUDE_DIRS +=	$(BREEZY_DIR) \
                 $(STDPERIPH_DIR)/inc \
                 $(CMSIS_DIR)/CM3/CoreSupport \
                 $(CMSIS_DIR)/CM3/DeviceSupport/ST/STM32F10x
 
 #################################
-# VERSION CONTROL
-#################################
-GIT_VERSION_HASH := $(shell git rev-parse --short=8 HEAD)
-GIT_VERSION_STRING := $(shell git describe --tags --abbrev=8 --always --dirty --long)
-GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GIT_VERSION_STRING)\"
-
-
-#################################
-# Object List
-#################################
-OBJECTS=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(ASOURCES))))
-OBJECTS+=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(CSOURCES))))
-OBJECTS+=$(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(CXXSOURCES))))
-LDSCRIPT=$(BREEZY_DIR)/stm32_flash.ld
-
-#$(info $$OBJECTS is [${OBJECTS}])
-
-#################################
-# Target Output Files
-#################################
-TARGET_ELF=$(BIN_DIR)/$(TARGET).elf
-TARGET_HEX=$(BIN_DIR)/$(TARGET).hex
-
-#################################
-# Debug Config
-#################################
-ifeq ($(DEBUG), GDB)
-DEBUG_FLAGS = -ggdb
-OPTIMIZE = -Og
-$(info ***** Building with Debug Symbols *****)
-else
-OPTIMIZE = -Os
-COMPILE_FLAGS = -flto
-LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
-endif
-
-#################################
-# VERSION CONTROL
-#################################
-GIT_VERSION_HASH := $(shell git rev-parse --short=8 HEAD)
-GIT_VERSION_STRING := $(shell git describe --tags --abbrev=8 --always --dirty --long)
-GIT_VARS := -DGIT_VERSION_HASH=0x$(GIT_VERSION_HASH) -DGIT_VERSION_STRING=\"$(GIT_VERSION_STRING)\"
-
-#################################
 # Flags
 #################################
-CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
-  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-  -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wundef -Wunused -Wvariadic-macros \
-  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
-FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
-CXX_FILE_SIZE_FLAGS = $(FILE_SIZE_FLAGS) -fno-rtti
 
 MCFLAGS=-mcpu=cortex-m3 -mthumb
-DEFS=-DTARGET_STM32F10X_MD -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER $(GIT_VARS)
-CFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) $(addprefix -I,$(INCLUDE_DIRS)) -std=c99
-CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) $(addprefix -I,$(INCLUDE_DIRS))
+DEFS+=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
+CFLAGS+=$(MCFLAGS) $(DEFS) $(addprefix -I,$(INCLUDE_DIRS))
+CXXFLAGS+=$(MCFLAGS) $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
+$(info VPATH = $(VPATH))
+$(info ASOURCES = $(ASOURCES))
 #################################
 # Build
 #################################
+$(TARGET_BIN): $(TARGET_HEX)
+	$(CP) -I ihex -O binary $< $@
+
 $(TARGET_HEX): $(TARGET_ELF)
-		$(CP) -O ihex --set-start 0x8000000 $< $@
+	$(CP) -O ihex --set-start 0x8000000 $< $@
 
 $(TARGET_ELF): $(OBJECTS)
-		$(CXX) -o $@ $^ $(LDFLAGS)
-		$(SIZE) $(TARGET_ELF)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+	$(SIZE) $(TARGET_ELF)
 
-$(OBJECT_DIR)/$(TARGET)/%.o: %.cpp
-		@mkdir -p $(dir $@)
-		@echo %% $(notdir $<)
-		@$(CXX) -c -o $@ $(CXXFLAGS) $<
+$(BIN_DIR)/$(TARGET)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo %% $(notdir $<)
+	@$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-$(OBJECT_DIR)/$(TARGET)/%.o: %.c
-		@mkdir -p $(dir $@)
-		@echo %% $(notdir $<)
-		@$(CC) -c -o $@ $(CFLAGS) $<
+$(BIN_DIR)/$(TARGET)/%.o: %.c
+	@mkdir -p $(dir $@)
+	@echo %% $(notdir $<)
+	@$(CC) -c -o $@ $(CFLAGS) $<
 
-$(OBJECT_DIR)/$(TARGET)/%.o: %.s
-		@mkdir -p $(dir $@)
-		@echo %% $(notdir $<)
-		@$(CC) -c -o $@ $(CFLAGS) $<
+$(BIN_DIR)/$(TARGET)/%.o: %.s
+	@mkdir -p $(dir $@)
+	@echo %% $(notdir $<)
+	@$(CC) -c -o $@ $(CFLAGS) $<
 
 
 #################################
