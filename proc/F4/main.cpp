@@ -38,7 +38,7 @@
 
 int main(void)
 {
-  rosflight_firmware::Revo board;
+  rosflight_firmware::F4Board board;
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
   board.init_board();
