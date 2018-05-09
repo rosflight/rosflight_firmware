@@ -16,7 +16,7 @@
 /site/
 *.idea*
 
-param_description.md
+scripts/parameter-descriptions.md
 
 *.aux
 *.fdb_latexmk
