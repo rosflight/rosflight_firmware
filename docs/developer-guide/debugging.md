@@ -20,27 +20,22 @@ Log out and back in for changes to take effect.
 
 ## Install QtCreator
 
-For some reason, the QtCreator bundled with 16.04 is unstable.  4.2.0 messes up ROS workspaces, so the most recent stable build for use with ROS and debugging is 4.1.0.  Download it from [here](https://download.qt.io/official_releases/qtcreator/4.1/4.1.0/installer_source/linux_gcc_64_rhel66/qtcreator.7z).
+For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator  Download the open source version from [here](https://www.qt.io/download).
 
-This downloads a `.7z` file, which requires `p7zip` to extract.  After downloading extract and install qtcreator:
+This downloads a `.run` file, just make it exectuable and run as `sudo`:
 
 ```bash
-sudo apt-get install p7zip-full
 cd ~/Downloads
-mkdir qtcreator
-mv qtcreator.7z qtcreator/.
-cd qtcreator
-p7zip -d qtcreator.7z
-cd ..
-sudo mv qtcreator /opt/.
-sudo ln -s /opt/qtcreator/bin/qtcreator /usr/bin/.
+chmod +x qt-unified-linux-x64-3.0.4-online.run 
+sudo ./qt-unified-linux-x64-3.0.4-online.run 
+
 ```
 
-If you want the icon to appear in your unity menu, create the following file as /usr/share/applications/qtcreator.desktop
+If you want the icon to appear in your unity menu, create the following file as `/usr/share/applications/qtcreator.desktop` (assuming that you installed qtcreator to the Qt folder in the installer)
 
 ```
 [Desktop Entry]
-Exec=bash -i -c qtcreator %F
+Exec=bash -i -c /opt/Qt/Tools/QtCreator/bin/qtcreator.sh %F
 Icon=qtcreator
 Type=Application
 Terminal=false
@@ -51,7 +46,6 @@ Categories=Qt;Development;IDE;
 InitialPreference=9
 ```
 
-
 ## Install openocd
 
 Open OCD (On-Chip-Debugger) is the software that will control the debugger.  We are going to install the version that is configured to work as a plugin for the eclipse IDE.  To get this version, go to the **[releases](https://github.com/gnuarmeclipse/openocd/releases)** page of the OpenOCD github page and download the latest `.tgz` file
@@ -59,7 +53,7 @@ Open OCD (On-Chip-Debugger) is the software that will control the debugger.  We 
 
 ```bash
 cd ~/Downloads
-tar -xvf gnuarmeclipse-openocd-debian32-0.10.0-201610281609-dev.tgz (or whatever)
+tar -xvf gnuarmeclipse-openocd-debian32-0.10.0-201610281609-dev.tgz # (or whatever)
 sudo mv openocd /opt/.
 ```
 
@@ -67,7 +61,7 @@ Then, for convenience, I normally create a script to run openocd for me.  Here i
 
 ``` bash
 #!/bin/bash
-cd /opt/openocd/0.10.0-201701241841/bin
+cd /opt/openocd/0.10.0-201701241841/bin # Use the correct version
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg
 ```
 
@@ -164,6 +158,8 @@ Go to the Bare Metal Plugin
 
 ## Test the Debugger
 
+Here are the instructions for a F1 target.  The instructions are very similar for an F4, just choose the correct `.elf` file.
+
 ### Turn on Debugger
 
 Connect the Debugger to your flight controller.  Here is the pinout for the Flip32 and flip32+
@@ -185,11 +181,11 @@ Plug in the debugger and start openocd (you'll need sudo privileges)
 * Switch to the ARM Kit we just created
 * Build Settings:
     * Change Build Directory to the firmware root
-    * Build Steps: `make DEBUG=GDB`
+    * Build Steps: `make BOARD=NAZE DEBUG=GDB`
 ![build](images/build.png)
 * Run Settings:
     * Change Run Configuration to hardware debugger
-    * Choose the `.elf` file in the `boards/naze/build` directory (you'll need to build first) `.../firmware/boards/naze/build/rosflight.elf`
+    * Choose the `.elf` file in the `proc/F1/build` directory (you'll need to build first) `firmware/proc/F1/build/rosflight.elf`
 ![run](images/run.png)
 
 You're done!  Just select the Debug tab and debug your project!

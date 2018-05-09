@@ -15,24 +15,24 @@ External libraries (such as MAVLink) are contained in the `lib` folder.
 
 ## Board Abstraction
 
-The board implementations are contained in the `boards` directory, with each board contained in its own subdirectory (e.g. `boards/naze`).
-Each board implementation is required to provide an implementation of the hardware abstraction layer interface, which is passed by reference to the flight stack.
-The Revo implementation in the `boards/F4` shows how this is done for an embedded flight controller.
+The hardware abstraction implementations are contained in the `proc` directory, with each board contained in its own subdirectory (e.g. `proc/F1`).
+Each processor implementation is required to provide an implementation of the hardware abstraction layer interface, which is passed by reference to the flight stack.
+The Revo implementation in the `proc/F4` shows how this is done for an embedded flight controller.
 Examples of board implementations for SIL simulation are found in the `rosflight_firmware` and `rosflight_sim` ROS packages available [here](https://github.com/rosflight/rosflight).
 
 The flight stack is encapsulated in the `ROSflight` class defined at `include/rosflight.h`.
 This class contains two public functions: `init()` and `run()`.
 Its constructor requires a single argument that is an implementation of the `Board` interface.
 Each board implementation is required to provide its own `main()` function that instantiates an implementation of the `Board` interface, instantiates a `ROSflight` object with that board interface as an argument, calls the `init()` method of that `ROSflight` object once, then calls the `run()` method in a loop.
-For example, here is the main function for the Naze32 board implementation (`board/naze/main.cpp`):
+For example, here is the main function for the Naze32 board implementation (`proc/F1/main.cpp`):
 
 ``` C++
-#include "naze32.h"
+#include "f1.h"
 #include "rosflight.h"
 
 int main()
 {
-  rosflight_firmware::Naze32 board;
+  rosflight_firmware::F1Board board;
   rosflight_firmware::ROSflight firmware(board);
 
   firmware.init();

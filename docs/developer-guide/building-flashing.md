@@ -37,17 +37,14 @@ Disable the modem-manager (sometimes linux thinks the device is a modem)
 ``` bash
 sudo systemctl stop ModemManager.service
 ```
-* Add the custom udev rule so linux handles the flight controller properly (copy the following as 45-stm32dfu.rules)
+* Add the custom udev rule so linux handles the flight controller properly (copy the following as `/etc/udev/rules.d/45-stm32dfu.rules`)
 ``` bash
 # DFU (Internal bootloader for STM32 MCUs)
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"
 ```
 
-!!! tip
-    dfu-util auto-detects F4-based boards.  Try `dfu-util` -ls to make sure your board is in bootloader mode
 
-
-### F4
+### Installing DFU-Util
 
 Install the dfu-util utility
 
@@ -55,7 +52,10 @@ Install the dfu-util utility
 sudo apt install dfu-util
 ```
 
-Then put the board in bootloader mode (short the boot pins while cycling power) and type `make flash`
+!!! tip
+    dfu-util auto-detects F4-based boards.  Try `dfu-util -ls` to make sure your board is in bootloader mode
+
+Then put the board in bootloader mode (short the boot pins while cycling power) and type `make BOARD=REVO flash`
 
 
 ### F1
