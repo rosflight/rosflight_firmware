@@ -59,3 +59,5 @@ pages:
     - Building and Flashing: developer-guide/building-flashing.md
     - Using a Debugger: developer-guide/debugging.md
     - Writing Documentation: developer-guide/writing-documentation.md
+  - Algorithms:
+    - Estimator: algorithms/estimator.md
