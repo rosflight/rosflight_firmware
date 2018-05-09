@@ -101,6 +101,8 @@ Because ROSflight ships with default parameters for multirotors, you will probab
 
 This is a list of all parameters on ROSflight, their types, default values, and minimum and maximum recommended setting:
 
+# Parameter descriptions
+
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
@@ -108,7 +110,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | STRM_HRTBT | Rate of heartbeat streaming (Hz) | int |  1 | 0 | 1000 |
 | STRM_STATUS | Rate of status streaming (Hz) | int |  10 | 0 | 1000 |
 | STRM_ATTITUDE | Rate of attitude stream (Hz) | int |  200 | 0 | 1000 |
-| STRM_IMU | Rate of IMU stream (Hz) | int |  500 | 0 | 1000 |
+| STRM_IMU | Rate of IMU stream (Hz) | int |  250 | 0 | 1000 |
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  50 | 0 | 75 |
 | STRM_BARO | Rate of barometer stream (Hz) | int |  50 | 0 | 100 |
 | STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  20 | 0 | 50 |
@@ -138,8 +140,6 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors - See motor documentation | int |  490 | 0 | 1000 |
 | MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 | 0.0 | 1.0 |
 | FAILSAFE_THR | Throttle sent to motors in failsafe condition (set just below hover throttle) | float |  0.3 | 0.0 | 1.0 |
-| MOTOR_MIN_PWM | PWM value sent to motor ESCs at zero throttle | int |  1000 | 1000 | 2000 |
-| MOTOR_MAX_PWM | PWM value sent to motor ESCs at full throttle | int |  2000 | 1000 | 2000 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_THR | int |  true | 0 | 1 |
 | FILTER_INIT_T | Time in ms to initialize estimator | int |  3000 | 0 | 100000 |
 | FILTER_KP | estimator proportional gain - See estimator documentation | float |  0.5f | 0 | 10.0 |
@@ -174,7 +174,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | BARO_BIAS | Barometer measurement bias (Pa) | float |  0.0f | 0 | inf |
 | GROUND_LEVEL | Altitude of ground level (m) | float |  1387.0f | -1000 | 10000 |
 | DIFF_PRESS_BIAS | Differential Pressure Bias (Pa) | float |  0.0f | -10 | 10 |
-| RC_TYPE | Type of RC input 0 - Parallel PWM (PWM), 1 - Pulse-Position Modulation (PPM) | int |  1 | 0 | 1 |
+| RC_TYPE | Type of RC input 0 - PPM, 1 - SBUS | int |  1 | 0 | 1 |
 | RC_X_CHN | RC input channel mapped to x-axis commands [0 - indexed] | int |  0 | 0 | 3 |
 | RC_Y_CHN | RC input channel mapped to y-axis commands [0 - indexed] | int |  1 | 0 | 3 |
 | RC_Z_CHN | RC input channel mapped to z-axis commands [0 - indexed] | int |  3 | 0 | 3 |
@@ -202,4 +202,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | ELEVATOR_REV | reverses elevator servo output | int |  0 | 0 | 1 |
 | AIL_REV | reverses aileron servo output | int |  0 | 0 | 1 |
 | RUDDER_REV | reverses rudder servo output | int |  0 | 0 | 1 |
+| FC_ROLL | roll angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
+| FC_PITCH | pitch angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
+| FC_YAW | yaw angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
 | ARM_THRESHOLD | RC deviation from max/min in yaw and throttle for arming and disarming check (us) | float |  0.15 | 0 | 500 |
