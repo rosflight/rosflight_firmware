@@ -67,3 +67,15 @@ Replace `/dev/ttyUSB0` with the port your flight controller is connected to. The
 The optional (but recommended) `output="screen"` option ensures that status messages from `rosflight_io` will be forwarded to the console from which you call `roslaunch`.
 
 For details on all parameters, topics, and services related to the `rosflight_io` node, refer to the documentation on the [ROS wiki](http://wiki.ros.org/rosflight).
+
+# Jetson TX2
+
+It is likely that your flip32/naze32 board doesn't work correctly out of the box with the TX2. To fix this you need to build some driverse in with the kernel. This process is pretty straight-forward.
+
+To build the kernel with additional USB drivers, follow the instructions and video found [here](http://www.jetsonhacks.com/2017/07/31/build-kernel-ttyacm-module-nvidia-jetson-tx2/). This video shows the ACM module being added, however there are a few additional drivers you will likely require. These include:
+- USB Winchiphead CH341 Single Port Serial Driver
+- USB Modem (CDC ACM) support
+- USB CP210x family of UART Bridge Controllers
+
+After following the instructions to add these drivers, reboot your TX2 and your USB devices should show up in /dev/ttyUSB? or /dev/ttyACM? as you would expect.
+
