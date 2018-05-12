@@ -149,7 +149,7 @@ public:
   // non-volatile memory
   void memory_init(void);
   bool memory_read(void * dest, size_t len);
-  bool memory_write(void *src, size_t len);
+  bool memory_write(const void *src, size_t len);
 
   // LEDs
   void led0_on(void);

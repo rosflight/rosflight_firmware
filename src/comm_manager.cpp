@@ -29,9 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 #include <stdint.h>
 
 #include "rosflight.h"
@@ -515,5 +512,3 @@ void CommManager::Stream::set_rate(uint32_t rate_hz)
 //}
 
 } // namespace rosflight_firmware
-
-#pragma GCC pop_options

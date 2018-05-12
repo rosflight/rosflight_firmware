@@ -20,7 +20,7 @@ Log out and back in for changes to take effect.
 
 ## Install QtCreator
 
-For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator  Download the open source version from [here](https://www.qt.io/download).
+For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator which can be downloaded [here](https://www.qt.io/download).
 
 This downloads a `.run` file, just make it exectuable and run as `sudo`:
 
@@ -73,7 +73,7 @@ cd /opt/openocd/0.10.0-5-20171110-1117/bin
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f4x.cfg
 ```
 
-I move these the `usr/local/bin` directory so I can call it from anywhere:
+I move these the `~/.local/bin` directory so I can call it from anywhere:
 
 ``` bash
 chmod +x start_openocd_f1

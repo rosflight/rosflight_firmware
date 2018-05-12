@@ -32,9 +32,6 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 #include "f4.h"
 
 namespace rosflight_firmware {
@@ -246,9 +243,9 @@ bool F4Board::memory_read(void * data, size_t len)
   return flash_.read_config((uint8_t*)data, len);
 }
 
-bool F4Board::memory_write(void * data, size_t len)
+bool F4Board::memory_write(const void * data, size_t len)
 {
-  return flash_.write_config(reinterpret_cast<uint8_t*>(data), len);
+  return flash_.write_config(reinterpret_cast<const uint8_t*>(data), len);
 }
 
 // LED
@@ -261,5 +258,4 @@ void F4Board::led1_off(void) { led2_.off(); }
 void F4Board::led1_toggle(void) { led2_.toggle(); }
 }
 
-#pragma GCC pop_options
 #pragma GCC diagnostic pop

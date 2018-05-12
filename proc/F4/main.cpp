@@ -29,9 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 #include "f4.h"
 #include "rosflight.h"
 #include "mavlink.h"
@@ -51,5 +48,3 @@ int main(void)
   }
   return 0;
 }
-
-#pragma GCC pop_options

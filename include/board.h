@@ -98,7 +98,7 @@ public:
 // non-volatile memory
   virtual void memory_init(void) = 0;
   virtual bool memory_read(void *dest, size_t len) = 0;
-  virtual bool memory_write(void *src, size_t len) = 0;
+  virtual bool memory_write(const void *src, size_t len) = 0;
 
 // LEDs
   virtual void led0_on(void) = 0;
