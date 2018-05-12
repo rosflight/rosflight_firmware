@@ -155,9 +155,9 @@ void Controller::calculate_equilbrium_torque_from_rc()
     turbomath::Vector pid_output = run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
-    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x);
-    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y);
-    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z);
+    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
 
     RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Equilibrium torques found and applied.");
     RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Please zero out trims on your transmitter");
