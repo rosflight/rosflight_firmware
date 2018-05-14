@@ -44,15 +44,15 @@ ROSFLIGHT_SRC = rosflight.cpp \
 # Math Source Files
 VPATH := $(VPATH):$(TURBOMATH_DIR)
 MATH_SRC =  turbomath.cpp
-                
+
 # List of Common C++ Source Files
 CXXSOURCES = $(ROSFLIGHT_SRC) \
              $(MATH_SRC) \
              $(MAVLINK_SRC)
 
 # No C sources in common
-CSOURCES =              
-                
+CSOURCES =
+
 # Common Include Files
 INCLUDE_DIRS =  $(ROSFLIGHT_DIR)/include \
                 $(ROSFLIGHT_DIR)/lib \
@@ -73,7 +73,7 @@ COMPILE_FLAGS = -flto
 LTO_FLAGS = -flto -fuse-linker-plugin $(OPTIMIZE)
 BUILD_TYPE=Release
 endif
-      
+
 
 #################################
 # VERSION CONTROL
@@ -100,12 +100,11 @@ TARGET_BIN=$(BIN_DIR)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).bin
 # Common Flags
 #################################
 DEFS = -DTARGET_$(BOARD) $(GIT_VARS)
-CXX_STRICT_FLAGS += -std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
+CXX_STRICT_FLAGS += -pedantic -pedantic-errors -Werror -Wall -Wextra \
   -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-  -Wredundant-decls -Wshadow -Wstrict-overflow=2 -Wswitch-default -Wundef -Wunused -Wvariadic-macros \
+  -Wredundant-decls -Wshadow -Wstrict-overflow=2 -Wswitch -Wundef -Wunused -Wvariadic-macros \
   -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
 FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
-CXX_FILE_SIZE_FLAGS =-c $(FILE_SIZE_FLAGS) -fno-rtti 
+CXX_FILE_SIZE_FLAGS =-c $(FILE_SIZE_FLAGS) -fno-rtti
 CFLAGS   = -c $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) -std=c99
 CXXFLAGS = -c $(DEFS) $(OPTIMIZE) $(DEBUG_FLAGS) $(CXX_FILE_SIZE_FLAGS) $(CXX_STRICT_FLAGS) -std=c++11
-            
