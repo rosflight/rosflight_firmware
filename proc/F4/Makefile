@@ -167,8 +167,8 @@ INCLUDE_DIRS += $(AIRBOURNE_SRC_DIR) \
 
 MCFLAGS= -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 DEFS+=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -D__FPU_USED -DHSE_VALUE=8000000
-CFLAGS += $(MCFLAGS) $(addprefix -I,$(INCLUDE_DIRS))
-CXXFLAGS += $(MCFLAGS)  -O2 $(addprefix -I,$(INCLUDE_DIRS))
+CFLAGS += $(MCFLAGS) -O0 $(addprefix -I,$(INCLUDE_DIRS))
+CXXFLAGS += $(MCFLAGS) -O0 $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 $(info VPATH = $(VPATH))

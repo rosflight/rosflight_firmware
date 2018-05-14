@@ -138,7 +138,7 @@ namespace rosflight_firmware
 // non-volatile memory
   void testBoard::memory_init(void){}
   bool testBoard::memory_read(void *dest, size_t len){ return false; }
-  bool testBoard::memory_write(void *src, size_t len){ return false; }
+  bool testBoard::memory_write(const void *src, size_t len){ return false; }
 
 // LEDs
   void testBoard::led0_on(void){}

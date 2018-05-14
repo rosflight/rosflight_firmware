@@ -112,8 +112,8 @@ INCLUDE_DIRS +=	$(BREEZY_DIR) \
 
 MCFLAGS=-mcpu=cortex-m3 -mthumb
 DEFS+=-DTARGET_STM32F10X_MD -D__CORTEX_M3 -DWORDS_STACK_SIZE=200 -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
-CFLAGS+=$(MCFLAGS) $(DEFS) $(addprefix -I,$(INCLUDE_DIRS))
-CXXFLAGS+=$(MCFLAGS) $(addprefix -I,$(INCLUDE_DIRS))
+CFLAGS+=$(MCFLAGS) $(OPTIMIZE) $(DEFS) $(addprefix -I,$(INCLUDE_DIRS))
+CXXFLAGS+=$(MCFLAGS) $(OPTIMIZE) $(addprefix -I,$(INCLUDE_DIRS))
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections
 
 #################################
