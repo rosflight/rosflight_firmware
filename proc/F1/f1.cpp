@@ -302,7 +302,7 @@ bool F1Board::memory_read(void * dest, size_t len)
   return readEEPROM(dest, len);
 }
 
-bool F1Board::memory_write(void * src, size_t len)
+bool F1Board::memory_write(const void * src, size_t len)
 {
   return writeEEPROM(src, len);
 }
