@@ -42,7 +42,7 @@ extern "C"
 
 namespace rosflight_firmware {
 
-class F1Board : public Board
+class BreezyBoard : public Board
 {
 
 private:
@@ -75,7 +75,7 @@ private:
   uint8_t baro_type = BARO_NONE;
 
 public:
-  F1Board();
+  BreezyBoard();
 
   bool new_imu_data_;
   uint64_t imu_time_us_;

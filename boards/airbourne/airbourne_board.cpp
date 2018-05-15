@@ -32,15 +32,15 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
-#include "f4.h"
+#include "airbourne_board.h"
 
 namespace rosflight_firmware {
 
-F4Board::F4Board()
+AirbourneBoard::AirbourneBoard()
 {
 }
 
-void F4Board::init_board(void)
+void AirbourneBoard::init_board(void)
 {
   systemInit();
   led2_.init(LED2_GPIO, LED2_PIN);
@@ -52,57 +52,57 @@ void F4Board::init_board(void)
   spi3_.init(&spi_config[FLASH_SPI]);
 }
 
-void F4Board::board_reset(bool bootloader)
+void AirbourneBoard::board_reset(bool bootloader)
 {
   (void)bootloader;
   NVIC_SystemReset();
 }
 
 // clock
-uint32_t F4Board::clock_millis()
+uint32_t AirbourneBoard::clock_millis()
 {
   return millis();
 }
 
-uint64_t F4Board::clock_micros()
+uint64_t AirbourneBoard::clock_micros()
 {
   return micros();
 }
 
-void F4Board::clock_delay(uint32_t milliseconds)
+void AirbourneBoard::clock_delay(uint32_t milliseconds)
 {
   delay(milliseconds);
 }
 
 // serial
-void F4Board::serial_init(uint32_t baud_rate)
+void AirbourneBoard::serial_init(uint32_t baud_rate)
 {
   (void)baud_rate;
   vcp_.init();
 }
 
-void F4Board::serial_write(const uint8_t *src, size_t len)
+void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
   vcp_.write(src, len);
 }
 
-uint16_t F4Board::serial_bytes_available(void)
+uint16_t AirbourneBoard::serial_bytes_available(void)
 {
   return vcp_.rx_bytes_waiting();
 }
 
-uint8_t F4Board::serial_read(void)
+uint8_t AirbourneBoard::serial_read(void)
 {
   return vcp_.read_byte();
 }
 
-void F4Board::serial_flush()
+void AirbourneBoard::serial_flush()
 {
   vcp_.flush();
 }
 
 // sensors
-void F4Board::sensors_init()
+void AirbourneBoard::sensors_init()
 {
   imu_.init(&spi1_);
   mag_.init(&int_i2c_);
@@ -112,17 +112,17 @@ void F4Board::sensors_init()
   while(millis() < 50); // wait for sensors to boot up
 }
 
-uint16_t F4Board::num_sensor_errors(void)
+uint16_t AirbourneBoard::num_sensor_errors(void)
 {
   return int_i2c_.num_errors();
 }
 
-bool F4Board::new_imu_data()
+bool AirbourneBoard::new_imu_data()
 {
   return imu_.new_data();
 }
 
-bool F4Board::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool AirbourneBoard::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
   float read_accel[3], read_gyro[3];
   imu_.read(read_accel, read_gyro, temperature, time_us);
@@ -138,59 +138,59 @@ bool F4Board::imu_read(float accel[3], float* temperature, float gyro[3], uint64
   return true;
 }
 
-void F4Board::imu_not_responding_error(void)
+void AirbourneBoard::imu_not_responding_error(void)
 {
   sensors_init();
 }
 
-void F4Board::mag_read(float mag[3])
+void AirbourneBoard::mag_read(float mag[3])
 {
   mag_.update();
   mag_.read(mag);
 }
 
-bool F4Board::mag_check(void)
+bool AirbourneBoard::mag_check(void)
 {
   mag_.update();
   return mag_.present();
 }
 
-void F4Board::baro_read(float *pressure, float *temperature)
+void AirbourneBoard::baro_read(float *pressure, float *temperature)
 {
   baro_.update();
   baro_.read(pressure, temperature);
 }
 
-bool F4Board::baro_check()
+bool AirbourneBoard::baro_check()
 {
   baro_.update();
   return baro_.present();
 }
 
-bool F4Board::diff_pressure_check(void)
+bool AirbourneBoard::diff_pressure_check(void)
 {
   airspeed_.update();
   return airspeed_.present();
 }
 
-void F4Board::diff_pressure_read(float *diff_pressure, float *temperature)
+void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature)
 {
   airspeed_.update();
   airspeed_.read(diff_pressure, temperature);
 }
 
-bool F4Board::sonar_check(void)
+bool AirbourneBoard::sonar_check(void)
 {
   return false;
 }
 
-float F4Board::sonar_read(void)
+float AirbourneBoard::sonar_read(void)
 {
   return 0.0;
 }
 
 // PWM
-void F4Board::rc_init(rc_type_t rc_type)
+void AirbourneBoard::rc_init(rc_type_t rc_type)
 {
   switch (rc_type)
   {
@@ -208,12 +208,12 @@ void F4Board::rc_init(rc_type_t rc_type)
   }
 }
 
-float F4Board::rc_read(uint8_t channel)
+float AirbourneBoard::rc_read(uint8_t channel)
 {
   return rc_->read(channel);
 }
 
-void F4Board::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
+void AirbourneBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
   for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
   {
@@ -222,40 +222,40 @@ void F4Board::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
   }
 }
 
-void F4Board::pwm_write(uint8_t channel, float value)
+void AirbourneBoard::pwm_write(uint8_t channel, float value)
 {
   esc_out_[channel].write(value);
 }
 
-bool F4Board::rc_lost()
+bool AirbourneBoard::rc_lost()
 {
   return rc_->lost();
 }
 
 // non-volatile memory
-void F4Board::memory_init(void)
+void AirbourneBoard::memory_init(void)
 {
   return flash_.init(&spi3_);
 }
 
-bool F4Board::memory_read(void * data, size_t len)
+bool AirbourneBoard::memory_read(void * data, size_t len)
 {
   return flash_.read_config((uint8_t*)data, len);
 }
 
-bool F4Board::memory_write(const void * data, size_t len)
+bool AirbourneBoard::memory_write(const void * data, size_t len)
 {
   return flash_.write_config(reinterpret_cast<const uint8_t*>(data), len);
 }
 
 // LED
-void F4Board::led0_on(void) { led1_.on(); }
-void F4Board::led0_off(void) { led1_.off(); }
-void F4Board::led0_toggle(void) { led1_.toggle(); }
+void AirbourneBoard::led0_on(void) { led1_.on(); }
+void AirbourneBoard::led0_off(void) { led1_.off(); }
+void AirbourneBoard::led0_toggle(void) { led1_.toggle(); }
 
-void F4Board::led1_on(void) { led2_.on(); }
-void F4Board::led1_off(void) { led2_.off(); }
-void F4Board::led1_toggle(void) { led2_.toggle(); }
+void AirbourneBoard::led1_on(void) { led2_.on(); }
+void AirbourneBoard::led1_off(void) { led2_.off(); }
+void AirbourneBoard::led1_toggle(void) { led2_.toggle(); }
 }
 
 #pragma GCC diagnostic pop

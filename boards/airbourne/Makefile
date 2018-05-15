@@ -40,7 +40,7 @@ SERIAL_DEVICE ?= /dev/ttyACM0
 # Working directories
 #################################
 ROSFLIGHT_ROOT		= ../..
-AIRBOURNE_ROOT      = lib/airbourne_f4
+AIRBOURNE_ROOT      = airbourne
 AIRBOURNE_SRC_DIR   = $(AIRBOURNE_ROOT)/src
 CMSIS_DIR           = $(AIRBOURNE_ROOT)/lib/CMSIS
 STDPERIPH_DIR       = $(AIRBOURNE_ROOT)/lib/STM32F4xx_StdPeriph_Driver
@@ -51,7 +51,7 @@ VCP_DIR             = $(AIRBOURNE_ROOT)/lib/vcp
 STARTUP_DIR         = $(AIRBOURNE_ROOT)/lib/startup
 PRINTF_DIR          = $(AIRBOURNE_ROOT)/lib/printf
 BIN_DIR       		= $(BOARD_DIR)/build
-BOARD_DIR       	= $(ROSFLIGHT_ROOT)/proc/F4
+BOARD_DIR       	= $(ROSFLIGHT_ROOT)/boards/airbourne
 
 #################################
 # ROSflight Common Build
@@ -131,7 +131,7 @@ AIRBOURNE_SRCS = led.cpp \
 
 # board-specific source files
 VPATH           := $(VPATH):$(BOARD_DIR)
-BOARD_CXX_SRC   = f4.cpp \
+BOARD_CXX_SRC   = airbourne_board.cpp \
                   main.cpp
 
 # Make a list of source files and includes

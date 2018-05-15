@@ -29,13 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "f4.h"
+#include "airbourne_board.h"
 #include "rosflight.h"
 #include "mavlink.h"
 
 int main(void)
 {
-  rosflight_firmware::F4Board board;
+  rosflight_firmware::AirbourneBoard board;
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
   board.init_board();

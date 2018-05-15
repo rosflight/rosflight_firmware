@@ -54,7 +54,7 @@
 
 namespace rosflight_firmware {
 
-class F4Board : public Board
+class AirbourneBoard : public Board
 {
 
 private:
@@ -96,7 +96,7 @@ private:
 
 
 public:
-  F4Board();
+  AirbourneBoard();
 
   bool new_imu_data_;
   uint64_t imu_time_us_;

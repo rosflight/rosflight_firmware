@@ -53,14 +53,14 @@ VALID_F4_BOARDS = REVO
 # Make sure that the supplied board is supported, and if so,
 # set the proper board directory
 ifeq ($(BOARD),$(filter $(BOARD),$(VALID_F4_BOARDS)))
-PROC_DIR=F4
+BOARD_DIR=boards/airbourne
 endif
 
 ifeq ($(BOARD),$(filter $(BOARD),$(VALID_F1_BOARDS)))
-PROC_DIR=F1
+BOARD_DIR=boards/breezy
 endif
 
-ifeq ($(PROC_DIR),)
+ifeq ($(BOARD_DIR),)
 $(info Invalid BOARD: $(BOARD))
 $(info =================================)
 $(info VALID F1 BOARDS:)
@@ -70,10 +70,8 @@ $(info VALID F4 BOARDS:)
 $(info $(VALID_F4_BOARDS))
 $(info =================================)
 else
-$(info Building ROSflight $(PROC_DIR))
+$(info Building ROSflight $(BOARD_DIR))
 endif
-
-BOARD_DIR       = proc/$(PROC_DIR)
 
 .PHONY: all flash clean
 
@@ -81,8 +79,8 @@ all:
 	cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE)
 
 clean:
-	cd proc/F1 && make clean
-	cd proc/F4 && make clean
+	cd boards/airbourne && make clean
+	cd boards/breezy && make clean
 
 flash:
 	cd $(BOARD_DIR) && make -j$(PARALLEL_JOBS) -l$(PARALLEL_JOBS) DEBUG=$(DEBUG) SERIAL_DEVICE=$(SERIAL_DEVICE) flash

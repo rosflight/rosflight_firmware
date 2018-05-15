@@ -39,8 +39,8 @@ SERIAL_DEVICE ?= /dev/ttyUSB0
 # Working directories
 #################################
 ROSFLIGHT_ROOT		= ../..
-BOARD_DIR       	= $(ROSFLIGHT_ROOT)/proc/F1
-BREEZY_DIR			= $(BOARD_DIR)/lib/breezystm32
+BOARD_DIR       	= $(ROSFLIGHT_ROOT)/boards/breezy
+BREEZY_DIR			= breezystm32
 CMSIS_DIR			= $(BREEZY_DIR)/lib/CMSIS
 STDPERIPH_DIR		= $(BREEZY_DIR)/lib/STM32F10x_StdPeriph_Driver
 BIN_DIR				= $(BOARD_DIR)/build
@@ -71,7 +71,7 @@ STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 # board-specific source files
 VPATH			:= $(VPATH):$(BOARD_DIR)
 BOARD_C_SRC     = flash.c
-BOARD_CXX_SRC   = f1.cpp \
+BOARD_CXX_SRC   = breezy_board.cpp \
                   main.cpp
 
 # Hardware Driver Source Files
