@@ -29,12 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-
 #include "airbourne_board.h"
 
-namespace rosflight_firmware {
+namespace rosflight_firmware
+{
 
 AirbourneBoard::AirbourneBoard()
 {
@@ -240,7 +238,7 @@ void AirbourneBoard::memory_init()
 
 bool AirbourneBoard::memory_read(void * data, size_t len)
 {
-  return flash_.read_config((uint8_t*)data, len);
+  return flash_.read_config(reinterpret_cast<uint8_t*>(data), len);
 }
 
 bool AirbourneBoard::memory_write(const void * data, size_t len)
@@ -256,6 +254,5 @@ void AirbourneBoard::led0_toggle() { led1_.toggle(); }
 void AirbourneBoard::led1_on() { led2_.on(); }
 void AirbourneBoard::led1_off() { led2_.off(); }
 void AirbourneBoard::led1_toggle() { led2_.toggle(); }
-}
 
-#pragma GCC diagnostic pop
+} // namespace rosflight_firmware
