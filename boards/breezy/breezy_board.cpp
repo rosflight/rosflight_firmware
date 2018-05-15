@@ -48,7 +48,7 @@ namespace rosflight_firmware {
 
 BreezyBoard::BreezyBoard(){}
 
-void BreezyBoard::init_board(void)
+void BreezyBoard::init_board()
 {
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
@@ -93,12 +93,12 @@ void BreezyBoard::serial_write(const uint8_t *src, size_t len)
   }
 }
 
-uint16_t BreezyBoard::serial_bytes_available(void)
+uint16_t BreezyBoard::serial_bytes_available()
 {
   return serialTotalBytesWaiting(Serial1);
 }
 
-uint8_t BreezyBoard::serial_read(void)
+uint8_t BreezyBoard::serial_read()
 {
   return serialRead(Serial1);
 }
@@ -134,7 +134,7 @@ void BreezyBoard::sensors_init()
   _accel_scale = 9.80665f/acc1G;
 }
 
-uint16_t BreezyBoard::num_sensor_errors(void)
+uint16_t BreezyBoard::num_sensor_errors()
 {
   return i2cGetErrorCounter();
 }
@@ -167,7 +167,7 @@ bool BreezyBoard::imu_read(float accel[3], float* temperature, float gyro[3], ui
   else return true;
 }
 
-void BreezyBoard::imu_not_responding_error(void)
+void BreezyBoard::imu_not_responding_error()
 {
   // If the IMU is not responding, then we need to change where we look for the interrupt
   _board_revision = (_board_revision < 4) ? 5 : 2;
@@ -186,7 +186,7 @@ void BreezyBoard::mag_read(float mag[3])
   mag[2] = (float)raw_mag[2];
 }
 
-bool BreezyBoard::mag_check(void)
+bool BreezyBoard::mag_check()
 {
   return hmc5883l_present();
 }
@@ -210,7 +210,7 @@ bool BreezyBoard::baro_check()
   return baro_type != BARO_NONE;
 }
 
-bool BreezyBoard::diff_pressure_check(void)
+bool BreezyBoard::diff_pressure_check()
 {
   ms4525_async_update();
   return ms4525_present();
@@ -222,7 +222,7 @@ void BreezyBoard::diff_pressure_read(float *diff_pressure, float *temperature)
   ms4525_async_read(diff_pressure, temperature);
 }
 
-bool BreezyBoard::sonar_check(void)
+bool BreezyBoard::sonar_check()
 {
   mb1242_async_update();
   if (mb1242_present())
@@ -242,7 +242,7 @@ bool BreezyBoard::sonar_check(void)
   }
 }
 
-float BreezyBoard::sonar_read(void)
+float BreezyBoard::sonar_read()
 {
   if (sonar_type == SONAR_I2C)
   {
@@ -255,7 +255,7 @@ float BreezyBoard::sonar_read(void)
     return 0.0f;
 }
 
-uint16_t num_sensor_errors(void)
+uint16_t num_sensor_errors()
 {
   return i2cGetErrorCounter();
 }
@@ -292,7 +292,7 @@ bool BreezyBoard::rc_lost()
 
 // non-volatile memory
 
-void BreezyBoard::memory_init(void)
+void BreezyBoard::memory_init()
 {
   initEEPROM();
 }
@@ -309,13 +309,13 @@ bool BreezyBoard::memory_write(const void * src, size_t len)
 
 // LED
 
-void BreezyBoard::led0_on(void) { LED0_ON; }
-void BreezyBoard::led0_off(void) { LED0_OFF; }
-void BreezyBoard::led0_toggle(void) { LED0_TOGGLE; }
+void BreezyBoard::led0_on() { LED0_ON; }
+void BreezyBoard::led0_off() { LED0_OFF; }
+void BreezyBoard::led0_toggle() { LED0_TOGGLE; }
 
-void BreezyBoard::led1_on(void) { LED1_ON; }
-void BreezyBoard::led1_off(void) { LED1_OFF; }
-void BreezyBoard::led1_toggle(void) { LED1_TOGGLE; }
+void BreezyBoard::led1_on() { LED1_ON; }
+void BreezyBoard::led1_off() { LED1_OFF; }
+void BreezyBoard::led1_toggle() { LED1_TOGGLE; }
 
 }
 
