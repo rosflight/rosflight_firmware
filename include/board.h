@@ -74,16 +74,20 @@ public:
   virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time) = 0;
   virtual void imu_not_responding_error(void) = 0;
 
-  virtual bool mag_check(void) = 0;
+  virtual bool mag_present(void) = 0;
+  virtual void mag_update(void) = 0;
   virtual void mag_read(float mag[3]) = 0;
 
-  virtual bool baro_check(void) = 0;
+  virtual bool baro_present() = 0;
+  virtual void baro_update() = 0;
   virtual void baro_read(float *pressure, float *temperature) = 0;
 
-  virtual bool diff_pressure_check(void) = 0;
+  virtual bool diff_pressure_present(void) = 0;
+  virtual void diff_pressure_update(void) = 0;
   virtual void diff_pressure_read(float *diff_pressure, float *temperature) = 0;
 
-  virtual bool sonar_check(void) = 0;
+  virtual bool sonar_present(void) = 0;
+  virtual void sonar_update(void) = 0;
   virtual float sonar_read(void) = 0;
 
 // RC

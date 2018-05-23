@@ -46,7 +46,7 @@ void AirbourneBoard::init_board(void)
   led2_.init(LED2_GPIO, LED2_PIN);
   led1_.init(LED1_GPIO, LED1_PIN);
 
-  int_i2c_.init(&i2c_config[MAG_I2C]);
+  int_i2c_.init(&i2c_config[BARO_I2C]);
   ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
@@ -104,17 +104,18 @@ void AirbourneBoard::serial_flush()
 // sensors
 void AirbourneBoard::sensors_init()
 {
+  while(millis() < 50) {} // wait for sensors to boot up
   imu_.init(&spi1_);
-  mag_.init(&int_i2c_);
+  
   baro_.init(&int_i2c_);
+  mag_.init(&int_i2c_);
   airspeed_.init(&ext_i2c_);
 
-  while(millis() < 50); // wait for sensors to boot up
 }
 
 uint16_t AirbourneBoard::num_sensor_errors(void)
 {
-  return int_i2c_.num_errors();
+  return ext_i2c_.num_errors();
 }
 
 bool AirbourneBoard::new_imu_data()
@@ -143,16 +144,33 @@ void AirbourneBoard::imu_not_responding_error(void)
   sensors_init();
 }
 
+bool AirbourneBoard::mag_present(void)
+{
+  mag_.update();
+  return mag_.present();
+}
+
+void AirbourneBoard::mag_update()
+{
+  mag_.update();
+}
+
 void AirbourneBoard::mag_read(float mag[3])
 {
   mag_.update();
   mag_.read(mag);
 }
 
-bool AirbourneBoard::mag_check(void)
+
+bool AirbourneBoard::baro_present()
 {
-  mag_.update();
-  return mag_.present();
+  baro_.update();
+  return baro_.present();
+}
+
+void AirbourneBoard::baro_update()
+{
+  baro_.update();
 }
 
 void AirbourneBoard::baro_read(float *pressure, float *temperature)
@@ -161,27 +179,36 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
   baro_.read(pressure, temperature);
 }
 
-bool AirbourneBoard::baro_check()
-{
-  baro_.update();
-  return baro_.present();
-}
 
-bool AirbourneBoard::diff_pressure_check(void)
+
+bool AirbourneBoard::diff_pressure_present(void)
 {
   airspeed_.update();
   return airspeed_.present();
 }
 
+void AirbourneBoard::diff_pressure_update()
+{
+  airspeed_.update();
+}
+
+
 void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature)
 {
+  (void) diff_pressure;
+  (void) temperature;
   airspeed_.update();
   airspeed_.read(diff_pressure, temperature);
 }
 
-bool AirbourneBoard::sonar_check(void)
+bool AirbourneBoard::sonar_present(void)
 {
   return false;
+}
+
+void AirbourneBoard::sonar_update()
+{
+  return;
 }
 
 float AirbourneBoard::sonar_read(void)

@@ -44,23 +44,23 @@ namespace rosflight_firmware
 Controller::Controller(ROSflight& rf) :
   RF_(rf)
 {
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_MAX_COMMAND);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_TAU);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_MAX_COMMAND);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_TAU);
 }
 
 void Controller::init()

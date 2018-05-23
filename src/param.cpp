@@ -153,7 +153,7 @@ void Params::set_defaults(void)
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - Requires reboot to take effect | 0 | 1000
   init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_THR | 0 | 1
@@ -205,7 +205,7 @@ void Params::set_defaults(void)
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1); // Type of RC input 0 - PPM, 1 - SBUS | 0 | 1
+  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 0); // Type of RC input 0 - PPM, 1 - SBUS | 0 | 1
   init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0); // RC input channel mapped to x-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1); // RC input channel mapped to y-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3); // RC input channel mapped to z-axis commands [0 - indexed] | 0 | 3

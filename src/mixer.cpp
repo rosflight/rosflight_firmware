@@ -44,9 +44,9 @@ Mixer::Mixer(ROSflight &_rf) :
 
 void Mixer::init()
 {
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_PWM_SEND_RATE);
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MIXER);
+  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MOTOR_PWM_SEND_RATE);
+  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
+  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MIXER);
 
   init_mixing();
   init_PWM();
