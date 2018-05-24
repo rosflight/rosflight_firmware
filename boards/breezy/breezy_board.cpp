@@ -48,7 +48,7 @@ namespace rosflight_firmware {
 
 BreezyBoard::BreezyBoard(){}
 
-void BreezyBoard::init_board(void)
+void BreezyBoard::init_board()
 {
   // Configure clock, this figures out HSE for hardware autodetect
   SetSysClock(0);
@@ -93,12 +93,12 @@ void BreezyBoard::serial_write(const uint8_t *src, size_t len)
   }
 }
 
-uint16_t BreezyBoard::serial_bytes_available(void)
+uint16_t BreezyBoard::serial_bytes_available()
 {
   return serialTotalBytesWaiting(Serial1);
 }
 
-uint8_t BreezyBoard::serial_read(void)
+uint8_t BreezyBoard::serial_read()
 {
   return serialRead(Serial1);
 }
@@ -134,7 +134,7 @@ void BreezyBoard::sensors_init()
   _accel_scale = 9.80665f/acc1G;
 }
 
-uint16_t BreezyBoard::num_sensor_errors(void)
+uint16_t BreezyBoard::num_sensor_errors()
 {
   return i2cGetErrorCounter();
 }
@@ -167,7 +167,7 @@ bool BreezyBoard::imu_read(float accel[3], float* temperature, float gyro[3], ui
   else return true;
 }
 
-void BreezyBoard::imu_not_responding_error(void)
+void BreezyBoard::imu_not_responding_error()
 {
   // If the IMU is not responding, then we need to change where we look for the interrupt
   _board_revision = (_board_revision < 4) ? 5 : 2;
@@ -186,10 +186,30 @@ void BreezyBoard::mag_read(float mag[3])
   mag[2] = (float)raw_mag[2];
 }
 
-bool BreezyBoard::mag_check(void)
+bool BreezyBoard::mag_present()
 {
   return hmc5883l_present();
 }
+
+void BreezyBoard::mag_update()
+{
+  hmc5883l_update();;
+}
+
+void BreezyBoard::baro_update()
+{
+  if (baro_type == BARO_BMP280)
+    bmp280_async_update();
+  else if (baro_type == BARO_MS5611)
+    ms5611_async_update();
+  else
+  {
+    bmp280_async_update();
+    ms5611_async_update();
+  }
+}
+
+
 
 void BreezyBoard::baro_read(float *pressure, float *temperature)
 {
@@ -205,15 +225,36 @@ void BreezyBoard::baro_read(float *pressure, float *temperature)
   }
 }
 
-bool BreezyBoard::baro_check()
+bool BreezyBoard::baro_present()
 {
-  return baro_type != BARO_NONE;
+  if (baro_type == BARO_BMP280)
+    return bmp280_present();
+  else if (baro_type == BARO_MS5611)
+    return ms5611_present();
+  else
+  {
+    if (bmp280_present())
+    {
+      baro_type = BARO_BMP280;
+      return true;
+    }
+    else if (ms5611_present())
+    {
+      baro_type = BARO_MS5611;
+      return true;
+    }
+  }
+  return false;
 }
 
-bool BreezyBoard::diff_pressure_check(void)
+bool BreezyBoard::diff_pressure_present()
 {
-  ms4525_async_update();
   return ms4525_present();
+}
+
+void BreezyBoard::diff_pressure_update()
+{
+  return ms4525_async_update();
 }
 
 void BreezyBoard::diff_pressure_read(float *diff_pressure, float *temperature)
@@ -222,27 +263,37 @@ void BreezyBoard::diff_pressure_read(float *diff_pressure, float *temperature)
   ms4525_async_read(diff_pressure, temperature);
 }
 
-bool BreezyBoard::sonar_check(void)
+void BreezyBoard::sonar_update()
 {
-  mb1242_async_update();
-  if (mb1242_present())
-  {
-    sonar_type = SONAR_I2C;
-    return true;
-  }
-  else if (sonarPresent())
-  {
-    sonar_type = SONAR_PWM;
-    return true;
-  }
-  else
-  {
-    sonar_type = SONAR_NONE;
-    return false;
-  }
+  if (sonar_type == SONAR_I2C || sonar_type == SONAR_NONE)
+    mb1242_async_update();
+  
+  // We don't need to actively update the pwm sonar
 }
 
-float BreezyBoard::sonar_read(void)
+bool BreezyBoard::sonar_present()
+{
+  if (sonar_type == SONAR_I2C)
+    return mb1242_present();
+  else if (sonar_type == SONAR_PWM)
+    return sonarPresent();
+  else
+  {
+    if (mb1242_present())
+    {
+      sonar_type = SONAR_I2C;
+      return true;
+    }
+    else if (sonarPresent())
+    {
+      sonar_type = SONAR_PWM;
+      return true;
+    }    
+  }
+  return false;
+}
+
+float BreezyBoard::sonar_read()
 {
   if (sonar_type == SONAR_I2C)
   {
@@ -255,7 +306,7 @@ float BreezyBoard::sonar_read(void)
     return 0.0f;
 }
 
-uint16_t num_sensor_errors(void)
+uint16_t num_sensor_errors()
 {
   return i2cGetErrorCounter();
 }
@@ -292,7 +343,7 @@ bool BreezyBoard::rc_lost()
 
 // non-volatile memory
 
-void BreezyBoard::memory_init(void)
+void BreezyBoard::memory_init()
 {
   initEEPROM();
 }
@@ -309,13 +360,13 @@ bool BreezyBoard::memory_write(const void * src, size_t len)
 
 // LED
 
-void BreezyBoard::led0_on(void) { LED0_ON; }
-void BreezyBoard::led0_off(void) { LED0_OFF; }
-void BreezyBoard::led0_toggle(void) { LED0_TOGGLE; }
+void BreezyBoard::led0_on() { LED0_ON; }
+void BreezyBoard::led0_off() { LED0_OFF; }
+void BreezyBoard::led0_toggle() { LED0_TOGGLE; }
 
-void BreezyBoard::led1_on(void) { LED1_ON; }
-void BreezyBoard::led1_off(void) { LED1_OFF; }
-void BreezyBoard::led1_toggle(void) { LED1_TOGGLE; }
+void BreezyBoard::led1_on() { LED1_ON; }
+void BreezyBoard::led1_off() { LED1_OFF; }
+void BreezyBoard::led1_toggle() { LED1_TOGGLE; }
 
 }
 

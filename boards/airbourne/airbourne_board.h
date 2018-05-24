@@ -29,6 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
+#define ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -52,7 +55,8 @@
 
 #include "board.h"
 
-namespace rosflight_firmware {
+namespace rosflight_firmware
+{
 
 class AirbourneBoard : public Board
 {
@@ -78,7 +82,7 @@ private:
 
     RC_BASE* rc_ = nullptr;
 
-    std::function<void(void)> imu_callback_;
+    std::function<void()> imu_callback_;
 
     int _board_revision = 2;
 
@@ -93,16 +97,14 @@ private:
     };
     uint8_t sonar_type = SONAR_NONE;
 
-
+    bool new_imu_data_;
+    uint64_t imu_time_us_;
 
 public:
   AirbourneBoard();
 
-  bool new_imu_data_;
-  uint64_t imu_time_us_;
-
   // setup
-  void init_board(void) override;
+  void init_board() override;
   void board_reset(bool bootloader) override;
 
   // clock
@@ -113,33 +115,34 @@ public:
   // serial
   void serial_init(uint32_t baud_rate) override;
   void serial_write(const uint8_t *src, size_t len) override;
-  uint16_t serial_bytes_available(void) override;
-  uint8_t serial_read(void) override;
-  void serial_flush(void) override;
+  uint16_t serial_bytes_available() override;
+  uint8_t serial_read() override;
+  void serial_flush() override;
 
   // sensors
   void sensors_init() override;
-  uint16_t num_sensor_errors(void) override;
+  uint16_t num_sensor_errors() override;
 
   bool new_imu_data() override;
   bool imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us) override;
   void imu_not_responding_error() override;
 
-  bool mag_present(void) override;
-  void mag_update(void) override;
+  bool mag_present() override;
+  void mag_update() override;
   void mag_read(float mag[3]) override;
 
   bool baro_present() override;
   void baro_update() override;
   void baro_read(float *pressure, float *temperature) override;
 
-  bool diff_pressure_present(void) override;
-  void diff_pressure_update(void) override;
+  bool diff_pressure_present() override;
+  void diff_pressure_update() override;
   void diff_pressure_read(float *diff_pressure, float *temperature) override;
 
-  bool sonar_present(void) override;
-  void sonar_update(void) override;
-  float sonar_read(void) override;
+  bool sonar_present() override;
+  void sonar_update() override;
+  float sonar_read() override;
+
 
   // RC
   void rc_init(rc_type_t rc_type) override;
@@ -151,18 +154,21 @@ public:
   void pwm_write(uint8_t channel, float value) override;
 
   // non-volatile memory
-  void memory_init(void) override;
+
+  void memory_init() override;
   bool memory_read(void * dest, size_t len) override;
   bool memory_write(const void *src, size_t len) override;
 
   // LEDs
-  void led0_on(void) override;
-  void led0_off(void) override;
-  void led0_toggle(void) override;
+  void led0_on() override;
+  void led0_off() override;
+  void led0_toggle() override;
 
-  void led1_on(void) override;
-  void led1_off(void) override;
-  void led1_toggle(void) override;
+  void led1_on() override;
+  void led1_off() override;
+  void led1_toggle() override;
 };
 
-}
+} // namespace rosflight_firmware
+
+#endif // ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H

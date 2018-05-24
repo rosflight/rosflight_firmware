@@ -29,18 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-
 #include "airbourne_board.h"
 
-namespace rosflight_firmware {
+namespace rosflight_firmware
+{
 
 AirbourneBoard::AirbourneBoard()
 {
 }
 
-void AirbourneBoard::init_board(void)
+void AirbourneBoard::init_board()
 {
   systemInit();
   led2_.init(LED2_GPIO, LED2_PIN);
@@ -86,12 +84,12 @@ void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
   vcp_.write(src, len);
 }
 
-uint16_t AirbourneBoard::serial_bytes_available(void)
+uint16_t AirbourneBoard::serial_bytes_available()
 {
   return vcp_.rx_bytes_waiting();
 }
 
-uint8_t AirbourneBoard::serial_read(void)
+uint8_t AirbourneBoard::serial_read()
 {
   return vcp_.read_byte();
 }
@@ -113,7 +111,7 @@ void AirbourneBoard::sensors_init()
 
 }
 
-uint16_t AirbourneBoard::num_sensor_errors(void)
+uint16_t AirbourneBoard::num_sensor_errors()
 {
   return ext_i2c_.num_errors();
 }
@@ -139,12 +137,12 @@ bool AirbourneBoard::imu_read(float accel[3], float* temperature, float gyro[3],
   return true;
 }
 
-void AirbourneBoard::imu_not_responding_error(void)
+void AirbourneBoard::imu_not_responding_error()
 {
   sensors_init();
 }
 
-bool AirbourneBoard::mag_present(void)
+bool AirbourneBoard::mag_present()
 {
   mag_.update();
   return mag_.present();
@@ -160,8 +158,6 @@ void AirbourneBoard::mag_read(float mag[3])
   mag_.update();
   mag_.read(mag);
 }
-
-
 bool AirbourneBoard::baro_present()
 {
   baro_.update();
@@ -179,9 +175,7 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
   baro_.read(pressure, temperature);
 }
 
-
-
-bool AirbourneBoard::diff_pressure_present(void)
+bool AirbourneBoard::diff_pressure_present()
 {
   airspeed_.update();
   return airspeed_.present();
@@ -201,7 +195,7 @@ void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature
   airspeed_.read(diff_pressure, temperature);
 }
 
-bool AirbourneBoard::sonar_present(void)
+bool AirbourneBoard::sonar_present()
 {
   return false;
 }
@@ -211,7 +205,7 @@ void AirbourneBoard::sonar_update()
   return;
 }
 
-float AirbourneBoard::sonar_read(void)
+float AirbourneBoard::sonar_read()
 {
   return 0.0;
 }
@@ -260,14 +254,14 @@ bool AirbourneBoard::rc_lost()
 }
 
 // non-volatile memory
-void AirbourneBoard::memory_init(void)
+void AirbourneBoard::memory_init()
 {
   return flash_.init(&spi3_);
 }
 
 bool AirbourneBoard::memory_read(void * data, size_t len)
 {
-  return flash_.read_config((uint8_t*)data, len);
+  return flash_.read_config(reinterpret_cast<uint8_t*>(data), len);
 }
 
 bool AirbourneBoard::memory_write(const void * data, size_t len)
@@ -276,13 +270,12 @@ bool AirbourneBoard::memory_write(const void * data, size_t len)
 }
 
 // LED
-void AirbourneBoard::led0_on(void) { led1_.on(); }
-void AirbourneBoard::led0_off(void) { led1_.off(); }
-void AirbourneBoard::led0_toggle(void) { led1_.toggle(); }
+void AirbourneBoard::led0_on() { led1_.on(); }
+void AirbourneBoard::led0_off() { led1_.off(); }
+void AirbourneBoard::led0_toggle() { led1_.toggle(); }
 
-void AirbourneBoard::led1_on(void) { led2_.on(); }
-void AirbourneBoard::led1_off(void) { led2_.off(); }
-void AirbourneBoard::led1_toggle(void) { led2_.toggle(); }
-}
+void AirbourneBoard::led1_on() { led2_.on(); }
+void AirbourneBoard::led1_off() { led2_.off(); }
+void AirbourneBoard::led1_toggle() { led2_.toggle(); }
 
-#pragma GCC diagnostic pop
+} // namespace rosflight_firmware

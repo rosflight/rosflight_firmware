@@ -68,7 +68,7 @@ namespace rosflight_firmware
 
 
 // setup
-  void testBoard::init_board(void){}
+  void testBoard::init_board(){}
   void testBoard::board_reset(bool bootloader){}
 
 // clock
@@ -79,13 +79,13 @@ namespace rosflight_firmware
 // serial
   void testBoard::serial_init(uint32_t baud_rate){}
   void testBoard::serial_write(const uint8_t *src, size_t len){}
-  uint16_t testBoard::serial_bytes_available(void){ return 0; }
-  uint8_t testBoard::serial_read(void){return 0;}
-  void testBoard::serial_flush(void){}
+  uint16_t testBoard::serial_bytes_available(){ return 0; }
+  uint8_t testBoard::serial_read(){return 0;}
+  void testBoard::serial_flush(){}
 
 // sensors
   void testBoard::sensors_init(){}
-  uint16_t testBoard::num_sensor_errors(void) {return 0;}
+  uint16_t testBoard::num_sensor_errors() {return 0;}
 
   bool testBoard::new_imu_data()
   {
@@ -110,19 +110,23 @@ namespace rosflight_firmware
     return true;
   }
 
-  void testBoard::imu_not_responding_error(void){}
+  void testBoard::imu_not_responding_error(){}
 
-  bool testBoard::mag_check(void){ return false; }
+  bool testBoard::mag_present(){ return false; }
+  void testBoard::mag_update(){}
   void testBoard::mag_read(float mag[3]){}
 
-  bool testBoard::baro_check(void){ return false; }
+  bool testBoard::baro_present(){ return false; }
+  void testBoard::baro_update(){}
   void testBoard::baro_read(float *pressure, float *temperature) {}
 
-  bool testBoard::diff_pressure_check(void){ return false; }
+  bool testBoard::diff_pressure_present(){ return false; }
+  void testBoard::diff_pressure_update(){}
   void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
 
-  bool testBoard::sonar_check(void){ return false; }
-  float testBoard::sonar_read(void){return 0;}
+  bool testBoard::sonar_present(){ return false; }
+  void testBoard::sonar_update(){}
+  float testBoard::sonar_read(){return 0;}
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
@@ -136,18 +140,18 @@ namespace rosflight_firmware
   void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
 
 // non-volatile memory
-  void testBoard::memory_init(void){}
+  void testBoard::memory_init(){}
   bool testBoard::memory_read(void *dest, size_t len){ return false; }
   bool testBoard::memory_write(const void *src, size_t len){ return false; }
 
 // LEDs
-  void testBoard::led0_on(void){}
-  void testBoard::led0_off(void){}
-  void testBoard::led0_toggle(void){}
+  void testBoard::led0_on(){}
+  void testBoard::led0_off(){}
+  void testBoard::led0_toggle(){}
 
-  void testBoard::led1_on(void){}
-  void testBoard::led1_off(void){}
-  void testBoard::led1_toggle(void){}
+  void testBoard::led1_on(){}
+  void testBoard::led1_off(){}
+  void testBoard::led1_toggle(){}
 
 } // namespace rosflight_firmware
 
