@@ -123,7 +123,7 @@ void BreezyBoard::sensors_init()
   else if (ms5611_init())
     baro_type = BARO_MS5611;
 
-  hmc5883lInit(_board_revision);
+  hmc5883lInit();
   mb1242_init();
   ms4525_init();
 
@@ -177,13 +177,7 @@ void BreezyBoard::imu_not_responding_error()
 void BreezyBoard::mag_read(float mag[3])
 {
   // Convert to NED
-  int16_t raw_mag[3];
-  //  hmc5883l_update();
-  hmc5883l_request_async_update();
-  hmc5883l_async_read(raw_mag);
-  mag[0] = (float)raw_mag[0];
-  mag[1] = (float)raw_mag[1];
-  mag[2] = (float)raw_mag[2];
+  hmc5883l_async_read(mag);
 }
 
 bool BreezyBoard::mag_present()
@@ -193,7 +187,7 @@ bool BreezyBoard::mag_present()
 
 void BreezyBoard::mag_update()
 {
-  hmc5883l_update();;
+  hmc5883l_request_async_update();
 }
 
 void BreezyBoard::baro_update()

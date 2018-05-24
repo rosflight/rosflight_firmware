@@ -112,8 +112,8 @@ bool Sensors::run(void)
 {
   // First, check for new IMU data
   bool got_imu = update_imu();
-//  if (!rf_.state_manager_.state().armed)
-//    look_for_disabled_sensors();
+  if (!rf_.state_manager_.state().armed)
+    look_for_disabled_sensors();
   
   // Update other sensors
   update_other_sensors();
@@ -163,6 +163,15 @@ void Sensors::update_other_sensors()
       data_.diff_pressure_temp = raw_temp;
       correct_diff_pressure();
     }
+  }
+  
+  if (rf_.board_.sonar_present())
+  {
+    data_.sonar_present = true;
+    float raw_distance;
+    rf_.board_.sonar_update();
+    raw_distance = rf_.board_.sonar_read();
+    data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
   }
 }
 
