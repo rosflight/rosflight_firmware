@@ -55,8 +55,8 @@ public:
   virtual void board_reset(bool bootloader) = 0;
 
 // clock
-  virtual uint32_t clock_millis() = 0;
-  virtual uint64_t clock_micros() = 0;
+  virtual uint32_t clock_millis() volatile = 0;
+  virtual uint64_t clock_micros() volatile = 0;
   virtual void clock_delay(uint32_t milliseconds) = 0;
 
 // serial

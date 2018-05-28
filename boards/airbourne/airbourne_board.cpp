@@ -57,12 +57,12 @@ void AirbourneBoard::board_reset(bool bootloader)
 }
 
 // clock
-uint32_t AirbourneBoard::clock_millis()
+uint32_t AirbourneBoard::clock_millis() volatile
 {
   return millis();
 }
 
-uint64_t AirbourneBoard::clock_micros()
+uint64_t AirbourneBoard::clock_micros() volatile
 {
   return micros();
 }

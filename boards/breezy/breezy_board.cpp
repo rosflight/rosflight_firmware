@@ -63,12 +63,12 @@ void BreezyBoard::board_reset(bool bootloader)
 
 // clock
 
-uint32_t BreezyBoard::clock_millis()
+uint32_t BreezyBoard::clock_millis() volatile
 {
   return millis();
 }
 
-uint64_t BreezyBoard::clock_micros()
+uint64_t BreezyBoard::clock_micros() volatile
 {
   return micros();
 }

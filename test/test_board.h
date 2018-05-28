@@ -54,8 +54,8 @@ public:
   void board_reset(bool bootloader) override;
 
 // clock
-  uint32_t clock_millis() override;
-  uint64_t clock_micros() override;
+  uint32_t clock_millis() volatile override;
+  uint64_t clock_micros() volatile override;
   void clock_delay(uint32_t milliseconds) override;
 
 // serial

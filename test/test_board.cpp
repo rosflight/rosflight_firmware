@@ -72,8 +72,8 @@ namespace rosflight_firmware
   void testBoard::board_reset(bool bootloader){}
 
 // clock
-  uint32_t testBoard::clock_millis(){ return time_us_/1000; }
-  uint64_t testBoard::clock_micros(){ return time_us_; }
+  uint32_t testBoard::clock_millis() volatile{ return time_us_/1000; }
+  uint64_t testBoard::clock_micros() volatile{ return time_us_; }
   void testBoard::clock_delay(uint32_t milliseconds){}
 
 // serial

@@ -112,67 +112,80 @@ bool Sensors::run(void)
 {
   // First, check for new IMU data
   bool got_imu = update_imu();
-  if (!rf_.state_manager_.state().armed)
-    look_for_disabled_sensors();
+//  if (!rf_.state_manager_.state().armed)
+//    look_for_disabled_sensors();
   
   // Update other sensors
-  update_other_sensors();
+  update_other_sensors();  
   return got_imu;
 }
 
 
 void Sensors::update_other_sensors()
 {  
-  if (rf_.board_.baro_present())
+  switch(next_sensor_to_update_)
   {
-    data_.baro_present = true;
-    rf_.board_.baro_update();
-    float raw_pressure;
-    float raw_temp;
-    rf_.board_.baro_read(&raw_pressure, &raw_temp);
-    data_.baro_valid = baro_outlier_filt_.update(raw_pressure, &data_.baro_pressure);
-    if (data_.baro_valid)
+  case BAROMETER:
+    if (rf_.board_.baro_present())
     {
-      data_.baro_temperature = raw_temp;
-      correct_baro();
+      data_.baro_present = true;
+      rf_.board_.baro_update();
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.baro_read(&raw_pressure, &raw_temp);
+      data_.baro_valid = baro_outlier_filt_.update(raw_pressure, &data_.baro_pressure);
+      if (data_.baro_valid)
+      {
+        data_.baro_temperature = raw_temp;
+        correct_baro();
+      }
     }
-  }
-  
-  if (rf_.board_.mag_present())
-  {
-    data_.mag_present = true;
-    float mag[3];
-    rf_.board_.mag_update();
-    rf_.board_.mag_read(mag);
-    data_.mag.x = mag[0];
-    data_.mag.y = mag[1];
-    data_.mag.z = mag[2];
-    correct_mag();
-  }
-  
-  if (rf_.board_.diff_pressure_present())
-  {
-    data_.diff_pressure_present = true;
-    float raw_pressure;
-    float raw_temp;
-    rf_.board_.diff_pressure_update();
-    rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
-    data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
-    if (data_.diff_pressure_valid)
+    break;
+  case MAGNETOMETER:
+    if (rf_.board_.mag_present())
     {
-      data_.diff_pressure_temp = raw_temp;
-      correct_diff_pressure();
+      data_.mag_present = true;
+      float mag[3];
+      rf_.board_.mag_update();
+      rf_.board_.mag_read(mag);
+      data_.mag.x = mag[0];
+      data_.mag.y = mag[1];
+      data_.mag.z = mag[2];
+      correct_mag();
     }
-  }
+    break;
   
-  if (rf_.board_.sonar_present())
-  {
-    data_.sonar_present = true;
-    float raw_distance;
-    rf_.board_.sonar_update();
-    raw_distance = rf_.board_.sonar_read();
-    data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
+  case DIFF_PRESSURE:
+    if (rf_.board_.diff_pressure_present())
+    {
+      data_.diff_pressure_present = true;
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.diff_pressure_update();
+      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
+      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
+      if (data_.diff_pressure_valid)
+      {
+        data_.diff_pressure_temp = raw_temp;
+        correct_diff_pressure();
+      }
+    }
+    break;
+    
+  case SONAR:    
+    if (rf_.board_.sonar_present())
+    {
+      data_.sonar_present = true;
+      float raw_distance;
+      rf_.board_.sonar_update();
+      raw_distance = rf_.board_.sonar_read();
+      data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
+    }
+    break;
+  default:
+    break;
   }
+  next_sensor_to_update_ = (next_sensor_to_update_ + 1) % NUM_LOW_PRIORITY_SENSORS;
 }
 
 
@@ -187,22 +200,22 @@ void Sensors::look_for_disabled_sensors()
     last_time_look_for_disarmed_sensors_ = rf_.board_.clock_millis();
     switch (next_sensor_to_look_for_)
     {
-    case LowPrioritySensors::BAROMETER:
+    case BAROMETER:
       rf_.board_.baro_update();
       break;
-    case LowPrioritySensors::MAGNETOMETER:
+    case MAGNETOMETER:
       rf_.board_.mag_update();
       break;
-    case LowPrioritySensors::DIFF_PRESSURE:
+    case DIFF_PRESSURE:
       rf_.board_.diff_pressure_update();
       break;
-    case LowPrioritySensors::SONAR:
+    case SONAR:
       rf_.board_.sonar_update();
       break;
     default:
       break;
     }
-    next_sensor_to_look_for_ = static_cast<LowPrioritySensors>((next_sensor_to_look_for_ + 1) % NUM_LOW_PRIORITY_SENSORS);
+    next_sensor_to_look_for_ = (next_sensor_to_look_for_ + 1) % NUM_LOW_PRIORITY_SENSORS;
   }
 }
 
