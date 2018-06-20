@@ -334,7 +334,7 @@ void CommManager::send_imu(void)
 {
   turbomath::Vector acc, gyro;
   uint64_t stamp_us;
-  RF_.sensors_.get_filtered_IMU_(acc, gyro, stamp_us);
+  RF_.sensors_.get_filtered_IMU(acc, gyro, stamp_us);
   comm_link_.send_imu(sysid_,
                       stamp_us,
                       acc,

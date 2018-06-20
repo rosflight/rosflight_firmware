@@ -69,17 +69,17 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
   volatile uint32_t lr; /* Link register. */
   volatile uint32_t pc; /* Program counter. */
   volatile uint32_t psr;/* Program status register. */
-  
+
   r0 = pulFaultStackAddress[ 0 ];
   r1 = pulFaultStackAddress[ 1 ];
   r2 = pulFaultStackAddress[ 2 ];
   r3 = pulFaultStackAddress[ 3 ];
-  
+
   r12 = pulFaultStackAddress[ 4 ];
   lr = pulFaultStackAddress[ 5 ];
   pc = pulFaultStackAddress[ 6 ];
   psr = pulFaultStackAddress[ 7 ];
-  
+
   // avoid compiler warnings about unused variables
   (void) r0;
   (void) r1;
@@ -89,7 +89,7 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
   (void) lr;
   (void) pc;
   (void) psr;
-  
+
   /* When the following line is hit, the variables contain the register values. */
   for( ;; );
 }
@@ -130,7 +130,7 @@ int main(void)
 
   firmware.init();
 
-  while(1)
+  while (true)
   {
     firmware.run();
   }
