@@ -109,7 +109,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status streaming (Hz) | 0 | 1000
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 200); // Rate of attitude stream (Hz) | 0 | 1000
-  init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 500); // Rate of IMU stream (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 250); // Rate of IMU stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 50); // Rate of magnetometer stream (Hz) | 0 | 75
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
@@ -153,11 +153,9 @@ void Params::set_defaults(void)
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - See motor documentation | 0 | 1000
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - Requires reboot to take effect | 0 | 1000
   init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
-  init_param_int(PARAM_MOTOR_MIN_PWM, "MOTOR_MIN_PWM", 1000); // PWM value sent to motor ESCs at zero throttle | 1000 | 2000
-  init_param_int(PARAM_MOTOR_MAX_PWM, "MOTOR_MAX_PWM", 2000); // PWM value sent to motor ESCs at full throttle | 1000 | 2000
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_THR | 0 | 1
 
   /*******************************/
@@ -165,7 +163,7 @@ void Params::set_defaults(void)
   /*******************************/
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 0.5f); // estimator proportional gain - See estimator documentation | 0 | 10.0
-  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.05f); // estimator integral gain - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.01f); // estimator integral gain - See estimator documentation | 0 | 1.0
 
   init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
   init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
@@ -207,7 +205,7 @@ void Params::set_defaults(void)
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 1); // Type of RC input 0 - Parallel PWM (PWM), 1 - Pulse-Position Modulation (PPM) | 0 | 1
+  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 0); // Type of RC input 0 - PPM, 1 - SBUS | 0 | 1
   init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0); // RC input channel mapped to x-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1); // RC input channel mapped to y-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3); // RC input channel mapped to z-axis commands [0 - indexed] | 0 | 3

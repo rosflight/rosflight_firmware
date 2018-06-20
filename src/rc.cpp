@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include <cstring>
 
 #include "rc.h"
@@ -43,24 +44,26 @@ RC::RC(ROSflight &_rf) :
 
 void RC::init()
 {
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_ARM_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_X_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Y_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_Z_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_F_CHANNEL);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_5_DIRECTION);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_6_DIRECTION);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_7_DIRECTION);
-  RF_.params_.add_callback(std::bind(&RC::param_change_callback, this, std::placeholders::_1), PARAM_RC_SWITCH_8_DIRECTION);
   init_rc();
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ARM_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_X_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_Y_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_Z_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_F_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_5_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_6_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_7_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_8_DIRECTION);
   new_command_ = false;
 }
 
 void RC::init_rc()
 {
+  RF_.board_.rc_init(static_cast<Board::rc_type_t>(RF_.params_.get_param_int(PARAM_RC_TYPE)));
   init_sticks();
   init_switches();
 }
@@ -165,7 +168,7 @@ bool RC::check_rc_lost()
   bool failsafe = false;
 
   // If the board reports that we have lost RC, tell the state manager
-  if (RF_.board_.pwm_lost())
+  if (RF_.board_.rc_lost())
   {
     failsafe = true;
   }
@@ -174,7 +177,8 @@ bool RC::check_rc_lost()
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
-      if (RF_.board_.pwm_read(i) < 900 || RF_.board_.pwm_read(i) > 2100)
+      float pwm = RF_.board_.rc_read(i);
+      if (pwm < -0.25 || pwm > 1.25)
       {
         failsafe = true;
       }
@@ -270,14 +274,14 @@ bool RC::run()
   // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
-    uint16_t pwm = RF_.board_.pwm_read(sticks[channel].channel);
+    float pwm = RF_.board_.rc_read(sticks[channel].channel);
     if (sticks[channel].one_sided) //generally only F is one_sided
     {
-      stick_values[channel] = (static_cast<float>(pwm - 1000)) / 1000.0f;
+      stick_values[channel] = pwm;
     }
     else
     {
-      stick_values[channel] = static_cast<float>(2*(pwm - 1500)) / (1000.0f);
+      stick_values[channel] = 2.0 * (pwm - 0.5);
     }
   }
 
@@ -288,11 +292,11 @@ bool RC::run()
     {
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) < 1200;
+        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) < 0.2;
       }
       else
       {
-        switch_values[channel] = RF_.board_.pwm_read(switches[channel].channel) >= 1800;
+        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) >= 0.8;
       }
     }
     else

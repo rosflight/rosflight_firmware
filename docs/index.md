@@ -7,7 +7,7 @@ ROSflight is an autopilot system that is designed from the ground up for integra
 
 A ROSflight setup consists of two main components:
 
-  1. **The embedded flight controller:** Typically a Naze32 or one of its variants, running the ROSflight [firmware](https://github.com/rosflight/firmware)
+  1. **The embedded flight controller:** Typically an openpilot Revo or one of its variants, running the ROSflight [firmware](https://github.com/rosflight/firmware)
   2. **The onboard computer:** Any computer that runs ROS, located on the vehicle with a physical serial connection to the embedded flight controller
 
 ## Why ROSflight?

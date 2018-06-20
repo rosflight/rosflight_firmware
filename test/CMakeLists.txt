@@ -1,13 +1,21 @@
 cmake_minimum_required(VERSION 2.6)
 
+# C++ standard
 add_definitions(-std=c++11)
 
 # Strict Compilation
-set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -pedantic-errors -Werror -Wall -Wextra \
+set(CMAKE_CXX_FLAGS "-pedantic -pedantic-errors -Werror -Wall -Wextra \
   -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
   -Wredundant-decls -Wshadow -Wstrict-overflow=5 -Wundef -Wunused -Wvariadic-macros \
   -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel"
   ${CMAKE_CXX_FLAGS})
+
+# Git information
+execute_process(COMMAND git rev-parse --short=8 HEAD OUTPUT_VARIABLE GIT_VERSION_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git describe --tags --abbrev=8 --always --dirty --long OUTPUT_VARIABLE GIT_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+add_definitions(-DGIT_VERSION_HASH=0x${GIT_VERSION_HASH})
+add_definitions(-DGIT_VERSION_STRING=\"${GIT_VERSION_STRING}\")
 
 # Locate GTest
 find_package(GTest REQUIRED)

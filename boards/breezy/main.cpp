@@ -29,19 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "naze32.h"
+#include "breezy_board.h"
 #include "rosflight.h"
 #include "mavlink.h"
 
-int main(void)
+int main()
 {
-  rosflight_firmware::Naze32 board;
+  rosflight_firmware::BreezyBoard board;
+  board.init_board();
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
 
   firmware.init();
 
-  while(1)
+  while (true)
   {
     firmware.run();
   }

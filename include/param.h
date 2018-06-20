@@ -38,7 +38,7 @@
 
 #ifndef GIT_VERSION_HASH
 #define GIT_VERSION_HASH 0x00
-//#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
+#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
 #endif
 
 #ifndef GIT_VERSION_STRING
@@ -71,6 +71,7 @@ enum : uint16_t
 
   PARAM_STREAM_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
+
 
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
@@ -109,8 +110,6 @@ enum : uint16_t
   PARAM_MOTOR_PWM_SEND_RATE,
   PARAM_MOTOR_IDLE_THROTTLE,
   PARAM_FAILSAFE_THROTTLE,
-  PARAM_MOTOR_MAX_PWM,
-  PARAM_MOTOR_MIN_PWM,
   PARAM_SPIN_MOTORS_WHEN_ARMED,
 
   /*******************************/

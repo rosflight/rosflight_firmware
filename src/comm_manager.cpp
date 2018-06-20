@@ -28,7 +28,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <cstdint>
+
+#include <stdint.h>
 
 #include "rosflight.h"
 
@@ -45,32 +46,13 @@ CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
 // function definitions
 void CommManager::init()
 {
-  comm_link_.register_param_request_list_callback(std::bind(&CommManager::param_request_list_callback,
-                                                            this,
-                                                            std::placeholders::_1));
-  comm_link_.register_param_request_read_callback(std::bind(&CommManager::param_request_read_callback,
-                                                            this,
-                                                            std::placeholders::_1,
-                                                            std::placeholders::_2,
-                                                            std::placeholders::_3));
-  comm_link_.register_param_set_int_callback(std::bind(&CommManager::param_set_int_callback,
-                                                       this, std::placeholders::_1,
-                                                       std::placeholders::_2,
-                                                       std::placeholders::_3));
-  comm_link_.register_param_set_float_callback(std::bind(&CommManager::param_set_float_callback,
-                                                         this, std::placeholders::_1,
-                                                         std::placeholders::_2,
-                                                         std::placeholders::_3));
-  comm_link_.register_offboard_control_callback(std::bind(&CommManager::offboard_control_callback,
-                                                this,
-                                                std::placeholders::_1));
-  comm_link_.register_command_callback(std::bind(&CommManager::command_callback,
-                                                 this,
-                                                 std::placeholders::_1));
-  comm_link_.register_timesync_callback(std::bind(&CommManager::timesync_callback,
-                                                  this,
-                                                  std::placeholders::_1,
-                                                  std::placeholders::_2));
+  comm_link_.register_param_request_list_callback([this](uint8_t target_system){this->param_request_list_callback(target_system);});
+  comm_link_.register_param_request_read_callback([this](uint8_t target_system, const char* const param_name, int16_t param_index){this->param_request_read_callback(target_system, param_name, param_index);});
+  comm_link_.register_param_set_int_callback([this](uint8_t target_system, const char* const param_name, int32_t param_value){this->param_set_int_callback(target_system, param_name, param_value);});
+  comm_link_.register_param_set_float_callback([this](uint8_t target_system, const char* const param_name, float param_value){this->param_set_float_callback(target_system, param_name, param_value);});
+  comm_link_.register_offboard_control_callback([this](const CommLink::OffboardControl& control){this->offboard_control_callback(control);});
+  comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
+  comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)));
 
   sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
@@ -79,37 +61,17 @@ void CommManager::init()
   send_params_index_ = PARAMS_COUNT;
 
   // Register Param change callbacks
-  RF_.params_.add_callback(std::bind(&CommManager::update_system_id, this, std::placeholders::_1), PARAM_SYSTEM_ID);
-
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate,
-                                     this,
-                                     STREAM_ID_HEARTBEAT,
-                                     std::placeholders::_1),
-                           PARAM_STREAM_HEARTBEAT_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1),
-                           PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_IMU, std::placeholders::_1),
-                           PARAM_STREAM_IMU_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_ATTITUDE, std::placeholders::_1),
-                           PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate,
-                                     this,
-                                     STREAM_ID_DIFF_PRESSURE,
-                                     std::placeholders::_1),
-                           PARAM_STREAM_AIRSPEED_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_BARO, std::placeholders::_1),
-                           PARAM_STREAM_BARO_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_SONAR, std::placeholders::_1),
-                           PARAM_STREAM_SONAR_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_MAG, std::placeholders::_1),
-                           PARAM_STREAM_MAG_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate,
-                                     this,
-                                     STREAM_ID_SERVO_OUTPUT_RAW,
-                                     std::placeholders::_1),
-                           PARAM_STREAM_OUTPUT_RAW_RATE);
-  RF_.params_.add_callback(std::bind(&CommManager::set_streaming_rate, this, STREAM_ID_RC_RAW, std::placeholders::_1),
-                           PARAM_STREAM_RC_RAW_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->update_system_id(param_id);}, PARAM_SYSTEM_ID);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);}, PARAM_STREAM_HEARTBEAT_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_IMU, param_id);}, PARAM_STREAM_IMU_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
   log(CommLink::LogSeverity::LOG_INFO, "Booting");
@@ -259,6 +221,7 @@ void CommManager::command_callback(CommLink::Command command)
     RF_.board_.clock_delay(20);
     RF_.board_.board_reset(reboot_to_bootloader_flag);
   }
+  RF_.board_.serial_flush();
 }
 
 void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
@@ -369,19 +332,14 @@ void CommManager::send_attitude(void)
 
 void CommManager::send_imu(void)
 {
-  //  if(RF_.sensors_.should_send_imu_data())
-  //  {
+  turbomath::Vector acc, gyro;
+  uint64_t stamp_us;
+  RF_.sensors_.get_filtered_IMU(acc, gyro, stamp_us);
   comm_link_.send_imu(sysid_,
-                      RF_.sensors_.data().imu_time,
-                      RF_.sensors_.data().accel,
-                      RF_.sensors_.data().gyro,
+                      stamp_us,
+                      acc,
+                      gyro,
                       RF_.sensors_.data().imu_temperature);
-  //  }
-  //  else
-  //  {
-  // Otherwise, wait and signal that we still need to send IMU
-  //    mavlink_streams[STREAM_ID_IMU].next_time_us -= mavlink_streams[STREAM_ID_IMU].period_us;
-  //  }
 
 }
 
@@ -395,14 +353,14 @@ void CommManager::send_output_raw(void)
 void CommManager::send_rc_raw(void)
 {
   // TODO better mechanism for retreiving RC (through RC module, not PWM-specific)
-  uint16_t channels[8] = { RF_.board_.pwm_read(0),
-                           RF_.board_.pwm_read(1),
-                           RF_.board_.pwm_read(2),
-                           RF_.board_.pwm_read(3),
-                           RF_.board_.pwm_read(4),
-                           RF_.board_.pwm_read(5),
-                           RF_.board_.pwm_read(6),
-                           RF_.board_.pwm_read(7) };
+  uint16_t channels[8] = { static_cast<uint16_t>(RF_.board_.rc_read(0)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(1)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(2)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(3)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(4)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(5)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(6)*1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(7)*1000) };
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 
@@ -459,6 +417,7 @@ void CommManager::stream()
   {
     streams_[i].stream(time_us);
   }
+  RF_.board_.serial_flush();
 }
 
 void CommManager::set_streaming_rate(uint8_t stream_id, int16_t param_id)

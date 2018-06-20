@@ -38,7 +38,8 @@ Your `rqt_graph` should look something like the following image. This looks funn
 
 * Spin up a simulated RC connection.   The easiest way to do this is with the helper package `rosflight_joy`.  Connect a joystick to the computer (or Taranis transmitter) and run `rosrun rosflight_joy rc_joy RC:=/multirotor/RC`.  This simulates the RC connection in hardware.  If everything is mapped right, you should now be able to arm, disarm and fly the aircraft in simulation!
 
-*__note: it is much easier to fly with a real transmitter than with an xbox-type controller.  Realflight transmitters and interlinks are also supported.  Non-Xbox joysticks may have incorrect mappings.  If your joystick doesn't work and you write your own mapping, please contribute back your new joystick mappings__*
+!!! note
+    it is much easier to fly with a real transmitter than with an xbox-type controller.  FrSky Taranis and Realflight transmitters and interlinks are also supported.  Non-Xbox joysticks may have incorrect mappings.  If your joystick doesn't work and you write your own mapping, please contribute back your new joystick mapping!
 
 Remember, the SIL tries its best to replicate hardware.  That means you have to calibrate and set parameters in the same way you do in hardware.  See the hardware setup and parameter configuration pages in this documentation to see how to perform all preflight configuration before the aircraft will arm.
 

@@ -68,23 +68,24 @@ namespace rosflight_firmware
 
 
 // setup
-  void testBoard::init_board(void){}
+  void testBoard::init_board(){}
   void testBoard::board_reset(bool bootloader){}
 
 // clock
-  uint32_t testBoard::clock_millis(){ return time_us_/1000; }
-  uint64_t testBoard::clock_micros(){ return time_us_; }
+  uint32_t testBoard::clock_millis() { return time_us_/1000; }
+  uint64_t testBoard::clock_micros() { return time_us_; }
   void testBoard::clock_delay(uint32_t milliseconds){}
 
 // serial
   void testBoard::serial_init(uint32_t baud_rate){}
   void testBoard::serial_write(const uint8_t *src, size_t len){}
-  uint16_t testBoard::serial_bytes_available(void){ return 0; }
-  uint8_t testBoard::serial_read(void){return 0;}
+  uint16_t testBoard::serial_bytes_available(){ return 0; }
+  uint8_t testBoard::serial_read(){return 0;}
+  void testBoard::serial_flush(){}
 
 // sensors
   void testBoard::sensors_init(){}
-  uint16_t testBoard::num_sensor_errors(void) {return 0;}
+  uint16_t testBoard::num_sensor_errors() {return 0;}
 
   bool testBoard::new_imu_data()
   {
@@ -109,42 +110,49 @@ namespace rosflight_firmware
     return true;
   }
 
-  void testBoard::imu_not_responding_error(void){}
+  void testBoard::imu_not_responding_error(){}
 
-  bool testBoard::mag_check(void){ return false; }
+  bool testBoard::mag_present(){ return false; }
+  void testBoard::mag_update(){}
   void testBoard::mag_read(float mag[3]){}
 
-  bool testBoard::baro_check(void){ return false; }
+  bool testBoard::baro_present(){ return false; }
+  void testBoard::baro_update(){}
   void testBoard::baro_read(float *pressure, float *temperature) {}
 
-  bool testBoard::diff_pressure_check(void){ return false; }
+  bool testBoard::diff_pressure_present(){ return false; }
+  void testBoard::diff_pressure_update(){}
   void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
 
-  bool testBoard::sonar_check(void){ return false; }
-  float testBoard::sonar_read(void){return 0;}
+  bool testBoard::sonar_present(){ return false; }
+  void testBoard::sonar_update(){}
+  float testBoard::sonar_read(){return 0;}
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  void testBoard::pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm){}
-  bool testBoard::pwm_lost(){ return rc_lost_; }
-  uint16_t testBoard::pwm_read(uint8_t channel){ return rc_values[channel];}
-  void testBoard::pwm_write(uint8_t channel, uint16_t value){}
+  void testBoard::rc_init(rc_type_t rc_type){}
+  bool testBoard::rc_lost(){ return rc_lost_; }
+  float testBoard::rc_read(uint8_t channel)
+  {
+    return static_cast<float>(rc_values[channel] - 1000)/1000.0 ;
+  }
+  void testBoard::pwm_write(uint8_t channel, float value){}
+  void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
 
 // non-volatile memory
-  void testBoard::memory_init(void){}
+  void testBoard::memory_init(){}
   bool testBoard::memory_read(void *dest, size_t len){ return false; }
   bool testBoard::memory_write(const void *src, size_t len){ return false; }
 
 // LEDs
-  void testBoard::led0_on(void){}
-  void testBoard::led0_off(void){}
-  void testBoard::led0_toggle(void){}
+  void testBoard::led0_on(){}
+  void testBoard::led0_off(){}
+  void testBoard::led0_toggle(){}
 
-  void testBoard::led1_on(void){}
-  void testBoard::led1_off(void){}
-  void testBoard::led1_toggle(void){}
+  void testBoard::led1_on(){}
+  void testBoard::led1_off(){}
+  void testBoard::led1_toggle(){}
 
 } // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop
-

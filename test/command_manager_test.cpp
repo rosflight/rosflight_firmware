@@ -630,7 +630,8 @@ TEST(command_manager_test, partial_muxing_test ) {
   };
 
   // step a bunch of times to clear the "lag time" on RC
-  while (board.clock_micros() < 1000000)
+  board.set_rc(rc_values);
+  while (board.clock_micros() < 2000000)
   {
     step_firmware(rf, board, 20000);
   }

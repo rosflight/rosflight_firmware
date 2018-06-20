@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include <stdint.h>
 
 #include "mixer.h"
@@ -43,10 +44,9 @@ Mixer::Mixer(ROSflight &_rf) :
 
 void Mixer::init()
 {
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_PWM_SEND_RATE);
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MOTOR_MIN_PWM);
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_RC_TYPE);
-  RF_.params_.add_callback(std::bind(&Mixer::param_change_callback, this, std::placeholders::_1), PARAM_MIXER);
+  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MOTOR_PWM_SEND_RATE);
+  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
+  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MIXER);
 
   init_mixing();
   init_PWM();
@@ -93,14 +93,9 @@ void Mixer::init_mixing()
 
 void Mixer::init_PWM()
 {
-  bool useCPPM = false;
-  if (RF_.params_.get_param_int(PARAM_RC_TYPE) == 1)
-  {
-    useCPPM = true;
-  }
   int16_t motor_refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
-  int16_t off_pwm = RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_.board_.pwm_init(useCPPM, motor_refresh_rate, off_pwm);
+  int16_t off_pwm = 1000;
+  RF_.board_.pwm_init(motor_refresh_rate, off_pwm);
 }
 
 
@@ -127,9 +122,7 @@ void Mixer::write_motor(uint8_t index, float value)
     value = 0.0;
   }
   raw_outputs_[index] = value;
-  int32_t pwm_us = value * (RF_.params_.get_param_int(PARAM_MOTOR_MAX_PWM) - RF_.params_.get_param_int(
-                              PARAM_MOTOR_MIN_PWM)) + RF_.params_.get_param_int(PARAM_MOTOR_MIN_PWM);
-  RF_.board_.pwm_write(index, pwm_us);
+  RF_.board_.pwm_write(index, raw_outputs_[index]);
 }
 
 
@@ -144,7 +137,7 @@ void Mixer::write_servo(uint8_t index, float value)
     value = -1.0;
   }
   raw_outputs_[index] = value;
-  RF_.board_.pwm_write(index, raw_outputs_[index] * 500 + 1500);
+  RF_.board_.pwm_write(index, raw_outputs_[index] * 0.5 + 0.5);
 }
 
 
@@ -159,6 +152,11 @@ void Mixer::mix_output()
     commands.x *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
     commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
     commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+  }
+  else if(commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE))
+  {
+    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while arming/disarming
+    commands.z = 0.0;
   }
 
   for (int8_t i=0; i<8; i++)

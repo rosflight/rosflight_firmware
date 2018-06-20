@@ -64,12 +64,6 @@ public:
 
   RC(ROSflight& _rf);
 
-  typedef enum
-  {
-    PARALLEL_PWM,
-    CPPM,
-  } rc_type_t;
-
   void init();
   float stick(Stick channel);
   bool switch_on(Switch channel);

@@ -126,10 +126,7 @@ void Estimator::run()
     last_time_ = now_us;
     return;
   }
-  else if (now_us  == last_time_)
-  {
-    return;
-  }
+
 
   RF_.state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
 
@@ -222,10 +219,10 @@ void Estimator::run()
       // Propagation for Low-Cost UAVs by Robert T. Casey)
       // (Eq. 12 Casey Paper)
       // This adds 90 us on STM32F10x chips
-      float norm_w = sqrt(sqrd_norm_w);
+      float norm_w = sqrtf(sqrd_norm_w);
       turbomath::Quaternion qhat_np1;
-      float t1 = cos((norm_w*dt)/2.0f);
-      float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
+      float t1 = cosf((norm_w*dt)/2.0f);
+      float t2 = 1.0f/norm_w * sinf((norm_w*dt)/2.0f);
       qhat_np1.w = t1*state_.attitude.w + t2*(-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z);
       qhat_np1.x = t1*state_.attitude.x + t2*( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z);
       qhat_np1.y = t1*state_.attitude.y + t2*( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z);
