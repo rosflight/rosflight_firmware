@@ -26,8 +26,8 @@ UNDL = "\x1B[4m"
 CLEAR = "\x1b[2K\r"
 UPLINE = "\033[F"
 STARTLINE = "\r"
-
 END = "\x1b[200C"
+CLEAR_SCREEN = "\033[2J + \033[0;0f"
 def GO_UP(x): return "\x1b[" + str(x) + "A"
 
 
@@ -86,6 +86,8 @@ class Stats():
             val = [getattr(val, field) for field in fields]
         elif not isinstance(val, list):
             val = [val]
+        elif isinstance(val,list):
+            val = val[:8]
         self.max = [max(internal, new) for internal, new in zip(self.max, val)]
         self.min = [min(internal, new) for internal, new in zip(self.max, val)]
         self.data['t'].append(t)
@@ -129,7 +131,8 @@ class Tester():
         self.status = Stats(2, 'status')
 
         self.last_time = time.time()
-
+        print(CLEAR_SCREEN, end='')
+        print("===========  ROSFLIGHT HARDWARE CONTINUOUS INTEGRATION TEST ===========\n\n")
         print(Message("Start Test", MSG_INFO))
 
         self.run()
@@ -159,11 +162,11 @@ class Tester():
 
     def output_callback(self, msg):
         t = msg.header.stamp.to_sec()
-        self.output.update(msg.values, t)
+        self.output.update(list(msg.values), t)
 
     def rc_callback(self, msg):
         t = msg.header.stamp.to_sec()
-        self.rc.update(msg.values, t)
+        self.rc.update(list(msg.values), t)
 
     def status_callback(self, msg):
         t = msg.header.stamp.to_sec()
@@ -190,10 +193,12 @@ class Tester():
             print(RST+CLEAR, end='')
             string = type + "\r" + GO_FORWARD(8) + " -- | dt = {:10.4f} \t| ["
             values = [getattr(self,type).t_diff]
-            for val in getattr(self, type).data['val'][-1]:
-                string += "{:10.4f}, "
+            for i, val in enumerate(getattr(self, type).data['val'][-1]):
+                string += "{:10.4f}"
                 values.append(val)
-            string += " ]"
+                if i != len(getattr(self, type).data['val'][-1]) -1:
+                    string += ", "
+            string += "]"
             print(string.format(*values), end='\n')
             return 1
         else:
@@ -214,8 +219,8 @@ class Tester():
             lines += self.print_status('omega')
             lines += self.print_status('airspeed')
             lines += self.print_status('baro')
-            lines += self.print_status('output')
-            lines += self.print_status('rc')
+            # lines += self.print_status('output')
+            # lines += self.print_status('rc')
             lines += self.print_status('status')
             print('\n', end='')
             print(RST + CLEAR, end='')
@@ -227,8 +232,8 @@ class Tester():
         rospy.init_node("rosflight_hardware_test")
         self.att_sub = rospy.Subscriber('attitude', Attitude, self.att_callback)
         self.status_sub = rospy.Subscriber('status', Status, self.status_callback)
-        self.rc_sub = rospy.Subscriber('rc', RCRaw, self.rc_callback)
-        self.output_sub = rospy.Subscriber('output', OutputRaw, self.output_callback)
+        self.rc_sub = rospy.Subscriber('rc_raw', RCRaw, self.rc_callback)
+        self.output_sub = rospy.Subscriber('output_raw', OutputRaw, self.output_callback)
         self.baro_sub = rospy.Subscriber('baro', Barometer, self.baro_callback)
         self.mag_sub = rospy.Subscriber('mag', MagneticField, self.mag_callback)
         self.acc_sub = rospy.Subscriber('imu/data', Imu, self.imu_callback)
