@@ -103,12 +103,6 @@ void ROSflight::run()
     mixer_.mix_output();
     loop_time_us = board_.clock_micros() - start;
   }
-  
-  if (loop_time_us > 1000)
-  {
-    volatile int debug = 1;
-    (void)debug;
-  }
 
   /*********************/
   /***  Post-Process ***/

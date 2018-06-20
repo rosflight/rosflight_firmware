@@ -77,7 +77,7 @@ public:
   Sensors(ROSflight& rosflight);
 
   inline const Data& data() const { return data_; }
-  void get_filtered_IMU_(turbomath::Vector& accel, turbomath::Vector& gyro, uint64_t& stamp_us);
+  void get_filtered_IMU(turbomath::Vector& accel, turbomath::Vector& gyro, uint64_t& stamp_us);
 
   // function declarations
   void init();

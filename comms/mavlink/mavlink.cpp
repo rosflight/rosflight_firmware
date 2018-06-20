@@ -119,8 +119,6 @@ void Mavlink::send_command_ack(uint8_t system_id, Command command, bool success)
   case CommLink::Command::COMMAND_SEND_VERSION:
     rosflight_cmd = ROSFLIGHT_CMD_SEND_VERSION;
     break;
-  default:
-    break;
   }
 
   mavlink_message_t msg;
@@ -179,8 +177,6 @@ void Mavlink::send_log_message(uint8_t system_id, LogSeverity severity, const ch
     break;
   case CommLink::LogSeverity::LOG_CRITICAL:
     mavlink_severity = MAV_SEVERITY_CRITICAL;
-    break;
-  default:
     break;
   }
 

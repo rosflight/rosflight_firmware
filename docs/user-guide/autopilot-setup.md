@@ -8,7 +8,7 @@ As of January 2018 ROSflight is only supported on flight controllers with STM32F
 
 * Download the latest version of ROSflight for your board [here](https://github.com/rosflight/firmware/releases).
 * Install the cleanflight configurator - It is an extension to Google Chrome - [link](https://chrome.google.com/webstore/detail/cleanflight-configurator/enacoimjcgeinfnnnpajinjgmkahmfgb?hl=en)
-* Be sure your user is in the `dialout` and `plugdev` group so you have access to the serial ports
+* Be sure your user is in the `dialout` and `plugdev` group so you have access to the serial ports. You'll need to log out and back in for these changes to take effect.
 ``` bash
 sudo usermod -a -G plugdev <username>
 sudo usermod -a -G dialout <username>

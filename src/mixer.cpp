@@ -155,7 +155,8 @@ void Mixer::mix_output()
   }
   else if(commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE))
   {
-      commands.z = 0.0;
+    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while arming/disarming
+    commands.z = 0.0;
   }
 
   for (int8_t i=0; i<8; i++)

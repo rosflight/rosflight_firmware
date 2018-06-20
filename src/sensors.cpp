@@ -64,20 +64,20 @@ void Sensors::init()
   rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_ROLL);
   rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_PITCH);
   rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_YAW);
-  
+
   new_imu_data_ = false;
-  
+
   // clear the IMU read error
   rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
   rf_.board_.sensors_init();
-  
+
   init_imu();
-  
+
   next_sensor_to_update_ = BAROMETER;
-  
+
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
   ground_pressure_ = 101325.0f*static_cast<float>(pow((1-2.25694e-5 * alt), 5.2553));
-  
+
   baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
@@ -91,7 +91,7 @@ void Sensors::init_imu()
   float pitch = rf_.params_.get_param_float(PARAM_FC_PITCH) * 0.017453293;
   float yaw = rf_.params_.get_param_float(PARAM_FC_YAW) * 0.017453293;
   data_.fcu_orientation = turbomath::Quaternion(roll, pitch, yaw);
-  
+
   // See if the IMU is uncalibrated, and throw an error if it is
   if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_ACC_Y_BIAS) == 0.0 &&
       rf_.params_.get_param_float(PARAM_ACC_Z_BIAS) == 0.0 && rf_.params_.get_param_float(PARAM_GYRO_X_BIAS) == 0.0 &&
@@ -112,21 +112,21 @@ bool Sensors::run(void)
 {
   // First, check for new IMU data
   bool got_imu = update_imu();
-  
+
   // Look for sensors that may not have been recognized at start because they weren't attached
   // to the 5V rail (only if disarmed)
   if (!rf_.state_manager_.state().armed)
     look_for_disabled_sensors();
-  
+
   // Update other sensors
-  update_other_sensors();  
+  update_other_sensors();
   return got_imu;
 }
 
 
 void Sensors::update_other_sensors()
-{  
-  switch(next_sensor_to_update_)
+{
+  switch (next_sensor_to_update_)
   {
   case BAROMETER:
     if (rf_.board_.baro_present())
@@ -157,7 +157,7 @@ void Sensors::update_other_sensors()
       correct_mag();
     }
     break;
-  
+
   case DIFF_PRESSURE:
     if (rf_.board_.diff_pressure_present())
     {
@@ -174,8 +174,8 @@ void Sensors::update_other_sensors()
       }
     }
     break;
-    
-  case SONAR:    
+
+  case SONAR:
     if (rf_.board_.sonar_present())
     {
       data_.sonar_present = true;
@@ -225,7 +225,7 @@ void Sensors::look_for_disabled_sensors()
 bool Sensors::start_imu_calibration(void)
 {
   start_gyro_calibration();
-  
+
   calibrating_acc_flag_ = true;
   rf_.params_.set_param_float(PARAM_ACC_X_BIAS, 0.0);
   rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, 0.0);
@@ -277,34 +277,34 @@ bool Sensors::update_imu(void)
     last_imu_update_ms_ = rf_.board_.clock_millis();
     if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
       return false;
-    
+
     // Move data into local copy
     data_.accel.x = accel_[0];
     data_.accel.y = accel_[1];
     data_.accel.z = accel_[2];
-    
+
     data_.accel = data_.fcu_orientation * data_.accel;
-    
+
     data_.gyro.x = gyro_[0];
     data_.gyro.y = gyro_[1];
     data_.gyro.z = gyro_[2];
-    
+
     data_.gyro = data_.fcu_orientation * data_.gyro;
-    
+
     if (calibrating_acc_flag_)
       calibrate_accel();
     if (calibrating_gyro_flag_)
       calibrate_gyro();
-    
+
     // Apply bias correction
     correct_imu();
-    
+
     // Integrate for filtered IMU
     float dt = (data_.imu_time - prev_imu_read_time_us_) * 1e-6;
     accel_int_ += dt * data_.accel;
     gyro_int_ += dt * data_.gyro;
     prev_imu_read_time_us_ = data_.imu_time;
-    
+
     return true;
   }
   else
@@ -320,7 +320,7 @@ bool Sensors::update_imu(void)
       last_imu_update_ms_ = rf_.board_.clock_millis();
       if (!rf_.state_manager_.state().armed)
         rf_.board_.imu_not_responding_error();
-      
+
       // Indicate an IMU error
       rf_.state_manager_.set_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     }
@@ -329,7 +329,7 @@ bool Sensors::update_imu(void)
 }
 
 
-void Sensors::get_filtered_IMU_(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us)
+void Sensors::get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us)
 {
   float delta_t = (data_.imu_time - int_start_us_)*1e-6;
   accel = accel_int_ / delta_t;
@@ -346,21 +346,21 @@ void Sensors::calibrate_gyro()
 {
   gyro_sum_ += data_.gyro;
   gyro_calibration_count_++;
-  
+
   if (gyro_calibration_count_ > 1000)
   {
     // Gyros are simple.  Just find the average during the calibration
     turbomath::Vector gyro_bias = gyro_sum_ / static_cast<float>(gyro_calibration_count_);
-    
+
     if (gyro_bias.norm() < 1.0)
     {
       rf_.params_.set_param_float(PARAM_GYRO_X_BIAS, gyro_bias.x);
       rf_.params_.set_param_float(PARAM_GYRO_Y_BIAS, gyro_bias.y);
       rf_.params_.set_param_float(PARAM_GYRO_Z_BIAS, gyro_bias.z);
-      
+
       // Tell the estimator to reset it's bias estimate, because it should be zero now
       rf_.estimator_.reset_adaptive_bias();
-      
+
       // Tell the state manager that we just completed a gyro calibration
       rf_.state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
     }
@@ -370,7 +370,7 @@ void Sensors::calibrate_gyro()
       rf_.state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
       rf_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Too much movement for gyro cal");
     }
-    
+
     // reset calibration in case we do it again
     calibrating_gyro_flag_ = false;
     gyro_calibration_count_ = 0;
@@ -402,7 +402,7 @@ void Sensors::calibrate_accel(void)
   max_ = vector_max(max_, data_.accel);
   min_ = vector_min(min_, data_.accel);
   accel_calibration_count_++;
-  
+
   if (accel_calibration_count_ > 1000)
   {
     // The temperature bias is calculated using a least-squares regression.
@@ -414,7 +414,7 @@ void Sensors::calibrate_accel(void)
       rf_.params_.get_param_float(PARAM_ACC_Y_TEMP_COMP),
       rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)
     };
-    
+
     // Figure out the proper accel bias.
     // We have to consider the contribution of temperature during the calibration,
     // Which is why this line is so confusing. What we are doing, is first removing
@@ -422,7 +422,7 @@ void Sensors::calibrate_accel(void)
     // Then we are dividing by the number of measurements.
     turbomath::Vector accel_bias = (acc_sum_ - (accel_temp_bias * acc_temp_sum_)) /
         static_cast<float>(accel_calibration_count_);
-    
+
     // Sanity Check -
     // If the accelerometer is upside down or being spun around during the calibration,
     // then don't do anything
@@ -436,14 +436,14 @@ void Sensors::calibrate_accel(void)
       // reset the estimated state
       rf_.estimator_.reset_state();
       calibrating_acc_flag_ = false;
-      
+
       if (accel_bias.norm() < 3.0)
       {
         rf_.params_.set_param_float(PARAM_ACC_X_BIAS, accel_bias.x);
         rf_.params_.set_param_float(PARAM_ACC_Y_BIAS, accel_bias.y);
         rf_.params_.set_param_float(PARAM_ACC_Z_BIAS, accel_bias.z);
         rf_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "IMU offsets captured");
-        
+
         // clear uncalibrated IMU flag
         rf_.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
       }
@@ -456,7 +456,7 @@ void Sensors::calibrate_accel(void)
                               static_cast<uint32_t>(accel_bias.norm()*1000)%1000);
       }
     }
-    
+
     // reset calibration counters in case we do it again
     accel_calibration_count_ = 0;
     acc_sum_.x = 0.0f;
@@ -477,7 +477,7 @@ void Sensors::calibrate_baro()
   if (rf_.board_.clock_millis() > last_baro_cal_iter_ms_ + 20)
   {
     baro_calibration_count_++;
-    
+
     // calibrate pressure reading to where it should be
     if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES + SENSOR_CAL_CYCLES)
     {
@@ -497,7 +497,7 @@ void Sensors::calibrate_baro()
       baro_calibration_var_ = 0.0f;
       baro_calibration_count_ = 0;
     }
-    
+
     else if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES)
     {
       float measurement = data_.baro_pressure - ground_pressure_;
@@ -515,7 +515,7 @@ void Sensors::calibrate_diff_pressure()
   if (rf_.board_.clock_millis() > last_diff_pressure_cal_iter_ms_ + 20)
   {
     diff_pressure_calibration_count_++;
-    
+
     if(diff_pressure_calibration_count_ > SENSOR_CAL_DELAY_CYCLES + SENSOR_CAL_CYCLES)
     {
       // if sample variance within acceptable range, flag calibration as done
@@ -557,7 +557,7 @@ void Sensors::correct_imu(void)
       + rf_.params_.get_param_float(PARAM_ACC_Y_BIAS);
   data_.accel.z -= rf_.params_.get_param_float(PARAM_ACC_Z_TEMP_COMP)*data_.imu_temperature
       + rf_.params_.get_param_float(PARAM_ACC_Z_BIAS);
-  
+
   data_.gyro.x -= rf_.params_.get_param_float(PARAM_GYRO_X_BIAS);
   data_.gyro.y -= rf_.params_.get_param_float(PARAM_GYRO_Y_BIAS);
   data_.gyro.z -= rf_.params_.get_param_float(PARAM_GYRO_Z_BIAS);
@@ -569,7 +569,7 @@ void Sensors::correct_mag(void)
   float mag_hard_x = data_.mag.x - rf_.params_.get_param_float(PARAM_MAG_X_BIAS);
   float mag_hard_y = data_.mag.y - rf_.params_.get_param_float(PARAM_MAG_Y_BIAS);
   float mag_hard_z = data_.mag.z - rf_.params_.get_param_float(PARAM_MAG_Z_BIAS);
-  
+
   // correct according to known soft iron bias - converts to nT
   data_.mag.x = rf_.params_.get_param_float(PARAM_MAG_A11_COMP)*mag_hard_x + rf_.params_.get_param_float(
         PARAM_MAG_A12_COMP)*mag_hard_y +
@@ -616,7 +616,7 @@ bool Sensors::OutlierFilter::update(float new_val, float *val)
   if (fabsf(diff) < window_size_ * max_change_)
   {
     *val = new_val;
-    
+
     center_ += turbomath::fsign(diff) * fminf(max_change_, fabsf(diff));
     if (window_size_ > 1)
     {

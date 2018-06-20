@@ -33,7 +33,7 @@
 #include "rosflight.h"
 #include "mavlink.h"
 
-int main(void)
+int main()
 {
   rosflight_firmware::BreezyBoard board;
   board.init_board();
@@ -42,7 +42,7 @@ int main(void)
 
   firmware.init();
 
-  while(1)
+  while (true)
   {
     firmware.run();
   }
