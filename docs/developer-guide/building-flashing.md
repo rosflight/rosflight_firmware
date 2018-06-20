@@ -58,7 +58,7 @@ sudo apt install dfu-util
 Then put the board in bootloader mode (short the boot pins while cycling power) and type `make BOARD=REVO flash`
 
 
-### F1
+## Flashing newly built firmware (F1)
 
 Install the stm32flash utility
 
@@ -69,6 +69,8 @@ sudo make install
 cd ..
 rm -rf stm32flash-code
 ```
+
+Then put the board in bootloader mode (short the boot pins while cycling power) and type `make BOARD=NAZE flash`
 
 ## Building and running unit tests
 

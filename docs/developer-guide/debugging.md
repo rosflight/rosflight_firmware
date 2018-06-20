@@ -26,12 +26,12 @@ This downloads a `.run` file, just make it exectuable and run as `sudo`:
 
 ```bash
 cd ~/Downloads
-chmod +x qt-unified-linux-x64-3.0.4-online.run 
-sudo ./qt-unified-linux-x64-3.0.4-online.run 
+chmod +x qt-unified-linux-x64-3.0.4-online.run
+sudo ./qt-unified-linux-x64-3.0.4-online.run
 
 ```
 
-If you want the icon to appear in your unity menu, create the following file as `/usr/share/applications/qtcreator.desktop` (assuming that you installed qtcreator to the Qt folder in the installer)
+If you want the icon to appear in your unity menu, create the following file as `~/.local/share/applications/qtcreator.desktop` (assuming that you installed qtcreator to the Qt folder in the installer)
 
 ```
 [Desktop Entry]
@@ -185,7 +185,7 @@ Plug in the debugger and start openocd (you'll need sudo privileges)
 ![build](images/build.png)
 * Run Settings:
     * Change Run Configuration to hardware debugger
-    * Choose the `.elf` file in the `proc/F1/build` directory (you'll need to build first) `firmware/proc/F1/build/rosflight.elf`
+    * Choose the `.elf` file in the `boards/breezy/build` directory (you'll need to build first) `firmware/boards/breezy/build/rosflight.elf`
 ![run](images/run.png)
 
 You're done!  Just select the Debug tab and debug your project!
