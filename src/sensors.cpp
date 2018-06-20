@@ -112,8 +112,11 @@ bool Sensors::run(void)
 {
   // First, check for new IMU data
   bool got_imu = update_imu();
-//  if (!rf_.state_manager_.state().armed)
-//    look_for_disabled_sensors();
+  
+  // Look for sensors that may not have been recognized at start because they weren't attached
+  // to the 5V rail (only if disarmed)
+  if (!rf_.state_manager_.state().armed)
+    look_for_disabled_sensors();
   
   // Update other sensors
   update_other_sensors();  
