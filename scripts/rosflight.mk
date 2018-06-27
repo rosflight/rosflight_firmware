@@ -63,7 +63,7 @@ INCLUDE_DIRS =  $(ROSFLIGHT_DIR)/include \
 #################################
 ifeq ($(DEBUG), GDB)
 DEBUG_FLAGS = -ggdb
-OPTIMIZE = -Og
+OPTIMIZE = -O0
 $(info ***** Building with Debug Symbols *****)
 BUILD_TYPE=Debug
 else
@@ -100,10 +100,10 @@ TARGET_BIN=$(BIN_DIR)/$(TARGET)_$(BOARD)_$(BUILD_TYPE).bin
 # Common Flags
 #################################
 DEFS = -DTARGET_$(BOARD) $(GIT_VARS)
-CXX_STRICT_FLAGS += -pedantic -pedantic-errors -Werror -Wall -Wextra \
-  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-  -Wredundant-decls -Wshadow -Wstrict-overflow=2 -Wswitch -Wundef -Wunused -Wvariadic-macros \
-  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
+#CXX_STRICT_FLAGS += -pedantic -pedantic-errors -Werror -Wall -Wextra \
+#  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
+#  -Wredundant-decls -Wshadow -Wstrict-overflow=2 -Wswitch -Wundef -Wunused -Wvariadic-macros \
+#  -Wctor-dtor-privacy -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel
 FILE_SIZE_FLAGS += -ffunction-sections -fdata-sections -fno-exceptions
 CXX_FILE_SIZE_FLAGS =-c $(FILE_SIZE_FLAGS) -fno-rtti
 CFLAGS   = -c $(DEFS) $(DEBUG_FLAGS) $(FILE_SIZE_FLAGS) -std=c99
