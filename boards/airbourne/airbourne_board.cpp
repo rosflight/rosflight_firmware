@@ -29,14 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
+#include "airbourne_board.h"
 
-#include "revo.h"
+namespace rosflight_firmware
+{
 
-namespace rosflight_firmware {
-
-Revo::Revo()
+AirbourneBoard::AirbourneBoard()
 {
 }
 Revo::~Revo()
@@ -44,15 +42,14 @@ Revo::~Revo()
 
 }
 
-void Revo::init_board(void)
+void AirbourneBoard::init_board()
 {
   systemInit();
   led2_.init(LED2_GPIO, LED2_PIN);
   led1_.init(LED1_GPIO, LED1_PIN);
 
-  int_i2c_.init(&i2c_config[MAG_I2C]);
-  //ext_i2c_.init(&i2c_config[EXTERNAL_I2C]); //Do not initialize this if using UART throught flexi port
-  //If you enable ext_i2c_ above, comment out the uart_->init in init_serial below, or change the port
+  int_i2c_.init(&i2c_config[BARO_I2C]);
+  ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
 
@@ -63,89 +60,51 @@ void Revo::init_board(void)
   //this->current_serial_=&vcp_;    //uncomment this to switch to VCP as the main output
 }
 
-void Revo::board_reset(bool bootloader)
+void AirbourneBoard::board_reset(bool bootloader)
 {
+  (void)bootloader;
   NVIC_SystemReset();
 }
 
 // clock
-uint32_t Revo::clock_millis()
+uint32_t AirbourneBoard::clock_millis()
 {
   return millis();
 }
 
-uint64_t Revo::clock_micros()
+uint64_t AirbourneBoard::clock_micros()
 {
   return micros();
 }
 
-void Revo::clock_delay(uint32_t milliseconds)
+void AirbourneBoard::clock_delay(uint32_t milliseconds)
 {
   delay(milliseconds);
 }
 
 // serial
-void Revo::serial_init(uint32_t baud_rate)
+void AirbourneBoard::serial_init(uint32_t baud_rate)
 {
-  uart_.init(&uart_config[2], 57600);//Comment this out if using i2c on the flexi port
-  //For testing only
-  /*
-  uint8_t hello_string[9] = "testing\n";
-  uint8_t num1='0';
-  uint8_t num2='0';
-  uint8_t num3='0';
-  uint8_t num4='0';
-  while(true)
-  {
-      for(uint8_t temp=0;temp<=254;temp++)
-      {
-          uart_.put_byte(temp);
-          //uart_.flush();
-      }
-      //uart_.flush();
-      //delay(100);
-      uart_.write(hello_string,8);
-      uart_.put_byte(num4);
-      uart_.put_byte(num3);
-      uart_.put_byte(num2);
-      uart_.put_byte(num1);
-      if(++num1>'9')
-      {
-          num1='0';
-          if(++num2>'9')
-          {
-              num2='0';
-              if(++num3>'9')
-              {
-                  num3='0';
-                  num4++;
-              }
-          }
-      }
-      //uart_.flush();
-      //delay(100);
-  }
-  //*/
-  //end testing
- // vcp_.init();
+  (void)baud_rate;
+  vcp_.init();
 }
 
-void Revo::serial_write(const uint8_t *src, size_t len)
+void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
   current_serial_->write(src, len);
 }
 
-uint16_t Revo::serial_bytes_available(void)
+uint16_t AirbourneBoard::serial_bytes_available()
 {
   return current_serial_->rx_bytes_waiting();
 }
 
-uint8_t Revo::serial_read(void)
+uint8_t AirbourneBoard::serial_read()
 {
   return current_serial_->read_byte();
 }
 
-void Revo::serial_flush()
+void AirbourneBoard::serial_flush()
 {
   current_serial_->flush();
 }
@@ -162,27 +121,27 @@ uint8_t Revo::get_serial_count()
 
 
 // sensors
-void Revo::sensors_init()
+void AirbourneBoard::sensors_init()
 {
+  while(millis() < 50) {} // wait for sensors to boot up
   imu_.init(&spi1_);
-  mag_.init(&int_i2c_);
+  
   baro_.init(&int_i2c_);
-  //airspeed_.init(&ext_i2c_); //This must be commented out if not using the flexi port for the airspeed sensor
-
-  while(millis() < 50); // wait for sensors to boot up
+  mag_.init(&int_i2c_);
+  airspeed_.init(&ext_i2c_);
 }
 
-uint16_t Revo::num_sensor_errors(void)
+uint16_t AirbourneBoard::num_sensor_errors()
 {
-  return int_i2c_.num_errors();
+  return ext_i2c_.num_errors();
 }
 
-bool Revo::new_imu_data()
+bool AirbourneBoard::new_imu_data()
 {
   return imu_.new_data();
 }
 
-bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool AirbourneBoard::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
 {
   float read_accel[3], read_gyro[3];
   imu_.read(read_accel, read_gyro, temperature, time_us);
@@ -198,59 +157,81 @@ bool Revo::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t*
   return true;
 }
 
-void Revo::imu_not_responding_error(void)
+void AirbourneBoard::imu_not_responding_error()
 {
   sensors_init();
 }
 
-void Revo::mag_read(float mag[3])
-{
-  mag_.update();
-  mag_.read(mag);
-}
-
-bool Revo::mag_check(void)
+bool AirbourneBoard::mag_present()
 {
   mag_.update();
   return mag_.present();
 }
 
-void Revo::baro_read(float *pressure, float *temperature)
+void AirbourneBoard::mag_update()
 {
-  baro_.update();
-  baro_.read(pressure, temperature);
+  mag_.update();
 }
 
-bool Revo::baro_check()
+void AirbourneBoard::mag_read(float mag[3])
+{
+  mag_.update();
+  mag_.read(mag);
+}
+bool AirbourneBoard::baro_present()
 {
   baro_.update();
   return baro_.present();
 }
 
-bool Revo::diff_pressure_check(void)
+void AirbourneBoard::baro_update()
+{
+  baro_.update();
+}
+
+void AirbourneBoard::baro_read(float *pressure, float *temperature)
+{
+  baro_.update();
+  baro_.read(pressure, temperature);
+}
+
+bool AirbourneBoard::diff_pressure_present()
 {
   airspeed_.update();
   return airspeed_.present();
 }
 
-void Revo::diff_pressure_read(float *diff_pressure, float *temperature)
+void AirbourneBoard::diff_pressure_update()
 {
+  airspeed_.update();
+}
+
+
+void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature)
+{
+  (void) diff_pressure;
+  (void) temperature;
   airspeed_.update();
   airspeed_.read(diff_pressure, temperature);
 }
 
-bool Revo::sonar_check(void)
+bool AirbourneBoard::sonar_present()
 {
   return false;
 }
 
-float Revo::sonar_read(void)
+void AirbourneBoard::sonar_update()
+{
+  return;
+}
+
+float AirbourneBoard::sonar_read()
 {
   return 0.0;
 }
 
 // PWM
-void Revo::rc_init(rc_type_t rc_type)
+void AirbourneBoard::rc_init(rc_type_t rc_type)
 {
   switch (rc_type)
   {
@@ -261,18 +242,19 @@ void Revo::rc_init(rc_type_t rc_type)
     rc_ = &rc_sbus_;
     break;
   case RC_TYPE_PPM:
+  default:
     rc_ppm_.init(&pwm_config[RC_PPM_PIN]);
     rc_ = &rc_ppm_;
     break;
   }
 }
 
-float Revo::rc_read(uint8_t channel)
+float AirbourneBoard::rc_read(uint8_t channel)
 {
   return rc_->read(channel);
 }
 
-void Revo::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
+void AirbourneBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
   for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
   {
@@ -281,40 +263,39 @@ void Revo::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
   }
 }
 
-void Revo::pwm_write(uint8_t channel, float value)
+void AirbourneBoard::pwm_write(uint8_t channel, float value)
 {
   esc_out_[channel].write(value);
 }
 
-bool Revo::rc_lost()
+bool AirbourneBoard::rc_lost()
 {
   return rc_->lost();
 }
 
 // non-volatile memory
-void Revo::memory_init(void)
+void AirbourneBoard::memory_init()
 {
   return flash_.init(&spi3_);
 }
 
-bool Revo::memory_read(void * data, size_t len)
+bool AirbourneBoard::memory_read(void * data, size_t len)
 {
-  return flash_.read_config((uint8_t*)data, len);
+  return flash_.read_config(reinterpret_cast<uint8_t*>(data), len);
 }
 
-bool Revo::memory_write(const void * data, size_t len)
+bool AirbourneBoard::memory_write(const void * data, size_t len)
 {
-  return flash_.write_config((uint8_t*)data, len);
+  return flash_.write_config(reinterpret_cast<const uint8_t*>(data), len);
 }
 
 // LED
-void Revo::led0_on(void) { led1_.on(); }
-void Revo::led0_off(void) { led1_.off(); }
-void Revo::led0_toggle(void) { led1_.toggle(); }
+void AirbourneBoard::led0_on() { led1_.on(); }
+void AirbourneBoard::led0_off() { led1_.off(); }
+void AirbourneBoard::led0_toggle() { led1_.toggle(); }
 
-void Revo::led1_on(void) { led2_.on(); }
-void Revo::led1_off(void) { led2_.off(); }
-void Revo::led1_toggle(void) { led2_.toggle(); }
-}
+void AirbourneBoard::led1_on() { led2_.on(); }
+void AirbourneBoard::led1_off() { led2_.off(); }
+void AirbourneBoard::led1_toggle() { led2_.toggle(); }
 
-#pragma GCC diagnostic pop
+} // namespace rosflight_firmware

@@ -126,10 +126,7 @@ void Estimator::run()
     last_time_ = now_us;
     return;
   }
-  else if (now_us  == last_time_)
-  {
-    return;
-  }
+
 
   RF_.state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
 

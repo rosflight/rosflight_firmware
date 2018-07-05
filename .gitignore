@@ -12,13 +12,11 @@
 *.o
 *.html
 /boards/*/build/
-/boards/*/obj/
 /test/build/
 /site/
-/boards/*/obj/
 *.idea*
-
-param_description.md
+*.map
+scripts/parameter-descriptions.md
 
 *.aux
 *.fdb_latexmk

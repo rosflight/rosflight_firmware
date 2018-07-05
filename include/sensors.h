@@ -77,7 +77,7 @@ public:
   Sensors(ROSflight& rosflight);
 
   inline const Data& data() const { return data_; }
-  void get_filtered_IMU_(turbomath::Vector& accel, turbomath::Vector& gyro, uint64_t& stamp_us);
+  void get_filtered_IMU(turbomath::Vector& accel, turbomath::Vector& gyro, uint64_t& stamp_us);
 
   // function declarations
   void init();
@@ -126,7 +126,7 @@ private:
     bool update(float new_val, float *val);
   };
 
-  enum LowPrioritySensors
+  enum : uint8_t
   {
     BAROMETER,
     DIFF_PRESSURE,
@@ -144,7 +144,8 @@ private:
 
   bool calibrating_acc_flag_ = false;
   bool calibrating_gyro_flag_ = false;
-  LowPrioritySensors next_sensor_to_update_ = BAROMETER;
+  uint8_t next_sensor_to_update_ = BAROMETER;
+  uint8_t next_sensor_to_look_for_ = BAROMETER;
   void init_imu();
   void calibrate_accel(void);
   void calibrate_gyro(void);
