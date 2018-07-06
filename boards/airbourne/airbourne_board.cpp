@@ -37,10 +37,6 @@ namespace rosflight_firmware
 AirbourneBoard::AirbourneBoard()
 {
 }
-AirbourneBoard::~AirbourneBoard()
-{
-
-}
 
 void AirbourneBoard::init_board()
 {
