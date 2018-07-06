@@ -37,7 +37,7 @@ namespace rosflight_firmware
 AirbourneBoard::AirbourneBoard()
 {
 }
-Revo::~Revo()
+AirbourneBoard::~AirbourneBoard()
 {
 
 }
@@ -109,12 +109,12 @@ void AirbourneBoard::serial_flush()
   current_serial_->flush();
 }
 
-Serial** Revo::get_serial_interfaces()
+Serial** AirbourneBoard::get_serial_interfaces()
 {
     return serial_interfaces_;
 }
 
-uint8_t Revo::get_serial_count()
+uint8_t AirbourneBoard::get_serial_count()
 {
     return 2;
 }
