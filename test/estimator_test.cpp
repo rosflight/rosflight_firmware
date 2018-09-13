@@ -146,7 +146,7 @@ TEST(estimator_test, linear_gyro_integration) {
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, false);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, false);
   rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
-  rf.params_.set_param_int(PARAM_GYRO_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
 
   double max_error = run_estimator_test("linear_gyro_sim.csv", rf, board, params);
 
@@ -182,7 +182,7 @@ TEST(estimator_test, quadratic_gyro_integration) {
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, false);
   rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
-  rf.params_.set_param_int(PARAM_GYRO_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
 
   double max_error = run_estimator_test("quad_int_sim.csv", rf, board, params);
 
@@ -216,7 +216,7 @@ TEST(estimator_test, mat_exp_integration) {
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, false);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
   rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
-  rf.params_.set_param_int(PARAM_GYRO_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
 
   double max_error = run_estimator_test("mat_exp_sim.csv", rf, board, params);
   EXPECT_LE(max_error, params[7]);
@@ -248,7 +248,7 @@ TEST(estimator_test, mat_exp_quad_int) {
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
   rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
-  rf.params_.set_param_int(PARAM_GYRO_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
 
   double max_error = run_estimator_test("mat_exp_quad_sim.csv", rf, board, params);
   EXPECT_LE(max_error, params[7]);
@@ -283,7 +283,7 @@ TEST(estimator_test, accel) {
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, false);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, false);
   rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
-  rf.params_.set_param_int(PARAM_GYRO_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
   rf.params_.set_param_int(PARAM_FILTER_KP, 3.0f);
   rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
 
@@ -318,7 +318,7 @@ TEST(estimator_test, all_features) {
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
   rf.params_.set_param_float(PARAM_FILTER_KP, 2.0f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
-  rf.params_.set_param_float(PARAM_GYRO_ALPHA, 0.0f);
+  rf.params_.set_param_float(PARAM_GYRO_XY_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_X_BIAS, 0.0);
   rf.params_.set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
   rf.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0); // We don't converge on z bias
@@ -359,7 +359,7 @@ TEST(estimator_test, level_bias_sim) {
   rf.params_.set_param_float(PARAM_FILTER_KP, 2.0f);
   rf.params_.set_param_float(PARAM_FILTER_KI, 0.2f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
-  rf.params_.set_param_float(PARAM_GYRO_ALPHA, 0.0f);
+  rf.params_.set_param_float(PARAM_GYRO_XY_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_X_BIAS, true_bias.x);
   rf.params_.set_param_float(PARAM_GYRO_Y_BIAS, true_bias.y);
   rf.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0); // We don't converge on z bias
@@ -405,7 +405,7 @@ TEST(estimator_test, moving_bias_sim) {
   rf.params_.set_param_float(PARAM_FILTER_KP, 0.5f);
   rf.params_.set_param_float(PARAM_FILTER_KI, 0.05f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
-  rf.params_.set_param_float(PARAM_GYRO_ALPHA, 0.0f);
+  rf.params_.set_param_float(PARAM_GYRO_XY_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_X_BIAS, true_bias.x);
   rf.params_.set_param_float(PARAM_GYRO_Y_BIAS, true_bias.y);
   rf.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0); // We don't converge on z bias
