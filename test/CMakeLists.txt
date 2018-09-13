@@ -5,13 +5,13 @@ project(rosflight)
 add_definitions(-std=c++11)
 
 # Strict Compilation
-#set(CMAKE_CXX_FLAGS "-pedantic -pedantic-errors -Werror -Wall -Wextra \
-#  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
-#  -Wredundant-decls  -Wstrict-overflow=5 -Wundef -Wunused -Wvariadic-macros \
-#  -Wctor-dtor-privacy -Wnoexcept -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel"
-#  ${CMAKE_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS "-pedantic -pedantic-errors -Werror -Wall -Wextra \
+  -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Wlogical-op -Wmissing-include-dirs \
+  -Wredundant-decls  -Wstrict-overflow=5 -Wundef -Wunused -Wvariadic-macros -Wold-style-cast -Wshadow \
+  -Wctor-dtor-privacy -Wnoexcept -Woverloaded-virtual -Wsign-promo -Wstrict-null-sentinel"
+  ${CMAKE_CXX_FLAGS})
 
-#-Wold-style-cast -Wshadow
+
 
 # Git information
 execute_process(COMMAND git rev-parse --short=8 HEAD OUTPUT_VARIABLE GIT_VERSION_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)

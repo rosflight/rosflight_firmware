@@ -349,8 +349,6 @@ bool Params::set_param_float(uint16_t id, float value)
 bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   uint16_t id = lookup_param_id(name);
-  if (id = PARAM_RC_NUM_CHANNELS)
-    int debug = 1;
   return set_param_int(id, value);
 }
 

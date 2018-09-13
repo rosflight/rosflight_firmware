@@ -6,6 +6,10 @@
 #include <string>
 #include <ostream>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <yaml-cpp/yaml.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -13,6 +17,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <boost/foreach.hpp>
+#pragma GCC diagnostic pop
 #define foreach BOOST_FOREACH
 
 #include "rosflight.h"
@@ -273,6 +278,6 @@ int main(int argc, char * argv[])
     }
   }
 }
-
+#pragma GCC diagnostic pop
 
 
