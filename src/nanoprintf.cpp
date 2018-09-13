@@ -79,7 +79,10 @@ static void ui2a(unsigned int num, unsigned int base, int uc,char *bf)
 {
   int n=0;
   unsigned int d=1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
   while (num/d >= base)
+#pragma GCC diagnostic pop
     d*=base;
   while (d!=0)
   {
