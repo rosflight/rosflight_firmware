@@ -119,6 +119,7 @@ AIRBOURNE_SRCS = led.cpp \
                  advanced.cpp \
                  i2c.cpp \
                  pwm.cpp \
+                 mb1242.cpp \
                  eeprom.cpp \
                  hmc5883l.cpp \
                  ms5611.cpp \
