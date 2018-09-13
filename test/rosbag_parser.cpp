@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
     string arg = argv[i];
     if (arg == "-h" || argc == 1 || arg == "--help")
     {
-      cout << "USAGE: vi_ekf_rosbag [options]" << "\n\n";
+      cout << "USAGE: rosbag_parser [options]" << "\n\n";
       cout << "Options:\n";
       cout << "\t -h, --help\tShow this help message and exit\n";
       cout << "\t -f FILENAME\tBagfile to parse\n";
@@ -186,10 +186,11 @@ int main(int argc, char * argv[])
   board.set_time(bag_start.toNSec()/1000);
 
   // Prepare the output file
-  fstream est_log, truth_log, imu_log;
+  fstream est_log, truth_log, imu_log, filtered_imu_log;
   est_log.open("estimate.bin", std::ofstream::out | std::ofstream::trunc);
   truth_log.open("truth.bin", std::ofstream::out | std::ofstream::trunc);
   imu_log.open("imu.bin", std::ofstream::out | std::ofstream::trunc);
+  filtered_imu_log.open("imu_filt.bin", std::ofstream::out | std::ofstream::trunc);
 
 
   foreach (rosbag::MessageInstance const m, view)
@@ -234,8 +235,17 @@ int main(int argc, char * argv[])
       double imud[7] = {(double) t_us/1e6,
                        (double)acc[0], (double)acc[1], (double)acc[2],
                        (double)gyro[0], (double)gyro[1], (double)gyro[2]};
-
       imu_log.write((char*) imud, sizeof(imud));
+
+      double imuf[7] = {(double)t_us/1e6,
+                        (double)RF.estimator_.accLPF().x,
+                        (double)RF.estimator_.accLPF().y,
+                        (double)RF.estimator_.accLPF().z,
+                        (double)RF.estimator_.gyroLPF().x,
+                        (double)RF.estimator_.gyroLPF().y,
+                        (double)RF.estimator_.gyroLPF().z};
+
+      filtered_imu_log.write((char*) imuf, sizeof(imuf));
     }
 
     else if (datatype.compare("geometry_msgs/PoseStamped") == 0)
