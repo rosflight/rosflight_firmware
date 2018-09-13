@@ -107,6 +107,7 @@ void AirbourneBoard::sensors_init()
   
   baro_.init(&int_i2c_);
   mag_.init(&int_i2c_);
+  sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
 
 }
@@ -177,7 +178,6 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
 
 bool AirbourneBoard::diff_pressure_present()
 {
-  airspeed_.update();
   return airspeed_.present();
 }
 
@@ -197,17 +197,17 @@ void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature
 
 bool AirbourneBoard::sonar_present()
 {
-  return false;
+  return sonar_.present();
 }
 
 void AirbourneBoard::sonar_update()
 {
-  return;
+  sonar_.update();
 }
 
 float AirbourneBoard::sonar_read()
 {
-  return 0.0;
+  return sonar_.read();
 }
 
 // PWM
