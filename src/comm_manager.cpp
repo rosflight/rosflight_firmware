@@ -63,7 +63,7 @@ void CommManager::init()
   // Register Param change callbacks
   RF_.params_.add_callback([this](int16_t param_id){this->update_system_id(param_id);}, PARAM_SYSTEM_ID);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);}, PARAM_STREAM_HEARTBEAT_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_STATUS, param_id);}, PARAM_STREAM_STATUS_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_IMU, param_id);}, PARAM_STREAM_IMU_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
