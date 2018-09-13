@@ -60,6 +60,7 @@ public:
   Estimator(ROSflight& _rf);
 
   inline const State& state() const { return state_; }
+  inline const turbomath::Vector& bias() const {return bias_;}
 
   void init();
   void run();
