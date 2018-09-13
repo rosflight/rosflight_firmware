@@ -42,7 +42,7 @@ void load_parameters(const string filename, rosflight_firmware::ROSflight& RF)
     for (auto it = node.begin(); it != node.end(); it++)
     {
       if ((*it)["type"].as<int>() == 6)
-          RF.params_.set_param_by_name_float((*it)["name"].as<string>().c_str(), (*it)["value"].as<float>());
+          RF.params_.set_param_by_name_int((*it)["name"].as<string>().c_str(), (*it)["value"].as<int>());
       else if ((*it)["type"].as<int>() == 9)
         RF.params_.set_param_by_name_float((*it)["name"].as<string>().c_str(), (*it)["value"].as<float>());
       else
@@ -173,6 +173,7 @@ int main(int argc, char * argv[])
   rosflight_firmware::testBoard board;
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight RF(board, mavlink);
+  RF.init();
 
   if (!param_filename.empty())
   {
@@ -183,12 +184,12 @@ int main(int argc, char * argv[])
   ros::Time bag_start = view.getBeginTime() + ros::Duration(start_time);
   ros::Time bag_end = view.getBeginTime() + ros::Duration(end_time);
   board.set_time(bag_start.toNSec()/1000);
-  RF.init();
 
   // Prepare the output file
-  fstream est_log, truth_log;
+  fstream est_log, truth_log, imu_log;
   est_log.open("estimate.bin", std::ofstream::out | std::ofstream::trunc);
   truth_log.open("truth.bin", std::ofstream::out | std::ofstream::trunc);
+  imu_log.open("imu.bin", std::ofstream::out | std::ofstream::trunc);
 
 
   foreach (rosbag::MessageInstance const m, view)
@@ -217,6 +218,7 @@ int main(int argc, char * argv[])
                        (float)imu->angular_velocity.y,
                        (float)imu->angular_velocity.z};
       uint64_t t_us = (imu->header.stamp - bag_start).toNSec()/1000;
+
       board.set_imu(acc, gyro, t_us);
       RF.run();
       double est[8] = {(double) t_us/1e6,
@@ -228,6 +230,12 @@ int main(int argc, char * argv[])
                        (double) RF.estimator_.bias().y,
                        (double) RF.estimator_.bias().z};
       est_log.write((char*) est, sizeof(est));
+
+      double imud[7] = {(double) t_us/1e6,
+                       (double)acc[0], (double)acc[1], (double)acc[2],
+                       (double)gyro[0], (double)gyro[1], (double)gyro[2]};
+
+      imu_log.write((char*) imud, sizeof(imud));
     }
 
     else if (datatype.compare("geometry_msgs/PoseStamped") == 0)
