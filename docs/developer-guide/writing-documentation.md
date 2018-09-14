@@ -7,8 +7,8 @@ All documentation for the entire ROSflight stack (both firmware and ROS code) be
 This is easy:
 
 ``` bash
-sudo apt install mkdocs
-sudo pip3 install https://github.com/mitya57/python-markdown-math/archive/master.zip
+sudo -H pip install mkdocs, pygments, pymarkdown pymdown-extensions mkdocs-material
+sudo -H pip install https://github.com/mitya57/python-markdown-math/archive/master.zip
 ```
 
 (You don't have use to the global pip if you have python environments working, but for beginners, this is the simplest way to do it)

@@ -1,6 +1,6 @@
 # Style Guide
 
-Any contributions to the firmware should adhere to the following style guidelines  
+Any contributions to the firmware should adhere to the following style guidelines
 
 ## White space and Line Endings
 
@@ -14,15 +14,16 @@ ROSflight uses the C++11 standard.
 
 Indentation should be **2 spaces** (no tabs). Case statements in switch blocks should not be indented, e.g.
 
-    switch (variable)
-    {
-    case 1:
-      // do something
-      break;
-    default:
-      break;
-    }
-
+``` C++
+switch (variable)
+{
+case 1:
+  // do something
+  break;
+default:
+  break;
+}
+```
 ### Braces
 
 Braces should be placed on the next line, e.g.

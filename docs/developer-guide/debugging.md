@@ -2,9 +2,11 @@
 
 Debugging a naze32 is easiest with an ST-Link V2.  You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator and the in-circuit debugger.
 
-_** We have had reports of problems with cheap clones of ST-Links not connecting.  Consider yourself warned. **_
+!!! warning
+    We have had reports of problems with cheap clones of ST-Links not connecting.
 
-_**It appears that perhaps debugging only works with Ubuntu 16.04 because of some issues with gdb-py and the "textinfo" tool in 14.04.**_
+!!! warning
+    It appears that perhaps debugging only works with Ubuntu 16.04 because of some issues with gdb-py and the "textinfo" tool in 14.04.
 
 ## Add User to Dailout Group
 
@@ -16,29 +18,24 @@ sudo adduser $USER dialout
 
 Log out and back in for changes to take effect.
 
-## Install QtCreator 4.1.0
+## Install QtCreator
 
-For some reason, the QtCreator bundled with 16.04 is unstable.  4.2.0 messes up ROS workspaces, so the most recent stable build for use with ROS and debugging is 4.1.0.  Download it from [here](https://download.qt.io/official_releases/qtcreator/4.1/4.1.0/installer_source/linux_gcc_64_rhel66/qtcreator.7z).
+For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator which can be downloaded [here](https://www.qt.io/download).
 
-This downloads a `.7z` file, which requires `p7zip` to extract.  After downloading extract and install qtcreator:
+This downloads a `.run` file, just make it exectuable and run as `sudo`:
 
 ```bash
-sudo apt-get install p7zip-full
 cd ~/Downloads
-mkdir qtcreator
-mv qtcreator.7z qtcreator/.
-cd qtcreator
-p7zip -d qtcreator.7z
-cd ..
-sudo mv qtcreator /opt/.
-sudo ln -s /opt/qtcreator/bin/qtcreator /usr/bin/.
+chmod +x qt-unified-linux-x64-3.0.4-online.run
+sudo ./qt-unified-linux-x64-3.0.4-online.run
+
 ```
 
-If you want the icon to appear in your unity menu, create the following file as /usr/share/applications/qtcreator.desktop
+If you want the icon to appear in your unity menu, create the following file as `~/.local/share/applications/qtcreator.desktop` (assuming that you installed qtcreator to the Qt folder in the installer)
 
 ```
 [Desktop Entry]
-Exec=bash -i -c qtcreator %F
+Exec=bash -i -c /opt/Qt/Tools/QtCreator/bin/qtcreator.sh %F
 Icon=qtcreator
 Type=Application
 Terminal=false
@@ -49,7 +46,6 @@ Categories=Qt;Development;IDE;
 InitialPreference=9
 ```
 
-
 ## Install openocd
 
 Open OCD (On-Chip-Debugger) is the software that will control the debugger.  We are going to install the version that is configured to work as a plugin for the eclipse IDE.  To get this version, go to the **[releases](https://github.com/gnuarmeclipse/openocd/releases)** page of the OpenOCD github page and download the latest `.tgz` file
@@ -57,7 +53,7 @@ Open OCD (On-Chip-Debugger) is the software that will control the debugger.  We 
 
 ```bash
 cd ~/Downloads
-tar -xvf gnuarmeclipse-openocd-debian32-0.10.0-201610281609-dev.tgz (or whatever)
+tar -xvf gnuarmeclipse-openocd-debian32-0.10.0-201610281609-dev.tgz # (or whatever)
 sudo mv openocd /opt/.
 ```
 
@@ -65,16 +61,25 @@ Then, for convenience, I normally create a script to run openocd for me.  Here i
 
 ``` bash
 #!/bin/bash
-
-cd /opt/openocd/0.10.0-201701241841/bin
+cd /opt/openocd/0.10.0-201701241841/bin # Use the correct version
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg
 ```
 
-which I move to the `~/.local/bin` directory so I can call it from anywhere:
+Here is my `start_openocd_f4` script
+
+``` bash
+#!/bin/bash
+cd /opt/openocd/0.10.0-5-20171110-1117/bin
+./openocd -f interface/stlink-v2.cfg -f target/stm32f4x.cfg
+```
+
+I move these the `~/.local/bin` directory so I can call it from anywhere:
 
 ``` bash
 chmod +x start_openocd_f1
-mv start_openocd_f1 ~/.local/bin
+chmod +x start_openocd_f4
+mv start_openocd_f1 usr/local/bin
+mv start_openocd_f4 usr/local/bin
 ```
 
 ## Install ARM compiler and 32-bit Dependencies
@@ -103,14 +108,14 @@ Now, we're going to configure a new "Kit" for ARM development (this allows you t
 
 ### Tell QtCreator where to find the compiler (GCC)
 
-* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C++.  
+* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C++.
 * Name the new compiler "G++ ARM" (or something)
 * Point the compiler path to where you just installed your fresh GCC.
 * The path for G++ `/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-g++`
 
 Do the same for GCC (if you are going to be doing any C-only code)
 
-* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C.  
+* Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C.
 * Name the compiler (I named my compiler "GCC ARM)
 * The path for GCC is `/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-gcc`
 
@@ -153,6 +158,8 @@ Go to the Bare Metal Plugin
 
 ## Test the Debugger
 
+Here are the instructions for a F1 target.  The instructions are very similar for an F4, just choose the correct `.elf` file.
+
 ### Turn on Debugger
 
 Connect the Debugger to your flight controller.  Here is the pinout for the Flip32 and flip32+
@@ -174,11 +181,11 @@ Plug in the debugger and start openocd (you'll need sudo privileges)
 * Switch to the ARM Kit we just created
 * Build Settings:
     * Change Build Directory to the firmware root
-    * Build Steps: `make DEBUG=GDB`
+    * Build Steps: `make BOARD=NAZE DEBUG=GDB`
 ![build](images/build.png)
 * Run Settings:
     * Change Run Configuration to hardware debugger
-    * Choose the `.elf` file in the `boards/naze/build` directory (you'll need to build first) `.../firmware/boards/naze/build/rosflight.elf`
+    * Choose the `.elf` file in the `boards/breezy/build` directory (you'll need to build first) `firmware/boards/breezy/build/rosflight.elf`
 ![run](images/run.png)
 
 You're done!  Just select the Debug tab and debug your project!

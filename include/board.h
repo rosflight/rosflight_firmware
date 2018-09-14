@@ -44,8 +44,14 @@ class Board
 {
 
 public:
+  typedef enum
+  {
+    RC_TYPE_PPM = 0,
+    RC_TYPE_SBUS = 1
+  } rc_type_t;
+
 // setup
-  virtual void init_board(void) = 0;
+  virtual void init_board() = 0;
   virtual void board_reset(bool bootloader) = 0;
 
 // clock
@@ -56,49 +62,56 @@ public:
 // serial
   virtual void serial_init(uint32_t baud_rate) = 0;
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
-  virtual uint16_t serial_bytes_available(void) = 0;
-  virtual uint8_t serial_read(void) = 0;
+  virtual uint16_t serial_bytes_available() = 0;
+  virtual uint8_t serial_read() = 0;
+  virtual void serial_flush() = 0;
 
 // sensors
   virtual void sensors_init() = 0;
-  virtual uint16_t num_sensor_errors(void)  = 0;
+  virtual uint16_t num_sensor_errors()  = 0;
 
   virtual bool new_imu_data() = 0;
   virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time) = 0;
-  virtual void imu_not_responding_error(void) = 0;
+  virtual void imu_not_responding_error() = 0;
 
-  virtual bool mag_check(void) = 0;
+  virtual bool mag_present() = 0;
+  virtual void mag_update() = 0;
   virtual void mag_read(float mag[3]) = 0;
 
-  virtual bool baro_check(void) = 0;
+  virtual bool baro_present() = 0;
+  virtual void baro_update() = 0;
   virtual void baro_read(float *pressure, float *temperature) = 0;
 
-  virtual bool diff_pressure_check(void) = 0;
+  virtual bool diff_pressure_present() = 0;
+  virtual void diff_pressure_update() = 0;
   virtual void diff_pressure_read(float *diff_pressure, float *temperature) = 0;
 
-  virtual bool sonar_check(void) = 0;
-  virtual float sonar_read(void) = 0;
+  virtual bool sonar_present() = 0;
+  virtual void sonar_update() = 0;
+  virtual float sonar_read() = 0;
+
+// RC
+  virtual void rc_init(rc_type_t rc_type) = 0;
+  virtual bool rc_lost() = 0;
+  virtual float rc_read(uint8_t channel) = 0;
 
 // PWM
-// TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  virtual void pwm_init(bool cppm, uint32_t refresh_rate, uint16_t idle_pwm) = 0;
-  virtual bool pwm_lost() = 0;
-  virtual uint16_t pwm_read(uint8_t channel) = 0;
-  virtual void pwm_write(uint8_t channel, uint16_t value) = 0;
+  virtual void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) = 0;
+  virtual void pwm_write(uint8_t channel, float value) = 0;
 
 // non-volatile memory
-  virtual void memory_init(void) = 0;
+  virtual void memory_init() = 0;
   virtual bool memory_read(void *dest, size_t len) = 0;
   virtual bool memory_write(const void *src, size_t len) = 0;
 
 // LEDs
-  virtual void led0_on(void) = 0;
-  virtual void led0_off(void) = 0;
-  virtual void led0_toggle(void) = 0;
+  virtual void led0_on() = 0;
+  virtual void led0_off() = 0;
+  virtual void led0_toggle() = 0;
 
-  virtual void led1_on(void) = 0;
-  virtual void led1_off(void) = 0;
-  virtual void led1_toggle(void) = 0;
+  virtual void led1_on() = 0;
+  virtual void led1_off() = 0;
+  virtual void led1_toggle() = 0;
 
 };
 

@@ -102,11 +102,12 @@ void Estimator::run_LPF()
   accel_LPF_.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*accel_LPF_.y;
   accel_LPF_.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*accel_LPF_.z;
 
-  float alpha_gyro = RF_.params_.get_param_float(PARAM_GYRO_ALPHA);
+  float alpha_gyro_xy = RF_.params_.get_param_float(PARAM_GYRO_XY_ALPHA);
+  float alpha_gyro_z = RF_.params_.get_param_float(PARAM_GYRO_Z_ALPHA);
   const turbomath::Vector& raw_gyro = RF_.sensors_.data().gyro;
-  gyro_LPF_.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*gyro_LPF_.x;
-  gyro_LPF_.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*gyro_LPF_.y;
-  gyro_LPF_.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*gyro_LPF_.z;
+  gyro_LPF_.x = (1.0f-alpha_gyro_xy)*raw_gyro.x + alpha_gyro_xy*gyro_LPF_.x;
+  gyro_LPF_.y = (1.0f-alpha_gyro_xy)*raw_gyro.y + alpha_gyro_xy*gyro_LPF_.y;
+  gyro_LPF_.z = (1.0f-alpha_gyro_z)*raw_gyro.z + alpha_gyro_z*gyro_LPF_.z;
 }
 
 void Estimator::run()
@@ -126,10 +127,7 @@ void Estimator::run()
     last_time_ = now_us;
     return;
   }
-  else if (now_us  == last_time_)
-  {
-    return;
-  }
+
 
   RF_.state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
 
@@ -222,10 +220,10 @@ void Estimator::run()
       // Propagation for Low-Cost UAVs by Robert T. Casey)
       // (Eq. 12 Casey Paper)
       // This adds 90 us on STM32F10x chips
-      float norm_w = sqrt(sqrd_norm_w);
+      float norm_w = sqrtf(sqrd_norm_w);
       turbomath::Quaternion qhat_np1;
-      float t1 = cos((norm_w*dt)/2.0f);
-      float t2 = 1.0f/norm_w * sin((norm_w*dt)/2.0f);
+      float t1 = cosf((norm_w*dt)/2.0f);
+      float t2 = 1.0f/norm_w * sinf((norm_w*dt)/2.0f);
       qhat_np1.w = t1*state_.attitude.w + t2*(-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z);
       qhat_np1.x = t1*state_.attitude.x + t2*( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z);
       qhat_np1.y = t1*state_.attitude.y + t2*( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z);

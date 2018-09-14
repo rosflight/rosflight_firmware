@@ -34,5 +34,5 @@ before_script:
   - arm-none-eabi-gcc --version
 
 script:
-  - ./run_tests.sh
+  - ./scripts/run_tests.sh
 

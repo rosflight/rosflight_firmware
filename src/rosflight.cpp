@@ -51,9 +51,6 @@ ROSflight::ROSflight(Board& board, CommLink& comm_link) :
 // Initialization Routine
 void ROSflight::init()
 {
-  // Initialize the board
-  board_.init_board();
-
   // Initialize the arming finite state machine
   state_manager_.init();
 

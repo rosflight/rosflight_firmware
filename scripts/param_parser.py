@@ -9,7 +9,7 @@ __email__ = "superjax08@gmail.com"
 
 import re
 
-f = open('src/param.cpp')
+f = open('../src/param.cpp')
 text = f.read()
 
 

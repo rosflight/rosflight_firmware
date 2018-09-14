@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -72,8 +71,8 @@ CommandManager::CommandManager(ROSflight& _rf) :
 
 void CommandManager::init()
 {
-  RF_.params_.add_callback(std::bind(&CommandManager::param_change_callback, this, std::placeholders::_1), PARAM_FIXED_WING);
-  RF_.params_.add_callback(std::bind(&CommandManager::param_change_callback, this, std::placeholders::_1), PARAM_FAILSAFE_THROTTLE);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FIXED_WING);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FAILSAFE_THROTTLE);
 
   init_failsafe();
 }
@@ -160,7 +159,7 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   }
   else
   {
-    if (fabs(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
+    if (fabsf(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
           > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override_[channel].last_override_time = now;

@@ -21,11 +21,14 @@ This is an example of a ROSflight pre-flight checklist.  You will likely need to
 - Wire-wiggle test (wiggle all wires to look for bad connections)
 - Parameter Check (if using a fixed wing, there are about 8 parameter you will need to change from default  )
 
-### After Powering Up Motors (MAKE SURE THE FLIGHT CONTROLLER IS DISARMED!!!)
+### After Powering Up Motors
+
+!!! warning
+    Be sure flight controller is disarmed before powering up motors!!!
 - Arm/Disarm test
 - Propeller spin test (check directions and response to stick inputs)
 - Control surface test (Fixed Wing)
-- Response to offboard controls (Fixed Wing)
+- Response to offboard controls
 
 
 ## ROSplane Checklist
@@ -40,9 +43,9 @@ This is an example of a ROSflight pre-flight checklist.  You will likely need to
 - Failsafe behavior is working
 - logging is set up and working (automatic rosbag recording)
 - blow into pitot tube and watch airspeed estimate
-- move aircraft up and down and watch altitutde estimate (remember NED, so higher altitude = negative z)
+- move aircraft up and down and watch altitude estimate (remember NED, so higher altitude = negative z)
 - check for GPS fix (go outside)
-- wire-wiggle test (look for sensor dropout and brownouts when wiggling all wires)
+- wire-wiggle test (look for sensor or RC dropout and brownouts when wiggling all wires - watch output from `rosflight_io` for potential errors)
 - walking estimator test (walk around outside with GPS and airspeed and watch estimator)
 
 ### After getting to flying field
@@ -54,4 +57,4 @@ This is an example of a ROSflight pre-flight checklist.  You will likely need to
 - GPS fix
 - Check automatic logging
 - Start external video recording
-- Go fly!
+- Fly!
