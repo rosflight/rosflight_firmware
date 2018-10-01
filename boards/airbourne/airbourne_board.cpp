@@ -50,9 +50,9 @@ void AirbourneBoard::init_board()
   spi3_.init(&spi_config[FLASH_SPI]);
 
   serial_interfaces_[0]=&vcp_;
-  serial_interfaces_[1]=&uart_;
+  serial_interfaces_[1]=&uart3_;
 
-  this->current_serial_=&uart_;
+  this->current_serial_=&uart3_;
   //this->current_serial_=&vcp_;    //uncomment this to switch to VCP as the main output
 }
 
@@ -79,10 +79,19 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 }
 
 // serial
-void AirbourneBoard::serial_init(uint32_t baud_rate)
+void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
-  (void)baud_rate;
-  vcp_.init();
+  if (dev == 3)
+  {
+    uart3_.init(&uart_config[UART3], baud_rate);
+    current_serial_ = &uart3_;
+  }
+  else
+  {
+    vcp_.init();
+    current_serial_ = &vcp_;
+  }
+
 }
 
 void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
