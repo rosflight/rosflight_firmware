@@ -49,11 +49,7 @@ void AirbourneBoard::init_board()
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
 
-  serial_interfaces_[0]=&vcp_;
-  serial_interfaces_[1]=&uart3_;
-
-  this->current_serial_=&uart3_;
-  //this->current_serial_=&vcp_;    //uncomment this to switch to VCP as the main output
+  current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)
@@ -81,7 +77,6 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 // serial
 void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
-  (void)dev;
   if (dev == 3)
   {
     uart3_.init(&uart_config[UART3], baud_rate);
@@ -114,16 +109,6 @@ void AirbourneBoard::serial_flush()
   current_serial_->flush();
 }
 
-Serial** AirbourneBoard::get_serial_interfaces()
-{
-    return serial_interfaces_;
-}
-
-uint8_t AirbourneBoard::get_serial_count()
-{
-    return 2;
-}
-
 
 // sensors
 void AirbourneBoard::sensors_init()
@@ -133,6 +118,7 @@ void AirbourneBoard::sensors_init()
   
   baro_.init(&int_i2c_);
   mag_.init(&int_i2c_);
+  sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
 }
 
@@ -202,7 +188,6 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
 
 bool AirbourneBoard::diff_pressure_present()
 {
-  airspeed_.update();
   return airspeed_.present();
 }
 
@@ -222,17 +207,17 @@ void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature
 
 bool AirbourneBoard::sonar_present()
 {
-  return false;
+  return sonar_.present();
 }
 
 void AirbourneBoard::sonar_update()
 {
-  return;
+  sonar_.update();
 }
 
 float AirbourneBoard::sonar_read()
 {
-  return 0.0;
+  return sonar_.read();
 }
 
 // PWM

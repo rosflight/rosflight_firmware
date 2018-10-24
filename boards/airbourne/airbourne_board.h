@@ -54,6 +54,8 @@
 #include "led.h"
 #include "serial.h"
 #include "system.h"
+#include "uart.h"
+#include "mb1242.h"
 
 #include "board.h"
 
@@ -75,11 +77,8 @@ private:
     HMC5883L mag_;
     MS5611 baro_;
     MS4525 airspeed_;
-
-    Serial* serial_interfaces_[2];//All serial interfaces available
-    //this excludes interfaces that are not programmed in yet
-
     RC_PPM rc_ppm_;
+    I2CSonar sonar_;
     RC_SBUS rc_sbus_;
     UART sbus_uart_;
     GPIO inv_pin_;

@@ -102,11 +102,12 @@ void Estimator::run_LPF()
   accel_LPF_.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*accel_LPF_.y;
   accel_LPF_.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*accel_LPF_.z;
 
-  float alpha_gyro = RF_.params_.get_param_float(PARAM_GYRO_ALPHA);
+  float alpha_gyro_xy = RF_.params_.get_param_float(PARAM_GYRO_XY_ALPHA);
+  float alpha_gyro_z = RF_.params_.get_param_float(PARAM_GYRO_Z_ALPHA);
   const turbomath::Vector& raw_gyro = RF_.sensors_.data().gyro;
-  gyro_LPF_.x = (1.0f-alpha_gyro)*raw_gyro.x + alpha_gyro*gyro_LPF_.x;
-  gyro_LPF_.y = (1.0f-alpha_gyro)*raw_gyro.y + alpha_gyro*gyro_LPF_.y;
-  gyro_LPF_.z = (1.0f-alpha_gyro)*raw_gyro.z + alpha_gyro*gyro_LPF_.z;
+  gyro_LPF_.x = (1.0f-alpha_gyro_xy)*raw_gyro.x + alpha_gyro_xy*gyro_LPF_.x;
+  gyro_LPF_.y = (1.0f-alpha_gyro_xy)*raw_gyro.y + alpha_gyro_xy*gyro_LPF_.y;
+  gyro_LPF_.z = (1.0f-alpha_gyro_z)*raw_gyro.z + alpha_gyro_z*gyro_LPF_.z;
 }
 
 void Estimator::run()

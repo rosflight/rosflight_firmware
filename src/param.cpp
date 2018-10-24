@@ -172,8 +172,9 @@ void Params::set_defaults(void)
 
   init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "CAL_GYRO_ARM", false); // True if desired to calibrate gyros on arm | 0 | 1
 
-  init_param_float(PARAM_GYRO_ALPHA, "GYRO_LPF_ALPHA", 0.3f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.5f); // Low-pass filter constant - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_GYRO_XY_ALPHA, "GYROXY_LPF_ALPHA", 0.3f); // Low-pass filter constant on gyro X and Y axes - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_GYRO_Z_ALPHA, "GYROZ_LPF_ALPHA", 0.3f); // Low-pass filter constant on gyro Z axis - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.5f); // Low-pass filter constant on all accel axes - See estimator documentation | 0 | 1.0
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
