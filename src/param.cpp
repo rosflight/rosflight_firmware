@@ -107,17 +107,17 @@ void Params::set_defaults(void)
   /*****************************/
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1); // Mavlink System ID  | 1 | 255
   init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1); // Rate of heartbeat streaming (Hz) | 0 | 1000
-  init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 0); // Rate of status streaming (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status streaming (Hz) | 0 | 1000
 
-  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 0); // Rate of attitude stream (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 200); // Rate of attitude stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 250); // Rate of IMU stream (Hz) | 0 | 1000
-  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 0); // Rate of magnetometer stream (Hz) | 0 | 75
-  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 0); // Rate of barometer stream (Hz) | 0 | 100
-  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 0); // Rate of airspeed stream (Hz) | 0 |  50
-  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 0); // Rate of sonar stream (Hz) | 0 | 40
+  init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 50); // Rate of magnetometer stream (Hz) | 0 | 75
+  init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
+  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50); // Rate of airspeed stream (Hz) | 0 |  50
+  init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
-  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 0); // Rate of raw output stream | 0 |  490
-  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 0); // Rate of raw RC input stream | 0 | 50
+  init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
+  init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50
 
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
