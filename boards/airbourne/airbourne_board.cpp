@@ -81,16 +81,17 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 // serial
 void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
-  if (dev == 3)
-  {
+  (void)dev;
+//  if (dev == 3)
+//  {
     uart3_.init(&uart_config[UART3], baud_rate);
     current_serial_ = &uart3_;
-  }
-  else
-  {
-    vcp_.init();
-    current_serial_ = &vcp_;
-  }
+//  }
+//  else
+//  {
+//    vcp_.init();
+//    current_serial_ = &vcp_;
+//  }
 
 }
 
