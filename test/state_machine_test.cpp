@@ -215,6 +215,84 @@ TEST(state_machine_test, arm_check) {
   ASSERT_EQ(rf.state_manager_.state().armed, false);
 }
 
+TEST(state_machine_test, arm_throttle_check)
+{
+  testBoard board;
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
+
+  rf.init();
+  board.set_pwm_lost(false);
+
+  uint16_t rc_values[8];
+  for (int i = 0; i < 8; i++)
+  {
+    rc_values[i] = (i > 3) ? 1000 : 1500;
+  }
+  rc_values[2] = 1000;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 100);
+
+  // clear all errors
+  rf.state_manager_.clear_error(rf.state_manager_.state().error_codes);
+
+  // make sure we start out disarmed
+  ASSERT_EQ(false, rf.state_manager_.state().armed);
+
+  // first, make sure we can arm if all is well
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  ASSERT_EQ(true, rf.state_manager_.state().armed);
+
+  // now go back to disarmed to prepare for following tests
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+  ASSERT_EQ(false, rf.state_manager_.state().armed);
+
+  // for first set of tests, have min throttle enabled
+  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
+
+  // make sure we can't arm with high RC throttle
+  rc_values[2] = 1500;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 100000);
+
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  step_firmware(rf, board, 1200000);
+  ASSERT_EQ(false, rf.state_manager_.state().armed);
+
+  // but make sure we can arm with low throttle with override switch off when min throttle is on
+  rc_values[2] = 1000;
+  rc_values[4] = 1000;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 100000);
+  ASSERT_EQ(false, rf.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE));
+
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  step_firmware(rf, board, 1200000);
+  ASSERT_EQ(true, rf.state_manager_.state().armed);
+
+  // disarm
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+  step_firmware(rf, board, 1200000);
+  ASSERT_EQ(false, rf.state_manager_.state().armed);
+
+  // now make sure that if min throttle is off, we can't arm with the override switch off
+  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, 0);
+
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  step_firmware(rf, board, 1200000);
+  ASSERT_EQ(false, rf.state_manager_.state().armed);
+
+  // but make sure we can arm with it on
+  rc_values[4] = 2000;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 100000);
+  ASSERT_EQ(true, rf.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE));
+
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  step_firmware(rf, board, 1200000);
+  ASSERT_EQ(true, rf.state_manager_.state().armed);
+}
+
 TEST(state_machine_test, failsafe_check) {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;

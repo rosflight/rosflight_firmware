@@ -10,19 +10,6 @@
 
 using namespace rosflight_firmware;
 
-// Initialize the full firmware, so that the state_manager can do its thing
-void step_firmware(ROSflight& rf, testBoard& board, uint32_t us)
-{
-  uint64_t start_time_us = board.clock_micros();
-  float dummy_acc[3] = {0, 0, -9.80665};
-  float dummy_gyro[3] = {0, 0, 0};
-  while(board.clock_micros() < start_time_us + us)
-  {
-    board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
-    rf.run();
-  }
-}
-
 TEST(command_manager_test, rc) {
   testBoard board;
   Mavlink mavlink(board);
