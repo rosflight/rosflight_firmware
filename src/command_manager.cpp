@@ -276,7 +276,7 @@ bool CommandManager::run()
     interpret_rc();
 
     // Check for offboard control timeout (100 ms)
-    if (RF_.board_.clock_millis() > offboard_command_.stamp_ms + 100)
+    if (RF_.board_.clock_millis() > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT))
     {
       // If it has been longer than 100 ms, then disable the offboard control
       offboard_command_.F.active = false;
