@@ -90,6 +90,7 @@ private:
     RC_BASE* rc_ = nullptr;
 
     std::function<void()> imu_callback_;
+    int secondary_serial_device_ = 0;
 
     int _board_revision = 2;
 

@@ -81,9 +81,11 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
   {
     uart3_.init(&uart_config[UART3], baud_rate);
     current_serial_ = &uart3_;
+    secondary_serial_device_ = dev;
   }
   else
   {
+    secondary_serial_device_ = dev;
     vcp_.init();
     current_serial_ = &vcp_;
   }
@@ -101,6 +103,11 @@ uint16_t AirbourneBoard::serial_bytes_available()
 
 uint8_t AirbourneBoard::serial_read()
 {
+  if (vcp_.connected())
+    current_serial_ = &vcp_;
+  else if (secondary_serial_device_ == 3)
+    current_serial_ = &uart3_;
+
   return current_serial_->read_byte();
 }
 
