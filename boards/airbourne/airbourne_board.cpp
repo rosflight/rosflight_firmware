@@ -77,6 +77,7 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 // serial
 void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
+  vcp_.init();
   if (dev == 3)
   {
     uart3_.init(&uart_config[UART3], baud_rate);
@@ -86,7 +87,6 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
   else
   {
     secondary_serial_device_ = dev;
-    vcp_.init();
     current_serial_ = &vcp_;
   }
 }
@@ -98,15 +98,16 @@ void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 
 uint16_t AirbourneBoard::serial_bytes_available()
 {
+  if (vcp_.connected())
+    current_serial_ = &vcp_;
+  else if (secondary_serial_device_ == 3)
+    current_serial_ = &uart3_;
+
   return current_serial_->rx_bytes_waiting();
 }
 
 uint8_t AirbourneBoard::serial_read()
 {
-  if (vcp_.connected())
-    current_serial_ = &vcp_;
-  else if (secondary_serial_device_ == 3)
-    current_serial_ = &uart3_;
 
   return current_serial_->read_byte();
 }
