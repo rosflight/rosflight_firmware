@@ -102,6 +102,7 @@ private:
   void command_callback(CommLink::Command command);
   void timesync_callback(int64_t tc1, int64_t ts1);
   void offboard_control_callback(const CommLink::OffboardControl& control);
+  void attitude_correction_callback(const turbomath::Quaternion &q);
 
   void send_heartbeat(void);
   void send_status(void);
