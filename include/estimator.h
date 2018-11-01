@@ -65,6 +65,7 @@ public:
   void run();
   void reset_state();
   void reset_adaptive_bias();
+  void set_attitude_correction(const turbomath::Quaternion& q);
 
 private:
   const turbomath::Vector g_ = {0.0f, 0.0f, -1.0f};
@@ -84,6 +85,9 @@ private:
   turbomath::Vector gyro_LPF_;
 
   turbomath::Vector w_acc_;
+
+  bool attitude_correction_next_run_;
+  turbomath::Quaternion q_correction_;
 
   void run_LPF();
 };
