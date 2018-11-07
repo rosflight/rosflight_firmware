@@ -98,8 +98,8 @@ private:
   rc_stick_config_t sticks[STICKS_COUNT];
   rc_switch_config_t switches[SWITCHES_COUNT];
 
-  bool switch_values[SWITCHES_COUNT];
-  float stick_values[STICKS_COUNT];
+  volatile bool switch_values[SWITCHES_COUNT];
+  volatile float stick_values[STICKS_COUNT];
 
   void init_rc();
   void init_switches();
