@@ -128,6 +128,18 @@ namespace rosflight_firmware
   void testBoard::sonar_update(){}
   float testBoard::sonar_read(){return 0;}
 
+  void testBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                           float *hacc, float *vacc, float* sacc)
+  {
+    (void)lla;
+    (void)vel;
+    (void)fix_type;
+    (void)tow_ms;
+    (void)hacc;
+    (void)vacc;
+    (void)sacc;
+  }
+
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
   void testBoard::rc_init(rc_type_t rc_type){}

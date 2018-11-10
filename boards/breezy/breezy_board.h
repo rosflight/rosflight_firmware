@@ -124,6 +124,11 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
+  bool gps_present() override { return false; }
+  void gps_update() override { return; }
+  void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                float *hacc, float *vacc, float* sacc) override;
+
   // PWM
   // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
   void rc_init(rc_type_t rc_type) override;

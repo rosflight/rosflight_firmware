@@ -89,6 +89,11 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
+  bool gps_present() override { return false; }
+  void gps_update() override {}
+  void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                float *hacc, float *vacc, float* sacc) override;
+
 // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;

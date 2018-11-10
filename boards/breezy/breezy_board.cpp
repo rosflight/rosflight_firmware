@@ -352,6 +352,18 @@ bool BreezyBoard::memory_write(const void * src, size_t len)
   return writeEEPROM(src, len);
 }
 
+void BreezyBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                              float *hacc, float *vacc, float* sacc)
+{
+  (void)lla;
+  (void)vel;
+  (void)fix_type;
+  (void)tow_ms;
+  (void)hacc;
+  (void)vacc;
+  (void)sacc;
+}
+
 // LED
 
 void BreezyBoard::led0_on() { LED0_ON; }
