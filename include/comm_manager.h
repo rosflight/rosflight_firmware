@@ -58,6 +58,7 @@ private:
     STREAM_ID_BARO,
     STREAM_ID_SONAR,
     STREAM_ID_MAG,
+    STREAM_ID_GPS,
 
     STREAM_ID_SERVO_OUTPUT_RAW,
     STREAM_ID_RC_RAW,
@@ -114,6 +115,7 @@ private:
   void send_baro(void);
   void send_sonar(void);
   void send_mag(void);
+  void send_gps(void);
   void send_low_priority(void);
 
   // Debugging Utils
@@ -132,6 +134,7 @@ private:
     Stream(0,     [this]{this->send_sonar();}),
     Stream(0,     [this]{this->send_mag();}),
     Stream(0,     [this]{this->send_output_raw();}),
+    Stream(0,     [this]{this->send_gps();}),
     Stream(0,     [this]{this->send_rc_raw();}),
     Stream(20000, [this]{this->send_low_priority();})
   };

@@ -32,14 +32,26 @@
  */
 
 #include <turbomath/turbomath.h>
+#include <string.h>
 
 namespace turbomath
 {
 
-Vector::Vector() : x(0.0f), y(0.0f), z(0.0f)
+Vector::Vector(const Vector &v) :
+  x(*arr), y(*(arr+1)), z(*(arr+2))
+{
+  arr[0] = v.arr[0];
+  arr[1] = v.arr[1];
+  arr[2] = v.arr[2];
+}
+
+Vector::Vector() :
+  x(*arr), y(*(arr+1)), z(*(arr+2))
 {}
 
-Vector::Vector(float x_, float y_, float z_) : x(x_), y(y_), z(z_)
+Vector::Vector(float x_, float y_, float z_) :
+  arr{x_, y_, z_},
+  x(*arr), y(*(arr+1)), z(*(arr+2))
 {}
 
 
@@ -70,6 +82,14 @@ Vector Vector::normalized() const
   float recip_norm = inv_sqrt(x*x + y*y + z*z);
   Vector out(x*recip_norm, y*recip_norm, z*recip_norm);
   return out;
+}
+
+Vector& Vector::operator =(const Vector&v)
+{
+  arr[0] = v.arr[0];
+  arr[1] = v.arr[1];
+  arr[2] = v.arr[2];
+  return *this;
 }
 
 

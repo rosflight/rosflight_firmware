@@ -161,6 +161,19 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us,
   send_message(msg);
 }
 
+void Mavlink::send_gps(uint8_t system_id, const double* lla, const float* vel, uint8_t fix_type, uint32_t tow_ms,
+                       float hacc, float vacc, float sacc )
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_gps_pack(system_id, compid_, &msg,
+                                 lla[0], lla[1], lla[2],
+                                 vel[0], vel[1], vel[2],
+                                 fix_type, tow_ms,
+                                 hacc, vacc, sacc);
+  send_message(msg);
+
+}
+
 void Mavlink::send_log_message(uint8_t system_id, LogSeverity severity, const char * text)
 {
   MAV_SEVERITY mavlink_severity = MAV_SEVERITY_ENUM_END;

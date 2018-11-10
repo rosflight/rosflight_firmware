@@ -66,6 +66,17 @@ public:
     float sonar_range = 0;
     bool sonar_range_valid = false;
 
+    double gps_lla[3] = {};
+    turbomath::Vector gps_vel_NED = {0, 0, 0};
+    uint8_t gps_fix_type;
+    float gps_CNO = 0;
+    uint32_t gps_tow_ms = 0;
+    bool gps_present = false;
+    float gps_speed_accuracy = 0;
+    float gps_horizontal_accuracy = 0;
+    float gps_vertical_accuracy = 0;
+
+
     turbomath::Vector mag = {0, 0, 0};
 
     bool baro_present = false;
@@ -129,6 +140,7 @@ private:
   enum : uint8_t
   {
     BAROMETER,
+    GPS,
     DIFF_PRESSURE,
     SONAR,
     MAGNETOMETER,

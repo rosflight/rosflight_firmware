@@ -63,11 +63,13 @@ union float_converter_t
 class Vector
 {
 public:
-  float x;
-  float y;
-  float z;
+  float arr[3];
+  float& x;
+  float& y;
+  float& z;
 
   Vector();
+  Vector(const Vector& v);
   Vector(float x_, float y_, float z_);
 
   float norm() const;
@@ -78,6 +80,7 @@ public:
   float dot(const Vector& v) const;
   Vector cross(const Vector& v) const;
 
+  Vector& operator= (const Vector& v);
   Vector operator* (float s) const;
   Vector operator/ (float s) const;
   Vector& operator*= (float s);

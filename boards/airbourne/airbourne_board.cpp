@@ -48,6 +48,8 @@ void AirbourneBoard::init_board()
   ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
+
+  uart3_.init(&uart_config[UART3], 115200, UART::MODE_8N1);
 }
 
 void AirbourneBoard::board_reset(bool bootloader)
@@ -109,6 +111,8 @@ void AirbourneBoard::sensors_init()
   mag_.init(&int_i2c_);
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
+
+  gps_.init(&uart3_);
 
 }
 
@@ -208,6 +212,17 @@ void AirbourneBoard::sonar_update()
 float AirbourneBoard::sonar_read()
 {
   return sonar_.read();
+}
+
+bool AirbourneBoard::gps_present()
+{
+  return gps_.present();
+}
+void AirbourneBoard::gps_update(){}
+void AirbourneBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                              float *hacc, float *vacc, float *sacc )
+{
+  gps_.read(lla, vel, &fix_type, &tow_ms, hacc, vacc, sacc);
 }
 
 // PWM

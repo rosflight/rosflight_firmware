@@ -90,6 +90,11 @@ public:
   virtual void sonar_update() = 0;
   virtual float sonar_read() = 0;
 
+  virtual bool gps_present() = 0;
+  virtual void gps_update() = 0;
+  virtual void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                        float *hacc, float *vacc, float* sacc) = 0;
+
 // RC
   virtual void rc_init(rc_type_t rc_type) = 0;
   virtual bool rc_lost() = 0;

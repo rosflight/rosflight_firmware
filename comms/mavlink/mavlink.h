@@ -93,6 +93,8 @@ public:
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
   void send_version(uint8_t system_id, const char * const version) override;
+  void send_gps(uint8_t system_id, const double *lla, const float *vel, uint8_t fix_type, uint32_t tow_ms,
+                float hacc, float vacc, float sacc ) override;
 
 private:
   void send_message(const mavlink_message_t &msg);

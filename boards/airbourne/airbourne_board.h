@@ -53,6 +53,7 @@
 #include "led.h"
 #include "uart.h"
 #include "mb1242.h"
+#include "ublox.h"
 
 #include "board.h"
 
@@ -81,6 +82,8 @@ private:
     LED led2_;
     LED led1_;
     M25P16 flash_;
+    UBLOX gps_;
+    UART uart3_;
 
     RC_BASE* rc_ = nullptr;
 
@@ -144,6 +147,11 @@ public:
   bool sonar_present() override;
   void sonar_update() override;
   float sonar_read() override;
+
+  bool gps_present() override;
+  void gps_update() override;
+  void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+                float *hacc, float *vacc, float* sacc) override;
 
 
   // RC

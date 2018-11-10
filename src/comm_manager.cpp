@@ -70,6 +70,7 @@ void CommManager::init()
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS, param_id);}, PARAM_STREAM_GPS_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
@@ -408,6 +409,18 @@ void CommManager::send_mag(void)
 {
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
+}
+
+void CommManager::send_gps(void)
+{
+  comm_link_.send_gps(sysid_,
+                      RF_.sensors_.data().gps_lla,
+                      RF_.sensors_.data().gps_vel_NED.arr,
+                      RF_.sensors_.data().gps_fix_type,
+                      RF_.sensors_.data().gps_tow_ms,
+                      RF_.sensors_.data().gps_horizontal_accuracy,
+                      RF_.sensors_.data().gps_vertical_accuracy,
+                      RF_.sensors_.data().gps_speed_accuracy);
 }
 
 void CommManager::send_low_priority(void)

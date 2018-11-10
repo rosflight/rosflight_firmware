@@ -127,7 +127,8 @@ AIRBOURNE_SRCS = led.cpp \
                  rc_sbus.cpp \
                  uart.cpp \
                  M25P16.cpp \
-                 ms4525.cpp
+                 ms4525.cpp \
+                 ublox.cpp
 
 
 # board-specific source files
