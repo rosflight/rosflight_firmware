@@ -114,16 +114,33 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_ERROR;
       break;
     case EVENT_REQUEST_ARM:
-      if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
+      // require low RC throttle to arm
+      if (RF_.rc_.stick(RC::Stick::STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
       {
-        fsm_state_ = FSM_STATE_CALIBRATING;
-        RF_.sensors_.start_gyro_calibration();
+        // require either min throttle to be enabled or throttle override switch to be on
+        if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)
+              || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
+        {
+          if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
+          {
+            fsm_state_ = FSM_STATE_CALIBRATING;
+            RF_.sensors_.start_gyro_calibration();
+          }
+          else
+          {
+            state_.armed = true;
+            RF_.comm_manager_.update_status();
+            fsm_state_ = FSM_STATE_ARMED;
+          }
+        }
+        else
+        {
+          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
+        }
       }
       else
       {
-        state_.armed = true;
-        RF_.comm_manager_.update_status();
-        fsm_state_ = FSM_STATE_ARMED;
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
       }
       break;
     default:

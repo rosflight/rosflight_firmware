@@ -52,6 +52,7 @@
 #include "pwm.h"
 #include "led.h"
 #include "uart.h"
+#include "mb1242.h"
 
 #include "board.h"
 
@@ -71,6 +72,7 @@ private:
     HMC5883L mag_;
     MS5611 baro_;
     MS4525 airspeed_;
+    I2CSonar sonar_;
     RC_SBUS rc_sbus_;
     UART sbus_uart_;
     GPIO inv_pin_;

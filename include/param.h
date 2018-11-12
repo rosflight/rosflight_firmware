@@ -125,7 +125,8 @@ enum : uint16_t
 
   PARAM_CALIBRATE_GYRO_ON_ARM,
 
-  PARAM_GYRO_ALPHA,
+  PARAM_GYRO_XY_ALPHA,
+  PARAM_GYRO_Z_ALPHA,
   PARAM_ACC_ALPHA,
 
   PARAM_GYRO_X_BIAS,
@@ -204,6 +205,11 @@ enum : uint16_t
   /*** ARMING SETUP ***/
   /********************/
   PARAM_ARM_THRESHOLD,
+
+  /************************/
+  /*** OFFBOARD CONTROL ***/
+  /************************/
+  PARAM_OFFBOARD_TIMEOUT,
 
   // keep track of size of params array
   PARAMS_COUNT

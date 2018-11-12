@@ -63,7 +63,7 @@ INCLUDE_DIRS =  $(ROSFLIGHT_DIR)/include \
 #################################
 ifeq ($(DEBUG), GDB)
 DEBUG_FLAGS = -ggdb
-OPTIMIZE = -Og
+OPTIMIZE = -O0
 $(info ***** Building with Debug Symbols *****)
 BUILD_TYPE=Debug
 else
