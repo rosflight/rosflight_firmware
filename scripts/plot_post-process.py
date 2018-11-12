@@ -2,11 +2,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.linalg import norm
 
+
+def quat2euler(q):
+    w = q[0, :]
+    x = q[1, :]
+    y = q[2, :]
+    z = q[3, :]
+    return np.array([np.arctan2(2.0 * (w * x + y * z), 1. - 2. * (x * x + y * y)),
+                     np.arcsin(2.0 * (w * y - z * x)),
+                     np.arctan2(2.0 * (w * z + x * y), 1. - 2. * (y * y + z * z))])
+
 est = np.fromfile("../test/build/estimate.bin", dtype=np.float64)
 est = np.reshape(est, (-1, 8))
 
 truth = np.fromfile("../test/build/truth.bin", dtype=np.float64)
 truth = np.reshape(truth, (-1, 5))
+truth[:,0] -= 2.25
+
+# rotate quaternion to account for mocap stupidity
+R = np.array([[0, -1, 0],
+              [0, 0, -1],
+              [1, 0, 0]])
+truth[:,2:] = truth[:,2:].dot(R)
 
 imu_filt = np.fromfile("../test/build/imu_filt.bin", dtype=np.float64)
 imu_filt = np.reshape(imu_filt, (-1, 7))
@@ -17,6 +34,12 @@ imu = np.reshape(imu, (-1, 7))
 est_labels=['t','qw','qx','qy','qz','bx','by','bz']
 truth_labels=['t','qw','qx','qy','qz']
 imu_filt_labels=['t','accx','accy','accz','gyrox','gyroy','gyroz']
+
+true_euler = quat2euler(truth[:,1:].T)
+true_euler[2,:] -= true_euler[2,0]
+est_euler = quat2euler(est[:,1:].T)
+
+
 
 plt.figure(1)
 for i in range(1,5,1):
@@ -54,6 +77,13 @@ for i in range(1,4,1):
     plt.subplot(3,1,i)
     plt.plot(imu[:,0], imu[:,i], label="unfiltered")
     plt.plot(imu_filt[:,0], imu_filt[:,i], label="filtered")
+    plt.legend()
+
+plt.figure(5)
+for i in range(3):
+    plt.subplot(3,1,i+1)
+    plt.plot(truth[:,0], true_euler[i,:], label="truth")
+    plt.plot(est[:,0], est_euler[i,:], label="est")
     plt.legend()
 
 plt.show()
