@@ -141,12 +141,7 @@ void StateManager::set_event(StateManager::Event event)
       }
       else
       {
-<<<<<<< Updated upstream
         RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
-=======
-        state_.armed = true;
-        fsm_state_ = FSM_STATE_ARMED;
->>>>>>> Stashed changes
       }
       break;
     default:
