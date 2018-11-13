@@ -111,6 +111,7 @@ uint16_t AirbourneBoard::serial_bytes_available()
       break;
     default:
       // no secondary serial device
+      break;
     }
   }
 
