@@ -16,6 +16,7 @@
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <rosflight_msgs/Command.h>
 #include <boost/foreach.hpp>
 #pragma GCC diagnostic pop
 #define foreach BOOST_FOREACH
@@ -191,11 +192,12 @@ int main(int argc, char * argv[])
   board.set_time(bag_start.toNSec()/1000);
 
   // Prepare the output file
-  fstream est_log, truth_log, imu_log, filtered_imu_log;
+  fstream est_log, truth_log, imu_log, filtered_imu_log, cmd_log;
   est_log.open("estimate.bin", std::ofstream::out | std::ofstream::trunc);
   truth_log.open("truth.bin", std::ofstream::out | std::ofstream::trunc);
   imu_log.open("imu.bin", std::ofstream::out | std::ofstream::trunc);
   filtered_imu_log.open("imu_filt.bin", std::ofstream::out | std::ofstream::trunc);
+  cmd_log.open("cmd.bin", std::ofstream::out | std::ofstream::trunc);
 
 
   foreach (rosbag::MessageInstance const m, view)
@@ -275,6 +277,18 @@ int main(int argc, char * argv[])
                          trans->transform.rotation.y,
                          trans->transform.rotation.z};
       truth_log.write((char*) truth, sizeof(truth));
+    }
+
+    else if (datatype.compare("rosflight_msgs/Command") == 0)
+    {
+      const rosflight_msgs::CommandConstPtr cmd(m.instantiate<rosflight_msgs::Command>());
+      double t = (cmd->header.stamp - bag_start).toSec();
+      double cmdarr[5] = {t,
+                          cmd->x,
+                          cmd->y,
+                          cmd->z,
+                          cmd->F};
+      cmd_log.write((char*)cmdarr, sizeof(cmdarr));
     }
   }
 }

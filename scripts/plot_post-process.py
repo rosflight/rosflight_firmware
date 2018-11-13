@@ -15,6 +15,9 @@ def quat2euler(q):
 est = np.fromfile("../test/build/estimate.bin", dtype=np.float64)
 est = np.reshape(est, (-1, 8))
 
+cmd = np.fromfile("../test/build/cmd.bin", dtype=np.float64)
+cmd = np.reshape(cmd, (-1, 5))
+
 truth = np.fromfile("../test/build/truth.bin", dtype=np.float64)
 truth = np.reshape(truth, (-1, 5))
 truth[:,0] -= 2.25
@@ -43,6 +46,7 @@ est_euler = quat2euler(est[:,1:].T)
 
 plt.figure(1)
 for i in range(1,5,1):
+    plt.suptitle('quaternion')
     plt.subplot(4,1,i)
     plt.ylabel(est_labels[i])
     plt.plot(est[:,0], est[:,i], label="est")
@@ -51,6 +55,7 @@ for i in range(1,5,1):
 
 plt.figure(2)
 for i in range(5,8,1):
+    plt.suptitle('biases')
     plt.subplot(3,1,i-4)
     plt.ylabel(est_labels[i])
     plt.plot(est[:,0], est[:,i])
@@ -64,26 +69,32 @@ good_acc = acc_mag.copy()
 bad_acc = acc_mag.copy()
 good_acc[~acc_within_bounds_idx]=np.nan
 bad_acc[acc_within_bounds_idx]=np.nan
-plt.figure(3)
-plt.title("accelerometer magnitude check")
-plt.plot(imu_filt[:,0], good_acc, '.', label="in bounds")
-plt.plot(imu_filt[:,0], bad_acc, '.', label="out of bounds")
-plt.plot([imu_filt[0,0], imu_filt[-1,0]], [acc_max, acc_max], ':', color=[0.2, 0.2, 0.2])
-plt.plot([imu_filt[0,0], imu_filt[-1,0]], [acc_min, acc_min], ':', color=[0.2, 0.2, 0.2])
-plt.legend()
+# plt.figure(3)
+# plt.title("accelerometer magnitude check")
+# plt.plot(imu_filt[:,0], good_acc, '.', label="in bounds")
+# plt.plot(imu_filt[:,0], bad_acc, '.', label="out of bounds")
+# plt.plot([imu_filt[0,0], imu_filt[-1,0]], [acc_max, acc_max], ':', color=[0.2, 0.2, 0.2])
+# plt.plot([imu_filt[0,0], imu_filt[-1,0]], [acc_min, acc_min], ':', color=[0.2, 0.2, 0.2])
+# plt.legend()
 
-plt.figure(4)
-for i in range(1,4,1):
-    plt.subplot(3,1,i)
-    plt.plot(imu[:,0], imu[:,i], label="unfiltered")
-    plt.plot(imu_filt[:,0], imu_filt[:,i], label="filtered")
-    plt.legend()
+# plt.figure(4)
+# for i in range(1,4,1):
+#     plt.subplot(3,1,i)
+#     plt.plot(imu[:,0], imu[:,i], label="unfiltered")
+#     plt.plot(imu_filt[:,0], imu_filt[:,i], label="filtered")
+#     plt.legend()
 
 plt.figure(5)
+ax = None
 for i in range(3):
-    plt.subplot(3,1,i+1)
+    plt.suptitle('euler')
+    ax = plt.subplot(3,1,i+1, sharex = ax)
     plt.plot(truth[:,0], true_euler[i,:], label="truth")
     plt.plot(est[:,0], est_euler[i,:], label="est")
+    plt.plot(cmd[:,0], cmd[:,i+1], label="cmd")
     plt.legend()
+
+
+
 
 plt.show()

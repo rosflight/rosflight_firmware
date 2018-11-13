@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   rosbag
+  rosflight_msgs
 )
 
 include_directories(${GTEST_INCLUDE_DIRS}
