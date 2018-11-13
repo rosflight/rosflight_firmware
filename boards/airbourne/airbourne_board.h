@@ -87,10 +87,16 @@ private:
     LED led1_;
     M25P16 flash_;
 
+    enum SerialDevice : uint32_t
+    {
+      SERIAL_DEVICE_VCP = 0,
+      SERIAL_DEVICE_UART3 = 3
+    };
+    SerialDevice secondary_serial_device_ = SERIAL_DEVICE_VCP;
+
     RC_BASE* rc_ = nullptr;
 
     std::function<void()> imu_callback_;
-    int secondary_serial_device_ = 0;
 
     int _board_revision = 2;
 
@@ -126,8 +132,6 @@ public:
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
-  Serial** get_serial_interfaces(void);//Returns an array of pointers to available serial interfaces
-  uint8_t get_serial_count(void);//Returns the number of available serial interfaces. Same as length of array above.
 
   // sensors
   void sensors_init() override;

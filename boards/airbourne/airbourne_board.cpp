@@ -78,16 +78,16 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
   vcp_.init();
-  if (dev == 3)
+  switch (dev)
   {
+  case SERIAL_DEVICE_UART3:
     uart3_.init(&uart_config[UART3], baud_rate);
     current_serial_ = &uart3_;
-    secondary_serial_device_ = dev;
-  }
-  else
-  {
-    secondary_serial_device_ = dev;
+    secondary_serial_device_ = SERIAL_DEVICE_UART3;
+    break;
+  default:
     current_serial_ = &vcp_;
+    secondary_serial_device_ = SERIAL_DEVICE_VCP;
   }
 }
 
@@ -98,10 +98,21 @@ void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 
 uint16_t AirbourneBoard::serial_bytes_available()
 {
-  if (vcp_.connected())
+  if (vcp_.connected() || secondary_serial_device_ == SERIAL_DEVICE_VCP)
+  {
     current_serial_ = &vcp_;
-  else if (secondary_serial_device_ == 3)
-    current_serial_ = &uart3_;
+  }
+  else
+  {
+    switch (secondary_serial_device_)
+    {
+    case SERIAL_DEVICE_UART3:
+      current_serial_ = &uart3_;
+      break;
+    default:
+      // no secondary serial device
+    }
+  }
 
   return current_serial_->rx_bytes_waiting();
 }
@@ -123,7 +134,7 @@ void AirbourneBoard::sensors_init()
 {
   while(millis() < 50) {} // wait for sensors to boot up
   imu_.init(&spi1_);
-  
+
   baro_.init(&int_i2c_);
   mag_.init(&int_i2c_);
   sonar_.init(&ext_i2c_);
