@@ -207,6 +207,11 @@ enum : uint16_t
   /********************/
   PARAM_ARM_THRESHOLD,
 
+  /************************/
+  /*** OFFBOARD CONTROL ***/
+  /************************/
+  PARAM_OFFBOARD_TIMEOUT,
+
   // keep track of size of params array
   PARAMS_COUNT
 };

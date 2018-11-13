@@ -69,7 +69,6 @@ void StateManager::set_error(uint16_t error)
 
   // Tell the FSM that we have had an error change
   process_errors();
-  RF_.comm_manager_.update_status();
 }
 
 void StateManager::clear_error(uint16_t error)
@@ -90,6 +89,8 @@ void StateManager::clear_error(uint16_t error)
 
 void StateManager::set_event(StateManager::Event event)
 {
+  FsmState start_state = fsm_state_;
+  uint16_t start_errors = state_.error_codes;
   switch (fsm_state_)
   {
   case FSM_STATE_INIT:
@@ -114,16 +115,38 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_ERROR;
       break;
     case EVENT_REQUEST_ARM:
-      if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
+      // require low RC throttle to arm
+      if (RF_.rc_.stick(RC::Stick::STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
       {
-        fsm_state_ = FSM_STATE_CALIBRATING;
-        RF_.sensors_.start_gyro_calibration();
+        // require either min throttle to be enabled or throttle override switch to be on
+        if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)
+              || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
+        {
+          if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
+          {
+            fsm_state_ = FSM_STATE_CALIBRATING;
+            RF_.sensors_.start_gyro_calibration();
+          }
+          else
+          {
+            state_.armed = true;
+            RF_.comm_manager_.update_status();
+            fsm_state_ = FSM_STATE_ARMED;
+          }
+        }
+        else
+        {
+          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
+        }
       }
       else
       {
+<<<<<<< Updated upstream
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
+=======
         state_.armed = true;
-        RF_.comm_manager_.update_status();
         fsm_state_ = FSM_STATE_ARMED;
+>>>>>>> Stashed changes
       }
       break;
     default:
@@ -183,13 +206,12 @@ void StateManager::set_event(StateManager::Event event)
     {
     case EVENT_RC_LOST:
       state_.failsafe = true;
-      RF_.comm_manager_.update_status();
       fsm_state_ = FSM_STATE_FAILSAFE;
       set_error(ERROR_RC_LOST);
+      RF_.comm_manager_.update_status();
       break;
     case EVENT_REQUEST_DISARM:
       state_.armed = false;
-      RF_.comm_manager_.update_status();
       if (state_.error)
         fsm_state_ = FSM_STATE_ERROR;
       else
@@ -217,7 +239,6 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_ERROR;
       break;
     case EVENT_RC_FOUND:
-      RF_.comm_manager_.update_status();
       state_.failsafe = false;
       fsm_state_ = FSM_STATE_ARMED;
       clear_error(ERROR_RC_LOST);
@@ -229,6 +250,10 @@ void StateManager::set_event(StateManager::Event event)
   default:
     break;
   }
+
+  // If there has been a change, then report it to the user
+  if (start_state != fsm_state_ || state_.error_codes != start_errors)
+    RF_.comm_manager_.update_status();
 }
 
 void StateManager::process_errors()

@@ -10,19 +10,6 @@
 
 using namespace rosflight_firmware;
 
-// Initialize the full firmware, so that the state_manager can do its thing
-void step_firmware(ROSflight& rf, testBoard& board, uint32_t us)
-{
-  uint64_t start_time_us = board.clock_micros();
-  float dummy_acc[3] = {0, 0, -9.80665};
-  float dummy_gyro[3] = {0, 0, 0};
-  while(board.clock_micros() < start_time_us + us)
-  {
-    board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
-    rf.run();
-  }
-}
-
 TEST(command_manager_test, rc) {
   testBoard board;
   Mavlink mavlink(board);
@@ -573,7 +560,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
   //=================================================
 
   start_ms = board.clock_millis();
-  while (board.clock_millis() < 100 + start_ms)
+  while (board.clock_millis() < rf.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT) + start_ms)
   {
     output = rf.command_manager_.combined_control();
     EXPECT_CLOSE(output.x.value, OFFBOARD_X);  // Offboard Command is still valid
