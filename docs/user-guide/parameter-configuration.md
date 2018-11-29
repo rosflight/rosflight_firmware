@@ -103,9 +103,12 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 
 # Parameter descriptions
 
+# Parameter descriptions
+
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
+| SERIAL_DEVICE | Serial Port (for supported devices) | int |  0 | 0 | 3 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
 | STRM_HRTBT | Rate of heartbeat streaming (Hz) | int |  1 | 0 | 1000 |
 | STRM_STATUS | Rate of status streaming (Hz) | int |  10 | 0 | 1000 |
@@ -113,7 +116,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | STRM_IMU | Rate of IMU stream (Hz) | int |  250 | 0 | 1000 |
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  50 | 0 | 75 |
 | STRM_BARO | Rate of barometer stream (Hz) | int |  50 | 0 | 100 |
-| STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  20 | 0 | 50 |
+| STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  50 | 0 | 50 |
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_SERVO | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |

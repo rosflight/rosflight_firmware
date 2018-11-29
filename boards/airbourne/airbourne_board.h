@@ -39,6 +39,7 @@
 #include <revo_f4.h>
 
 #include "vcp.h"
+#include "uart.h"
 #include "i2c.h"
 #include "spi.h"
 #include "mpu6000.h"
@@ -51,6 +52,8 @@
 #include "rc_sbus.h"
 #include "pwm.h"
 #include "led.h"
+#include "serial.h"
+#include "system.h"
 #include "uart.h"
 #include "mb1242.h"
 
@@ -64,6 +67,8 @@ class AirbourneBoard : public Board
 
 private:
     VCP vcp_;
+    UART uart3_;
+    Serial* current_serial_;//A pointer to the serial stream currently in use.
     I2C int_i2c_;
     I2C ext_i2c_;
     SPI spi1_;
@@ -72,15 +77,22 @@ private:
     HMC5883L mag_;
     MS5611 baro_;
     MS4525 airspeed_;
+    RC_PPM rc_ppm_;
     I2CSonar sonar_;
     RC_SBUS rc_sbus_;
     UART sbus_uart_;
     GPIO inv_pin_;
-    RC_PPM rc_ppm_;
     PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
     LED led2_;
     LED led1_;
     M25P16 flash_;
+
+    enum SerialDevice : uint32_t
+    {
+      SERIAL_DEVICE_VCP = 0,
+      SERIAL_DEVICE_UART3 = 3
+    };
+    SerialDevice secondary_serial_device_ = SERIAL_DEVICE_VCP;
 
     RC_BASE* rc_ = nullptr;
 
@@ -115,7 +127,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate) override;
+  void serial_init(uint32_t baud_rate, uint32_t dev) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;

@@ -91,7 +91,7 @@ public:
     Channel F;
   };
 
-  virtual void init(uint32_t baud_rate) = 0;
+  virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void receive() = 0;
 
   // send functions

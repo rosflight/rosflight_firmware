@@ -48,6 +48,8 @@ void AirbourneBoard::init_board()
   ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
+
+  current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)
@@ -73,43 +75,71 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 }
 
 // serial
-void AirbourneBoard::serial_init(uint32_t baud_rate)
+void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
-  (void)baud_rate;
   vcp_.init();
+  switch (dev)
+  {
+  case SERIAL_DEVICE_UART3:
+    uart3_.init(&uart_config[UART3], baud_rate);
+    current_serial_ = &uart3_;
+    secondary_serial_device_ = SERIAL_DEVICE_UART3;
+    break;
+  default:
+    current_serial_ = &vcp_;
+    secondary_serial_device_ = SERIAL_DEVICE_VCP;
+  }
 }
 
 void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
-  vcp_.write(src, len);
+  current_serial_->write(src, len);
 }
 
 uint16_t AirbourneBoard::serial_bytes_available()
 {
-  return vcp_.rx_bytes_waiting();
+  if (vcp_.connected() || secondary_serial_device_ == SERIAL_DEVICE_VCP)
+  {
+    current_serial_ = &vcp_;
+  }
+  else
+  {
+    switch (secondary_serial_device_)
+    {
+    case SERIAL_DEVICE_UART3:
+      current_serial_ = &uart3_;
+      break;
+    default:
+      // no secondary serial device
+      break;
+    }
+  }
+
+  return current_serial_->rx_bytes_waiting();
 }
 
 uint8_t AirbourneBoard::serial_read()
 {
-  return vcp_.read_byte();
+
+  return current_serial_->read_byte();
 }
 
 void AirbourneBoard::serial_flush()
 {
-  vcp_.flush();
+  current_serial_->flush();
 }
+
 
 // sensors
 void AirbourneBoard::sensors_init()
 {
   while(millis() < 50) {} // wait for sensors to boot up
   imu_.init(&spi1_);
-  
+
   baro_.init(&int_i2c_);
   mag_.init(&int_i2c_);
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
-
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
