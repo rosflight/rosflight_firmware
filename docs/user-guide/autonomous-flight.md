@@ -76,6 +76,13 @@ I would then publish this message to the `/command` topic to forward it to the e
 !!! note
     If the flight controller does not receive a new command for certain period of time, it will ignore the old commands and revert to RC control. The length of this timeout period is set by the `OFFBOARD_TIMEOUT` parameter.
 
+## Supply attitude measurements to ROSflight
+
+Because ROSflight only has an onboard IMU, the internal attitude estimate can sometimes deviate a bit from truth.  More sophisticated state estimation methods which include GPS or visual information typically have a much better attitude estimate than an IMU-only and therefore ROSflight has the ability to accept an external attitude measurement.
+
+To supply this measurement, publish a `geometry_msgs/Quaternion` to the `/attitude_measurement` topic, and the strength of this update is tuned with the
+`FILTER_KP_COR` parameter.
+
 ## Fly waypoints with ros_plane or ros_copter
 
 Waypoint following is not supported natively by the ROSflight stack. However, the [ROSplane](https://github.com/byu-magicc/ros_plane) and [ROScopter](https://github.com/byu-magicc/ros_copter) projects are good example implementations of how to achieve this using ROSflight. They also provide good examples of how you might go about integrating your own guidance or control algorithms with the ROSflight stack.

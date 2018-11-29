@@ -144,6 +144,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | FILTER_INIT_T | Time in ms to initialize estimator | int |  3000 | 0 | 100000 |
 | FILTER_KP | estimator proportional gain - See estimator documentation | float |  0.5f | 0 | 10.0 |
 | FILTER_KI | estimator integral gain - See estimator documentation | float |  0.01f | 0 | 1.0 |
+| FILTER_KP_COR | estimator proportional gain on external attitude correction - See estimator documentation | float |  10.0f | 0 | 1.0 |
 | FILTER_QUAD_INT | Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | int |  1 | 0 | 1 |
 | FILTER_MAT_EXP | 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | int |  1 | 0 | 1 |
 | FILTER_USE_ACC | Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | int |  1 | 0 | 1 |
