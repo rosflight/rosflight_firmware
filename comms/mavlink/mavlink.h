@@ -50,7 +50,7 @@ class Mavlink : public CommLink
 {
 public:
   Mavlink(Board& board);
-  void init(uint32_t baud_rate) override;
+  void init(uint32_t baud_rate, uint32_t dev) override;
   void receive() override;
 
   void send_attitude_quaternion(uint8_t system_id,
@@ -101,6 +101,7 @@ private:
   void handle_msg_param_request_read(const mavlink_message_t *const msg);
   void handle_msg_param_set(const mavlink_message_t *const msg);
   void handle_msg_offboard_control(const mavlink_message_t *const msg);
+  void handle_msg_attitude_correction(const mavlink_message_t *const msg);
   void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
   void handle_mavlink_message(void);

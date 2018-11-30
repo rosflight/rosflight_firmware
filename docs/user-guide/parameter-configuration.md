@@ -103,9 +103,12 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 
 # Parameter descriptions
 
+# Parameter descriptions
+
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
+| SERIAL_DEVICE | Serial Port (for supported devices) | int |  0 | 0 | 3 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
 | STRM_HRTBT | Rate of heartbeat streaming (Hz) | int |  1 | 0 | 1000 |
 | STRM_STATUS | Rate of status streaming (Hz) | int |  10 | 0 | 1000 |
@@ -113,7 +116,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | STRM_IMU | Rate of IMU stream (Hz) | int |  250 | 0 | 1000 |
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  50 | 0 | 75 |
 | STRM_BARO | Rate of barometer stream (Hz) | int |  50 | 0 | 100 |
-| STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  20 | 0 | 50 |
+| STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  50 | 0 | 50 |
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_SERVO | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
@@ -144,6 +147,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | FILTER_INIT_T | Time in ms to initialize estimator | int |  3000 | 0 | 100000 |
 | FILTER_KP | estimator proportional gain - See estimator documentation | float |  0.5f | 0 | 10.0 |
 | FILTER_KI | estimator integral gain - See estimator documentation | float |  0.01f | 0 | 1.0 |
+| FILTER_KP_COR | estimator proportional gain on external attitude correction - See estimator documentation | float |  10.0f | 0 | 1.0 |
 | FILTER_QUAD_INT | Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | int |  1 | 0 | 1 |
 | FILTER_MAT_EXP | 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | int |  1 | 0 | 1 |
 | FILTER_USE_ACC | Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | int |  1 | 0 | 1 |

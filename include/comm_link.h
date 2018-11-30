@@ -91,7 +91,7 @@ public:
     Channel F;
   };
 
-  virtual void init(uint32_t baud_rate) = 0;
+  virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void receive() = 0;
 
   // send functions
@@ -171,6 +171,11 @@ public:
     offboard_control_callback_ = callback;
   }
 
+  void register_attitude_correction_callback(std::function<void(const turbomath::Quaternion)> callback)
+  {
+    attitude_correction_callback_ = callback;
+  }
+
   void register_command_callback(std::function<void(Command)> callback)
   {
     command_callback_ = callback;
@@ -188,6 +193,7 @@ protected:
   std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
 
   std::function<void(const OffboardControl)> offboard_control_callback_;
+  std::function<void(const turbomath::Quaternion)> attitude_correction_callback_;
   std::function<void(Command)> command_callback_;
   std::function<void(int64_t, int64_t)> timesync_callback_;
 };

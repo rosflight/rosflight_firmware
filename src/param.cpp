@@ -100,6 +100,7 @@ void Params::set_defaults(void)
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
+  init_param_int(PARAM_SERIAL_DEVICE, "SERIAL_DEVICE", 0); // Serial Port (for supported devices) | 0 | 3
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -112,7 +113,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 250); // Rate of IMU stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 50); // Rate of magnetometer stream (Hz) | 0 | 75
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
-  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
+  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
 
   init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
@@ -164,6 +165,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
   init_param_float(PARAM_FILTER_KP, "FILTER_KP", 0.5f); // estimator proportional gain - See estimator documentation | 0 | 10.0
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.01f); // estimator integral gain - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KP_ATT_CORRECTION, "FILTER_KP_COR", 10.0f); // estimator proportional gain on external attitude correction - See estimator documentation | 0 | 1.0
 
   init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
   init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1

@@ -54,6 +54,7 @@ enum : uint16_t
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BAUD_RATE = 0,
+  PARAM_SERIAL_DEVICE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -118,6 +119,7 @@ enum : uint16_t
   PARAM_INIT_TIME,
   PARAM_FILTER_KP,
   PARAM_FILTER_KI,
+  PARAM_FILTER_KP_ATT_CORRECTION,
 
   PARAM_FILTER_USE_QUAD_INT,
   PARAM_FILTER_USE_MAT_EXP,
