@@ -90,6 +90,7 @@ private:
   State state_;
 
   uint32_t next_led_blink_ms_ = 0;
+  uint32_t next_arming_error_msg_ms_ = 0;
 
   enum FsmState
   {
