@@ -54,6 +54,7 @@ enum : uint16_t
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BAUD_RATE = 0,
+  PARAM_SERIAL_DEVICE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/

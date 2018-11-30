@@ -80,8 +80,9 @@ void BreezyBoard::clock_delay(uint32_t milliseconds)
 
 // serial
 
-void BreezyBoard::serial_init(uint32_t baud_rate)
+void BreezyBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
+  (void)dev;
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 

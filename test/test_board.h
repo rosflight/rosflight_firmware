@@ -59,7 +59,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
 // serial
-  void serial_init(uint32_t baud_rate) override;
+  void serial_init(uint32_t baud_rate, uint32_t dev) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
