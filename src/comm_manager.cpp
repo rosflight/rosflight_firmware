@@ -53,6 +53,7 @@ void CommManager::init()
   comm_link_.register_offboard_control_callback([this](const CommLink::OffboardControl& control){this->offboard_control_callback(control);});
   comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
   comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
+  comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
@@ -274,6 +275,11 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
   // Tell the command_manager that we have a new command we need to mux
   new_offboard_command.stamp_ms = RF_.board_.clock_millis();
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
+}
+
+void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
+{
+  RF_.estimator_.set_attitude_correction(q);
 }
 
 // function definitions
