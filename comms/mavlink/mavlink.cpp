@@ -41,9 +41,9 @@ Mavlink::Mavlink(Board& board) :
   board_(board)
 {}
 
-void Mavlink::init(uint32_t baud_rate)
+void Mavlink::init(uint32_t baud_rate, uint32_t dev)
 {
-  board_.serial_init(baud_rate);
+  board_.serial_init(baud_rate, dev);
   initialized_ = true;
 }
 
