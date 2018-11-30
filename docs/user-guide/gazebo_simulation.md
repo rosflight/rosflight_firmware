@@ -6,9 +6,14 @@ Rosflight comes with a useful tool allowing it to perform software-in-the-loop (
 
 To best mimic the hardware experience of ROSflight, the SIL plugin for Gazebo actually implements the firmware source code as a library. We just implemented a different "board layer" which uses gazebo instead of hardware calls for things like `imu_read()` and `pwm_write()`. Instead of a serial link over USB to the flight controller, we use a UDP connection bouncing off of localhost to communicate between `rosflight_io` and the firmware. This means the interface to the SIL plugin is identical to that of hardware. `rosflight_io` is the main gateway to the firmware in simulation, just as it is in hardware.
 
-Here is an illustration comparing all the connections in hardware and RC:
-![SIL_diagram](images/sil_diagram.png)
+The following table summarizes the correlation between connections in hardware and simulation:
 
+| Connection Type                         | Hardware     | Simulation                              |
+|-----------------------------------------|--------------|-----------------------------------------|
+| Serial communications to `rosflight_io` | USB / UART   | UDP                                     |
+| RC                                      | PPM Receiver | ROS `RC` topic (`rosflight_msgs/RCRaw`) |
+| Motors                                  | PWM          | Gazebo Plugin                           |
+| Sensors                                 | SPI/I2C      | Gazebo Plugin                           |
 
 ## Quick-Start Guide to SIL Simulation
 
