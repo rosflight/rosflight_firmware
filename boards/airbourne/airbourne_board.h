@@ -153,10 +153,10 @@ public:
 
   // PWM
   void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) override;
+  void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
 
   // non-volatile memory
-
   void memory_init() override;
   bool memory_read(void * dest, size_t len) override;
   bool memory_write(const void *src, size_t len) override;

@@ -84,6 +84,8 @@ void Mixer::init_mixing()
 
   mixer_to_use_ = array_of_mixers_[mixer_choice];
 
+  init_PWM();
+
   for (int8_t i=0; i<8; i++)
   {
     raw_outputs_[i] = 0.0f;
@@ -93,9 +95,17 @@ void Mixer::init_mixing()
 
 void Mixer::init_PWM()
 {
-  int16_t motor_refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
+  uint32_t refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
+  if (refresh_rate == 0 && mixer_to_use_ != nullptr)
+  {
+    refresh_rate = mixer_to_use_->default_pwm_rate;
+  }
   int16_t off_pwm = 1000;
-  RF_.board_.pwm_init(motor_refresh_rate, off_pwm);
+
+  if (RF_.state_manager_.state().error_codes & StateManager::ERROR_INVALID_MIXER || refresh_rate == 0)
+    RF_.board_.pwm_disable();
+  else
+    RF_.board_.pwm_init(refresh_rate, off_pwm);
 }
 
 

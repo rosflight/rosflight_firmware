@@ -138,6 +138,7 @@ namespace rosflight_firmware
   }
   void testBoard::pwm_write(uint8_t channel, float value){}
   void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
+  void testBoard::pwm_disable() {}
 
 // non-volatile memory
   void testBoard::memory_init(){}
