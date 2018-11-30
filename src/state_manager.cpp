@@ -164,20 +164,18 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_PREFLIGHT;
       break;
     case EVENT_REQUEST_ARM:
-      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm:");
-      if(state.error_codes | StateManager::ERROR_INVALID_MIXER)
-        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  Invalid mixer");
-      if(state.error_codes | StateManager::ERROR_IMU_NOT_RESPONDING)
-        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  IMU not responding");
-      if(state.error_codes | StateManager::ERROR_RC_LOST)
-        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  RC signal lost");
-      if(state.error_codes | StateManager::ERROR_UNHEALTHY_ESTIMATOR)
-        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  Unhealthy estimator");
-      if(state.error_codes | StateManager::ERROR_TIME_GOING_BACKWARDS)
-        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  Time going backwards");
-      if(state.error_codes | StateManager::ERROR_INVALID_MIXER)
-        RF_.command_manager_.log(CommLink::LogSeverity::LOG_ERROR, "  IMU not calibrated");
-
+      if (state_.error_codes & StateManager::ERROR_INVALID_MIXER)
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Invalid mixer");
+      if (state_.error_codes & StateManager::ERROR_IMU_NOT_RESPONDING)
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: IMU not responding");
+      if (state_.error_codes & StateManager::ERROR_RC_LOST)
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: RC signal lost");
+      if (state_.error_codes & StateManager::ERROR_UNHEALTHY_ESTIMATOR)
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Unhealthy estimator");
+      if (state_.error_codes & StateManager::ERROR_TIME_GOING_BACKWARDS)
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
+      if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU)
+        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
       break;
     default:
       break;
