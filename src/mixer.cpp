@@ -40,16 +40,16 @@ namespace rosflight_firmware
 
 Mixer::Mixer(ROSflight &_rf) :
   RF_(_rf)
-{}
+{
+  mixer_to_use_ = nullptr;
+}
 
 void Mixer::init()
 {
+  init_mixing();
   RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MOTOR_PWM_SEND_RATE);
   RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
   RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MIXER);
-
-  init_mixing();
-  init_PWM();
 }
 
 void Mixer::param_change_callback(uint16_t param_id)
@@ -76,13 +76,16 @@ void Mixer::init_mixing()
   if (mixer_choice >= NUM_MIXERS)
   {
     RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Invalid Mixer Choice");
-    mixer_choice = 0;
 
     // set the invalid mixer flag
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
+    mixer_to_use_ = nullptr;
+  }
+  else
+  {
+    mixer_to_use_ = array_of_mixers_[mixer_choice];
   }
 
-  mixer_to_use_ = array_of_mixers_[mixer_choice];
 
   init_PWM();
 
@@ -102,8 +105,8 @@ void Mixer::init_PWM()
   }
   int16_t off_pwm = 1000;
 
-  if (RF_.state_manager_.state().error_codes & StateManager::ERROR_INVALID_MIXER || refresh_rate == 0)
-    RF_.board_.pwm_disable();
+  if (mixer_to_use_ == nullptr || refresh_rate == 0)
+    RF_.board_.pwm_init(50, 0);
   else
     RF_.board_.pwm_init(refresh_rate, off_pwm);
 }
