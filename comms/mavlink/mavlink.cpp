@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
  * All rights reserved.
@@ -442,6 +442,20 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
   offboard_control_callback_(control);
 }
 
+void Mavlink::handle_msg_attitude_correction(const mavlink_message_t * const msg)
+{
+  mavlink_attitude_correction_t q_msg;
+  mavlink_msg_attitude_correction_decode(msg, &q_msg);
+
+  turbomath::Quaternion q_correction;
+  q_correction.w = q_msg.qw;
+  q_correction.x = q_msg.qx;
+  q_correction.y = q_msg.qy;
+  q_correction.z = q_msg.qz;
+
+  attitude_correction_callback_(q_correction);
+}
+
 void Mavlink::handle_mavlink_message(void)
 {
   switch (in_buf_.msgid)
@@ -463,6 +477,9 @@ void Mavlink::handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
     handle_msg_timesync(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_ATTITUDE_CORRECTION:
+    handle_msg_attitude_correction(&in_buf_);
     break;
   default:
     break;

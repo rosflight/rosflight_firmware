@@ -76,6 +76,8 @@ void Estimator::reset_state()
 
   state_.timestamp_us = RF_.board_.clock_micros();
 
+  attitude_correction_next_run_ = false;
+
   // Clear the unhealthy estimator flag
   RF_.state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
 }
@@ -110,9 +112,15 @@ void Estimator::run_LPF()
   gyro_LPF_.z = (1.0f-alpha_gyro_z)*raw_gyro.z + alpha_gyro_z*gyro_LPF_.z;
 }
 
+void Estimator::set_attitude_correction(const turbomath::Quaternion &q)
+{
+  attitude_correction_next_run_ = true;
+  q_correction_ = q;
+}
+
 void Estimator::run()
 {
-  float kp, ki;
+  float acc_kp, ki;
   uint64_t now_us = RF_.sensors_.data().imu_time;
   if (last_time_ == 0)
   {
@@ -138,12 +146,12 @@ void Estimator::run()
   // Crank up the gains for the first few seconds for quick convergence
   if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
+    acc_kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
+    acc_kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI);
   }
 
@@ -186,6 +194,12 @@ void Estimator::run()
     w_acc.z = 0.0f;
   }
 
+  if (attitude_correction_next_run_)
+  {
+    attitude_correction_next_run_ = false;
+    w_acc += RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION)*(q_correction_ - state_.attitude);
+  }
+
 
   // Handle Gyro Measurements
   turbomath::Vector wbar;
@@ -204,7 +218,7 @@ void Estimator::run()
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
-  turbomath::Vector wfinal = wbar - bias_ + w_acc * kp;
+  turbomath::Vector wfinal = wbar - bias_ + w_acc * acc_kp;
 
   // Propagate Dynamics (only if we've moved)
   float sqrd_norm_w = wfinal.sqrd_norm();
