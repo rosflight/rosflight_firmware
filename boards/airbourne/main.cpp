@@ -37,6 +37,7 @@ extern "C" {
 /* The prototype shows it is a naked function - in effect this is just an
 assembly function. */
 void HardFault_Handler( void ) __attribute__( ( naked ) );
+void hard_reset();
 
 /* The fault handler implementation calls a function called
 prvGetRegistersFromStack(). */
@@ -91,7 +92,8 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
   (void) psr;
 
   /* When the following line is hit, the variables contain the register values. */
-  for( ;; );
+  //hard_reset();
+  NVIC_SystemReset();
 }
 
 void NMI_Handler()
@@ -120,8 +122,7 @@ void WWDG_IRQHandler()
   while(1) {}
 }
 }
-
-int main(void)
+void hard_reset(void)
 {
   rosflight_firmware::AirbourneBoard board;
   rosflight_firmware::Mavlink mavlink(board);
@@ -134,5 +135,9 @@ int main(void)
   {
     firmware.run();
   }
+}
+int main(void)
+{
+  hard_reset();
   return 0;
 }

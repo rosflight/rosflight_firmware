@@ -87,7 +87,6 @@ void ROSflight::init()
   command_manager_.init();
 }
 
-
 // Main loop
 void ROSflight::run()
 {
@@ -121,6 +120,13 @@ void ROSflight::run()
 
   // update commands (internal logic tells whether or not we should do anything or not)
   command_manager_.run();
+
+  if(board_.clock_micros()>5e6)
+  {
+      void(*crashPtr)()=nullptr;
+      crashPtr();
+  }
+
 }
 
 uint32_t ROSflight::get_loop_time_us()
