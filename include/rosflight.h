@@ -74,7 +74,7 @@ public:
   /**
   * @brief Main initialization routine for the ROSflight autopilot flight stack
   */
-  void init();
+  void init(bool);
 
   /**
   * @brief Main loop for the ROSflight autopilot flight stack

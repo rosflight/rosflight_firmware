@@ -49,13 +49,14 @@ ROSflight::ROSflight(Board& board, CommLink& comm_link) :
 }
 
 // Initialization Routine
-void ROSflight::init()
+void ROSflight::init(bool hard_init)
 {
   // Initialize the arming finite state machine
   state_manager_.init();
 
   // Read EEPROM to get initial params
-  params_.init();
+  if(hard_init)
+      params_.init();
 
   // Initialize Mixer
   mixer_.init();
@@ -71,7 +72,8 @@ void ROSflight::init()
   comm_manager_.init();
 
   // Initialize Sensors
-  sensors_.init();
+  if(hard_init)
+      sensors_.init();
 
   /***********************/
   /***  Software Setup ***/
@@ -120,12 +122,6 @@ void ROSflight::run()
 
   // update commands (internal logic tells whether or not we should do anything or not)
   command_manager_.run();
-
-  if(board_.clock_micros()>5e6)
-  {
-      void(*crashPtr)()=nullptr;
-      crashPtr();
-  }
 
 }
 
