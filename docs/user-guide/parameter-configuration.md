@@ -140,7 +140,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | Y_EQ_TORQUE | Equilibrium torque added to output of controller on y axis | float |  0.0f | -1.0 | 1.0 |
 | Z_EQ_TORQUE | Equilibrium torque added to output of controller on z axis | float |  0.0f | -1.0 | 1.0 |
 | PID_TAU | Dirty Derivative time constant - See controller documentation | float |  0.05f | 0.0 | 1.0 |
-| MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors - Requires reboot to take effect | int |  490 | 0 | 1000 |
+| MOTOR_PWM_UPDATE | Overrides default PWM rate specified by mixer if non-zero - Requires reboot to take effect | int |  0 | 0 | 490 |
 | MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 | 0.0 | 1.0 |
 | FAILSAFE_THR | Throttle sent to motors in failsafe condition (set just below hover throttle) | float |  0.3 | 0.0 | 1.0 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_THR | int |  true | 0 | 1 |

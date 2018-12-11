@@ -273,6 +273,14 @@ void AirbourneBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
   }
 }
 
+void AirbourneBoard::pwm_disable()
+{
+  for (int i = 0; i < PWM_NUM_OUTPUTS; i++)
+  {
+    esc_out_[i].disable();
+  }
+}
+
 void AirbourneBoard::pwm_write(uint8_t channel, float value)
 {
   esc_out_[channel].write(value);

@@ -321,6 +321,13 @@ void BreezyBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
+void BreezyBoard::pwm_disable()
+{
+  pwm_refresh_rate_ = 50;
+  pwm_idle_pwm_ = 0;
+  pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
+}
+
 float BreezyBoard::rc_read(uint8_t channel)
 {
   return (float)(pwmRead(channel) - 1000)/1000.0;
