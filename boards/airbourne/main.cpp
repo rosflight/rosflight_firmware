@@ -123,7 +123,7 @@ void WWDG_IRQHandler()
 }
 }
 //Currently soft resets are not supported
-void reset(bool hard_reset)
+void reset()
 {
   rosflight_firmware::AirbourneBoard board;
   rosflight_firmware::Mavlink mavlink(board);
@@ -144,6 +144,6 @@ void reset(bool hard_reset)
 }
 int main(void)
 {
-  reset(true);
+  reset();
   return 0;
 }
