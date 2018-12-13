@@ -122,6 +122,7 @@ void WWDG_IRQHandler()
   while(1) {}
 }
 }
+//Currently soft resets are not supported
 void reset(bool hard_reset)
 {
   rosflight_firmware::AirbourneBoard board;
@@ -129,7 +130,7 @@ void reset(bool hard_reset)
   rosflight_firmware::ROSflight firmware(board, mavlink);
   board.init_board();
 
-  firmware.init(hard_reset);
+  firmware.init();
   while (true)
   {
     firmware.run();
