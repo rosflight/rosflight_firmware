@@ -134,7 +134,7 @@ void reset()
   while (true)
   {
     firmware.run();
-    if(board.clock_micros()/5e6>1e6)
+    if(board.clock_micros()>5e6)
     {
         void(*crashPtr)()=nullptr;
         crashPtr();
