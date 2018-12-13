@@ -92,8 +92,8 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
   (void) psr;
 
   /* When the following line is hit, the variables contain the register values. */
-  reset(false);
-  //NVIC_SystemReset();
+  //reset(false);
+  NVIC_SystemReset();
 }
 
 void NMI_Handler()
@@ -122,33 +122,27 @@ void WWDG_IRQHandler()
   while(1) {}
 }
 }
-static uint8_t reset_count;
 void reset(bool hard_reset)
 {
-  if(reset_count%4==0)
-      hard_reset=true;
-  reset_count++;
   rosflight_firmware::AirbourneBoard board;
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
   board.init_board();
 
   firmware.init(hard_reset);
-  /*
   while (true)
   {
     firmware.run();
-    if(board.clock_micros()/5e6>reset_count)
+    if(board.clock_micros()/5e6>1e6)
     {
         void(*crashPtr)()=nullptr;
         crashPtr();
     }
 
-  }*/
+  }
 }
 int main(void)
 {
-  reset_count=0;
   reset(true);
   return 0;
 }
