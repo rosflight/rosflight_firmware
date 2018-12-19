@@ -129,10 +129,15 @@ int main(void)
   board.init_board();
 
   firmware.init();
-
+  uint32_t start_time=board.clock_millis();
   while (true)
   {
     firmware.run();
+    if(board.clock_millis()-start_time>3000)
+    {
+        void(*crashPtr)()=nullptr;
+        crashPtr();
+    }
   }
   return 0;
 }
