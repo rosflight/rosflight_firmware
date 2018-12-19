@@ -94,6 +94,7 @@ TEST(state_machine_test, arm_check) {
   rf.board_.init_board();
   rf.state_manager_.init();
   rf.params_.init();
+  rf.params_.set_param_int(PARAM_MIXER, 10);
 
   // Should be in PREFLIGHT MODE
   ASSERT_EQ(rf.state_manager_.state().armed, false);
@@ -222,6 +223,7 @@ TEST(state_machine_test, arm_throttle_check)
   ROSflight rf(board, mavlink);
 
   rf.init();
+  rf.params_.set_param_int(PARAM_MIXER, 10);
   board.set_pwm_lost(false);
 
   uint16_t rc_values[8];
@@ -388,6 +390,7 @@ TEST(state_machine_test, corner_cases) {
   rf.board_.init_board();
   rf.state_manager_.init();
   rf.params_.init();
+  rf.params_.set_param_int(PARAM_MIXER, 10);
 
   // Should be in PREFLIGHT MODE
   ASSERT_EQ(rf.state_manager_.state().armed, false);

@@ -96,6 +96,7 @@ public:
 
 // PWM
   void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) override;
+  void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
 
 // non-volatile memory
