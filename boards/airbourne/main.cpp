@@ -55,6 +55,7 @@ void HardFault_Handler(void)
     );
 }
 
+rosflight_firmware::AirbourneBoard board;
 void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 {
   /* These are volatile to try and prevent the compiler/linker optimising them
@@ -91,7 +92,20 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
   (void) psr;
 
   /* When the following line is hit, the variables contain the register values. */
-  for( ;; );
+
+  //This logic is so that if it crashes in the proccess of sending a crash message,
+  //It just resets right away, and lets the crash message go unsent
+  static bool second_crash=false;
+  if(!second_crash)
+  {
+      mavlink_message_t crash_message;
+      mavlink_msg_rosflight_hard_error_pack(1,0,&crash_message,r0,r1,r2,r3,r12,lr,pc,psr);
+      uint8_t data[MAVLINK_MAX_PACKET_LEN];
+      uint16_t len = mavlink_msg_to_send_buffer(data, &crash_message);
+      board.serial_write(data, len);
+
+  }
+  NVIC_SystemReset();
 }
 
 void NMI_Handler()
@@ -123,7 +137,6 @@ void WWDG_IRQHandler()
 
 int main(void)
 {
-  rosflight_firmware::AirbourneBoard board;
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
   board.init_board();
@@ -133,7 +146,9 @@ int main(void)
   while (true)
   {
     firmware.run();
-    if(board.clock_millis()-start_time>3000)
+    //Crash after three seconds for testing
+    //If you see this in production, it is a mistake, and also why it crashes after three seconds
+    if(board.clock_millis()-start_time>30000)
     {
         void(*crashPtr)()=nullptr;
         crashPtr();
