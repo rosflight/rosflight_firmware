@@ -38,7 +38,7 @@ ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](htt
 Additional Sensors you may want for your ROSflight setup include:
 
 * Sonar – MB1030 – [$25 on MaxBotix](https://www.maxbotix.com/Ultrasonic_Sensors/MB1030.htm)
-* GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/511-ublox-neo-m8-gps-module.html)
+* GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/u-blox/883-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
 The I2C sonar (MB124X) is also supported, but PWM sonars are preferred (https://www.adafruit.com/product/982?gclid=CjwKCAiA47DTBRAUEiwA4luU2QSNTXTLpAU6YI31w_cgVRXgiTB6v326aibrkUAaLYFRMMUWjI5uSBoCm80QAvD_BwE).
