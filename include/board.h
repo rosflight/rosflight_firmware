@@ -97,6 +97,7 @@ public:
 
 // PWM
   virtual void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) = 0;
+  virtual void pwm_disable() = 0;
   virtual void pwm_write(uint8_t channel, float value) = 0;
 
 // non-volatile memory
