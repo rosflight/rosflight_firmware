@@ -32,6 +32,12 @@
 #include "airbourne_board.h"
 #include "rosflight.h"
 #include "mavlink.h"
+#include "backup_sram.h"
+
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Because this was unnecessary and annoying
+
+//for testing
+uint32_t error_count_ = 0;
 
 extern "C" {
 /* The prototype shows it is a naked function - in effect this is just an
@@ -43,116 +49,116 @@ prvGetRegistersFromStack(). */
 void HardFault_Handler(void)
 {
     __asm volatile
-    (
-        " tst lr, #4                                                \n"
-        " ite eq                                                    \n"
-        " mrseq r0, msp                                             \n"
-        " mrsne r0, psp                                             \n"
-        " ldr r1, [r0, #24]                                         \n"
-        " ldr r2, handler2_address_const                            \n"
-        " bx r2                                                     \n"
-        " handler2_address_const: .word prvGetRegistersFromStack    \n"
-    );
+            (
+                " tst lr, #4                                                \n"
+                " ite eq                                                    \n"
+                " mrseq r0, msp                                             \n"
+                " mrsne r0, psp                                             \n"
+                " ldr r1, [r0, #24]                                         \n"
+                " ldr r2, handler2_address_const                            \n"
+                " bx r2                                                     \n"
+                " handler2_address_const: .word prvGetRegistersFromStack    \n"
+                );
 }
 
-rosflight_firmware::AirbourneBoard board;
 void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 {
-  /* These are volatile to try and prevent the compiler/linker optimising them
+    /* These are volatile to try and prevent the compiler/linker optimising them
   away as the variables never actually get used.  If the debugger won't show the
   values of the variables, make them global my moving their declaration outside
   of this function. */
-  volatile uint32_t r0;
-  volatile uint32_t r1;
-  volatile uint32_t r2;
-  volatile uint32_t r3;
-  volatile uint32_t r12;
-  volatile uint32_t lr; /* Link register. */
-  volatile uint32_t pc; /* Program counter. */
-  volatile uint32_t psr;/* Program status register. */
+    volatile uint32_t r0;
+    volatile uint32_t r1;
+    volatile uint32_t r2;
+    volatile uint32_t r3;
+    volatile uint32_t r12;
+    volatile uint32_t lr; /* Link register. */
+    volatile uint32_t pc; /* Program counter. */
+    volatile uint32_t psr;/* Program status register. */
 
-  r0 = pulFaultStackAddress[ 0 ];
-  r1 = pulFaultStackAddress[ 1 ];
-  r2 = pulFaultStackAddress[ 2 ];
-  r3 = pulFaultStackAddress[ 3 ];
+    r0 = pulFaultStackAddress[ 0 ];
+    r1 = pulFaultStackAddress[ 1 ];
+    r2 = pulFaultStackAddress[ 2 ];
+    r3 = pulFaultStackAddress[ 3 ];
 
-  r12 = pulFaultStackAddress[ 4 ];
-  lr = pulFaultStackAddress[ 5 ];
-  pc = pulFaultStackAddress[ 6 ];
-  psr = pulFaultStackAddress[ 7 ];
+    r12 = pulFaultStackAddress[ 4 ];
+    lr = pulFaultStackAddress[ 5 ];
+    pc = pulFaultStackAddress[ 6 ];
+    psr = pulFaultStackAddress[ 7 ];
 
-  // avoid compiler warnings about unused variables
-  (void) r0;
-  (void) r1;
-  (void) r2;
-  (void) r3;
-  (void) r12;
-  (void) lr;
-  (void) pc;
-  (void) psr;
+    // avoid compiler warnings about unused variables
+    (void) r0;
+    (void) r1;
+    (void) r2;
+    (void) r3;
+    (void) r12;
+    (void) lr;
+    (void) pc;
+    (void) psr;
 
-  /* When the following line is hit, the variables contain the register values. */
+    /* When the following line is hit, the variables contain the register values. */
 
-  //This logic is so that if it crashes in the proccess of sending a crash message,
-  //It just resets right away, and lets the crash message go unsent
-  static bool second_crash=false;
-  if(!second_crash)
-  {
-      mavlink_message_t crash_message;
-      mavlink_msg_rosflight_hard_error_pack(1,0,&crash_message,r0,r1,r2,r3,r12,lr,pc,psr);
-      uint8_t data[MAVLINK_MAX_PACKET_LEN];
-      uint16_t len = mavlink_msg_to_send_buffer(data, &crash_message);
-      board.serial_write(data, len);
+    //This logic is so that if it crashes in the proccess of sending a crash message,
+    //It just resets right away, and lets the crash message go unsent
 
-  }
-  NVIC_SystemReset();
+    //save crash information to backup SRAM
+    backup_data_t backup_data;
+    backup_data.debug_info={r0,r1,r2,r3,r12,lr,pc,psr};
+    backup_data.reset_count=++error_count_;
+    backup_data.error_code=1;
+    backup_data.checksum=generate_backup_checksum(backup_data);
+    backup_sram_write(backup_data);
+
+    NVIC_SystemReset();
 }
 
 void NMI_Handler()
 {
-  while(1) {}
+    while(1) {}
 }
 
 
 void MemManage_Handler()
 {
-  while(1) {}
+    while(1) {}
 }
 
 void BusFault_Handler()
 {
-  while(1) {}
+    while(1) {}
 }
 
 void UsageFault_Handler()
 {
-  while(1) {}
+    while(1) {}
 }
 
 void WWDG_IRQHandler()
 {
-  while(1) {}
+    while(1) {}
 }
 }
+
+
 
 int main(void)
 {
-  rosflight_firmware::Mavlink mavlink(board);
-  rosflight_firmware::ROSflight firmware(board, mavlink);
-  board.init_board();
+    rosflight_firmware::AirbourneBoard board;
+    rosflight_firmware::Mavlink mavlink(board);
+    rosflight_firmware::ROSflight firmware(board, mavlink);
+    board.init_board();
+    firmware.init();
 
-  firmware.init();
-  uint32_t start_time=board.clock_millis();
-  while (true)
-  {
-    firmware.run();
-    //Crash after three seconds for testing
-    //If you see this in production, it is a mistake, and also why it crashes after three seconds
-    if(board.clock_millis()-start_time>30000)
+    test_backup_sram();
+
+    while (true)
     {
+        firmware.run();
+        //Crash after a set amount of time for testing
+        //If you see this in production, it is a mistake, and also why it crashes
+        delay(5000);
         void(*crashPtr)()=nullptr;
         crashPtr();
     }
-  }
-  return 0;
+    return 0;
 }

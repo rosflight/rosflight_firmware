@@ -24,12 +24,13 @@
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHEvolatile THER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "airbourne_board.h"
+#include "backup_sram.h"
 
 namespace rosflight_firmware
 {
@@ -48,6 +49,8 @@ void AirbourneBoard::init_board()
   ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
+
+  backup_sram_init();
 
   current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
 }
