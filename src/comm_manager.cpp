@@ -212,6 +212,10 @@ void CommManager::command_callback(CommLink::Command command)
       break;
     case CommLink::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
+      if(this->RF_.board_.has_error_data())
+      {
+
+      }
       break;
     }
   }

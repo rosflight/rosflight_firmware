@@ -33,6 +33,7 @@
 #include "rosflight.h"
 #include "mavlink.h"
 #include "backup_sram.h"
+#include "board.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Because this was unnecessary and annoying
 
@@ -102,7 +103,7 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
     //It just resets right away, and lets the crash message go unsent
 
     //save crash information to backup SRAM
-    backup_data_t backup_data;
+    rosflight_firmware::backup_data_t backup_data;
     backup_data.debug_info={r0,r1,r2,r3,r12,lr,pc,psr};
     backup_data.reset_count=++error_count_;
     backup_data.error_code=1;
@@ -148,17 +149,18 @@ int main(void)
     rosflight_firmware::ROSflight firmware(board, mavlink);
     board.init_board();
     firmware.init();
-
-    test_backup_sram();
+    backup_sram_init();
+    rosflight_firmware::backup_data_t backup_data = backup_sram_read();
+    error_count_ = backup_data.reset_count;
 
     while (true)
     {
         firmware.run();
         //Crash after a set amount of time for testing
         //If you see this in production, it is a mistake, and also why it crashes
-        delay(5000);
-        void(*crashPtr)()=nullptr;
-        crashPtr();
+        //delay(5000);
+        //void(*crashPtr)()=nullptr;
+        //crashPtr();
     }
     return 0;
 }
