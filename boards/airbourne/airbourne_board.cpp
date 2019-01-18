@@ -50,7 +50,7 @@ void AirbourneBoard::init_board()
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
 
-  backup_sram_init();
+  backup_sram::get_instance().init();
 
   current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
 }
@@ -323,10 +323,9 @@ void AirbourneBoard::led1_toggle() { led2_.toggle(); }
 
 //Backup memory
 bool AirbourneBoard::has_error_data(){
-    backup_data_t backup_data = backup_sram_read();
-    return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
+    return backup_sram::get_instance().has_data();
 }
 rosflight_firmware::backup_data_t AirbourneBoard::get_error_data(){
-    return backup_sram_read();
+    return backup_sram::get_instance().read();
 }
 } // namespace rosflight_firmware
