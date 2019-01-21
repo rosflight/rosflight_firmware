@@ -51,6 +51,13 @@ void StateManager::init()
 
   // Initialize LEDs
   RF_.board_.led1_off();
+  if(RF_.board_.has_error_data())
+  {
+      rosflight_firmware::backup_data_t error_data=RF_.board_.get_error_data();
+      this->state_=error_data.state;
+      if(this->state_.armed && error_data.arm_status!=rosflight_firmware::ARM_MAGIC)
+          this->state_.armed=false;
+  }
 }
 
 void StateManager::run()

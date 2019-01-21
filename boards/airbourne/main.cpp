@@ -34,11 +34,22 @@
 #include "mavlink.h"
 #include "backup_sram.h"
 #include "board.h"
+#include "state_manager.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Because this was unnecessary and annoying
 
 //for testing
 uint32_t error_count_ = 0;
+rosflight_firmware::ROSflight* rosflight=nullptr;
+rosflight_firmware::StateManager::State get_state()
+{
+    if(rosflight==nullptr)
+    {
+        rosflight_firmware::StateManager::State ret = {0};
+        return ret;
+    }
+    return rosflight->state_manager_.state();
+}
 
 extern "C" {
 /* The prototype shows it is a naked function - in effect this is just an
@@ -107,6 +118,9 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
     backup_data.debug_info={r0,r1,r2,r3,r12,lr,pc,psr};
     backup_data.reset_count=++error_count_;
     backup_data.error_code=1;
+    backup_data.state = get_state();
+    if(backup_data.state.armed)
+        backup_data.arm_status=rosflight_firmware::ARM_MAGIC;
     backup_data.checksum=generate_backup_checksum(backup_data);
     backup_sram_write(backup_data);
 
@@ -147,10 +161,13 @@ int main(void)
     rosflight_firmware::AirbourneBoard board;
     rosflight_firmware::Mavlink mavlink(board);
     rosflight_firmware::ROSflight firmware(board, mavlink);
+    rosflight = &firmware; //this allows crashes to grab some info
     board.init_board();
     firmware.init();
     backup_sram_init();
     rosflight_firmware::backup_data_t backup_data = backup_sram_read();
+    volatile uint32_t size = sizeof(rosflight_firmware::backup_data_t);
+    (void)size;
     error_count_ = backup_data.reset_count;
 
     while (true)

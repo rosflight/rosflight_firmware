@@ -37,6 +37,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "state_manager.h"
+
 namespace rosflight_firmware
 {
 struct debug_info_t{
@@ -53,10 +55,12 @@ struct backup_data_t{
     uint32_t error_code;
     debug_info_t debug_info;
     uint32_t reset_count;
-    uint32_t arm_status;
+    uint32_t arm_status; //This must equals ARM_MAGIC, or else the state manager will not rearm on reboot
     //TODO add state manager info
+    StateManager::State state;
     uint32_t checksum; //With the current implementation of the checksum, this must go last
 };
+const uint32_t ARM_MAGIC = 0xfa11bad;
 
 class Board
 {
