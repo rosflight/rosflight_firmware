@@ -320,10 +320,10 @@ void AirbourneBoard::led1_toggle() { led2_.toggle(); }
 
 //Backup memory
 bool AirbourneBoard::has_backup_data(){
-    backup_data_t backup_data = backup_sram_read();
+    BackupData backup_data = backup_sram_read();
     return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
 }
-rosflight_firmware::backup_data_t AirbourneBoard::get_backup_data(){
+rosflight_firmware::BackupData AirbourneBoard::get_backup_data(){
     return backup_sram_read();
 }
 } // namespace rosflight_firmware

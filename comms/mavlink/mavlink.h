@@ -94,7 +94,7 @@ public:
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
   void send_version(uint8_t system_id, const char * const version) override;
-  void send_error_data(uint8_t system_id, const backup_data_t& error_data);
+  void send_error_data(uint8_t system_id, const BackupData& error_data);
 
 private:
   void send_message(const mavlink_message_t &msg);

@@ -185,7 +185,7 @@ public:
 
   //Backup Data
   bool has_backup_data() override;
-  rosflight_firmware::backup_data_t get_backup_data() override;
+  rosflight_firmware::BackupData get_backup_data() override;
 };
 
 } // namespace rosflight_firmware

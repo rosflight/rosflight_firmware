@@ -51,7 +51,7 @@ struct debug_info_t{
     uint32_t pc;
     uint32_t psr;
 };
-struct backup_data_t{
+struct BackupData{
     uint32_t error_code;
     debug_info_t debug_info;
     uint32_t reset_count;
@@ -60,6 +60,7 @@ struct backup_data_t{
     StateManager::State state;
     uint32_t checksum; //With the current implementation of the checksum, this must go last
 };
+//This magic number is used to check that the firmware was armed before it reset
 const uint32_t ARM_MAGIC = 0xfa11bad;
 
 class Board
@@ -138,7 +139,7 @@ public:
 
 // Backup memory
   virtual bool has_backup_data() = 0;
-  virtual backup_data_t get_backup_data() = 0;
+  virtual BackupData get_backup_data() = 0;
 
 };
 

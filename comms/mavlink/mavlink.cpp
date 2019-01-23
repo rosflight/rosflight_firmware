@@ -300,10 +300,10 @@ void Mavlink::send_version(uint8_t system_id, const char * const version)
   mavlink_msg_rosflight_version_pack(system_id, compid_, &msg, version);
   send_message(msg);
 }
-void Mavlink::send_error_data(uint8_t system_id, const backup_data_t &error_data)
+void Mavlink::send_error_data(uint8_t system_id, const BackupData &error_data)
 {
   mavlink_message_t msg;
-  bool rearm = error_data.state.armed && error_data.arm_status==rosflight_firmware::ARM_MAGIC;
+  bool rearm = (error_data.state.armed && error_data.arm_status==rosflight_firmware::ARM_MAGIC);
   mavlink_msg_rosflight_hard_error_pack(system_id,compid_, &msg, error_data.error_code, error_data.debug_info.pc, error_data.reset_count, rearm);
   send_message(msg);
 }
@@ -464,8 +464,8 @@ void Mavlink::handle_msg_attitude_correction(const mavlink_message_t * const msg
 }
 void Mavlink::handle_msg_heartbeat(const mavlink_message_t * const msg)
 {
-   mavlink_heartbeat_t heartbeat_msg;
-   mavlink_msg_heartbeat_decode(msg, &heartbeat_msg);
+   //none of the information from the heartbeat is used
+   (void)msg;
    this->heartbeat_callback_();
 }
 

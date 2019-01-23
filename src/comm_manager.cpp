@@ -290,7 +290,6 @@ void CommManager::heartbeat_callback(void)
       if(this->RF_.board_.has_backup_data())
       {
           this->send_error_data();
-          //TODO get and send error data
       }
       error_data_sent = true;
   }
@@ -427,11 +426,8 @@ void CommManager::send_mag(void)
 }
 void CommManager::send_error_data(void)
 {
-    if(RF_.board_.has_backup_data())
-    {
-        backup_data_t error_data = RF_.board_.get_backup_data();
-        comm_link_.send_error_data(sysid_, error_data);
-    }
+  BackupData error_data = RF_.board_.get_backup_data();
+  comm_link_.send_error_data(sysid_, error_data);
 }
 
 void CommManager::send_low_priority(void)
