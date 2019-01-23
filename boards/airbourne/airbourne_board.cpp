@@ -24,13 +24,12 @@
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHEvolatile THER IN CONTRACT, STRICT LIABILITY,
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "airbourne_board.h"
-#include "backup_sram.h"
 
 namespace rosflight_firmware
 {
@@ -58,9 +57,7 @@ void AirbourneBoard::init_board()
 void AirbourneBoard::board_reset(bool bootloader)
 {
   (void)bootloader;
-  void(*crashPtr)()=nullptr;
-  crashPtr();
-  //NVIC_SystemReset();
+  NVIC_SystemReset();
 }
 
 // clock
@@ -322,11 +319,11 @@ void AirbourneBoard::led1_off() { led2_.off(); }
 void AirbourneBoard::led1_toggle() { led2_.toggle(); }
 
 //Backup memory
-bool AirbourneBoard::has_error_data(){
+bool AirbourneBoard::has_backup_data(){
     backup_data_t backup_data = backup_sram_read();
     return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
 }
-rosflight_firmware::backup_data_t AirbourneBoard::get_error_data(){
+rosflight_firmware::backup_data_t AirbourneBoard::get_backup_data(){
     return backup_sram_read();
 }
 } // namespace rosflight_firmware

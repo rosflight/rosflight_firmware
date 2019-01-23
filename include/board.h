@@ -137,8 +137,8 @@ public:
   virtual void led1_toggle() = 0;
 
 // Backup memory
-  virtual bool has_error_data() = 0;
-  virtual backup_data_t get_error_data() = 0;
+  virtual bool has_backup_data() = 0;
+  virtual backup_data_t get_backup_data() = 0;
 
 };
 

@@ -213,10 +213,6 @@ void CommManager::command_callback(CommLink::Command command)
       break;
     case CommLink::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
-      if(this->RF_.board_.has_error_data())
-      {
-
-      }
       break;
     }
   }
@@ -291,7 +287,7 @@ void CommManager::heartbeat_callback(void)
   static bool error_data_sent = false;
   if(!error_data_sent)
   {
-      if(this->RF_.board_.has_error_data())
+      if(this->RF_.board_.has_backup_data())
       {
           this->send_error_data();
           //TODO get and send error data
@@ -431,9 +427,9 @@ void CommManager::send_mag(void)
 }
 void CommManager::send_error_data(void)
 {
-    if(RF_.board_.has_error_data())
+    if(RF_.board_.has_backup_data())
     {
-        backup_data_t error_data = RF_.board_.get_error_data();
+        backup_data_t error_data = RF_.board_.get_backup_data();
         comm_link_.send_error_data(sysid_, error_data);
     }
 }
