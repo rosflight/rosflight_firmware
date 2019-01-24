@@ -2,7 +2,7 @@
 
 ## Compatible hardware
 
-As of January 2018 ROSflight is only supported on flight controllers with STM32F103 and STM32F405 processors, specifically, the revo, naze32, flip32.  Both the 6-DOF and 10-DOF versions of each board are fully supported.  We have had most success with revo boards purchased from [hobbyking](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  We have had weird issues with knock-off boards from Chinese vendors.
+As of January 2018 ROSflight is only supported on flight controllers with STM32F103 and STM32F405 processors, specifically, the revo, naze32, flip32.  Both the 6-DOF and 10-DOF versions of each board are fully supported.  We have had most success with revo boards purchased from [hobbyking](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  We have had weird issues with knock-off boards from Chinese vendors.  An acro version (IMU-Only) can be found at [readytoflyquads](https://www.readytoflyquads.com/openpilot-cc3d-revolution-acro).
 
 ## Flashing firmware using the Cleanflight Configurator
 
