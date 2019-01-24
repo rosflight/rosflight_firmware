@@ -19,7 +19,7 @@ sudo systemctl stop ModemManager.service
 ```
 * Add the custom udev rule so linux handles the flight controller properly
 ``` bash
-echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"') | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
 ```
 * Load the firmware and flash using cleanflight configurator
     * Open the configurator, open firmware flasher.  Connect your flight controller, and make sure that you have selected the right port (or DFU in the case of F4-based boards).  Then select "Load Firmware (Local)" and  select your .hex file you downloaded earlier.
