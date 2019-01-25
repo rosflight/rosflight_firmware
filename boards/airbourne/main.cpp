@@ -112,17 +112,14 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
 
     /* When the following line is hit, the variables contain the register values. */
 
-    //This logic is so that if it crashes in the proccess of sending a crash message,
-    //It just resets right away, and lets the crash message go unsent
-
     //save crash information to backup SRAM
     rosflight_firmware::BackupData backup_data;
     backup_data.debug_info={r0,r1,r2,r3,r12,lr,pc,psr};
-    backup_data.reset_count=++error_count_;
+    backup_data.reset_count=error_count_+1;
     backup_data.error_code=1;
     backup_data.state = get_state();
     if(backup_data.state.armed)
-        backup_data.arm_status=rosflight_firmware::ARM_MAGIC;
+        backup_data.arm_status=rosflight_firmware::ARM_MAGIC;//magic number for extra certainty on rearm
     backup_data.checksum=generate_backup_checksum(backup_data);
     backup_sram_write(backup_data);
 
@@ -166,10 +163,9 @@ int main(void)
     rosflight = &firmware; //this allows crashes to grab some info
     board.init_board();
     firmware.init();
+    //Because the USB driver breaks the backup sram, the backup sram must be initalized after
     backup_sram_init();
     rosflight_firmware::BackupData backup_data = backup_sram_read();
-    volatile uint32_t size = sizeof(rosflight_firmware::BackupData);
-    (void)size;
     error_count_ = backup_data.reset_count;
 
     while (true)
