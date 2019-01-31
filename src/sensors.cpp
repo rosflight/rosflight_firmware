@@ -159,18 +159,23 @@ void Sensors::update_other_sensors()
     break;
 
   case DIFF_PRESSURE:
-    if (rf_.board_.diff_pressure_present())
-    {
-      data_.diff_pressure_present = true;
-      float raw_pressure;
-      float raw_temp;
-      rf_.board_.diff_pressure_update();
-      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
-      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
-      if (data_.diff_pressure_valid)
+    if (rf_.board_.diff_pressure_present() || data_.diff_pressure_present) {
+      // if diff_pressure is currently present OR if it has historically been
+      //   present (diff_pressure_present default is false)
+      rf_.board_.diff_pressure_update(); //update assists in recovering sensor if it temporarily disappears
+
+      if (rf_.board_.diff_pressure_present())
       {
-        data_.diff_pressure_temp = raw_temp;
-        correct_diff_pressure();
+        data_.diff_pressure_present = true;
+        float raw_pressure;
+        float raw_temp;
+        rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
+        data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
+        if (data_.diff_pressure_valid)
+        {
+          data_.diff_pressure_temp = raw_temp;
+          correct_diff_pressure();
+        }
       }
     }
     break;
