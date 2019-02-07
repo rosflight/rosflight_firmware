@@ -159,7 +159,8 @@ void Sensors::update_other_sensors()
     break;
 
   case DIFF_PRESSURE:
-    if (rf_.board_.diff_pressure_present() || data_.diff_pressure_present) {
+    if (rf_.board_.diff_pressure_present() || data_.diff_pressure_present)
+    {
       // if diff_pressure is currently present OR if it has historically been
       //   present (diff_pressure_present default is false)
       rf_.board_.diff_pressure_update(); //update assists in recovering sensor if it temporarily disappears
