@@ -54,6 +54,7 @@ void CommManager::init()
   comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
   comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
   comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
+  comm_link_.register_heartbeat_callback([this](void){this->heartbeat_callback();});
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
@@ -281,6 +282,19 @@ void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
 {
   RF_.estimator_.set_attitude_correction(q);
 }
+void CommManager::heartbeat_callback(void)
+{
+  static bool error_data_sent = false;
+  if(!error_data_sent)
+  {
+      if(this->RF_.board_.has_backup_data())
+      {
+          this->send_error_data();
+      }
+      error_data_sent = true;
+  }
+  this->send_heartbeat();//respond to heartbeats with a heartbeat
+}
 
 // function definitions
 void CommManager::receive(void)
@@ -409,6 +423,11 @@ void CommManager::send_mag(void)
 {
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
+}
+void CommManager::send_error_data(void)
+{
+  BackupData error_data = RF_.board_.get_backup_data();
+  comm_link_.send_error_data(sysid_, error_data);
 }
 
 void CommManager::send_low_priority(void)

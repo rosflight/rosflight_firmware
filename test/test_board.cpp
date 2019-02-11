@@ -154,6 +154,17 @@ namespace rosflight_firmware
   void testBoard::led1_off(){}
   void testBoard::led1_toggle(){}
 
+//Backup memory
+  bool testBoard::has_backup_data() { return false; }
+  BackupData testBoard::get_backup_data()
+  {
+#pragma GCC diagnostic push //Ignore blank fields in struct
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+	  BackupData blank_data = {0};
+#pragma GCC diagnostic pop
+	  return blank_data;
+  }
+
 } // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop

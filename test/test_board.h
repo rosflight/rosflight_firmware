@@ -113,6 +113,9 @@ public:
   void led1_off() override;
   void led1_toggle() override;
 
+//Backup memory
+  bool has_backup_data() override;
+  BackupData get_backup_data() override;
 
 
   void set_imu(float* acc, float* gyro, uint64_t time_us);

@@ -147,6 +147,10 @@ public:
   void led1_on() override;
   void led1_off() override;
   void led1_toggle() override;
+
+  // Backup memory
+  bool has_backup_data() override;
+  BackupData get_backup_data() override;
 };
 
 } // namespace rosflight_firmware
