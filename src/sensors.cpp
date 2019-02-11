@@ -159,18 +159,24 @@ void Sensors::update_other_sensors()
     break;
 
   case DIFF_PRESSURE:
-    if (rf_.board_.diff_pressure_present())
+    if (rf_.board_.diff_pressure_present() || data_.diff_pressure_present)
     {
-      data_.diff_pressure_present = true;
-      float raw_pressure;
-      float raw_temp;
-      rf_.board_.diff_pressure_update();
-      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
-      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
-      if (data_.diff_pressure_valid)
+      // if diff_pressure is currently present OR if it has historically been
+      //   present (diff_pressure_present default is false)
+      rf_.board_.diff_pressure_update(); //update assists in recovering sensor if it temporarily disappears
+
+      if (rf_.board_.diff_pressure_present())
       {
-        data_.diff_pressure_temp = raw_temp;
-        correct_diff_pressure();
+        data_.diff_pressure_present = true;
+        float raw_pressure;
+        float raw_temp;
+        rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
+        data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
+        if (data_.diff_pressure_valid)
+        {
+          data_.diff_pressure_temp = raw_temp;
+          correct_diff_pressure();
+        }
       }
     }
     break;
@@ -201,24 +207,10 @@ void Sensors::look_for_disabled_sensors()
   if (rf_.board_.clock_millis() > last_time_look_for_disarmed_sensors_ + 1000)
   {
     last_time_look_for_disarmed_sensors_ = rf_.board_.clock_millis();
-    switch (next_sensor_to_look_for_)
-    {
-    case BAROMETER:
-      rf_.board_.baro_update();
-      break;
-    case MAGNETOMETER:
-      rf_.board_.mag_update();
-      break;
-    case DIFF_PRESSURE:
-      rf_.board_.diff_pressure_update();
-      break;
-    case SONAR:
-      rf_.board_.sonar_update();
-      break;
-    default:
-      break;
-    }
-    next_sensor_to_look_for_ = (next_sensor_to_look_for_ + 1) % NUM_LOW_PRIORITY_SENSORS;
+    rf_.board_.baro_update();
+    rf_.board_.mag_update();
+    rf_.board_.diff_pressure_update();
+    rf_.board_.sonar_update();
   }
 }
 
