@@ -84,7 +84,7 @@ cd /opt/openocd/0.10.0-5-20171110-1117/bin
 !!! note
     On more recent versions of openocd, `interface/stlink-v2.cfg` is deprecated. Use `interface/stlink.cfg` instead.
 
-I move these the `~/.local/bin` directory so I can call it from anywhere:
+I move these to the `~/.local/bin` directory so I can call it from anywhere:
 
 ``` bash
 chmod +x start_openocd_f1
@@ -95,7 +95,7 @@ mv start_openocd_f4 usr/local/bin
 
 ### For VSCode
 
-For vscode, install the version currently available through your package manager:
+For vscode, install the openocd version currently available through your package manager:
 
 Ubunutu:
 ```bash
@@ -107,7 +107,7 @@ Mac:
 brew install open-ocd
 ```
 
-You also need to add a little more to your start script to ensure it properly connects to GDB and vscode:
+The `start_openocd_f4` script requires a few additional parameters to ensure proper connection to vscode and GDB:
 
 ```bash
 #!/bin/bash
@@ -119,7 +119,7 @@ As shown above, this script can be added to your `~/.local/bin` if you want to b
 
 ## Install ARM compiler and 32-bit Dependencies
 
-Follow the guide in [Building and Flashing](/developer-guide/building-flashing.md) to install the compiler.
+Follow the guide in [Building and Flashing](/developer-guide/building-flashing) to install the compiler.
 
 QtCreator also needs 32-bit python bindings to run GDB (skip this if using vscode)
 
@@ -196,7 +196,7 @@ Open the debugger launch.json file by navigating to the Debug pane (Ctrl + Shift
 
 ![Open vscode debugger launch.json](images/vscode-debuggerLaunch.png)
 
-Add an configuration entry to the launch.json file that looks something like this:
+Add a configuration entry to the launch.json file that looks something like this:
 
 ```json
 {
