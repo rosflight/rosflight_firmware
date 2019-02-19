@@ -50,7 +50,7 @@ class Mavlink : public CommLink
 {
 public:
   Mavlink(Board& board);
-  void init(uint32_t baud_rate) override;
+  void init(uint32_t baud_rate, uint32_t dev) override;
   void receive() override;
 
   void send_attitude_quaternion(uint8_t system_id,

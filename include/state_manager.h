@@ -64,7 +64,7 @@ public:
     EVENT_CALIBRATION_FAILED,
   };
 
-  enum
+  enum : uint16_t
   {
     ERROR_NONE = 0x0000,
     ERROR_INVALID_MIXER = 0x0001,
@@ -90,6 +90,7 @@ private:
   State state_;
 
   uint32_t next_led_blink_ms_ = 0;
+  uint32_t next_arming_error_msg_ms_ = 0;
 
   enum FsmState
   {

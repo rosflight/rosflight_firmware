@@ -100,6 +100,7 @@ void Params::set_defaults(void)
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with onboard computer | 9600 | 921600
+  init_param_int(PARAM_SERIAL_DEVICE, "SERIAL_DEVICE", 0); // Serial Port (for supported devices) | 0 | 3
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -112,7 +113,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 250); // Rate of IMU stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_MAG_RATE, "STRM_MAG", 50); // Rate of magnetometer stream (Hz) | 0 | 75
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
-  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 20); // Rate of airspeed stream (Hz) | 0 |  50
+  init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
   init_param_int(PARAM_STREAM_GPS_RATE, "STRM_GPS", 10); // Rate of gps stream (Hz) | 0 | 10
 
@@ -154,7 +155,7 @@ void Params::set_defaults(void)
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 490); // Refresh rate of motor commands to motors - Requires reboot to take effect | 0 | 1000
+  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 0); // Overrides default PWM rate specified by mixer if non-zero - Requires reboot to take effect | 0 | 490
   init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_THR | 0 | 1

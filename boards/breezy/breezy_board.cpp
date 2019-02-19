@@ -80,8 +80,9 @@ void BreezyBoard::clock_delay(uint32_t milliseconds)
 
 // serial
 
-void BreezyBoard::serial_init(uint32_t baud_rate)
+void BreezyBoard::serial_init(uint32_t baud_rate, uint32_t dev)
 {
+  (void)dev;
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
@@ -317,6 +318,13 @@ void BreezyBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
   pwm_refresh_rate_ = refresh_rate;
   pwm_idle_pwm_ = idle_pwm;
+  pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
+}
+
+void BreezyBoard::pwm_disable()
+{
+  pwm_refresh_rate_ = 50;
+  pwm_idle_pwm_ = 0;
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 

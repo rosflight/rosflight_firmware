@@ -25,6 +25,7 @@ TEST(command_manager_test, rc) {
   }
   rc_values[2] = 1000;
 
+  rf.params_.set_param_int(PARAM_MIXER, 10);
   float max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
   float max_pitch = rf.params_.get_param_float(PARAM_RC_MAX_PITCH);
   float max_yawrate = rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
@@ -84,6 +85,7 @@ TEST(command_manager_test, rc_arm_disarm) {
   }
   rc_values[2] = 1000;
 
+  rf.params_.set_param_int(PARAM_MIXER, 10);
   float max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
   float max_pitch = rf.params_.get_param_float(PARAM_RC_MAX_PITCH);
   float max_yawrate = rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
@@ -256,6 +258,7 @@ TEST(command_manager_test, rc_failsafe_test) {
   }
   rc_values[2] = 1000;
 
+  rf.params_.set_param_int(PARAM_MIXER, 10);
   float max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
   float max_pitch = rf.params_.get_param_float(PARAM_RC_MAX_PITCH);
   float max_yawrate = rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
@@ -387,6 +390,7 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 
   // Initialize the firmware
   rf.init();
+  rf.params_.set_param_int(PARAM_MIXER, 10);
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
 
   uint16_t rc_values[8];
@@ -597,6 +601,7 @@ TEST(command_manager_test, partial_muxing_test ) {
     rc_values[i] = 1500;
   }
   rc_values[2] = 1000;
+  rf.params_.set_param_int(PARAM_MIXER, 10);
 
   // Let's clear all errors in the state_manager
   rf.state_manager_.clear_error(rf.state_manager_.state().error_codes);

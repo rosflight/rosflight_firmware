@@ -94,7 +94,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate) override;
+  void serial_init(uint32_t baud_rate, uint32_t dev) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
@@ -136,6 +136,7 @@ public:
   float rc_read(uint8_t channel) override;
 
   void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) override;
+  void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
 
   // non-volatile memory

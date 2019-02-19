@@ -54,7 +54,8 @@ void CommManager::init()
   comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
   comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
   comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
-  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)));
+  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
+                  static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
   sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
 

@@ -77,7 +77,7 @@ namespace rosflight_firmware
   void testBoard::clock_delay(uint32_t milliseconds){}
 
 // serial
-  void testBoard::serial_init(uint32_t baud_rate){}
+  void testBoard::serial_init(uint32_t baud_rate, uint32_t dev){}
   void testBoard::serial_write(const uint8_t *src, size_t len){}
   uint16_t testBoard::serial_bytes_available(){ return 0; }
   uint8_t testBoard::serial_read(){return 0;}
@@ -150,6 +150,7 @@ namespace rosflight_firmware
   }
   void testBoard::pwm_write(uint8_t channel, float value){}
   void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
+  void testBoard::pwm_disable() {}
 
 // non-volatile memory
   void testBoard::memory_init(){}

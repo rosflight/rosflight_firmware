@@ -40,16 +40,16 @@ namespace rosflight_firmware
 
 Mixer::Mixer(ROSflight &_rf) :
   RF_(_rf)
-{}
+{
+  mixer_to_use_ = nullptr;
+}
 
 void Mixer::init()
 {
+  init_mixing();
   RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MOTOR_PWM_SEND_RATE);
   RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
   RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MIXER);
-
-  init_mixing();
-  init_PWM();
 }
 
 void Mixer::param_change_callback(uint16_t param_id)
@@ -76,13 +76,18 @@ void Mixer::init_mixing()
   if (mixer_choice >= NUM_MIXERS)
   {
     RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Invalid Mixer Choice");
-    mixer_choice = 0;
 
     // set the invalid mixer flag
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
+    mixer_to_use_ = nullptr;
+  }
+  else
+  {
+    mixer_to_use_ = array_of_mixers_[mixer_choice];
   }
 
-  mixer_to_use_ = array_of_mixers_[mixer_choice];
+
+  init_PWM();
 
   for (int8_t i=0; i<8; i++)
   {
@@ -93,9 +98,17 @@ void Mixer::init_mixing()
 
 void Mixer::init_PWM()
 {
-  int16_t motor_refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
+  uint32_t refresh_rate = RF_.params_.get_param_int(PARAM_MOTOR_PWM_SEND_RATE);
+  if (refresh_rate == 0 && mixer_to_use_ != nullptr)
+  {
+    refresh_rate = mixer_to_use_->default_pwm_rate;
+  }
   int16_t off_pwm = 1000;
-  RF_.board_.pwm_init(motor_refresh_rate, off_pwm);
+
+  if (mixer_to_use_ == nullptr || refresh_rate == 0)
+    RF_.board_.pwm_init(50, 0);
+  else
+    RF_.board_.pwm_init(refresh_rate, off_pwm);
 }
 
 
@@ -158,6 +171,9 @@ void Mixer::mix_output()
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while arming/disarming
     commands.z = 0.0;
   }
+
+  if (mixer_to_use_ == nullptr)
+    return;
 
   for (int8_t i=0; i<8; i++)
   {

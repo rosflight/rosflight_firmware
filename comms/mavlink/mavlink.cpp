@@ -41,9 +41,9 @@ Mavlink::Mavlink(Board& board) :
   board_(board)
 {}
 
-void Mavlink::init(uint32_t baud_rate)
+void Mavlink::init(uint32_t baud_rate, uint32_t dev)
 {
-  board_.serial_init(baud_rate);
+  board_.serial_init(baud_rate, dev);
   initialized_ = true;
 }
 
@@ -457,8 +457,8 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
 
 void Mavlink::handle_msg_attitude_correction(const mavlink_message_t * const msg)
 {
-  mavlink_rosflight_quaternion_t q_msg;
-  mavlink_msg_rosflight_quaternion_decode(msg, &q_msg);
+  mavlink_attitude_correction_t q_msg;
+  mavlink_msg_attitude_correction_decode(msg, &q_msg);
 
   turbomath::Quaternion q_correction;
   q_correction.w = q_msg.qw;
@@ -491,7 +491,7 @@ void Mavlink::handle_mavlink_message(void)
   case MAVLINK_MSG_ID_TIMESYNC:
     handle_msg_timesync(&in_buf_);
     break;
-  case MAVLINK_MSG_ID_ROSFLIGHT_QUATERNION:
+  case MAVLINK_MSG_ID_ATTITUDE_CORRECTION:
     handle_msg_attitude_correction(&in_buf_);
     break;
   default:

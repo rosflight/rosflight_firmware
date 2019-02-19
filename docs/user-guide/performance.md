@@ -76,3 +76,9 @@ $$k_i \approx \tfrac{k_p}{10}.$$
 [^1]: Mahony, R., Hamel, T. and Pflimlin, J. (2008). Nonlinear Complementary Filters on the Special Orthogonal Group. IEEE Transactions on Automatic Control, 53(5), pp.1203-1218.
 
 [^2]: Casey, R., Karpenko, M., Curry, R. and Elkaim, G. (2013). Attitude Representation and Kinematic Propagation for Low-Cost UAVs. AIAA Guidance, Navigation, and Control (GNC) Conference.
+
+## External Attitude Corrections
+
+Because the onboard attitude estimator uses only inertial measurements, the estimates can deviate from truth. This is especially true during extended periods of accelerated flight, during which the gravity vector cannot be measured. External attitude corrections can be applied to the filter to help improve performance. These attitude corrections might come from a higher-level estimator running on the companion computer that fuses additional information from GPS or vision, or from a motion capture system.
+
+To send these corrections to the flight controller, publish a `geometry_msgs/Quaternion` message to the `/attitude_correction` topic that `rosflight_io` subscribes to. The degree to which this update will be trusted is tuned with the `FILTER_KP_COR` parameter.

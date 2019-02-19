@@ -60,7 +60,7 @@ public:
   virtual void clock_delay(uint32_t milliseconds) = 0;
 
 // serial
-  virtual void serial_init(uint32_t baud_rate) = 0;
+  virtual void serial_init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
@@ -102,6 +102,7 @@ public:
 
 // PWM
   virtual void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) = 0;
+  virtual void pwm_disable() = 0;
   virtual void pwm_write(uint8_t channel, float value) = 0;
 
 // non-volatile memory
