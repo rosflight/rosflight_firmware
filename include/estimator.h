@@ -60,6 +60,9 @@ public:
   Estimator(ROSflight& _rf);
 
   inline const State& state() const { return state_; }
+  inline const turbomath::Vector& bias() const {return bias_;}
+  inline const turbomath::Vector& accLPF() const {return accel_LPF_;}
+  inline const turbomath::Vector& gyroLPF() const {return gyro_LPF_;}
 
   void init();
   void run();
