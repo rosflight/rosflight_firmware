@@ -4,18 +4,18 @@ You will need to install ROS on both the onboard computer and base station lapto
 
 Currently only the long-term support [ROS kinetic](http://wiki.ros.org/kinetic/Installation) release is supported, with the recommended operating system being Ubuntu 16.04. If storage is limited on your onboard computer, you can install the bare-bones ROS package (`ros-kinetic-ros-base`) instead of the full desktop version.
 
-# Installing rosflight
+## Installing rosflight
 
 You will need to install the rosflight packages on both your onboard computer and your base station computer. The onboard computer will run the node that actually communicates with the flight controller over the serial connection, while the base station needs the message and service definitions to be able to subscribe and publish to topics or call services.
 
-## From the apt repository
+### From the apt repository
 
 The recommended installation method for Ubuntu or Debian systems is to use the rosflight packages in the official ROS apt repositories. If you have configured your system to use these packages as described in the ROS installation guide, you can install rosflight using
 ```bash
 sudo apt-get install ros-kinetic-rosflight-pkgs
 ```
 
-## From source
+### From source
 
 If you prefer, or if you are unable to use the apt packages (e.g. for 64-bit ARM running on an NVIDA TX1/TX2), you can install the rosflight repositories from source instead. You will need a `catkin` workspace set up. If you haven't already done this, you can create a new workspace with something like the following commands:
 ```bash
@@ -30,7 +30,11 @@ catkin_make
 
 source ~/catkin_ws/devel/setup.bash
 ```
-In order to ensure that ROS uses this workspace, you can add the last line (`source ~/catkin_ws/devel/setup.bash`) to your `~/.bashrc` file or its equivalent on other systems. Next download the source code into your workspace
+
+!!! note
+    In order to ensure that ROS uses this workspace, you can add the last line (`source ~/catkin_ws/devel/setup.bash`) to your `~/.bashrc` file or its equivalent on other systems.
+
+Next download the source code into your workspace
 ```bash
 cd ~/catkin_ws/src
 git clone https://github.com/rosflight/rosflight.git
@@ -52,18 +56,32 @@ cd ~/catkin_ws
 catkin_make
 ```
 
-# Running rosflight_io
+## Running rosflight_io
 
 The `rosflight_io` node is the bridge between ROS and the MAVLink communication with the flight controller. This node must be run on the computer that has the physical serial connection to your flight controller. To run this node, use something like the following command (after starting a `roscore`):
 ```bash
-rosrun rosflight rosflight_io _port:=/dev/ttyUSB0
+rosrun rosflight rosflight_io _port:=/dev/ttyACM0
 ```
-Replace `/dev/ttyUSB0` with the port your flight controller is connected to. The `rosflight_io` node could also be started from within a launch file with something like
+Replace `/dev/ttyACM0` with the port your flight controller is connected to. The `rosflight_io` node could also be started from within a launch file with something like
 ```xml
 <node pkg="rosflight" type="rosflight_io" name="rosflight_io" output="screen">
-  <param name="port" value="/dev/ttyUSB0"/>
+  <param name="port" value="/dev/ttyACM0"/>
 </node>
 ```
-The optional (but recommended) `output="screen"` option ensures that status messages from `rosflight_io` will be forwarded to the console from which you call `roslaunch`.
+
+!!! tip
+    The optional (but recommended) `output="screen"` option ensures that status messages from `rosflight_io` will be forwarded to the console from which you call `roslaunch`.
 
 For details on all parameters, topics, and services related to the `rosflight_io` node, refer to the documentation on the [ROS wiki](http://wiki.ros.org/rosflight).
+
+# Jetson TX2
+
+It is likely that your flip32/naze32 board doesn't work correctly out of the box with the TX2. To fix this you need to build some drivers in with the kernel. This process is pretty straight-forward.
+
+To build the kernel with additional USB drivers, follow the instructions and video found [here](http://www.jetsonhacks.com/2017/07/31/build-kernel-ttyacm-module-nvidia-jetson-tx2/). This video shows the ACM module being added, however there are a few additional drivers you will likely require. These include:
+- USB Winchiphead CH341 Single Port Serial Driver
+- USB Modem (CDC ACM) support
+- USB CP210x family of UART Bridge Controllers
+
+After following the instructions to add these drivers, reboot your TX2 and your USB devices should show up in /dev/ttyUSB? or /dev/ttyACM? as you would expect.
+

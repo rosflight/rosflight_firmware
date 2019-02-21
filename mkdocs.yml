@@ -3,16 +3,45 @@ site_url: http://rosflight.org
 repo_url: https://github.com/rosflight/firmware
 edit_uri: blob/master/docs/
 google_analytics: ['UA-96018590-2', 'docs.rosflight.org']
-theme: readthedocs
-theme_dir: docs/custom_theme
+theme:
+  name: 'material'
+  palette:
+    primary: 'Blue Grey'
+    accent: 'red'
+  favicon: 'custom_theme/img/favicon.ico'
+  logo: 'custom_theme/img/logo.png'
+  feature:
+    tabs: True
+# theme_dir: docs/custom_theme
 extra_css: [custom_theme/extra.css]
 extra_javascript:
     - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 markdown_extensions:
-    - mdx_math
+  - mdx_math
+  - admonition
+  - footnotes
+  - toc:
+      permalink: True
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - codehilite:
+      linenums: False
 pages:
   - Home: index.md
   - User Guide:
+    - Overview: user-guide/overview.md
     - Getting started: user-guide/getting-started.md
     - Hardware setup: user-guide/hardware-setup.md
     - Autopilot setup: user-guide/autopilot-setup.md

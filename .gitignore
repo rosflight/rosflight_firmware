@@ -15,8 +15,8 @@
 /test/build/
 /site/
 *.idea*
-
-param_description.md
+*.map
+scripts/parameter-descriptions.md
 
 *.aux
 *.fdb_latexmk

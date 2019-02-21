@@ -2,9 +2,14 @@
 
 #include <turbomath/turbomath.h>
 
+#include "rosflight.h"
+#include "test_board.h"
+
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "eigen3/Eigen/Dense"
+
+#include <cstdint>
 
 #define EXPECT_VEC3_SUPERCLOSE(vec, eig) \
   EXPECT_NEAR((vec).x, (eig).x(), 0.0001);\
@@ -52,3 +57,5 @@
 
 double quaternion_error(turbomath::Quaternion q0, turbomath::Quaternion q);
 double quaternion_error(Eigen::Quaternionf q_eig, turbomath::Quaternion q);
+
+void step_firmware(rosflight_firmware::ROSflight& rf, rosflight_firmware::testBoard& board, uint32_t us);

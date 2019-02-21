@@ -44,23 +44,23 @@ namespace rosflight_firmware
 Controller::Controller(ROSflight& rf) :
   RF_(rf)
 {
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_ANGLE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_ROLL_RATE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_ANGLE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_PITCH_RATE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_P);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_I);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_YAW_RATE_D);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_MAX_COMMAND);
-  RF_.params_.add_callback(std::bind(&Controller::param_change_callback, this, std::placeholders::_1), PARAM_PID_TAU);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_P);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_I);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_D);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_MAX_COMMAND);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_TAU);
 }
 
 void Controller::init()
@@ -106,13 +106,13 @@ void Controller::run()
   if ( dt_us < 0 )
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
+  prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 100;
+  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
 
   // Run the PID loops
   turbomath::Vector pid_output = run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
@@ -155,9 +155,9 @@ void Controller::calculate_equilbrium_torque_from_rc()
     turbomath::Vector pid_output = run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
-    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x);
-    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y);
-    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z);
+    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
 
     RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Equilibrium torques found and applied.");
     RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Please zero out trims on your transmitter");
@@ -179,7 +179,7 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::Sta
   // Based on the control types coming from the command manager, run the appropriate PID loops
   turbomath::Vector out;
 
-  float dt = dt_us;
+  float dt = 1e-6*dt_us;
 
   // ROLL
   if (command.x.type == RATE)

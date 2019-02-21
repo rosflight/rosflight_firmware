@@ -1,0 +1,25 @@
+digraph fsm {
+
+INIT -> PREFLIGHT [label="initialized"];
+INIT -> ERROR [label="error"];
+PREFLIGHT -> ERROR [label="error"];
+ERROR -> PREFLIGHT [label="errors\ncleared"];
+PREFLIGHT -> CALIBRATING [label="arm requested\n& calibrate on arm"];
+CALIBRATING -> PREFLIGHT [label="calibration\nfailed"];
+CALIBRATING -> ERROR [label="error"];
+CALIBRATING -> ARMED [label="calibration\ncomplete"];
+PREFLIGHT -> ARMED [label="arm\nrequested"];
+ARMED -> PREFLIGHT [label="disarm\nrequested"];
+ARMED -> ERROR [label="disarm requested\n& error"];
+ARMED -> FAILSAFE [label="RC lost"];
+FAILSAFE -> ARMED [label="RC regained"];
+FAILSAFE -> ERROR [label="disarm\nrequested"];
+
+//INIT -> INIT;
+//PREFLIGHT -> PREFLIGHT;
+//ERROR -> ERROR;
+//CALIBRATING -> CALIBRATING;
+//ARMED -> ARMED;
+//FAILSAFE -> FAILSAFE;
+
+}

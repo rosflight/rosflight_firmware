@@ -38,6 +38,7 @@
 #include <turbomath/turbomath.h>
 
 #include "param.h"
+#include "board.h"
 
 namespace rosflight_firmware
 {
@@ -91,7 +92,7 @@ public:
     Channel F;
   };
 
-  virtual void init(uint32_t baud_rate) = 0;
+  virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void receive() = 0;
 
   // send functions
@@ -137,6 +138,7 @@ public:
                            int16_t loop_time_us) = 0;
   virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
+  virtual void send_error_data(uint8_t system_id, const BackupData& error_data) = 0;
 
   // register callbacks
 
@@ -171,6 +173,11 @@ public:
     offboard_control_callback_ = callback;
   }
 
+  void register_attitude_correction_callback(std::function<void(const turbomath::Quaternion)> callback)
+  {
+    attitude_correction_callback_ = callback;
+  }
+
   void register_command_callback(std::function<void(Command)> callback)
   {
     command_callback_ = callback;
@@ -180,6 +187,10 @@ public:
   {
     timesync_callback_ = callback;
   }
+  void register_heartbeat_callback(std::function<void()> callback)
+  {
+    heartbeat_callback_ = callback;
+  }
 
 protected:
   std::function<void(uint8_t)> param_request_list_callback_;
@@ -188,8 +199,10 @@ protected:
   std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
 
   std::function<void(const OffboardControl)> offboard_control_callback_;
+  std::function<void(const turbomath::Quaternion)> attitude_correction_callback_;
   std::function<void(Command)> command_callback_;
   std::function<void(int64_t, int64_t)> timesync_callback_;
+  std::function<void(void)> heartbeat_callback_;
 };
 
 } // namespace rosflight_firmware

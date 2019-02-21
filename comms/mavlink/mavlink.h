@@ -40,6 +40,7 @@
 # pragma GCC diagnostic pop
 
 #include "comm_link.h"
+#include "board.h"
 
 namespace rosflight_firmware
 {
@@ -50,7 +51,7 @@ class Mavlink : public CommLink
 {
 public:
   Mavlink(Board& board);
-  void init(uint32_t baud_rate) override;
+  void init(uint32_t baud_rate, uint32_t dev) override;
   void receive() override;
 
   void send_attitude_quaternion(uint8_t system_id,
@@ -93,6 +94,7 @@ public:
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
   void send_version(uint8_t system_id, const char * const version) override;
+  void send_error_data(uint8_t system_id, const BackupData& error_data);
 
 private:
   void send_message(const mavlink_message_t &msg);
@@ -101,8 +103,10 @@ private:
   void handle_msg_param_request_read(const mavlink_message_t *const msg);
   void handle_msg_param_set(const mavlink_message_t *const msg);
   void handle_msg_offboard_control(const mavlink_message_t *const msg);
+  void handle_msg_attitude_correction(const mavlink_message_t *const msg);
   void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
+  void handle_msg_heartbeat(const mavlink_message_t * const msg);
   void handle_mavlink_message(void);
 
   Board& board_;

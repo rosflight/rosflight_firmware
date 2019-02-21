@@ -38,7 +38,7 @@
 
 #ifndef GIT_VERSION_HASH
 #define GIT_VERSION_HASH 0x00
-//#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
+#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
 #endif
 
 #ifndef GIT_VERSION_STRING
@@ -54,6 +54,7 @@ enum : uint16_t
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BAUD_RATE = 0,
+  PARAM_SERIAL_DEVICE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -71,6 +72,7 @@ enum : uint16_t
 
   PARAM_STREAM_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
+
 
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
@@ -109,8 +111,6 @@ enum : uint16_t
   PARAM_MOTOR_PWM_SEND_RATE,
   PARAM_MOTOR_IDLE_THROTTLE,
   PARAM_FAILSAFE_THROTTLE,
-  PARAM_MOTOR_MAX_PWM,
-  PARAM_MOTOR_MIN_PWM,
   PARAM_SPIN_MOTORS_WHEN_ARMED,
 
   /*******************************/
@@ -119,6 +119,7 @@ enum : uint16_t
   PARAM_INIT_TIME,
   PARAM_FILTER_KP,
   PARAM_FILTER_KI,
+  PARAM_FILTER_KP_ATT_CORRECTION,
 
   PARAM_FILTER_USE_QUAD_INT,
   PARAM_FILTER_USE_MAT_EXP,
@@ -126,7 +127,8 @@ enum : uint16_t
 
   PARAM_CALIBRATE_GYRO_ON_ARM,
 
-  PARAM_GYRO_ALPHA,
+  PARAM_GYRO_XY_ALPHA,
+  PARAM_GYRO_Z_ALPHA,
   PARAM_ACC_ALPHA,
 
   PARAM_GYRO_X_BIAS,
@@ -197,10 +199,19 @@ enum : uint16_t
   PARAM_AILERON_REVERSE,
   PARAM_RUDDER_REVERSE,
 
+  PARAM_FC_ROLL,
+  PARAM_FC_PITCH,
+  PARAM_FC_YAW,
+
   /********************/
   /*** ARMING SETUP ***/
   /********************/
   PARAM_ARM_THRESHOLD,
+
+  /************************/
+  /*** OFFBOARD CONTROL ***/
+  /************************/
+  PARAM_OFFBOARD_TIMEOUT,
 
   // keep track of size of params array
   PARAMS_COUNT

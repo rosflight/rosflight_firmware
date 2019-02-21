@@ -1,4 +1,4 @@
-dist: "trusty"
+dist: "xenial"
 language: cpp
 
 addons:
@@ -6,9 +6,9 @@ addons:
     packages:
       - build-essential
       - libc6-i386
-      - lib32bz2-1.0
-      - lib32ncurses5
-      - lib32z1
+      - libbz2-1.0:i386
+      - libncurses5:i386
+      - libz1:i386
       - cmake
       - libgtest-dev
       - libeigen3-dev
@@ -34,5 +34,5 @@ before_script:
   - arm-none-eabi-gcc --version
 
 script:
-  - ./run_tests.sh
+  - ./scripts/run_tests.sh
 
