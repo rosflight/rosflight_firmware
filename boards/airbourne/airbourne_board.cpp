@@ -252,6 +252,10 @@ void AirbourneBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32
 {
   gps_.read(lla, vel, &fix_type, &tow_ms, hacc, vacc, sacc);
 }
+void AirbourneBoard::gps_read_pvt(UBLOX::NAV_PVT_t &pvt)
+{
+    gps_.read_pvt(pvt);
+}
 
 // PWM
 void AirbourneBoard::rc_init(rc_type_t rc_type)

@@ -32,6 +32,7 @@
 #include <stdint.h>
 
 #include "rosflight.h"
+#include "comm_manager.h"
 
 namespace rosflight_firmware
 {
@@ -422,6 +423,37 @@ void CommManager::send_gps(void)
                       RF_.sensors_.data().gps_horizontal_accuracy,
                       RF_.sensors_.data().gps_vertical_accuracy,
                       RF_.sensors_.data().gps_speed_accuracy);
+  UBLOX::UTCTime time = {
+      RF_.sensors_.data().gnss_pvt.year,
+      RF_.sensors_.data().gnss_pvt.month,
+      RF_.sensors_.data().gnss_pvt.day,
+      RF_.sensors_.data().gnss_pvt.hour,
+      RF_.sensors_.data().gnss_pvt.min,
+      RF_.sensors_.data().gnss_pvt.sec,
+      RF_.sensors_.data().gnss_pvt.nano,
+  };
+  comm_link_.send_gnss_pvt(
+              sysid_,
+              RF_.sensors_.data().gnss_pvt.iTOW,
+              time,
+              RF_.sensors_.data().gnss_pvt.tAcc,
+              RF_.sensors_.data().gnss_pvt.fixType,
+              RF_.sensors_.data().gnss_pvt.numSV,
+              RF_.sensors_.data().gnss_pvt.lon,
+              RF_.sensors_.data().gnss_pvt.lat,
+              RF_.sensors_.data().gnss_pvt.height,
+              RF_.sensors_.data().gnss_pvt.hMSL,
+              RF_.sensors_.data().gnss_pvt.hAcc,
+              RF_.sensors_.data().gnss_pvt.vAcc,
+              RF_.sensors_.data().gnss_pvt.velN,
+              RF_.sensors_.data().gnss_pvt.velE,
+              RF_.sensors_.data().gnss_pvt.velD,
+              RF_.sensors_.data().gnss_pvt.gSpeed,
+              RF_.sensors_.data().gnss_pvt.headMot,
+              RF_.sensors_.data().gnss_pvt.sAcc,
+              RF_.sensors_.data().gnss_pvt.headAcc,
+              RF_.sensors_.data().gnss_pvt.pDOP
+              );
 }
 
 void CommManager::send_low_priority(void)

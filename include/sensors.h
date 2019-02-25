@@ -36,6 +36,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <turbomath/turbomath.h>
+#include "ublox.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Ignore warning about leaving struct fields blank
 
 namespace rosflight_firmware
 {
@@ -75,6 +79,7 @@ public:
     float gps_speed_accuracy = 0;
     float gps_horizontal_accuracy = 0;
     float gps_vertical_accuracy = 0;
+    UBLOX::NAV_PVT_t gnss_pvt = {};
 
 
     turbomath::Vector mag = {0, 0, 0};
@@ -215,5 +220,7 @@ private:
 };
 
 } // namespace rosflight_firmware
+
+#pragma GCC diagnostic pop // End ignore missing field initializers in structs
 
 #endif // ROSFLIGHT_FIRMWARE_SENSORS_H

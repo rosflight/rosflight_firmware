@@ -88,7 +88,6 @@ private:
     LED led1_;
     M25P16 flash_;
     UBLOX gps_;
-    UART uart3_;
 
     enum SerialDevice : uint32_t
     {
@@ -164,6 +163,7 @@ public:
   void gps_update() override;
   void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
                 float *hacc, float *vacc, float* sacc) override;
+  void gps_read_pvt(UBLOX::NAV_PVT_t &pvt) override;
 
 
   // RC

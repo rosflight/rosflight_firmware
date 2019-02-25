@@ -38,6 +38,7 @@
 #include <turbomath/turbomath.h>
 
 #include "param.h"
+#include "ublox.h"
 
 namespace rosflight_firmware
 {
@@ -139,6 +140,10 @@ public:
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
   virtual void send_gps(uint8_t system_id, const double* lla, const float* vel, uint8_t fix_type, uint32_t tow_ms,
                         float hacc, float vacc, float sacc) = 0;
+  virtual void send_gnss_pvt(uint8_t system_id, uint32_t iTow, UBLOX::UTCTime time, uint32_t t_acc, uint8_t fix_type, uint8_t num_satellites,
+                             int32_t lon, int32_t lat, int32_t height, int32_t height_msl, int32_t h_acc, int32_t v_acc, int32_t vel_n,
+                             int32_t vel_e, int32_t vel_d, int32_t ground_speed, int32_t heading_motion, uint32_t speed_acc,
+                             uint32_t heading_acc, uint16_t p_dop)=0;
 
   // register callbacks
 
