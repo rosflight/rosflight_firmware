@@ -37,7 +37,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "ublox.h"
+#include "sensors.h"
 
 namespace rosflight_firmware
 {
@@ -94,9 +94,10 @@ public:
 
   virtual bool gps_present() = 0;
   virtual void gps_update() = 0;
-  virtual void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
-                        float *hacc, float *vacc, float* sacc) = 0;
-  virtual void gps_read_pvt(UBLOX::NAV_PVT_t &pvt) = 0;
+
+  virtual GNSSData gps_read() = 0;
+  virtual GNSSPosECEF gnss_pos_ecef_read() = 0;
+  virtual GNSSVelECEF gnss_vel_ecef_read() = 0;
 
 // RC
   virtual void rc_init(rc_type_t rc_type) = 0;

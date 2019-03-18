@@ -133,8 +133,9 @@ void Sensors::update_other_sensors()
     {
       data_.gps_present = true;
       rf_.board_.gps_update();
-      rf_.board_.gps_read(data_.gps_lla, data_.gps_vel_NED.arr, data_.gps_fix_type, data_.gps_tow_ms,
-                          &data_.gps_horizontal_accuracy, &data_.gps_vertical_accuracy, &data_.gps_speed_accuracy);
+      this->data_.gnss_data = rf_.board_.gps_read();
+      this->data_.gnss_pos_ecef = rf_.board_.gnss_pos_ecef_read();
+      this->data_.gnss_vel_ecef = rf_.board_.gnss_vel_ecef_read();
     }
     break;
   case BAROMETER:

@@ -415,45 +415,32 @@ void CommManager::send_mag(void)
 
 void CommManager::send_gps(void)
 {
-  comm_link_.send_gps(sysid_,
-                      RF_.sensors_.data().gps_lla,
-                      RF_.sensors_.data().gps_vel_NED.arr,
-                      RF_.sensors_.data().gps_fix_type,
-                      RF_.sensors_.data().gps_tow_ms,
-                      RF_.sensors_.data().gps_horizontal_accuracy,
-                      RF_.sensors_.data().gps_vertical_accuracy,
-                      RF_.sensors_.data().gps_speed_accuracy);
-  UBLOX::UTCTime time = {
-      RF_.sensors_.data().gnss_pvt.year,
-      RF_.sensors_.data().gnss_pvt.month,
-      RF_.sensors_.data().gnss_pvt.day,
-      RF_.sensors_.data().gnss_pvt.hour,
-      RF_.sensors_.data().gnss_pvt.min,
-      RF_.sensors_.data().gnss_pvt.sec,
-      RF_.sensors_.data().gnss_pvt.nano,
-  };
-  comm_link_.send_gnss_pvt(
-              sysid_,
-              RF_.sensors_.data().gnss_pvt.iTOW,
-              time,
-              RF_.sensors_.data().gnss_pvt.tAcc,
-              RF_.sensors_.data().gnss_pvt.fixType,
-              RF_.sensors_.data().gnss_pvt.numSV,
-              RF_.sensors_.data().gnss_pvt.lon,
-              RF_.sensors_.data().gnss_pvt.lat,
-              RF_.sensors_.data().gnss_pvt.height,
-              RF_.sensors_.data().gnss_pvt.hMSL,
-              RF_.sensors_.data().gnss_pvt.hAcc,
-              RF_.sensors_.data().gnss_pvt.vAcc,
-              RF_.sensors_.data().gnss_pvt.velN,
-              RF_.sensors_.data().gnss_pvt.velE,
-              RF_.sensors_.data().gnss_pvt.velD,
-              RF_.sensors_.data().gnss_pvt.gSpeed,
-              RF_.sensors_.data().gnss_pvt.headMot,
-              RF_.sensors_.data().gnss_pvt.sAcc,
-              RF_.sensors_.data().gnss_pvt.headAcc,
-              RF_.sensors_.data().gnss_pvt.pDOP
-              );
+  if (RF_.sensors_.data().gps_present)
+  {
+    GNSSData gnss_data = RF_.sensors_.data().gnss_data;
+    comm_link_.send_gnss_pvt(sysid_,gnss_data.time,
+                             gnss_data.nanos, gnss_data.lat,
+                             gnss_data.lon,gnss_data.height,
+                             gnss_data.vel_n,
+                             gnss_data.vel_e,
+                             gnss_data.vel_d,
+                             gnss_data.h_acc,
+                             gnss_data.v_acc);
+    GNSSPosECEF gnss_pos_ecef = RF_.sensors_.data().gnss_pos_ecef;
+    comm_link_.send_gnss_pos_ecef(sysid_,
+                                  gnss_pos_ecef.tow,
+                                  gnss_pos_ecef.x,
+                                  gnss_pos_ecef.y,
+                                  gnss_pos_ecef.z,
+                                  gnss_pos_ecef.p_acc);
+    GNSSVelECEF gnss_vel_ecef = RF_.sensors_.data().gnss_vel_ecef;
+    comm_link_.send_gnss_vel_ecef(sysid_,
+                                  gnss_vel_ecef.tow,
+                                  gnss_vel_ecef.vx,
+                                  gnss_vel_ecef.vy,
+                                  gnss_vel_ecef.vz,
+                                  gnss_vel_ecef.s_acc);
+  }
 }
 
 void CommManager::send_low_priority(void)

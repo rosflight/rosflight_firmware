@@ -36,13 +36,73 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <turbomath/turbomath.h>
-#include "ublox.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Ignore warning about leaving struct fields blank
 
 namespace rosflight_firmware
 {
+//Fix type, as defined in sensor_msgs/NavSatStatus
+typedef enum{
+    NO_FIX,   //Unable to fix position
+    FIX,      //Unaugmented fix
+    SBAS_FIX, //with satellite-based augmentation
+    GBAS_FIX  //with ground-based augmentation
+} GNSSFixType;
+
+#pragma GCC diagnostic push //Allow anonymous nested unions and structs
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+struct GNSSData{
+    GNSSFixType fix_type;
+    uint64_t time;//Unix time, in seconds
+    uint64_t nanos;//Fractional time
+    union{ //This union allows accessing lla as an array or separate values
+        int32_t lla[3];
+        struct{
+            int32_t lat;//deg*10^-7
+            int32_t lon;//deg*10^-7
+            int32_t height;//mm
+        };
+    };
+    union{ //This union allows accessing velocity as an array or separate values
+	    int32_t vel[3]; //An array representation of the velocity
+	    struct{
+		    int32_t vel_n;//mm/s
+		    int32_t vel_e;//mm/s
+		    int32_t vel_d;//mm/s
+	    };
+    };
+    uint32_t h_acc;//mm
+    uint32_t v_acc;//mm
+};
+
+struct GNSSPosECEF{
+    uint16_t tow;//time of week. Only to be used as a stamp
+    union { //This union allows accessing position as an array or separate values 
+	    int32_t pos[3];
+	    struct{
+		    int32_t x;//cm
+		    int32_t y;//cm
+		    int32_t z;//cm
+	    };
+    };
+    uint32_t p_acc;//cm
+};
+
+struct GNSSVelECEF{
+    uint16_t tow;//time of week. Only to be used as a stamp
+    union{ //This union allows accessing velocity as an array or separate values 
+	    int32_t vel[3];
+	    struct{
+		    int32_t vx;//cm/s
+		    int32_t vy;//cm/s
+		    int32_t vz;//cm/s
+	    };
+    };
+    uint32_t s_acc;//cm/s
+};
+#pragma GCC diagnostic pop
 
 class ROSflight;
 
@@ -70,17 +130,11 @@ public:
     float sonar_range = 0;
     bool sonar_range_valid = false;
 
-    double gps_lla[3] = {};
-    turbomath::Vector gps_vel_NED = {0, 0, 0};
-    uint8_t gps_fix_type;
-    float gps_CNO = 0;
-    uint32_t gps_tow_ms = 0;
+    GNSSData gnss_data ={};
+    float gps_CNO = 0; //What is this?
     bool gps_present = false;
-    float gps_speed_accuracy = 0;
-    float gps_horizontal_accuracy = 0;
-    float gps_vertical_accuracy = 0;
-    UBLOX::NAV_PVT_t gnss_pvt = {};
-
+    GNSSPosECEF gnss_pos_ecef;
+    GNSSVelECEF gnss_vel_ecef;
 
     turbomath::Vector mag = {0, 0, 0};
 

@@ -247,14 +247,17 @@ bool AirbourneBoard::gps_present()
   return gps_.present();
 }
 void AirbourneBoard::gps_update(){}
-void AirbourneBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
-                              float *hacc, float *vacc, float *sacc )
+GNSSData AirbourneBoard::gps_read()
 {
-  gps_.read(lla, vel, &fix_type, &tow_ms, hacc, vacc, sacc);
+  return this->gps_.read();
 }
-void AirbourneBoard::gps_read_pvt(UBLOX::NAV_PVT_t &pvt)
+GNSSPosECEF AirbourneBoard::gnss_pos_ecef_read()
 {
-    gps_.read_pvt(pvt);
+  return this->gps_.read_pos_ecef();
+}
+GNSSVelECEF AirbourneBoard::gnss_vel_ecef_read()
+{
+  return this->gps_.read_vel_ecef();
 }
 
 // PWM

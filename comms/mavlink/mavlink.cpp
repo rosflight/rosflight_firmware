@@ -173,15 +173,25 @@ void Mavlink::send_gps(uint8_t system_id, const double* lla, const float* vel, u
   send_message(msg);
 
 }
-void Mavlink::send_gnss_pvt(uint8_t system_id, uint32_t iTow, UBLOX::UTCTime time, uint32_t t_acc, uint8_t fix_type, uint8_t num_satellites,
-                             int32_t lon, int32_t lat, int32_t height, int32_t height_msl, int32_t h_acc, int32_t v_acc, int32_t vel_n,
-                             int32_t vel_e, int32_t vel_d, int32_t ground_speed, int32_t heading_motion, uint32_t speed_acc,
-                             uint32_t heading_acc, uint16_t p_dop)
+void Mavlink::send_gnss_pvt(uint8_t system_id, uint64_t time, uint64_t nanos, int64_t lat, int64_t lon, int64_t height, int64_t vel_n,
+                            int64_t vel_e, int64_t vel_d, int64_t h_acc, int64_t v_acc)
 {
     mavlink_message_t msg;
-    mavlink_msg_rosflight_gnss_pvt_pack(system_id, compid_, &msg, iTow, time.year, time.month, time.day, time.hour, time.min, time.sec,
-                                        time.nano, t_acc, fix_type, num_satellites, lon, lat, height, height_msl, h_acc, v_acc, vel_n,
-                                        vel_e, vel_d, ground_speed, heading_motion, speed_acc, heading_acc, p_dop);
+    mavlink_msg_rosflight_gnss_pack(system_id, compid_, &msg, time, nanos, lat, lon, height,vel_n,vel_e, vel_d, h_acc, v_acc);
+    send_message(msg);
+}
+
+void Mavlink::send_gnss_pos_ecef(uint8_t system_id, uint16_t tow, int32_t x, int32_t y, int32_t z, uint32_t p_acc)
+{
+    mavlink_message_t msg;
+    mavlink_msg_rosflight_gnss_pos_ecef_pack(system_id, compid_, &msg, tow, x, y, z, p_acc);
+    send_message(msg);
+}
+
+void Mavlink::send_gnss_vel_ecef(uint8_t system_id, uint16_t tow, int32_t vx, int32_t vy, int32_t vz, uint32_t s_acc)
+{
+    mavlink_message_t msg;
+    mavlink_msg_rosflight_gnss_vel_ecef_pack(system_id, compid_, &msg, tow, vx, vy, vz, s_acc);
     send_message(msg);
 }
 

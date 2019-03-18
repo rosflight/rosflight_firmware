@@ -161,11 +161,10 @@ public:
 
   bool gps_present() override;
   void gps_update() override;
-  void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
-                float *hacc, float *vacc, float* sacc) override;
-  void gps_read_pvt(UBLOX::NAV_PVT_t &pvt) override;
 
-
+  GNSSData gps_read() override;
+  GNSSPosECEF gnss_pos_ecef_read() override;
+  GNSSVelECEF gnss_vel_ecef_read() override;
   // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;
