@@ -61,10 +61,6 @@ Sensors::Sensors(ROSflight& rosflight) :
 
 void Sensors::init()
 {
-  rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_ROLL);
-  rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_PITCH);
-  rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_YAW);
-
   new_imu_data_ = false;
 
   // clear the IMU read error
@@ -103,8 +99,17 @@ void Sensors::init_imu()
 
 void Sensors::param_change_callback(uint16_t param_id)
 {
-  (void) param_id; // suppress unused parameter warning
-  init_imu();
+  switch (param_id)
+  {
+  case PARAM_FC_ROLL:
+  case PARAM_FC_PITCH:
+  case PARAM_FC_YAW:
+    init_imu();
+    break;
+  default:
+    // do nothing
+    break;
+  }
 }
 
 

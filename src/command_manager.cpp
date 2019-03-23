@@ -71,16 +71,21 @@ CommandManager::CommandManager(ROSflight& _rf) :
 
 void CommandManager::init()
 {
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FIXED_WING);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FAILSAFE_THROTTLE);
-
   init_failsafe();
 }
 
 void CommandManager::param_change_callback(uint16_t param_id)
 {
-  (void) param_id; // suppress unused parameter warning
-  init_failsafe();
+  switch (param_id)
+  {
+  case PARAM_FIXED_WING:
+  case PARAM_FAILSAFE_THROTTLE:
+    init_failsafe();
+    break;
+  default:
+    // do nothing
+    break;
+  }
 }
 
 void CommandManager::init_failsafe()

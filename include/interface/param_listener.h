@@ -29,74 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
-#define ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
+#ifndef ROSFLIGHT_FIRMWARE_INTERFACE_PARAM_LISTENER_H
+#define ROSFLIGHT_FIRMWARE_INTERFACE_PARAM_LISTENER_H
 
 #include <cstdint>
-
-#include "interface/param_listener.h"
-
-#include "board.h"
-#include "param.h"
-#include "sensors.h"
-#include "estimator.h"
-#include "rc.h"
-#include "controller.h"
-#include "comm_link.h"
-#include "comm_manager.h"
-#include "mixer.h"
-#include "state_manager.h"
-#include "command_manager.h"
 
 namespace rosflight_firmware
 {
 
-class ROSflight
+class ParamListenerInterface
 {
-
 public:
-  ROSflight(Board& board, CommLink& comm_link);
-
-  Board& board_;
-  CommManager comm_manager_;
-
-  Params params_;
-
-  CommandManager command_manager_;
-  Controller controller_;
-  Estimator estimator_;
-  Mixer mixer_;
-  RC rc_;
-  Sensors sensors_;
-  StateManager state_manager_;
-
-  uint32_t loop_time_us;
-
-  /**
-  * @brief Main initialization routine for the ROSflight autopilot flight stack
-  */
-  void init();
-
-  /**
-  * @brief Main loop for the ROSflight autopilot flight stack
-  */
-  void run();
-
-  uint32_t get_loop_time_us();
-
-private:
-  static constexpr size_t num_param_listeners_ = 7;
-  ParamListenerInterface * const param_listeners_[num_param_listeners_] = {
-    &comm_manager_,
-    &command_manager_,
-    &controller_,
-    &estimator_,
-    &mixer_,
-    &rc_,
-    &sensors_
-  };
+  virtual void param_change_callback(uint16_t param_id) = 0;
 };
 
 } // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
+#endif // ROSFLIGHT_FIRMWARE_INTERFACE_PARAM_LISTENER_H

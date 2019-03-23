@@ -63,21 +63,51 @@ void CommManager::init()
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
 
-  // Register Param change callbacks
-  RF_.params_.add_callback([this](int16_t param_id){this->update_system_id(param_id);}, PARAM_SYSTEM_ID);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);}, PARAM_STREAM_HEARTBEAT_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_STATUS, param_id);}, PARAM_STREAM_STATUS_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_IMU, param_id);}, PARAM_STREAM_IMU_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
-
   initialized_ = true;
   log(CommLink::LogSeverity::LOG_INFO, "Booting");
+}
+
+void CommManager::param_change_callback(uint16_t param_id)
+{
+  switch (param_id)
+  {
+  case PARAM_SYSTEM_ID:
+    update_system_id(param_id);
+    break;
+  case PARAM_STREAM_HEARTBEAT_RATE:
+    set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);
+    break;
+  case PARAM_STREAM_STATUS_RATE:
+    set_streaming_rate(STREAM_ID_STATUS, param_id);
+    break;
+  case PARAM_STREAM_IMU_RATE:
+    set_streaming_rate(STREAM_ID_IMU, param_id);
+    break;
+  case PARAM_STREAM_ATTITUDE_RATE:
+    set_streaming_rate(STREAM_ID_ATTITUDE, param_id);
+    break;
+  case PARAM_STREAM_AIRSPEED_RATE:
+    set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);
+    break;
+  case PARAM_STREAM_BARO_RATE:
+    set_streaming_rate(STREAM_ID_BARO, param_id);
+    break;
+  case PARAM_STREAM_SONAR_RATE:
+    set_streaming_rate(STREAM_ID_SONAR, param_id);
+    break;
+  case PARAM_STREAM_MAG_RATE:
+    set_streaming_rate(STREAM_ID_MAG, param_id);
+    break;
+  case PARAM_STREAM_OUTPUT_RAW_RATE:
+    set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);
+    break;
+  case PARAM_STREAM_RC_RAW_RATE:
+    set_streaming_rate(STREAM_ID_RC_RAW, param_id);
+    break;
+  default:
+    // do nothing
+    break;
+  }
 }
 
 void CommManager::update_system_id(uint16_t param_id)

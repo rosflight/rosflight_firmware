@@ -37,6 +37,8 @@
 
 #include <turbomath/turbomath.h>
 
+#include "interface/param_listener.h"
+
 #include "command_manager.h"
 #include "estimator.h"
 
@@ -45,7 +47,7 @@ namespace rosflight_firmware
 
 class ROSflight;
 
-class Controller
+class Controller : public ParamListenerInterface
 {
 public:
   struct Output
@@ -64,7 +66,7 @@ public:
   void run();
 
   void calculate_equilbrium_torque_from_rc();
-  void param_change_callback(uint16_t param_id);
+  void param_change_callback(uint16_t param_id) override;
 
 private:
   class PID

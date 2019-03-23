@@ -96,6 +96,11 @@ void Estimator::init()
   reset_state();
 }
 
+void Estimator::param_change_callback(uint16_t param_id)
+{
+  (void) param_id;
+}
+
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);

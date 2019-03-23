@@ -38,12 +38,14 @@
 
 #include <turbomath/turbomath.h>
 
+#include "interface/param_listener.h"
+
 namespace rosflight_firmware
 {
 
 class ROSflight;
 
-class Estimator
+class Estimator : public ParamListenerInterface
 {
 
 public:
@@ -62,6 +64,7 @@ public:
   inline const State& state() const { return state_; }
 
   void init();
+  void param_change_callback(uint16_t param_id) override;
   void run();
   void reset_state();
   void reset_adaptive_bias();

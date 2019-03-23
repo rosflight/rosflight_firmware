@@ -35,6 +35,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "interface/param_listener.h"
+
 #include "comm_link.h"
 #include "nanoprintf.h"
 
@@ -43,7 +45,7 @@ namespace rosflight_firmware
 
 class ROSflight;
 
-class CommManager
+class CommManager : public ParamListenerInterface
 {
 private:
   enum StreamId
@@ -143,6 +145,7 @@ public:
   CommManager(ROSflight& rf, CommLink& comm_link);
 
   void init();
+  void param_change_callback(uint16_t param_id) override;
   void receive(void);
   void stream();
   void send_param_value(uint16_t param_id);

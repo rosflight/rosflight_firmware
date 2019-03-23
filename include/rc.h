@@ -35,12 +35,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "interface/param_listener.h"
+
 namespace rosflight_firmware
 {
 
 class ROSflight;
 
-class RC
+class RC : public ParamListenerInterface
 {
 
 public:

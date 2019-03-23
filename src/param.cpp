@@ -46,10 +46,10 @@ namespace rosflight_firmware
 {
 
 Params::Params(ROSflight& _rf) :
-  RF_(_rf)
+  RF_(_rf),
+  listeners_(nullptr),
+  num_listeners_(0)
 {
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-    callbacks[id] = NULL;
 }
 
 // local function definitions
@@ -261,10 +261,10 @@ void Params::set_defaults(void)
   init_param_int(PARAM_OFFBOARD_TIMEOUT, "OFFBOARD_TIMEOUT", 100); // Timeout in milliseconds for offboard commands, after which RC override is activated | 0 | 100000
 }
 
-void Params::add_callback(std::function<void(int)> callback, uint16_t param_id)
+void Params::set_listeners(ParamListenerInterface * const listeners[], size_t num_listeners)
 {
-  callbacks[param_id] = callback;
-  callback(param_id);
+  listeners_ = listeners;
+  num_listeners_ = num_listeners;
 }
 
 bool Params::read(void)
@@ -299,9 +299,14 @@ bool Params::write(void)
 
 void Params::change_callback(uint16_t id)
 {
-  // call the callback function
-  if(callbacks[id])
-    callbacks[id](id);
+  // call the callback function for all listeners
+  if (listeners_ != nullptr)
+  {
+    for (size_t i = 0; i < num_listeners_; i++)
+    {
+      listeners_[i]->param_change_callback(id);
+    }
+  }
 }
 
 uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
