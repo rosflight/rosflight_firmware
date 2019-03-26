@@ -34,7 +34,7 @@
 namespace rosflight_firmware
 {
 
-ROSflight::ROSflight(Board& board, CommLink& comm_link) :
+ROSflight::ROSflight(Board& board, CommLinkInterface& comm_link) :
   board_(board),
   comm_manager_(*this, comm_link),
   params_(*this),
@@ -46,6 +46,7 @@ ROSflight::ROSflight(Board& board, CommLink& comm_link) :
   sensors_(*this),
   state_manager_(*this)
 {
+  comm_link.set_listener(&comm_manager_);
 }
 
 // Initialization Routine

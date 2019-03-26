@@ -32,13 +32,14 @@
 #ifndef ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 #define ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 
+#include "interface/comm_link.h"
+
 #include "board.h"
 #include "param.h"
 #include "sensors.h"
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
-#include "comm_link.h"
 #include "comm_manager.h"
 #include "mixer.h"
 #include "state_manager.h"
@@ -54,7 +55,7 @@ private:
 
 
 public:
-  ROSflight(Board& board, CommLink& comm_link);
+  ROSflight(Board& board, CommLinkInterface& comm_link);
 
   Board& board_;
   CommManager comm_manager_;

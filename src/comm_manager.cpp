@@ -36,7 +36,7 @@
 namespace rosflight_firmware
 {
 
-CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
+CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) :
   RF_(rf),
   comm_link_(comm_link)
 {
@@ -46,15 +46,6 @@ CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
 // function definitions
 void CommManager::init()
 {
-  comm_link_.register_param_request_list_callback([this](uint8_t target_system){this->param_request_list_callback(target_system);});
-  comm_link_.register_param_request_read_callback([this](uint8_t target_system, const char* const param_name, int16_t param_index){this->param_request_read_callback(target_system, param_name, param_index);});
-  comm_link_.register_param_set_int_callback([this](uint8_t target_system, const char* const param_name, int32_t param_value){this->param_set_int_callback(target_system, param_name, param_value);});
-  comm_link_.register_param_set_float_callback([this](uint8_t target_system, const char* const param_name, float param_value){this->param_set_float_callback(target_system, param_name, param_value);});
-  comm_link_.register_offboard_control_callback([this](const CommLink::OffboardControl& control){this->offboard_control_callback(control);});
-  comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
-  comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
-  comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
-  comm_link_.register_heartbeat_callback([this](void){this->heartbeat_callback();});
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
@@ -77,7 +68,7 @@ void CommManager::init()
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
-  log(CommLink::LogSeverity::LOG_INFO, "Booting");
+  log(CommLinkInterface::LogSeverity::LOG_INFO, "Booting");
 }
 
 void CommManager::update_system_id(uint16_t param_id)
@@ -165,7 +156,7 @@ void CommManager::param_set_float_callback(uint8_t target_system, const char* co
   }
 }
 
-void CommManager::command_callback(CommLink::Command command)
+void CommManager::command_callback(CommLinkInterface::Command command)
 {
   bool result;
   bool reboot_flag = false;
@@ -181,37 +172,37 @@ void CommManager::command_callback(CommLink::Command command)
     result = true;
     switch (command)
     {
-    case CommLink::Command::COMMAND_READ_PARAMS:
+    case CommLinkInterface::Command::COMMAND_READ_PARAMS:
       result = RF_.params_.read();
       break;
-    case CommLink::Command::COMMAND_WRITE_PARAMS:
+    case CommLinkInterface::Command::COMMAND_WRITE_PARAMS:
       result = RF_.params_.write();
       break;
-    case CommLink::Command::COMMAND_SET_PARAM_DEFAULTS:
+    case CommLinkInterface::Command::COMMAND_SET_PARAM_DEFAULTS:
       RF_.params_.set_defaults();
       break;
-    case CommLink::Command::COMMAND_ACCEL_CALIBRATION:
+    case CommLinkInterface::Command::COMMAND_ACCEL_CALIBRATION:
       result = RF_.sensors_.start_imu_calibration();
       break;
-    case CommLink::Command::COMMAND_GYRO_CALIBRATION:
+    case CommLinkInterface::Command::COMMAND_GYRO_CALIBRATION:
       result = RF_.sensors_.start_gyro_calibration();
       break;
-    case CommLink::Command::COMMAND_BARO_CALIBRATION:
+    case CommLinkInterface::Command::COMMAND_BARO_CALIBRATION:
       result = RF_.sensors_.start_baro_calibration();
       break;
-    case CommLink::Command::COMMAND_AIRSPEED_CALIBRATION:
+    case CommLinkInterface::Command::COMMAND_AIRSPEED_CALIBRATION:
       result = RF_.sensors_.start_diff_pressure_calibration();
       break;
-    case CommLink::Command::COMMAND_RC_CALIBRATION:
+    case CommLinkInterface::Command::COMMAND_RC_CALIBRATION:
       RF_.controller_.calculate_equilbrium_torque_from_rc();
       break;
-    case CommLink::Command::COMMAND_REBOOT:
+    case CommLinkInterface::Command::COMMAND_REBOOT:
       reboot_flag = true;
       break;
-    case CommLink::Command::COMMAND_REBOOT_TO_BOOTLOADER:
+    case CommLinkInterface::Command::COMMAND_REBOOT_TO_BOOTLOADER:
       reboot_to_bootloader_flag = true;
       break;
-    case CommLink::Command::COMMAND_SEND_VERSION:
+    case CommLinkInterface::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
       break;
     }
@@ -235,7 +226,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
     comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us)*1000, ts1);
 }
 
-void CommManager::offboard_control_callback(const CommLink::OffboardControl& control)
+void CommManager::offboard_control_callback(const CommLinkInterface::OffboardControl& control)
 {
   // put values into a new command struct
   control_t new_offboard_command;
@@ -253,19 +244,19 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
   // translate modes into standard message
   switch (control.mode)
   {
-  case CommLink::OffboardControl::Mode::PASS_THROUGH:
+  case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
     new_offboard_command.x.type = PASSTHROUGH;
     new_offboard_command.y.type = PASSTHROUGH;
     new_offboard_command.z.type = PASSTHROUGH;
     new_offboard_command.F.type = THROTTLE;
     break;
-  case CommLink::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+  case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
     new_offboard_command.x.type = RATE;
     new_offboard_command.y.type = RATE;
     new_offboard_command.z.type = RATE;
     new_offboard_command.F.type = THROTTLE;
     break;
-  case CommLink::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
+  case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
     new_offboard_command.x.type = ANGLE;
     new_offboard_command.y.type = ANGLE;
     new_offboard_command.z.type = RATE;
@@ -302,7 +293,7 @@ void CommManager::receive(void)
   comm_link_.receive();
 }
 
-void CommManager::log(CommLink::LogSeverity severity, const char *fmt, ...)
+void CommManager::log(CommLinkInterface::LogSeverity severity, const char *fmt, ...)
 {
   // Convert the format string to a raw char array
   va_list args;

@@ -33,7 +33,6 @@
 #define ROSFLIGHT_FIRMWARE_COMM_LINK_H
 
 #include <cstdint>
-#include <functional>
 
 #include <turbomath/turbomath.h>
 
@@ -43,7 +42,7 @@
 namespace rosflight_firmware
 {
 
-class CommLink
+class CommLinkInterface
 {
 public:
 
@@ -90,6 +89,20 @@ public:
     Channel y;
     Channel z;
     Channel F;
+  };
+
+  class ListenerInterface
+  {
+  public:
+    virtual void param_request_list_callback(uint8_t target_system) = 0;
+    virtual void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index) = 0;
+    virtual void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value) = 0;
+    virtual void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value) = 0;
+    virtual void command_callback(Command command) = 0;
+    virtual void timesync_callback(int64_t tc1, int64_t ts1) = 0;
+    virtual void offboard_control_callback(const OffboardControl& control) = 0;
+    virtual void attitude_correction_callback(const turbomath::Quaternion &q) = 0;
+    virtual void heartbeat_callback() = 0;
   };
 
   virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
@@ -140,69 +153,8 @@ public:
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
   virtual void send_error_data(uint8_t system_id, const BackupData& error_data) = 0;
 
-  // register callbacks
-
-  void register_param_request_list_callback(std::function<void(uint8_t /* target_system */)> callback)
-  {
-    param_request_list_callback_ = callback;
-  }
-
-  void register_param_request_read_callback(std::function<void(uint8_t /* target_system */,
-                                                               const char * const /* param_name */,
-                                                               uint16_t /* param_index */)> callback)
-  {
-    param_request_read_callback_ = callback;
-  }
-
-  void register_param_set_int_callback(std::function<void(uint8_t /* target_system */,
-                                                          const char * const /* param_name */,
-                                                          int32_t /* param_value */)> callback)
-  {
-    param_set_int_callback_ = callback;
-  }
-
-  void register_param_set_float_callback(std::function<void(uint8_t /* target_system */,
-                                                            const char * const /* param_name */,
-                                                            float /* param_value */)> callback)
-  {
-    param_set_float_callback_ = callback;
-  }
-
-  void register_offboard_control_callback(std::function<void(const OffboardControl&)> callback)
-  {
-    offboard_control_callback_ = callback;
-  }
-
-  void register_attitude_correction_callback(std::function<void(const turbomath::Quaternion)> callback)
-  {
-    attitude_correction_callback_ = callback;
-  }
-
-  void register_command_callback(std::function<void(Command)> callback)
-  {
-    command_callback_ = callback;
-  }
-
-  void register_timesync_callback(std::function<void(int64_t /* tc1 */, int64_t /* ts1 */)> callback)
-  {
-    timesync_callback_ = callback;
-  }
-  void register_heartbeat_callback(std::function<void()> callback)
-  {
-    heartbeat_callback_ = callback;
-  }
-
-protected:
-  std::function<void(uint8_t)> param_request_list_callback_;
-  std::function<void(uint8_t, const char * const, uint16_t)> param_request_read_callback_;
-  std::function<void(uint8_t, const char * const, int32_t)> param_set_int_callback_;
-  std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
-
-  std::function<void(const OffboardControl)> offboard_control_callback_;
-  std::function<void(const turbomath::Quaternion)> attitude_correction_callback_;
-  std::function<void(Command)> command_callback_;
-  std::function<void(int64_t, int64_t)> timesync_callback_;
-  std::function<void(void)> heartbeat_callback_;
+  // register listener
+  virtual void set_listener(ListenerInterface * listener) = 0;
 };
 
 } // namespace rosflight_firmware

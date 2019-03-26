@@ -144,12 +144,12 @@ void StateManager::set_event(StateManager::Event event)
         }
         else
         {
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
         }
       }
       else
       {
-        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
       }
       break;
     default:
@@ -175,17 +175,17 @@ void StateManager::set_event(StateManager::Event event)
       if (next_arming_error_msg_ms_ < RF_.board_.clock_millis())
       {
         if (state_.error_codes & StateManager::ERROR_INVALID_MIXER)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Invalid mixer");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Invalid mixer");
         if (state_.error_codes & StateManager::ERROR_IMU_NOT_RESPONDING)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: IMU not responding");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not responding");
         if (state_.error_codes & StateManager::ERROR_RC_LOST)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: RC signal lost");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: RC signal lost");
         if (state_.error_codes & StateManager::ERROR_UNHEALTHY_ESTIMATOR)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Unhealthy estimator");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Unhealthy estimator");
         if (state_.error_codes & StateManager::ERROR_TIME_GOING_BACKWARDS)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
         if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
 
         next_arming_error_msg_ms_ = RF_.board_.clock_millis() + 1000; // throttle messages to 1 Hz
       }
