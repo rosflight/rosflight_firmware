@@ -58,10 +58,20 @@ void CommManager::init()
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
-  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
-
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
+
+  update_system_id(PARAM_SYSTEM_ID);
+  set_streaming_rate(STREAM_ID_HEARTBEAT, PARAM_STREAM_HEARTBEAT_RATE);
+  set_streaming_rate(STREAM_ID_STATUS, PARAM_STREAM_STATUS_RATE);
+  set_streaming_rate(STREAM_ID_IMU, PARAM_STREAM_IMU_RATE);
+  set_streaming_rate(STREAM_ID_ATTITUDE, PARAM_STREAM_ATTITUDE_RATE);
+  set_streaming_rate(STREAM_ID_DIFF_PRESSURE, PARAM_STREAM_AIRSPEED_RATE);
+  set_streaming_rate(STREAM_ID_BARO, PARAM_STREAM_BARO_RATE);
+  set_streaming_rate(STREAM_ID_SONAR, PARAM_STREAM_SONAR_RATE);
+  set_streaming_rate(STREAM_ID_MAG, PARAM_STREAM_MAG_RATE);
+  set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, PARAM_STREAM_OUTPUT_RAW_RATE);
+  set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
   log(CommLink::LogSeverity::LOG_INFO, "Booting");
@@ -112,8 +122,7 @@ void CommManager::param_change_callback(uint16_t param_id)
 
 void CommManager::update_system_id(uint16_t param_id)
 {
-  (void) param_id;
-  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
+  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(param_id));
 }
 
 void CommManager::update_status()
