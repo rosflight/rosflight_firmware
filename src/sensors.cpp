@@ -129,13 +129,15 @@ void Sensors::update_other_sensors()
   switch (next_sensor_to_update_)
   {
   case GPS:
-    if (rf_.board_.gps_present())
+    if (rf_.board_.gps_present() && rf_.board_.gps_has_new_data())
     {
       data_.gps_present = true;
+      data_.gps_new_data = true;
       rf_.board_.gps_update();
       this->data_.gnss_data = rf_.board_.gps_read();
       this->data_.gnss_pos_ecef = rf_.board_.gnss_pos_ecef_read();
       this->data_.gnss_vel_ecef = rf_.board_.gnss_vel_ecef_read();
+      this->data_.gnss_raw = rf_.board_.gnss_raw_read();
     }
     break;
   case BAROMETER:

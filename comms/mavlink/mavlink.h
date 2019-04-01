@@ -95,10 +95,17 @@ public:
   void send_version(uint8_t system_id, const char * const version) override;
   void send_gps(uint8_t system_id, const double *lla, const float *vel, uint8_t fix_type, uint32_t tow_ms,
                 float hacc, float vacc, float sacc ) override;
-  virtual void send_gnss_pvt(uint8_t system_id, uint64_t time, uint64_t nanos, int64_t lat, int64_t lon, int64_t height, int64_t vel_n,
-                              int64_t vel_e, int64_t vel_d, int64_t h_acc, int64_t v_acc) override;
-  virtual void send_gnss_pos_ecef(uint8_t system_id, uint16_t tow, int32_t x, int32_t y, int32_t z, uint32_t p_acc) override;
-  virtual void send_gnss_vel_ecef(uint8_t system_id, uint16_t tow, int32_t vx, int32_t vy, int32_t zv, uint32_t s_acc) override;
+  void send_gnss_pvt(uint8_t system_id, uint8_t fix_type, uint64_t time, uint64_t nanos, int32_t lat, int32_t lon, int32_t height, int32_t vel_n,
+                              int32_t vel_e, int32_t vel_d, int32_t h_acc, int32_t v_acc, uint64_t rosflight_timestamp) override;
+  void send_gnss_pos_ecef(uint8_t system_id, uint32_t tow, int32_t x, int32_t y, int32_t z, uint32_t p_acc) override;
+  void send_gnss_vel_ecef(uint8_t system_id, uint32_t tow, int32_t vx, int32_t vy, int32_t zv, uint32_t s_acc) override;
+  void send_gnss_raw(uint8_t system_id, uint32_t time_of_week, uint16_t year, uint8_t month, uint8_t day,
+                              uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
+                              int32_t nano, uint8_t fix_type, uint8_t num_sat,
+                              int32_t lon, int32_t lat, int32_t height, int32_t height_msl,
+                              uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
+                              int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
+                              uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp);
 
 private:
   void send_message(const mavlink_message_t &msg);

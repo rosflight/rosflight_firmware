@@ -75,10 +75,11 @@ struct GNSSData{
     };
     uint32_t h_acc;//mm
     uint32_t v_acc;//mm
+    uint64_t rosflight_timestamp;//microseconds, time stamp of last byte in the message
 };
 
 struct GNSSPosECEF{
-    uint16_t tow;//time of week. Only to be used as a stamp
+    uint32_t tow;//time of week. Only to be used as a stamp
     union { //This union allows accessing position as an array or separate values 
 	    int32_t pos[3];
 	    struct{
@@ -91,7 +92,7 @@ struct GNSSPosECEF{
 };
 
 struct GNSSVelECEF{
-    uint16_t tow;//time of week. Only to be used as a stamp
+    uint32_t tow;//time of week. Only to be used as a stamp
     union{ //This union allows accessing velocity as an array or separate values 
 	    int32_t vel[3];
 	    struct{
@@ -102,6 +103,37 @@ struct GNSSVelECEF{
     };
     uint32_t s_acc;//cm/s
 };
+
+struct GNSSRaw{
+  uint64_t time_of_week;
+  uint16_t year;
+  uint8_t month;
+  uint8_t day;
+  uint8_t hour;
+  uint8_t min;
+  uint8_t sec;
+  uint8_t valid;
+  uint32_t t_acc;
+  int32_t nano;
+  uint8_t fix_type;
+  uint8_t num_sat;
+  int32_t lon;
+  int32_t lat;
+  int32_t height;
+  int32_t height_msl;
+  uint32_t h_acc;
+  uint32_t v_acc;
+  int32_t vel_n;
+  int32_t vel_e;
+  int32_t vel_d;
+  int32_t g_speed;
+  int32_t head_mot;
+  uint32_t s_acc;
+  uint32_t head_acc;
+  uint16_t p_dop;
+  uint64_t rosflight_timestamp;//microseconds, time stamp of last byte in the message
+};
+
 #pragma GCC diagnostic pop
 
 class ROSflight;
@@ -131,10 +163,12 @@ public:
     bool sonar_range_valid = false;
 
     GNSSData gnss_data ={};
+    bool gps_new_data = false;
     float gps_CNO = 0; //What is this?
     bool gps_present = false;
     GNSSPosECEF gnss_pos_ecef;
     GNSSVelECEF gnss_vel_ecef;
+    GNSSRaw gnss_raw;
 
     turbomath::Vector mag = {0, 0, 0};
 

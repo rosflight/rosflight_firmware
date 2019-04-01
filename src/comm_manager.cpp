@@ -42,6 +42,7 @@ CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
   comm_link_(comm_link)
 {
   initialized_ = false;
+  //instance = this;
 }
 
 // function definitions
@@ -73,6 +74,8 @@ void CommManager::init()
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS, param_id);}, PARAM_STREAM_GPS_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS_ECEF, param_id);}, PARAM_STREAM_GPS_ECEF_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS_RAW, param_id);}, PARAM_STREAM_GPS_RAW_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
@@ -418,14 +421,24 @@ void CommManager::send_gps(void)
   if (RF_.sensors_.data().gps_present)
   {
     GNSSData gnss_data = RF_.sensors_.data().gnss_data;
-    comm_link_.send_gnss_pvt(sysid_,gnss_data.time,
+    comm_link_.send_gnss_pvt(sysid_,
+                             gnss_data.fix_type,
+                             gnss_data.time,
                              gnss_data.nanos, gnss_data.lat,
                              gnss_data.lon,gnss_data.height,
                              gnss_data.vel_n,
                              gnss_data.vel_e,
                              gnss_data.vel_d,
                              gnss_data.h_acc,
-                             gnss_data.v_acc);
+                             gnss_data.v_acc,
+                             gnss_data.rosflight_timestamp);
+  }
+}
+
+void CommManager::send_gps_ecef()
+{
+  if(RF_.sensors_.data().gps_present)
+  {
     GNSSPosECEF gnss_pos_ecef = RF_.sensors_.data().gnss_pos_ecef;
     comm_link_.send_gnss_pos_ecef(sysid_,
                                   gnss_pos_ecef.tow,
@@ -440,6 +453,42 @@ void CommManager::send_gps(void)
                                   gnss_vel_ecef.vy,
                                   gnss_vel_ecef.vz,
                                   gnss_vel_ecef.s_acc);
+   }
+}
+
+void CommManager::send_gps_raw()
+{
+  if(RF_.sensors_.data().gps_present)
+  {
+    GNSSRaw raw = RF_.sensors_.data().gnss_raw;
+    comm_link_.send_gnss_raw(sysid_,
+                             raw.time_of_week,
+                             raw.year,
+                             raw.month,
+                             raw.day,
+                             raw.hour,
+                             raw.min,
+                             raw.sec,
+                             raw.valid,
+                             raw.t_acc,
+                             raw.nano,
+                             raw.fix_type,
+                             raw.num_sat,
+                             raw.lon,
+                             raw.lat,
+                             raw.height,
+                             raw.height_msl,
+                             raw.h_acc,
+                             raw.v_acc,
+                             raw.vel_n,
+                             raw.vel_e,
+                             raw.vel_d,
+                             raw.g_speed,
+                             raw.head_mot,
+                             raw.s_acc,
+                             raw.head_acc,
+                             raw.p_dop,
+                             raw.rosflight_timestamp);
   }
 }
 

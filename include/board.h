@@ -96,8 +96,10 @@ public:
   virtual void gps_update() = 0;
 
   virtual GNSSData gps_read() = 0;
+  virtual bool gps_has_new_data() = 0;
   virtual GNSSPosECEF gnss_pos_ecef_read() = 0;
   virtual GNSSVelECEF gnss_vel_ecef_read() = 0;
+  virtual GNSSRaw gnss_raw_read() = 0;
 
 // RC
   virtual void rc_init(rc_type_t rc_type) = 0;

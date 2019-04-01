@@ -58,9 +58,11 @@ private:
     STREAM_ID_BARO,
     STREAM_ID_SONAR,
     STREAM_ID_MAG,
-    STREAM_ID_GPS,
 
     STREAM_ID_SERVO_OUTPUT_RAW,
+    STREAM_ID_GPS,
+    STREAM_ID_GPS_ECEF,
+    STREAM_ID_GPS_RAW,
     STREAM_ID_RC_RAW,
     STREAM_ID_LOW_PRIORITY,
     STREAM_COUNT
@@ -116,6 +118,8 @@ private:
   void send_sonar(void);
   void send_mag(void);
   void send_gps(void);
+  void send_gps_ecef(void);
+  void send_gps_raw(void);
   void send_low_priority(void);
 
   // Debugging Utils
@@ -135,6 +139,8 @@ private:
     Stream(0,     [this]{this->send_mag();}),
     Stream(0,     [this]{this->send_output_raw();}),
     Stream(0,     [this]{this->send_gps();}),
+    Stream(0,     [this]{this->send_gps_ecef();}),
+    Stream(0,     [this]{this->send_gps_raw();}),
     Stream(0,     [this]{this->send_rc_raw();}),
     Stream(20000, [this]{this->send_low_priority();})
   };
@@ -155,6 +161,7 @@ public:
   void send_named_value_float(const char *const name, float value);
 };
 
+//CommManager *instance = nullptr;
 } // namespace rosflight_firmware
 
 #endif // ROSFLIGHT_FIRMWARE_COMM_MANAGER_H

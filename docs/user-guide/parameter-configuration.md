@@ -120,6 +120,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_SERVO | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
+| STRM_GPS | Rate of GPS streaming | int | 10 | 0 | 10 |
 | PARAM_MAX_CMD | saturation point for PID controller output | float |  1.0 | 0 | 1.0 |
 | PID_ROLL_RATE_P | Roll Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_I | Roll Rate Integral Gain | float |  0.000f | 0.0 | 1000.0 |

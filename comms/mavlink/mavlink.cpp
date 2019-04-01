@@ -173,26 +173,67 @@ void Mavlink::send_gps(uint8_t system_id, const double* lla, const float* vel, u
   send_message(msg);
 
 }
-void Mavlink::send_gnss_pvt(uint8_t system_id, uint64_t time, uint64_t nanos, int64_t lat, int64_t lon, int64_t height, int64_t vel_n,
-                            int64_t vel_e, int64_t vel_d, int64_t h_acc, int64_t v_acc)
+void Mavlink::send_gnss_pvt(uint8_t system_id, uint8_t fix_type ,uint64_t time, uint64_t nanos, int32_t lat, int32_t lon, int32_t height, int32_t vel_n,
+                            int32_t vel_e, int32_t vel_d, int32_t h_acc, int32_t v_acc, uint64_t rosflight_timestamp)
 {
     mavlink_message_t msg;
-    mavlink_msg_rosflight_gnss_pack(system_id, compid_, &msg, time, nanos, lat, lon, height,vel_n,vel_e, vel_d, h_acc, v_acc);
+    mavlink_msg_rosflight_gnss_pack(system_id, compid_, &msg, fix_type, time, nanos, lat, lon, height, vel_n, vel_e, vel_d, h_acc, v_acc, rosflight_timestamp);
     send_message(msg);
 }
 
-void Mavlink::send_gnss_pos_ecef(uint8_t system_id, uint16_t tow, int32_t x, int32_t y, int32_t z, uint32_t p_acc)
+void Mavlink::send_gnss_pos_ecef(uint8_t system_id, uint32_t tow, int32_t x, int32_t y, int32_t z, uint32_t p_acc)
 {
     mavlink_message_t msg;
     mavlink_msg_rosflight_gnss_pos_ecef_pack(system_id, compid_, &msg, tow, x, y, z, p_acc);
     send_message(msg);
 }
 
-void Mavlink::send_gnss_vel_ecef(uint8_t system_id, uint16_t tow, int32_t vx, int32_t vy, int32_t vz, uint32_t s_acc)
+void Mavlink::send_gnss_vel_ecef(uint8_t system_id, uint32_t tow, int32_t vx, int32_t vy, int32_t vz, uint32_t s_acc)
 {
     mavlink_message_t msg;
     mavlink_msg_rosflight_gnss_vel_ecef_pack(system_id, compid_, &msg, tow, vx, vy, vz, s_acc);
     send_message(msg);
+}
+
+void Mavlink::send_gnss_raw(uint8_t system_id, uint32_t time_of_week, uint16_t year, uint8_t month, uint8_t day,
+                            uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
+                            int32_t nano, uint8_t fix_type, uint8_t num_sat,
+                            int32_t lon, int32_t lat, int32_t height, int32_t height_msl,
+                            uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
+                            int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
+                            uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp)
+{
+  mavlink_message_t msg;
+  mavlink_rosflight_gnss_raw_t data={};
+  data.time_of_week = time_of_week;
+  data.year = year;
+  data.month = month;
+  data.day = day;
+  data.hour = hour;
+  data.min = min;
+  data.sec = sec;
+  data.valid = valid;
+  data.t_acc = t_acc;
+  data.nano = nano;
+  data.fix_type = fix_type;
+  data.num_sat = num_sat;
+  data.lon = lon;
+  data.lat = lat;
+  data.height = height;
+  data.height_msl = height_msl;
+  data.h_acc = h_acc;
+  data.v_acc = v_acc;
+  data.vel_n = vel_n;
+  data.vel_e = vel_e;
+  data.vel_d = vel_d;
+  data.g_speed = g_speed;
+  data.head_mot = head_mot;
+  data.s_acc = s_acc;
+  data.head_acc = head_acc;
+  data.p_dop = p_dop;
+  data.rosflight_timestamp = rosflight_timestamp;
+  mavlink_msg_rosflight_gnss_raw_encode(system_id, compid_, &msg, &data);
+  send_message(msg);
 }
 
 void Mavlink::send_log_message(uint8_t system_id, LogSeverity severity, const char * text)

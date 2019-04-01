@@ -247,6 +247,10 @@ bool AirbourneBoard::gps_present()
   return gps_.present();
 }
 void AirbourneBoard::gps_update(){}
+bool AirbourneBoard::gps_has_new_data()
+{
+  return this->gps_.new_data();
+}
 GNSSData AirbourneBoard::gps_read()
 {
   return this->gps_.read();
@@ -258,6 +262,10 @@ GNSSPosECEF AirbourneBoard::gnss_pos_ecef_read()
 GNSSVelECEF AirbourneBoard::gnss_vel_ecef_read()
 {
   return this->gps_.read_vel_ecef();
+}
+GNSSRaw AirbourneBoard::gnss_raw_read()
+{
+  return this->gps_.read_raw();
 }
 
 // PWM

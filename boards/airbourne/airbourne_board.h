@@ -162,9 +162,12 @@ public:
   bool gps_present() override;
   void gps_update() override;
 
+  //GNSS
   GNSSData gps_read() override;
+  bool gps_has_new_data() override;
   GNSSPosECEF gnss_pos_ecef_read() override;
   GNSSVelECEF gnss_vel_ecef_read() override;
+  GNSSRaw gnss_raw_read() override;
   // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;
