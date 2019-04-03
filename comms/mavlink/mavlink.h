@@ -40,6 +40,7 @@
 # pragma GCC diagnostic pop
 
 #include "comm_link.h"
+#include "board.h"
 
 namespace rosflight_firmware
 {
@@ -104,6 +105,7 @@ public:
                               uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
                               int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
                               uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp);
+  void send_error_data(uint8_t system_id, const BackupData& error_data);
 
 private:
   void send_message(const mavlink_message_t &msg);
@@ -115,6 +117,7 @@ private:
   void handle_msg_attitude_correction(const mavlink_message_t *const msg);
   void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
+  void handle_msg_heartbeat(const mavlink_message_t * const msg);
   void handle_mavlink_message(void);
 
   Board& board_;

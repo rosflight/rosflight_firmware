@@ -57,6 +57,7 @@
 #include "uart.h"
 #include "mb1242.h"
 #include "ublox.h"
+#include "backup_sram.h"
 
 #include "board.h"
 
@@ -189,6 +190,10 @@ public:
   void led1_on() override;
   void led1_off() override;
   void led1_toggle() override;
+
+  //Backup Data
+  bool has_backup_data() override;
+  rosflight_firmware::BackupData get_backup_data() override;
 };
 
 } // namespace rosflight_firmware

@@ -373,6 +373,13 @@ void Mavlink::send_version(uint8_t system_id, const char * const version)
   mavlink_msg_rosflight_version_pack(system_id, compid_, &msg, version);
   send_message(msg);
 }
+void Mavlink::send_error_data(uint8_t system_id, const BackupData &error_data)
+{
+  mavlink_message_t msg;
+  bool rearm = (error_data.state.armed && error_data.arm_status==rosflight_firmware::ARM_MAGIC);
+  mavlink_msg_rosflight_hard_error_pack(system_id,compid_, &msg, error_data.error_code, error_data.debug_info.pc, error_data.reset_count, rearm);
+  send_message(msg);
+}
 
 void Mavlink::send_message(const mavlink_message_t &msg)
 {
@@ -528,6 +535,12 @@ void Mavlink::handle_msg_attitude_correction(const mavlink_message_t * const msg
 
   attitude_correction_callback_(q_correction);
 }
+void Mavlink::handle_msg_heartbeat(const mavlink_message_t * const msg)
+{
+   //none of the information from the heartbeat is used
+   (void)msg;
+   this->heartbeat_callback_();
+}
 
 void Mavlink::handle_mavlink_message(void)
 {
@@ -553,6 +566,9 @@ void Mavlink::handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_ATTITUDE_CORRECTION:
     handle_msg_attitude_correction(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_HEARTBEAT:
+    handle_msg_heartbeat(&in_buf_);
     break;
   default:
     break;

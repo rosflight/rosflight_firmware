@@ -129,6 +129,7 @@ AIRBOURNE_SRCS = led.cpp \
                  M25P16.cpp \
                  ms4525.cpp \
                  ublox.cpp
+		 backup_sram.cpp
 
 
 # board-specific source files
