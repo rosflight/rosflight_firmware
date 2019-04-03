@@ -128,7 +128,7 @@ namespace rosflight_firmware
   void testBoard::sonar_update(){}
   float testBoard::sonar_read(){return 0;}
 
-  void testBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+  void testBoard::gnss_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
                            float *hacc, float *vacc, float* sacc)
   {
     (void)lla;

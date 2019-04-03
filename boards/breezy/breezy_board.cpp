@@ -360,7 +360,7 @@ bool BreezyBoard::memory_write(const void * src, size_t len)
   return writeEEPROM(src, len);
 }
 
-void BreezyBoard::gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+void BreezyBoard::gnss_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
                               float *hacc, float *vacc, float* sacc)
 {
   (void)lla;

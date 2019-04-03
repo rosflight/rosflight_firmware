@@ -124,9 +124,9 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
-  bool gps_present() override { return false; }
-  void gps_update() override { return; }
-  void gps_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
+  bool gnss_present() override { return false; }
+  void gnss_update() override { return; }
+  void gnss_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
                 float *hacc, float *vacc, float* sacc) override;
 
   // PWM

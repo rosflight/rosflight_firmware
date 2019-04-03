@@ -73,9 +73,8 @@ void CommManager::init()
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS, param_id);}, PARAM_STREAM_GPS_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS_ECEF, param_id);}, PARAM_STREAM_GPS_ECEF_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GPS_RAW, param_id);}, PARAM_STREAM_GPS_RAW_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GNSS, param_id);}, PARAM_STREAM_GNSS_RATE);
+  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GNSS_RAW, param_id);}, PARAM_STREAM_GNSS_RAW_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
   RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
@@ -416,49 +415,39 @@ void CommManager::send_mag(void)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
 
-void CommManager::send_gps(void)
+void CommManager::send_gnss(void)
 {
-  if (RF_.sensors_.data().gps_present)
+  if (RF_.sensors_.data().gnss_present)
   {
     GNSSData gnss_data = RF_.sensors_.data().gnss_data;
-    comm_link_.send_gnss_pvt(sysid_,
-                             gnss_data.fix_type,
-                             gnss_data.time,
-                             gnss_data.nanos, gnss_data.lat,
-                             gnss_data.lon,gnss_data.height,
-                             gnss_data.vel_n,
-                             gnss_data.vel_e,
-                             gnss_data.vel_d,
-                             gnss_data.h_acc,
-                             gnss_data.v_acc,
-                             gnss_data.rosflight_timestamp);
+    comm_link_.send_gnss(sysid_,
+                         gnss_data.time_of_week,
+                         gnss_data.fix_type,
+                         gnss_data.time,
+                         gnss_data.nanos,
+                         gnss_data.lat,
+                         gnss_data.lon,
+                         gnss_data.height,
+                         gnss_data.vel_n,
+                         gnss_data.vel_e,
+                         gnss_data.vel_d,
+                         gnss_data.h_acc,
+                         gnss_data.v_acc,
+                         gnss_data.ecef.x,
+                         gnss_data.ecef.y,
+                         gnss_data.ecef.z,
+                         gnss_data.ecef.p_acc,
+                         gnss_data.ecef.vx,
+                         gnss_data.ecef.vy,
+                         gnss_data.ecef.vz,
+                         gnss_data.ecef.s_acc,
+                         gnss_data.rosflight_timestamp);
   }
 }
 
-void CommManager::send_gps_ecef()
+void CommManager::send_gnss_raw()
 {
-  if(RF_.sensors_.data().gps_present)
-  {
-    GNSSPosECEF gnss_pos_ecef = RF_.sensors_.data().gnss_pos_ecef;
-    comm_link_.send_gnss_pos_ecef(sysid_,
-                                  gnss_pos_ecef.tow,
-                                  gnss_pos_ecef.x,
-                                  gnss_pos_ecef.y,
-                                  gnss_pos_ecef.z,
-                                  gnss_pos_ecef.p_acc);
-    GNSSVelECEF gnss_vel_ecef = RF_.sensors_.data().gnss_vel_ecef;
-    comm_link_.send_gnss_vel_ecef(sysid_,
-                                  gnss_vel_ecef.tow,
-                                  gnss_vel_ecef.vx,
-                                  gnss_vel_ecef.vy,
-                                  gnss_vel_ecef.vz,
-                                  gnss_vel_ecef.s_acc);
-   }
-}
-
-void CommManager::send_gps_raw()
-{
-  if(RF_.sensors_.data().gps_present)
+  if(RF_.sensors_.data().gnss_present)
   {
     GNSSRaw raw = RF_.sensors_.data().gnss_raw;
     comm_link_.send_gnss_raw(sysid_,

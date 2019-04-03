@@ -141,7 +141,7 @@ void AirbourneBoard::sensors_init()
   mag_.init(&int_i2c_);
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
-  gps_.init(&uart3_);
+  gnss_.init(&uart3_);
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
@@ -242,30 +242,75 @@ float AirbourneBoard::sonar_read()
   return sonar_.read();
 }
 
-bool AirbourneBoard::gps_present()
+bool AirbourneBoard::gnss_present()
 {
-  return gps_.present();
+  return gnss_.present();
 }
-void AirbourneBoard::gps_update(){}
-bool AirbourneBoard::gps_has_new_data()
+void AirbourneBoard::gnss_update(){}
+bool AirbourneBoard::gnss_has_new_data()
 {
-  return this->gps_.new_data();
+  return this->gnss_.new_data();
 }
-GNSSData AirbourneBoard::gps_read()
+GNSSData AirbourneBoard::gnss_read()
 {
-  return this->gps_.read();
-}
-GNSSPosECEF AirbourneBoard::gnss_pos_ecef_read()
-{
-  return this->gps_.read_pos_ecef();
-}
-GNSSVelECEF AirbourneBoard::gnss_vel_ecef_read()
-{
-  return this->gps_.read_vel_ecef();
+  UBLOX::GNSSPVT gnss_pvt= gnss_.read();
+  UBLOX::GNSSPosECEF pos_ecef = gnss_.read_pos_ecef();
+  UBLOX::GNSSVelECEF vel_ecef = gnss_.read_vel_ecef();
+  GNSSData gnss = {};
+  gnss.time_of_week = gnss_pvt.time_of_week;
+  gnss.time = gnss_pvt.time;
+  gnss.nanos = gnss_pvt.nanos;
+  gnss.lat = gnss_pvt.lat;
+  gnss.lon = gnss_pvt.lon;
+  gnss.height = gnss_pvt.height;
+  gnss.vel_n = gnss_pvt.vel_n;
+  gnss.vel_e = gnss_pvt.vel_e;
+  gnss.vel_d = gnss_pvt.vel_d;
+  gnss.h_acc = gnss_pvt.h_acc;
+  gnss.v_acc = gnss_pvt.v_acc;
+  gnss.ecef.x = pos_ecef.x;
+  gnss.ecef.y = pos_ecef.y;
+  gnss.ecef.z = pos_ecef.z;
+  gnss.ecef.p_acc = pos_ecef.p_acc;
+  gnss.ecef.vx = vel_ecef.vx;
+  gnss.ecef.vy = vel_ecef.vy;
+  gnss.ecef.vz = vel_ecef.vz;
+  gnss.ecef.s_acc = vel_ecef.s_acc;
+
+  return gnss;
 }
 GNSSRaw AirbourneBoard::gnss_raw_read()
 {
-  return this->gps_.read_raw();
+  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
+  GNSSRaw raw = {};
+  raw.time_of_week = pvt.iTOW;
+  raw.year = pvt.time.year;
+  raw.month = pvt.time.month;
+  raw.day = pvt.time.day;
+  raw.hour = pvt.time.hour;
+  raw.min = pvt.time.min;
+  raw.sec = pvt.time.sec;
+  raw.valid = pvt.time.valid;
+  raw.t_acc = pvt.time.tAcc;
+  raw.nano = pvt.time.nano;
+  raw.fix_type = pvt.fixType;
+  raw.num_sat = pvt.numSV;
+  raw.lon = pvt.lon;
+  raw.lat = pvt.lat;
+  raw.height = pvt.height;
+  raw.height_msl = pvt.hMSL;
+  raw.h_acc = pvt.hAcc;
+  raw.v_acc = pvt.vAcc;
+  raw.vel_n = pvt.velN;
+  raw.vel_e = pvt.velE;
+  raw.vel_d = pvt.velD;
+  raw.g_speed = pvt.gSpeed;
+  raw.head_mot = pvt.headMot;
+  raw.s_acc = pvt.sAcc;
+  raw.head_acc = pvt.headAcc;
+  raw.p_dop = pvt.pDOP;
+  raw.rosflight_timestamp = gnss_.get_last_pvt_timestamp();
+  return raw;
 }
 
 // PWM
