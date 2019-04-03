@@ -138,7 +138,6 @@ public:
                            int16_t loop_time_us) = 0;
   virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
-<<<<<<< HEAD
   virtual void send_gnss(uint8_t system_id, uint32_t time_of_week, uint8_t fix_type, uint64_t time, uint64_t nanos, int32_t lat,
                          int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, uint32_t h_acc, uint32_t v_acc,
                          int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y,
@@ -150,9 +149,7 @@ public:
                               uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
                               int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
                               uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp) = 0;
-=======
   virtual void send_error_data(uint8_t system_id, const BackupData& error_data) = 0;
->>>>>>> origin/master
 
   // register callbacks
 

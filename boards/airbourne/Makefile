@@ -128,7 +128,7 @@ AIRBOURNE_SRCS = led.cpp \
                  uart.cpp \
                  M25P16.cpp \
                  ms4525.cpp \
-                 ublox.cpp
+                 ublox.cpp \
 		 backup_sram.cpp
 
 
