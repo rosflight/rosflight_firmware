@@ -439,6 +439,9 @@ void CommManager::send_gnss(void)
   if (RF_.sensors_.data().gnss_present)
   {
     GNSSData gnss_data = RF_.sensors_.data().gnss_data;
+    if(gnss_data.time_of_week!=this->last_sent_gnss_tow)
+    {
+      this->last_sent_gnss_tow = gnss_data.time_of_week;
     comm_link_.send_gnss(sysid_,
                          gnss_data.time_of_week,
                          gnss_data.fix_type,
@@ -462,6 +465,7 @@ void CommManager::send_gnss(void)
                          gnss_data.ecef.s_acc,
                          gnss_data.rosflight_timestamp);
   }
+  }
 }
 
 void CommManager::send_gnss_raw()
@@ -469,34 +473,36 @@ void CommManager::send_gnss_raw()
   if(RF_.sensors_.data().gnss_present)
   {
     GNSSRaw raw = RF_.sensors_.data().gnss_raw;
-    comm_link_.send_gnss_raw(sysid_,
-                             raw.time_of_week,
-                             raw.year,
-                             raw.month,
-                             raw.day,
-                             raw.hour,
-                             raw.min,
-                             raw.sec,
-                             raw.valid,
-                             raw.t_acc,
-                             raw.nano,
-                             raw.fix_type,
-                             raw.num_sat,
-                             raw.lon,
-                             raw.lat,
-                             raw.height,
-                             raw.height_msl,
-                             raw.h_acc,
-                             raw.v_acc,
-                             raw.vel_n,
-                             raw.vel_e,
-                             raw.vel_d,
-                             raw.g_speed,
-                             raw.head_mot,
-                             raw.s_acc,
-                             raw.head_acc,
-                             raw.p_dop,
-                             raw.rosflight_timestamp);
+    if(raw.time_of_week != this->last_sent_gnss_raw_tow)
+      comm_link_.send_gnss_raw(sysid_,
+                               raw.time_of_week,
+                               raw.year,
+                               raw.month,
+                               raw.day,
+                               raw.hour,
+                               raw.min,
+                               raw.sec,
+                               raw.valid,
+                               raw.t_acc,
+                               raw.nano,
+                               raw.fix_type,
+                               raw.num_sat,
+                               raw.lon,
+                               raw.lat,
+                               raw.height,
+                               raw.height_msl,
+                               raw.h_acc,
+                               raw.v_acc,
+                               raw.vel_n,
+                               raw.vel_e,
+                               raw.vel_d,
+                               raw.g_speed,
+                               raw.head_mot,
+                               raw.s_acc,
+                               raw.head_acc,
+                               raw.p_dop,
+                               raw.rosflight_timestamp);
+    this->last_sent_gnss_raw_tow = raw.time_of_week;
   }
 }
 

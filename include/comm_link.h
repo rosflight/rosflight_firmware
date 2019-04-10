@@ -143,12 +143,12 @@ public:
                          int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y,
                          int32_t ecef_v_z, uint32_t s_acc, uint64_t rosflight_timestamp) = 0;
   virtual void send_gnss_raw(uint8_t system_id, uint32_t time_of_week, uint16_t year, uint8_t month, uint8_t day,
-                              uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
-                              int32_t nano, uint8_t fix_type, uint8_t num_sat,
-                              int32_t lon, int32_t lat, int32_t height, int32_t height_msl,
-                              uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
-                              int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
-                              uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp) = 0;
+                             uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
+                             int32_t nano, uint8_t fix_type, uint8_t num_sat,
+                             int32_t lon, int32_t lat, int32_t height, int32_t height_msl,
+                             uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
+                             int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
+                             uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp) = 0;
   virtual void send_error_data(uint8_t system_id, const BackupData& error_data) = 0;
 
   // register callbacks

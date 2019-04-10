@@ -253,6 +253,9 @@ bool AirbourneBoard::gnss_has_new_data()
 {
   return this->gnss_.new_data();
 }
+//This method translates the UBLOX driver interface into the ROSFlight interface
+//If not gnss_has_new_data(), then this may return 0's for ECEF position data,
+//ECEF velocity data, or both
 GNSSData AirbourneBoard::gnss_read()
 {
   UBLOX::GNSSPVT gnss_pvt= gnss_.read();
@@ -270,14 +273,24 @@ GNSSData AirbourneBoard::gnss_read()
   gnss.vel_d = gnss_pvt.vel_d;
   gnss.h_acc = gnss_pvt.h_acc;
   gnss.v_acc = gnss_pvt.v_acc;
-  gnss.ecef.x = pos_ecef.x;
-  gnss.ecef.y = pos_ecef.y;
-  gnss.ecef.z = pos_ecef.z;
-  gnss.ecef.p_acc = pos_ecef.p_acc;
-  gnss.ecef.vx = vel_ecef.vx;
-  gnss.ecef.vy = vel_ecef.vy;
-  gnss.ecef.vz = vel_ecef.vz;
-  gnss.ecef.s_acc = vel_ecef.s_acc;
+  //Does not include ECEF position data if the timestamp doesn't match
+  //See UBLOX::new_data() for reasoning
+  if (gnss.time_of_week == pos_ecef.time_of_week)
+  {
+    gnss.ecef.x = pos_ecef.x;
+    gnss.ecef.y = pos_ecef.y;
+    gnss.ecef.z = pos_ecef.z;
+    gnss.ecef.p_acc = pos_ecef.p_acc;
+  }
+  //Does not include ECEF position data if the timestamp doesn't match
+  //See UBLOX::new_data() for reasoning
+  if (gnss.time_of_week == vel_ecef.time_of_week)
+  {
+    gnss.ecef.vx = vel_ecef.vx;
+    gnss.ecef.vy = vel_ecef.vy;
+    gnss.ecef.vz = vel_ecef.vz;
+    gnss.ecef.s_acc = vel_ecef.s_acc;
+  }
 
   return gnss;
 }

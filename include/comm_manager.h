@@ -117,6 +117,9 @@ private:
   void send_baro(void);
   void send_sonar(void);
   void send_mag(void);
+  //The time of week stamp for the last sent GNSS message, to prevent re-sending
+  uint32_t last_sent_gnss_tow=0;
+  uint32_t last_sent_gnss_raw_tow=0;
   void send_gnss(void);
   void send_gnss_raw(void);
   void send_low_priority(void);

@@ -115,7 +115,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
-  init_param_int(PARAM_STREAM_GNSS_RATE, "STRM_GNSS", 10); // Rate of GNSS stream (Hz) | 0 | 10
+  init_param_int(PARAM_STREAM_GNSS_RATE, "STRM_GNSS", 1000); // Maximum rate of GNSS stream (Hz) | 0 | 10
   init_param_int(PARAM_STREAM_GNSS_RAW_RATE, "STRM_GNSS_RAW", 0); //Rate of GNSS raw stream (Hz) | 0 | 10
 
   init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
