@@ -68,54 +68,54 @@ class AirbourneBoard : public Board
 {
 
 private:
-    VCP vcp_;
-    UART uart3_;
-    Serial* current_serial_;//A pointer to the serial stream currently in use.
-    I2C int_i2c_;
-    I2C ext_i2c_;
-    SPI spi1_;
-    SPI spi3_;
-    MPU6000 imu_;
-    HMC5883L mag_;
-    MS5611 baro_;
-    MS4525 airspeed_;
-    RC_PPM rc_ppm_;
-    I2CSonar sonar_;
-    RC_SBUS rc_sbus_;
-    UART sbus_uart_;
-    GPIO inv_pin_;
-    PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
-    LED led2_;
-    LED led1_;
-    M25P16 flash_;
-    UBLOX gnss_;
+  VCP vcp_;
+  UART uart3_;
+  Serial *current_serial_;//A pointer to the serial stream currently in use.
+  I2C int_i2c_;
+  I2C ext_i2c_;
+  SPI spi1_;
+  SPI spi3_;
+  MPU6000 imu_;
+  HMC5883L mag_;
+  MS5611 baro_;
+  MS4525 airspeed_;
+  RC_PPM rc_ppm_;
+  I2CSonar sonar_;
+  RC_SBUS rc_sbus_;
+  UART sbus_uart_;
+  GPIO inv_pin_;
+  PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
+  LED led2_;
+  LED led1_;
+  M25P16 flash_;
+  UBLOX gnss_;
 
-    enum SerialDevice : uint32_t
-    {
-      SERIAL_DEVICE_VCP = 0,
-      SERIAL_DEVICE_UART3 = 3
-    };
-    SerialDevice secondary_serial_device_ = SERIAL_DEVICE_VCP;
+  enum SerialDevice : uint32_t
+  {
+    SERIAL_DEVICE_VCP = 0,
+    SERIAL_DEVICE_UART3 = 3
+  };
+  SerialDevice secondary_serial_device_ = SERIAL_DEVICE_VCP;
 
-    RC_BASE* rc_ = nullptr;
+  RC_BASE *rc_ = nullptr;
 
-    std::function<void()> imu_callback_;
+  std::function<void()> imu_callback_;
 
-    int _board_revision = 2;
+  int _board_revision = 2;
 
-    float _accel_scale = 1.0;
-    float _gyro_scale = 1.0;
+  float _accel_scale = 1.0;
+  float _gyro_scale = 1.0;
 
-    enum
-    {
-      SONAR_NONE,
-      SONAR_I2C,
-      SONAR_PWM
-    };
-    uint8_t sonar_type = SONAR_NONE;
+  enum
+  {
+    SONAR_NONE,
+    SONAR_I2C,
+    SONAR_PWM
+  };
+  uint8_t sonar_type = SONAR_NONE;
 
-    bool new_imu_data_;
-    uint64_t imu_time_us_;
+  bool new_imu_data_;
+  uint64_t imu_time_us_;
 
 public:
   AirbourneBoard();
@@ -141,7 +141,7 @@ public:
   uint16_t num_sensor_errors() override;
 
   bool new_imu_data() override;
-  bool imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us) override;
+  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
@@ -179,7 +179,7 @@ public:
 
   // non-volatile memory
   void memory_init() override;
-  bool memory_read(void * dest, size_t len) override;
+  bool memory_read(void *dest, size_t len) override;
   bool memory_write(const void *src, size_t len) override;
 
   // LEDs

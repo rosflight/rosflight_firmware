@@ -37,7 +37,7 @@
 namespace rosflight_firmware
 {
 
-CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
+CommManager::CommManager(ROSflight &rf, CommLink &comm_link) :
   RF_(rf),
   comm_link_(comm_link)
 {
@@ -48,15 +48,45 @@ CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
 // function definitions
 void CommManager::init()
 {
-  comm_link_.register_param_request_list_callback([this](uint8_t target_system){this->param_request_list_callback(target_system);});
-  comm_link_.register_param_request_read_callback([this](uint8_t target_system, const char* const param_name, int16_t param_index){this->param_request_read_callback(target_system, param_name, param_index);});
-  comm_link_.register_param_set_int_callback([this](uint8_t target_system, const char* const param_name, int32_t param_value){this->param_set_int_callback(target_system, param_name, param_value);});
-  comm_link_.register_param_set_float_callback([this](uint8_t target_system, const char* const param_name, float param_value){this->param_set_float_callback(target_system, param_name, param_value);});
-  comm_link_.register_offboard_control_callback([this](const CommLink::OffboardControl& control){this->offboard_control_callback(control);});
-  comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
-  comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
-  comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
-  comm_link_.register_heartbeat_callback([this](void){this->heartbeat_callback();});
+  comm_link_.register_param_request_list_callback([this](uint8_t target_system)
+  {
+    this->param_request_list_callback(target_system);
+  });
+  comm_link_.register_param_request_read_callback([this](uint8_t target_system, const char *const param_name,
+      int16_t param_index)
+  {
+    this->param_request_read_callback(target_system, param_name, param_index);
+  });
+  comm_link_.register_param_set_int_callback([this](uint8_t target_system, const char *const param_name,
+      int32_t param_value)
+  {
+    this->param_set_int_callback(target_system, param_name, param_value);
+  });
+  comm_link_.register_param_set_float_callback([this](uint8_t target_system, const char *const param_name,
+      float param_value)
+  {
+    this->param_set_float_callback(target_system, param_name, param_value);
+  });
+  comm_link_.register_offboard_control_callback([this](const CommLink::OffboardControl& control)
+  {
+    this->offboard_control_callback(control);
+  });
+  comm_link_.register_command_callback([this](CommLink::Command command)
+  {
+    this->command_callback(command);
+  });
+  comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1)
+  {
+    this->timesync_callback(tc1, ts1);
+  });
+  comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q)
+  {
+    this->attitude_correction_callback(q);
+  });
+  comm_link_.register_heartbeat_callback([this](void)
+  {
+    this->heartbeat_callback();
+  });
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
@@ -66,19 +96,58 @@ void CommManager::init()
   send_params_index_ = PARAMS_COUNT;
 
   // Register Param change callbacks
-  RF_.params_.add_callback([this](int16_t param_id){this->update_system_id(param_id);}, PARAM_SYSTEM_ID);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);}, PARAM_STREAM_HEARTBEAT_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_STATUS, param_id);}, PARAM_STREAM_STATUS_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_IMU, param_id);}, PARAM_STREAM_IMU_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GNSS, param_id);}, PARAM_STREAM_GNSS_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_GNSS_RAW, param_id);}, PARAM_STREAM_GNSS_RAW_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->update_system_id(param_id);
+  }, PARAM_SYSTEM_ID);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);
+  }, PARAM_STREAM_HEARTBEAT_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_STATUS, param_id);
+  }, PARAM_STREAM_STATUS_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_IMU, param_id);
+  }, PARAM_STREAM_IMU_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);
+  }, PARAM_STREAM_ATTITUDE_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);
+  }, PARAM_STREAM_AIRSPEED_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_BARO, param_id);
+  }, PARAM_STREAM_BARO_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_SONAR, param_id);
+  }, PARAM_STREAM_SONAR_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_GNSS, param_id);
+  }, PARAM_STREAM_GNSS_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_GNSS_RAW, param_id);
+  }, PARAM_STREAM_GNSS_RAW_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_MAG, param_id);
+  }, PARAM_STREAM_MAG_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);
+  }, PARAM_STREAM_OUTPUT_RAW_RATE);
+  RF_.params_.add_callback([this](int16_t param_id)
+  {
+    this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);
+  }, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
   log(CommLink::LogSeverity::LOG_INFO, "Booting");
@@ -132,7 +201,7 @@ void CommManager::send_parameter_list()
   send_params_index_ = 0;
 }
 
-void CommManager::param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index)
+void CommManager::param_request_read_callback(uint8_t target_system, const char *const param_name, int16_t param_index)
 {
   if (target_system == sysid_)
   {
@@ -143,7 +212,7 @@ void CommManager::param_request_read_callback(uint8_t target_system, const char*
   }
 }
 
-void CommManager::param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value)
+void CommManager::param_set_int_callback(uint8_t target_system, const char *const param_name, int32_t param_value)
 {
   if (target_system == sysid_)
   {
@@ -156,7 +225,7 @@ void CommManager::param_set_int_callback(uint8_t target_system, const char* cons
   }
 }
 
-void CommManager::param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value)
+void CommManager::param_set_float_callback(uint8_t target_system, const char *const param_name, float param_value)
 {
   if (target_system == sysid_)
   {
@@ -239,7 +308,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
     comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us)*1000, ts1);
 }
 
-void CommManager::offboard_control_callback(const CommLink::OffboardControl& control)
+void CommManager::offboard_control_callback(const CommLink::OffboardControl &control)
 {
   // put values into a new command struct
   control_t new_offboard_command;
@@ -289,13 +358,13 @@ void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
 void CommManager::heartbeat_callback(void)
 {
   static bool error_data_sent = false;
-  if(!error_data_sent)
+  if (!error_data_sent)
   {
-      if(this->RF_.board_.has_backup_data())
-      {
-          this->send_error_data();
-      }
-      error_data_sent = true;
+    if (this->RF_.board_.has_backup_data())
+    {
+      this->send_error_data();
+    }
+    error_data_sent = true;
   }
   this->send_heartbeat();//respond to heartbeats with a heartbeat
 }
@@ -385,7 +454,8 @@ void CommManager::send_rc_raw(void)
                            static_cast<uint16_t>(RF_.board_.rc_read(4)*1000),
                            static_cast<uint16_t>(RF_.board_.rc_read(5)*1000),
                            static_cast<uint16_t>(RF_.board_.rc_read(6)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(7)*1000) };
+                           static_cast<uint16_t>(RF_.board_.rc_read(7)*1000)
+                         };
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 
@@ -439,41 +509,41 @@ void CommManager::send_gnss(void)
   if (RF_.sensors_.data().gnss_present)
   {
     GNSSData gnss_data = RF_.sensors_.data().gnss_data;
-    if(gnss_data.time_of_week!=this->last_sent_gnss_tow)
+    if (gnss_data.time_of_week!=this->last_sent_gnss_tow)
     {
       this->last_sent_gnss_tow = gnss_data.time_of_week;
-    comm_link_.send_gnss(sysid_,
-                         gnss_data.time_of_week,
-                         gnss_data.fix_type,
-                         gnss_data.time,
-                         gnss_data.nanos,
-                         gnss_data.lat,
-                         gnss_data.lon,
-                         gnss_data.height,
-                         gnss_data.vel_n,
-                         gnss_data.vel_e,
-                         gnss_data.vel_d,
-                         gnss_data.h_acc,
-                         gnss_data.v_acc,
-                         gnss_data.ecef.x,
-                         gnss_data.ecef.y,
-                         gnss_data.ecef.z,
-                         gnss_data.ecef.p_acc,
-                         gnss_data.ecef.vx,
-                         gnss_data.ecef.vy,
-                         gnss_data.ecef.vz,
-                         gnss_data.ecef.s_acc,
-                         gnss_data.rosflight_timestamp);
-  }
+      comm_link_.send_gnss(sysid_,
+                           gnss_data.time_of_week,
+                           gnss_data.fix_type,
+                           gnss_data.time,
+                           gnss_data.nanos,
+                           gnss_data.lat,
+                           gnss_data.lon,
+                           gnss_data.height,
+                           gnss_data.vel_n,
+                           gnss_data.vel_e,
+                           gnss_data.vel_d,
+                           gnss_data.h_acc,
+                           gnss_data.v_acc,
+                           gnss_data.ecef.x,
+                           gnss_data.ecef.y,
+                           gnss_data.ecef.z,
+                           gnss_data.ecef.p_acc,
+                           gnss_data.ecef.vx,
+                           gnss_data.ecef.vy,
+                           gnss_data.ecef.vz,
+                           gnss_data.ecef.s_acc,
+                           gnss_data.rosflight_timestamp);
+    }
   }
 }
 
 void CommManager::send_gnss_raw()
 {
-  if(RF_.sensors_.data().gnss_present)
+  if (RF_.sensors_.data().gnss_present)
   {
     GNSSRaw raw = RF_.sensors_.data().gnss_raw;
-    if(raw.time_of_week != this->last_sent_gnss_raw_tow)
+    if (raw.time_of_week != this->last_sent_gnss_raw_tow)
       comm_link_.send_gnss_raw(sysid_,
                                raw.time_of_week,
                                raw.year,
@@ -561,7 +631,7 @@ void CommManager::Stream::stream(uint64_t now_us)
     {
       next_time_us_ += period_us_;
     }
-    while(next_time_us_ < now_us);
+    while (next_time_us_ < now_us);
 
     send_function_();
   }

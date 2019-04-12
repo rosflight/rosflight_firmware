@@ -10,7 +10,8 @@
 
 using namespace rosflight_firmware;
 
-TEST(command_manager_test, rc) {
+TEST(command_manager_test, rc)
+{
   testBoard board;
   Mavlink mavlink(board);
   ROSflight rf(board, mavlink);
@@ -67,7 +68,8 @@ TEST(command_manager_test, rc) {
 }
 
 
-TEST(command_manager_test, rc_arm_disarm) {
+TEST(command_manager_test, rc_arm_disarm)
+{
   testBoard board;
   Mavlink mavlink(board);
   ROSflight rf(board, mavlink);
@@ -240,7 +242,8 @@ TEST(command_manager_test, rc_arm_disarm) {
 }
 
 
-TEST(command_manager_test, rc_failsafe_test) {
+TEST(command_manager_test, rc_failsafe_test)
+{
   testBoard board;
   Mavlink mavlink(board);
   ROSflight rf(board, mavlink);
@@ -379,7 +382,8 @@ TEST(command_manager_test, rc_failsafe_test) {
 #define RC_X_PWM 1800
 #define RC_X ((RC_X_PWM - 1500)/500.0 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL))
 
-TEST(command_manager_test, rc_offboard_muxing_test ) {
+TEST(command_manager_test, rc_offboard_muxing_test)
+{
 
   testBoard board;
   Mavlink mavlink(board);
@@ -583,7 +587,8 @@ TEST(command_manager_test, rc_offboard_muxing_test ) {
 }
 
 
-TEST(command_manager_test, partial_muxing_test ) {
+TEST(command_manager_test, partial_muxing_test)
+{
 
   testBoard board;
   Mavlink mavlink(board);

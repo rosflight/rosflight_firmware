@@ -64,15 +64,21 @@ typedef struct
   control_channel_t *combined;
 } mux_t;
 
-CommandManager::CommandManager(ROSflight& _rf) :
+CommandManager::CommandManager(ROSflight &_rf) :
   RF_(_rf),
   failsafe_command_(multirotor_failsafe_command_)
 {}
 
 void CommandManager::init()
 {
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FIXED_WING);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FAILSAFE_THROTTLE);
+  RF_.params_.add_callback([this](uint16_t param_id)
+  {
+    this->param_change_callback(param_id);
+  }, PARAM_FIXED_WING);
+  RF_.params_.add_callback([this](uint16_t param_id)
+  {
+    this->param_change_callback(param_id);
+  }, PARAM_FAILSAFE_THROTTLE);
 
   init_failsafe();
 }
@@ -160,7 +166,7 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   else
   {
     if (fabsf(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
-          > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
+        > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override_[channel].last_override_time = now;
       return true;
@@ -174,7 +180,7 @@ bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
   bool override_this_channel = false;
   //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
   if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
-        || stick_deviated(channel))
+      || stick_deviated(channel))
   {
     override_this_channel = true;
   }

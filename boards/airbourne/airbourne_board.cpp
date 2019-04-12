@@ -136,7 +136,7 @@ void AirbourneBoard::serial_flush()
 // sensors
 void AirbourneBoard::sensors_init()
 {
-  while(millis() < 50) {} // wait for sensors to boot up
+  while (millis() < 50) {} // wait for sensors to boot up
   imu_.init(&spi1_);
 
   baro_.init(&int_i2c_);
@@ -156,7 +156,7 @@ bool AirbourneBoard::new_imu_data()
   return imu_.new_data();
 }
 
-bool AirbourneBoard::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool AirbourneBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us)
 {
   float read_accel[3], read_gyro[3];
   imu_.read(read_accel, read_gyro, temperature, time_us);
@@ -248,7 +248,7 @@ bool AirbourneBoard::gnss_present()
 {
   return gnss_.present();
 }
-void AirbourneBoard::gnss_update(){}
+void AirbourneBoard::gnss_update() {}
 bool AirbourneBoard::gnss_has_new_data()
 {
   return this->gnss_.new_data();
@@ -385,31 +385,51 @@ void AirbourneBoard::memory_init()
   return flash_.init(&spi3_);
 }
 
-bool AirbourneBoard::memory_read(void * data, size_t len)
+bool AirbourneBoard::memory_read(void *data, size_t len)
 {
-  return flash_.read_config(reinterpret_cast<uint8_t*>(data), len);
+  return flash_.read_config(reinterpret_cast<uint8_t *>(data), len);
 }
 
-bool AirbourneBoard::memory_write(const void * data, size_t len)
+bool AirbourneBoard::memory_write(const void *data, size_t len)
 {
-  return flash_.write_config(reinterpret_cast<const uint8_t*>(data), len);
+  return flash_.write_config(reinterpret_cast<const uint8_t *>(data), len);
 }
 
 // LED
-void AirbourneBoard::led0_on() { led1_.on(); }
-void AirbourneBoard::led0_off() { led1_.off(); }
-void AirbourneBoard::led0_toggle() { led1_.toggle(); }
+void AirbourneBoard::led0_on()
+{
+  led1_.on();
+}
+void AirbourneBoard::led0_off()
+{
+  led1_.off();
+}
+void AirbourneBoard::led0_toggle()
+{
+  led1_.toggle();
+}
 
-void AirbourneBoard::led1_on() { led2_.on(); }
-void AirbourneBoard::led1_off() { led2_.off(); }
-void AirbourneBoard::led1_toggle() { led2_.toggle(); }
+void AirbourneBoard::led1_on()
+{
+  led2_.on();
+}
+void AirbourneBoard::led1_off()
+{
+  led2_.off();
+}
+void AirbourneBoard::led1_toggle()
+{
+  led2_.toggle();
+}
 
 //Backup memory
-bool AirbourneBoard::has_backup_data(){
-    BackupData backup_data = backup_sram_read();
-    return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
+bool AirbourneBoard::has_backup_data()
+{
+  BackupData backup_data = backup_sram_read();
+  return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
 }
-rosflight_firmware::BackupData AirbourneBoard::get_backup_data(){
-    return backup_sram_read();
+rosflight_firmware::BackupData AirbourneBoard::get_backup_data()
+{
+  return backup_sram_read();
 }
 } // namespace rosflight_firmware

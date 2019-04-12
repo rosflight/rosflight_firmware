@@ -37,16 +37,17 @@ extern "C"
 
 #include <breezystm32.h>
 #include "flash.h"
-extern void SetSysClock(bool overclock);
+  extern void SetSysClock(bool overclock);
 
 }
 
 
 #include "breezy_board.h"
 
-namespace rosflight_firmware {
+namespace rosflight_firmware
+{
 
-BreezyBoard::BreezyBoard(){}
+BreezyBoard::BreezyBoard() {}
 
 void BreezyBoard::init_board()
 {
@@ -116,7 +117,7 @@ void BreezyBoard::sensors_init()
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
-  while(millis() < 50);
+  while (millis() < 50);
 
   i2cWrite(0,0,0);
   if (bmp280_init())
@@ -145,7 +146,7 @@ bool BreezyBoard::new_imu_data()
   return mpu6050_new_data();
 }
 
-bool BreezyBoard::imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us)
+bool BreezyBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us)
 {
   volatile int16_t gyro_raw[3], accel_raw[3];
   volatile int16_t raw_temp;
@@ -262,7 +263,7 @@ void BreezyBoard::sonar_update()
 {
   if (sonar_type == SONAR_I2C || sonar_type == SONAR_NONE)
     mb1242_async_update();
-  
+
   // We don't need to actively update the pwm sonar
 }
 
@@ -283,7 +284,7 @@ bool BreezyBoard::sonar_present()
     {
       sonar_type = SONAR_PWM;
       return true;
-    }    
+    }
   }
   return false;
 }
@@ -350,18 +351,18 @@ void BreezyBoard::memory_init()
   initEEPROM();
 }
 
-bool BreezyBoard::memory_read(void * dest, size_t len)
+bool BreezyBoard::memory_read(void *dest, size_t len)
 {
   return readEEPROM(dest, len);
 }
 
-bool BreezyBoard::memory_write(const void * src, size_t len)
+bool BreezyBoard::memory_write(const void *src, size_t len)
 {
   return writeEEPROM(src, len);
 }
 
-void BreezyBoard::gnss_read(double* lla, float* vel, uint8_t& fix_type, uint32_t& tow_ms,
-                              float *hacc, float *vacc, float* sacc)
+void BreezyBoard::gnss_read(double *lla, float *vel, uint8_t &fix_type, uint32_t &tow_ms,
+                            float *hacc, float *vacc, float *sacc)
 {
   (void)lla;
   (void)vel;
@@ -374,24 +375,43 @@ void BreezyBoard::gnss_read(double* lla, float* vel, uint8_t& fix_type, uint32_t
 
 // LED
 
-void BreezyBoard::led0_on() { LED0_ON; }
-void BreezyBoard::led0_off() { LED0_OFF; }
-void BreezyBoard::led0_toggle() { LED0_TOGGLE; }
+void BreezyBoard::led0_on()
+{
+  LED0_ON;
+}
+void BreezyBoard::led0_off()
+{
+  LED0_OFF;
+}
+void BreezyBoard::led0_toggle()
+{
+  LED0_TOGGLE;
+}
 
-void BreezyBoard::led1_on() { LED1_ON; }
-void BreezyBoard::led1_off() { LED1_OFF; }
-void BreezyBoard::led1_toggle() { LED1_TOGGLE; }
+void BreezyBoard::led1_on()
+{
+  LED1_ON;
+}
+void BreezyBoard::led1_off()
+{
+  LED1_OFF;
+}
+void BreezyBoard::led1_toggle()
+{
+  LED1_TOGGLE;
+}
 
 bool BreezyBoard::has_backup_data()
 {
-	return false;
+  return false;
 }
-BackupData BreezyBoard::get_backup_data() {
+BackupData BreezyBoard::get_backup_data()
+{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-	BackupData blank_data = {0};
+  BackupData blank_data = {0};
 #pragma GCC diagnostic pop
-	return blank_data;
+  return blank_data;
 }
 
 }

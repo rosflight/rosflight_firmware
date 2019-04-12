@@ -75,18 +75,21 @@ public:
     ERROR_UNCALIBRATED_IMU = 0x0020,
   };
 
-  StateManager(ROSflight& parent);
+  StateManager(ROSflight &parent);
   void init();
   void run();
 
-  inline const State& state() const { return state_; }
+  inline const State &state() const
+  {
+    return state_;
+  }
 
   void set_event(Event event);
   void set_error(uint16_t error);
   void clear_error(uint16_t error);
 
 private:
-  ROSflight& RF_;
+  ROSflight &RF_;
   State state_;
 
   uint32_t next_led_blink_ms_ = 0;

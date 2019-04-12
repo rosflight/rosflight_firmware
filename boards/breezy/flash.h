@@ -68,7 +68,7 @@ void initEEPROM(void);
  * @param len The number of bytes to copy
  * @returns true if the read was successful, false otherwise
  */
-bool readEEPROM(void * dest, size_t len);
+bool readEEPROM(void *dest, size_t len);
 
 /**
  * @brief Write data to Flash
@@ -76,4 +76,4 @@ bool readEEPROM(void * dest, size_t len);
  * @param len The number of bytes to copy
  * @returns true if the write was successful, false otherwise
  */
-bool writeEEPROM(const void * src, size_t len);
+bool writeEEPROM(const void *src, size_t len);

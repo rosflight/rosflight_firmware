@@ -82,7 +82,7 @@ public:
   } mixer_t;
 
 private:
-  ROSflight& RF_;
+  ROSflight &RF_;
 
   float raw_outputs_[8];
   float unsaturated_outputs_[8];
@@ -228,13 +228,16 @@ private:
   };
 
 public:
-  Mixer(ROSflight& _rf);
+  Mixer(ROSflight &_rf);
   void init();
   void init_PWM();
   void init_mixing();
   void mix_output();
   void param_change_callback(uint16_t param_id);
-  inline const float* get_outputs() const {return raw_outputs_;}
+  inline const float *get_outputs() const
+  {
+    return raw_outputs_;
+  }
 };
 
 } // namespace rosflight_firmware

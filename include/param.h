@@ -257,7 +257,7 @@ private:
   std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
 
   params_t params;
-  ROSflight& RF_;
+  ROSflight &RF_;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -265,7 +265,7 @@ private:
 
 
 public:
-  Params(ROSflight& _rf);
+  Params(ROSflight &_rf);
 
   void add_callback(std::function<void(int)> callback, uint16_t param_id);
 
@@ -313,21 +313,30 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline int get_param_int(uint16_t id) const { return params.values[id].ivalue; }
+  inline int get_param_int(uint16_t id) const
+  {
+    return params.values[id].ivalue;
+  }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline float get_param_float(uint16_t id) const { return params.values[id].fvalue; }
+  inline float get_param_float(uint16_t id) const
+  {
+    return params.values[id].fvalue;
+  }
 
   /**
    * @brief Get the name of a parameter
    * @param id The ID of the parameter
    * @return The name of the parameter
    */
-  inline const char *get_param_name(uint16_t id) const { return params.names[id]; }
+  inline const char *get_param_name(uint16_t id) const
+  {
+    return params.names[id];
+  }
 
   /**
    * @brief Get the type of a parameter
@@ -337,7 +346,10 @@ public:
    * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
    * See line 165
    */
-  inline param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
+  inline param_type_t get_param_type(uint16_t id) const
+  {
+    return params.types[id];
+  }
 
   /**
    * @brief Sets the value of a parameter by ID and calls the parameter change callback

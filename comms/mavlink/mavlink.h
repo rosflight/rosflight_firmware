@@ -50,7 +50,7 @@ class Board;
 class Mavlink : public CommLink
 {
 public:
-  Mavlink(Board& board);
+  Mavlink(Board &board);
   void init(uint32_t baud_rate, uint32_t dev) override;
   void receive() override;
 
@@ -66,10 +66,10 @@ public:
                 const turbomath::Vector &accel,
                 const turbomath::Vector &gyro,
                 float temperature) override;
-  void send_log_message(uint8_t system_id, LogSeverity severity, const char * text) override;
+  void send_log_message(uint8_t system_id, LogSeverity severity, const char *text) override;
   void send_mag(uint8_t system_id, const turbomath::Vector &mag) override;
-  void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) override;
-  void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) override;
+  void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char *const name, int32_t value) override;
+  void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char *const name, float value) override;
   void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) override;
   void send_param_value_int(uint8_t system_id,
                             uint16_t index,
@@ -82,7 +82,8 @@ public:
                               float value,
                               uint16_t param_count) override;
   void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) override;
-  void send_sonar(uint8_t system_id, /* TODO enum type*/uint8_t type, float range, float max_range, float min_range) override;
+  void send_sonar(uint8_t system_id, /* TODO enum type*/uint8_t type, float range, float max_range,
+                  float min_range) override;
   void send_status(uint8_t system_id,
                    bool armed,
                    bool failsafe,
@@ -93,19 +94,20 @@ public:
                    int16_t num_errors,
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
-  void send_version(uint8_t system_id, const char * const version) override;
-  virtual void send_gnss(uint8_t system_id, uint32_t time_of_week, uint8_t fix_type, uint64_t time, uint64_t nanos, int32_t lat,
-             int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, uint32_t h_acc, uint32_t v_acc,
-             int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y,
-             int32_t ecef_v_z, uint32_t s_acc, uint64_t rosflight_timestamp);
+  void send_version(uint8_t system_id, const char *const version) override;
+  virtual void send_gnss(uint8_t system_id, uint32_t time_of_week, uint8_t fix_type, uint64_t time, uint64_t nanos,
+                         int32_t lat,
+                         int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, uint32_t h_acc, uint32_t v_acc,
+                         int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y,
+                         int32_t ecef_v_z, uint32_t s_acc, uint64_t rosflight_timestamp);
   void send_gnss_raw(uint8_t system_id, uint32_t time_of_week, uint16_t year, uint8_t month, uint8_t day,
-                              uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
-                              int32_t nano, uint8_t fix_type, uint8_t num_sat,
-                              int32_t lon, int32_t lat, int32_t height, int32_t height_msl,
-                              uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
-                              int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
-                              uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp);
-  void send_error_data(uint8_t system_id, const BackupData& error_data);
+                     uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
+                     int32_t nano, uint8_t fix_type, uint8_t num_sat,
+                     int32_t lon, int32_t lat, int32_t height, int32_t height_msl,
+                     uint32_t h_acc, uint32_t v_acc, int32_t vel_n, int32_t vel_e,
+                     int32_t vel_d, int32_t g_speed, int32_t head_mot, uint32_t s_acc,
+                     uint32_t head_acc, uint16_t p_dop, uint64_t rosflight_timestamp);
+  void send_error_data(uint8_t system_id, const BackupData &error_data);
 
 private:
   void send_message(const mavlink_message_t &msg);
@@ -117,10 +119,10 @@ private:
   void handle_msg_attitude_correction(const mavlink_message_t *const msg);
   void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
-  void handle_msg_heartbeat(const mavlink_message_t * const msg);
+  void handle_msg_heartbeat(const mavlink_message_t *const msg);
   void handle_mavlink_message(void);
 
-  Board& board_;
+  Board &board_;
 
   uint32_t compid_ = 250;
   mavlink_message_t in_buf_;

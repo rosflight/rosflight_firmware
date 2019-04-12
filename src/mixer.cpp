@@ -47,9 +47,18 @@ Mixer::Mixer(ROSflight &_rf) :
 void Mixer::init()
 {
   init_mixing();
-  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MOTOR_PWM_SEND_RATE);
-  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
-  RF_.params_.add_callback([this](uint8_t param_id){this->param_change_callback(param_id);}, PARAM_MIXER);
+  RF_.params_.add_callback([this](uint8_t param_id)
+  {
+    this->param_change_callback(param_id);
+  }, PARAM_MOTOR_PWM_SEND_RATE);
+  RF_.params_.add_callback([this](uint8_t param_id)
+  {
+    this->param_change_callback(param_id);
+  }, PARAM_RC_TYPE);
+  RF_.params_.add_callback([this](uint8_t param_id)
+  {
+    this->param_change_callback(param_id);
+  }, PARAM_MIXER);
 }
 
 void Mixer::param_change_callback(uint16_t param_id)
@@ -166,7 +175,7 @@ void Mixer::mix_output()
     commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
     commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
-  else if(commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE))
+  else if (commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE))
   {
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while arming/disarming
     commands.z = 0.0;
@@ -181,7 +190,7 @@ void Mixer::mix_output()
     {
       // Matrix multiply to mix outputs
       unsaturated_outputs_[i] = (commands.F*mixer_to_use_->F[i] + commands.x*mixer_to_use_->x[i] +
-                              commands.y*mixer_to_use_->y[i] + commands.z*mixer_to_use_->z[i]);
+                                 commands.y*mixer_to_use_->y[i] + commands.z*mixer_to_use_->z[i]);
 
       // Save off the largest control output if it is greater than 1.0 for future scaling
       if (unsaturated_outputs_[i] > max_output)
