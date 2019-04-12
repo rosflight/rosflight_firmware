@@ -361,16 +361,22 @@ bool BreezyBoard::memory_write(const void *src, size_t len)
   return writeEEPROM(src, len);
 }
 
-void BreezyBoard::gnss_read(double *lla, float *vel, uint8_t &fix_type, uint32_t &tow_ms,
-                            float *hacc, float *vacc, float *sacc)
+//GNSS is not supported on breezy boards
+GNSSData BreezyBoard::gnss_read()
 {
-  (void)lla;
-  (void)vel;
-  (void)fix_type;
-  (void)tow_ms;
-  (void)hacc;
-  (void)vacc;
-  (void)sacc;
+  return {};
+}
+
+//GNSS is not supported on breezy boards
+GNSSRaw BreezyBoard::gnss_raw_read()
+{
+  return {};
+}
+
+//GNSS is not supported on breezy boards
+bool BreezyBoard::gnss_has_new_data()
+{
+  return false;
 }
 
 // LED

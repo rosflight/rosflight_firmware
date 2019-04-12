@@ -158,17 +158,24 @@ float testBoard::sonar_read()
   return 0;
 }
 
-void testBoard::gnss_read(double *lla, float *vel, uint8_t &fix_type, uint32_t &tow_ms,
-                          float *hacc, float *vacc, float *sacc)
+//GNSS is not support on the test board
+GNSSData testBoard::gnss_read()
 {
-  (void)lla;
-  (void)vel;
-  (void)fix_type;
-  (void)tow_ms;
-  (void)hacc;
-  (void)vacc;
-  (void)sacc;
+  return {};
 }
+
+//GNSS is not support on the test board
+GNSSRaw testBoard::gnss_raw_read()
+{
+  return {};
+}
+
+//GNSS is not support on the test board
+bool testBoard::gnss_has_new_data()
+{
+  return false;
+}
+
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)

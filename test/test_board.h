@@ -33,6 +33,7 @@
 #define ROSFLIGHT_FIRMWARE_TEST_BOARD_H
 
 #include "board.h"
+#include "sensors.h"
 
 namespace rosflight_firmware
 {
@@ -94,8 +95,10 @@ public:
     return false;
   }
   void gnss_update() override {}
-  void gnss_read(double *lla, float *vel, uint8_t &fix_type, uint32_t &tow_ms,
-                 float *hacc, float *vacc, float *sacc) override;
+  GNSSData gnss_read() override;
+  GNSSRaw gnss_raw_read() override;
+  bool gnss_has_new_data() override;
+
 
 // RC
   void rc_init(rc_type_t rc_type) override;
