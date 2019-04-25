@@ -41,7 +41,7 @@ set(ROSFLIGHT_SRC
     ../src/mixer.cpp
     ../comms/mavlink/mavlink.cpp
     ../lib/turbomath/turbomath.cpp
-    )
+		)
 
 
 
@@ -56,5 +56,6 @@ add_executable(unit_tests
         command_manager_test.cpp
         estimator_test.cpp
         parameters_test.cpp
+	test_comm_link.cpp
         )
 target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)

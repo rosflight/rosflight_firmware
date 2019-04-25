@@ -123,6 +123,7 @@ void StateManager::set_event(StateManager::Event event)
       fsm_state_ = FSM_STATE_ERROR;
       break;
     case EVENT_REQUEST_ARM:
+      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "Attempting arm");
       // require low RC throttle to arm
       if (RF_.rc_.stick(RC::Stick::STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
       {

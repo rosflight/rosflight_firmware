@@ -40,9 +40,7 @@ namespace rosflight_firmware
   void testBoard::set_rc(uint16_t *values)
   {
     for (int i = 0; i < 8; i++)
-    {
-      rc_values[i] = values[i];
-    }
+      rc_values[i] = static_cast<float>(values[i]-1000)/1000.0;
   }
 
   void testBoard::set_time(uint64_t time_us)
@@ -130,15 +128,18 @@ namespace rosflight_firmware
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  void testBoard::rc_init(rc_type_t rc_type){}
-  bool testBoard::rc_lost(){ return rc_lost_; }
-  float testBoard::rc_read(uint8_t channel)
-  {
-    return static_cast<float>(rc_values[channel] - 1000)/1000.0 ;
-  }
-  void testBoard::pwm_write(uint8_t channel, float value){}
-  void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
-  void testBoard::pwm_disable() {}
+void testBoard::rc_init(rc_type_t rc_type) {}
+bool testBoard::rc_lost()
+{
+  return rc_lost_;
+}
+float testBoard::rc_read(uint8_t channel)
+{
+  return rc_values[channel];
+}
+void testBoard::pwm_write(uint8_t channel, float value) {}
+void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
+void testBoard::pwm_disable() {}
 
 // non-volatile memory
   void testBoard::memory_init(){}

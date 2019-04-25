@@ -3,6 +3,8 @@
 #include "rosflight.h"
 #include "mavlink.h"
 #include "test_board.h"
+#include "test_comm_link.h"
+#include <iostream>
 
 using namespace rosflight_firmware;
 
@@ -10,8 +12,10 @@ TEST(state_machine_test, error_check) {
 
   // Initialize the full firmware, so that the state_manager can do its thing
   testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  //Mavlink mavlink(board);
+  TestCommLink link;
+  link.set_enabled(false);
+  ROSflight rf(board, link);
 
   // Initialize just a subset of the modules
   // (some modules set errors when they initialize)
@@ -86,8 +90,9 @@ TEST(state_machine_test, error_check) {
 TEST(state_machine_test, arm_check) {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  //Mavlink mavlink(board);
+  TestCommLink test_cl;
+  ROSflight rf(board, test_cl);
 
   // Initialize just a subset of the modules
   // (some modules set errors when they initialize)
@@ -95,6 +100,7 @@ TEST(state_machine_test, arm_check) {
   rf.state_manager_.init();
   rf.params_.init();
   rf.params_.set_param_int(PARAM_MIXER, 10);
+  rf.estimator_.init();
 
   // Should be in PREFLIGHT MODE
   ASSERT_EQ(rf.state_manager_.state().armed, false);
@@ -119,8 +125,14 @@ TEST(state_machine_test, arm_check) {
 
 
   // Clear the error, and then try again to arm
+  std::cout<<"Before step firmware: 0x"<<std::hex<<rf.state_manager_.state().error_codes<<std::dec<<std::endl;
+  step_firmware(rf, board, 1000000);
+  std::cout<<"After step firmware: 0x"<<std::hex<<rf.state_manager_.state().error_codes<<std::dec<<std::endl;
   rf.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
+  std::cout<<"After clear invalid mixer: 0x"<<std::hex<<rf.state_manager_.state().error_codes<<std::dec<<std::endl;
+  std::cout<<"Starting problematic test"<<std::endl;
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  std::cout<<"Finished problematic test"<<std::endl;
   ASSERT_EQ(rf.state_manager_.state().armed, true);
   ASSERT_EQ(rf.state_manager_.state().failsafe, false);
   ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
@@ -219,8 +231,9 @@ TEST(state_machine_test, arm_check) {
 TEST(state_machine_test, arm_throttle_check)
 {
   testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  //Mavlink mavlink(board);
+  TestCommLink test_cl;
+  ROSflight rf(board, test_cl);
 
   rf.init();
   rf.params_.set_param_int(PARAM_MIXER, 10);
@@ -233,7 +246,7 @@ TEST(state_machine_test, arm_throttle_check)
   }
   rc_values[2] = 1000;
   board.set_rc(rc_values);
-  step_firmware(rf, board, 100);
+  step_firmware(rf, board, 40000);
 
   // clear all errors
   rf.state_manager_.clear_error(rf.state_manager_.state().error_codes);
@@ -242,7 +255,17 @@ TEST(state_machine_test, arm_throttle_check)
   ASSERT_EQ(false, rf.state_manager_.state().armed);
 
   // first, make sure we can arm if all is well
+  //std::cout<<rf.state_manager_.state().armed<<std::endl;
+  //std::cout<<rf.state_manager_.state().failsafe<<std::endl;
+  //std::cout<<rf.state_manager_.state().error<<std::endl;
+  //std::cout<<rf.state_manager_.state().error_codes<<std::endl;
+  //std::cout<<0 + rf.state_manager_.fsm_state()<<std::endl;
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  //std::cout<<rf.state_manager_.state().armed<<std::endl;
+  //std::cout<<rf.state_manager_.state().failsafe<<std::endl;
+  //std::cout<<rf.state_manager_.state().error<<std::endl;
+  //std::cout<<rf.state_manager_.state().error_codes<<std::endl;
+  //std::cout<<0 + rf.state_manager_.fsm_state()<<std::endl;
   ASSERT_EQ(true, rf.state_manager_.state().armed);
 
   // now go back to disarmed to prepare for following tests

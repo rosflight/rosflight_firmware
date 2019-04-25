@@ -27,7 +27,10 @@ double quaternion_error(turbomath::Quaternion q0, turbomath::Quaternion q)
   }
 }
 
-void step_firmware(rosflight_firmware::ROSflight& rf, rosflight_firmware::testBoard& board, uint32_t us)
+//Does not actually wait the given number of microseconds.
+//Does one firmware cycle per 1000 microseconds (1 ms)
+//Increments the virtual clock each time, by 1000 microseconds
+void step_firmware(rosflight_firmware::ROSflight &rf, rosflight_firmware::testBoard &board, uint32_t us)
 {
   uint64_t start_time_us = board.clock_micros();
   float dummy_acc[3] = {0, 0, -9.80665};
