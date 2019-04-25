@@ -1,6 +1,6 @@
 # Using an In-Circuit Debugger with a Naze32 (and variants)
 
-Debugging a naze32 is easiest with an ST-Link V2.  You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator and the in-circuit debugger.
+Debugging a naze32 is easiest with an ST-Link V2.  You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator or Visual Studio Code and the in-circuit debugger.
 
 !!! warning
     We have had reports of problems with cheap clones of ST-Links not connecting.
@@ -18,7 +18,9 @@ sudo adduser $USER dialout
 
 Log out and back in for changes to take effect.
 
-## Install QtCreator
+## Install IDE 
+
+### QtCreator
 
 For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator which can be downloaded [here](https://www.qt.io/download).
 
@@ -46,7 +48,13 @@ Categories=Qt;Development;IDE;
 InitialPreference=9
 ```
 
+### VSCode
+
+You can install Visual Studio Code by downloading the latest version from **[their website](https://code.visualstudio.com)**. The debugging tools provided by vscode have been confirmed to work on both Mac and Linux.
+
 ## Install openocd
+
+### For QtCreator
 
 Open OCD (On-Chip-Debugger) is the software that will control the debugger.  We are going to install the version that is configured to work as a plugin for the eclipse IDE.  To get this version, go to the **[releases](https://github.com/gnuarmeclipse/openocd/releases)** page of the OpenOCD github page and download the latest `.tgz` file
 
@@ -73,7 +81,10 @@ cd /opt/openocd/0.10.0-5-20171110-1117/bin
 ./openocd -f interface/stlink-v2.cfg -f target/stm32f4x.cfg
 ```
 
-I move these the `~/.local/bin` directory so I can call it from anywhere:
+!!! note
+    On more recent versions of openocd, `interface/stlink-v2.cfg` is deprecated. Use `interface/stlink.cfg` instead.
+
+I move these to the `~/.local/bin` directory so I can call it from anywhere:
 
 ``` bash
 chmod +x start_openocd_f1
@@ -82,11 +93,35 @@ mv start_openocd_f1 usr/local/bin
 mv start_openocd_f4 usr/local/bin
 ```
 
+### For VSCode
+
+For vscode, install the openocd version currently available through your package manager:
+
+Ubunutu:
+```bash
+sudo apt-get install openocd
+```
+
+Mac:
+```bash
+brew install open-ocd
+```
+
+The `start_openocd_f4` script requires a few additional parameters to ensure proper connection to vscode and GDB:
+
+```bash
+#!/bin/bash
+cd /opt/openocd/0.10.0-11-20190118-1134/bin
+./openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c "gdb_port 50250" -c init -c "reset init"
+```
+
+As shown above, this script can be added to your `~/.local/bin` if you want to be able to call it from anywhere.
+
 ## Install ARM compiler and 32-bit Dependencies
 
-Follow the guide in [Building and Flashing](/developer-guide/building-flashing.md) to install the compiler.
+Follow the guide in [Building and Flashing](/developer-guide/building-flashing) to install the compiler.
 
-QtCreator also needs 32-bit python bindings to run GDB
+QtCreator also needs 32-bit python bindings to run GDB (skip this if using vscode)
 
 ``` bash
 sudo dpkg --add-architecture i386
@@ -155,6 +190,50 @@ Go to the Bare Metal Plugin
 
 ![ARM_kit](images/ARM_kit.png)
 
+## Configure VsCode for ARM Development
+
+Open the debugger launch.json file by navigating to the Debug pane (Ctrl + Shift + D) and clicking the gear at the top of the screen:
+
+![Open vscode debugger launch.json](images/vscode-debuggerLaunch.png)
+
+Add a configuration entry to the launch.json file that looks something like this:
+
+```json
+{
+    "name": "GDB-REVO",
+    "type": "cppdbg",
+    "request": "launch",
+    "MIMode": "gdb",
+    "targetArchitecture": "arm",
+    "miDebuggerPath": "/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-gdb", // (or whatever)
+    "program": "${workspaceRoot}/boards/airbourne/build/rosflight_REVO_Debug.elf", 
+    "externalConsole": false,
+    "cwd": "${workspaceRoot}",
+    "setupCommands": [
+        { "text": "file ${workspaceRoot}/boards/airbourne/build/rosflight_REVO_Debug.elf" },
+        { "text": "set remotetimeout 30" },
+        { "text": "target remote localhost:50250" },
+        { "text": "monitor halt" },
+        { "text": "monitor reset init" },
+        { "text": "load" },
+        { "text": "info target" }
+    ],
+}
+```
+
+Note that you will need to change the `program` and first `setupCommands.text` entries if you want to run a different example or version of the firmware.
+
+With a board plugged in and openocd running, you should now be able to press Play on the debug screen and launch the firmware in debug mode!
+
+If you dont want to call make from the terminal for every change, you can also create a simple task in vscode to do it for you. Open tasks.json from Command Pallette -> Tasks: Configure Task
+
+```json
+{
+    "label": "build",
+    "type": "shell",
+    "command": "make"
+}
+```
 
 ## Test the Debugger
 
