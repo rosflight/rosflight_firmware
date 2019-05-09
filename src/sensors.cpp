@@ -182,6 +182,7 @@ void Sensors::update_other_sensors()
     break;
 
   case SONAR:
+    rf_.board_.sonar_update();
     if (rf_.board_.sonar_present())
     {
       data_.sonar_present = true;
