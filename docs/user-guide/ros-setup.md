@@ -42,7 +42,7 @@ git clone https://github.com/rosflight/rosflight.git
 pull down the submodules (there is a triple-layer submodule setup in the `rosflight` metapackage, so you have to remember the `--recursive` argument)
 ```bash
 cd rosflight
-git submodule --init --recursive
+git submodule update --init --recursive
 ```
 install dependencies,
 ```bash
