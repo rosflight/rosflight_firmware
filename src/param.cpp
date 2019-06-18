@@ -89,7 +89,7 @@ void Params::init()
   RF_.board_.memory_init();
   if (!read())
   {
-    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Unable to load parameters");
+    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Unable to load parameters. Overwriting with defaults.");
     set_defaults();
     write();
   }
