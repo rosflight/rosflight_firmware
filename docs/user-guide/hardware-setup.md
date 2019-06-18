@@ -1,16 +1,20 @@
 # Parts list
 
-To use ROSflight to its full potential, you will need the following parts on your MAV (Minature Aerial Vehicle).  ROSflight supports both multirotor and fixedwing vehicles.
+To use ROSflight to its full potential, you will need the following parts. Some parts are onboard your MAV (Minature Aerial Vehicle), others are on the ground. ROSflight supports both multirotor and fixedwing vehicles.
 
+*Onboard the MAV*
 1. Aircraft Frame, Motor(s), ESC(s), Battery and Propeller(s)
 2. Flight Controller (FC)
-3. Any external sensors
-4. Vibration Isolation for FC
-5. Onboard Computer
-6. Wi-Fi Router and Dongle
-7. RC transmitter and receiver
-8. Laptop or base station computer
-9. Joystick (Xbox controller)
+3. Vibration Isolation for FC
+4. Any external sensors
+5. R/C Receiver
+6. Onboard Computer
+7. Wi-Fi Antenna, or access of some kind to ground-station, wireless network (e.g. Ubiquiti Bullet)
+*Ground Station*
+8. Ground-Station, Wireless Network (e.g. Wi-Fi Router, Ubiquiti Rocket)
+9. R/C transmitter
+10. Laptop or base station computer
+11. Joystick (Xbox controller)
 
 ## Frame, Motors, ESCs, Battery and Propeller
 
@@ -31,7 +35,7 @@ Some things to keep in mind as you design or build your MAV.
 ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  It works on most variants of the revo and naze32 flight controller.  Configuring a new board is relatively straight-forward, assuming that the board uses an STM32F4xx or STM32F1xx processor.
 
 !!! warning
-    We have seen some problems using off-brand versions of flight controllers because there are fake versions of accelerometers which can mess with the firmware; try to avoid those if you can.
+    We have seen some problems using off-brand versions of flight controllers because the accelerometers are of very poor quality, which can mess with the firmware; try to avoid those if you can.
 
 ## External Sensors
 
@@ -41,19 +45,19 @@ Additional Sensors you may want for your ROSflight setup include:
 * GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/u-blox/883-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
-The I2C sonar (MB124X) is also supported, but PWM sonars are preferred (https://www.adafruit.com/product/982?gclid=CjwKCAiA47DTBRAUEiwA4luU2QSNTXTLpAU6YI31w_cgVRXgiTB6v326aibrkUAaLYFRMMUWjI5uSBoCm80QAvD_BwE).
+The I2C sonar (MB124X) is also supported, but PWM sonars are preferred (https://www.adafruit.com/product/982).
 
 ## Vibration Isolation
 
-It is really important to isolate your flight controller from vibrations from propellers and motors.  We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV.  You may also want to try adding mass to the flight control board.  We have accomplished this by gluing steel washers to the fiberglass mounting plate.
+It is really important to isolate your flight controller from vehicle vibrations, such as those caused by propellers and motors. We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV. You may also want to try adding mass to the flight control board. We have accomplished this by gluing steel washers to the fiberglass mounting plate.
 
 ![Vibration Isloation](images/vibration_isolation.png)
 
-You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the flight control board.  The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
+You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the FC mounting plate.  The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
 
 ## Onboard Computer
 
-The only requirement for the onboard computer is that it runs Linux 16.04, ROS, has at least one USB port, and can be carried by the aircraft.  We have had success with the following onboard computers, but by no means is this a comprehensive list, it is more by way of suggestion.
+The only requirement for the onboard computer is that it runs Linux ( Ubuntu LTS versions 16.04 or 18.04), ROS, has at least one USB port, and can be carried by the aircraft. We have had success with the following onboard computers, but by no means is this a comprehensive list, it is more by way of suggestion.
 
 * MSI CUBI – i7-5500U – [$350 on Amazon](https://www.amazon.com/MSI-Intel-Support-Barebones-Cubi-028BUS/dp/B011Q6BBMW/ref=sr_1_6?s=electronics&ie=UTF8&qid=1490068829&sr=1-6&keywords=i7+NUC)
 * GIGABYTE BRIX Gaming- i7-4710HQ/GTX 760 – [$850 on Amazon](https://www.amazon.com/dp/B00OJZVGFU/ref=cm_sw_su_dp)
@@ -62,16 +66,19 @@ The only requirement for the onboard computer is that it runs Linux 16.04, ROS, 
 * ODROID-C2 – Cortex A53 2GHz 4-core – [$42 on Ameridroid](http://ameridroid.com/products/odroid-c2)
 * Rasberry Pi 3 – Cortex A53 1.2GHz 4-core – [$36 on Amazon](https://www.amazon.com/dp/B01CD5VC92/ref=cm_sw_su_dp)
 * NVIDIA Tegra TX1 - Cortex-A57 4-core CPU, 256-core Maxwell GPU - [$435 from NVIDA](http://www.nvidia.com/object/embedded-systems-dev-kits-modules.html) (Educational Discounts Available)
+* NVIDIA Tegra TX2 - 6-core ARMv8 64-bit CPU (4-core Cortex-A57, 2-core NVIDIA Denver 2), 8GB RAM, 256-core Pascal GPU - [$600 from NVIDA](https://developer.nvidia.com/embedded/buy/jetson-tx2-devkit) (Educational Discounts Available)
+
+It is possible to pair the TX1 and TX2 with a CTI Orbitty carrier board for more compact builds.
 
 ## Wi-Fi
 
-You will need Wi-Fi to communicate with your MAV when it is in the air.  ROS communicates over TCP, so it is really easy to use ROS to view what is going on in your MAV while it is flying, send commands and read sensor data.  For most applications, a standard Wi-Fi router and dongle will suffice.  For long-range applications, you may want to look into [Ubiquiti](https://www.ubnt.com/) point-to-point Wi-Fi.  (We have seen ranges over a mile with these networks)
+You will need Wi-Fi to communicate with your MAV when it is in the air. Because ROS communicates over TCP, it is very easy to use ROS to view what is going on in your MAV while it is flying by sending commands and reading sensor data.  For most applications, a standard Wi-Fi router and dongle will suffice.  For long-range applications, you may want to look into [Ubiquiti](https://www.ubnt.com/) point-to-point Wi-Fi. (We have seen ranges over a mile with these networks)
 
-## RC Transmitter and Reciever
+## RC Transmitter and Receiver
 
 For RC Control, you will need a transmitter with between 6 and 8 channels.  Any additional channels will be wasted.  We require RC control for safe operation, and only support arming and disarming via RC control.
 
-As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. A recommended RC setup is described below, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
+As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. A common RC setup is listed here, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
 
 * Transmitter – [FrSky Taranis QX7 ($105 on getfpv.com)](https://www.getfpv.com/frsky-taranis-q-x7-2-4ghz-16ch-transmitter-white.html)
 * Receiver – [FrSky D4R-II (24.99 on getfpv.com)](https://www.getfpv.com/frsky-d4r-ii-4ch-2-4ghz-accst-receiver-w-telemetry.html)
@@ -79,15 +86,15 @@ As of version 1.0, ROSflight only supports PPM (pulse position modulation) recei
 
 ## Laptop or Base Station Computer
 
-You will need a laptop which can run Ubuntu 16.04 and ROS to communicate with the MAV over WiFi.  If you are new to Linux, and want to also use windows, I would recommend dual booting your computer rather than using a virtual machine.
+You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communicate with the MAV over the ground station wireless network.  If you are new to Linux, and want to retain access to Windows, I would recommend dual booting your computer rather than using a virtual machine. ROS networking can be problematic from a virtual environment.
 
 ## Joystick
 
-The Joystick is not technically a required component, because it is possible to control your MAV over command line. It does make things easier, however.  We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration.  Other joysticks are supported, but you may need to perform custom axis and button mappings.
+The Joystick is not technically a required component because it is possible to control your MAV from the command line. It does make things easier, however.  We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration.  Other joysticks are supported, but you may need to perform custom axis and button mappings.
 
 # Wiring diagram
 
-Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboard computer.  This diagram also includes the motor power switch, which allows for the sensors, flight controller and onboard computer to be power on while the motors are off.  This is a safer way to work on the aircraft as the motors are unable to spin while the switch is off.
+Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboard computer. This diagram also includes the motor power switch, which allows for the sensors, flight controller, and onboard computer to be powered on while the motors are off. This is a safer way to test sensors, code, etc. as the motors are unable to spin while the switch is off.
 
 ![Wiring Diagram](images/Wiring_Diagram.png)
 
@@ -95,7 +102,7 @@ Your needs will likely be slightly different than what is shown.  This is meant 
 
 # Motor layouts
 
-The desired mixer can be chosen by setting the the `MIXER` parameter to the following values:
+The desired mixer can be chosen by setting the `MIXER` parameter to the following values:
 
 | # | Mixer |
 |---|---------|

@@ -17,6 +17,7 @@ The following checklists should help you get a new vehicle set up for the first 
 
 ### General setup
   1. Set the `FIXED_WING` parameter (`1` if a fixed-wing, `0` if a multirotor)
+  1. Set the `RC_TYPE` parameter (`0` if PPM, `1` if SBUS)
   1. Set the `MIXER` parameter to the appropriate value described in the [Hardware Setup](/user-guide/hardware-setup) page
   1. Set the `MOTOR_PWM_UPDATE` parameter (typically `490` for SimonK ESCs, `50` for standard servos)
   1. Make sure your [RC transmitter is set up correctly](/user-guide/rc-configuration)
