@@ -42,16 +42,16 @@ pages:
   - Home: index.md
   - User Guide:
     - Overview: user-guide/overview.md
-    - Getting started: user-guide/getting-started.md
-    - Hardware setup: user-guide/hardware-setup.md
-    - Autopilot setup: user-guide/autopilot-setup.md
+    - Getting Started: user-guide/getting-started.md
+    - Hardware Setup: user-guide/hardware-setup.md
+    - Autopilot Setup: user-guide/autopilot-setup.md
     - RC Configuration: user-guide/rc-configuration.md
-    - ROS setup: user-guide/ros-setup.md
+    - ROS Setup: user-guide/ros-setup.md
     - Parameter Configuration: user-guide/parameter-configuration.md
-    - Preflight checks: user-guide/preflight-checks.md
-    - Improving performance: user-guide/performance.md
+    - Pre-Flight Checks: user-guide/preflight-checks.md
+    - Improving Performance: user-guide/performance.md
     - Running Gazebo Simulation: user-guide/gazebo_simulation.md
-    - Autonomous flight: user-guide/autonomous-flight.md
+    - Autonomous Flight: user-guide/autonomous-flight.md
   - Developer Guide:
     - Contribution Guidelines: developer-guide/contribution-guidelines.md
     - Style Guide: developer-guide/style-guide.md
