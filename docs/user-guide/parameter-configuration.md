@@ -83,13 +83,13 @@ Again, you must specify the absolute file name of the file to be loaded.
 Because ROSflight ships with default parameters for multirotors, you will probably want to change the following parameters if you want to fly a fixed-wing aircraft.
 
 
-| Parameter | Description | Type | Fixed Wing Value
+| Parameter | Description | Type | Fixed-Wing Value
 |-----------|-------------|------|---------------|
 | MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors and servos (Hz) - See motor documentation | int |  50 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_PWM | int |  false |
 | MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 |
 | ARM_CHANNEL | RC switch channel mapped to arming [0 indexed, -1 to disable] | int |  4 |
-| FIXED_WING | switches on passthrough commands for fixedwing operation | int |  true |
+| FIXED_WING | switches on passthrough commands for fixed-wing operation | int |  true |
 | MIXER | Which mixer to choose - See [Mixer documentation](hardware-setup/#motor-layouts) | int | 10  |
 | ELEVATOR_REV | reverses elevator servo output | int |  0/1 |
 | AIL_REV | reverses aileron servo output | int |  0/1 |
@@ -211,4 +211,4 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | FC_PITCH | pitch angle (deg) of flight controller wrt aircraft body | float |  0.0f | -180 | 180 |
 | FC_YAW | yaw angle (deg) of flight controller wrt aircraft body | float |  0.0f | -180 | 180 |
 | ARM_THRESHOLD | RC deviation from max/min in yaw and throttle for arming and disarming check (us) | float |  0.15 | 0 | 500 |
-| OFFBOARD_TIMEOUT | Timeout in milliseconds for off-board commands, after which RC override is activated | int |  100 | 0 | 100000 |
+| OFFBOARD_TIMEOUT | Timeout in milliseconds for offboard commands, after which RC override is activated | int |  100 | 0 | 100000 |

@@ -10,7 +10,7 @@ To avoid confusion and to reduce code complexity in the firmware source code, RO
 
 ### Configure the full stick output for each channel
 
-The easiest way to do this is to enter the "Servo Setup" Menu (for Spektrum transmitters) and change the servo travel variable.  You can watch the raw RC readings from the flight controller by echoing the rc_raw topic from `rosflight_io`
+The easiest way to do this is to enter the "Servo Setup" Menu (for Spektrum transmitters) and change the servo travel variable. You can watch the raw RC readings from the flight controller by echoing the rc_raw topic from `rosflight_io`
 
 ```
 rostopic echo /rc_raw
@@ -26,11 +26,11 @@ You may want to follow this YouTube guide for channel calibration in betaflight:
 
 You now have to make sure your RC transmitter is sending commands consistent with the north-east-down (NED) frame assumed by ROSflight.
 
-You may find this graphic helpful.  It shows all the basic stick positions, and the associated output from the first four channels when looking at a raw AETR (aileron, elevator, throttle, rudder) RC signal from `rosflight_io`.  Make sure that the stick output is in the correct direction.
+You may find this graphic helpful. It shows all the basic stick positions, and the associated output from the first four channels when looking at a raw AETR (aileron, elevator, throttle, rudder) RC signal from `rosflight_io`. Make sure that the stick output is in the correct direction.
 
 ![stick_image](images/sticks.png)
 
-It should be noted that channel assignment can be modified via the `RC_*_CHN` parameters.  So, if you are using something other than AETR assignment, the channel index for each stick may be different, but the direction should be the same.
+It should be noted that channel assignment can be modified via the `RC_*_CHN` parameters. So, if you are using something other than AETR assignment, the channel index for each stick may be different, but the direction should be the same.
 
 # Switch configuration
 

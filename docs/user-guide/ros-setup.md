@@ -1,4 +1,4 @@
-# Installing/setting up ROS
+# Installing/Setting up ROS
 
 You will need to install ROS on both the onboard computer and base station laptop. Check out the [Official ROS Installation](http://wiki.ros.org/ROS/Installation) page for details on how to do this.
 

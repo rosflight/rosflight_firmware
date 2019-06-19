@@ -1,6 +1,6 @@
-# Parts list
+# Parts List
 
-To use ROSflight to its full potential, you will need the following parts. Some parts are onboard your MAV (Minature Aerial Vehicle), others are on the ground. ROSflight supports both multirotor and fixedwing vehicles.
+To use ROSflight to its full potential, you will need the following parts. Some parts are onboard your MAV (Minature Aerial Vehicle), others are on the ground. ROSflight supports both multirotor and fixed-wing vehicles.
 
 *Onboard the MAV*
 1. Aircraft Frame, Motor(s), ESC(s), Battery and Propeller(s)
@@ -116,7 +116,7 @@ The desired mixer can be chosen by setting the `MIXER` parameter to the followin
 | 7 | Y6 |
 | 8 | X8 |
 | 9 | Tricopter |
-| 10 | Fixed wing (traditional AETR) |
+| 10 | Fixed-wing (traditional AETR) |
 
 The associated motor layouts are shown below for each mixer.
 The **ESC calibration** mixer directly outputs the throttle command equally to each motor, and can be used for calibrating the ESCs.
