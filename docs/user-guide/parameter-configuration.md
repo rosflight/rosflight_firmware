@@ -1,6 +1,6 @@
 # Parameters
 
-The ROSflight firmware has several dozen parameters which it uses to customize performance.  Parameters are considered semi-static variables.  That is, parameters do not change during flight, but they may change between vehicles.  Examples of parameters you may wish to change are:
+The ROSflight firmware has several dozen parameters which it uses to customize performance. Parameters are considered semi-static variables. That is, parameters do not change during flight, but they may change between vehicles. Examples of parameters you may wish to change are:
 
 * Fixed-wing vehicle flag
 * PID gains
@@ -14,7 +14,7 @@ and so on. Access to all parameters is enabled via ROS services advertised by `r
 
 ### Getting Parameter Values
 
-Sometimes it is handy to ask the flight controller what the current value of a parameter is.  This is accomplished using the `param_get` service.  As an example, let's retrieve the roll angle controller proportional (P) gain.
+Sometimes it is handy to ask the flight controller what the current value of a parameter is. This is accomplished using the `param_get` service. As an example, let's retrieve the roll angle controller proportional (P) gain.
 
 ```
 rosservice call /param_get PID_ROLL_ANG_P
@@ -29,7 +29,7 @@ value: 0.15000000596
 
 ### Changing Parameters
 
-Parameters are changed via the `param_set` service.  As an example, let's change the roll angle controller P gain.  (I will assume that the flight controller is connected and `rosflight_io` is running in the root namespace).
+Parameters are changed via the `param_set` service. As an example, let's change the roll angle controller P gain. (I will assume that the flight controller is connected and `rosflight_io` is running in the root namespace.)
 
 ```
 rosservice call /param_set PID_ROLL_ANG_P 0.08
@@ -41,11 +41,11 @@ You should get a prompt from `rosflight_io` saying
 [ WARN] [1491672408.585508849]: There are unsaved changes to onboard parameters
 ```
 
-Notice that the parameters have been set, but not saved.  Parameter changes take effect immediately, however they will not persist over a reboot unless you *write* them to the non-volatile memory.  This brings us to the next task.
+Notice that the parameters have been set, but not saved. Parameter changes take effect immediately, however they will not persist over a reboot unless you *write* them to the non-volatile memory. This brings us to the next task.
 
 ### Writing Parameters
 
-To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory.  This is done by calling `param_write`
+To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `param_write`
 
 ```
 rosservice call /param_write
@@ -57,11 +57,11 @@ rosservice call /param_write
 [ INFO] [1491672597.123452908]: Onboard parameters have been saved
 ```
 !!! error
-    Parameter writing can only happen if the flight controller is disarmed.  If the param write failed for some reason, you may want to make sure your FC is disarmed and try again.
+    Parameter writing can only happen if the flight controller is disarmed. If the param write failed for some reason, you may want to make sure your FC is disarmed and try again.
 
 ### Backing Up and Loading Parameters from File
 
-It is good practice to backup your parameter configuration in case you have to re-flash your firmware or you want to share configurations between vehicles.  We can do this via the `param_save_to_file` and `param_load_from_file` services.
+It is good practice to backup your parameter configuration in case you have to re-flash your firmware or you want to share configurations between vehicles. We can do this via the `param_save_to_file` and `param_load_from_file` services.
 
 First, let's back up our current parameter configuration:
 
@@ -69,7 +69,7 @@ First, let's back up our current parameter configuration:
 rosservice call /param_save_to_file ~/parameters.yml
 ```
 
-Parameters are saved in YAML format.  You must also specify the absolute file name of where you would like your parameters to be saved.  The current active set of parameters will be saved, regardless of what is saved in non-volatile memory on the flight controller.
+Parameters are saved in YAML format. You must also specify the absolute file name of where you would like your parameters to be saved. The current active set of parameters will be saved, regardless of what is saved in non-volatile memory on the flight controller.
 
 Now, let's say we want to re-load this parameter file
 ```

@@ -4,7 +4,7 @@ Rosflight comes with a useful tool allowing it to perform software-in-the-loop (
 
 ## Architecture of the SIL Simulation
 
-To best mimic the hardware experience of ROSflight, the SIL plugin for Gazebo actually implements the firmware source code as a library. We just implemented a different "board layer" which uses gazebo instead of hardware calls for things like "read_imu" and "pwm_write". Instead of a serial link over USB to the flight controller, we use a UDP connection bouncing off of localhost to communicate between `rosflight_io` and the firmware. This means the interface to the SIL plugin is identical to that of hardware. `rosflight_io` is the main gateway to the firmware in simulation, just as it is in hardware.
+To best mimic the hardware experience of ROSflight, the SIL plugin for Gazebo actually implements the firmware source code as a library. We just implemented a different "board layer" which uses gazebo instead of hardware calls for things like `imu_read()` and `pwm_write()`. Instead of a serial link over USB to the flight controller, we use a UDP connection bouncing off of localhost to communicate between `rosflight_io` and the firmware. This means the interface to the SIL plugin is identical to that of hardware. `rosflight_io` is the main gateway to the firmware in simulation, just as it is in hardware.
 
 Here is an illustration comparing all the connections in hardware and RC:
 ![SIL_diagram](images/sil_diagram.png)
@@ -16,11 +16,11 @@ Here is an illustration comparing all the connections in hardware and RC:
 
 * clone the `rosflight` metapackage repository from [github](https://github.com/rosflight/rosflight) into your workspace
 
-* clone submodules of the `rosflight` metapackage (``` git submodule update --init --recursive ```)
+* clone submodules of the `rosflight` metapackage: ` git submodule update --init --recursive `
 
 * clone the `rosflight_joy` metapackage repository from [github](https://github.com/rosflight/rosflight_joy) into your workspace
 
-* install pygame `sudo pip install pygame`
+* install pygame: `pip install --user pygame`
 
 * Perform a `catkin_make`
 

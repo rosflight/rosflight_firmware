@@ -31,7 +31,7 @@ Notice that I didn't include any I tuning. As a general rule, try to keep the I 
 You should _only_ have I gain on roll and pitch if one of the following is true:
 
 1. You expect your CG to change, and/or
-2. You expect your rotor geometry to change
+1. You expect your rotor geometry to change
 
 Both of these are pretty rare. Instead, use your RC transmitter to trim the aircraft so it hovers with no stick input. In the RC trim calculation section, we will use the RC trim to calculate a feed-forward torque on the roll, pitch and yaw rates.
 

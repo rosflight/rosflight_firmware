@@ -1,38 +1,41 @@
 # Parts List
 
-To use ROSflight to its full potential, you will need the following parts. Some parts are onboard your MAV (Minature Aerial Vehicle), others are on the ground. ROSflight supports both multirotor and fixed-wing vehicles.
+To use ROSflight to its full potential, you will need the following parts. Some parts are onboard your MAV (Miniature Aerial Vehicle), others are on the ground. ROSflight supports both multirotor and fixed-wing vehicles.
 
 *Onboard the MAV*
+
 1. Aircraft Frame, Motor(s), ESC(s), Battery and Propeller(s)
-2. Flight Controller (FC)
-3. Vibration Isolation for FC
-4. Any external sensors
-5. R/C Receiver
-6. Onboard Computer
-7. Wi-Fi Antenna, or access of some kind to ground-station, wireless network (e.g. Ubiquiti Bullet)
+1. Flight Controller (FC)
+1. Vibration Isolation for FC
+1. Any external sensors
+1. R/C Receiver
+1. Onboard Computer
+1. Wi-Fi Antenna, or access of some kind to ground-station, wireless network (e.g. Ubiquiti Bullet)
+
 *Ground Station*
-8. Ground-Station, Wireless Network (e.g. Wi-Fi Router, Ubiquiti Rocket)
-9. R/C transmitter
-10. Laptop or base station computer
-11. Joystick (Xbox controller)
 
-## Frame, Motors, ESCs, Battery and Propeller
+1. Ground-Station, Wireless Network (e.g. Wi-Fi Router, Ubiquiti Rocket)
+1. R/C transmitter
+1. Laptop or base station computer
+1. Joystick (Xbox controller)
 
-We do not officially support any specific multirotor or airplane frame, motor, ESC, Battery or Propeller combination.  There are a lot of great resources for building your own MAV, and there are a lot of great kits out there that have all of these parts.
+## Frame, Motors, ESCs, Battery, and Propeller
+
+We do not officially support any specific multirotor or airplane frame, motor, ESC, Battery or Propeller combination. There are a lot of great resources for building your own MAV, and there are a lot of great kits out there that have all of these parts.
 
 If you are designing your own multirotor or airplane, you may want to look at [ecalc](https://www.ecalc.ch/), an online tool which can help you design a proper ESC/Battery/Motor/Propeller system for your MAV.
 
 Some things to keep in mind as you design or build your MAV.
 
-* Most kits do not include space for an onboard computer, cameras, laser scanners or other sensors.  Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
-* You will likely also need to customize the power circuitry of your MAV to provide power at some specific voltage to your onboard computer.  Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors.  This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand.  We will talk about this more when we talk about wiring up your MAV.
-* Cheap propellers can cause a huge amount of vibration.  Consider buying high-quality propellers, doing a propeller balance, or both.  RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
+* Most kits do not include space for an onboard computer, cameras, laser scanners or other sensors. Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
+* You will likely also need to customize the power circuitry of your MAV to provide power at some specific voltage to your onboard computer. Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors. This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand. We will talk about this more when we talk about wiring up your MAV.
+* Cheap propellers can cause a huge amount of vibration. Consider buying high-quality propellers, doing a propeller balance, or both. RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
 * ESCs will need to be calibrated from 2000 to 1000 us
 
 
 ## Flight Controller
 
-ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  It works on most variants of the revo and naze32 flight controller.  Configuring a new board is relatively straight-forward, assuming that the board uses an STM32F4xx or STM32F1xx processor.
+ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us). It works on most variants of the revo and naze32 flight controller. Configuring a new board is relatively straight-forward, assuming that the board uses an STM32F4xx or STM32F1xx processor.
 
 !!! warning
     We have seen some problems using off-brand versions of flight controllers because the accelerometers are of very poor quality, which can mess with the firmware; try to avoid those if you can.
@@ -53,7 +56,7 @@ It is really important to isolate your flight controller from vehicle vibrations
 
 ![Vibration Isloation](images/vibration_isolation.png)
 
-You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the FC mounting plate.  The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
+You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the FC mounting plate. The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
 
 ## Onboard Computer
 
@@ -72,11 +75,11 @@ It is possible to pair the TX1 and TX2 with a CTI Orbitty carrier board for more
 
 ## Wi-Fi
 
-You will need Wi-Fi to communicate with your MAV when it is in the air. Because ROS communicates over TCP, it is very easy to use ROS to view what is going on in your MAV while it is flying by sending commands and reading sensor data.  For most applications, a standard Wi-Fi router and dongle will suffice.  For long-range applications, you may want to look into [Ubiquiti](https://www.ubnt.com/) point-to-point Wi-Fi. (We have seen ranges over a mile with these networks)
+You will need Wi-Fi to communicate with your MAV when it is in the air. Because ROS communicates over TCP, it is very easy to use ROS to view what is going on in your MAV while it is flying by sending commands and reading sensor data. For most applications, a standard Wi-Fi router and dongle will suffice. For long-range applications, you may want to look into [Ubiquiti](https://www.ubnt.com/) point-to-point Wi-Fi. (We have seen ranges over a mile with these networks.)
 
 ## RC Transmitter and Receiver
 
-For RC Control, you will need a transmitter with between 6 and 8 channels.  Any additional channels will be wasted.  We require RC control for safe operation, and only support arming and disarming via RC control.
+For RC Control, you will need a transmitter with between 6 and 8 channels. Any additional channels will be wasted. We require RC control for safe operation, and only support arming and disarming via RC control.
 
 As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. A common RC setup is listed here, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
 
@@ -86,11 +89,11 @@ As of version 1.0, ROSflight only supports PPM (pulse position modulation) recei
 
 ## Laptop or Base Station Computer
 
-You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communicate with the MAV over the ground station wireless network.  If you are new to Linux, and want to retain access to Windows, I would recommend dual booting your computer rather than using a virtual machine. ROS networking can be problematic from a virtual environment.
+You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communicate with the MAV over the ground station wireless network. If you are new to Linux, and want to retain access to Windows, I would recommend dual booting your computer rather than using a virtual machine. ROS networking can be problematic from a virtual environment.
 
 ## Joystick
 
-The Joystick is not technically a required component because it is possible to control your MAV from the command line. It does make things easier, however.  We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration.  Other joysticks are supported, but you may need to perform custom axis and button mappings.
+The Joystick is not technically a required component because it is possible to control your MAV from the command line. It does make things easier, however. We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration. Other joysticks are supported, but you may need to perform custom axis and button mappings.
 
 # Wiring diagram
 
@@ -98,7 +101,7 @@ Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboa
 
 ![Wiring Diagram](images/Wiring_Diagram.png)
 
-Your needs will likely be slightly different than what is shown.  This is meant as an example only and can be adapted to fit your needs.
+Your needs will likely be slightly different than what is shown. This is meant as an example only and can be adapted to fit your needs.
 
 # Motor layouts
 
@@ -128,14 +131,14 @@ The **ESC calibration** mixer directly outputs the throttle command equally to e
 
 # Connecting to the Flight Controller
 
-The flight controller communicates with the onboard computer over a serial link.  ROSflight only supports one serial connection at a time and by default should be the serial link connected to the USB connector on the board.
+The flight controller communicates with the onboard computer over a serial link. ROSflight only supports one serial connection at a time and by default should be the serial link connected to the USB connector on the board.
 
 ## Using secondary serial links (example: use with telemetry radio)
 
-In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector, however UART3 can be also used to communicate with the onboard computer if you desire a more secure connection (micro USB connectors have been known to come off in high vibrations) or if you would like to use a telemetry radio for remote control.  
+In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector, however UART3 can be also used to communicate with the onboard computer if you desire a more secure connection (micro USB connectors have been known to come off in high vibrations) or if you would like to use a telemetry radio for remote control.
 
 If a usb connection is detected on the USB peripheral, ROSflight will direct all communication on this port, however if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
 
-We have had the most sucess with the SiK radios (AKA 3DR telemetry radios).  These require a 5V supply and ground and connect directly to the UART3 pins.  We like the SiK radios because they can be easily configured using the `AT-commands`, which are used by [MissionPlanner](http://ardupilot.org/planner/)(Windows only), [sikset.py](https://community.emlid.com/t/sikset-py-a-python-script-to-easily-control-your-rfd900-3dr-radio-from-the-command-line/3654) or with the [AT-commands](http://files.rfdesign.com.au/Files/documents/Software%20manual.pdf) directly on the command line.  There are a number of configuration options available which should be used to optimize the radios for their intended usage.
+We have had the most sucess with the SiK radios (AKA 3DR telemetry radios). These require a 5V supply and ground and connect directly to the UART3 pins. We like the SiK radios because they can be easily configured using the `AT-commands`, which are used by [MissionPlanner](http://ardupilot.org/planner/)(Windows only), [sikset.py](https://community.emlid.com/t/sikset-py-a-python-script-to-easily-control-your-rfd900-3dr-radio-from-the-command-line/3654) or with the [AT-commands](http://files.rfdesign.com.au/Files/documents/Software%20manual.pdf) directly on the command line. There are a number of configuration options available which should be used to optimize the radios for their intended usage.
 
 This is just an example, any UART-based communication interface should be supported through this interface.

@@ -1,6 +1,6 @@
 # Autopilot Setup
 
-Note: For a more in-depth guide, see "Building and Flashing" in the Developer Guide.
+Note: For more in-depth information, see [Building and Flashing](/developer-guide/building-flashing) in the Developer Guide.
 
 ## Compatible hardware
 
@@ -9,7 +9,7 @@ As of January 2018, ROSflight is only supported on flight controllers with STM32
 ## Configure your machine to recognize the flight controller
 
 !!! tip
-    You can see which groups you are in by running `groups $USER` on the command line.
+    You can see which groups you are a member of by running `groups $USER` on the command line.
 
 * Be sure your user is in the `dialout` and `plugdev` groups so you have access to the serial ports. You will need to log out and back in for these changes to take effect.
 ``` bash
@@ -47,15 +47,18 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664"
     * Connect your flight controller
     * Make sure that you have selected the right port (or DFU in the case of F4-based boards)
     * Select "Load Firmware (Local)"
-    * Select your .hex file you downloaded earlier.
-![cleanflight_gui_1](images/cleanflight_configurator-1.png)
+    * Select your \*.hex file you downloaded earlier.
     * Short the boot pins on your flight controller, unplug it, and and plug back in.
+
+![cleanflight_gui_1](images/cleanflight_configurator-1.png)
+
 * If you scroll to the bottom of the screen, you will see the green bar indicate progress as the hex is flashed to the flight controller. You should then see something like the following:
+
 ![success](images/sucessful_flash.png)
 
 * You're done! Great job.
 
-## Flashing F4 boards from Command Line
+## Flashing F4 boards from the Command Line
 
 You can use dfu-util to flash the firmware. This is helpful if you need (or prefer) a command-line interface. Install the dfu-util utility with:
 

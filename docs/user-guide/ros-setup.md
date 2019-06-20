@@ -1,6 +1,6 @@
 # Installing/Setting up ROS
 
-You will need to install ROS on both the onboard computer and base station laptop. Check out the [Official ROS Installation](http://wiki.ros.org/ROS/Installation) page for details on how to do this.
+You will need to install ROS on both the onboard computer and base station laptop. Check out the official [ROS Installation](http://wiki.ros.org/ROS/Installation) page for details on how to do this.
 
 Currently only the long-term support [ROS Kinetic](http://wiki.ros.org/kinetic/Installation) and [ROS Melodic](http://wiki.ros.org/melodic/Installation) releases are supported, with the recommended operating system being Ubuntu 16.04 and 18.04 respectively. If storage and/or hardware resources are limited on your onboard computer, you can install the bare-bones ROS package (e.g. `ros-kinetic-ros-base`) instead of the full desktop version.
 
@@ -84,7 +84,8 @@ For details on all parameters, topics, and services related to the `rosflight_io
 
 It is likely that your flip32/naze32 board doesn't work correctly out of the box with the TX2. To fix this, you need to build some drivers in with the kernel. This process is pretty straight-forward.
 
-To build the kernel with additional USB drivers, follow the instructions and video found [here](https://www.jetsonhacks.com/2018/03/22/build-kernel-modules-nvidia-jetson-tx2-2/). This video shows the ACM (?and CH341?) module being added, however, there are a few additional drivers you will likely require. These include:
+To build the kernel with additional USB drivers, follow the instructions and video found [here](https://www.jetsonhacks.com/2018/03/22/build-kernel-modules-nvidia-jetson-tx2-2/). This video shows the CH341 module being added. However, there are a few additional drivers you will likely require. These include:
+
 - USB Winchiphead CH341 Single Port Serial Driver
 - USB Modem (CDC ACM) support
 - USB CP210x family of UART Bridge Controllers

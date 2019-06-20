@@ -24,7 +24,7 @@ This is an example of a ROSflight pre-flight checklist. You will likely need to 
 ### After Powering Up Motors
 
 !!! warning
-    Be sure flight controller is disarmed before powering up motors!!!
+    Be sure the flight controller is disarmed before powering up motors!!!
 - Arm/Disarm test
 - Propeller spin test (check directions and response to stick inputs)
 - Control surface test (fixed-wing)
