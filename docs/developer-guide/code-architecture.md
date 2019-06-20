@@ -1,7 +1,7 @@
 # Code Architecture
 
 The firmware is divided into two main components: the _ROSflight library_, and a collection of _board implementations_.
-This division is intended to allow the same core flight code to run on any processor or platform, either an embedded flight controller (such as the Naze32 or Revo) or a desktop environment for a software-in-the-loop (SIL) simulation. The interface between these two components is called the _hardware abstraction layer_.
+This division is intended to allow the same core flight code to run on any processor or platform, either an embedded flight controller (such as the Naze32 or Revo) or a desktop environment for a software-in-the-loop (SIL) simulation. The interface between these two components is called the _hardware abstraction layer_ (HAL).
 This architecture is illustrated in the following diagram:
 
 ![hardware abstraction layer](images/HAL.svg)

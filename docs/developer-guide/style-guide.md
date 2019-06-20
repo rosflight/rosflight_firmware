@@ -159,9 +159,9 @@ The use of global variables should be limited to when absolutely necessary (such
 Include files at the top of your file in the following order:
 
 1. Standard library (e.g. `<cstdint>`)
-2. Files from external libraries included in the project (e.g. `<breezystm32/breezystm32.h>`, `<mavlink/v1.0/common/mavlink.h>`)
-3. Other header files from this project (e.g. `"rosflight.h"`)
-4. The header file for this specific source file
+1. Files from external libraries included in the project (e.g. `<breezystm32/breezystm32.h>`, `<mavlink/v1.0/common/mavlink.h>`)
+1. Other header files from this project (e.g. `"rosflight.h"`)
+1. The header file for this specific source file
 
 Group the includes according to the above list with an empty line between each group. (For external libraries, you may subdivide group 2 into a group for each library.) The first two groups should use angle brackets (`<>`), and the last two groups should use quotation marks (`""`). Files from external libraries should be namespaced by the library name (e.g. `<breezystm32/breezystm32.h>`, not `<breezystm32.h>`).
 

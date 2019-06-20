@@ -30,7 +30,7 @@ make
 
 ## Flashing Newly Built Firmware (F4 & F1)
 
-See [Autopilot Setup](/user-guide/autopilot-setup.md) for full instructions.
+See [Autopilot Setup](/user-guide/autopilot-setup) for full instructions.
 
 
 ## Building and Running Unit Tests

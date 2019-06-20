@@ -1,6 +1,6 @@
 # Using an In-Circuit Debugger with a Naze32 (and variants)
 
-Debugging a naze32 is easiest with an ST-Link V2.  You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator or Visual Studio Code and the in-circuit debugger.
+Debugging a naze32 is easiest with an ST-Link V2. You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator or Visual Studio Code and the in-circuit debugger.
 
 !!! warning
     We have had reports of problems with cheap clones of ST-Links not connecting.
@@ -243,9 +243,9 @@ If you do not want to call `make` from the terminal for every change, you can al
 
 Here are the instructions for an F1 target. The instructions are very similar for an F4, just choose the correct `.elf` file.
 
-### Turn on Debugger
+### Turn on the Debugger
 
-Connect the debugger to your flight controller. Here is the pinout for the Flip32 and Flip32+
+Connect the debugger to your flight controller. Here is the pinout for the Flip32 and Flip32+:
 ![flip32 pinout](http://www.dronetrest.com/uploads/db5290/694/14344b7ed01cb324.jpg)
 
 Plug in the debugger and start openocd (you will need sudo privileges):
