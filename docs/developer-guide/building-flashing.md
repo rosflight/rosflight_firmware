@@ -32,30 +32,6 @@ make
 
 See [Autopilot Setup](/user-guide/autopilot-setup) for full instructions.
 
-
-## Building and Running Unit Tests
-
-Contributions will need to pass our continuous integration unit tests before merging. To test your contributions against these tests, you'll first need to install Eigen and gtest:
-
-``` bash
-sudo apt install libgtest-dev libeigen3-dev cmake
-cd /usr/src/gtest
-sudo cmake CMakeLists.txt
-sudo make
-sudo cp *.a /usr/lib
-```
-
-Then you'll need to build and run the tests themselves:
-
-``` bash
-cd <firmware_directory>/test
-mkdir build
-cd build
-cmake ..
-make
-./unit_tests
-```
-
 ## Bonus
 
 If you want to try to use the latest gcc compiler provided by ARM, use the following steps to install:
