@@ -26,9 +26,9 @@ Here is a flowchart describing my PID tuning process for roll and pitch:
 
 You may want to do another D-tuning iteration. Additionally, sometimes it is helpful to do a little tweaking on roll and pitch separately to eek out a little more performance from the differences in roll and pitch dynamics of your vehicle.
 
-Notice that I didn't include any I tuning. As a general rule, try to keep the I gain as low as possible. It will _always_ slow your response rate to input, and it can induce low frequency oscillations.
+Notice that we did not include any `I` tuning. As a general rule, try to keep the `I` gain as low as possible. It will _always_ slow your response rate to input, and it can induce low frequency oscillations.
 
-You should _only_ have I gain on roll and pitch if one of the following is true:
+You should _only_ have `I` gain on roll and pitch if one of the following is true:
 
 1. You expect your CG to change, and/or
 1. You expect your rotor geometry to change
@@ -38,11 +38,11 @@ Both of these are pretty rare. Instead, use your RC transmitter to trim the airc
 
 ### Tuning Yaw rate
 
-Dynamically and algorithmically, using a D gain in yaw-rate control has no significant advantage. Controlling with derivative requires differentiating gyro measurements, which tends to be pretty noisy. In our experience, putting D in rate controllers on multirotors has always decreased performance.
+Dynamically and algorithmically, using a `D` gain in yaw-rate control has no significant advantage. Controlling with derivative requires differentiating gyro measurements, which tends to be pretty noisy. In our experience, putting `D` in rate controllers on multirotors has always decreased performance.
 
-Tuning yaw rate is generally pretty easy. Basically, keep cranking it up until you feel like it's "locked in". Sometimes, a little bit of I (on the order of 0.1P) can help with this as well.
+Tuning yaw rate is generally pretty easy. Basically, keep cranking it up until you feel like it's "locked in". Sometimes, a little bit of `I` (on the order of 0.1P) can help with this as well.
 
-The problem with too much P on yaw rate generally manifests itself in motor saturation. Some, especially larger, multirotors have problems getting enough control authority in yaw with the propellers being aligned flat. After you are done tuning, you might want to look at a plot of motor commands during a fairly aggressive flight. Underactuated yaw will be pretty obvious in these plots, because you will see the motor commands railing. To fix this, you can put shims between the arm mounts and the motors to tilt the motors just a little bit in the direction of yaw for that motor.
+The problem with too much `P` on yaw rate generally manifests itself in motor saturation. Some, especially larger, multirotors have problems getting enough control authority in yaw with the propellers being aligned flat. After you are done tuning, you might want to look at a plot of motor commands during a fairly aggressive flight. Underactuated yaw will be pretty obvious in these plots, because you will see the motor commands railing. To fix this, you can put shims between the arm mounts and the motors to tilt the motors just a little bit in the direction of yaw for that motor.
 
 ## RC trim (Feed-Forward Torque Calculation)
 
@@ -66,11 +66,10 @@ The `ACC_LPF_ALPHA` and `GYRO_LPF_ALPHA` parameters are used in the following lo
 
 $$x_t = (1-\alpha)y_t + \alpha x_{t-1}$$
 
-
 where \(y_t\) is the measurement and \(x_t\) is the filtered value. Lowering \(\alpha\) will reduce lag in response, so if you feel like your MAV is sluggish despite all attempts at controller gain tuning, consider reducing \(\alpha\). Reducing \(\alpha\) too far, however will result in a lot of noise from the sensors making its way into the motors. This can cause motors to get really hot, so make sure you check motor temperature if you are changing the low-pass filter constants.
 
 ### Tuning the Complementary Filter
-The complementary filter has two gains, \(k_p\) and \(k_i\). For a complete understanding of how these work, I would recommend reading the Mahony Paper, or the technical report in the reports folder. In short, \(k_p\) can be thought of as the strength of accelerometer measurements in the filter, and the \(k_i\) gain is the integral constant on the gyro bias. These values should probably not be changed. Before you go changing these values, make sure you _completely_ understand how they work in the filter.
+The complementary filter has two gains, \(k_p\) and \(k_i\). For a complete understanding of how these work, we recommend reading the Mahony Paper, or the technical report in the reports folder. In short, \(k_p\) can be thought of as the strength of accelerometer measurements in the filter, and the \(k_i\) gain is the integral constant on the gyro bias. These values should probably not be changed. Before you go changing these values, make sure you _completely_ understand how they work in the filter.
 
 If you do decide to change these values, you should stick to the following rule of thumb.
 

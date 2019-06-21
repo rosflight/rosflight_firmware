@@ -10,8 +10,13 @@ sudo apt install lib32ncurses5 lib32tinfo5 libc6-i386
 
 To build the firmware, you will need a supported version of the ARM embedded toolchain (the compiler). If you are using the Ubuntu operating on an ARM chip, you can simply install gcc with `apt`. Otherwise, you will need to use a different method to install the ARM gcc compiler. You may attempt to use the latest stable release provided on the [ARM](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads) website, but we cannot guarantee an error-free experience. If you do use that method, we encourage you to verify the MD5 checksum. Currently, we are targeting version 6.3.1 of the gcc-arm-none-eabi compiler provided by the team-gcc-arm-embedded Ubuntu ppa. The instructions for installing this version follow, with the first command lessening the likelihood of an error while adding the ppa to your system:
 
+!!! note
+    If adding the ppa to your system fails, try running the following line before attempting to add the ppa once more:
+    ``` bash
+    sudo apt install --reinstall ca-certificates
+    ```
+
 ``` bash
-sudo apt install --reinstall ca-certificates
 sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
 sudo apt update
 sudo apt install gcc-arm-none-eabi
