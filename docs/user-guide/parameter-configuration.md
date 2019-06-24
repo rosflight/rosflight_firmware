@@ -120,16 +120,16 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | PID_ROLL_RATE_P | Roll Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_I | Roll Rate Integral Gain | float |  0.000f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_D | Rall Rate Derivative Gain | float |  0.000f | 0.0 | 1000.0 |
-| PID_PITCH_RATE_P | Pitch Rate Proporitional Gain | float |  0.070f | 0.0 | 1000.0 |
+| PID_PITCH_RATE_P | Pitch Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_I | Pitch Rate Integral Gain | float |  0.0000f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_D | Pitch Rate Derivative Gain | float |  0.0000f | 0.0 | 1000.0 |
-| PID_YAW_RATE_P | Yaw Rate Proporitional Gain | float |  0.25f | 0.0 | 1000.0 |
+| PID_YAW_RATE_P | Yaw Rate Proportional Gain | float |  0.25f | 0.0 | 1000.0 |
 | PID_YAW_RATE_I | Yaw Rate Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_YAW_RATE_D | Yaw Rate Derivative Gain | float |  0.0f | 0.0 | 1000.0 |
-| PID_ROLL_ANG_P | Roll Angle Proporitional Gain | float |  0.15f | 0.0 | 1000.0 |
+| PID_ROLL_ANG_P | Roll Angle Proportional Gain | float |  0.15f | 0.0 | 1000.0 |
 | PID_ROLL_ANG_I | Roll Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_ROLL_ANG_D | Roll Angle Derivative Gain | float |  0.05f | 0.0 | 1000.0 |
-| PID_PITCH_ANG_P | Pitch Angle Proporitional Gain | float |  0.15f | 0.0 | 1000.0 |
+| PID_PITCH_ANG_P | Pitch Angle Proportional Gain | float |  0.15f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_I | Pitch Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_D | Pitch Angle Derivative Gain | float |  0.05f | 0.0 | 1000.0 |
 | X_EQ_TORQUE | Equilibrium torque added to output of controller on x axis | float |  0.0f | -1.0 | 1.0 |
@@ -189,7 +189,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | SWITCH_6_DIR | RC switch 6 toggle direction | int |  1 | -1 | 1 |
 | SWITCH_7_DIR | RC switch 7 toggle direction | int |  1 | -1 | 1 |
 | SWITCH_8_DIR | RC switch 8 toggle direction | int |  1 | -1 | 1 |
-| RC_OVRD_DEV | RC stick deviation from center for overrride | float |  0.1 | 0.0 | 1.0 |
+| RC_OVRD_DEV | RC stick deviation from center for override | float |  0.1 | 0.0 | 1.0 |
 | OVRD_LAG_TIME | RC stick deviation lag time before returning control (ms) | int |  1000 | 0 | 100000 |
 | MIN_THROTTLE | Take minimum throttle between RC and computer at all times | int |  true | 0 | 1 |
 | RC_ATT_MODE | Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | int |  1 | 0 | 1 |
@@ -199,12 +199,13 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | RC_MAX_PITCHRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  3.14159f | 0.0 | 3.14159 |
 | RC_MAX_YAWRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  1.507f | 0.0 | 3.14159 |
 | MIXER | Which mixer to choose - See Mixer documentation | int |  Mixer::INVALID_MIXER | 0 | 10 |
-| FIXED_WING | switches on passthrough commands for fixed-wing operation | int |  false | 0 | 1 |
+| FIXED_WING | switches on pass-through commands for fixed-wing operation | int |  false | 0 | 1 |
 | ELEVATOR_REV | reverses elevator servo output | int |  0 | 0 | 1 |
 | AIL_REV | reverses aileron servo output | int |  0 | 0 | 1 |
 | RUDDER_REV | reverses rudder servo output | int |  0 | 0 | 1 |
-| FC_ROLL | roll angle (deg) of flight controller wrt to aircraft body | float |  0.0f | 0 | 360 |
-| FC_PITCH | pitch angle (deg) of flight controller wrt to aircraft body | float |  0.0f | 0 | 360 |
-| FC_YAW | yaw angle (deg) of flight controller wrt to aircraft body | float |  0.0f | 0 | 360 |
+| FC_ROLL | roll angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
+| FC_PITCH | pitch angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
+| FC_YAW | yaw angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
 | ARM_THRESHOLD | RC deviation from max/min in yaw and throttle for arming and disarming check (us) | float |  0.15 | 0 | 500 |
 | OFFBOARD_TIMEOUT | Timeout in milliseconds for offboard commands, after which RC override is activated | int |  100 | 0 | 100000 |
+
