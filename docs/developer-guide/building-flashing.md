@@ -1,10 +1,6 @@
 # Building and Flashing the Firmware
 
-You _**might**_ first need to install some 32-bit dependencies:
-
-```bash
-sudo apt install lib32ncurses5 lib32tinfo5 libc6-i386
-```
+Additionally, make sure you have configured your computer as described in the [Serial Port Configuration](/user-guide/autopilot-setup/#serial-port-configuration) in the User Guide.
 
 ## Building Firmware from Source
 
@@ -33,11 +29,23 @@ git submodule update --init --recursive
 make
 ```
 
-## Flashing Newly Built Firmware (F4 & F1)
+## Flashing Newly Built Firmware
 
-See [Autopilot Setup](/user-guide/autopilot-setup) for full instructions.
+### F4
+
+* Flash the firmware to the board by running `make BOARD=REVO flash`
+
+### F1
+
+* Flash the firmware to the board by running `make BOARD=NAZE flash`
 
 ## Bonus
+
+!!! Note
+    You _**might**_ first need to install some 32-bit dependencies:
+    ```bash
+    sudo apt install lib32ncurses5 lib32tinfo5 libc6-i386
+    ```
 
 If you want to try to use the latest gcc compiler provided by ARM, use the following steps to install:
 
@@ -47,7 +55,7 @@ If you want to try to use the latest gcc compiler provided by ARM, use the follo
 ``` bash
 cd ~/Downloads
 tar -xvf gcc-arm-none-eabi-<gcc_version>-linux.tar.bz2
-sudo mv gcc-arm-none-eabi-5_4-2016q3 /opt/
+sudo mv gcc-arm-none-eabi-<gcc_version> /opt/
 ```
 
 For convenience, you might want to add the `bin` folder of the compiler to your path so you can call it from anywhere. To do that, just append the following line to the bottom of your `~/.bashrc` file:
