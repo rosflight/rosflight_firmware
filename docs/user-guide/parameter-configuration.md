@@ -99,7 +99,7 @@ Because ROSflight ships with default parameters for multirotors, you will probab
 
 ## Description of all Parameters
 
-This is a list of all parameters on ROSflight, their types, default values, and minimum and maximum recommended setting:
+This is a list of all ROSflight parameters, including their types, default values, and minimum and maximum recommended values:
 
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
@@ -119,7 +119,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | PARAM_MAX_CMD | saturation point for PID controller output | float |  1.0 | 0 | 1.0 |
 | PID_ROLL_RATE_P | Roll Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_I | Roll Rate Integral Gain | float |  0.000f | 0.0 | 1000.0 |
-| PID_ROLL_RATE_D | Rall Rate Derivative Gain | float |  0.000f | 0.0 | 1000.0 |
+| PID_ROLL_RATE_D | Roll Rate Derivative Gain | float |  0.000f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_P | Pitch Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_I | Pitch Rate Integral Gain | float |  0.0000f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_D | Pitch Rate Derivative Gain | float |  0.0000f | 0.0 | 1000.0 |
@@ -208,4 +208,3 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | FC_YAW | yaw angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
 | ARM_THRESHOLD | RC deviation from max/min in yaw and throttle for arming and disarming check (us) | float |  0.15 | 0 | 500 |
 | OFFBOARD_TIMEOUT | Timeout in milliseconds for offboard commands, after which RC override is activated | int |  100 | 0 | 100000 |
-
