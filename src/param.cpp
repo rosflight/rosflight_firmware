@@ -106,8 +106,8 @@ void Params::set_defaults(void)
   /*** MAVLINK CONFIGURATION ***/
   /*****************************/
   init_param_int(PARAM_SYSTEM_ID, "SYS_ID", 1); // Mavlink System ID  | 1 | 255
-  init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1); // Rate of heartbeat streaming (Hz) | 0 | 1000
-  init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status streaming (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_HEARTBEAT_RATE, "STRM_HRTBT", 1); // Rate of heartbeat stream (Hz) | 0 | 1000
+  init_param_int(PARAM_STREAM_STATUS_RATE, "STRM_STATUS", 10); // Rate of status stream (Hz) | 0 | 1000
 
   init_param_int(PARAM_STREAM_ATTITUDE_RATE, "STRM_ATTITUDE", 200); // Rate of attitude stream (Hz) | 0 | 1000
   init_param_int(PARAM_STREAM_IMU_RATE, "STRM_IMU", 250); // Rate of IMU stream (Hz) | 0 | 1000
@@ -245,9 +245,9 @@ void Params::set_defaults(void)
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0); // reverses aileron servo output | 0 | 1
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0); // reverses rudder servo output | 0 | 1
 
-  init_param_float(PARAM_FC_ROLL, "FC_ROLL", 0.0f); // roll angle (deg) of flight controller wrt to aircraft body | -180 | 180
-  init_param_float(PARAM_FC_PITCH, "FC_PITCH", 0.0f); // pitch angle (deg) of flight controller wrt to aircraft body | -180 | 180
-  init_param_float(PARAM_FC_YAW, "FC_YAW", 0.0f); // yaw angle (deg) of flight controller wrt to aircraft body | -180 | 180
+  init_param_float(PARAM_FC_ROLL, "FC_ROLL", 0.0f); // roll angle (deg) of flight controller wrt to aircraft body | 0 | 360
+  init_param_float(PARAM_FC_PITCH, "FC_PITCH", 0.0f); // pitch angle (deg) of flight controller wrt to aircraft body | 0 | 360
+  init_param_float(PARAM_FC_YAW, "FC_YAW", 0.0f); // yaw angle (deg) of flight controller wrt to aircraft body | 0 | 360
 
 
   /********************/
