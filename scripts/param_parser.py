@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 __author__ = "James Jackson"
 __copyright__ = "Copyright 2017, ROSflight"
