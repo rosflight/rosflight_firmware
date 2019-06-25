@@ -86,13 +86,13 @@ cd /opt/openocd/0.10.0-5-20171110-1117/bin
 !!! Note
     On more recent versions of openocd, `interface/stlink-v2.cfg` is deprecated. Use `interface/stlink.cfg` instead.
 
-I move these to the `~/.local/bin` directory so I can call it from anywhere:
+I move these to the `/usr/local/bin` directory so I can call it from anywhere:
 
 ``` bash
 chmod +x start_openocd_f1
 chmod +x start_openocd_f4
-mv start_openocd_f1 ~/.local/bin
-mv start_openocd_f4 ~/.local/bin
+mv start_openocd_f1 /usr/local/bin
+mv start_openocd_f4 /usr/local/bin
 ```
 
 ### For VSCode
@@ -117,7 +117,7 @@ cd /opt/openocd/0.10.0-11-20190118-1134/bin
 ./openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c "gdb_port 50250" -c init -c "reset init"
 ```
 
-As shown above, this script can be added to your `~/.local/bin` if you want to be able to call it from anywhere.
+As shown above, this script can be added to your `/usr/local/bin` if you want to be able to call it from anywhere.
 
 ## Install ARM compiler and 32-bit Dependencies
 
