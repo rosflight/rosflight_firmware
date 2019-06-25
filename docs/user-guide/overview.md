@@ -33,7 +33,7 @@ The firmware runs a number of error checks before allowing the flight controller
 Completing the configuration checklist on the [Getting Started](/user-guide/getting-started) page should avoid these errors.
 In addition to a few internal health checks, the following conditions are checked:
 
-  - **Mixer:** Valid mixer must have been selected (see the [hardware setup](/user-guide/hardware-setup) documentation page)
+  - **Mixer:** Valid mixer must have been selected (see the [Hardware Setup](/user-guide/hardware-setup) documentation page)
   - **IMU calibration:** The IMU must have been calibrated since firmware was flashed (it is recommended that you recalibrate often)
   - **RC:** There must be an active RC connection
 

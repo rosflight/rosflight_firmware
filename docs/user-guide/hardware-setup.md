@@ -98,7 +98,7 @@ You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communica
 
 The Joystick is not technically a required component because it is possible to control your MAV from the command line. It does make things easier, however. We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration. Other joysticks are supported, but you may need to perform custom axis and button mappings.
 
-# Wiring diagram
+# Wiring Diagram
 
 Below is an example wiring diagram for a multirotor using an MSI Cubi as a companion computer. This diagram also includes the motor power switch, which allows for the sensors, flight controller, and companion computer to be powered on while the motors are off. This is a safer way to test sensors, code, etc. as the motors are unable to spin while the switch is off.
 
@@ -106,7 +106,7 @@ Below is an example wiring diagram for a multirotor using an MSI Cubi as a compa
 
 Your needs will likely be slightly different than what is shown. This is meant as an example only and can be adapted to fit your needs.
 
-# Motor layouts
+# Motor Layouts
 
 The desired mixer can be chosen by setting the `MIXER` parameter to the following values:
 
