@@ -6,6 +6,9 @@
 
 ## Compatible hardware
 
+!!! Warning
+    Deprecation Notice: As of June 2019, plans are to deprecate support for the F1 in the near future. If you need to use an F1, you will need to retrieve an older version of the code that supports the F1. However, if there are issues, we will not be able to help you fix them.
+
 As of January 2018, ROSflight is only supported on flight controllers with STM32F103 and STM32F405 processors, specifically, the revo, naze32, and flip32. Both the 6-DOF and 10-DOF versions of each board are fully supported. We have had the most success with revo boards purchased from [HobbyKing](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us). We have had weird issues with knock-off boards from Chinese vendors. An acro version (IMU-Only) can be found at [readytoflyquads](https://www.readytoflyquads.com/openpilot-cc3d-revolution-acro).
 
 ## Serial Port Configuration
@@ -73,6 +76,7 @@ You can use dfu-util to flash the firmware. This is helpful if you need (or pref
 ``` bash
 sudo apt install dfu-util
 ```
+
 * Download the latest rosflight-F4.bin file, [found here](https://github.com/rosflight/firmware/releases)
 * Put the board in bootloader mode (short the boot pins while restarting the board by cycling power)
 
