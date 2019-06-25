@@ -7,18 +7,15 @@ Additionally, make sure you have configured your computer as described in the [S
 
 ## Building Firmware from Source
 
-To build the firmware, you will need a supported version of the ARM embedded toolchain (the compiler). If you are using the Ubuntu operating on an ARM chip, you can simply install gcc with `apt`. Otherwise, you will need to use a different method to install the ARM gcc compiler. You may attempt to use the latest stable release provided on the [ARM](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads) website, but we cannot guarantee an error-free experience. If you do use that method, we encourage you to verify the MD5 checksum. Currently, we are targeting version 6.3.1 of the gcc-arm-none-eabi compiler provided by the team-gcc-arm-embedded Ubuntu ppa. The instructions for installing this version follow, with the first command lessening the likelihood of an error while adding the ppa to your system:
-
-!!! note
-    If adding the ppa to your system fails, try running the following line before attempting to add the ppa once more:
-    ``` bash
-    sudo apt install --reinstall ca-certificates
-    ```
+To build the firmware, you will need a supported version of the ARM embedded toolchain (the compiler). If you are using the Ubuntu operating on an ARM chip, you can simply install gcc with `apt`. Otherwise, you will need to use a different method to install the ARM gcc compiler. We recommend using the latest stable release provided on the [ARM](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads) website. If you do use this method, we encourage you to verify the MD5 checksum after downloading. Currently (as of June 2019), we are targeting version 6.3.1 of the gcc-arm-none-eabi compiler provided by the [6-2017-q2-update](https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2?revision=2cc92fb5-3e0e-402d-9197-bdfc8224d8a5?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,6-2017-q2-update). The instructions for installing this version follow:
 
 ``` bash
-sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
-sudo apt update
-sudo apt install gcc-arm-none-eabi
+cd Downloads
+wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2?revision=2cc92fb5-3e0e-402d-9197-bdfc8224d8a5?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,6-2017-q2-update
+tar -xvf gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
+sudo mv gcc-arm-none-eabi-6-2017-q2-update /opt/.
+echo "export PATH=$PATH:/opt/gcc-arm-none-eabi-6-2017-q2-update/bin" >> ~/.bashrc
+rm -rf gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
 ```
 
 You can check which version installed by running `arm-none-eabi-gcc --version`.
