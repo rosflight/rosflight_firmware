@@ -1,12 +1,12 @@
 # Installing/Setting up ROS
 
-You will need to install ROS on both the onboard computer and base station laptop. Check out the official [ROS Installation](http://wiki.ros.org/ROS/Installation) page for details on how to do this.
+You will need to install ROS on both the companion computer and the base station laptop. Check out the official [ROS Installation](http://wiki.ros.org/ROS/Installation) page for details on how to do this.
 
-Currently only the long-term support [ROS Kinetic](http://wiki.ros.org/kinetic/Installation) and [ROS Melodic](http://wiki.ros.org/melodic/Installation) releases are supported, with the recommended operating system being Ubuntu 16.04 and 18.04 respectively. If storage and/or hardware resources are limited on your onboard computer, you can install the bare-bones ROS package (e.g. `ros-kinetic-ros-base`) instead of the full desktop version.
+Currently only the long-term support [ROS Kinetic](http://wiki.ros.org/kinetic/Installation) and [ROS Melodic](http://wiki.ros.org/melodic/Installation) releases are supported, with the recommended operating system being Ubuntu 16.04 and 18.04 respectively. If storage and/or hardware resources are limited on your companion computer, you can install the bare-bones ROS package (e.g. `ros-kinetic-ros-base`) instead of the full desktop version.
 
 ## Installing ROSflight
 
-You will need to install the ROSflight packages on both your onboard computer and your base station computer. The onboard computer will run the node that actually communicates with the flight controller over a serial connection, while the base station needs the message and service definitions to be able to call services or subscribe and publish to topics.
+You will need to install the ROSflight packages on both the companion computer and the base station computer. The companion computer will run the node that actually communicates with the flight controller over a serial connection, while the base station needs the message and service definitions to be able to call services or subscribe and publish to topics.
 
 ### From the apt repository
 

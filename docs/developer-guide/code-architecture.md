@@ -77,11 +77,11 @@ The operation of the state manager is defined by the following finite state mach
 ### Parameter Server
 This module handles all parameters for the flight stack.
 It supports the getting and setting of integer and floating point parameters, and the saving of these parameters to non-volatile memory.
-Setting and getting of parameters from the onboard computer is done through the MAVLink interface.
+Setting and getting of parameters from the companion computer is done through the MAVLink interface.
 While no other data flow lines are shown on the diagram, all of the other modules interact with the parameter server.
 
 ### Comm Manager
-This module handles all serial communication between the flight controller and onboard computer.
+This module handles all serial communication between the flight controller and companion computer.
 This includes streaming data and receiving offboard control setpoints and other commands from the computer.
 This module primarily collects data from the sensors, estimator, state manager, and parameters modules, and sends offboard control setpoints to the command manager and parameter requests to the parameter server.
 

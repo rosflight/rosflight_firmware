@@ -2,21 +2,21 @@ This page provides an overview of the basic operation of the ROSflight firmware 
 
 # Companion computer
 
-ROSflight is primarily intended to be used with an onboard companion computer running ROS.
+ROSflight is primarily intended to be used with a companion companion computer running ROS.
 The ROS interface is provided by the [rosflight_io](http://wiki.ros.org/rosflight) node.
 All configuration of the flight controller is done through the ROS service API provided by `rosflight_io` (see the [parameter configuration](/user-guide/parameter-configuration) documentation page).
 Sensor data such as IMU measurements are streamed from the flight controller to the companion computer and published as ROS topics.
 Control setpoints can also be sent to the flight controller by publishing to the appropriate ROS topic (see the [autonomous flight](/user-guide/autonomous-flight) documentation page).
 
-_A quick note on terminology:_ We commonly refer to the companion computer as the "onboard" computer, since it is carried onboard the vehicle [as in board the train].
-However, we also refer to the control setpoints passed from that computer to the flight controller as "offboard" control [as in circuit board].
+_A quick note on terminology:_ We commonly refer to the companion computer as the "onboard" computer, since it is carried onboard the vehicle (as in board the train).
+However, we also refer to the control setpoints passed from that computer to the flight controller as "offboard" control (as in circuit board).
 The control is "offboard" from the perspective of the flight controller, even though the computer providing those commands is "onboard" the vehicle.
 Perhaps this is not the greatest terminology, but hopefully this helps clear up potential confusion.
 
 # RC safety pilot
 
 ROSflight is designed for use with offboard control from experimental and research code.
-As such, it provides several mechanisms for an RC safety pilot to intervene if something goes wrong with the control setpoints coming from the onboard computer:
+As such, it provides several mechanisms for an RC safety pilot to intervene if something goes wrong with the control setpoints coming from the companion computer:
 
   - **RC override switch:** The safety pilot can flip a switch on the transmitter to take back RC control. Attitude and throttle override can be mapped independently, meaning you can choose one or the other, put them on separate switches, or put them both on the same switch. Details on these switches are provided on the [RC configuration](/user-guide/rc-configuration) page.
   - **Stick deviations:** If a stick is deviated from its center position, then that channel is overridden by RC control. This allows the safety pilot to take control without flipping a switch. This may be useful to provide a momentary correction on a single axis. The fraction of stick travel needed to activate the RC override is controlled by the `RC_OVRD_DEV` parameter. The `OVRD_LAG_TIME` parameter controls the amount of time that the override remains active after the sticks return to center.

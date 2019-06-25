@@ -1,15 +1,15 @@
 # Parts List
 
-To use ROSflight to its full potential, you will need the following parts. Some parts are onboard your MAV (Miniature Aerial Vehicle), others are on the ground. ROSflight supports both multirotor and fixed-wing vehicles.
+To use ROSflight to its full potential, you will need the following system components. Some components are mounted on your MAV (Miniature Aerial Vehicle), while others are on the ground. ROSflight supports both multirotor and fixed-wing vehicles.
 
-*Onboard the MAV*
+*Mounted on the MAV*
 
 1. Aircraft Frame, Motor(s), ESC(s), Battery and Propeller(s)
 1. Flight Controller (FC)
 1. Vibration Isolation for FC
 1. Any external sensors
 1. R/C Receiver
-1. Onboard Computer
+1. Companion Computer
 1. Wi-Fi Antenna, or access of some kind to ground-station, wireless network (e.g. Ubiquiti Bullet)
 
 *Ground Station*
@@ -27,8 +27,8 @@ If you are designing your own multirotor or airplane, you may want to look at [e
 
 Some things to keep in mind as you design or build your MAV.
 
-* Most kits do not include space for an onboard computer, cameras, laser scanners or other sensors. Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
-* You will likely also need to customize the power circuitry of your MAV to provide power at some specific voltage to your onboard computer. Many people like to separate the power electronics (The ESCs and motors) from the computer and onboard sensors. This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand. We will talk about this more when we talk about wiring up your MAV.
+* Most kits do not include space for a companion computer, cameras, laser scanners or other sensors. Be sure to think about where these components are going to go, and how their placement will affect the CG of the MAV.
+* You will likely also need to customize the power circuitry of your MAV to provide power to your companion computer at some specific voltage. Many people like to separate the power electronics (the ESCs and motors), from the computer and companion sensors. This can really come in handy if you are trying to develop code on the MAV, because you can have the computer on and sensors powered, and not worry at all about propellers turning on and causing injury as you move the aircraft about by hand. We will talk about this more when we talk about wiring up your MAV.
 * Cheap propellers can cause a huge amount of vibration. Consider buying high-quality propellers, doing a propeller balance, or both. RCGroups, DIY Drones and Youtube have some awesome guides on how to do propeller balancing.
 * ESCs will need to be calibrated from 2000 to 1000 us
 
@@ -58,9 +58,9 @@ It is really important to isolate your flight controller from vehicle vibrations
 
 You may need to experiment with the amount of gel you use, how far apart the gel is spaced, and the amount of mass added to the FC mounting plate. The interaction of these factors is difficult to predict, therefore it takes a little bit of experimentation to get it right.
 
-## Onboard Computer
+## Companion Computer
 
-The only requirement for the onboard computer is that it runs Linux ( Ubuntu LTS versions 16.04 or 18.04), ROS, has at least one USB port, and can be carried by the aircraft. We have had success with the following onboard computers, but by no means is this a comprehensive list, it is more by way of suggestion.
+The only requirement for the companion computer is that it runs Linux (Ubuntu LTS versions 16.04 or 18.04), ROS, has at least one USB port, and can be carried by the aircraft. We have had success with the following companion computers, but by no means is this a comprehensive list; it is more by way of suggestion.
 
 * MSI CUBI – i7-5500U – [$350 on Amazon](https://www.amazon.com/MSI-Intel-Support-Barebones-Cubi-028BUS/dp/B011Q6BBMW/ref=sr_1_6?s=electronics&ie=UTF8&qid=1490068829&sr=1-6&keywords=i7+NUC)
 * GIGABYTE BRIX Gaming- i7-4710HQ/GTX 760 – [$850 on Amazon](https://www.amazon.com/dp/B00OJZVGFU/ref=cm_sw_su_dp)
@@ -97,7 +97,7 @@ The Joystick is not technically a required component because it is possible to c
 
 # Wiring diagram
 
-Below is an example wiring diagram for a multirotor using a MSI Cubi as an onboard computer. This diagram also includes the motor power switch, which allows for the sensors, flight controller, and onboard computer to be powered on while the motors are off. This is a safer way to test sensors, code, etc. as the motors are unable to spin while the switch is off.
+Below is an example wiring diagram for a multirotor using an MSI Cubi as a companion computer. This diagram also includes the motor power switch, which allows for the sensors, flight controller, and companion computer to be powered on while the motors are off. This is a safer way to test sensors, code, etc. as the motors are unable to spin while the switch is off.
 
 ![Wiring Diagram](images/Wiring_Diagram.png)
 
@@ -131,11 +131,11 @@ The **ESC calibration** mixer directly outputs the throttle command equally to e
 
 # Connecting to the Flight Controller
 
-The flight controller communicates with the onboard computer over a serial link. ROSflight only supports one serial connection at a time and by default should be the serial link connected to the USB connector on the board.
+The flight controller communicates with the companion computer over a serial link. ROSflight only supports one serial connection at a time and by default should be the serial link connected to the USB connector on the board.
 
 ## Using secondary serial links (example: use with telemetry radio)
 
-In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector, however UART3 can be also used to communicate with the onboard computer if you desire a more secure connection (micro USB connectors have been known to come off in high vibrations) or if you would like to use a telemetry radio for remote control.
+In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector, however UART3 can also be used to communicate with the companion computer if you desire a more secure connection (micro USB connectors have been known to disconnect in high vibrations), or if you would like to use a telemetry radio for remote control.
 
 If a usb connection is detected on the USB peripheral, ROSflight will direct all communication on this port, however if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
 

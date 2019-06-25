@@ -50,7 +50,7 @@ In the vast majority of cases, your multirotor will not be built perfectly. The 
 
 Use the RC transmitter to find the "equilibrium torques" about the x, y, and z axes to keep the multirotor level. This is done by trimming the aircraft with the RC trims. These are usually the little switches next to the sticks on your transmitter. Adjust these until you can hover the multirotor without touching the sticks.
 
-Next, land the multirotor, disarm, center the sticks and perform a trim calibration with `rosservice call /calibrate_rc_trim`. ROSflight then uses the trim settings on your transmitter to find these feed-forward, or equilibrium, torques that need to be applied post-controller to keep the multirotor level. These torques will be applied to all future commands (both from the onboard computer and RC), so *you will need to zero out your transmitter trims after calibration*.
+Next, land the multirotor, disarm, center the sticks and perform a trim calibration with `rosservice call /calibrate_rc_trim`. ROSflight then uses the trim settings on your transmitter to find these feed-forward, or equilibrium, torques that need to be applied post-controller to keep the multirotor level. These torques will be applied to all future commands (both from the companion computer and RC), so *you will need to zero out your transmitter trims after calibration*.
 
 ## Estimator Tuning
 

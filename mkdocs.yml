@@ -44,7 +44,7 @@ pages:
     - Overview: user-guide/overview.md
     - Getting Started: user-guide/getting-started.md
     - Hardware Setup: user-guide/hardware-setup.md
-    - Autopilot Setup: user-guide/autopilot-setup.md
+    - Flight Controller Setup: user-guide/flight-controller-setup.md
     - RC Configuration: user-guide/rc-configuration.md
     - ROS Setup: user-guide/ros-setup.md
     - Parameter Configuration: user-guide/parameter-configuration.md

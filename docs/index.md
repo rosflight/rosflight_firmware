@@ -8,13 +8,13 @@ ROSflight is an autopilot system designed from the ground up for integration wit
 A ROSflight setup consists of two main components:
 
   1. **The embedded flight controller:** Typically an OpenPilot Revo or one of its variants, running the ROSflight [firmware](https://github.com/rosflight/firmware)
-  2. **The onboard computer:** Any computer that runs ROS, is located on the vehicle, and has a physical serial connection to the embedded flight controller
+  2. **The companion computer:** Any computer that runs ROS, is located on the vehicle, and has a physical serial connection to the embedded flight controller
 
 ## Why ROSflight?
 
-There are a lot of excellent autopilots out there with a lot of great firmware options. Why did we feel like the world needed ROSflight? Because in our experience none of the other available options satisfied our research needs. Specifically, we needed an autopilot that could stream sensor data at high rates, easily accept control setpoints from an onboard computer, and accomplish all of this with a lean, easy to understand code base.
+There are a lot of excellent autopilots out there with a lot of great firmware options. Why did we feel like the world needed ROSflight? Because in our experience none of the other available options satisfied our research needs. Specifically, we needed an autopilot that could stream sensor data at high rates, easily accept control setpoints from a companion computer, and accomplish all of this with a lean, easy to understand code base.
 
-The other options that we tried were limited in bandwidth for streaming sensor data, and the APIs for sending control setpoints were confusing and difficult to implement. Perhaps most importantly, the code was sometimes so complex (feature-rich, but complicated) that it was difficult to figure out what the autopilot was actually doing. In talking to other researchers and industry members, we found that many people shared similar frustrations. So we decided to create the autopilot that we wanted and share it in the hopes that it will be useful to other people as well.
+The other options that we tried were limited in bandwidth for streaming sensor data, and the APIs for sending control setpoints were confusing and difficult to implement. Perhaps most importantly, the code was sometimes so complex (feature-rich, but complicated) that it was difficult to figure out what the autopilot was actually doing. In talking to other researchers and industry members, we found that many people shared similar frustrations. So we decided to create and share the autopilot we wanted, hoping it will be useful to other people as well.
 
 ## Our Vision
 

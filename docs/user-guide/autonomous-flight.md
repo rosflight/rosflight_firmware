@@ -1,10 +1,10 @@
 # Autonomous Flight
 
-One of the core functionalities of the ROSflight autopilot is to allow the onboard computer to send control setpoints to the embedded flight controller. These setpoints would typically be computed by a controller running as a ROS node, normally on the onboard computer.
+One of the core functionalities of the ROSflight autopilot is to allow the companion computer to send control setpoints to the embedded flight controller. These setpoints would typically be computed by a controller running as a ROS node, normally on the companion computer.
 
-## Provide control from an onboard computer
+## Provide control from a companion computer
 
-Control setpoints are sent to the autopilot by publishing to the `/command` topic that is advertised by the `rosflight_io` node. This topic accepts messages of type `rosflight_msgs/Command`, which have the following structure:
+Control setpoints are sent to the flight controller by publishing to the `/command` topic that is advertised by the `rosflight_io` node. This topic accepts messages of type `rosflight_msgs/Command`, which have the following structure:
 
 ```
 std_msgs/Header header

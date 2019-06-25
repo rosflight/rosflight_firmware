@@ -2,11 +2,11 @@
 
 Reading through the pages in this user guide in order should provide you with the information you need to get a vehicle flying with ROSflight. The following is a summary of the steps you'll need to follow to get your vehicle set up, with links to the corresponding documentation pages:
 
-  1. [Set up your hardware](/user-guide/hardware-setup) (fixed-wing or multirotor platform, autopilot, and onboard computer)
-  1. [Flash your autopilot with the latest ROSflight firmware](/user-guide/autopilot-setup)
+  1. [Set up your hardware](/user-guide/hardware-setup) (fixed-wing or multirotor platform, flight controller, and companion computer)
+  1. [Flash your flight controller with the latest ROSflight firmware](/user-guide/flight-controller-setup)
   1. [Set up your RC transmitter](/user-guide/rc-configuration)
-  1. [Set up ROS on your onboard computer](/user-guide/ros-setup)
-  1. [Configure the autopilot for your setup](/user-guide/parameter-configuration). The configuration checklists below should help guide you through this process.
+  1. [Set up ROS on your companion computer](/user-guide/ros-setup)
+  1. [Configure the flight controller for your setup](/user-guide/parameter-configuration). The configuration checklists below should help guide you through this process.
   1. [Run through your preflight checks](/user-guide/preflight-checks)
   1. [Tune the attitude controller gains](/user-guide/performance) (multirotors only)
   1. [Set up autonomous flight via offboard control](/user-guide/autonomous-flight) (optional)

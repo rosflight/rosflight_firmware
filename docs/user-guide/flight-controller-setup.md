@@ -1,4 +1,4 @@
-# Autopilot Setup
+# Flight Controller Setup
 
 !!! Note
     This page contains instructions for flashing pre-built firmware binaries.

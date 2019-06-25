@@ -1,6 +1,6 @@
 # Building and Flashing the Firmware
 
-Additionally, make sure you have configured your computer as described in the [Serial Port Configuration](/user-guide/autopilot-setup/#serial-port-configuration) in the User Guide.
+Additionally, make sure you have configured your computer as described in the [Serial Port Configuration](/user-guide/flight-controller-setup/#serial-port-configuration) in the User Guide.
 
 ## Building Firmware from Source
 

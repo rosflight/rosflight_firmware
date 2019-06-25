@@ -1,11 +1,11 @@
 # Pre-Flight Checklist
 
-This is an example of a ROSflight pre-flight checklist. You will likely need to augment this with checks specific to both (a) your hardware and (b) the code running on your onboard computer.
+This is an example of a ROSflight pre-flight checklist. You will likely need to augment this with checks specific to both (a) your hardware and (b) the code running on your companion computer.
 
 ## Generic Checklist
 
 ### Before powering up motors
-- ROS is running on the onboard computer, communicating with the base station
+- ROS is running on the companion computer, communicating with the base station
 - Sensors are calibrated and publishing
     + IMU (re-calibrate every flight): `rosservice call /calibrate_imu`
     + Barometer: `rosservice call /calibrate_baro`
@@ -34,12 +34,12 @@ This is an example of a ROSflight pre-flight checklist. You will likely need to 
 ## ROSplane Checklist
 
 ### Before Leaving for the Flying Field
-- ROS is running and communicating on both the base station and onboard computer
+- ROS is running and communicating on both the base station and companion computer
 - Set fixed-wing parameters
 - Wireless network setup is working
 - `rosflight_io` reports no errors
 - RC communication and override check
-- Proper directions on all control surfaces, from both RC and onboard computer
+- Proper directions on all control surfaces, from both RC and companion computer
 - Failsafe behavior is working
 - Logging is set up and working (automatic rosbag recording)
 - Blow into pitot tube and watch airspeed estimate
