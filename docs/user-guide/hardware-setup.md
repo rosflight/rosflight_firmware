@@ -35,7 +35,7 @@ Some things to keep in mind as you design or build your MAV.
 
 ## Flight Controller
 
-ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us). It works on most variants of the revo and naze32 flight controller. Configuring a new board is relatively straight-forward, assuming that the board uses an STM32F4xx or STM32F1xx processor.
+ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us). It works on most variants of the Revo and Naze32 flight controller. Configuring a new board is relatively straight-forward, assuming that the board uses an STM32F4xx or STM32F1xx processor.
 
 !!! Warning
     Deprecation Notice: As of June 2019, plans are to deprecate support for the F1 in the near future. If you need to use an F1, you will need to retrieve an older version of the code that supports the F1. However, if there are issues, we will not be able to help you fix them.
@@ -47,15 +47,13 @@ ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](htt
 
 Additional Sensors you may want for your ROSflight setup include:
 
-* Sonar – MB1030 – [$25 on MaxBotix](https://www.maxbotix.com/Ultrasonic_Sensors/MB1030.htm)
+* Sonar - MB1242 I2CXL-MaxSonar - [$40 on MaxBotix](https://www.maxbotix.com/Ultrasonic_Sensors/MB1242.htm)
 * GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/u-blox/883-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
-The I2C sonar (MB124X) is also supported, but PWM sonars are preferred (https://www.adafruit.com/product/982).
-
 ## Vibration Isolation
 
-It is really important to isolate your flight controller from vehicle vibrations, such as those caused by propellers and motors. We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K/ref=sr_1_1?ie=UTF8&qid=1490068378&sr=8-1&keywords=kyosho+zeal) to mount a fiberglass plate holding the FC to the MAV. You may also want to try adding mass to the flight control board. We have accomplished this by gluing steel washers to the fiberglass mounting plate.
+It is really important to isolate your flight controller from vehicle vibrations, such as those caused by propellers and motors. We recommend using small amounts of [Kyosho Zeal](https://www.amazon.com/Kyosho-Z8006-Vibration-Absorption-Sheet/dp/B002U2GS2K) to mount a fiberglass plate holding the FC to the MAV. You may also want to try adding mass to the flight control board. We have accomplished this by gluing steel washers to the fiberglass mounting plate.
 
 ![Vibration Isloation](images/vibration_isolation.png)
 
@@ -84,7 +82,7 @@ You will need Wi-Fi to communicate with your MAV when it is in the air. Because 
 
 For RC Control, you will need a transmitter with between 6 and 8 channels. Any additional channels will be wasted. We require RC control for safe operation, and only support arming and disarming via RC control.
 
-As of version 1.0, ROSflight only supports PPM (pulse position modulation) receivers. A common RC setup is listed here, but is meant as an example. Any configurations with PPM and 6-8 channels will be sufficient.
+ROSflight only supports PPM (pulse position modulation) and SBUS receivers. Individual channel PWM outputs are not supported. A common RC setup is listed here, but is meant as an example. Any configurations with PPM or SBUS and 6-8 channels will be sufficient.
 
 * Transmitter – [FrSky Taranis QX7 ($105 on getfpv.com)](https://www.getfpv.com/frsky-taranis-q-x7-2-4ghz-16ch-transmitter-white.html)
 * Receiver – [FrSky D4R-II (24.99 on getfpv.com)](https://www.getfpv.com/frsky-d4r-ii-4ch-2-4ghz-accst-receiver-w-telemetry.html)
@@ -96,7 +94,7 @@ You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communica
 
 ## Joystick
 
-The Joystick is not technically a required component because it is possible to control your MAV from the command line. It does make things easier, however. We recommend XBOX 360 controllers and have default parameters set for the XBOX configuration. Other joysticks are supported, but you may need to perform custom axis and button mappings.
+A joystick is used for [software-in-the-loop (SIL) simulations](/user-guide/gazebo_simulation). The joystick is not technically a required component because it is possible to control your MAV from the command line, but it makes things much easier. Our first recommendation is to use the same Taranis QX7 transmitter you use for hardware as a joystick by plugging it into the computer via USB. We also support RealFlight controllers and XBOX 360 controllers. Other joysticks are supported, but you may need to perform custom axis and button mappings.
 
 # Wiring Diagram
 
@@ -138,10 +136,10 @@ The flight controller communicates with the companion computer over a serial lin
 
 ## Using secondary serial links (example: use with telemetry radio)
 
-In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector, however UART3 can also be used to communicate with the companion computer if you desire a more secure connection (micro USB connectors have been known to disconnect in high vibrations), or if you would like to use a telemetry radio for remote control.
+In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector. However, UART3 can also be used to communicate with the companion computer if you desire a more secure connection (micro USB connectors have been known to disconnect in high vibrations), or if you would like to use a telemetry radio for remote control.
 
-If a usb connection is detected on the USB peripheral, ROSflight will direct all communication on this port, however if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
+If a USB connection is detected on the USB peripheral, ROSflight will direct all communication on this port. However, if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
 
-We have had the most sucess with the SiK radios (AKA 3DR telemetry radios). These require a 5V supply and ground and connect directly to the UART3 pins. We like the SiK radios because they can be easily configured using the `AT-commands`, which are used by [MissionPlanner](http://ardupilot.org/planner/)(Windows only), [sikset.py](https://community.emlid.com/t/sikset-py-a-python-script-to-easily-control-your-rfd900-3dr-radio-from-the-command-line/3654) or with the [AT-commands](http://files.rfdesign.com.au/Files/documents/Software%20manual.pdf) directly on the command line. There are a number of configuration options available which should be used to optimize the radios for their intended usage.
+We have had the most sucess with the SiK radios (AKA 3DR telemetry radios). These require a 5V supply and ground and connect directly to the UART3 pins. We like the SiK radios because they can be easily configured using the `AT-commands`, which are used by [MissionPlanner](http://ardupilot.org/planner/) (Windows only), [sikset.py](https://community.emlid.com/t/sikset-py-a-python-script-to-easily-control-your-rfd900-3dr-radio-from-the-command-line/3654) or with the [AT-commands](http://files.rfdesign.com.au/Files/documents/Software%20manual.pdf) directly on the command line. There are a number of configuration options available which should be used to optimize the radios for their intended usage.
 
-This is just an example, any UART-based communication interface should be supported through this interface.
+This is just an example; any UART-based communication interface should be supported through this interface.

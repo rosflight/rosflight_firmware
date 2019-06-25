@@ -1,6 +1,6 @@
 # Welcome to ROSflight
 
-ROSflight is an autopilot system designed from the ground up for integration with [ROS](http://www.ros.org/). Its purpose is to accomplish two main tasks:
+ROSflight is an autopilot system designed from the ground up with researchers in mind, and for easy integration with [ROS](http://www.ros.org/). Its purpose is to accomplish two main tasks:
 
   1. Stream high-rate sensor data from the embedded flight controller to ROS
   2. Provide a simple API for sending control setpoints to the embedded flight controller
@@ -12,7 +12,7 @@ A ROSflight setup consists of two main components:
 
 ## Why ROSflight?
 
-There are a lot of excellent autopilots out there with a lot of great firmware options. Why did we feel like the world needed ROSflight? Because in our experience none of the other available options satisfied our research needs. Specifically, we needed an autopilot that could stream sensor data at high rates, easily accept control setpoints from a companion computer, and accomplish all of this with a lean, easy to understand code base.
+There are a lot of excellent autopilots out there with a lot of great firmware options. Why did we feel like the world needed ROSflight? Because in our experience none of the other available options satisfied our research needs. Specifically, we needed an autopilot that could stream sensor data at high rates, easily accept control setpoints from a companion computer, and accomplish all of this with a lean, easy-to-understand code base.
 
 The other options that we tried were limited in bandwidth for streaming sensor data, and the APIs for sending control setpoints were confusing and difficult to implement. Perhaps most importantly, the code was sometimes so complex (feature-rich, but complicated) that it was difficult to figure out what the autopilot was actually doing. In talking to other researchers and industry members, we found that many people shared similar frustrations. So we decided to create and share the autopilot we wanted, hoping it will be useful to other people as well.
 

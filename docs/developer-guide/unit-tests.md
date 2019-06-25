@@ -22,9 +22,21 @@ Copy the archive files you just built to the `/usr/lib` directory so CMake can f
 sudo cp *.a /usr/lib
 ```
 
-## Build the Unit Tests
+## Run the Test Script
 
-Then you'll need to build and run the tests themselves:
+The simplest way to run the unit tests is to use the testing script.
+This script first checks that the firmware compiles, then runs the unit tests.
+This is the same script used on the continuous integration server, so this is a great way to check that your code will pass the tests before opening a pull request.
+Run the test script with
+
+```bash
+cd <firmware_directory>
+./scripts/run_tests.sh
+```
+
+## Manually Build and Run the Unit Tests
+
+If you want to manually build and run the unit tests, first build them with the following commands:
 
 ``` bash
 cd <firmware_directory>/test
@@ -34,7 +46,7 @@ cmake ..
 make
 ```
 
-## Run the Unit Tests
+Then run them with:
 
 ``` bash
 ./unit_tests

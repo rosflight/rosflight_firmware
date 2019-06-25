@@ -167,6 +167,8 @@ Group the includes according to the above list with an empty line between each g
 
 Alphabetize the files within each group. Do not change the include order to fix build errors; if you have to do that it means you are not including a file somewhere that you should. Please fix it by including all the right files.
 
+Include C standard library headers using the C++ style (`#include <cmath>`) instead of the C style (`#include <math.h>`).
+
 For example, in `sensors.c` I might have:
 ``` C++
 #include <cstdbool>

@@ -16,6 +16,7 @@ Reading through the pages in this user guide in order should provide you with th
 The following checklists should help you get a new vehicle set up for the first time. This checklist assumes that your [hardware is already set up correctly](/user-guide/hardware-setup).
 
 ### General Setup
+
   1. Set the `FIXED_WING` parameter (`1` if a fixed-wing, `0` if a multirotor)
   1. Set the `RC_TYPE` parameter (`0` if PPM, `1` if SBUS)
   1. Set the `MIXER` parameter to the appropriate value described in the [Hardware Setup](/user-guide/hardware-setup) page
@@ -31,6 +32,7 @@ The following checklists should help you get a new vehicle set up for the first 
   1. Make sure you run through the [Preflight Checklist](/user-guide/preflight-checks) before flying
 
 ### Multirotor-specific Setup
+
 !!! warning
     IMPORTANT: Remove all props from the vehicle when calibrating ESCs!!!
 
@@ -55,5 +57,6 @@ The following checklists should help you get a new vehicle set up for the first 
   1. Tune the controller gains as described in the [Multirotor gain tuning](user-guide/performance/#multirotor-gain-tuning) section of the Improving Performance page
 
 ### Fixed-wing-specific Setup
+
   1. Reverse servo directions if necessary using the `AIL_REV`, `ELEVATOR_REV`, and `RUDDER_REV` parameters (`1` to reverse, `0` to keep current direction)
   1. You'll most likely want to set the `ARM_SPIN_MOTORS` parameter to `0` so that the prop doesn't spin at a minimum throttle setting when you arm, especially if you'll be doing hand launching

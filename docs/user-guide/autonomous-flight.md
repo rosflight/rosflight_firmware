@@ -28,7 +28,7 @@ The following table describes the different values the `mode` field can take, as
 
 The `MODE_PASS_THROUGH` mode is used for fixed-wing vehicles to directly specify the control surface deflections and throttle, while the `MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE` and `MODE_ROLL_PITCH_YAWRATE_THROTTLE` modes are used for multirotor vehicles to specify the attitude rates or angles, respectively.
 
-The `ignore` field is used if you want to specify control setpoints for some, but not all, of the axes. For example, I may want to specify a throttle setpoint to perform (a 'sloppy') altitude hold, while still letting the RC pilot specify the attitude setpoints. The `ignore` field is a bitmask that can be populated by combining the following values:
+The `ignore` field is used if you want to specify control setpoints for some, but not all, of the axes. For example, I may want to specify throttle setpoints to perform altitude hold, while still letting the RC pilot specify the attitude setpoints. The `ignore` field is a bitmask that can be populated by combining the following values:
 
 | Value | Enum | Result |
 |-------|------|--------|
@@ -77,6 +77,6 @@ I would then publish this message to the `/command` topic to forward it to the e
 !!! note
     If the flight controller does not receive a new command for a defined period of time, it will ignore the old commands and revert to RC control. The length of this timeout period is set by the `OFFBOARD_TIMEOUT` parameter.
 
-## Fly waypoints with ros_plane or ros_copter
+## Fly waypoints with ROSplane or ROScopter
 
 Waypoint following is not supported natively by the ROSflight stack. However, the [ROSplane](https://github.com/byu-magicc/ros_plane) and [ROScopter](https://github.com/byu-magicc/ros_copter) projects are good, example implementations of how to achieve this using ROSflight. They also provide good examples of how you might go about integrating your own guidance or control algorithms with the ROSflight stack.

@@ -1,8 +1,8 @@
 # Writing Documentation
 
-All documentation for the entire ROSflight stack (both firmware and ROS code) belongs in this "ReadTheDocs" webpage. Here I will explain quickly how to build the documentation on your own local computer so you can view changes as you write and contribute to the documentation.
+All documentation for the entire ROSflight stack (both firmware and ROS code) belongs in this "MkDocs" webpage. This guide explains how to build the documentation on your own local computer so you can view changes as you write and contribute to the documentation.
 
-## Install mkdocs and latex support
+## Install mkdocs and LaTeX support
 
 This is easy:
 
@@ -28,8 +28,8 @@ Now, as you make changes to the documentation, you should be able to see it on y
 ## Adding pages
 To add a new page to the documentation, just take a look at the mkdocs.yml file in the root of the firmware directory. You should be able to figure it out from there.
 
-## Adding latex
-The syntax for adding latex math inline is `\( x \)`, which renders as \(x \). For adding a block, it's
+## Adding LaTeX
+The syntax for adding LaTeX math inline is `\( x \)`, which renders as \(x \). For adding a block, it's
 
 ``` latex
 $$ E = mc^2 $$

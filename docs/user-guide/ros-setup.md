@@ -17,25 +17,12 @@ sudo apt install ros-<ros_release>-rosflight-pkgs
 
 ### From source
 
-If you prefer, or if binary packages are not available for your distribution or system architecture, you can install the ROSflight packages from source instead. You will need a `catkin` workspace set up. If you haven't already done this, you can create a new workspace with something like the following commands:
-```bash
-source /opt/ros/<ros_release>/setup.bash
+If you prefer, or if binary packages are not available for your distribution or system architecture, you can install the ROSflight packages from source instead. First, set up a `catkin` workspace by following the directions [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
-cd
-mkdir -p catkin_ws/src
-cd catkin_ws
-cp /opt/ros/melodic/share/catkin/cmake/toplevel.cmake src/CMakeLists.txt
-catkin_make
+!!! tip
+    In order to ensure that new terminal windows are configured to use this workspace, you can add the line `source ~/catkin_ws/devel/setup.bash` to your `~/.bashrc` file or its equivalent on other systems. (Change the path if your workspace is located somewhere other than  `~/catkin_ws`.)
 
-source ~/catkin_ws/devel/setup.bash
-```
-
-(The `cp` line is optional.)
-
-!!! note
-    In order to ensure that ROS uses this workspace, you can add the last line (`source ~/catkin_ws/devel/setup.bash`) to your `~/.bashrc` file or its equivalent on other systems.
-
-Next, download the source code into your workspace:
+Next, download the source code into your workspace. Assuming that your workspace is located at `~/catkin_ws`:
 ```bash
 cd ~/catkin_ws/src
 git clone https://github.com/rosflight/rosflight.git
@@ -47,9 +34,8 @@ git submodule update --init --recursive
 ```
 Install dependencies:
 ```bash
-rosdep install --ignore-src rosflight
 cd ~/catkin_ws/src
-rosdep install --ignore-src --from-path rosflight
+rosdep -y install --ignore-src --from-path rosflight
 ```
 Finally, build the packages:
 ```bash
@@ -82,7 +68,7 @@ For details on all parameters, topics, and services related to the `rosflight_io
 
 **Original Content**
 
-It is likely that your flip32/naze32 board doesn't work correctly out of the box with the TX2. To fix this, you need to build some drivers in with the kernel. This process is pretty straight-forward.
+It is likely that your Flip32/Naze32 board doesn't work correctly out of the box with the TX2. To fix this, you need to build some drivers in with the kernel. This process is pretty straight-forward.
 
 To build the kernel with additional USB drivers, follow the instructions and video found [here](https://www.jetsonhacks.com/2018/03/22/build-kernel-modules-nvidia-jetson-tx2-2/). This video shows the CH341 module being added. However, there are a few additional drivers you will likely require. These include:
 
