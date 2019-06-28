@@ -110,7 +110,6 @@ public:
     AuxChannel cmd_array[14];
   };
 
-  virtual void init(uint32_t baud_rate) = 0;
   virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void receive() = 0;
 
@@ -195,6 +194,7 @@ public:
   void register_aux_command_callback(std::function<void(const AuxCommand&)> callback)
   {
     aux_command_callback_ = callback;
+  }
 
   void register_attitude_correction_callback(std::function<void(const turbomath::Quaternion)> callback)
   {
