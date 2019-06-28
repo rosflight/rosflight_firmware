@@ -39,6 +39,27 @@
 namespace turbomath
 {
 
+// float-based wrappers
+float cos(float x);
+float sin(float x);
+float asin(float x);
+float atan2(float y, float x);
+float atan(float x);
+float fsign(float y);
+
+// turbo-speed approximation of (1.0 - pow(pressure/101325.0, 0.1902631)) * 39097.63
+// Used for calculating altitude in m from atmospheric pressure in Pa
+float alt(float x);
+
+float inv_sqrt(float x);
+float fabs(float x);
+
+union float_converter_t
+{
+  float fvalue;
+  int32_t ivalue;
+};
+
 class Vector
 {
 public:
@@ -95,27 +116,25 @@ public:
   Vector operator* (const Vector& v) const;
   Quaternion operator* (const Quaternion& q) const;
   Quaternion& operator*= (const Quaternion& q);
-};
+  Vector boxminus(const Quaternion& q) const;
+  static Vector log(const Quaternion &q)
+  {
+    Vector v{q.x, q.y, q.z};
+    float norm_v = v.norm();
 
-// float-based wrappers
-float cos(float x);
-float sin(float x);
-float asin(float x);
-float atan2(float y, float x);
-float atan(float x);
-float fsign(float y);
+    Vector out;
+    if (norm_v < 1e-8)
+    {
+      out.x = out.y = out.z = 0.0;
+    }
+    else
+    {
+      out = 2.0*atan2(norm_v, q.w)*v/norm_v;
+    }
+    return out;
+  }
 
-// turbo-speed approximation of (1.0 - pow(pressure/101325.0, 0.1902631)) * 39097.63
-// Used for calculating altitude in m from atmospheric pressure in Pa
-float alt(float x);
-
-float inv_sqrt(float x);
-float fabs(float x);
-
-union float_converter_t
-{
-  float fvalue;
-  int32_t ivalue;
+  Vector operator-(const Quaternion& q) const {return boxminus(q);}
 };
 
 } // namespace turbomath

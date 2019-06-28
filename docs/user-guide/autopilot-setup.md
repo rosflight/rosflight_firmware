@@ -2,7 +2,7 @@
 
 ## Compatible hardware
 
-As of January 2018 ROSflight is only supported on flight controllers with STM32F103 and STM32F405 processors, specifically, the revo, naze32, flip32.  Both the 6-DOF and 10-DOF versions of each board are fully supported.  We have had most success with revo boards purchased from [hobbyking](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  We have had weird issues with knock-off boards from Chinese vendors.
+As of January 2018 ROSflight is only supported on flight controllers with STM32F103 and STM32F405 processors, specifically, the revo, naze32, flip32.  Both the 6-DOF and 10-DOF versions of each board are fully supported.  We have had most success with revo boards purchased from [hobbyking](https://hobbyking.com/en_us/openpilot-cc3d-revolution-revo-32bit-flight-controller-w-integrated-433mhz-oplink.html?___store=en_us).  We have had weird issues with knock-off boards from Chinese vendors.  An acro version (IMU-Only) can be found at [readytoflyquads](https://www.readytoflyquads.com/openpilot-cc3d-revolution-acro).
 
 ## Flashing firmware using the Cleanflight Configurator
 
@@ -19,7 +19,7 @@ sudo systemctl stop ModemManager.service
 ```
 * Add the custom udev rule so linux handles the flight controller properly
 ``` bash
-echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"') | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/45-stdfu-permissions.rules > /dev/null
 ```
 * Load the firmware and flash using cleanflight configurator
     * Open the configurator, open firmware flasher.  Connect your flight controller, and make sure that you have selected the right port (or DFU in the case of F4-based boards).  Then select "Load Firmware (Local)" and  select your .hex file you downloaded earlier.

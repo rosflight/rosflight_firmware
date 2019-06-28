@@ -103,9 +103,12 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 
 # Parameter descriptions
 
+# Parameter descriptions
+
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
+| SERIAL_DEVICE | Serial Port (for supported devices) | int |  0 | 0 | 3 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
 | STRM_HRTBT | Rate of heartbeat streaming (Hz) | int |  1 | 0 | 1000 |
 | STRM_STATUS | Rate of status streaming (Hz) | int |  10 | 0 | 1000 |
@@ -113,7 +116,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | STRM_IMU | Rate of IMU stream (Hz) | int |  250 | 0 | 1000 |
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  50 | 0 | 75 |
 | STRM_BARO | Rate of barometer stream (Hz) | int |  50 | 0 | 100 |
-| STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  20 | 0 | 50 |
+| STRM_AIRSPEED | Rate of airspeed stream (Hz) | int |  50 | 0 | 50 |
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_SERVO | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
@@ -137,19 +140,21 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | Y_EQ_TORQUE | Equilibrium torque added to output of controller on y axis | float |  0.0f | -1.0 | 1.0 |
 | Z_EQ_TORQUE | Equilibrium torque added to output of controller on z axis | float |  0.0f | -1.0 | 1.0 |
 | PID_TAU | Dirty Derivative time constant - See controller documentation | float |  0.05f | 0.0 | 1.0 |
-| MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors - See motor documentation | int |  490 | 0 | 1000 |
+| MOTOR_PWM_UPDATE | Overrides default PWM rate specified by mixer if non-zero - Requires reboot to take effect | int |  0 | 0 | 490 |
 | MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 | 0.0 | 1.0 |
 | FAILSAFE_THR | Throttle sent to motors in failsafe condition (set just below hover throttle) | float |  0.3 | 0.0 | 1.0 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_THR | int |  true | 0 | 1 |
 | FILTER_INIT_T | Time in ms to initialize estimator | int |  3000 | 0 | 100000 |
 | FILTER_KP | estimator proportional gain - See estimator documentation | float |  0.5f | 0 | 10.0 |
-| FILTER_KI | estimator integral gain - See estimator documentation | float |  0.05f | 0 | 1.0 |
+| FILTER_KI | estimator integral gain - See estimator documentation | float |  0.01f | 0 | 1.0 |
+| FILTER_KP_COR | estimator proportional gain on external attitude correction - See estimator documentation | float |  10.0f | 0 | 1.0 |
 | FILTER_QUAD_INT | Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | int |  1 | 0 | 1 |
 | FILTER_MAT_EXP | 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | int |  1 | 0 | 1 |
 | FILTER_USE_ACC | Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | int |  1 | 0 | 1 |
 | CAL_GYRO_ARM | True if desired to calibrate gyros on arm | int |  false | 0 | 1 |
-| GYRO_LPF_ALPHA | Low-pass filter constant - See estimator documentation | float |  0.3f | 0 | 1.0 |
-| ACC_LPF_ALPHA | Low-pass filter constant - See estimator documentation | float |  0.5f | 0 | 1.0 |
+| GYROXY_LPF_ALPHA | Low-pass filter constant on gyro X and Y axes - See estimator documentation | float |  0.3f | 0 | 1.0 |
+| GYROZ_LPF_ALPHA | Low-pass filter constant on gyro Z axis - See estimator documentation | float |  0.3f | 0 | 1.0 |
+| ACC_LPF_ALPHA | Low-pass filter constant on all accel axes - See estimator documentation | float |  0.5f | 0 | 1.0 |
 | GYRO_X_BIAS | Constant x-bias of gyroscope readings | float |  0.0f | -1.0 | 1.0 |
 | GYRO_Y_BIAS | Constant y-bias of gyroscope readings | float |  0.0f | -1.0 | 1.0 |
 | GYRO_Z_BIAS | Constant z-bias of gyroscope readings | float |  0.0f | -1.0 | 1.0 |
@@ -174,7 +179,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | BARO_BIAS | Barometer measurement bias (Pa) | float |  0.0f | 0 | inf |
 | GROUND_LEVEL | Altitude of ground level (m) | float |  1387.0f | -1000 | 10000 |
 | DIFF_PRESS_BIAS | Differential Pressure Bias (Pa) | float |  0.0f | -10 | 10 |
-| RC_TYPE | Type of RC input 0 - PPM, 1 - SBUS | int |  1 | 0 | 1 |
+| RC_TYPE | Type of RC input 0 - PPM, 1 - SBUS | int |  0 | 0 | 1 |
 | RC_X_CHN | RC input channel mapped to x-axis commands [0 - indexed] | int |  0 | 0 | 3 |
 | RC_Y_CHN | RC input channel mapped to y-axis commands [0 - indexed] | int |  1 | 0 | 3 |
 | RC_Z_CHN | RC input channel mapped to z-axis commands [0 - indexed] | int |  3 | 0 | 3 |
@@ -206,3 +211,4 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | FC_PITCH | pitch angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
 | FC_YAW | yaw angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
 | ARM_THRESHOLD | RC deviation from max/min in yaw and throttle for arming and disarming check (us) | float |  0.15 | 0 | 500 |
+| OFFBOARD_TIMEOUT | Timeout in milliseconds for offboard commands, after which RC override is activated | int |  100 | 0 | 100000 |

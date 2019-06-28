@@ -38,7 +38,7 @@ ROSflight is best supported on the Openpilot Revolution from [hobbyking.com](htt
 Additional Sensors you may want for your ROSflight setup include:
 
 * Sonar – MB1030 – [$25 on MaxBotix](https://www.maxbotix.com/Ultrasonic_Sensors/MB1030.htm)
-* GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/511-ublox-neo-m8-gps-module.html)
+* GPS – u-blox NEO-M8N – [$35 from Drotek](https://drotek.com/shop/en/u-blox/883-ublox-neo-m8-gps-module.html)
 * Digital Airspeed Sensor – [$65 on JDrones](http://store.jdrones.com/digital_airspeed_sensor_p/senair02kit.html)
 
 The I2C sonar (MB124X) is also supported, but PWM sonars are preferred (https://www.adafruit.com/product/982?gclid=CjwKCAiA47DTBRAUEiwA4luU2QSNTXTLpAU6YI31w_cgVRXgiTB6v326aibrkUAaLYFRMMUWjI5uSBoCm80QAvD_BwE).
@@ -117,3 +117,18 @@ The **ESC calibration** mixer directly outputs the throttle command equally to e
 ![Mixer_1](images/mixers_1.png)
 
 ![Mixer_2](images/mixers_2.png)
+
+
+# Connecting to the Flight Controller
+
+The flight controller communicates with the onboard computer over a serial link.  ROSflight only supports one serial connection at a time and by default should be the serial link connected to the USB connector on the board.
+
+## Using secondary serial links (example: use with telemetry radio)
+
+In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector, however UART3 can be also used to communicate with the onboard computer if you desire a more secure connection (micro USB connectors have been known to come off in high vibrations) or if you would like to use a telemetry radio for remote control.  
+
+If a usb connection is detected on the USB peripheral, ROSflight will direct all communication on this port, however if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
+
+We have had the most sucess with the SiK radios (AKA 3DR telemetry radios).  These require a 5V supply and ground and connect directly to the UART3 pins.  We like the SiK radios because they can be easily configured using the `AT-commands`, which are used by [MissionPlanner](http://ardupilot.org/planner/)(Windows only), [sikset.py](https://community.emlid.com/t/sikset-py-a-python-script-to-easily-control-your-rfd900-3dr-radio-from-the-command-line/3654) or with the [AT-commands](http://files.rfdesign.com.au/Files/documents/Software%20manual.pdf) directly on the command line.  There are a number of configuration options available which should be used to optimize the radios for their intended usage.
+
+This is just an example, any UART-based communication interface should be supported through this interface.

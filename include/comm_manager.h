@@ -103,6 +103,8 @@ private:
   void timesync_callback(int64_t tc1, int64_t ts1);
   void offboard_control_callback(const CommLink::OffboardControl& control);
   void aux_command_callback_(const CommLink::AuxCommand &command);
+  void attitude_correction_callback(const turbomath::Quaternion &q);
+  void heartbeat_callback(void);
 
   void send_heartbeat(void);
   void send_status(void);
@@ -115,6 +117,7 @@ private:
   void send_sonar(void);
   void send_mag(void);
   void send_low_priority(void);
+  void send_error_data(void);
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);

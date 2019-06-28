@@ -42,7 +42,7 @@ git clone https://github.com/rosflight/rosflight.git
 pull down the submodules (there is a triple-layer submodule setup in the `rosflight` metapackage, so you have to remember the `--recursive` argument)
 ```bash
 cd rosflight
-git submodule --init --recursive
+git submodule update --init --recursive
 ```
 install dependencies,
 ```bash
@@ -76,7 +76,7 @@ For details on all parameters, topics, and services related to the `rosflight_io
 
 # Jetson TX2
 
-It is likely that your flip32/naze32 board doesn't work correctly out of the box with the TX2. To fix this you need to build some driverse in with the kernel. This process is pretty straight-forward.
+It is likely that your flip32/naze32 board doesn't work correctly out of the box with the TX2. To fix this you need to build some drivers in with the kernel. This process is pretty straight-forward.
 
 To build the kernel with additional USB drivers, follow the instructions and video found [here](http://www.jetsonhacks.com/2017/07/31/build-kernel-ttyacm-module-nvidia-jetson-tx2/). This video shows the ACM module being added, however there are a few additional drivers you will likely require. These include:
 - USB Winchiphead CH341 Single Port Serial Driver
