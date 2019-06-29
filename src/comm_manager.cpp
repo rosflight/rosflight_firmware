@@ -30,6 +30,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "rosflight.h"
 
@@ -39,9 +40,7 @@ namespace rosflight_firmware
 CommManager::CommManager(ROSflight& rf, CommLink& comm_link) :
   RF_(rf),
   comm_link_(comm_link)
-{
-  initialized_ = false;
-}
+{}
 
 // function definitions
 void CommManager::init()
@@ -282,18 +281,37 @@ void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
 {
   RF_.estimator_.set_attitude_correction(q);
 }
+
 void CommManager::heartbeat_callback(void)
 {
-  static bool error_data_sent = false;
-  if(!error_data_sent)
+  // receiving a heartbeat implies that a connection has been made
+  // to the off-board computer.
+  connected_ = true;
+
+  static bool one_time_data_sent = false;
+  if (!one_time_data_sent)
   {
-      if(this->RF_.board_.has_backup_data())
-      {
-          this->send_error_data();
-      }
-      error_data_sent = true;
+    // error data
+    if (this->RF_.board_.has_backup_data())
+    {
+        this->send_error_data();
+    }
+
+    // buffered log messages
+    uint8_t log_size = log_buffer_size();
+    while (log_size--)
+    {
+      log(log_severity_buffer_[log_buffer_tail_], log_buffer_[log_buffer_tail_]);
+      log_buffer_tail_ = (log_buffer_tail_ + 1) % LOG_BUF_SIZE;
+    }
+    log_buffer_head_ = log_buffer_tail_ = 0;
+    log_buffer_full_ = false;
+
+    one_time_data_sent = true;
   }
-  this->send_heartbeat();//respond to heartbeats with a heartbeat
+
+  // respond to heartbeats with a heartbeat
+  this->send_heartbeat();
 }
 
 // function definitions
@@ -307,10 +325,24 @@ void CommManager::log(CommLink::LogSeverity severity, const char *fmt, ...)
   // Convert the format string to a raw char array
   va_list args;
   va_start(args, fmt);
-  char text[50];
+  char text[LOG_MSG_SIZE];
   rosflight_firmware::nanoprintf::tfp_sprintf(text, fmt, args);
   va_end(args);
-  comm_link_.send_log_message(sysid_, severity, text);
+
+  if (initialized_ && connected_)
+  {
+    comm_link_.send_log_message(sysid_, severity, text);
+  }
+  else
+  {
+    // Add log message to circular buffer
+    memcpy(log_buffer_[log_buffer_head_], text, LOG_MSG_SIZE);
+    log_severity_buffer_[log_buffer_head_] = severity;
+    // advance indices, keeping read/write indices ordered
+    if (log_buffer_full_) log_buffer_tail_ = (log_buffer_tail_ + 1) % LOG_BUF_SIZE;
+    log_buffer_head_ = (log_buffer_head_ + 1) % LOG_BUF_SIZE;
+    log_buffer_full_ = (log_buffer_head_ == log_buffer_tail_);
+  }
 }
 
 void CommManager::send_heartbeat(void)
@@ -468,6 +500,23 @@ void CommManager::send_next_param(void)
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
   }
+}
+
+uint8_t CommManager::log_buffer_size() const
+{
+  uint8_t size = LOG_BUF_SIZE;
+  if (!log_buffer_full_)
+  {
+    if (log_buffer_head_ >= log_buffer_tail_)
+    {
+      size = log_buffer_head_ - log_buffer_tail_;
+    }
+    else
+    {
+      size = LOG_BUF_SIZE + log_buffer_head_ - log_buffer_tail_;
+    }
+  }
+  return size;
 }
 
 CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :

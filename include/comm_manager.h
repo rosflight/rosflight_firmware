@@ -78,7 +78,16 @@ private:
   ROSflight& RF_;
   CommLink& comm_link_;
   uint8_t send_params_index_;
-  bool initialized_;
+  bool initialized_ = false;
+  bool connected_ = false;
+
+  static constexpr int LOG_MSG_SIZE = 50;
+  static constexpr int LOG_BUF_SIZE = 4;
+  char log_buffer_[LOG_BUF_SIZE][LOG_MSG_SIZE];
+  CommLink::LogSeverity log_severity_buffer_[LOG_BUF_SIZE];
+  uint8_t log_buffer_head_ = 0, log_buffer_tail_ = 0;
+  bool log_buffer_full_ = false;
+  uint8_t log_buffer_size() const;
 
   class Stream
   {
