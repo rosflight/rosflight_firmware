@@ -55,6 +55,7 @@ void CommManager::init()
   comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
   comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
   comm_link_.register_heartbeat_callback([this](void){this->heartbeat_callback();});
+  comm_link_.register_aux_command_callback([this](const CommLink::AuxCommand &command){this->aux_command_callback(command);});
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
@@ -278,7 +279,7 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 
-void CommManager::aux_command_callback_(const CommLink::AuxCommand &command)
+void CommManager::aux_command_callback(const CommLink::AuxCommand &command)
 {
   Mixer::aux_command_t new_aux_command;
 
