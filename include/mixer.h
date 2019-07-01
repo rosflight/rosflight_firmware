@@ -59,6 +59,7 @@ public:
     X8 = 8,
     TRICOPTER = 9,
     FIXEDWING = 10,
+    PASSTHROUGH = 11,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
@@ -220,6 +221,17 @@ private:
     50
   };
 
+  const mixer_t passthrough_mixing =
+  {
+    {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
+
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+    50
+  };
+
   const mixer_t *mixer_to_use_;
 
   const mixer_t *array_of_mixers_[NUM_MIXERS] =
@@ -234,7 +246,8 @@ private:
     &Y6_mixing,
     &X8_mixing,
     &tricopter_mixing,
-    &fixedwing_mixing
+    &fixedwing_mixing,
+    &passthrough_mixing
   };
 
 public:
