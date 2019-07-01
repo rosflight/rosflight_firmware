@@ -206,7 +206,7 @@ void Mavlink::send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, c
   send_message(msg);
 }
 
-void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8])
+void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14])
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_output_raw_pack(system_id, compid_, &msg, timestamp_ms, raw_outputs);

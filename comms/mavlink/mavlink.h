@@ -70,7 +70,7 @@ public:
   void send_mag(uint8_t system_id, const turbomath::Vector &mag) override;
   void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) override;
   void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) override;
-  void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) override;
+  void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) override;
   void send_param_value_int(uint8_t system_id,
                             uint16_t index,
                             const char *const name,

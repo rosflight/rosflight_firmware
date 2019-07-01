@@ -89,7 +89,7 @@ void Mixer::init_mixing()
 
   init_PWM();
 
-  for (int8_t i=0; i<8; i++)
+  for (int8_t i=0; i<14; i++)
   {
     raw_outputs_[i] = 0.0f;
     unsaturated_outputs_[i] = 0.0f;
