@@ -12,7 +12,7 @@ Control setpoints can also be sent to the flight controller by publishing to the
     To avoid confusion, we try to consistently use the following terminology:
 
       - **Flight controller:** The embedded board (such as a Revo or Naze32) that runs the ROSflight firmware and performs I/O with sensors and ESCs
-      - **Companion computer:** A Linux computer, running ROS, that is mounted on the vehicle and has a physical serial connection with the flight controller
+      - **Companion computer:** A Linux computer, running ROS, that is mounted on the vehicle and has a physical, serial connection with the flight controller
       - **Offboard control (setpoints):** The control setpoints passed from the companion computer to the flight controller. The control is "offboard" from the perspective of the flight controller, even though the computer providing those commands is mounted onboard the vehicle. Perhaps this is not the greatest terminology, but hopefully this helps clear up potential confusion.
 
 # RC safety pilot

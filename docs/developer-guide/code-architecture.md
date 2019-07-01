@@ -59,9 +59,9 @@ int main()
 
 ## Comm Link Abstraction
 
-The purpose of the comm link abstraction layer is to allow other communication protocols that MAVLink to be used if desired.
+The purpose of the comm link abstraction layer is to allow communication protocols other than MAVLink to be used if desired.
 The comm link abstraction implementations are contained in the `comms` directory, organized in subdirectories by protocol.
-The implementations translate between the messages that the firmware expects to send and receive, and the messaged defined by the communication protocol.
+The implementations translate between the messages that the firmware expects to send and receive, and the messages defined by the communication protocol.
 Currently, only MAVLink is implemented.
 
 ## Flight Stack

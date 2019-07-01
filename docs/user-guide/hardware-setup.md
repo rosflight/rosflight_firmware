@@ -94,7 +94,7 @@ You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communica
 
 ## Joystick
 
-A joystick is used for [software-in-the-loop (SIL) simulations](/user-guide/gazebo_simulation). The joystick is not technically a required component because it is possible to control your MAV from the command line, but it makes things much easier. Our first recommendation is to use the same Taranis QX7 transmitter you use for hardware as a joystick by plugging it into the computer via USB. We also support RealFlight controllers and XBOX 360 controllers. Other joysticks are supported, but you may need to perform custom axis and button mappings.
+A joystick is used for [software-in-the-loop (SIL) simulations](/user-guide/gazebo_simulation). The joystick is not technically a required component because it is possible to control your MAV from the command line, but it makes things much easier. Our first recommendation is to use the same Taranis QX7 transmitter you use for hardware as a joystick by plugging it into the computer via USB. We also support RealFlight controllers and XBOX 360 controllers. Other joysticks are supported, but you may need to create custom axis and button mappings.
 
 # Wiring Diagram
 
@@ -138,7 +138,7 @@ The flight controller communicates with the companion computer over a serial lin
 
 In the case of an F4 flight controller, which has a USB peripheral, the highest bandwidth connection will be the USB connector. However, UART3 can also be used to communicate with the companion computer if you desire a more secure connection (micro USB connectors have been known to disconnect in high vibrations), or if you would like to use a telemetry radio for remote control.
 
-If a USB connection is detected on the USB peripheral, ROSflight will direct all communication on this port. However, if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
+If a USB connection is detected on the USB peripheral, ROSflight will direct all communication through this port. However, if the `PARAM_SERIAL_DEVICE` parameter is set to `3` and the `PARAM_BAUD_RATE` parameter is set properly, then UART3 will be enabled when the USB connection is absent.
 
 We have had the most sucess with the SiK radios (AKA 3DR telemetry radios). These require a 5V supply and ground and connect directly to the UART3 pins. We like the SiK radios because they can be easily configured using the `AT-commands`, which are used by [MissionPlanner](http://ardupilot.org/planner/) (Windows only), [sikset.py](https://community.emlid.com/t/sikset-py-a-python-script-to-easily-control-your-rfd900-3dr-radio-from-the-command-line/3654) or with the [AT-commands](http://files.rfdesign.com.au/Files/documents/Software%20manual.pdf) directly on the command line. There are a number of configuration options available which should be used to optimize the radios for their intended usage.
 
