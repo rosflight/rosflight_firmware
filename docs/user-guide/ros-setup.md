@@ -11,8 +11,15 @@ You will need to install the ROSflight packages on both the companion computer a
 ### From the apt Repository
 
 The recommended installation method for Ubuntu or Debian systems is to use the ROSflight packages in the official ROS apt repositories. If you have configured your system to use these repositories, as described in the ROS installation guide, you can install rosflight using the following, inserting the name of the ROS release you are using (e.g. "kinetic" or "melodic"):
+
 ```bash
 sudo apt install ros-<ros_release>-rosflight-pkgs
+```
+
+The previous command will install all of the rosflight packages, including the Gazebo simulation packages. If installing on a companion computer with limited resources, you can instead install only `rosflight_io`:
+
+```bash
+sudo apt install ros-<ros_release>-rosflight
 ```
 
 ### From Source
