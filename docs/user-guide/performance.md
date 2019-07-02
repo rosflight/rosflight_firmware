@@ -44,7 +44,7 @@ Tuning yaw rate is generally pretty easy. Basically, keep cranking it up until y
 
 The problem with too much `P` on yaw rate generally manifests itself in motor saturation. Some, especially larger, multirotors have problems getting enough control authority in yaw with the propellers being aligned flat. After you are done tuning, you might want to look at a plot of motor commands during a fairly aggressive flight. Underactuated yaw will be pretty obvious in these plots, because you will see the motor commands railing. To fix this, you can put shims between the arm mounts and the motors to tilt the motors just a little bit in the direction of yaw for that motor.
 
-## RC trim (Feed-Forward Torque Calculation)
+## RC trim
 
 In the vast majority of cases, your multirotor will not be built perfectly. The CG could be slightly off, or your motors, speed controllers and propellers could be slightly different. One way to fix this is by adding an integrator. Integrators get rid of static offsets such as those just mentioned. However, as explained above, integrators also always slow vehicle response. In our case, since this offset is going to be constant, we can instead find a "feed-forward", or equilibrium offset, torque that you need to apply to hover without drift.
 

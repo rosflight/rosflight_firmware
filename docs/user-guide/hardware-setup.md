@@ -96,7 +96,7 @@ You will need a laptop which can run Ubuntu 16.04 or 18.04 with ROS to communica
 
 ### Joystick
 
-A joystick is used for [software-in-the-loop (SIL) simulations](/user-guide/gazebo_simulation). The joystick is not technically a required component because it is possible to control your MAV from the command line, but it makes things much easier. Our first recommendation is to use the same Taranis QX7 transmitter you use for hardware as a joystick by plugging it into the computer via USB. We also support RealFlight controllers and XBOX 360 controllers. Other joysticks are supported, but you may need to create custom axis and button mappings.
+A joystick is used for [software-in-the-loop (SIL) simulations](gazebo_simulation.md). The joystick is not technically a required component because it is possible to control your MAV from the command line, but it makes things much easier. Our first recommendation is to use the same Taranis QX7 transmitter you use for hardware as a joystick by plugging it into the computer via USB. We also support RealFlight controllers and XBOX 360 controllers. Other joysticks are supported, but you may need to create custom axis and button mappings.
 
 ## Wiring Diagram
 

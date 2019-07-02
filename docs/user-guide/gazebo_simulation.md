@@ -47,7 +47,7 @@ Your `rqt_graph` should look something like the following image. This looks funn
 !!! note
     It is much easier to fly with a real transmitter than with an Xbox-type controller. FrSky Taranis and RealFlight transmitters and interlinks are also supported. Non-Xbox joysticks may have incorrect mappings. If your joystick does not work, and you write your own mapping, please contribute back your new joystick mapping!
 
-Remember, the SIL tries its best to replicate hardware. That means you have to calibrate and set parameters in the same way you do in hardware. See the [Hardware Setup](/user-guide/hardware-setup) and [Parameter Configuration](/user-guide/parameter-configuration) pages in this documentation for instructions on how to perform all preflight configuration before the aircraft will arm.
+Remember, the SIL tries its best to replicate hardware. That means you have to calibrate and set parameters in the same way you do in hardware. See the [Hardware Setup](hardware-setup.md) and [Parameter Configuration](parameter-configuration.md) pages in this documentation for instructions on how to perform all preflight configuration before the aircraft will arm.
 
 As a quick help, here is a roslaunch file which quickly does all the above `rosrun` steps automatically:
 

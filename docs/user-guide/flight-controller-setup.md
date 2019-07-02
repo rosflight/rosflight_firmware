@@ -2,7 +2,7 @@
 
 !!! Note
     This page contains instructions for flashing pre-built firmware binaries.
-    For instructions on building and flashing from source, see [Building and Flashing](/developer-guide/building-flashing) in the Developer Guide.
+    For instructions on building and flashing from source, see [Building and Flashing](../developer-guide/building-flashing.md) in the Developer Guide.
 
 ## Compatible Hardware
 

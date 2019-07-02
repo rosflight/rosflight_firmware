@@ -38,7 +38,7 @@ To build only the F4 firmware, use `make BOARD=REVO`. To build only the F1 firmw
 
 ## Flashing Newly-Built Firmware
 
-First, make sure you have configured your computer as described in the [Serial Port Configuration](/user-guide/flight-controller-setup/#serial-port-configuration) section of the user guide.
+First, make sure you have configured your computer as described in the [Serial Port Configuration](../user-guide/flight-controller-setup.md#serial-port-configuration) section of the user guide.
 
 ### F4
 
