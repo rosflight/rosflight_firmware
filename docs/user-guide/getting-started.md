@@ -33,8 +33,8 @@ The following checklists should help you get a new vehicle set up for the first 
 
 ### Multirotor-specific Setup
 
-!!! warning
-    IMPORTANT: Remove all props from the vehicle when calibrating ESCs!!!
+!!! danger
+    **IMPORTANT:** Remove all props from the vehicle when calibrating ESCs!!!
 
   1. Calibrate ESCs
       1. Make sure `MOTOR_MIN_PWM` and `MOTOR_MAX_PWM` are correct (usually `1000` and `2000`)
