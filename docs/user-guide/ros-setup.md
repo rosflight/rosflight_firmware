@@ -8,14 +8,14 @@ Currently only the long-term support [ROS Kinetic](http://wiki.ros.org/kinetic/I
 
 You will need to install the ROSflight packages on both the companion computer and the base station computer. The companion computer will run the node that actually communicates with the flight controller over a serial connection, while the base station needs the message and service definitions to be able to call services or subscribe and publish to topics.
 
-### From the apt repository
+### From the apt Repository
 
 The recommended installation method for Ubuntu or Debian systems is to use the ROSflight packages in the official ROS apt repositories. If you have configured your system to use these repositories, as described in the ROS installation guide, you can install rosflight using the following, inserting the name of the ROS release you are using (e.g. "kinetic" or "melodic"):
 ```bash
 sudo apt install ros-<ros_release>-rosflight-pkgs
 ```
 
-### From source
+### From Source
 
 If you prefer, or if binary packages are not available for your distribution or system architecture, you can install the ROSflight packages from source instead. First, set up a `catkin` workspace by following the directions [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
@@ -61,12 +61,10 @@ Replace `/dev/ttyACM0` with the port your flight controller is connected to. The
 
 For details on all parameters, topics, and services related to the `rosflight_io` node, refer to the documentation on the [ROS wiki](http://wiki.ros.org/rosflight).
 
-# Jetson TX2
+## Jetson TX2
 
 !!! Update
     As of Jetpack 4.2, with the CTI-L4T patch installed to use the TX2 mounted on a CTI Orbitty carrier board, the three drivers mentioned here are installed out of the box.
-
-**Original Content**
 
 It is likely that your Flip32/Naze32 board doesn't work correctly out of the box with the TX2. To fix this, you need to build some drivers in with the kernel. This process is pretty straight-forward.
 

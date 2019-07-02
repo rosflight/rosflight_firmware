@@ -1,4 +1,4 @@
-# Using an In-Circuit Debugger with a Naze32 (and variants)
+# Using an In-Circuit Debugger
 
 Debugging a Naze32 is easiest with an ST-Link V2. You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator or Visual Studio Code and the in-circuit debugger.
 

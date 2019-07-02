@@ -2,7 +2,7 @@
 
 All documentation for the entire ROSflight stack (both firmware and ROS code) belongs in this "MkDocs" webpage. This guide explains how to build the documentation on your own local computer so you can view changes as you write and contribute to the documentation.
 
-## Install mkdocs and LaTeX support
+## Install mkdocs and LaTeX Support
 
 This is easy:
 
@@ -12,7 +12,7 @@ pip install --user mkdocs pygments pymarkdown pymdown-extensions mkdocs-material
 
 (You don't have use to the global pip if you have python environments working, but for beginners, this is the simplest way to do it.)
 
-## Run the mkdocs server
+## Run the mkdocs Server
 
 Just type `mkdocs serve` in the root directory of the firmware repository. It should report to you something like:
 
@@ -25,7 +25,7 @@ This means that mkdocs is hosting a webpage for you on http://127.0.0.1:8000. Na
 
 Now, as you make changes to the documentation, you should be able to see it on your browser. Just hit reload from time to time to see your changes.
 
-## Adding pages
+## Adding Pages
 To add a new page to the documentation, just take a look at the mkdocs.yml file in the root of the firmware directory. You should be able to figure it out from there.
 
 ## Adding LaTeX

@@ -2,7 +2,7 @@
 
 One of the core functionalities of the ROSflight autopilot is to allow the companion computer to send control setpoints to the embedded flight controller. These setpoints would typically be computed by a controller running as a ROS node, normally on the companion computer.
 
-## Provide control from a companion computer
+## Provide Control from a Companion Computer
 
 Control setpoints are sent to the flight controller by publishing to the `/command` topic that is advertised by the `rosflight_io` node. This topic accepts messages of type `rosflight_msgs/Command`, which have the following structure:
 
@@ -77,6 +77,6 @@ I would then publish this message to the `/command` topic to forward it to the e
 !!! note
     If the flight controller does not receive a new command for a defined period of time, it will ignore the old commands and revert to RC control. The length of this timeout period is set by the `OFFBOARD_TIMEOUT` parameter.
 
-## Fly waypoints with ROSplane or ROScopter
+## Fly Waypoints with ROSplane or ROScopter
 
 Waypoint following is not supported natively by the ROSflight stack. However, the [ROSplane](https://github.com/byu-magicc/ros_plane) and [ROScopter](https://github.com/byu-magicc/ros_copter) projects are good, example implementations of how to achieve this using ROSflight. They also provide good examples of how you might go about integrating your own guidance or control algorithms with the ROSflight stack.

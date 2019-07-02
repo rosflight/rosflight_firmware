@@ -56,7 +56,7 @@ The following checklists should help you get a new vehicle set up for the first 
   1. Set torque offsets as described in the [RC trim calculation](user-guide/performance/#rc-trim-calculation) section of the Improving Performance page
   1. Tune the controller gains as described in the [Multirotor gain tuning](user-guide/performance/#multirotor-gain-tuning) section of the Improving Performance page
 
-### Fixed-wing-specific Setup
+### Fixed-Wing-Specific Setup
 
   1. Reverse servo directions if necessary using the `AIL_REV`, `ELEVATOR_REV`, and `RUDDER_REV` parameters (`1` to reverse, `0` to keep current direction)
   1. You'll most likely want to set the `ARM_SPIN_MOTORS` parameter to `0` so that the prop doesn't spin at a minimum throttle setting when you arm, especially if you'll be doing hand launching

@@ -2,7 +2,7 @@
 
 Any contributions to the firmware should adhere to the following style guidelines.
 
-## White space and Line Endings
+## White Space and Line Endings
 
 Please try not to commit anything that only changes white space or line endings. To check if that's going to happen, run `git diff --check` before you stage your files. Git will warn you about obnoxious changes. Please fix them.
 

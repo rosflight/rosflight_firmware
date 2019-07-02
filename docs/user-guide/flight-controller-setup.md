@@ -4,7 +4,7 @@
     This page contains instructions for flashing pre-built firmware binaries.
     For instructions on building and flashing from source, see [Building and Flashing](/developer-guide/building-flashing) in the Developer Guide.
 
-## Compatible hardware
+## Compatible Hardware
 
 !!! Warning
     Deprecation Notice: As of June 2019, plans are to deprecate support for the F1 in the near future. If you need to use an F1, you will need to retrieve an older version of the code that supports the F1. However, if there are issues, we will not be able to help you fix them.
@@ -47,7 +47,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664"
     sudo apt purge modemmanager
     ```
 
-## Flashing firmware using the Cleanflight Configurator
+## Flashing Firmware using the Cleanflight Configurator
 
 * Download the latest version of ROSflight for your board [here](https://github.com/rosflight/firmware/releases).
 * Install the Cleanflight configurator - It is an extension to Google Chrome - [link](https://chrome.google.com/webstore/detail/cleanflight-configurator/enacoimjcgeinfnnnpajinjgmkahmfgb?hl=en)
@@ -69,7 +69,9 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE="0664"
 
 * You're done! Great job.
 
-## Flashing F4 boards from the Command Line
+## Flashing Firmware from the Command Line
+
+### F4 Boards
 
 You can use dfu-util to flash the firmware. This is helpful if you need (or prefer) a command-line interface.
 
@@ -90,7 +92,7 @@ sudo apt install dfu-util
     dfu-util -a 0 -s 0x08000000 -D rosflight-F4.bin
 ```
 
-## Flashing F1 boards from Command Line
+### F1 Boards
 
 You can use stm32flash to flash the firmware to F1-based boards.
 

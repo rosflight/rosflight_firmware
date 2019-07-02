@@ -1,4 +1,6 @@
-# Binding your Transmitter to your Receiver
+# RC Configuration
+
+## Binding your Transmitter to your Receiver
 
 As of version 1.0, ROSflight only supports PPM receivers on F1 controllers, while F4 controllers support SBUS and PPM. If your transmitter/receiver setup only supports PWM output, we recommend using a PPM encoder such as the one [here](https://www.getfpv.com/holybro-ppm-encoder-module.html). Be sure to set the `RC_TYPE` parameter to `0` for PPM, or `1` for SBUS.
 
@@ -32,25 +34,25 @@ You may find this graphic helpful. It shows all the basic stick positions, and t
 
 It should be noted that channel assignment can be modified via the `RC_*_CHN` parameters. So, if you are using something other than AETR assignment, the channel index for each stick may be different, but the direction should be the same.
 
-# Switch configuration
+## Switch Configuration
 
 Switches can be configured for the following functions.
 To disable a switch for a specific, default function, set the corresponding parameter to `-1`.
 Be sure to check that the switch directions operate as you intend, and reverse them in your transmitter if necessary.
 
-## Safety pilot configuration
+### Safety Pilot Configuration
 
 The `RC_ATT_OVRD_CHN` parameter maps a switch to override attitude commands with RC control.
 The `RC_THR_OVRD_CHN` parameter maps a switch to override throttle commands with RC control.
 To override both with a single switch, set both parameters to the same value (this is the default behavior).
 
-## Arming
+### Arming
 
 By default, arming is done with the sticks (left stick down and right to arm, down and left to disarm).
 To use a switch instead, set the `ARM_CHANNEL` parameter to the desired channel.
 Setting an arming switch disables arming with the sticks.
 
-## Flight mode
+### Flight Mode
 
 If desired, you can map a switch to select between attitude control types (angle and rate) in flight by setting the `RC_ATT_CTRL_CHN` parameter to the desired channel.
 This can be useful if, for example, you are learning rate mode but want to be able to switch back to attitude mode to help stabilize the vehicle.

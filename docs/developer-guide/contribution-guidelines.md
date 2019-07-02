@@ -11,6 +11,6 @@ Pull requests are also required to pass the automated unit tests. You can test y
 
 Although we strive for complete in-code documentation, in practice this often gets left behind for the sake of rapid development. If you, as a potential developer, find some portion of documentation unsatisfactory, we welcome questions on the [GitHub issues page](https://github.com/rosflight/firmware/issues) or [forum](https://discuss.rosflight.org/), and pull requests which improve documentation. Several new developers have started with first improving the documentation to get a handle on how things work.
 
-# Communication
+## Communication
 
 There are two channels to communicate with the developer team. For bug reports, feature requests, and anything to do with code, please open an issue on the appropriate [firmware](https://github.com/rosflight/firmware/issues) or [ROS stack](https://github.com/rosflight/rosflight/issues) GitHub issue page. For questions and other discussions, please use the [forum](https://discuss.rosflight.org/).

@@ -1,6 +1,8 @@
+# Overview
+
 This page provides an overview of the basic operation of the ROSflight firmware and the concepts behind the behaviors.
 
-# Companion computer
+## Companion computer
 
 ROSflight is primarily intended to be used with a companion computer running ROS.
 The ROS interface is provided by the [rosflight_io](http://wiki.ros.org/rosflight) node.
@@ -19,7 +21,7 @@ The following figure illustrates the interactions between the major components o
 
 ![System Components](images/components.svg)
 
-# RC safety pilot
+## RC safety pilot
 
 ROSflight is designed for use with offboard control from experimental and research code.
 As such, it provides several mechanisms for an RC safety pilot to intervene if something goes wrong with the control setpoints coming from the companion computer:
@@ -28,7 +30,7 @@ As such, it provides several mechanisms for an RC safety pilot to intervene if s
   - **Stick deviations:** If a stick is deviated from its center position, then that channel is overridden by RC control. This allows the safety pilot to take control without flipping a switch. This may be useful to provide a momentary correction on a single axis. The fraction of stick travel needed to activate the RC override is controlled by the `RC_OVRD_DEV` parameter. The `OVRD_LAG_TIME` parameter controls the amount of time that the override remains active after the sticks return to center.
   - **Minimum throttle:** By default, the flight controller takes the minimum of the two throttle commands from RC and offboard control setpoints. This allows the safety pilot to drop the throttle quickly if needed. This behavior can be turned on or off with the `MIN_THROTTLE` parameter.
 
-# Arming, errors & failsafe
+## Arming, errors & failsafe
 
 The flight controller can only be armed and disarmed via RC control.
 Two mechanisms are provided: sticks (left stick down and right to arm, down and left to disarm) and switch.
@@ -50,7 +52,7 @@ The following is a simplified version of the finite state machine that defines l
 
 ![Arming FSM](images/arming-fsm-simplified.svg)
 
-# LEDs
+## LEDs
 
 The meaning of the various LEDs is summarized in the following table. The colors of the LEDs may change depending on your specific board:
 
