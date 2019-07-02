@@ -7,7 +7,7 @@ All documentation for the entire ROSflight stack (both firmware and ROS code) be
 This is easy:
 
 ``` bash
-pip install --user mkdocs pygments pymarkdown pymdown-extensions mkdocs-material python-markdown-math
+pip install --user mkdocs mkdocs-material pygments pymdown-extensions
 ```
 
 (You don't have use to the global pip if you have python environments working, but for beginners, this is the simplest way to do it.)
