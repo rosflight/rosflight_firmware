@@ -45,5 +45,6 @@ deploy:
   local_dir: site
   repo: rosflight/rosflight.github.io
   target_branch: master
+  fqdn: docs.rosflight.org
   on:
     branch: master
