@@ -665,7 +665,7 @@ TEST(command_manager_test, partial_muxing_test ) {
   EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 
 
-  // Now, let's disable the pitch channel on the onboard command
+  // Now, let's disable the pitch channel on the companion command
   offboard_command.y.active = false;
   offboard_command.stamp_ms = board.clock_millis();
   rf.command_manager_.set_new_offboard_command(offboard_command);

@@ -1,5 +1,0 @@
-https://github.com/mitya57/python-markdown-math/archive/master.zip
-
-mkdocs>=0.17.1
-Pygments>=2.2
-pymdown-extensions>=3.4
