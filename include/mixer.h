@@ -260,6 +260,7 @@ public:
   void init_mixing();
   void mix_output();
   void param_change_callback(uint16_t param_id);
+  void set_new_aux_command(aux_command_t new_aux_command);
   inline const float* get_outputs() const {return raw_outputs_;}
 };
 
