@@ -167,7 +167,7 @@ void Mixer::mix_output()
   Controller::Output commands = RF_.controller_.output();
   float max_output = 1.0f;
 
-  // Reverse Fixedwing channels just before mixing if we need to
+  // Reverse fixed-wing channels just before mixing if we need to
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
     commands.x *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;

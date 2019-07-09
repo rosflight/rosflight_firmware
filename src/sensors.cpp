@@ -399,8 +399,8 @@ void Sensors::calibrate_accel(void)
   if (accel_calibration_count_ > 1000)
   {
     // The temperature bias is calculated using a least-squares regression.
-    // This is computationally intensive, so it is done by the onboard computer in
-    // fcu_io and shipped over to the flight controller.
+    // This is computationally intensive, so it is done by the companion
+    // computer in fcu_io and shipped over to the flight controller.
     turbomath::Vector accel_temp_bias =
     {
       rf_.params_.get_param_float(PARAM_ACC_X_TEMP_COMP),
