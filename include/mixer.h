@@ -59,6 +59,7 @@ public:
     X8 = 8,
     TRICOPTER = 9,
     FIXEDWING = 10,
+    PASSTHROUGH = 11,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
@@ -81,11 +82,24 @@ public:
     uint32_t default_pwm_rate;
   } mixer_t;
 
-private:
-  ROSflight &RF_;
+  typedef struct
+  {
+    output_type_t type;
+    float value;
+  } aux_channel_t;
 
-  float raw_outputs_[8];
-  float unsaturated_outputs_[8];
+  typedef struct
+  {
+    aux_channel_t channel[14];
+  } aux_command_t;
+
+private:
+  ROSflight& RF_;
+
+  float raw_outputs_[14];
+  float unsaturated_outputs_[14];
+  aux_command_t aux_command_;
+  output_type_t combined_output_type_[14];
 
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
@@ -210,6 +224,17 @@ private:
     50
   };
 
+  const mixer_t passthrough_mixing =
+  {
+    {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
+
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+    50
+  };
+
   const mixer_t *mixer_to_use_;
 
   const mixer_t *array_of_mixers_[NUM_MIXERS] =
@@ -224,20 +249,18 @@ private:
     &Y6_mixing,
     &X8_mixing,
     &tricopter_mixing,
-    &fixedwing_mixing
+    &fixedwing_mixing,
+    &passthrough_mixing
   };
 
 public:
-  Mixer(ROSflight &_rf);
+  Mixer(ROSflight& _rf);
   void init();
   void init_PWM();
   void init_mixing();
   void mix_output();
   void param_change_callback(uint16_t param_id);
-  inline const float *get_outputs() const
-  {
-    return raw_outputs_;
-  }
+  inline const float* get_outputs() const {return raw_outputs_;}
 };
 
 } // namespace rosflight_firmware

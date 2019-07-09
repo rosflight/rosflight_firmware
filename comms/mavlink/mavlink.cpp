@@ -280,7 +280,7 @@ void Mavlink::send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, c
   send_message(msg);
 }
 
-void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8])
+void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14])
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_output_raw_pack(system_id, compid_, &msg, timestamp_ms, raw_outputs);
@@ -483,6 +483,39 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
   command_callback_(command);
 }
 
+void Mavlink::handle_msg_rosflight_aux_cmd(const mavlink_message_t *const msg)
+{
+  mavlink_rosflight_aux_cmd_t cmd;
+  mavlink_msg_rosflight_aux_cmd_decode(msg, &cmd);
+
+  CommLink::AuxCommand command;
+  // Repack mavlink message into CommLink::AuxCommand
+  for (int i = 0; i < 14; i++)
+  {
+    switch (cmd.type_array[i])
+    {
+    case DISABLED:
+      command.cmd_array[i].type = CommLink::AuxCommand::Type::DISABLED;
+      break;
+    case SERVO:
+      command.cmd_array[i].type = CommLink::AuxCommand::Type::SERVO;
+      break;
+    case MOTOR:
+      command.cmd_array[i].type = CommLink::AuxCommand::Type::MOTOR;
+      break;
+    default:
+      // Invalid channel mode; log an error and return with calling callback
+      // log(CommLink::LogSeverity::LOG_ERROR, "Unsupported AUX_CMD_CHANNEL_MODE %d", cmd.type_array[i]);
+      return;
+    }
+
+    command.cmd_array[i].value = cmd.aux_cmd_array[i];
+  }
+
+  // call callback after all channels have been repacked
+  aux_command_callback_(command);
+}
+
 void Mavlink::handle_msg_timesync(const mavlink_message_t *const msg)
 {
   mavlink_timesync_t tsync;
@@ -563,6 +596,9 @@ void Mavlink::handle_mavlink_message(void)
     break;
   case MAVLINK_MSG_ID_ROSFLIGHT_CMD:
     handle_msg_rosflight_cmd(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_ROSFLIGHT_AUX_CMD:
+    handle_msg_rosflight_aux_cmd(&in_buf_);
     break;
   case MAVLINK_MSG_ID_TIMESYNC:
     handle_msg_timesync(&in_buf_);
