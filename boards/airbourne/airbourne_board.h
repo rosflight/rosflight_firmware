@@ -69,6 +69,7 @@ class AirbourneBoard : public Board
 
 private:
   VCP vcp_;
+  UART uart1_;
   UART uart3_;
   Serial *current_serial_;//A pointer to the serial stream currently in use.
   I2C int_i2c_;
@@ -82,7 +83,6 @@ private:
   RC_PPM rc_ppm_;
   I2CSonar sonar_;
   RC_SBUS rc_sbus_;
-  UART sbus_uart_;
   GPIO inv_pin_;
   PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
   LED led2_;

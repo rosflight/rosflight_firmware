@@ -55,14 +55,22 @@ Params::Params(ROSflight &_rf) :
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  memset(params.names[id], 0, PARAMS_NAME_LENGTH);
+  for (int i = 0; i < PARAMS_NAME_LENGTH; i++)
+  {
+    params.names[id][i] = name[i];
+  }
   params.values[id].ivalue = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
-  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  memset(params.names[id], 0, PARAMS_NAME_LENGTH);
+  for (int i = 0; i < PARAMS_NAME_LENGTH; i++)
+  {
+    params.names[id][i] = name[i];
+  }
   params.values[id].fvalue = value;
   params.types[id] = PARAM_TYPE_FLOAT;
 }
@@ -119,7 +127,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
   init_param_int(PARAM_STREAM_GNSS_RATE, "STRM_GNSS", 1000); // Maximum rate of GNSS stream (Hz) | 0 | 10
-  init_param_int(PARAM_STREAM_GNSS_RAW_RATE, "STRM_GNSS_RAW", 0); //Rate of GNSS raw stream (Hz) | 0 | 10
+  init_param_int(PARAM_STREAM_GNSS_RAW_RATE, "STRM_GNSS_RAW", 10); //Rate of GNSS raw stream (Hz) | 0 | 10
 
   init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50

@@ -48,6 +48,7 @@ void AirbourneBoard::init_board()
   ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
+  uart1_.init(&uart_config[UART1], 115200, UART::MODE_8N1);
   uart3_.init(&uart_config[UART3], 115200, UART::MODE_8N1);
 
   backup_sram_init();
@@ -143,7 +144,7 @@ void AirbourneBoard::sensors_init()
   mag_.init(&int_i2c_);
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
-  gnss_.init(&uart3_);
+  gnss_.init(&uart1_);
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
@@ -334,9 +335,9 @@ void AirbourneBoard::rc_init(rc_type_t rc_type)
   switch (rc_type)
   {
   case RC_TYPE_SBUS:
-    sbus_uart_.init(&uart_config[0], 100000, UART::MODE_8E2);
+    uart1_.init(&uart_config[UART1], 100000, UART::MODE_8E2);
     inv_pin_.init(SBUS_INV_GPIO, SBUS_INV_PIN, GPIO::OUTPUT);
-    rc_sbus_.init(&inv_pin_, &sbus_uart_);
+    rc_sbus_.init(&inv_pin_, &uart1_);
     rc_ = &rc_sbus_;
     break;
   case RC_TYPE_PPM:

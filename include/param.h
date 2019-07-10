@@ -259,7 +259,7 @@ private:
   params_t params;
   ROSflight &RF_;
 
-  void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
+  void init_param_int(uint16_t id, const char name[], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
   uint8_t compute_checksum(void);
 
