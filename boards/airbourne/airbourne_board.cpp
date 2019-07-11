@@ -372,7 +372,10 @@ void AirbourneBoard::pwm_disable()
 
 void AirbourneBoard::pwm_write(uint8_t channel, float value)
 {
-  esc_out_[channel].write(value);
+  if (channel < PWM_NUM_OUTPUTS)
+  {
+    esc_out_[channel].write(value);
+  }
 }
 
 bool AirbourneBoard::rc_lost()
