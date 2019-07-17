@@ -228,7 +228,7 @@ class Params
 {
 
 public:
-  static constexpr uint8_t PARAMS_NAME_LENGTH = 18;
+  static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
 
 private:
   union param_value_t
