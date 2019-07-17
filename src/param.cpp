@@ -54,14 +54,16 @@ Params::Params(ROSflight& _rf) :
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  strncpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  const uint8_t len = (strlen(name)>PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name);
+  memcpy(params.names[id], name, len);
   params.values[id].ivalue = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
-  strncpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  const uint8_t len = (strlen(name)>PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name);
+  memcpy(params.names[id], name, len);
   params.values[id].fvalue = value;
   params.types[id] = PARAM_TYPE_FLOAT;
 }
