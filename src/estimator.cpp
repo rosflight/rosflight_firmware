@@ -166,9 +166,14 @@ void Estimator::run()
   // add in accelerometer
   float a_sqrd_norm = accel_LPF_.sqrd_norm();
 
+  // establish allowed acceleration deviation from 1g (i.e., non-accelerated flight)
+  const float margin = RF_.params_.get_param_float(PARAM_FILTER_ACCEL_MARGIN);
+  const float lowerbound = (1.0f - margin)*(1.0f - margin)*9.80665f*9.80665f;
+  const float upperbound = (1.0f + margin)*(1.0f + margin)*9.80665f*9.80665f;
+
   turbomath::Vector w_acc;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
-      && a_sqrd_norm < 1.1f*1.1f*9.80665f*9.80665f && a_sqrd_norm > 0.9f*0.9f*9.80665f*9.80665f)
+      && lowerbound < a_sqrd_norm && a_sqrd_norm < upperbound)
   {
     // Get error estimated by accelerometer measurement
     last_acc_update_us_ = now_us;
