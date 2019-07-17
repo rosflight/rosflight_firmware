@@ -32,8 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_PARAM_H
 #define ROSFLIGHT_FIRMWARE_PARAM_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 #include <functional>
 
 #ifndef GIT_VERSION_HASH
@@ -229,7 +228,7 @@ class Params
 {
 
 public:
-  static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
+  static constexpr uint8_t PARAMS_NAME_LENGTH = 18;
 
 private:
   union param_value_t
