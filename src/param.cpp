@@ -31,9 +31,8 @@
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "board.h"
 #include "mixer.h"
@@ -55,14 +54,14 @@ Params::Params(ROSflight& _rf) :
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  strncpy(params.names[id], name, PARAMS_NAME_LENGTH);
   params.values[id].ivalue = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
-  memcpy(params.names[id], name, PARAMS_NAME_LENGTH);
+  strncpy(params.names[id], name, PARAMS_NAME_LENGTH);
   params.values[id].fvalue = value;
   params.types[id] = PARAM_TYPE_FLOAT;
 }

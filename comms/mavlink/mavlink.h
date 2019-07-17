@@ -36,6 +36,7 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #include "v1.0/rosflight/mavlink.h"
 # pragma GCC diagnostic pop
 
