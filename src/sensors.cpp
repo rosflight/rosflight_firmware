@@ -61,18 +61,9 @@ Sensors::Sensors(ROSflight &rosflight) :
 
 void Sensors::init()
 {
-  rf_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_FC_ROLL);
-  rf_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_FC_PITCH);
-  rf_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_FC_YAW);
+  rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_ROLL);
+  rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_PITCH);
+  rf_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FC_YAW);
 
   new_imu_data_ = false;
 

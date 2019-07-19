@@ -71,14 +71,8 @@ CommandManager::CommandManager(ROSflight &_rf) :
 
 void CommandManager::init()
 {
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_FIXED_WING);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_FAILSAFE_THROTTLE);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FIXED_WING);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_FAILSAFE_THROTTLE);
 
   init_failsafe();
 }
