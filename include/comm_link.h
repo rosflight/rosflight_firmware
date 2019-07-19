@@ -157,10 +157,10 @@ public:
   virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
   virtual void send_gnss(uint8_t system_id, uint32_t time_of_week, uint8_t fix_type, uint64_t time, uint64_t nanos,
-                         int32_t lat,
-                         int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, uint32_t h_acc, uint32_t v_acc,
-                         int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y,
-                         int32_t ecef_v_z, uint32_t s_acc, uint64_t rosflight_timestamp) = 0;
+                         int32_t lat, int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, 
+                         uint32_t h_acc, uint32_t v_acc, int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, 
+                         uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y, int32_t ecef_v_z, uint32_t s_acc, 
+                         uint64_t rosflight_timestamp) = 0;
   virtual void send_gnss_raw(uint8_t system_id, uint32_t time_of_week, uint16_t year, uint8_t month, uint8_t day,
                              uint8_t hour, uint8_t min, uint8_t sec, uint8_t valid, uint32_t t_acc,
                              int32_t nano, uint8_t fix_type, uint8_t num_sat,
