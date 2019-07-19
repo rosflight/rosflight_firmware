@@ -93,6 +93,7 @@ void Estimator::init()
 {
   last_time_ = 0;
   last_acc_update_us_ = 0;
+  last_att_correction_us_ = 0;
   reset_state();
 }
 
@@ -125,12 +126,13 @@ void Estimator::set_attitude_correction(const turbomath::Quaternion &q)
 
 void Estimator::run()
 {
-  float acc_kp, ki;
+  float kp, ki;
   uint64_t now_us = RF_.sensors_.data().imu_time;
   if (last_time_ == 0)
   {
     last_time_ = now_us;
-    last_acc_update_us_ = last_time_;
+    last_acc_update_us_ = now_us;
+    last_att_correction_us_ = now_us;
     return;
   }
   else if (now_us < last_time_)
@@ -151,12 +153,12 @@ void Estimator::run()
   // Crank up the gains for the first few seconds for quick convergence
   if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
   {
-    acc_kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    acc_kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI);
   }
 
@@ -171,7 +173,7 @@ void Estimator::run()
   const float lowerbound = (1.0f - margin)*(1.0f - margin)*9.80665f*9.80665f;
   const float upperbound = (1.0f + margin)*(1.0f + margin)*9.80665f*9.80665f;
 
-  turbomath::Vector w_acc;
+  turbomath::Vector w_err;
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
       && lowerbound < a_sqrd_norm && a_sqrd_norm < upperbound)
   {
@@ -186,30 +188,49 @@ void Estimator::run()
     // Below Eq. 45 Mahony Paper
     turbomath::Quaternion q_tilde = q_acc_inv * state_.attitude;
     // Correction Term of Eq. 47a and 47b Mahony Paper
-    // w_acc = 2*s_tilde*v_tilde
-    w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
-    w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
-    w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
-
-    // integrate biases from accelerometer feedback
-    // (eq 47b Mahony Paper, using correction term w_acc found above
-    bias_.x -= ki*w_acc.x*dt;
-    bias_.y -= ki*w_acc.y*dt;
-    bias_.z = 0.0;  // Don't integrate z bias, because it's unobservable
-  }
-  else
-  {
-    w_acc.x = 0.0f;
-    w_acc.y = 0.0f;
-    w_acc.z = 0.0f;
+    // w_err = 2*s_tilde*v_tilde
+    w_err.x = -2.0f*q_tilde.w*q_tilde.x;
+    w_err.y = -2.0f*q_tilde.w*q_tilde.y;
+    w_err.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
   }
 
   if (attitude_correction_next_run_)
   {
+    turbomath::Vector xhat_BW, yhat_BW, zhat_BW;
+    turbomath::Vector xext_BW, yext_BW, zext_BW;
+    {
+      float &w = state_.attitude.w, &x = state_.attitude.x, &y = state_.attitude.y, &z = state_.attitude.z;
+      xhat_BW.x = 1.0f - 2.0f*(y*y + z*z); xhat_BW.y = 2.0f*(x*y - z*w); xhat_BW.z = 2.0f*(x*z + y*w);
+      yhat_BW.x = 2.0f*(x*y + z*w); yhat_BW.y = 1.0f - 2.0f*(x*x + z*z); yhat_BW.z = 2.0f*(y*z - x*w);
+      zhat_BW.x = 2.0f*(x*z - y*w); zhat_BW.y = 2.0f*(y*z + x*w); zhat_BW.z = 1.0f - 2.0f*(x*x + y*y);
+    }
+    {
+      float &w = q_correction_.w, &x = q_correction_.x, &y = q_correction_.y, &z = q_correction_.z;
+      xext_BW.x = 1.0f - 2.0f*(y*y + z*z); xext_BW.y = 2.0f*(x*y - z*w); xext_BW.z = 2.0f*(x*z + y*w);
+      yext_BW.x = 2.0f*(x*y + z*w); yext_BW.y = 1.0f - 2.0f*(x*x + z*z); yext_BW.z = 2.0f*(y*z - x*w);
+      zext_BW.x = 2.0f*(x*z - y*w); zext_BW.y = 2.0f*(y*z + x*w); zext_BW.z = 1.0f - 2.0f*(x*x + y*y);
+    }
+    turbomath::Vector w_ext = xext_BW.cross(xhat_BW) + yext_BW.cross(yhat_BW) + zext_BW.cross(zhat_BW);
+
+    // the angular rate correction from external attitude updates occur at a
+    // different rate than IMU updates, so it needs to be integrated with a
+    // different dt. The following scales the correction term by the timestep
+    // ratio so that it is integrated correctly.
+    const float extAttDt = (now_us - last_att_correction_us_) * 1e-6f;
+    const float scaleDt = (dt > 0) ? (extAttDt / dt) : 0.0f;
+    w_ext *= scaleDt;
+
+    // use error calculated from external attitude update only
+    w_err = w_ext;
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION);
+
+    last_att_correction_us_ = now_us;
     attitude_correction_next_run_ = false;
-    w_acc += RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION)*(q_correction_ - state_.attitude);
   }
 
+  // integrate biases driven by measured angular error
+  // eq 47b Mahony Paper, using correction term w_err found above
+  bias_ -= ki*w_err*dt;
 
   // Handle Gyro Measurements
   turbomath::Vector wbar;
@@ -228,7 +249,7 @@ void Estimator::run()
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
-  turbomath::Vector wfinal = wbar - bias_ + w_acc * acc_kp;
+  turbomath::Vector wfinal = wbar - bias_ + kp * w_err;
 
   // Propagate Dynamics (only if we've moved)
   float sqrd_norm_w = wfinal.sqrd_norm();
