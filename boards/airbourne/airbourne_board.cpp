@@ -144,7 +144,7 @@ void AirbourneBoard::sensors_init()
   mag_.init(&int_i2c_);
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
-  gnss_.init(&uart1_);
+  // gnss_.init(&uart1_);
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
@@ -406,10 +406,12 @@ void AirbourneBoard::led0_on()
 {
   led1_.on();
 }
+
 void AirbourneBoard::led0_off()
 {
   led1_.off();
 }
+
 void AirbourneBoard::led0_toggle()
 {
   led1_.toggle();
@@ -419,10 +421,12 @@ void AirbourneBoard::led1_on()
 {
   led2_.on();
 }
+
 void AirbourneBoard::led1_off()
 {
   led2_.off();
 }
+
 void AirbourneBoard::led1_toggle()
 {
   led2_.toggle();
@@ -434,8 +438,10 @@ bool AirbourneBoard::has_backup_data()
   BackupData backup_data = backup_sram_read();
   return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
 }
+
 rosflight_firmware::BackupData AirbourneBoard::get_backup_data()
 {
   return backup_sram_read();
 }
+
 } // namespace rosflight_firmware

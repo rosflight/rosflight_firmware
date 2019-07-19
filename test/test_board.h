@@ -90,10 +90,7 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
-  bool gnss_present() override
-  {
-    return false;
-  }
+  bool gnss_present() override { return false; }
   void gnss_update() override {}
   GNSSData gnss_read() override;
   GNSSRaw gnss_raw_read() override;

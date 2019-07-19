@@ -33,29 +33,36 @@
 #ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
 #define ROSFLIGHT_FIRMWARE_SENSORS_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
+#include <cstdbool>
+#include <cstring>
 #include <turbomath/turbomath.h>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers" // Ignore warning about leaving struct fields blank
 
 namespace rosflight_firmware
 {
 // Fix type, as defined in sensor_msgs/NavSatStatus
-typedef enum
+enum GNSSFixType
 {
-  NO_FIX,   // Unable to fix position
-  FIX,      // Unaugmented fix
-  SBAS_FIX, // with satellite-based augmentation
-  GBAS_FIX  // with ground-based augmentation
-} GNSSFixType;
-
-#pragma GCC diagnostic push // Allow anonymous nested unions and structs
-#pragma GCC diagnostic ignored "-Wpedantic"
+  GNSS_FIX_TYPE_NO_FIX,   // Unable to fix position
+  GNSS_FIX_TYPE_FIX,      // Unaugmented fix
+  GNSS_FIX_TYPE_SBAS_FIX, // with satellite-based augmentation
+  GNSS_FIX_TYPE_GBAS_FIX  // with ground-based augmentation
+};
 
 struct GNSSData
 {
+  struct ECEF
+  {
+    int32_t x; // cm
+    int32_t y; // cm
+    int32_t z; // cm
+    uint32_t p_acc; // cm
+    int32_t vx; // cm/s
+    int32_t vy; // cm/s
+    int32_t vz; // cm/s
+    uint32_t s_acc; // cm/s
+  };
+
   GNSSFixType fix_type;
   uint32_t time_of_week;
   uint64_t time; // Unix time, in seconds
@@ -68,18 +75,15 @@ struct GNSSData
   int32_t vel_d; // mm/s
   uint32_t h_acc; // mm
   uint32_t v_acc; // mm
-  struct
-  {
-    int32_t x; // cm
-    int32_t y; // cm
-    int32_t z; // cm
-    uint32_t p_acc; // cm
-    int32_t vx; // cm/s
-    int32_t vy; // cm/s
-    int32_t vz; // cm/s
-    uint32_t s_acc; // cm/s
-  } ecef;
+
+  ECEF ecef;
+
   uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
+
+  GNSSData()
+  {
+    memset(this, 0, sizeof(GNSSData));
+  }
 };
 
 struct GNSSRaw
@@ -111,9 +115,12 @@ struct GNSSRaw
   uint32_t head_acc;
   uint16_t p_dop;
   uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
-};
 
-#pragma GCC diagnostic pop
+  GNSSRaw()
+  {
+    memset(this, 0, sizeof(GNSSRaw));
+  }
+};
 
 class ROSflight;
 
@@ -141,11 +148,11 @@ public:
     float sonar_range = 0;
     bool sonar_range_valid = false;
 
-    GNSSData gnss_data = {};
+    GNSSData gnss_data;
     bool gnss_new_data = false;
     float gps_CNO = 0; // What is this?
     bool gnss_present = false;
-    GNSSRaw gnss_raw = {};
+    GNSSRaw gnss_raw;
 
     turbomath::Vector mag = {0, 0, 0};
 
@@ -157,10 +164,7 @@ public:
 
   Sensors(ROSflight &rosflight);
 
-  inline const Data &data() const
-  {
-    return data_;
-  }
+  inline const Data &data() const { return data_; }
   void get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us);
 
   // function declarations
@@ -287,7 +291,5 @@ private:
 };
 
 } // namespace rosflight_firmware
-
-#pragma GCC diagnostic pop // End ignore missing field initializers in structs
 
 #endif // ROSFLIGHT_FIRMWARE_SENSORS_H

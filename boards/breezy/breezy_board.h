@@ -129,10 +129,12 @@ public:
   {
     return false;
   }
+
   void gnss_update() override
   {
     return;
   }
+
   GNSSData gnss_read() override;
   bool gnss_has_new_data() override;
   GNSSRaw gnss_raw_read() override;

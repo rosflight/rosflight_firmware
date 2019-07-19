@@ -118,9 +118,6 @@ private:
   void send_baro(void);
   void send_sonar(void);
   void send_mag(void);
-  //The time of week stamp for the last sent GNSS message, to prevent re-sending
-  uint32_t last_sent_gnss_tow=0;
-  uint32_t last_sent_gnss_raw_tow=0;
   void send_gnss(void);
   void send_gnss_raw(void);
   void send_low_priority(void);
@@ -148,6 +145,10 @@ private:
     Stream(20000, [this]{this->send_low_priority();})
   };
 
+  // the time of week stamp for the last sent GNSS message, to prevent re-sending
+  uint32_t last_sent_gnss_tow_ = 0;
+  uint32_t last_sent_gnss_raw_tow_ = 0;
+
 public:
 
   CommManager(ROSflight& rf, CommLink& comm_link);
@@ -164,7 +165,6 @@ public:
   void send_named_value_float(const char *const name, float value);
 };
 
-//CommManager *instance = nullptr;
 } // namespace rosflight_firmware
 
 #endif // ROSFLIGHT_FIRMWARE_COMM_MANAGER_H

@@ -128,8 +128,7 @@ AIRBOURNE_SRCS = led.cpp \
                  uart.cpp \
                  M25P16.cpp \
                  ms4525.cpp \
-                 ublox.cpp \
-		 backup_sram.cpp
+                 backup_sram.cpp
 
 
 # board-specific source files
@@ -172,7 +171,7 @@ MCFLAGS= -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-
 DEFS+=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -D__FPU_USED -DHSE_VALUE=8000000 -DUSE_USB_OTG_FS
 CFLAGS += $(MCFLAGS) $(OPTIMIZE) $(addprefix -I,$(INCLUDE_DIRS))
 CXXFLAGS += $(MCFLAGS) $(OPTIMIZE) $(addprefix -I,$(INCLUDE_DIRS))
-LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections -Wl,-Map=main.map  
+LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections -Wl,-Map=main.map
 
 $(info VPATH = $(VPATH))
 $(info STARTUP_DIR = $(STARTUP_DIR))

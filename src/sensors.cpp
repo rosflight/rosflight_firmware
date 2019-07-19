@@ -138,6 +138,7 @@ void Sensors::update_other_sensors()
       this->data_.gnss_raw = rf_.board_.gnss_raw_read();
     }
     break;
+
   case BAROMETER:
     if (rf_.board_.baro_present())
     {
@@ -154,6 +155,7 @@ void Sensors::update_other_sensors()
       }
     }
     break;
+
   case MAGNETOMETER:
     if (rf_.board_.mag_present())
     {
@@ -205,6 +207,7 @@ void Sensors::update_other_sensors()
   default:
     break;
   }
+
   next_sensor_to_update_ = (next_sensor_to_update_ + 1) % NUM_LOW_PRIORITY_SENSORS;
 }
 

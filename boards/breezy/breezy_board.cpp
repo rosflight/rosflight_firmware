@@ -385,10 +385,12 @@ void BreezyBoard::led0_on()
 {
   LED0_ON;
 }
+
 void BreezyBoard::led0_off()
 {
   LED0_OFF;
 }
+
 void BreezyBoard::led0_toggle()
 {
   LED0_TOGGLE;
@@ -398,10 +400,12 @@ void BreezyBoard::led1_on()
 {
   LED1_ON;
 }
+
 void BreezyBoard::led1_off()
 {
   LED1_OFF;
 }
+
 void BreezyBoard::led1_toggle()
 {
   LED1_TOGGLE;
@@ -411,6 +415,7 @@ bool BreezyBoard::has_backup_data()
 {
   return false;
 }
+
 BackupData BreezyBoard::get_backup_data()
 {
 #pragma GCC diagnostic push

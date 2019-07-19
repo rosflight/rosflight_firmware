@@ -33,8 +33,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_MIXER_H
 #define ROSFLIGHT_FIRMWARE_MIXER_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
+#include <cstdbool>
 
 namespace rosflight_firmware
 {
@@ -45,6 +45,9 @@ class Mixer
 {
 
 public:
+
+  static constexpr uint8_t NUM_TOTAL_OUTPUTS = 14;
+  static constexpr uint8_t NUM_MIXER_OUTPUTS = 8;
 
   enum
   {
@@ -74,11 +77,11 @@ public:
 
   typedef struct
   {
-    output_type_t output_type[8];
-    float F[8];
-    float x[8];
-    float y[8];
-    float z[8];
+    output_type_t output_type[NUM_MIXER_OUTPUTS];
+    float F[NUM_MIXER_OUTPUTS];
+    float x[NUM_MIXER_OUTPUTS];
+    float y[NUM_MIXER_OUTPUTS];
+    float z[NUM_MIXER_OUTPUTS];
     uint32_t default_pwm_rate;
   } mixer_t;
 
@@ -90,16 +93,16 @@ public:
 
   typedef struct
   {
-    aux_channel_t channel[14];
+    aux_channel_t channel[NUM_TOTAL_OUTPUTS];
   } aux_command_t;
 
 private:
   ROSflight& RF_;
 
-  float raw_outputs_[14];
-  float unsaturated_outputs_[14];
+  float raw_outputs_[NUM_TOTAL_OUTPUTS];
+  float outputs_[NUM_TOTAL_OUTPUTS];
   aux_command_t aux_command_;
-  output_type_t combined_output_type_[14];
+  output_type_t combined_output_type_[NUM_TOTAL_OUTPUTS];
 
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);

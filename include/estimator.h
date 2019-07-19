@@ -59,10 +59,7 @@ public:
 
   Estimator(ROSflight &_rf);
 
-  inline const State &state() const
-  {
-    return state_;
-  }
+  inline const State &state() const { return state_; }
 
   void init();
   void run();

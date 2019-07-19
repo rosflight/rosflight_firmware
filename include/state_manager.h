@@ -79,10 +79,7 @@ public:
   void init();
   void run();
 
-  inline const State &state() const
-  {
-    return state_;
-  }
+  inline const State &state() const { return state_; }
 
   void set_event(Event event);
   void set_error(uint16_t error);

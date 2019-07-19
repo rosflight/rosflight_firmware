@@ -149,8 +149,7 @@ TEST(turbotrig_test, fast_alt_test)
   float trueResult = 0.0;
   for (int i = 69682; i < 106597; i++)
   {
-    trueResult = static_cast<float>((1.0 - pow(static_cast<float>(i)/101325,
-                                     0.190284)) * 145366.45) * static_cast<float>(0.3048);
+    trueResult = static_cast<float>((1.0 - pow(static_cast<float>(i)/101325, 0.190284)) * 145366.45) * static_cast<float>(0.3048);
     EXPECT_NEAR(turbomath::alt(i), trueResult, .15);
     //arbitrarily chose <= .15m since fast_alt isn't accurate enough for EXPECT_CLOSE,
     //but being within .15 meters of the correct result seems pretty good to me

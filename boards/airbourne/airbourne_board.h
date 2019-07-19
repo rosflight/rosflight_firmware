@@ -56,8 +56,8 @@
 #include "system.h"
 #include "uart.h"
 #include "mb1242.h"
-#include "ublox.h"
 #include "backup_sram.h"
+// #include "ublox.h"
 
 #include "board.h"
 
@@ -88,7 +88,7 @@ private:
   LED led2_;
   LED led1_;
   M25P16 flash_;
-  UBLOX gnss_;
+  // UBLOX gnss_;
 
   enum SerialDevice : uint32_t
   {

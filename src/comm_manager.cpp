@@ -285,7 +285,8 @@ void CommManager::aux_command_callback(const CommLink::AuxCommand &command)
 {
   Mixer::aux_command_t new_aux_command;
 
-  for (int i = 0; i < 14; i++) {
+  for (int i = 0; i < 14; i++)
+  {
     switch (command.cmd_array[i].type)
     {
     case CommLink::AuxCommand::Type::DISABLED:
@@ -305,6 +306,7 @@ void CommManager::aux_command_callback(const CommLink::AuxCommand &command)
       break;
     }
   }
+
   // Send the new aux_command to the mixer
   RF_.mixer_.set_new_aux_command(new_aux_command);
 }
@@ -455,6 +457,7 @@ void CommManager::send_mag(void)
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
+
 void CommManager::send_error_data(void)
 {
   BackupData error_data = RF_.board_.get_backup_data();
@@ -463,73 +466,29 @@ void CommManager::send_error_data(void)
 
 void CommManager::send_gnss(void)
 {
+  const GNSSData& gnss_data = RF_.sensors_.data().gnss_data;
+
   if (RF_.sensors_.data().gnss_present)
   {
-    GNSSData gnss_data = RF_.sensors_.data().gnss_data;
-    if (gnss_data.time_of_week!=this->last_sent_gnss_tow)
+    if (gnss_data.time_of_week != last_sent_gnss_tow_)
     {
-      this->last_sent_gnss_tow = gnss_data.time_of_week;
-      comm_link_.send_gnss(sysid_,
-                           gnss_data.time_of_week,
-                           gnss_data.fix_type,
-                           gnss_data.time,
-                           gnss_data.nanos,
-                           gnss_data.lat,
-                           gnss_data.lon,
-                           gnss_data.height,
-                           gnss_data.vel_n,
-                           gnss_data.vel_e,
-                           gnss_data.vel_d,
-                           gnss_data.h_acc,
-                           gnss_data.v_acc,
-                           gnss_data.ecef.x,
-                           gnss_data.ecef.y,
-                           gnss_data.ecef.z,
-                           gnss_data.ecef.p_acc,
-                           gnss_data.ecef.vx,
-                           gnss_data.ecef.vy,
-                           gnss_data.ecef.vz,
-                           gnss_data.ecef.s_acc,
-                           gnss_data.rosflight_timestamp);
+      comm_link_.send_gnss(sysid_, gnss_data);
+      last_sent_gnss_tow_ = gnss_data.time_of_week;
     }
   }
 }
 
 void CommManager::send_gnss_raw()
 {
+  const GNSSRaw& gnss_raw = RF_.sensors_.data().gnss_raw;
+
   if (RF_.sensors_.data().gnss_present)
   {
-    GNSSRaw raw = RF_.sensors_.data().gnss_raw;
-    if (raw.time_of_week != this->last_sent_gnss_raw_tow)
-      comm_link_.send_gnss_raw(sysid_,
-                               raw.time_of_week,
-                               raw.year,
-                               raw.month,
-                               raw.day,
-                               raw.hour,
-                               raw.min,
-                               raw.sec,
-                               raw.valid,
-                               raw.t_acc,
-                               raw.nano,
-                               raw.fix_type,
-                               raw.num_sat,
-                               raw.lon,
-                               raw.lat,
-                               raw.height,
-                               raw.height_msl,
-                               raw.h_acc,
-                               raw.v_acc,
-                               raw.vel_n,
-                               raw.vel_e,
-                               raw.vel_d,
-                               raw.g_speed,
-                               raw.head_mot,
-                               raw.s_acc,
-                               raw.head_acc,
-                               raw.p_dop,
-                               raw.rosflight_timestamp);
-    this->last_sent_gnss_raw_tow = raw.time_of_week;
+    if (gnss_raw.time_of_week != last_sent_gnss_raw_tow_)
+    {
+      comm_link_.send_gnss_raw(sysid_, RF_.sensors_.data().gnss_raw);
+      last_sent_gnss_raw_tow_ = gnss_raw.time_of_week;
+    }
   }
 }
 

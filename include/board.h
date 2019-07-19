@@ -42,6 +42,7 @@
 
 namespace rosflight_firmware
 {
+
 struct debug_info_t
 {
   uint32_t r0;
@@ -53,6 +54,7 @@ struct debug_info_t
   uint32_t pc;
   uint32_t psr;
 };
+
 struct BackupData
 {
   uint32_t error_code;
@@ -63,6 +65,7 @@ struct BackupData
   StateManager::State state;
   uint32_t checksum; //With the current implementation of the checksum, this must go last
 };
+
 //This magic number is used to check that the firmware was armed before it reset
 const uint32_t ARM_MAGIC = 0xfa11bad;
 
