@@ -93,6 +93,7 @@ private:
 
   uint64_t last_time_;
   uint64_t last_acc_update_us_;
+  uint64_t last_att_correction_us_;
 
   turbomath::Vector w1_;
   turbomath::Vector w2_;
