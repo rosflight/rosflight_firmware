@@ -299,7 +299,7 @@ GNSSData AirbourneBoard::gnss_read()
 }
 GNSSRaw AirbourneBoard::gnss_raw_read()
 {
-  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
+//  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
   GNSSRaw raw = {};
   // raw.time_of_week = pvt.iTOW;
   // raw.year = pvt.time.year;

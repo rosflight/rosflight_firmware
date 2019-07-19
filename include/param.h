@@ -32,8 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_PARAM_H
 #define ROSFLIGHT_FIRMWARE_PARAM_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 #include <functional>
 
 #ifndef GIT_VERSION_HASH

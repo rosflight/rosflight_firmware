@@ -31,9 +31,8 @@
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "board.h"
 #include "mixer.h"
@@ -55,22 +54,18 @@ Params::Params(ROSflight &_rf) :
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
-  memset(params.names[id], 0, PARAMS_NAME_LENGTH);
-  for (int i = 0; i < PARAMS_NAME_LENGTH; i++)
-  {
-    params.names[id][i] = name[i];
-  }
+  // copy cstr including '\0' or until maxlen
+  const uint8_t len = (strlen(name)>=PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name)+1;
+  memcpy(params.names[id], name, len);
   params.values[id].ivalue = value;
   params.types[id] = PARAM_TYPE_INT32;
 }
 
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
-  memset(params.nabes[id], 0, PARAMS_NAME_LENGTH);
-  for (int i = 0; i < PARAMS_NAME_LENGTH; i++)
-  {
-    params.names[id][i] = name[i];
-  }
+  // copy cstr including '\0' or until maxlen
+  const uint8_t len = (strlen(name)>=PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name)+1;
+  memcpy(params.names[id], name, len);
   params.values[id].fvalue = value;
   params.types[id] = PARAM_TYPE_FLOAT;
 }
