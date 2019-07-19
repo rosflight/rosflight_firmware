@@ -161,35 +161,15 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us,
   send_message(msg);
 }
 void Mavlink::send_gnss(uint8_t system_id, uint32_t time_of_week, uint8_t fix_type, uint64_t time, uint64_t nanos,
-                        int32_t lat,
-                        int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, uint32_t h_acc, uint32_t v_acc,
-                        int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y,
-                        int32_t ecef_v_z, uint32_t s_acc, uint64_t rosflight_timestamp)
+                        int32_t lat, int32_t lon, int32_t height, int32_t vel_n, int32_t vel_e, int32_t vel_d, 
+                        uint32_t h_acc, uint32_t v_acc, int32_t ecef_x, int32_t ecef_y, int32_t ecef_z, 
+                        uint32_t p_acc, int32_t ecef_v_x, int32_t ecef_v_y, int32_t ecef_v_z, uint32_t s_acc, 
+                        uint64_t rosflight_timestamp)
 {
   mavlink_message_t msg;
-  mavlink_msg_rosflight_gnss_pack(system_id,
-                                  compid_,
-                                  &msg,
-                                  time_of_week,
-                                  fix_type,
-                                  time,
-                                  nanos,
-                                  lat,
-                                  lon,
-                                  height,
-                                  vel_n,
-                                  vel_e,
-                                  vel_d,
-                                  h_acc,
-                                  v_acc,
-                                  ecef_x,
-                                  ecef_y,
-                                  ecef_z,
-                                  p_acc,
-                                  ecef_v_x,
-                                  ecef_v_y,
-                                  ecef_v_z,
-                                  s_acc,
+  mavlink_msg_rosflight_gnss_pack(system_id, compid_, &msg,
+                                  time_of_week, fix_type, time, nanos, lat, lon, height, vel_n, vel_e, vel_d, h_acc,
+                                  v_acc, ecef_x, ecef_y, ecef_z, p_acc, ecef_v_x, ecef_v_y, ecef_v_z, s_acc,
                                   rosflight_timestamp);
   send_message(msg);
 }

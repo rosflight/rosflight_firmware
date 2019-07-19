@@ -45,58 +45,19 @@ RC::RC(ROSflight &_rf) :
 void RC::init()
 {
   init_rc();
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_TYPE);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_ARM_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_X_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_Y_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_Z_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_F_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_SWITCH_5_DIRECTION);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_SWITCH_6_DIRECTION);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_SWITCH_7_DIRECTION);
-  RF_.params_.add_callback([this](uint16_t param_id)
-  {
-    this->param_change_callback(param_id);
-  }, PARAM_RC_SWITCH_8_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ARM_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_X_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_Y_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_Z_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_F_CHANNEL);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_5_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_6_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_7_DIRECTION);
+  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_8_DIRECTION);
   new_command_ = false;
 }
 
