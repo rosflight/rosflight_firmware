@@ -44,7 +44,7 @@
 namespace rosflight_firmware
 {
 
-Params::Params(ROSflight& _rf) :
+Params::Params(ROSflight &_rf) :
   RF_(_rf)
 {
   for (uint16_t id = 0; id < PARAMS_COUNT; id++)
@@ -77,9 +77,9 @@ uint8_t Params::compute_checksum(void)
 
   for (p = reinterpret_cast<const char *>(&params.values); p < reinterpret_cast<const char *>(&params.values) + 4*PARAMS_COUNT; p++)
     chk ^= *p;
-  for (p = reinterpret_cast<const char *>(&params.names); p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT*PARAMS_NAME_LENGTH; p++)
+  for (p = reinterpret_cast<const char *>(&params.names);  p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT*PARAMS_NAME_LENGTH; p++)
     chk ^= *p;
-  for (p = reinterpret_cast<const char *>(&params.types); p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++)
+  for (p = reinterpret_cast<const char *>(&params.types);  p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++)
     chk ^= *p;
 
   return chk;
@@ -118,6 +118,8 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_BARO_RATE, "STRM_BARO", 50); // Rate of barometer stream (Hz) | 0 | 100
   init_param_int(PARAM_STREAM_AIRSPEED_RATE, "STRM_AIRSPEED", 50); // Rate of airspeed stream (Hz) | 0 |  50
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
+  init_param_int(PARAM_STREAM_GNSS_RATE, "STRM_GNSS", 1000); // Maximum rate of GNSS stream (Hz) | 0 | 10
+  init_param_int(PARAM_STREAM_GNSS_RAW_RATE, "STRM_GNSS_RAW", 10); //Rate of GNSS raw stream (Hz) | 0 | 10
 
   init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50
@@ -218,8 +220,8 @@ void Params::set_defaults(void)
   init_param_int(PARAM_RC_F_CHANNEL, "RC_F_CHN", 2); // RC input channel mapped to F-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
-  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN", -1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
-  init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL", -1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN",-1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL",-1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
@@ -303,7 +305,7 @@ bool Params::write(void)
 void Params::change_callback(uint16_t id)
 {
   // call the callback function
-  if(callbacks[id])
+  if (callbacks[id])
     callbacks[id](id);
 }
 
