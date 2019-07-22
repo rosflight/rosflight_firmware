@@ -29,8 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-
 #include <cstdint>
 #include <cstring>
 
@@ -40,6 +38,21 @@
 #include "param.h"
 
 #include "rosflight.h"
+
+#ifndef GIT_VERSION_HASH
+#define GIT_VERSION_HASH 0x00
+#pragma message "GIT_VERSION_HASH Undefined, setting to 0x00!"
+#endif
+#ifndef GIT_VERSION_STRING
+#define GIT_VERSION_STRING "empty"
+#pragma message "GIT_VERSION_STRING Undefined, setting to \"empty\"!"
+#endif
+
+// Uncomment to view contents of GIT_VERSION_HASH and GIT_VERSION STRING
+//#define STRINGIFY(s) XSTRINGIFY(s)
+//#define XSTRINGIFY(s) #s
+//#pragma message( "GIT_VERSION_HASH: " STRINGIFY(GIT_VERSION_HASH))
+//#pragma message( "GIT_VERSION_STRING: " GIT_VERSION_STRING)
 
 namespace rosflight_firmware
 {
@@ -372,6 +385,8 @@ bool Params::set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t 
 
 bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value)
 {
-  return set_param_by_name_int(name, reinterpret_cast<int32_t &>(value));
+  param_value_t tmp;
+  tmp.fvalue = value;
+  return set_param_by_name_int(name, tmp.ivalue);
 }
 }
