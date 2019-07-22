@@ -104,7 +104,7 @@ private:
   void command_callback(CommLinkInterface::Command command) override;
   void timesync_callback(int64_t tc1, int64_t ts1) override;
   void offboard_control_callback(const CommLinkInterface::OffboardControl& control) override;
-  void aux_command_callback(const CommLink::AuxCommand &command) override;
+  void aux_command_callback(const CommLinkInterface::AuxCommand &command) override;
   void attitude_correction_callback(const turbomath::Quaternion &q) override;
   void heartbeat_callback() override;
 
