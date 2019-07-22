@@ -33,6 +33,7 @@
 #define ROSFLIGHT_FIRMWARE_TEST_BOARD_H
 
 #include "board.h"
+#include "sensors.h"
 
 namespace rosflight_firmware
 {
@@ -59,7 +60,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
 // serial
-  void serial_init(uint32_t baud_rate) override;
+  void serial_init(uint32_t baud_rate, uint32_t dev) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
@@ -70,7 +71,7 @@ public:
   uint16_t num_sensor_errors() ;
 
   bool new_imu_data() override;
-  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time) override;
+  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
@@ -89,6 +90,13 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
+  bool gnss_present() override { return false; }
+  void gnss_update() override {}
+  GNSSData gnss_read() override;
+  GNSSRaw gnss_raw_read() override;
+  bool gnss_has_new_data() override;
+
+
 // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;
@@ -96,6 +104,7 @@ public:
 
 // PWM
   void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) override;
+  void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
 
 // non-volatile memory
@@ -112,10 +121,13 @@ public:
   void led1_off() override;
   void led1_toggle() override;
 
+//Backup memory
+  bool has_backup_data() override;
+  BackupData get_backup_data() override;
 
 
-  void set_imu(float* acc, float* gyro, uint64_t time_us);
-  void set_rc(uint16_t* values);
+  void set_imu(float *acc, float *gyro, uint64_t time_us);
+  void set_rc(uint16_t *values);
   void set_time(uint64_t time_us);
   void set_pwm_lost(bool lost);
 

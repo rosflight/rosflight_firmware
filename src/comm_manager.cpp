@@ -53,34 +53,85 @@ void CommManager::init()
   comm_link_.register_offboard_control_callback([this](const CommLink::OffboardControl& control){this->offboard_control_callback(control);});
   comm_link_.register_command_callback([this](CommLink::Command command){this->command_callback(command);});
   comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
-  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)));
-
-  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
+  comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
+  comm_link_.register_heartbeat_callback([this](void){this->heartbeat_callback();});
+  comm_link_.register_aux_command_callback([this](const CommLink::AuxCommand &command){this->aux_command_callback(command);});
+  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
+                  static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
 
-  // Register Param change callbacks
-  RF_.params_.add_callback([this](int16_t param_id){this->update_system_id(param_id);}, PARAM_SYSTEM_ID);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);}, PARAM_STREAM_HEARTBEAT_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_STATUS, param_id);}, PARAM_STREAM_STATUS_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_IMU, param_id);}, PARAM_STREAM_IMU_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_ATTITUDE, param_id);}, PARAM_STREAM_ATTITUDE_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);}, PARAM_STREAM_AIRSPEED_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_BARO, param_id);}, PARAM_STREAM_BARO_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SONAR, param_id);}, PARAM_STREAM_SONAR_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_MAG, param_id);}, PARAM_STREAM_MAG_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);}, PARAM_STREAM_OUTPUT_RAW_RATE);
-  RF_.params_.add_callback([this](int16_t param_id){this->set_streaming_rate(STREAM_ID_RC_RAW, param_id);}, PARAM_STREAM_RC_RAW_RATE);
+  update_system_id(PARAM_SYSTEM_ID);
+  set_streaming_rate(STREAM_ID_HEARTBEAT, PARAM_STREAM_HEARTBEAT_RATE);
+  set_streaming_rate(STREAM_ID_STATUS, PARAM_STREAM_STATUS_RATE);
+  set_streaming_rate(STREAM_ID_IMU, PARAM_STREAM_IMU_RATE);
+  set_streaming_rate(STREAM_ID_ATTITUDE, PARAM_STREAM_ATTITUDE_RATE);
+  set_streaming_rate(STREAM_ID_DIFF_PRESSURE, PARAM_STREAM_AIRSPEED_RATE);
+  set_streaming_rate(STREAM_ID_BARO, PARAM_STREAM_BARO_RATE);
+  set_streaming_rate(STREAM_ID_SONAR, PARAM_STREAM_SONAR_RATE);
+  set_streaming_rate(STREAM_ID_GNSS, PARAM_STREAM_GNSS_RATE);
+  set_streaming_rate(STREAM_ID_GNSS_RAW, PARAM_STREAM_GNSS_RAW_RATE);
+  set_streaming_rate(STREAM_ID_MAG, PARAM_STREAM_MAG_RATE);
+  set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, PARAM_STREAM_OUTPUT_RAW_RATE);
+  set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
   log(CommLink::LogSeverity::LOG_INFO, "Booting");
 }
 
+void CommManager::param_change_callback(uint16_t param_id)
+{
+  switch (param_id)
+  {
+  case PARAM_SYSTEM_ID:
+    update_system_id(param_id);
+    break;
+  case PARAM_STREAM_HEARTBEAT_RATE:
+    set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);
+    break;
+  case PARAM_STREAM_STATUS_RATE:
+    set_streaming_rate(STREAM_ID_STATUS, param_id);
+    break;
+  case PARAM_STREAM_IMU_RATE:
+    set_streaming_rate(STREAM_ID_IMU, param_id);
+    break;
+  case PARAM_STREAM_ATTITUDE_RATE:
+    set_streaming_rate(STREAM_ID_ATTITUDE, param_id);
+    break;
+  case PARAM_STREAM_AIRSPEED_RATE:
+    set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);
+    break;
+  case PARAM_STREAM_BARO_RATE:
+    set_streaming_rate(STREAM_ID_BARO, param_id);
+    break;
+  case PARAM_STREAM_SONAR_RATE:
+    set_streaming_rate(STREAM_ID_SONAR, param_id);
+    break;
+  case PARAM_STREAM_GNSS_RATE:
+    set_streaming_rate(STREAM_ID_GNSS, param_id);
+    break;
+  case PARAM_STREAM_GNSS_RAW_RATE:
+    set_streaming_rate(STREAM_ID_GNSS_RAW, param_id);
+    break;
+  case PARAM_STREAM_MAG_RATE:
+    set_streaming_rate(STREAM_ID_MAG, param_id);
+    break;
+  case PARAM_STREAM_OUTPUT_RAW_RATE:
+    set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);
+    break;
+  case PARAM_STREAM_RC_RAW_RATE:
+    set_streaming_rate(STREAM_ID_RC_RAW, param_id);
+    break;
+  default:
+    // do nothing
+    break;
+  }
+}
+
 void CommManager::update_system_id(uint16_t param_id)
 {
-  (void) param_id;
-  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(PARAM_SYSTEM_ID));
+  sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(param_id));
 }
 
 void CommManager::update_status()
@@ -275,6 +326,54 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 
+void CommManager::aux_command_callback(const CommLink::AuxCommand &command)
+{
+  Mixer::aux_command_t new_aux_command;
+
+  for (int i = 0; i < 14; i++)
+  {
+    switch (command.cmd_array[i].type)
+    {
+    case CommLink::AuxCommand::Type::DISABLED:
+      // Channel is either not used or is controlled by the mixer
+      new_aux_command.channel[i].type = Mixer::NONE;
+      new_aux_command.channel[i].value = 0;
+      break;
+    case CommLink::AuxCommand::Type::SERVO:
+      // PWM value should be mapped to servo position
+      new_aux_command.channel[i].type = Mixer::S;
+      new_aux_command.channel[i].value = command.cmd_array[i].value;
+      break;
+    case CommLink::AuxCommand::Type::MOTOR:
+      // PWM value should be mapped to motor speed
+      new_aux_command.channel[i].type = Mixer::M;
+      new_aux_command.channel[i].value = command.cmd_array[i].value;
+      break;
+    }
+  }
+
+  // Send the new aux_command to the mixer
+  RF_.mixer_.set_new_aux_command(new_aux_command);
+}
+
+void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
+{
+  RF_.estimator_.set_attitude_correction(q);
+}
+void CommManager::heartbeat_callback(void)
+{
+  static bool error_data_sent = false;
+  if(!error_data_sent)
+  {
+      if(this->RF_.board_.has_backup_data())
+      {
+          this->send_error_data();
+      }
+      error_data_sent = true;
+  }
+  this->send_heartbeat();//respond to heartbeats with a heartbeat
+}
+
 // function definitions
 void CommManager::receive(void)
 {
@@ -402,6 +501,40 @@ void CommManager::send_mag(void)
 {
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
+}
+
+void CommManager::send_error_data(void)
+{
+  BackupData error_data = RF_.board_.get_backup_data();
+  comm_link_.send_error_data(sysid_, error_data);
+}
+
+void CommManager::send_gnss(void)
+{
+  const GNSSData& gnss_data = RF_.sensors_.data().gnss_data;
+
+  if (RF_.sensors_.data().gnss_present)
+  {
+    if (gnss_data.time_of_week != last_sent_gnss_tow_)
+    {
+      comm_link_.send_gnss(sysid_, gnss_data);
+      last_sent_gnss_tow_ = gnss_data.time_of_week;
+    }
+  }
+}
+
+void CommManager::send_gnss_raw()
+{
+  const GNSSRaw& gnss_raw = RF_.sensors_.data().gnss_raw;
+
+  if (RF_.sensors_.data().gnss_present)
+  {
+    if (gnss_raw.time_of_week != last_sent_gnss_raw_tow_)
+    {
+      comm_link_.send_gnss_raw(sysid_, RF_.sensors_.data().gnss_raw);
+      last_sent_gnss_raw_tow_ = gnss_raw.time_of_week;
+    }
+  }
 }
 
 void CommManager::send_low_priority(void)

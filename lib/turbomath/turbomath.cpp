@@ -269,6 +269,19 @@ Quaternion& Quaternion::from_RPY(float roll, float pitch, float yaw)
   return *this;
 }
 
+Vector Quaternion::boxminus(const Quaternion &q) const
+{
+  Quaternion dq = q.inverse() * (*this);
+  if (dq.w < 0.0)
+  {
+    dq.w *= -1.0;
+    dq.x *= -1.0;
+    dq.y *= -1.0;
+    dq.z *= -1.0;
+  }
+  return log(dq);
+}
+
 void Quaternion::get_RPY(float *roll, float *pitch, float *yaw) const
 {
   *roll = turbomath::atan2(2.0f * (w*x + y*z), 1.0f - 2.0f * (x*x + y*y));

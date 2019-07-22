@@ -76,6 +76,8 @@ void Estimator::reset_state()
 
   state_.timestamp_us = RF_.board_.clock_micros();
 
+  attitude_correction_next_run_ = false;
+
   // Clear the unhealthy estimator flag
   RF_.state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
 }
@@ -94,25 +96,36 @@ void Estimator::init()
   reset_state();
 }
 
+void Estimator::param_change_callback(uint16_t param_id)
+{
+  (void) param_id;
+}
+
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
-  const turbomath::Vector& raw_accel = RF_.sensors_.data().accel;
+  const turbomath::Vector &raw_accel = RF_.sensors_.data().accel;
   accel_LPF_.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*accel_LPF_.x;
   accel_LPF_.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*accel_LPF_.y;
   accel_LPF_.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*accel_LPF_.z;
 
   float alpha_gyro_xy = RF_.params_.get_param_float(PARAM_GYRO_XY_ALPHA);
   float alpha_gyro_z = RF_.params_.get_param_float(PARAM_GYRO_Z_ALPHA);
-  const turbomath::Vector& raw_gyro = RF_.sensors_.data().gyro;
+  const turbomath::Vector &raw_gyro = RF_.sensors_.data().gyro;
   gyro_LPF_.x = (1.0f-alpha_gyro_xy)*raw_gyro.x + alpha_gyro_xy*gyro_LPF_.x;
   gyro_LPF_.y = (1.0f-alpha_gyro_xy)*raw_gyro.y + alpha_gyro_xy*gyro_LPF_.y;
   gyro_LPF_.z = (1.0f-alpha_gyro_z)*raw_gyro.z + alpha_gyro_z*gyro_LPF_.z;
 }
 
+void Estimator::set_attitude_correction(const turbomath::Quaternion &q)
+{
+  attitude_correction_next_run_ = true;
+  q_correction_ = q;
+}
+
 void Estimator::run()
 {
-  float kp, ki;
+  float acc_kp, ki;
   uint64_t now_us = RF_.sensors_.data().imu_time;
   if (last_time_ == 0)
   {
@@ -138,12 +151,12 @@ void Estimator::run()
   // Crank up the gains for the first few seconds for quick convergence
   if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
+    acc_kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
+    acc_kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI);
   }
 
@@ -186,6 +199,12 @@ void Estimator::run()
     w_acc.z = 0.0f;
   }
 
+  if (attitude_correction_next_run_)
+  {
+    attitude_correction_next_run_ = false;
+    w_acc += RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION)*(q_correction_ - state_.attitude);
+  }
+
 
   // Handle Gyro Measurements
   turbomath::Vector wbar;
@@ -204,7 +223,7 @@ void Estimator::run()
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
-  turbomath::Vector wfinal = wbar - bias_ + w_acc * kp;
+  turbomath::Vector wfinal = wbar - bias_ + w_acc * acc_kp;
 
   // Propagate Dynamics (only if we've moved)
   float sqrd_norm_w = wfinal.sqrd_norm();
@@ -225,9 +244,9 @@ void Estimator::run()
       float t1 = cosf((norm_w*dt)/2.0f);
       float t2 = 1.0f/norm_w * sinf((norm_w*dt)/2.0f);
       qhat_np1.w = t1*state_.attitude.w + t2*(-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z);
-      qhat_np1.x = t1*state_.attitude.x + t2*( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z);
-      qhat_np1.y = t1*state_.attitude.y + t2*( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z);
-      qhat_np1.z = t1*state_.attitude.z + t2*( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y);
+      qhat_np1.x = t1*state_.attitude.x + t2*(p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z);
+      qhat_np1.y = t1*state_.attitude.y + t2*(q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z);
+      qhat_np1.z = t1*state_.attitude.z + t2*(r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y);
       state_.attitude = qhat_np1.normalize();
     }
     else
@@ -235,9 +254,9 @@ void Estimator::run()
       // Euler Integration
       // (Eq. 47a Mahony Paper), but this is pretty straight-forward
       turbomath::Quaternion qdot(0.5f * (-p*state_.attitude.x - q*state_.attitude.y - r*state_.attitude.z),
-                                 0.5f * ( p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z),
-                                 0.5f * ( q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z),
-                                 0.5f * ( r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y));
+                                 0.5f * (p*state_.attitude.w + r*state_.attitude.y - q*state_.attitude.z),
+                                 0.5f * (q*state_.attitude.w - r*state_.attitude.x + p*state_.attitude.z),
+                                 0.5f * (r*state_.attitude.w + q*state_.attitude.x - p*state_.attitude.y));
       state_.attitude.w += qdot.w*dt;
       state_.attitude.x += qdot.x*dt;
       state_.attitude.y += qdot.y*dt;

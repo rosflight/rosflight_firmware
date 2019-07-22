@@ -32,6 +32,10 @@
 #ifndef ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 #define ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 
+#include <cstdint>
+
+#include "interface/param_listener.h"
+
 #include "board.h"
 #include "param.h"
 #include "sensors.h"
@@ -50,13 +54,10 @@ namespace rosflight_firmware
 class ROSflight
 {
 
-private:
-
-
 public:
-  ROSflight(Board& board, CommLink& comm_link);
+  ROSflight(Board &board, CommLink &comm_link);
 
-  Board& board_;
+  Board &board_;
   CommManager comm_manager_;
 
   Params params_;
@@ -82,6 +83,18 @@ public:
   void run();
 
   uint32_t get_loop_time_us();
+
+private:
+  static constexpr size_t num_param_listeners_ = 7;
+  ParamListenerInterface * const param_listeners_[num_param_listeners_] = {
+    &comm_manager_,
+    &command_manager_,
+    &controller_,
+    &estimator_,
+    &mixer_,
+    &rc_,
+    &sensors_
+  };
 };
 
 } // namespace rosflight_firmware

@@ -38,6 +38,8 @@
 #include <turbomath/turbomath.h>
 
 #include "param.h"
+#include "board.h"
+#include "sensors.h"
 
 namespace rosflight_firmware
 {
@@ -91,7 +93,25 @@ public:
     Channel F;
   };
 
-  virtual void init(uint32_t baud_rate) = 0;
+  struct AuxCommand
+  {
+    enum class Type
+    {
+      DISABLED,
+      SERVO,
+      MOTOR
+    };
+
+    struct AuxChannel
+    {
+      Type type;
+      float value;
+    };
+
+    AuxChannel cmd_array[14];
+  };
+
+  virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void receive() = 0;
 
   // send functions
@@ -113,7 +133,7 @@ public:
   virtual void send_mag(uint8_t system_id, const turbomath::Vector &mag) = 0;
   virtual void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) = 0;
   virtual void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) = 0;
-  virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) = 0;
+  virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) = 0;
   virtual void send_param_value_int(uint8_t system_id,
                                     uint16_t index,
                                     const char *const name,
@@ -137,6 +157,9 @@ public:
                            int16_t loop_time_us) = 0;
   virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
+  virtual void send_gnss(uint8_t system_id, const GNSSData& data) = 0;
+  virtual void send_gnss_raw(uint8_t system_id, const GNSSRaw& data) = 0;
+  virtual void send_error_data(uint8_t system_id, const BackupData& error_data) = 0;
 
   // register callbacks
 
@@ -171,6 +194,16 @@ public:
     offboard_control_callback_ = callback;
   }
 
+  void register_aux_command_callback(std::function<void(const AuxCommand&)> callback)
+  {
+    aux_command_callback_ = callback;
+  }
+
+  void register_attitude_correction_callback(std::function<void(const turbomath::Quaternion)> callback)
+  {
+    attitude_correction_callback_ = callback;
+  }
+
   void register_command_callback(std::function<void(Command)> callback)
   {
     command_callback_ = callback;
@@ -180,6 +213,10 @@ public:
   {
     timesync_callback_ = callback;
   }
+  void register_heartbeat_callback(std::function<void()> callback)
+  {
+    heartbeat_callback_ = callback;
+  }
 
 protected:
   std::function<void(uint8_t)> param_request_list_callback_;
@@ -188,8 +225,11 @@ protected:
   std::function<void(uint8_t, const char * const, float)> param_set_float_callback_;
 
   std::function<void(const OffboardControl)> offboard_control_callback_;
+  std::function<void(const AuxCommand)> aux_command_callback_;
+  std::function<void(const turbomath::Quaternion)> attitude_correction_callback_;
   std::function<void(Command)> command_callback_;
   std::function<void(int64_t, int64_t)> timesync_callback_;
+  std::function<void(void)> heartbeat_callback_;
 };
 
 } // namespace rosflight_firmware

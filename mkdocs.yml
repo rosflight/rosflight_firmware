@@ -1,62 +1,68 @@
 site_name: ROSflight
+site_description: 'A lean, open-source autopilot system built by researchers, for researchers'
 site_url: http://rosflight.org
-repo_url: https://github.com/rosflight/firmware
-edit_uri: blob/master/docs/
-google_analytics: ['UA-96018590-2', 'docs.rosflight.org']
+site_author: 'James Jackson, Daniel Koch'
+copyright: 'Copyright &copy; 2019, James Jackson and Daniel Koch, BYU MAGICC Lab'
+
+repo_name: 'rosflight/firmware'
+repo_url: 'https://github.com/rosflight/firmware'
+edit_uri: 'blob/master/docs/'
+
+google_analytics:
+  - 'UA-96018590-2'
+  - 'auto'
+
 theme:
   name: 'material'
+  language: 'en'
   palette:
     primary: 'Blue Grey'
-    accent: 'red'
-  favicon: 'custom_theme/img/favicon.ico'
-  logo: 'custom_theme/img/logo.png'
+    accent: 'Red'
+  favicon: 'assets/favicon.ico'
+  logo: 'assets/logo.png'
   feature:
-    tabs: True
-# theme_dir: docs/custom_theme
-extra_css: [custom_theme/extra.css]
+    tabs: true
+
 extra_javascript:
     - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
 markdown_extensions:
-  - mdx_math
   - admonition
+  - codehilite:
+      linenums: false
+      guess_lang: false
   - footnotes
-  - toc:
-      permalink: True
   - pymdownx.arithmatex
   - pymdownx.betterem:
       smart_enable: all
-  - pymdownx.caret
-  - pymdownx.critic
   - pymdownx.details
   - pymdownx.inlinehilite
-  - pymdownx.magiclink
-  - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
-  - codehilite:
-      linenums: False
-pages:
+  - pymdownx.tasklist
+  - toc:
+      permalink: true
+
+nav:
   - Home: index.md
   - User Guide:
     - Overview: user-guide/overview.md
-    - Getting started: user-guide/getting-started.md
-    - Hardware setup: user-guide/hardware-setup.md
-    - Autopilot setup: user-guide/autopilot-setup.md
+    - Getting Started: user-guide/getting-started.md
+    - Hardware Setup: user-guide/hardware-setup.md
+    - Flight Controller Setup: user-guide/flight-controller-setup.md
     - RC Configuration: user-guide/rc-configuration.md
-    - ROS setup: user-guide/ros-setup.md
+    - ROS Setup: user-guide/ros-setup.md
     - Parameter Configuration: user-guide/parameter-configuration.md
-    - Preflight checks: user-guide/preflight-checks.md
-    - Improving performance: user-guide/performance.md
+    - Pre-Flight Checks: user-guide/preflight-checks.md
+    - Improving Performance: user-guide/performance.md
     - Running Gazebo Simulation: user-guide/gazebo_simulation.md
-    - Autonomous flight: user-guide/autonomous-flight.md
+    - Autonomous Flight: user-guide/autonomous-flight.md
   - Developer Guide:
     - Contribution Guidelines: developer-guide/contribution-guidelines.md
     - Style Guide: developer-guide/style-guide.md
     - Code Architecture: developer-guide/code-architecture.md
     - Building and Flashing: developer-guide/building-flashing.md
+    - Unit Tests: developer-guide/unit-tests.md
     - Using a Debugger: developer-guide/debugging.md
     - Writing Documentation: developer-guide/writing-documentation.md
   - Algorithms:

@@ -37,8 +37,37 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sensors.h"
+#include "state_manager.h"
+
 namespace rosflight_firmware
 {
+
+struct debug_info_t
+{
+  uint32_t r0;
+  uint32_t r1;
+  uint32_t r2;
+  uint32_t r3;
+  uint32_t r12;
+  uint32_t lr;
+  uint32_t pc;
+  uint32_t psr;
+};
+
+struct BackupData
+{
+  uint32_t error_code;
+  debug_info_t debug_info;
+  uint32_t reset_count;
+  uint32_t arm_status; //This must equals ARM_MAGIC, or else the state manager will not rearm on reboot
+  //TODO add state manager info
+  StateManager::State state;
+  uint32_t checksum; //With the current implementation of the checksum, this must go last
+};
+
+//This magic number is used to check that the firmware was armed before it reset
+const uint32_t ARM_MAGIC = 0xfa11bad;
 
 class Board
 {
@@ -60,7 +89,7 @@ public:
   virtual void clock_delay(uint32_t milliseconds) = 0;
 
 // serial
-  virtual void serial_init(uint32_t baud_rate) = 0;
+  virtual void serial_init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
@@ -71,7 +100,7 @@ public:
   virtual uint16_t num_sensor_errors()  = 0;
 
   virtual bool new_imu_data() = 0;
-  virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time) = 0;
+  virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) = 0;
   virtual void imu_not_responding_error() = 0;
 
   virtual bool mag_present() = 0;
@@ -90,6 +119,13 @@ public:
   virtual void sonar_update() = 0;
   virtual float sonar_read() = 0;
 
+  virtual bool gnss_present() = 0;
+  virtual void gnss_update() = 0;
+
+  virtual GNSSData gnss_read() = 0;
+  virtual bool gnss_has_new_data() = 0;
+  virtual GNSSRaw gnss_raw_read() = 0;
+
 // RC
   virtual void rc_init(rc_type_t rc_type) = 0;
   virtual bool rc_lost() = 0;
@@ -97,6 +133,7 @@ public:
 
 // PWM
   virtual void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) = 0;
+  virtual void pwm_disable() = 0;
   virtual void pwm_write(uint8_t channel, float value) = 0;
 
 // non-volatile memory
@@ -112,6 +149,10 @@ public:
   virtual void led1_on() = 0;
   virtual void led1_off() = 0;
   virtual void led1_toggle() = 0;
+
+// Backup memory
+  virtual bool has_backup_data() = 0;
+  virtual BackupData get_backup_data() = 0;
 
 };
 

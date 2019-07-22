@@ -9,6 +9,7 @@
 *.files
 *.orig
 *.user.*
+.vscode/
 *.o
 *.html
 /boards/*/build/
@@ -27,3 +28,5 @@ scripts/parameter-descriptions.md
 *.synctex.gz
 *.bbl
 *.blg
+*.cflags
+*.cxxflags

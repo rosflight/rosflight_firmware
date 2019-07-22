@@ -39,6 +39,7 @@
 #include <revo_f4.h>
 
 #include "vcp.h"
+#include "uart.h"
 #include "i2c.h"
 #include "spi.h"
 #include "mpu6000.h"
@@ -51,8 +52,12 @@
 #include "rc_sbus.h"
 #include "pwm.h"
 #include "led.h"
+#include "serial.h"
+#include "system.h"
 #include "uart.h"
 #include "mb1242.h"
+#include "backup_sram.h"
+// #include "ublox.h"
 
 #include "board.h"
 
@@ -63,44 +68,54 @@ class AirbourneBoard : public Board
 {
 
 private:
-    VCP vcp_;
-    I2C int_i2c_;
-    I2C ext_i2c_;
-    SPI spi1_;
-    SPI spi3_;
-    MPU6000 imu_;
-    HMC5883L mag_;
-    MS5611 baro_;
-    MS4525 airspeed_;
-    I2CSonar sonar_;
-    RC_SBUS rc_sbus_;
-    UART sbus_uart_;
-    GPIO inv_pin_;
-    RC_PPM rc_ppm_;
-    PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
-    LED led2_;
-    LED led1_;
-    M25P16 flash_;
+  VCP vcp_;
+  UART uart1_;
+  UART uart3_;
+  Serial *current_serial_;//A pointer to the serial stream currently in use.
+  I2C int_i2c_;
+  I2C ext_i2c_;
+  SPI spi1_;
+  SPI spi3_;
+  MPU6000 imu_;
+  HMC5883L mag_;
+  MS5611 baro_;
+  MS4525 airspeed_;
+  RC_PPM rc_ppm_;
+  I2CSonar sonar_;
+  RC_SBUS rc_sbus_;
+  GPIO inv_pin_;
+  PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
+  LED led2_;
+  LED led1_;
+  M25P16 flash_;
+  // UBLOX gnss_;
 
-    RC_BASE* rc_ = nullptr;
+  enum SerialDevice : uint32_t
+  {
+    SERIAL_DEVICE_VCP = 0,
+    SERIAL_DEVICE_UART3 = 3
+  };
+  SerialDevice secondary_serial_device_ = SERIAL_DEVICE_VCP;
 
-    std::function<void()> imu_callback_;
+  RC_BASE *rc_ = nullptr;
 
-    int _board_revision = 2;
+  std::function<void()> imu_callback_;
 
-    float _accel_scale = 1.0;
-    float _gyro_scale = 1.0;
+  int _board_revision = 2;
 
-    enum
-    {
-      SONAR_NONE,
-      SONAR_I2C,
-      SONAR_PWM
-    };
-    uint8_t sonar_type = SONAR_NONE;
+  float _accel_scale = 1.0;
+  float _gyro_scale = 1.0;
 
-    bool new_imu_data_;
-    uint64_t imu_time_us_;
+  enum
+  {
+    SONAR_NONE,
+    SONAR_I2C,
+    SONAR_PWM
+  };
+  uint8_t sonar_type = SONAR_NONE;
+
+  bool new_imu_data_;
+  uint64_t imu_time_us_;
 
 public:
   AirbourneBoard();
@@ -115,7 +130,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate) override;
+  void serial_init(uint32_t baud_rate, uint32_t dev) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
@@ -126,7 +141,7 @@ public:
   uint16_t num_sensor_errors() override;
 
   bool new_imu_data() override;
-  bool imu_read(float accel[3], float* temperature, float gyro[3], uint64_t* time_us) override;
+  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
@@ -145,7 +160,13 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
+  bool gnss_present() override;
+  void gnss_update() override;
 
+  //GNSS
+  GNSSData gnss_read() override;
+  bool gnss_has_new_data() override;
+  GNSSRaw gnss_raw_read() override;
   // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;
@@ -153,12 +174,12 @@ public:
 
   // PWM
   void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) override;
+  void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
 
   // non-volatile memory
-
   void memory_init() override;
-  bool memory_read(void * dest, size_t len) override;
+  bool memory_read(void *dest, size_t len) override;
   bool memory_write(const void *src, size_t len) override;
 
   // LEDs
@@ -169,6 +190,10 @@ public:
   void led1_on() override;
   void led1_off() override;
   void led1_toggle() override;
+
+  //Backup Data
+  bool has_backup_data() override;
+  rosflight_firmware::BackupData get_backup_data() override;
 };
 
 } // namespace rosflight_firmware

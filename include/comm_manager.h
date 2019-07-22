@@ -35,6 +35,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "interface/param_listener.h"
+
 #include "comm_link.h"
 #include "nanoprintf.h"
 
@@ -43,7 +45,7 @@ namespace rosflight_firmware
 
 class ROSflight;
 
-class CommManager
+class CommManager : public ParamListenerInterface
 {
 private:
   enum StreamId
@@ -60,6 +62,8 @@ private:
     STREAM_ID_MAG,
 
     STREAM_ID_SERVO_OUTPUT_RAW,
+    STREAM_ID_GNSS,
+    STREAM_ID_GNSS_RAW,
     STREAM_ID_RC_RAW,
     STREAM_ID_LOW_PRIORITY,
     STREAM_COUNT
@@ -102,6 +106,9 @@ private:
   void command_callback(CommLink::Command command);
   void timesync_callback(int64_t tc1, int64_t ts1);
   void offboard_control_callback(const CommLink::OffboardControl& control);
+  void aux_command_callback(const CommLink::AuxCommand &command);
+  void attitude_correction_callback(const turbomath::Quaternion &q);
+  void heartbeat_callback(void);
 
   void send_heartbeat(void);
   void send_status(void);
@@ -113,7 +120,10 @@ private:
   void send_baro(void);
   void send_sonar(void);
   void send_mag(void);
+  void send_gnss(void);
+  void send_gnss_raw(void);
   void send_low_priority(void);
+  void send_error_data(void);
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
@@ -131,15 +141,22 @@ private:
     Stream(0,     [this]{this->send_sonar();}),
     Stream(0,     [this]{this->send_mag();}),
     Stream(0,     [this]{this->send_output_raw();}),
+    Stream(0,     [this]{this->send_gnss();}),
+    Stream(0,     [this]{this->send_gnss_raw();}),
     Stream(0,     [this]{this->send_rc_raw();}),
     Stream(20000, [this]{this->send_low_priority();})
   };
+
+  // the time of week stamp for the last sent GNSS message, to prevent re-sending
+  uint32_t last_sent_gnss_tow_ = 0;
+  uint32_t last_sent_gnss_raw_tow_ = 0;
 
 public:
 
   CommManager(ROSflight& rf, CommLink& comm_link);
 
   void init();
+  void param_change_callback(uint16_t param_id) override;
   void receive(void);
   void stream();
   void send_param_value(uint16_t param_id);
