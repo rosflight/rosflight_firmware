@@ -15,6 +15,7 @@ There are a number of ways to represent the attitude of a MAV.  Often, attitude 
 
 ### Euler Angles
 Euler angles represent rotations about three different axes, usually, the z, y, and x axes in that order.  This method is often the most easy for users to understand and interpret, but it is by far the least computationally efficient.  To propagate euler angles, the following kinematics are employed:
+
 $$ \begin{equation}
 	\begin{bmatrix}
 		\dot{\phi} \\
@@ -37,7 +38,7 @@ $$ \begin{equation}
 
 Note the large number of trigonometric functions associated with this propagation.  In a complementary filter, this will be evaluated at every measurement, and the non-linear coupling between $\omega$  and the attitude becomes very expensive, particularly on embedded processors.
 
-Another shortcoming of euler angles is known as "gimbal lock".  Gimbal lock occurs at the "singularity" of the euler angle representation, or pointing directly up or down.  The problem occurs because there is more than one way to represent this particular rotation.  There are some steps one can take to handle these issues, but it is a fundamental problem associated with using euler angles, and motivates the other attitude representations.
+Another shortcoming of euler angles is known as "gimbal lock".  Gimbal lock occurs at the "singularity" of the euler angle representation, or pitched directly up or down.  The problem occurs because there is more than one way to represent this particular rotation.  There are some steps one can take to handle these issues, but it is a fundamental problem associated with using euler angles, and motivates the other attitude representations.
 
 ### Rotation Matrix
 
@@ -65,6 +66,7 @@ $$
 This propagation step is linear with respect to the angular rates, which simplifies calculation significantly.
 
 A rotation matrix from the inertial frame to body frame can be constructed from euler angles via the following formula:
+
 $$
 \newcommand{\ct}{c\theta}
 \newcommand{\cp}{c\phi}
@@ -80,6 +82,7 @@ $$
         \end{bmatrix}
 \end{equation}
 $$
+
 and converting back to euler angles is done via the following;
 
 $$
@@ -127,6 +130,7 @@ $$
 	\label{eq:euler_to_axis_angle}
 \end{equation}
 $$
+
 and second, some formulas to convert to and from euler angles.
 
 $$
@@ -159,7 +163,7 @@ $$
 \end{equation}
 $$
 
-Quaternions are "closed" under the following operation, termed quaternion multiplication.
+The quaternion group is "closed" under the following operation, termed quaternion multiplication.
 
 $$
 q_1 \otimes q_2 = \begin{bmatrix} s_1s_2 - v_1^\top v_2 \\ s_1v_2 + s_2v_1 + v_1 \times v_2 \end{bmatrix}
@@ -206,7 +210,7 @@ where \(q_\omega\) is the pure quaternion created from angular rates.
 			 \end{bmatrix}
 \end{equation}
 
-What this means is that, like rotation matrices, quaternion dynamics are \textit{linear} with respect to angular rates, as opposed to euler angles, which are non-linear, and they take less computation than rotation matrices because they have fewer terms.  Casey et al.~\cite{Casey2013} performed a study comparing all three of the above representations, and found that complementary filters using an euler angle representation took **12 times** longer to compute on average than a quaternion-based filter.  Quaternions <wbr>ere also about 20\% more efficient when compared with rotation matrices.  For these reasons, ROSflight uses quaternions in its filter.
+What this means is that, like rotation matrices, quaternion dynamics are _linear_ with respect to angular rates, as opposed to euler angles, which are non-linear, and they take less computation than rotation matrices because they have fewer terms.  Casey et al. [Casey2013] performed a study comparing all three of the above representations, and found that complementary filters using an euler angle representation took **12 times** longer to compute on average than a quaternion-based filter.  Quaternions were also about 20% more efficient when compared with rotation matrices.  For these reasons, ROSflight uses quaternions in its filter.
 
 ## Derivation
 
