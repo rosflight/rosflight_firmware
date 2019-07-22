@@ -41,7 +41,7 @@
 namespace rosflight_firmware
 {
 
-Controller::Controller(ROSflight& rf) :
+Controller::Controller(ROSflight &rf) :
   RF_(rf)
 {
   RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_P);
@@ -103,7 +103,7 @@ void Controller::run()
   }
 
   int32_t dt_us = (RF_.estimator_.state().timestamp_us - prev_time_us_);
-  if ( dt_us < 0 )
+  if (dt_us < 0)
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
     return;
@@ -174,7 +174,7 @@ void Controller::param_change_callback(uint16_t param_id)
   init();
 }
 
-turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
+turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State &state, const control_t &command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   turbomath::Vector out;
@@ -237,7 +237,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
     differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
-        + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+                      + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
   }
   else

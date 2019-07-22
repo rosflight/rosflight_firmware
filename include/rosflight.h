@@ -57,7 +57,7 @@ private:
 public:
   ROSflight(Board& board, CommLinkInterface& comm_link);
 
-  Board& board_;
+  Board &board_;
   CommManager comm_manager_;
 
   Params params_;

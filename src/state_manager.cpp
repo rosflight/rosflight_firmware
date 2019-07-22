@@ -35,7 +35,7 @@
 namespace rosflight_firmware
 {
 
-StateManager::StateManager(ROSflight& parent) :
+StateManager::StateManager(ROSflight &parent) :
   RF_(parent), fsm_state_(FSM_STATE_INIT)
 {
   state_.armed = false;
@@ -51,13 +51,13 @@ void StateManager::init()
 
   // Initialize LEDs
   RF_.board_.led1_off();
-  if(RF_.board_.has_backup_data())
+  if (RF_.board_.has_backup_data())
   {
-      rosflight_firmware::BackupData error_data=RF_.board_.get_backup_data();
-      this->state_=error_data.state;
-      //Be very sure that arming is correct
-      if(error_data.arm_status!=rosflight_firmware::ARM_MAGIC)
-          this->state_.armed=false;
+    rosflight_firmware::BackupData error_data=RF_.board_.get_backup_data();
+    this->state_=error_data.state;
+    //Be very sure that arming is correct
+    if (error_data.arm_status!=rosflight_firmware::ARM_MAGIC)
+      this->state_.armed=false;
   }
 }
 
@@ -128,7 +128,7 @@ void StateManager::set_event(StateManager::Event event)
       {
         // require either min throttle to be enabled or throttle override switch to be on
         if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)
-              || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
+            || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
         {
           if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
           {
