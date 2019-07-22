@@ -61,6 +61,21 @@ public:
 
   inline const State &state() const { return state_; }
 
+  inline const turbomath::Vector& bias()
+  {
+      return bias_;
+  }
+
+  inline const turbomath::Vector& accLPF()
+  {
+      return accel_LPF_;
+  }
+
+  inline const turbomath::Vector& gyroLPF()
+  {
+      return gyro_LPF_;
+  }
+
   void init();
   void run();
   void reset_state();
