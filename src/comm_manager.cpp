@@ -30,18 +30,50 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "rosflight.h"
 
 namespace rosflight_firmware
 {
 
+CommManager::LogMessageBuffer::LogMessageBuffer()
+{
+  memset(buffer_, 0, sizeof(buffer_));
+}
+
+
+void CommManager::LogMessageBuffer::add_message(CommLinkInterface::LogSeverity severity, char msg[])
+{
+  LogMessage& newest_msg = buffer_[newest_];
+  strcpy(newest_msg.msg, msg);
+  newest_msg.severity = severity;
+
+  newest_ = (newest_ + 1) % LOG_BUF_SIZE;
+
+  // quietly over-write old messages (what else can we do?)
+  length_ += 1;
+  if (length_ > LOG_BUF_SIZE)
+  {
+    length_ = LOG_BUF_SIZE;
+    oldest_ = (oldest_ + 1) % LOG_BUF_SIZE;
+  }
+}
+
+void CommManager::LogMessageBuffer::pop()
+{
+  if (length_ > 0)
+  {
+    length_--;
+    oldest_ = (oldest_ + 1) % LOG_BUF_SIZE;
+  }
+}
+
+
 CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) :
   RF_(rf),
   comm_link_(comm_link)
-{
-  initialized_ = false;
-}
+{}
 
 // function definitions
 void CommManager::init()
@@ -67,7 +99,6 @@ void CommManager::init()
   set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
-  log(CommLinkInterface::LogSeverity::LOG_INFO, "Booting");
 }
 
 void CommManager::param_change_callback(uint16_t param_id)
@@ -350,18 +381,26 @@ void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
 {
   RF_.estimator_.set_attitude_correction(q);
 }
+
 void CommManager::heartbeat_callback(void)
 {
-  static bool error_data_sent = false;
-  if(!error_data_sent)
+  // receiving a heartbeat implies that a connection has been made
+  // to the off-board computer.
+  connected_ = true;
+
+  static bool one_time_data_sent = false;
+  if (!one_time_data_sent)
   {
-      if(this->RF_.board_.has_backup_data())
-      {
-          this->send_error_data();
-      }
-      error_data_sent = true;
+    // error data
+    if (this->RF_.board_.has_backup_data())
+    {
+        this->send_error_data();
+    }
   }
-  this->send_heartbeat();//respond to heartbeats with a heartbeat
+
+  /// JSJ: I don't think we need this
+  // respond to heartbeats with a heartbeat
+  this->send_heartbeat();
 }
 
 // function definitions
@@ -375,10 +414,18 @@ void CommManager::log(CommLinkInterface::LogSeverity severity, const char *fmt, 
   // Convert the format string to a raw char array
   va_list args;
   va_start(args, fmt);
-  char text[50];
+  char text[LOG_MSG_SIZE];
   rosflight_firmware::nanoprintf::tfp_sprintf(text, fmt, args);
   va_end(args);
-  comm_link_.send_log_message(sysid_, severity, text);
+
+  if (initialized_ && connected_)
+  {
+    comm_link_.send_log_message(sysid_, severity, text);
+  }
+  else
+  {
+    log_buffer_.add_message(severity, text);
+  }
 }
 
 void CommManager::send_heartbeat(void)
@@ -530,6 +577,14 @@ void CommManager::send_gnss_raw()
 void CommManager::send_low_priority(void)
 {
   send_next_param();
+
+  // send buffered log messages
+  if (connected_ && !log_buffer_.empty())
+  {
+    const LogMessageBuffer::LogMessage& msg = log_buffer_.oldest();
+    comm_link_.send_log_message(sysid_, msg.severity, msg.msg);
+    log_buffer_.pop();
+  }
 }
 
 // function definitions

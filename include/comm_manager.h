@@ -82,7 +82,36 @@ private:
   ROSflight& RF_;
   CommLinkInterface& comm_link_;
   uint8_t send_params_index_;
-  bool initialized_;
+  bool initialized_ = false;
+  bool connected_ = false;
+
+
+  static constexpr int LOG_MSG_SIZE = 50;
+  class LogMessageBuffer
+  {
+  public:
+    static constexpr int LOG_BUF_SIZE = 25;
+    LogMessageBuffer();
+
+    struct LogMessage
+    {
+      char msg[LOG_MSG_SIZE];
+      CommLinkInterface::LogSeverity severity;
+    };
+    void add_message(CommLinkInterface::LogSeverity severity, char msg[LOG_MSG_SIZE]);
+    size_t size() const { return length_; }
+    bool empty() const { return length_ == 0; }
+    bool full() const { return length_ == LOG_BUF_SIZE; }
+    const LogMessage& oldest() const { return buffer_[oldest_]; }
+    void pop();
+
+  private:
+    LogMessage buffer_[LOG_BUF_SIZE];
+    size_t oldest_ = 0;
+    size_t newest_ = 0;
+    size_t length_ = 0;
+  };
+  LogMessageBuffer log_buffer_;
 
   class Stream
   {
@@ -127,7 +156,7 @@ private:
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
-  //  void send_named_command_struct(const char *const name, control_t command_struct);
+//    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
 
