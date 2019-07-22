@@ -28,3 +28,5 @@ scripts/parameter-descriptions.md
 *.synctex.gz
 *.bbl
 *.blg
+*.cflags
+*.cxxflags
