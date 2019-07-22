@@ -36,12 +36,14 @@
 #include <cstdint>
 #include <cstdbool>
 
+#include "interface/param_listener.h"
+
 namespace rosflight_firmware
 {
 
 class ROSflight;
 
-class Mixer
+class Mixer : public ParamListenerInterface
 {
 
 public:
@@ -262,7 +264,7 @@ public:
   void init_PWM();
   void init_mixing();
   void mix_output();
-  void param_change_callback(uint16_t param_id);
+  void param_change_callback(uint16_t param_id) override;
   void set_new_aux_command(aux_command_t new_aux_command);
   inline const float* get_outputs() const {return raw_outputs_;}
 };

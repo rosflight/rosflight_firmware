@@ -35,6 +35,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "interface/param_listener.h"
+
 namespace rosflight_firmware
 {
 
@@ -244,8 +246,6 @@ private:
     uint8_t chk;                            // XOR checksum
   } params_t;
 
-  std::function<void(int)> callbacks[PARAMS_COUNT]; // Param change callbacks
-
   params_t params;
   ROSflight &RF_;
 
@@ -253,13 +253,12 @@ private:
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
   uint8_t compute_checksum(void);
 
+  ParamListenerInterface *const * listeners_;
+  size_t num_listeners_;
+
 
 public:
   Params(ROSflight &_rf);
-
-  void add_callback(std::function<void(int)> callback, uint16_t param_id);
-
-
 
   // function declarations
 
@@ -272,6 +271,13 @@ public:
    * @brief Set all parameters to default values
    */
   void set_defaults(void);
+
+  /**
+  * @brief Specify listeners for parameter changes
+  * @param listeners An array of pointers to objects that implement the ParamListenerInterface interface
+  * @param num_listeners The length of the array passed as the listeners parameter
+  */
+  void set_listeners(ParamListenerInterface * const listeners[], size_t num_listeners);
 
   /**
    * @brief Read parameter values from non-volatile memory
