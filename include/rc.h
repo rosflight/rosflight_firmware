@@ -64,7 +64,7 @@ public:
     SWITCHES_COUNT
   };
 
-  RC(ROSflight& _rf);
+  RC(ROSflight &_rf);
 
   void init();
   float stick(Stick channel);
@@ -75,7 +75,7 @@ public:
   void param_change_callback(uint16_t param_id);
 
 private:
-  ROSflight& RF_;
+  ROSflight &RF_;
 
   typedef struct
   {

@@ -59,21 +59,21 @@ public:
     uint64_t timestamp_us;
   };
 
-  Estimator(ROSflight& _rf);
+  Estimator(ROSflight &_rf);
 
-  inline const State& state() const { return state_; }
+  inline const State &state() const { return state_; }
 
   void init();
   void param_change_callback(uint16_t param_id) override;
   void run();
   void reset_state();
   void reset_adaptive_bias();
-  void set_attitude_correction(const turbomath::Quaternion& q);
+  void set_attitude_correction(const turbomath::Quaternion &q);
 
 private:
   const turbomath::Vector g_ = {0.0f, 0.0f, -1.0f};
 
-  ROSflight& RF_;
+  ROSflight &RF_;
   State state_;
 
   uint64_t last_time_;

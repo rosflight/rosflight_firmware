@@ -55,9 +55,9 @@ class ROSflight
 {
 
 public:
-  ROSflight(Board& board, CommLink& comm_link);
+  ROSflight(Board &board, CommLink &comm_link);
 
-  Board& board_;
+  Board &board_;
   CommManager comm_manager_;
 
   Params params_;

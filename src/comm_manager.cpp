@@ -55,6 +55,7 @@ void CommManager::init()
   comm_link_.register_timesync_callback([this](int64_t tc1, int64_t ts1){this->timesync_callback(tc1, ts1);});
   comm_link_.register_attitude_correction_callback([this](const turbomath::Quaternion& q){this->attitude_correction_callback(q);});
   comm_link_.register_heartbeat_callback([this](void){this->heartbeat_callback();});
+  comm_link_.register_aux_command_callback([this](const CommLink::AuxCommand &command){this->aux_command_callback(command);});
   comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
                   static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
 
@@ -69,6 +70,8 @@ void CommManager::init()
   set_streaming_rate(STREAM_ID_DIFF_PRESSURE, PARAM_STREAM_AIRSPEED_RATE);
   set_streaming_rate(STREAM_ID_BARO, PARAM_STREAM_BARO_RATE);
   set_streaming_rate(STREAM_ID_SONAR, PARAM_STREAM_SONAR_RATE);
+  set_streaming_rate(STREAM_ID_GNSS, PARAM_STREAM_GNSS_RATE);
+  set_streaming_rate(STREAM_ID_GNSS_RAW, PARAM_STREAM_GNSS_RAW_RATE);
   set_streaming_rate(STREAM_ID_MAG, PARAM_STREAM_MAG_RATE);
   set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, PARAM_STREAM_OUTPUT_RAW_RATE);
   set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
@@ -104,6 +107,12 @@ void CommManager::param_change_callback(uint16_t param_id)
     break;
   case PARAM_STREAM_SONAR_RATE:
     set_streaming_rate(STREAM_ID_SONAR, param_id);
+    break;
+  case PARAM_STREAM_GNSS_RATE:
+    set_streaming_rate(STREAM_ID_GNSS, param_id);
+    break;
+  case PARAM_STREAM_GNSS_RAW_RATE:
+    set_streaming_rate(STREAM_ID_GNSS_RAW, param_id);
     break;
   case PARAM_STREAM_MAG_RATE:
     set_streaming_rate(STREAM_ID_MAG, param_id);
@@ -317,6 +326,36 @@ void CommManager::offboard_control_callback(const CommLink::OffboardControl& con
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 
+void CommManager::aux_command_callback(const CommLink::AuxCommand &command)
+{
+  Mixer::aux_command_t new_aux_command;
+
+  for (int i = 0; i < 14; i++)
+  {
+    switch (command.cmd_array[i].type)
+    {
+    case CommLink::AuxCommand::Type::DISABLED:
+      // Channel is either not used or is controlled by the mixer
+      new_aux_command.channel[i].type = Mixer::NONE;
+      new_aux_command.channel[i].value = 0;
+      break;
+    case CommLink::AuxCommand::Type::SERVO:
+      // PWM value should be mapped to servo position
+      new_aux_command.channel[i].type = Mixer::S;
+      new_aux_command.channel[i].value = command.cmd_array[i].value;
+      break;
+    case CommLink::AuxCommand::Type::MOTOR:
+      // PWM value should be mapped to motor speed
+      new_aux_command.channel[i].type = Mixer::M;
+      new_aux_command.channel[i].value = command.cmd_array[i].value;
+      break;
+    }
+  }
+
+  // Send the new aux_command to the mixer
+  RF_.mixer_.set_new_aux_command(new_aux_command);
+}
+
 void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
 {
   RF_.estimator_.set_attitude_correction(q);
@@ -463,10 +502,39 @@ void CommManager::send_mag(void)
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
+
 void CommManager::send_error_data(void)
 {
   BackupData error_data = RF_.board_.get_backup_data();
   comm_link_.send_error_data(sysid_, error_data);
+}
+
+void CommManager::send_gnss(void)
+{
+  const GNSSData& gnss_data = RF_.sensors_.data().gnss_data;
+
+  if (RF_.sensors_.data().gnss_present)
+  {
+    if (gnss_data.time_of_week != last_sent_gnss_tow_)
+    {
+      comm_link_.send_gnss(sysid_, gnss_data);
+      last_sent_gnss_tow_ = gnss_data.time_of_week;
+    }
+  }
+}
+
+void CommManager::send_gnss_raw()
+{
+  const GNSSRaw& gnss_raw = RF_.sensors_.data().gnss_raw;
+
+  if (RF_.sensors_.data().gnss_present)
+  {
+    if (gnss_raw.time_of_week != last_sent_gnss_raw_tow_)
+    {
+      comm_link_.send_gnss_raw(sysid_, RF_.sensors_.data().gnss_raw);
+      last_sent_gnss_raw_tow_ = gnss_raw.time_of_week;
+    }
+  }
 }
 
 void CommManager::send_low_priority(void)

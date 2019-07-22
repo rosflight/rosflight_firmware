@@ -58,9 +58,9 @@ public:
     float z;
   };
 
-  Controller(ROSflight& rf);
+  Controller(ROSflight &rf);
 
-  inline const Output& output() const { return output_; }
+  inline const Output &output() const { return output_; }
 
   void init();
   void run();
@@ -91,9 +91,12 @@ private:
     float tau_;
   };
 
-  ROSflight& RF_;
+  ROSflight &RF_;
 
-  turbomath::Vector run_pid_loops(uint32_t dt, const Estimator::State& state, const control_t& command, bool update_integrators);
+  turbomath::Vector run_pid_loops(uint32_t dt,
+                                  const Estimator::State &state,
+                                  const control_t &command,
+                                  bool update_integrators);
 
   Output output_;
 

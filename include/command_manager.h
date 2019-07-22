@@ -157,12 +157,12 @@ private:
     { RC::STICK_Z, 0 }
   };
 
-  ROSflight& RF_;
+  ROSflight &RF_;
 
   bool new_command_;
   bool rc_override_;
 
-  control_t& failsafe_command_;
+  control_t &failsafe_command_;
 
   void param_change_callback(uint16_t param_id) override;
   void init_failsafe();
@@ -176,7 +176,7 @@ private:
 
 public:
 
-  CommandManager(ROSflight& _rf);
+  CommandManager(ROSflight &_rf);
   void init();
   bool run();
   bool rc_override_active();
@@ -184,8 +184,8 @@ public:
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
   void override_combined_command_with_rc();
-  inline const control_t& combined_control() const { return combined_command_; }
-  inline const control_t& rc_control() const { return rc_command_; }
+  inline const control_t &combined_control() const { return combined_command_; }
+  inline const control_t &rc_control() const { return rc_command_; }
 };
 
 } // namespace rosflight_firmware

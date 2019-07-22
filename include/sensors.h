@@ -33,14 +33,96 @@
 #ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
 #define ROSFLIGHT_FIRMWARE_SENSORS_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
+#include <cstdbool>
+#include <cstring>
 #include <turbomath/turbomath.h>
 
 #include "interface/param_listener.h"
 
 namespace rosflight_firmware
 {
+// Fix type, as defined in sensor_msgs/NavSatStatus
+enum GNSSFixType
+{
+  GNSS_FIX_TYPE_NO_FIX,   // Unable to fix position
+  GNSS_FIX_TYPE_FIX,      // Unaugmented fix
+  GNSS_FIX_TYPE_SBAS_FIX, // with satellite-based augmentation
+  GNSS_FIX_TYPE_GBAS_FIX  // with ground-based augmentation
+};
+
+struct GNSSData
+{
+  struct ECEF
+  {
+    int32_t x; // cm
+    int32_t y; // cm
+    int32_t z; // cm
+    uint32_t p_acc; // cm
+    int32_t vx; // cm/s
+    int32_t vy; // cm/s
+    int32_t vz; // cm/s
+    uint32_t s_acc; // cm/s
+  };
+
+  GNSSFixType fix_type;
+  uint32_t time_of_week;
+  uint64_t time; // Unix time, in seconds
+  uint64_t nanos; // Fractional time
+  int32_t lat; // deg*10^-7
+  int32_t lon; // deg*10^-7
+  int32_t height; // mm
+  int32_t vel_n; // mm/s
+  int32_t vel_e; // mm/s
+  int32_t vel_d; // mm/s
+  uint32_t h_acc; // mm
+  uint32_t v_acc; // mm
+
+  ECEF ecef;
+
+  uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
+
+  GNSSData()
+  {
+    memset(this, 0, sizeof(GNSSData));
+  }
+};
+
+struct GNSSRaw
+{
+  uint64_t time_of_week;
+  uint16_t year;
+  uint8_t month;
+  uint8_t day;
+  uint8_t hour;
+  uint8_t min;
+  uint8_t sec;
+  uint8_t valid;
+  uint32_t t_acc;
+  int32_t nano;
+  uint8_t fix_type;
+  uint8_t num_sat;
+  int32_t lon;
+  int32_t lat;
+  int32_t height;
+  int32_t height_msl;
+  uint32_t h_acc;
+  uint32_t v_acc;
+  int32_t vel_n;
+  int32_t vel_e;
+  int32_t vel_d;
+  int32_t g_speed;
+  int32_t head_mot;
+  uint32_t s_acc;
+  uint32_t head_acc;
+  uint16_t p_dop;
+  uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
+
+  GNSSRaw()
+  {
+    memset(this, 0, sizeof(GNSSRaw));
+  }
+};
 
 class ROSflight;
 
@@ -68,6 +150,12 @@ public:
     float sonar_range = 0;
     bool sonar_range_valid = false;
 
+    GNSSData gnss_data;
+    bool gnss_new_data = false;
+    float gps_CNO = 0; // What is this?
+    bool gnss_present = false;
+    GNSSRaw gnss_raw;
+
     turbomath::Vector mag = {0, 0, 0};
 
     bool baro_present = false;
@@ -76,10 +164,10 @@ public:
     bool diff_pressure_present = false;
   };
 
-  Sensors(ROSflight& rosflight);
+  Sensors(ROSflight &rosflight);
 
-  inline const Data& data() const { return data_; }
-  void get_filtered_IMU(turbomath::Vector& accel, turbomath::Vector& gyro, uint64_t& stamp_us);
+  inline const Data &data() const { return data_; }
+  void get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us);
 
   // function declarations
   void init();
@@ -131,13 +219,14 @@ private:
   enum : uint8_t
   {
     BAROMETER,
+    GNSS,
     DIFF_PRESSURE,
     SONAR,
     MAGNETOMETER,
     NUM_LOW_PRIORITY_SENSORS
   };
 
-  ROSflight& rf_;
+  ROSflight &rf_;
 
   Data data_;
 

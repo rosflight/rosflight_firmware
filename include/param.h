@@ -32,8 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_PARAM_H
 #define ROSFLIGHT_FIRMWARE_PARAM_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 #include <functional>
 
 #include "interface/param_listener.h"
@@ -71,6 +70,8 @@ enum : uint16_t
   PARAM_STREAM_BARO_RATE,
   PARAM_STREAM_AIRSPEED_RATE,
   PARAM_STREAM_SONAR_RATE,
+  PARAM_STREAM_GNSS_RATE,
+  PARAM_STREAM_GNSS_RAW_RATE,
 
   PARAM_STREAM_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
@@ -255,7 +256,7 @@ private:
   } params_t;
 
   params_t params;
-  ROSflight& RF_;
+  ROSflight &RF_;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -266,7 +267,7 @@ private:
 
 
 public:
-  Params(ROSflight& _rf);
+  Params(ROSflight &_rf);
 
   // function declarations
 
@@ -317,21 +318,30 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline int get_param_int(uint16_t id) const { return params.values[id].ivalue; }
+  inline int get_param_int(uint16_t id) const
+  {
+    return params.values[id].ivalue;
+  }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline float get_param_float(uint16_t id) const { return params.values[id].fvalue; }
+  inline float get_param_float(uint16_t id) const
+  {
+    return params.values[id].fvalue;
+  }
 
   /**
    * @brief Get the name of a parameter
    * @param id The ID of the parameter
    * @return The name of the parameter
    */
-  inline const char *get_param_name(uint16_t id) const { return params.names[id]; }
+  inline const char *get_param_name(uint16_t id) const
+  {
+    return params.names[id];
+  }
 
   /**
    * @brief Get the type of a parameter
@@ -341,7 +351,10 @@ public:
    * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
    * See line 165
    */
-  inline param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
+  inline param_type_t get_param_type(uint16_t id) const
+  {
+    return params.types[id];
+  }
 
   /**
    * @brief Sets the value of a parameter by ID and calls the parameter change callback
