@@ -65,3 +65,5 @@ nav:
     - Unit Tests: developer-guide/unit-tests.md
     - Using a Debugger: developer-guide/debugging.md
     - Writing Documentation: developer-guide/writing-documentation.md
+  - Algorithms:
+    - Estimator: algorithms/estimator.md
