@@ -85,13 +85,33 @@ private:
   bool initialized_ = false;
   bool connected_ = false;
 
+
   static constexpr int LOG_MSG_SIZE = 50;
-  static constexpr int LOG_BUF_SIZE = 4;
-  char log_buffer_[LOG_BUF_SIZE][LOG_MSG_SIZE];
-  CommLink::LogSeverity log_severity_buffer_[LOG_BUF_SIZE];
-  uint8_t log_buffer_head_ = 0, log_buffer_tail_ = 0;
-  bool log_buffer_full_ = false;
-  uint8_t log_buffer_size() const;
+  class LogMessageBuffer
+  {
+  public:
+    static constexpr int LOG_BUF_SIZE = 25;
+    LogMessageBuffer();
+
+    struct LogMessage
+    {
+      char msg[LOG_MSG_SIZE];
+      CommLinkInterface::LogSeverity severity;
+    };
+    void add_message(CommLinkInterface::LogSeverity severity, char msg[LOG_MSG_SIZE]);
+    size_t size() const { return length_; }
+    bool empty() const { return length_ == 0; }
+    bool full() const { return length_ == LOG_BUF_SIZE; }
+    const LogMessage& oldest() const { return buffer_[oldest_]; }
+    void pop();
+
+  private:
+    LogMessage buffer_[LOG_BUF_SIZE];
+    size_t oldest_ = 0;
+    size_t newest_ = 0;
+    size_t length_ = 0;
+  };
+  LogMessageBuffer log_buffer_;
 
   class Stream
   {
@@ -136,7 +156,7 @@ private:
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
-  //  void send_named_command_struct(const char *const name, control_t command_struct);
+//    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
 

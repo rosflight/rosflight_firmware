@@ -105,7 +105,7 @@ void Params::init()
   RF_.board_.memory_init();
   if (!read())
   {
-    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Unable to load parameters; using default values");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Unable to load parameters; using default values");
     set_defaults();
     write();
   }

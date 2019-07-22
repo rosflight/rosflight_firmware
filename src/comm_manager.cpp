@@ -37,6 +37,39 @@
 namespace rosflight_firmware
 {
 
+CommManager::LogMessageBuffer::LogMessageBuffer()
+{
+  memset(buffer_, 0, sizeof(buffer_));
+}
+
+
+void CommManager::LogMessageBuffer::add_message(CommLinkInterface::LogSeverity severity, char msg[])
+{
+  LogMessage& newest_msg = buffer_[newest_];
+  strcpy(newest_msg.msg, msg);
+  newest_msg.severity = severity;
+
+  newest_ = (newest_ + 1) % LOG_BUF_SIZE;
+
+  // quietly over-write old messages (what else can we do?)
+  length_ += 1;
+  if (length_ > LOG_BUF_SIZE)
+  {
+    length_ = LOG_BUF_SIZE;
+    oldest_ = (oldest_ + 1) % LOG_BUF_SIZE;
+  }
+}
+
+void CommManager::LogMessageBuffer::pop()
+{
+  if (length_ > 0)
+  {
+    length_--;
+    oldest_ = (oldest_ + 1) % LOG_BUF_SIZE;
+  }
+}
+
+
 CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) :
   RF_(rf),
   comm_link_(comm_link)
@@ -66,7 +99,6 @@ void CommManager::init()
   set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
-  log(CommLinkInterface::LogSeverity::LOG_INFO, "Booting");
 }
 
 void CommManager::param_change_callback(uint16_t param_id)
@@ -364,20 +396,9 @@ void CommManager::heartbeat_callback(void)
     {
         this->send_error_data();
     }
-
-    // buffered log messages
-    uint8_t log_size = log_buffer_size();
-    while (log_size--)
-    {
-      log(log_severity_buffer_[log_buffer_tail_], log_buffer_[log_buffer_tail_]);
-      log_buffer_tail_ = (log_buffer_tail_ + 1) % LOG_BUF_SIZE;
-    }
-    log_buffer_head_ = log_buffer_tail_ = 0;
-    log_buffer_full_ = false;
-
-    one_time_data_sent = true;
   }
 
+  /// JSJ: I don't think we need this
   // respond to heartbeats with a heartbeat
   this->send_heartbeat();
 }
@@ -403,13 +424,7 @@ void CommManager::log(CommLinkInterface::LogSeverity severity, const char *fmt, 
   }
   else
   {
-    // Add log message to circular buffer
-    memcpy(log_buffer_[log_buffer_head_], text, LOG_MSG_SIZE);
-    log_severity_buffer_[log_buffer_head_] = severity;
-    // advance indices, keeping read/write indices ordered
-    if (log_buffer_full_) log_buffer_tail_ = (log_buffer_tail_ + 1) % LOG_BUF_SIZE;
-    log_buffer_head_ = (log_buffer_head_ + 1) % LOG_BUF_SIZE;
-    log_buffer_full_ = (log_buffer_head_ == log_buffer_tail_);
+    log_buffer_.add_message(severity, text);
   }
 }
 
@@ -562,6 +577,14 @@ void CommManager::send_gnss_raw()
 void CommManager::send_low_priority(void)
 {
   send_next_param();
+
+  // send buffered log messages
+  if (connected_ && !log_buffer_.empty())
+  {
+    const LogMessageBuffer::LogMessage& msg = log_buffer_.oldest();
+    comm_link_.send_log_message(sysid_, msg.severity, msg.msg);
+    log_buffer_.pop();
+  }
 }
 
 // function definitions
@@ -597,23 +620,6 @@ void CommManager::send_next_param(void)
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
   }
-}
-
-uint8_t CommManager::log_buffer_size() const
-{
-  uint8_t size = LOG_BUF_SIZE;
-  if (!log_buffer_full_)
-  {
-    if (log_buffer_head_ >= log_buffer_tail_)
-    {
-      size = log_buffer_head_ - log_buffer_tail_;
-    }
-    else
-    {
-      size = LOG_BUF_SIZE + log_buffer_head_ - log_buffer_tail_;
-    }
-  }
-  return size;
 }
 
 CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :
