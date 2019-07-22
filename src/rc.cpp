@@ -45,19 +45,6 @@ RC::RC(ROSflight &_rf) :
 void RC::init()
 {
   init_rc();
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_TYPE);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_THROTTLE_OVERRIDE_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ATT_CONTROL_TYPE_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_ARM_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_X_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_Y_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_Z_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_F_CHANNEL);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_5_DIRECTION);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_6_DIRECTION);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_7_DIRECTION);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_RC_SWITCH_8_DIRECTION);
   new_command_ = false;
 }
 
@@ -70,8 +57,31 @@ void RC::init_rc()
 
 void RC::param_change_callback(uint16_t param_id)
 {
-  (void) param_id; // suppress unused parameter warning
-  init_rc();
+  switch (param_id)
+  {
+  case PARAM_RC_TYPE:
+    RF_.board_.rc_init(static_cast<Board::rc_type_t>(RF_.params_.get_param_int(PARAM_RC_TYPE)));
+    break;
+  case PARAM_RC_X_CHANNEL:
+  case PARAM_RC_Y_CHANNEL:
+  case PARAM_RC_Z_CHANNEL:
+  case PARAM_RC_F_CHANNEL:
+    init_sticks();
+    break;
+  case PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL:
+  case PARAM_RC_THROTTLE_OVERRIDE_CHANNEL:
+  case PARAM_RC_ATT_CONTROL_TYPE_CHANNEL:
+  case PARAM_RC_ARM_CHANNEL:
+  case PARAM_RC_SWITCH_5_DIRECTION:
+  case PARAM_RC_SWITCH_6_DIRECTION:
+  case PARAM_RC_SWITCH_7_DIRECTION:
+  case PARAM_RC_SWITCH_8_DIRECTION:
+    init_switches();
+    break;
+  default:
+    // do nothing
+    break;
+  }
 }
 
 float RC::stick(Stick channel)
@@ -157,9 +167,9 @@ void RC::init_switches()
     }
 
     if (switches[chan].mapped)
-      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
     else
-      RF_.comm_manager_.log(CommLink::LogSeverity::LOG_INFO, "%s switch not mapped", channel_name);
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch not mapped", channel_name);
   }
 }
 

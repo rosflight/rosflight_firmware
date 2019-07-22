@@ -36,10 +36,11 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #include "v1.0/rosflight/mavlink.h"
 # pragma GCC diagnostic pop
 
-#include "comm_link.h"
+#include "interface/comm_link.h"
 #include "board.h"
 
 namespace rosflight_firmware
@@ -47,7 +48,7 @@ namespace rosflight_firmware
 
 class Board;
 
-class Mavlink : public CommLink
+class Mavlink : public CommLinkInterface
 {
 public:
   Mavlink(Board& board);
@@ -70,7 +71,7 @@ public:
   void send_mag(uint8_t system_id, const turbomath::Vector &mag) override;
   void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char * const name, int32_t value) override;
   void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char * const name, float value) override;
-  void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[8]) override;
+  void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) override;
   void send_param_value_int(uint8_t system_id,
                             uint16_t index,
                             const char *const name,
@@ -94,7 +95,11 @@ public:
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
   void send_version(uint8_t system_id, const char * const version) override;
-  void send_error_data(uint8_t system_id, const BackupData& error_data);
+  void send_gnss(uint8_t system_id, const GNSSData& data) override;
+  void send_gnss_raw(uint8_t system_id, const GNSSRaw& data) override;
+  void send_error_data(uint8_t system_id, const BackupData& error_data) override;
+
+  inline void set_listener(ListenerInterface * listener) override { listener_ = listener; }
 
 private:
   void send_message(const mavlink_message_t &msg);
@@ -105,9 +110,10 @@ private:
   void handle_msg_offboard_control(const mavlink_message_t *const msg);
   void handle_msg_attitude_correction(const mavlink_message_t *const msg);
   void handle_msg_rosflight_cmd(const mavlink_message_t *const msg);
+  void handle_msg_rosflight_aux_cmd(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
   void handle_msg_heartbeat(const mavlink_message_t * const msg);
-  void handle_mavlink_message(void);
+  void handle_mavlink_message();
 
   Board& board_;
 
@@ -115,6 +121,8 @@ private:
   mavlink_message_t in_buf_;
   mavlink_status_t status_;
   bool initialized_ = false;
+
+  ListenerInterface * listener_ = nullptr;
 };
 
 } // namespace rosflight_firmware

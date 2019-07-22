@@ -35,7 +35,7 @@
 namespace rosflight_firmware
 {
 
-StateManager::StateManager(ROSflight& parent) :
+StateManager::StateManager(ROSflight &parent) :
   RF_(parent), fsm_state_(FSM_STATE_INIT)
 {
   state_.armed = false;
@@ -51,13 +51,13 @@ void StateManager::init()
 
   // Initialize LEDs
   RF_.board_.led1_off();
-  if(RF_.board_.has_backup_data())
+  if (RF_.board_.has_backup_data())
   {
-      rosflight_firmware::BackupData error_data=RF_.board_.get_backup_data();
-      this->state_=error_data.state;
-      //Be very sure that arming is correct
-      if(error_data.arm_status!=rosflight_firmware::ARM_MAGIC)
-          this->state_.armed=false;
+    rosflight_firmware::BackupData error_data=RF_.board_.get_backup_data();
+    this->state_=error_data.state;
+    //Be very sure that arming is correct
+    if (error_data.arm_status!=rosflight_firmware::ARM_MAGIC)
+      this->state_.armed=false;
   }
 }
 
@@ -128,7 +128,7 @@ void StateManager::set_event(StateManager::Event event)
       {
         // require either min throttle to be enabled or throttle override switch to be on
         if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)
-              || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
+            || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
         {
           if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
           {
@@ -144,12 +144,12 @@ void StateManager::set_event(StateManager::Event event)
         }
         else
         {
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
         }
       }
       else
       {
-        RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
       }
       break;
     default:
@@ -175,17 +175,17 @@ void StateManager::set_event(StateManager::Event event)
       if (next_arming_error_msg_ms_ < RF_.board_.clock_millis())
       {
         if (state_.error_codes & StateManager::ERROR_INVALID_MIXER)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Invalid mixer");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Invalid mixer");
         if (state_.error_codes & StateManager::ERROR_IMU_NOT_RESPONDING)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: IMU not responding");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not responding");
         if (state_.error_codes & StateManager::ERROR_RC_LOST)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: RC signal lost");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: RC signal lost");
         if (state_.error_codes & StateManager::ERROR_UNHEALTHY_ESTIMATOR)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Unhealthy estimator");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Unhealthy estimator");
         if (state_.error_codes & StateManager::ERROR_TIME_GOING_BACKWARDS)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
         if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU)
-          RF_.comm_manager_.log(CommLink::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
 
         next_arming_error_msg_ms_ = RF_.board_.clock_millis() + 1000; // throttle messages to 1 Hz
       }
