@@ -82,7 +82,6 @@ void RC::param_change_callback(uint16_t param_id)
     // do nothing
     break;
   }
-  init_rc();
 }
 
 float RC::stick(Stick channel)
