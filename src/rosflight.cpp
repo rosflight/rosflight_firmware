@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "interface/param_listener.h"
 #include "rosflight.h"
 
 namespace rosflight_firmware
@@ -47,6 +48,7 @@ ROSflight::ROSflight(Board& board, CommLinkInterface& comm_link) :
   state_manager_(*this)
 {
   comm_link.set_listener(&comm_manager_);
+  params_.set_listeners(param_listeners_, num_param_listeners_);
 }
 
 // Initialization Routine

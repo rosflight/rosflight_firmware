@@ -35,6 +35,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "interface/param_listener.h"
+
 #include "rc.h"
 
 namespace rosflight_firmware
@@ -66,7 +68,7 @@ typedef struct
   control_channel_t F;
 } control_t;
 
-class CommandManager
+class CommandManager : public ParamListenerInterface
 {
 
 private:
@@ -162,7 +164,7 @@ private:
 
   control_t &failsafe_command_;
 
-  void param_change_callback(uint16_t param_id);
+  void param_change_callback(uint16_t param_id) override;
   void init_failsafe();
 
   bool do_roll_pitch_yaw_muxing(MuxChannel channel);

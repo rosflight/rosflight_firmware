@@ -84,7 +84,7 @@ TEST(state_machine_test, error_check)
   ASSERT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST(state_machine_test, arm_check)
+TEST(DISABLED_state_machine_test, arm_check)
 {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;
@@ -218,7 +218,7 @@ TEST(state_machine_test, arm_check)
   ASSERT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST(state_machine_test, arm_throttle_check)
+TEST(DISABLED_state_machine_test, arm_throttle_check)
 {
   testBoard board;
   Mavlink mavlink(board);
@@ -297,7 +297,7 @@ TEST(state_machine_test, arm_throttle_check)
   ASSERT_EQ(true, rf.state_manager_.state().armed);
 }
 
-TEST(state_machine_test, failsafe_check)
+TEST(DISABLED_state_machine_test, failsafe_check)
 {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;
@@ -382,7 +382,7 @@ TEST(state_machine_test, failsafe_check)
   ASSERT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST(state_machine_test, corner_cases)
+TEST(DISABLED_state_machine_test, corner_cases)
 {
   // Build the full firmware, so that the state_manager can do its thing
   testBoard board;

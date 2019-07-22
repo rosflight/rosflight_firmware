@@ -35,12 +35,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "interface/param_listener.h"
+
 namespace rosflight_firmware
 {
 
 class ROSflight;
 
-class RC
+class RC : public ParamListenerInterface
 {
 
 public:
@@ -70,7 +72,7 @@ public:
   bool switch_mapped(Switch channel);
   bool run();
   bool new_command();
-  void param_change_callback(uint16_t param_id);
+  void param_change_callback(uint16_t param_id) override;
 
 private:
   ROSflight &RF_;

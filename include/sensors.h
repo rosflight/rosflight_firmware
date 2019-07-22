@@ -38,6 +38,8 @@
 #include <cstring>
 #include <turbomath/turbomath.h>
 
+#include "interface/param_listener.h"
+
 namespace rosflight_firmware
 {
 // Fix type, as defined in sensor_msgs/NavSatStatus
@@ -124,7 +126,7 @@ struct GNSSRaw
 
 class ROSflight;
 
-class Sensors
+class Sensors : public ParamListenerInterface
 {
 public:
   struct Data
@@ -170,7 +172,7 @@ public:
   // function declarations
   void init();
   bool run();
-  void param_change_callback(uint16_t param_id);
+  void param_change_callback(uint16_t param_id) override;
 
   // Calibration Functions
   bool start_imu_calibration(void);
