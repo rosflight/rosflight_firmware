@@ -53,8 +53,6 @@ class BreezyBoard : public Board
 private:
   serialPort_t *Serial1;
 
-  std::function<void(void)> imu_callback_;
-
   int _board_revision = 2;
 
   float _accel_scale = 1.0;

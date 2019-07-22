@@ -32,8 +32,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_PARAM_H
 #define ROSFLIGHT_FIRMWARE_PARAM_H
 
+#include <cstddef>
 #include <cstdint>
-#include <functional>
 
 #include "interface/param_listener.h"
 

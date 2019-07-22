@@ -45,7 +45,7 @@ namespace rosflight_firmware
 
 class ROSflight;
 
-class CommManager : public CommLinkInterface::ListenerInterface, ParamListenerInterface
+class CommManager : public CommLinkInterface::ListenerInterface, public ParamListenerInterface
 {
 private:
   enum StreamId
