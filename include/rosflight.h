@@ -34,6 +34,7 @@
 
 #include <cstdint>
 
+#include "interface/comm_link.h"
 #include "interface/param_listener.h"
 
 #include "board.h"
@@ -42,7 +43,6 @@
 #include "estimator.h"
 #include "rc.h"
 #include "controller.h"
-#include "comm_link.h"
 #include "comm_manager.h"
 #include "mixer.h"
 #include "state_manager.h"
@@ -55,7 +55,7 @@ class ROSflight
 {
 
 public:
-  ROSflight(Board &board, CommLink &comm_link);
+  ROSflight(Board& board, CommLinkInterface& comm_link);
 
   Board &board_;
   CommManager comm_manager_;
