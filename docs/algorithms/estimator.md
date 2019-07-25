@@ -2,16 +2,18 @@
 
 ## Introduction
 
-The estimator is used to calculate an estimate of the attitude and angular velocity of the multirotor.  It is assumed that the flight controller is mounted rigidly to the body of the aircraft (perhaps with dampening material to remove vibrations from the motors), such that measurements of the onboard IMU are consistent with the motion of the aircraft.
+The estimator is used to calculate an estimate of the attitude and angular velocity of the multirotor.  It is assumed that the flight controller is mounted rigidly to the body of the aircraft (perhaps with dampening material to remove vibrations from the motors), such that measurements of the on-board IMU are consistent with the motion of the aircraft.
 
-Due to the limited computational power on the embedded processor, and to calculate attitude estimates at speeds up to 8000Hz, a simple complementary filter is used, rather than an extended Kalman filter.  In practice, this method works extremely well, and it used widely throughout commercially available autopilots.  There are a variety of complementary filters, but the general theory is the same.  A complementary filter is a method to fuse the measurements from a gyroscope, accelerometer and sometimes magnetometer to produce an estimate of the attitude of the MAV.
+Due to the limited computational power on the embedded processor, and to calculate attitude estimates at speeds up to 8000Hz, a simple complementary filter is used, rather than an extended Kalman filter.  In practice, this method works extremely well, and it used widely throughout commercially available autopilots.  There are a variety of complementary filters, but the general theory is the same.  A complementary filter is a method that combines low and high frequency data (complementary in frequency bandwidth).  It can be used to fuse the measurements from a gyroscope, accelerometer and sometimes magnetometer to produce an estimate of the attitude of the MAV.
 
 
 ## Complementary Filtering
-The idea behind complementary filtering is to try to get the "best of both worlds" of gyros and accelerometers.  Gyros are very accurate in short spaces of time, but they are subject to drift.  Accelerometers don't drift in the long scheme of things, but they are noisy as the MAV moves about.  So, to solve these problems, the complementary filter primarily propagates states using gyroscope measurements, but then corrects drift with the accelerometer.  In a general sense, it is like taking a high-pass filtered version of gyroscope measurements, and a low-pass filtered version of accelerometers, and fusing the two together in a manner that results in an estimate that is stable over time, but also able to handle quick transient motions.
+The idea behind complementary filtering is to try to get the "best of both worlds" of gyros and accelerometers.  Gyros are very accurate in short spaces of time, but they are subject to low-frequency drift.  Accelerometers don't drift in the long scheme of things, but they experience high-frequency noise as the MAV moves about.  So, to solve these problems, the complementary filter primarily propagates states using gyroscope measurements, but then corrects drift with the accelerometer, which is a partial source of attitude measurements.  In a general sense, it is like taking a high-pass filtered version of gyroscope measurements, and a low-pass filtered version of accelerometers, and fusing the two together in a manner that results in an estimate that is stable over time, but also able to handle quick transient motions.
+
+For an excellent review of the theory of complementary filtering, consult Mahony's Nonlinear Complementary Filtering on SO(3) paper[^1].
 
 ## Attitude Representation
-There are a number of ways to represent the attitude of a MAV.  Often, attitude is represented in terms of the euler angles yaw, pitch and roll, but it can also be represented in other ways, such as rotation matrices, and quaternions.
+There are a number of ways to represent the attitude of a MAV.  Often, attitude is represented in terms of the Euler angles yaw, pitch and roll, but it can also be represented in other ways, such as rotation matrices, and quaternions.
 
 ### Euler Angles
 Euler angles represent rotations about three different axes, usually, the z, y, and x axes in that order.  This method is often the most easy for users to understand and interpret, but it is by far the least computationally efficient.  To propagate euler angles, the following kinematics are employed:
@@ -214,32 +216,28 @@ What this means is that, like rotation matrices, quaternion dynamics are _linear
 
 ## Derivation
 
-ROSflight implements the quaternion-based passive "Mahony" filter as described in [this paper](https://hal.archives-ouvertes.fr/hal-00488376/document).  In particular, we implement equation 47 from that paper, which also estimates gyroscope biases.  A Lyuapanov stability analysis is performed in that paper, in which it is shown that all states and biases, except heading, are globally asymptotically stable given an accelerometer measurement and gyroscope.  The above reference also describes how a magnetometer can be integrated in a similar method to the accelerometer.  That portion of the filter is ommitted here due to the unreliable nature of magnetometers onboard modern small UAS.
+ROSflight implements the quaternion-based passive "Mahony" filter as described in [this paper](https://hal.archives-ouvertes.fr/hal-00488376/document) [^1].  In particular, we implement equation 47 from that paper, which also estimates gyroscope biases.  A Lyuapanov stability analysis is performed in that paper, in which it is shown that all states and biases, except heading, are globally asymptotically stable given an accelerometer measurement and gyroscope.  The above reference also describes how a magnetometer can be integrated in a similar method to the accelerometer.  That portion of the filter is omitted here due to the unreliable nature of magnetometers on-board modern small UAS.
 
 ### Passive Complementary Filter
 The original filter propagates per the following dynamics:
 
 $$
-\newcommand{\wacc}{\omega_{acc}}
+\newcommand{\werr}{\omega_\text{err}}
+\newcommand{\wfinal}{\omega_\text{final}}
 \begin{equation}
 	\begin{aligned}
-	\dot{\hat{q}} &= \frac{1}{2} \hat{q} \otimes q_\omega\\
-	\dot{\hat{b}} &= -2k_I\wacc
+	\dot{\hat{q}} &= \frac{1}{2} \hat{q} \otimes \textrm{p}\left(\wfinal\right) \\
+	\dot{\hat{b}} &= -2k_I\werr
 	\end{aligned}
 	\label{eq:traditional_prop}
 	\tag{1}
 \end{equation}
 $$
 
-where \(q_{\omega}\) is the pure quaternion formed from a composite \(\omega_{comp}\) which consists of the estimated angular rates, \(\bar{\omega}\), the estimated gyroscope biases, \(\hat{b}\), and an adjustment term, calculated from accelerometer measurements, \(\omega_{acc}\). \(k_p\) and \(k_I\)s are constant gains used in determining the dynamics of the filter.
+where \(\textrm{p}\left(\cdot\right)\) creates a pure quaternion from a 3-vector. The term \(\wfinal\) is a composite angular rate which consists of the measured angular rates, \(\bar{\omega}\), the estimated gyroscope biases, \(\hat{b}\), and a correction term calculated from another measurement of attitude (usually the accelerometer), \(\werr\). The constant gains \(k_p\) and \(k_I\)s are used in determining the dynamics of the filter.
 $$
-\begin{equation}
-\begin{aligned}
-	q_{\omega} &= \textrm{p}\left(\bar{\omega} - \hat{b} + k_P\wacc\right) \\
-	&= \textrm{p}\left( \omega_{comp} \right)
-	\end{aligned}
-	\label{eq:q_omega}
-	\tag{2}
+\begin{equation}\label{eq:q_omega}\tag{2}
+	\wfinal = \bar{\omega} - \hat{b} + k_P\werr
 \end{equation}
 $$
 
@@ -254,31 +252,31 @@ $$
 \newcommand{\qhat}{\hat{q}}
 $$
 
-\(\wacc\) can be described as the error in the attitude as predicted by the accelerometer.  To calculate \(\wacc\) the quaternion describing the rotation between the accelerometer estimate and the inertial frame, \(\qmeas\), is first calculated
+The correction term \(\werr\) can be understood as the error in the attitude as predicted by another source (e.g., the accelerometer).  To calculate \(\werr\) the quaternion describing the rotation between the accelerometer estimate and the z-axis of the inertial frame (i.e., where gravity *should* be), \(\qmeas\), is first calculated
 
 $$
 \begin{equation}
-\begin{aligned}
-	\avec &=
+	\avec =
 		\begin{bmatrix}
 			a_x \\
 			a_y \\
 			a_z \\
 			\end{bmatrix},
 	\qquad
-	\gvec &=
+	\gvec =
 	  \begin{bmatrix}
 			0 \\
 			0 \\
 			1 \\
-		\end{bmatrix}, \qquad
-	\gamvec &= \frac{\avec+\gvec}{\norm{\avec+\gvec}}, \qquad
-	\qmeas &=
+		\end{bmatrix},
+	\qquad
+	\gamvec = \frac{\avec+\gvec}{\norm{\avec+\gvec}},
+	\qquad
+	\qmeas =
 	  \begin{bmatrix}
 	    \avec^\top \gamvec \\
 	    \avec \times \gamvec
 	  \end{bmatrix}
-\end{aligned}
 \end{equation}
 $$
 
@@ -296,19 +294,15 @@ Next, the quaternion error between the estimate \(\qhat\) and the accelerometer 
 		\end{bmatrix}
 \end{equation}
 
-$$	
-\newcommand{\wmeas}{\omega_{acc}}
-$$
-
-Finally, \(\qmeas\) is converted back into a 3-vector per the method described in eq. 47a of Mahony2007.
+Finally, \(\qmeas\) is converted back into a 3-vector per the method described in eq. 47a of Mahony2007 [^1].
 \begin{equation}
-	\wmeas = 2\tilde{s}\vtilde
+	\werr = 2\tilde{s}\vtilde
 \end{equation}
 
-Although the formulation in Eq.\(\eqref{eq:traditional_prop}\) is more concise, in implementation, \(q_{\omega}\) is never actually formed, instead the composite \(\omega_{comp}\) vector of Eq.\(\eqref{eq:q_omega}\) is directly substituted into equation\(\eqref{eq:mat_exponential}\).  Gyroscope bias propagation is performed using standard euler integration, because they are assumed to be nearly constant.
+Both the attitude quaternion and bias dynamics can be integrated using standard Euler integration, requiring that the resulting quaternion is re-normalized.
 
 ### Modifications to Original Passive Filter
-There have been a few modifications to the passive filter described in Mahony2007, consisting primarily of contributions from [Casey2013](https://arc.aiaa.org/doi/pdf/10.2514/6.2013-4615).  Firstly, rather than simply taking gyroscope measurements directly as an estimate of $\omega$, a quadratic polynomial is used to approximate the true angular rate from gyroscope measurements to reduce error.  In Casey2013, this process was shown to reduce RMS error by more than 1,000 times.  There are additional steps associated with performing this calculation, but the benefit in accuracy more than compensates for the extra calculation time.  The equation to perform this calculation is shown in Eq.\(\eqref{eq:quad_approx}\).
+There have been a few modifications to the passive filter described in Mahony2007 [^1], consisting primarily of contributions from [Casey2013](https://arc.aiaa.org/doi/pdf/10.2514/6.2013-4615).  Firstly, rather than simply taking gyroscope measurements directly as an estimate of $\omega$, a quadratic polynomial is used to approximate the true angular rate from gyroscope measurements to reduce error.  In Casey2013, this process was shown to reduce RMS error by more than 1,000 times.  There are additional steps associated with performing this calculation, but the benefit in accuracy more than compensates for the extra calculation time.  The equation to perform this calculation is shown in Eq.\(\eqref{eq:quad_approx}\).
 
 \begin{equation}
 	\bar{\omega} = \frac{1}{12}\left(-\omega\left(t_{n-2}\right) + 8\omega\left(t_{n-1}\right) + 5\omega\left(t_n\right) \right)
@@ -370,6 +364,17 @@ where \(\lfloor\w\rfloor_4\) is the 4x4 skew-symmetric matrix formed from \(\w\)
 	\end{bmatrix}
 \end{equation}
 
+## External Attitude Measurements
+Using the ROSflight estimator with gyro measurements only will quickly drift due to gyro biases. The accelerometer makes the biases in \(p\) and \(q\) observable and provides another measurement of pitch and roll. To make yaw observable, an external attitude measurement can be provided to the estimator which is used in much the same way as the accelerometer. Instead of as outlined above for accelerometer updates, the correction term \(\werr\) can be calculated as
+$$
+\begin{equation}
+	\werr = k_\text{ext}\sum_{i=1}^3 R(\hat{q})^\top e_i\times \bar{R}^\top e_i
+\end{equation}
+$$
+where \(k_\text{ext}= F_s^\text{IMU} / F_s^\text{ext}\) is the ratio of the IMU sample rate to the external attitude sample rate.
+
+In our implementation, whenever an external attitude measurement is supplied, if there was a \(\werr\) calculated from the accelerometer, it is overwritten by the above calculation for an external attitude update. Also note that the gain \(k_P\) associated with an external attitude can be much higher if we trust the source of the external attitude measurement.
+
 
 ## Tuning
 The filter can be tuned with the two gains \(k_P\) and \(k_I\).  Upon initialization, \(k_P\) and \(k_i\) are set very high, so as to quickly cause the filter to converge upon approprate values.  After a few seconds, they are both reduced by a factor of 10, to a value chosen through manual tuning.  A high $k_P$ will cause sensitivity to transient accelerometer errors, while a small $k_P$ will cause sensitivity to gyroscope drift.  A high $k_I$ will cause biases to wander unnecessarily, while a low $k_I$ will result in slow convergence upon accurate gyroscope bias estimates.  These parameters generally do not need to be modified from the default values.
@@ -378,3 +383,5 @@ The filter can be tuned with the two gains \(k_P\) and \(k_I\).  Upon initializa
 The entire filter is implemented in float-based quaternion calculations.  Even though the STM32F10x microprocessor does not contain a floating-point unit, the entire filter has been timed to take about 370\(\mu\)s.  The extra steps of quadratic integration and matrix exponential propagation can be ommited for a 20\(\mu\)s and 90\(\mu\)s reduction in speed, respectively.  Even with these functions, however, this is sufficiently short to run at well over 1000Hz, which is the update rate of the MPU6050 on the naze32.
 
 Control is performed according to euler angle estimates, and to reduce the computational load of converting from quaternion to euler angles (See Equation\(\eqref{eq:euler_from_quat}\)), a lookup table approximation of atan2 and asin are used.  The Invensense MPU6050 has a 16-bit ADC and an accelerometer and gyro onboard.  The accelerometer, when scaled to \(\pm\)4g, has a resolution of 0.002394 m/s\(^2\).  The lookup table method used to approximate atan2 and asin in the actual implementation is accurate to \(\pm\) 0.001 rad.  Given the accuracy of the accelerometer, use of this lookup table implementation is justfied.  The C-code implementation of the estimator can be found in the file `src/estimator.c.`
+
+[^1]: Mahony, R., Hamel, T. and Pflimlin, J. (2008). Nonlinear Complementary Filters on the Special Orthogonal Group. IEEE Transactions on Automatic Control, 53(5), pp.1203-1218.
