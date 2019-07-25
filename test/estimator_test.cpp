@@ -16,7 +16,7 @@ double sign(double y)
   return (y > 0.0) - (y < 0.0);
 }
 
-double run_estimator_test(std::string filename, ROSflight &rf, testBoard &board, std::vector<double> params)
+double run_estimator_test(std::string filename, ROSflight &rf, testBoard &board, std::vector<double> params, bool use_extatt = false)
 {
 #ifndef DEBUG
   (void) filename;
@@ -76,6 +76,14 @@ double run_estimator_test(std::string filename, ROSflight &rf, testBoard &board,
 
     // Simulate measurements
     board.set_imu(acc, gyro, static_cast<uint64_t>(t*1e6));
+
+    if (use_extatt)
+    {
+      // Use truth as an external attitude measurement
+      Eigen::Quaternionf eig_quat(rotation.cast<float>());
+      turbomath::Quaternion q_extatt(eig_quat.w(), eig_quat.x(), eig_quat.y(), eig_quat.z());
+      rf.estimator_.set_external_attitude_update(q_extatt);
+    }
 
     // Run firmware
     rf.run();
@@ -445,5 +453,44 @@ TEST(estimator_test, moving_bias_sim)
 
 #ifdef DEBUG
   printf("estimated_bias = %.7f, %.7f\n", bias.x, bias.y);
+#endif
+}
+
+TEST(estimator_test, external_attitude_test)
+{
+  testBoard board;
+  Mavlink mavlink(board);
+  ROSflight rf(board, mavlink);
+
+  std::vector<double> params =
+  {
+    10.0, // xfreq
+    0.1, // yfreq
+    0.5, // zfreq
+    1.5, // xamp
+    0.4, // yamp
+    1.0, // zamp
+    30.0, // tmax
+    0.0008 // error_limit
+  };
+
+  // Initialize the firmware
+  rf.init();
+
+  rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
+  rf.params_.set_param_int(PARAM_FILTER_KP_ACC, 0.5f);
+  rf.params_.set_param_int(PARAM_FILTER_KP_EXT, 1.5f);
+  rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, false);
+  rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, false);
+  rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
+
+  double max_error = run_estimator_test("external_attitude_test.csv", rf, board, params, true);
+
+  EXPECT_LE(max_error, params[7]);
+
+#ifdef DEBUG
+  printf("max_error = %.7f\n", max_error);
 #endif
 }
