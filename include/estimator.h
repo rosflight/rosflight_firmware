@@ -117,6 +117,8 @@ private:
   turbomath::Vector smoothed_gyro_measurement();
   void integrate_angular_rate(turbomath::Quaternion& quat,
           const turbomath::Vector& omega, const float dt) const;
+  void quaternion_to_dcm(const turbomath::Quaternion& q, turbomath::Vector& X,
+              turbomath::Vector& Y, turbomath::Vector& Z) const;
 };
 
 } // namespace rosflight_firmware
