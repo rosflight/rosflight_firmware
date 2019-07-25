@@ -548,14 +548,14 @@ void Mavlink::handle_msg_attitude_correction(const mavlink_message_t *const msg)
   mavlink_attitude_correction_t q_msg;
   mavlink_msg_attitude_correction_decode(msg, &q_msg);
 
-  turbomath::Quaternion q_correction;
-  q_correction.w = q_msg.qw;
-  q_correction.x = q_msg.qx;
-  q_correction.y = q_msg.qy;
-  q_correction.z = q_msg.qz;
+  turbomath::Quaternion q_extatt;
+  q_extatt.w = q_msg.qw;
+  q_extatt.x = q_msg.qx;
+  q_extatt.y = q_msg.qy;
+  q_extatt.z = q_msg.qz;
 
   if (listener_ != nullptr)
-    listener_->attitude_correction_callback(q_correction);
+    listener_->external_attitude_callback(q_extatt);
 }
 void Mavlink::handle_msg_heartbeat(const mavlink_message_t *const msg)
 {

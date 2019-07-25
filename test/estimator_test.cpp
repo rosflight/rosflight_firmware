@@ -300,7 +300,7 @@ TEST(estimator_test, accel)
   rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
   rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
   rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
-  rf.params_.set_param_int(PARAM_FILTER_KP, 3.0f);
+  rf.params_.set_param_int(PARAM_FILTER_KP_ACC, 3.0f);
   rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
 
   double max_error = run_estimator_test("accel_sim.csv", rf, board, params);
@@ -334,7 +334,7 @@ TEST(estimator_test, all_features)
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
-  rf.params_.set_param_float(PARAM_FILTER_KP, 2.0f);
+  rf.params_.set_param_float(PARAM_FILTER_KP_ACC, 2.0f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_XY_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_Z_ALPHA, 0.0f);
@@ -377,7 +377,7 @@ TEST(estimator_test, level_bias_sim)
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
-  rf.params_.set_param_float(PARAM_FILTER_KP, 2.0f);
+  rf.params_.set_param_float(PARAM_FILTER_KP_ACC, 2.0f);
   rf.params_.set_param_float(PARAM_FILTER_KI, 0.2f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_XY_ALPHA, 0.0f);
@@ -426,7 +426,7 @@ TEST(estimator_test, moving_bias_sim)
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
   rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
-  rf.params_.set_param_float(PARAM_FILTER_KP, 0.5f);
+  rf.params_.set_param_float(PARAM_FILTER_KP_ACC, 0.5f);
   rf.params_.set_param_float(PARAM_FILTER_KI, 0.05f);
   rf.params_.set_param_float(PARAM_ACC_ALPHA, 0.0f);
   rf.params_.set_param_float(PARAM_GYRO_XY_ALPHA, 0.0f);

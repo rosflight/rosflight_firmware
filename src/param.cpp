@@ -182,9 +182,9 @@ void Params::set_defaults(void)
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
   init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
-  init_param_float(PARAM_FILTER_KP, "FILTER_KP", 0.5f); // estimator proportional gain - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_KP_ACC, "FILTER_KP_ACC", 0.5f); // estimator proportional gain on accel-based error - See estimator documentation | 0 | 10.0
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.01f); // estimator integral gain - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_FILTER_KP_ATT_CORRECTION, "FILTER_KP_COR", 10.0f); // estimator proportional gain on external attitude correction - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KP_EXT, "FILTER_KP_EXT", 1.5f); // estimator proportional gain on external attitude-based error - See estimator documentation | 0 | 10.0
   init_param_float(PARAM_FILTER_ACCEL_MARGIN, "FILTER_ACCMARGIN", 0.1f); // allowable accel norm margin around 1g to determine if accel is usable | 0 | 1.0
 
   init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1

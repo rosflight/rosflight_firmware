@@ -121,7 +121,7 @@ public:
       virtual void timesync_callback(int64_t tc1, int64_t ts1) = 0;
       virtual void offboard_control_callback(const OffboardControl &control) = 0;
       virtual void aux_command_callback(const AuxCommand &command) = 0;
-      virtual void attitude_correction_callback(const turbomath::Quaternion &q) = 0;
+      virtual void external_attitude_callback(const turbomath::Quaternion &q) = 0;
       virtual void heartbeat_callback() = 0;
     };
 

@@ -76,7 +76,7 @@ void Estimator::reset_state()
 
   state_.timestamp_us = RF_.board_.clock_micros();
 
-  attitude_correction_next_run_ = false;
+  extatt_update_next_run_ = false;
 
   // Clear the unhealthy estimator flag
   RF_.state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
@@ -93,7 +93,7 @@ void Estimator::init()
 {
   last_time_ = 0;
   last_acc_update_us_ = 0;
-  last_att_correction_us_ = 0;
+  last_extatt_update_us_ = 0;
   reset_state();
 }
 
@@ -118,10 +118,10 @@ void Estimator::run_LPF()
   gyro_LPF_.z = (1.0f-alpha_gyro_z)*raw_gyro.z + alpha_gyro_z*gyro_LPF_.z;
 }
 
-void Estimator::set_attitude_correction(const turbomath::Quaternion &q)
+void Estimator::set_external_attitude_update(const turbomath::Quaternion &q)
 {
-  attitude_correction_next_run_ = true;
-  q_correction_ = q;
+  extatt_update_next_run_ = true;
+  q_extatt_ = q;
 }
 
 void Estimator::run()
@@ -132,7 +132,7 @@ void Estimator::run()
   {
     last_time_ = now_us;
     last_acc_update_us_ = now_us;
-    last_att_correction_us_ = now_us;
+    last_extatt_update_us_ = now_us;
     return;
   }
   else if (now_us < last_time_)
@@ -153,12 +153,12 @@ void Estimator::run()
   // Crank up the gains for the first few seconds for quick convergence
   if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP)*10.0f;
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC)*10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
   }
   else
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP);
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC);
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI);
   }
 
@@ -194,18 +194,20 @@ void Estimator::run()
     w_err.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
   }
 
-  if (attitude_correction_next_run_)
+  if (extatt_update_next_run_)
   {
     turbomath::Vector xhat_BW, yhat_BW, zhat_BW;
     turbomath::Vector xext_BW, yext_BW, zext_BW;
     {
+      // create DCM from quaternion attitude estimate
       float &w = state_.attitude.w, &x = state_.attitude.x, &y = state_.attitude.y, &z = state_.attitude.z;
       xhat_BW.x = 1.0f - 2.0f*(y*y + z*z); xhat_BW.y = 2.0f*(x*y - z*w); xhat_BW.z = 2.0f*(x*z + y*w);
       yhat_BW.x = 2.0f*(x*y + z*w); yhat_BW.y = 1.0f - 2.0f*(x*x + z*z); yhat_BW.z = 2.0f*(y*z - x*w);
       zhat_BW.x = 2.0f*(x*z - y*w); zhat_BW.y = 2.0f*(y*z + x*w); zhat_BW.z = 1.0f - 2.0f*(x*x + y*y);
     }
     {
-      float &w = q_correction_.w, &x = q_correction_.x, &y = q_correction_.y, &z = q_correction_.z;
+      // create DCM from quaternion external attitude
+      float &w = q_extatt_.w, &x = q_extatt_.x, &y = q_extatt_.y, &z = q_extatt_.z;
       xext_BW.x = 1.0f - 2.0f*(y*y + z*z); xext_BW.y = 2.0f*(x*y - z*w); xext_BW.z = 2.0f*(x*z + y*w);
       yext_BW.x = 2.0f*(x*y + z*w); yext_BW.y = 1.0f - 2.0f*(x*x + z*z); yext_BW.z = 2.0f*(y*z - x*w);
       zext_BW.x = 2.0f*(x*z - y*w); zext_BW.y = 2.0f*(y*z + x*w); zext_BW.z = 1.0f - 2.0f*(x*x + y*y);
@@ -216,16 +218,16 @@ void Estimator::run()
     // different rate than IMU updates, so it needs to be integrated with a
     // different dt. The following scales the correction term by the timestep
     // ratio so that it is integrated correctly.
-    const float extAttDt = (now_us - last_att_correction_us_) * 1e-6f;
+    const float extAttDt = (now_us - last_extatt_update_us_) * 1e-6f;
     const float scaleDt = (dt > 0) ? (extAttDt / dt) : 0.0f;
     w_ext *= scaleDt;
 
     // use error calculated from external attitude update only
     w_err = w_ext;
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION);
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_EXT);
 
-    last_att_correction_us_ = now_us;
-    attitude_correction_next_run_ = false;
+    last_extatt_update_us_ = now_us;
+    extatt_update_next_run_ = false;
   }
 
   // integrate biases driven by measured angular error
