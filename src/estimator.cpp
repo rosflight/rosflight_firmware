@@ -294,26 +294,17 @@ turbomath::Vector Estimator::accel_correction() const
 
 turbomath::Vector Estimator::extatt_correction() const
 {
-  // DCM columns of attitude estimate and external measurement (world w.r.t body).
+  // DCM rows of attitude estimate and external measurement (world w.r.t body).
   // These are the world axes from the perspective of the body frame.
+  // Note: If we extracted cols it would be body w.r.t world.
   turbomath::Vector xhat_BW, yhat_BW, zhat_BW;
   turbomath::Vector xext_BW, yext_BW, zext_BW;
 
-  // create DCM from quaternion attitude estimate
-  {
-    const float &w = state_.attitude.w, &x = state_.attitude.x, &y = state_.attitude.y, &z = state_.attitude.z;
-    xhat_BW.x = 1.0f - 2.0f*(y*y + z*z); xhat_BW.y = 2.0f*(x*y - z*w); xhat_BW.z = 2.0f*(x*z + y*w);
-    yhat_BW.x = 2.0f*(x*y + z*w); yhat_BW.y = 1.0f - 2.0f*(x*x + z*z); yhat_BW.z = 2.0f*(y*z - x*w);
-    zhat_BW.x = 2.0f*(x*z - y*w); zhat_BW.y = 2.0f*(y*z + x*w); zhat_BW.z = 1.0f - 2.0f*(x*x + y*y);
-  }
+  // extract rows of rotation matrix from quaternion attitude estimate
+  quaternion_to_dcm(state_.attitude, xhat_BW, yhat_BW, zhat_BW);
 
-  // create DCM from quaternion external attitude
-  {
-    const float &w = q_extatt_.w, &x = q_extatt_.x, &y = q_extatt_.y, &z = q_extatt_.z;
-    xext_BW.x = 1.0f - 2.0f*(y*y + z*z); xext_BW.y = 2.0f*(x*y - z*w); xext_BW.z = 2.0f*(x*z + y*w);
-    yext_BW.x = 2.0f*(x*y + z*w); yext_BW.y = 1.0f - 2.0f*(x*x + z*z); yext_BW.z = 2.0f*(y*z - x*w);
-    zext_BW.x = 2.0f*(x*z - y*w); zext_BW.y = 2.0f*(y*z + x*w); zext_BW.z = 1.0f - 2.0f*(x*x + y*y);
-  }
+  // extract rows of rotation matrix from quaternion external attitude
+  quaternion_to_dcm(q_extatt_, xext_BW, yext_BW, zext_BW);
 
   // calculate cross products of corresponding axes as an error metric. For example, if vehicle were
   // level but extatt had a different yaw angle than the internal estimate, xext_BW.cross(xhat_BW)
@@ -383,6 +374,19 @@ void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
     quat.z += qdot.z*dt;
     quat.normalize();
   }
+}
+
+void Estimator::quaternion_to_dcm(const turbomath::Quaternion& q,
+        turbomath::Vector& X, turbomath::Vector& Y, turbomath::Vector& Z) const
+{
+  // R(q) = [X.x X.y X.z]
+  //        [Y.x Y.y Y.z]
+  //        [Z.x Z.y Z.z]
+  
+  const float &w = q.w, &x = q.x, &y = q.y, &z = q.z;
+  X.x = 1.0f - 2.0f*(y*y + z*z);   X.y =        2.0f*(x*y - z*w);   X.z =        2.0f*(x*z + y*w);
+  Y.x =        2.0f*(x*y + z*w);   Y.y = 1.0f - 2.0f*(x*x + z*z);   Y.z =        2.0f*(y*z - x*w);
+  Z.x =        2.0f*(x*z - y*w);   Z.y =        2.0f*(y*z + x*w);   Z.z = 1.0f - 2.0f*(x*x + y*y);
 }
 
 } // namespace rosflight_firmware
