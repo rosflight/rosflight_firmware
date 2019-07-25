@@ -109,6 +109,14 @@ private:
   turbomath::Quaternion q_extatt_;
 
   void run_LPF();
+
+  bool can_use_accel() const;
+  bool can_use_extatt() const;
+  turbomath::Vector accel_correction() const;
+  turbomath::Vector extatt_correction() const;
+  turbomath::Vector smoothed_gyro_measurement();
+  void integrate_angular_rate(turbomath::Quaternion& quat,
+          const turbomath::Vector& omega, const float dt) const;
 };
 
 } // namespace rosflight_firmware
