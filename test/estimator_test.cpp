@@ -10,118 +10,185 @@
 //#define DEBUG
 
 using namespace rosflight_firmware;
+using namespace Eigen;
+
+class EstimatorTest : public ::testing::Test
+{
+public:
+  Vector3d gravity;
+  Matrix3d rotation;
+
+  double x_freq_, y_freq_, z_freq_;
+  double x_amp_, y_amp_, z_amp_;
+  double tmax_;
+  double t_, dt_;
+
+  void SetUp() override
+  {
+    gravity << 0.0, 0.0, -9.80665;
+    rotation = Matrix3d::Identity();
+    dt_ = 0.001;
+  }
+
+  void run(double x_freq, double y_freq, double z_freq,
+             double x_amp, double y_amp, double z_amp, double tmax)
+  {
+      x_freq_ = x_freq;
+      y_freq_ = y_freq;
+      z_freq_ = z_freq;
+      x_amp_ = x_amp;
+      y_amp_ = y_amp;
+      z_amp_ = z_amp;
+
+      float acc[3], gyro[3];
+
+//      double max_error = 0.0;
+      t_ = 0.0;
+      while (t_ < tmax)
+      {
+        Vector3d w;
+        w[0] = x_amp_*sin(x_freq_/(2.0*M_PI)*t_);
+        w[1] = y_amp_*sin(y_freq_/(2.0*M_PI)*t_);
+        w[2] = z_amp_*sin(z_freq_/(2.0*M_PI)*t_);
+        integrate(rotation, w, dt_);
+        simulateIMU(acc, gyro);
+        t_ += dt_;
+      }
+  }
+
+  void integrate(Matrix3d& R, const Vector3d& w, double dt)
+  {
+    double theta_sq = w.squaredNorm();
+    double s = 1.0 / std::sqrt(theta_sq);
+    double theta = std::sqrt(theta_sq);
+
+    Matrix3d wcross;
+    wcross << 0, -w(3), w(2),
+             w(3), 0,  -w(1),
+            -w(2), w(1), 0;
+
+    Matrix3d wexp = Matrix3d::Identity() + (std::sin(theta) * s) * wcross + ((1-std::cos(theta))*s*s)*wcross*wcross;
+    R = -(wexp * dt) * R;
+  }
+
+  void simulateIMU(float* acc, float* gyro)
+  {
+    Map<Vector3f> y_acc(acc);
+    y_acc = (rotation.transpose() * gravity).cast<float>();
+
+    // Create gyro measurement
+    gyro[0] = x_amp_*sin(x_freq_/(2.0*M_PI)*t_);
+    gyro[0] = y_amp_*sin(y_freq_/(2.0*M_PI)*t_);
+    gyro[0] = z_amp_*sin(z_freq_/(2.0*M_PI)*t_);
+  }
+
+  Vector3d computeError()
+  {
+
+  }
+};
 
 double sign(double y)
 {
   return (y > 0.0) - (y < 0.0);
 }
 
-double run_estimator_test(std::string filename, ROSflight &rf, testBoard &board, std::vector<double> params)
-{
-#ifndef DEBUG
-  (void) filename;
-#endif
+//double run_estimator_test(std::string filename, ROSflight &rf, testBoard &board, std::vector<double> params)
+//{
+//#ifndef DEBUG
+//  (void) filename;
+//#endif
 
-  double x_freq = params[0];
-  double y_freq = params[1];
-  double z_freq = params[2];
-  double x_amp = params[3];
-  double y_amp = params[4];
-  double z_amp = params[5];
-  double tmax = params[6];
+//  double x_freq = params[0];
+//  double y_freq = params[1];
+//  double z_freq = params[2];
+//  double x_amp = params[3];
+//  double y_amp = params[4];
+//  double z_amp = params[5];
+//  double tmax = params[6];
 
-  double dt = 0.001;
+//  double dt = 0.001;
 
-  Eigen::Vector3d gravity;
-  gravity << 0.0, 0.0, -9.80665;
-  Eigen::Matrix3d rotation = Eigen::Matrix3d::Identity();
 
-#ifdef DEBUG
-  // File for saving simulation results
-  std::ofstream file;
-  file.open(filename.c_str());
-#endif
 
-  double max_error = 0.0;
-  volatile double t = 0.0;
-  while (t < tmax)
-  {
-    // euler integration of S03 (probably a better way that isn't so intensive)
-    double ddt = 0.00005;
-    Eigen::Matrix3d omega_skew;
-    double step = t + dt;
-    while (t < step)
-    {
-      double p = x_amp*sin(x_freq/(2.0*M_PI)*t);
-      double q = y_amp*sin(y_freq/(2.0*M_PI)*t);
-      double r = z_amp*sin(z_freq/(2.0*M_PI)*t);
+//#ifdef DEBUG
+//  // File for saving simulation results
+//  std::ofstream file;
+//  file.open(filename.c_str());
+//#endif
 
-      omega_skew << 0.0, -r, q,
-                 r, 0.0, -p,
-                 -q, p, 0.0;
-      rotation = rotation*(omega_skew*ddt).exp();
-      t += ddt;
-    }
+//  double max_error = 0.0;
+//  volatile double t = 0.0;
+//  while (t < tmax)
+//  {
+//    // euler integration of S03 (probably a better way that isn't so intensive)
+//    double ddt = 0.00005;
+//    Eigen::Matrix3d omega_skew;
+//    double step = t + dt;
+//    while (t < step)
+//    {
+//      double p = x_amp*sin(x_freq/(2.0*M_PI)*t);
+//      double q = y_amp*sin(y_freq/(2.0*M_PI)*t);
+//      double r = z_amp*sin(z_freq/(2.0*M_PI)*t);
 
-    // Extract Accel Orientation
-    Eigen::Vector3d y_acc = rotation.transpose() * gravity;
+//      omega_skew << 0.0, -r, q,
+//                 r, 0.0, -p,
+//                 -q, p, 0.0;
+//      rotation = rotation*(omega_skew*ddt).exp();
+//      t += ddt;
+//    }
 
-    // Create gyro measurement
-    double p = x_amp*sin(x_freq/(2.0*M_PI)*t);
-    double q = y_amp*sin(y_freq/(2.0*M_PI)*t);
-    double r = z_amp*sin(z_freq/(2.0*M_PI)*t);
+//    // Extract Accel Orientation
 
-    float acc[3] = {static_cast<float>(y_acc(0)), static_cast<float>(y_acc(1)), static_cast<float>(y_acc(2))};
-    float gyro[3] = {static_cast<float>(p), static_cast<float>(q), static_cast<float>(r)};
 
-    // Simulate measurements
-    board.set_imu(acc, gyro, static_cast<uint64_t>(t*1e6));
+//    // Simulate measurements
+//    board.set_imu(acc, gyro, static_cast<uint64_t>(t*1e6));
 
-    // Run firmware
-    rf.run();
+//    // Run firmware
+//    rf.run();
 
-    Eigen::Quaternionf eig_quat(rotation.cast<float>());
-    turbomath::Quaternion estimate = rf.estimator_.state().attitude;
-    if (eig_quat.w() < 0.0)
-    {
-      eig_quat.coeffs() *= -1.0;
-    }
+//    Eigen::Quaternionf eig_quat(rotation.cast<float>());
+//    turbomath::Quaternion estimate = rf.estimator_.state().attitude;
+//    if (eig_quat.w() < 0.0)
+//    {
+//      eig_quat.coeffs() *= -1.0;
+//    }
 
-    double pos_error = quaternion_error(eig_quat, estimate);
-    eig_quat.coeffs() *= -1.0;
-    double neg_error = quaternion_error(eig_quat, estimate);
+//    double pos_error = quaternion_error(eig_quat, estimate);
+//    eig_quat.coeffs() *= -1.0;
+//    double neg_error = quaternion_error(eig_quat, estimate);
 
-    double error = 0.0;
-    if (pos_error < neg_error)
-    {
-      error = pos_error;
-      eig_quat.coeffs() *= -1.0;
-    }
-    else
-    {
-      error = neg_error;
-    }
+//    double error = 0.0;
+//    if (pos_error < neg_error)
+//    {
+//      error = pos_error;
+//      eig_quat.coeffs() *= -1.0;
+//    }
+//    else
+//    {
+//      error = neg_error;
+//    }
 
-    // output to file for plotting
-#ifdef DEBUG
-    file << t << ", " << (error > error_limit) << ", ";
-    file << estimate.w << ", " << estimate.x << ", " << estimate.y << ", " << estimate.z << ", ";
-    file << eig_quat.w() << ", " << eig_quat.x() << ", " << eig_quat.y() << ", " << eig_quat.z() << ", ";
-    file << rf.estimator_.state().roll << ", " << rf.estimator_.state().pitch << ", " <<rf.estimator_.state().yaw << ", ";
-    file << rf.estimator_.state().angular_velocity.x << ", " << rf.estimator_.state().angular_velocity.y << ", " <<
-         rf.estimator_.state().angular_velocity.z << ", ";
-    file << p << ", " << q << ", " << r << ", ";
-    file << error << "\n";
-#endif
+//    // output to file for plotting
+//#ifdef DEBUG
+//    file << t << ", " << (error > error_limit) << ", ";
+//    file << estimate.w << ", " << estimate.x << ", " << estimate.y << ", " << estimate.z << ", ";
+//    file << eig_quat.w() << ", " << eig_quat.x() << ", " << eig_quat.y() << ", " << eig_quat.z() << ", ";
+//    file << rf.estimator_.state().roll << ", " << rf.estimator_.state().pitch << ", " <<rf.estimator_.state().yaw << ", ";
+//    file << rf.estimator_.state().angular_velocity.x << ", " << rf.estimator_.state().angular_velocity.y << ", " <<
+//         rf.estimator_.state().angular_velocity.z << ", ";
+//    file << p << ", " << q << ", " << r << ", ";
+//    file << error << "\n";
+//#endif
 
-    if (std::isfinite(error))
-    {
-      if (error > max_error)
-        max_error = error;
-    }
-  }
-  return max_error;
-}
+//    if (std::isfinite(error))
+//    {
+//      if (error > max_error)
+//        max_error = error;
+//    }
+//  }
+//  return max_error;
+//}
 
 
 TEST(estimator_test, linear_gyro_integration)
@@ -152,9 +219,9 @@ TEST(estimator_test, linear_gyro_integration)
   rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
   rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
 
-  double max_error = run_estimator_test("linear_gyro_sim.csv", rf, board, params);
+//  double max_error = run_estimator_test("linear_gyro_sim.csv", rf, board, params);
 
-  EXPECT_LE(max_error, params[7]);
+//  EXPECT_LE(max_error, params[7]);
 
 #ifdef DEBUG
   printf("max_error = %.7f\n", max_error);
@@ -191,9 +258,9 @@ TEST(estimator_test, quadratic_gyro_integration)
   rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
   rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
 
-  double max_error = run_estimator_test("quad_int_sim.csv", rf, board, params);
+//  double max_error = run_estimator_test("quad_int_sim.csv", rf, board, params);
 
-  EXPECT_LE(max_error, params[7]);
+//  EXPECT_LE(max_error, params[7]);
 
 #ifdef DEBUG
   printf("max_error = %.7f\n", max_error);
@@ -228,8 +295,8 @@ TEST(estimator_test, mat_exp_integration)
   rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
   rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
 
-  double max_error = run_estimator_test("mat_exp_sim.csv", rf, board, params);
-  EXPECT_LE(max_error, params[7]);
+//  double max_error = run_estimator_test("mat_exp_sim.csv", rf, board, params);
+//  EXPECT_LE(max_error, params[7]);
 #ifdef DEBUG
   printf("max_error = %.7f\n", max_error);
 #endif
@@ -263,8 +330,8 @@ TEST(estimator_test, mat_exp_quad_int)
   rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
   rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
 
-  double max_error = run_estimator_test("mat_exp_quad_sim.csv", rf, board, params);
-  EXPECT_LE(max_error, params[7]);
+//  double max_error = run_estimator_test("mat_exp_quad_sim.csv", rf, board, params);
+//  EXPECT_LE(max_error, params[7]);
 
 #ifdef DEBUG
   printf("max_error = %.7f\n", max_error);
@@ -303,8 +370,8 @@ TEST(estimator_test, accel)
   rf.params_.set_param_int(PARAM_FILTER_KP, 3.0f);
   rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
 
-  double max_error = run_estimator_test("accel_sim.csv", rf, board, params);
-  EXPECT_LE(max_error, params[7]);
+//  double max_error = run_estimator_test("accel_sim.csv", rf, board, params);
+//  EXPECT_LE(max_error, params[7]);
 #ifdef DEBUG
   printf("max_error = %.7f\n", max_error);
 #endif
@@ -342,8 +409,8 @@ TEST(estimator_test, all_features)
   rf.params_.set_param_float(PARAM_GYRO_Y_BIAS, 0.0);
   rf.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0); // We don't converge on z bias
 
-  double max_error = run_estimator_test("full_estimator_sim.csv", rf, board, params);
-  EXPECT_LE(max_error, params[7]);
+//  double max_error = run_estimator_test("full_estimator_sim.csv", rf, board, params);
+//  EXPECT_LE(max_error, params[7]);
 
 #ifdef DEBUG
   printf("max_error = %.7f\n", max_error);
@@ -386,7 +453,7 @@ TEST(estimator_test, level_bias_sim)
   rf.params_.set_param_float(PARAM_GYRO_Y_BIAS, true_bias.y);
   rf.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0); // We don't converge on z bias
 
-  run_estimator_test("level_bias_sim.csv", rf, board, params);
+//  run_estimator_test("level_bias_sim.csv", rf, board, params);
 
   // Check bias at the end
   turbomath::Vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
@@ -435,7 +502,7 @@ TEST(estimator_test, moving_bias_sim)
   rf.params_.set_param_float(PARAM_GYRO_Y_BIAS, true_bias.y);
   rf.params_.set_param_float(PARAM_GYRO_Z_BIAS, 0.0); // We don't converge on z bias
 
-  run_estimator_test("moving_bias_sim.csv", rf, board, params);
+//  run_estimator_test("moving_bias_sim.csv", rf, board, params);
 
   // Check bias at the end
   turbomath::Vector bias = rf.estimator_.state().angular_velocity - rf.sensors_.data().gyro;
