@@ -24,6 +24,19 @@ public:
     rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_MIXER, 10);
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
+    stepFirmware(100000);
+  }
+
+  void stepFirmware(uint32_t us)
+  {
+    uint64_t start_time_us = board.clock_micros();
+    float dummy_acc[3] = {0, 0, -9.80665};
+    float dummy_gyro[3] = {0, 0, 0};
+    while (board.clock_micros() < start_time_us + us)
+    {
+      board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
+      rf.run();
+    }
   }
 
 };
