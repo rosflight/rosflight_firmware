@@ -42,7 +42,7 @@ class testBoard : public Board
 {
 
 private:
-  uint16_t rc_values[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  uint16_t rc_values[8] = {1500, 1500, 1000, 1500, 1500, 1500, 1500, 1500};
   uint64_t time_us_ = 0;
   bool rc_lost_ = false;
   float acc_[3] = {0, 0, 0};

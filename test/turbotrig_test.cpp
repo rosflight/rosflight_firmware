@@ -95,7 +95,7 @@ turbomath::Quaternion random_quaternions[25] =
 };
 
 
-TEST(turbotrig_test, atan_test)
+TEST(TurboMath, atan)
 {
   for (float i = -200.0; i <= 200.0; i += 0.001)
   {
@@ -103,7 +103,7 @@ TEST(turbotrig_test, atan_test)
   }
 }
 
-TEST(turbotrig_test, sin_cos_test)
+TEST(TurboMath, sin_cos)
 {
   for (float i = -200.0; i <= 200.0; i += 0.001)
   {
@@ -113,7 +113,7 @@ TEST(turbotrig_test, sin_cos_test)
 }
 
 
-TEST(turbotrig_test, atan2_test)
+TEST(TurboMath, atan2)
 {
   for (float i = -100.0; i <= 100.0; i += 0.1)
   {
@@ -127,7 +127,7 @@ TEST(turbotrig_test, atan2_test)
   }
 }
 
-TEST(turbotrig_test, asin_test)
+TEST(TurboMath, asin)
 {
   for (float i = -1.0; i <= 1.0; i += 0.001)
   {
@@ -138,7 +138,7 @@ TEST(turbotrig_test, asin_test)
   }
 }
 
-TEST(turbotrig_test, fast_alt_test)
+TEST(TurboMath, fastAlt)
 {
 
   //out of bounds
@@ -157,7 +157,7 @@ TEST(turbotrig_test, fast_alt_test)
 }
 
 
-TEST(turbovec_test, vector_test)
+TEST(TurboMath, Vector)
 {
   for (int i = 0; i < 24; i++)
   {
@@ -209,7 +209,7 @@ TEST(turbovec_test, vector_test)
 }
 
 
-TEST(turbovec_test, quaternion_test)
+TEST(TurboMath, Quaternion)
 {
 
   for (int i = 0; i < 24; i++)
@@ -266,7 +266,7 @@ TEST(turbovec_test, quaternion_test)
   }
 }
 
-TEST(turbovec_test, quat_from_two_vectors_test)
+TEST(TurboMath, QuatFromTwoVectors)
 {
   // Test the "quat_from_two_vectors"
   turbomath::Vector vec1(1.0f, 0.0f, 0.0f);

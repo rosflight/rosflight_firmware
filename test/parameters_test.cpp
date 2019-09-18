@@ -8,7 +8,7 @@ using namespace rosflight_firmware;
 #define EXPECT_PARAM_EQ_INT(id, value) EXPECT_EQ(value, rf.params_.get_param_int(id))
 #define EXPECT_PARAM_EQ_FLOAT(id, value) EXPECT_EQ(value, rf.params_.get_param_float(id))
 
-TEST(parameters_test, default_parameters_test)
+TEST(Parameters, DefaultParameters)
 {
   testBoard board;
   Mavlink mavlink(board);

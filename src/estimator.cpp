@@ -167,6 +167,12 @@ void Estimator::run()
   float a_sqrd_norm = accel_LPF_.sqrd_norm();
 
   turbomath::Vector w_acc;
+  if (attitude_correction_next_run_)
+  {
+    attitude_correction_next_run_ = false;
+    w_acc += RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION)*(q_correction_ - state_.attitude);
+  }
+
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)
       && a_sqrd_norm < 1.1f*1.1f*9.80665f*9.80665f && a_sqrd_norm > 0.9f*0.9f*9.80665f*9.80665f)
   {
@@ -182,29 +188,16 @@ void Estimator::run()
     turbomath::Quaternion q_tilde = q_acc_inv * state_.attitude;
     // Correction Term of Eq. 47a and 47b Mahony Paper
     // w_acc = 2*s_tilde*v_tilde
-    w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
-    w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
-    w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
-
-    // integrate biases from accelerometer feedback
-    // (eq 47b Mahony Paper, using correction term w_acc found above
-    bias_.x -= ki*w_acc.x*dt;
-    bias_.y -= ki*w_acc.y*dt;
-    bias_.z = 0.0;  // Don't integrate z bias, because it's unobservable
-  }
-  else
-  {
-    w_acc.x = 0.0f;
-    w_acc.y = 0.0f;
-    w_acc.z = 0.0f;
+    w_acc.x += -2.0f*q_tilde.w*q_tilde.x;
+    w_acc.y += -2.0f*q_tilde.w*q_tilde.y;
+    w_acc.z += 0.0f; // Don't correct z, because it's unobservable from the accelerometer
   }
 
-  if (attitude_correction_next_run_)
-  {
-    attitude_correction_next_run_ = false;
-    w_acc += RF_.params_.get_param_float(PARAM_FILTER_KP_ATT_CORRECTION)*(q_correction_ - state_.attitude);
-  }
-
+  // integrate biases from accelerometer feedback
+  // (eq 47b Mahony Paper, using correction term w_acc found above
+  bias_.x -= ki*w_acc.x*dt;
+  bias_.y -= ki*w_acc.y*dt;
+  bias_.z -= ki*w_acc.z*dt;
 
   // Handle Gyro Measurements
   turbomath::Vector wbar;
