@@ -83,7 +83,7 @@ public:
   void run();
   void reset_state();
   void reset_adaptive_bias();
-  void set_attitude_correction(const turbomath::Quaternion &q);
+  void set_external_attitude_update(const turbomath::Quaternion &q);
 
 private:
   const turbomath::Vector g_ = {0.0f, 0.0f, -1.0f};
@@ -93,6 +93,7 @@ private:
 
   uint64_t last_time_;
   uint64_t last_acc_update_us_;
+  uint64_t last_extatt_update_us_;
 
   turbomath::Vector w1_;
   turbomath::Vector w2_;
@@ -104,10 +105,20 @@ private:
 
   turbomath::Vector w_acc_;
 
-  bool attitude_correction_next_run_;
-  turbomath::Quaternion q_correction_;
+  bool extatt_update_next_run_;
+  turbomath::Quaternion q_extatt_;
 
   void run_LPF();
+
+  bool can_use_accel() const;
+  bool can_use_extatt() const;
+  turbomath::Vector accel_correction() const;
+  turbomath::Vector extatt_correction() const;
+  turbomath::Vector smoothed_gyro_measurement();
+  void integrate_angular_rate(turbomath::Quaternion& quat,
+          const turbomath::Vector& omega, const float dt) const;
+  void quaternion_to_dcm(const turbomath::Quaternion& q, turbomath::Vector& X,
+              turbomath::Vector& Y, turbomath::Vector& Z) const;
 };
 
 } // namespace rosflight_firmware

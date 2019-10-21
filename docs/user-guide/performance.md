@@ -75,11 +75,11 @@ If you do decide to change these values, you should stick to the following rule 
 
 $$k_i \approx \tfrac{k_p}{10}.$$
 
-## External Attitude Corrections
+## External Attitude Measurements
 
-Because the onboard attitude estimator uses only inertial measurements, the estimates can deviate from truth. This is especially true during extended periods of accelerated flight, during which the gravity vector cannot be measured. External attitude corrections can be applied to the filter to help improve performance. These attitude corrections might come from a higher-level estimator running on the companion computer that fuses additional information from GPS or vision, or from a motion capture system.
+Because the onboard attitude estimator uses only inertial measurements, the estimates can deviate from truth. This is especially true during extended periods of accelerated flight, during which the gravity vector cannot be measured. Attitude measurements from an external source can be applied to the filter to help improve performance. These external attitude measurements might come from a higher-level estimator running on the companion computer that fuses additional information from GPS, vision, or a motion capture system.
 
-To send these corrections to the flight controller, publish a `geometry_msgs/Quaternion` message to the `/attitude_correction` topic to which `rosflight_io` subscribes. The degree to which this update will be trusted is tuned with the `FILTER_KP_COR` parameter.
+To send these updates to the flight controller, publish a `geometry_msgs/Quaternion` message to the `external_attitude` topic to which `rosflight_io` subscribes. The degree to which this update will be trusted is tuned with the `FILTER_KP_EXT` parameter.
 
 
 [^1]: Mahony, R., Hamel, T. and Pflimlin, J. (2008). Nonlinear Complementary Filters on the Special Orthogonal Group. IEEE Transactions on Automatic Control, 53(5), pp.1203-1218.

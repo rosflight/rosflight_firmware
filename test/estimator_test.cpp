@@ -7,7 +7,7 @@
 #include <cmath>
 #include <fstream>
 
-//#define DEBUG
+// #define DEBUG
 
 using namespace rosflight_firmware;
 using namespace Eigen;
@@ -161,7 +161,7 @@ public:
       q_ext.y = q_.y();
       q_ext.z = q_.z();
 
-      rf.estimator_.set_attitude_correction(q_ext);
+      rf.estimator_.set_external_attitude_update(q_ext);
     }
   }
 
@@ -297,7 +297,7 @@ TEST_F(EstimatorTest, MatrixExp)
   initFile("expInt.bin");
 #endif
   double error = run();
-  EXPECT_LE(error, 1e-3);
+  EXPECT_LE(error, 3e-3);
 
 #ifdef DEBUG
   std::cout << "error = " << error << std::endl;
@@ -317,7 +317,7 @@ TEST_F(EstimatorTest, MatrixExpQuadInt)
   initFile("expQuadInt.bin");
 #endif
   double error = run();
-  EXPECT_LE(error, 2e-4);
+  EXPECT_LE(error, 2e-3);
 
 #ifdef DEBUG
   std::cout << "error = " << error << std::endl;
@@ -475,8 +475,8 @@ TEST_F(EstimatorTest, StaticExtAtt)
   run();
 
   double error = computeError().norm();
-  EXPECT_LE(error, 1e-3);
-  EXPECT_LE(biasError(), 2e-3);
+  EXPECT_LE(error, 5e-3);
+  EXPECT_LE(biasError(), 2e-2);
 #ifdef DEBUG
   std::cout << "stateError = " << error << std::endl;
   std::cout << "biasError = " << biasError() << std::endl;
@@ -484,50 +484,50 @@ TEST_F(EstimatorTest, StaticExtAtt)
 }
 
 // This test is fixed by #357
-//TEST(DISABLED_EstimatorTest, MovingExtAtt)
-//{
-//  rf.params_.set_param_int(PARAM_FILTER_USE_ACC, false);
-//  rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
-//  rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
-//  rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
-//  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
-//  rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
-//  rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
+TEST_F(EstimatorTest, MovingExtAtt)
+{
+ rf.params_.set_param_int(PARAM_FILTER_USE_ACC, false);
+ rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
+ rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
+ rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
+ rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
+ rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
+ rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
 
-//  turbomath::Quaternion q_tweaked;
-//  q_tweaked.from_RPY(0.2, 0.1, 0.0);
-//  q_.w() = q_tweaked.w;
-//  q_.x() = q_tweaked.x;
-//  q_.y() = q_tweaked.y;
-//  q_.z() = q_tweaked.z;
+ turbomath::Quaternion q_tweaked;
+ q_tweaked.from_RPY(0.2, 0.1, 0.0);
+ q_.w() = q_tweaked.w;
+ q_.x() = q_tweaked.x;
+ q_.y() = q_tweaked.y;
+ q_.z() = q_tweaked.z;
 
-//  x_freq_ = 2.0;
-//  y_freq_ = 3.0;
-//  z_freq_ = 0.5;
-//  x_amp_ = 0.1;
-//  y_amp_ = 0.2;
-//  z_amp_ = -0.1;
+ x_freq_ = 2.0;
+ y_freq_ = 3.0;
+ z_freq_ = 0.5;
+ x_amp_ = 0.1;
+ y_amp_ = 0.2;
+ z_amp_ = -0.1;
 
 
-//  tmax_ = 150.0;
-//  x_gyro_bias_ = 0.01;
-//  y_gyro_bias_ = -0.03;
-//  z_gyro_bias_ = 0.01;
+ tmax_ = 150.0;
+ x_gyro_bias_ = 0.01;
+ y_gyro_bias_ = -0.03;
+ z_gyro_bias_ = 0.01;
 
-//  oversampling_factor_ = 1;
+ oversampling_factor_ = 1;
 
-//  ext_att_update_rate_ = 3;
+ ext_att_update_rate_ = 3;
 
-//#ifdef DEBUG
-//  initFile("movingExtAtt.bin");
-//#endif
-//  run();
+#ifdef DEBUG
+ initFile("movingExtAtt.bin");
+#endif
+ run();
 
-//  double error = computeError().norm();
-//  EXPECT_LE(error, 1e-3);
-//  EXPECT_LE(biasError(), 2e-3);
-//#ifdef DEBUG
-//  std::cout << "stateError = " << error << std::endl;
-//  std::cout << "biasError = " << biasError() << std::endl;
-//#endif
-//}
+ double error = computeError().norm();
+ EXPECT_LE(error, 4e-3);
+ EXPECT_LE(biasError(), 2e-2);
+#ifdef DEBUG
+ std::cout << "stateError = " << error << std::endl;
+ std::cout << "biasError = " << biasError() << std::endl;
+#endif
+}

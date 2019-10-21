@@ -543,20 +543,21 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t *const msg)
     listener_->offboard_control_callback(control);
 }
 
-void Mavlink::handle_msg_attitude_correction(const mavlink_message_t *const msg)
+void Mavlink::handle_msg_external_attitude(const mavlink_message_t *const msg)
 {
-  mavlink_attitude_correction_t q_msg;
-  mavlink_msg_attitude_correction_decode(msg, &q_msg);
+  mavlink_external_attitude_t q_msg;
+  mavlink_msg_external_attitude_decode(msg, &q_msg);
 
-  turbomath::Quaternion q_correction;
-  q_correction.w = q_msg.qw;
-  q_correction.x = q_msg.qx;
-  q_correction.y = q_msg.qy;
-  q_correction.z = q_msg.qz;
+  turbomath::Quaternion q_extatt;
+  q_extatt.w = q_msg.qw;
+  q_extatt.x = q_msg.qx;
+  q_extatt.y = q_msg.qy;
+  q_extatt.z = q_msg.qz;
 
   if (listener_ != nullptr)
-    listener_->attitude_correction_callback(q_correction);
+    listener_->external_attitude_callback(q_extatt);
 }
+
 void Mavlink::handle_msg_heartbeat(const mavlink_message_t *const msg)
 {
   //none of the information from the heartbeat is used
@@ -591,8 +592,8 @@ void Mavlink::handle_mavlink_message()
   case MAVLINK_MSG_ID_TIMESYNC:
     handle_msg_timesync(&in_buf_);
     break;
-  case MAVLINK_MSG_ID_ATTITUDE_CORRECTION:
-    handle_msg_attitude_correction(&in_buf_);
+  case MAVLINK_MSG_ID_EXTERNAL_ATTITUDE:
+    handle_msg_external_attitude(&in_buf_);
     break;
   case MAVLINK_MSG_ID_HEARTBEAT:
     handle_msg_heartbeat(&in_buf_);

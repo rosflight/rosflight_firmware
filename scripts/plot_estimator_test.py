@@ -46,6 +46,6 @@ if __name__ == '__main__':
 	plotResults("estState.bin")
 	plotResults("estBias.bin")
 	plotResults("estStateExtAtt.bin")
-	# plotResults("movingExtAtt.bin")
+	plotResults("movingExtAtt.bin")
 
 	plt.show()
