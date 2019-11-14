@@ -37,14 +37,3 @@ before_script:
 
 script:
   - ./scripts/run_tests.sh
-
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  local_dir: site
-  repo: rosflight/rosflight.github.io
-  target_branch: master
-  fqdn: docs.rosflight.org
-  on:
-    branch: master
