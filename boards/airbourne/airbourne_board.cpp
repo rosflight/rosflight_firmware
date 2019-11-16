@@ -145,6 +145,10 @@ void AirbourneBoard::sensors_init()
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
   // gnss_.init(&uart1_);
+  battery_adc_.init(&adc_config[0]);
+  voltage_pin_.init(&battery_adc_, VOLTAGE_GPIO, VOLTAGE_PIN, VOLTAGE_ADC_CHANNEL);
+  current_pin_.init(&battery_adc_, CURRENT_GPIO, CURRENT_PIN, CURRENT_ADC_CHANNEL);
+  battery_monitor_.init(&voltage_pin_, 0 , &current_pin_, 0);
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
@@ -329,6 +333,36 @@ GNSSRaw AirbourneBoard::gnss_raw_read()
   // raw.p_dop = pvt.pDOP;
   // raw.rosflight_timestamp = gnss_.get_last_pvt_timestamp();
   return raw;
+}
+
+bool AirbourneBoard::battery_voltage_present()
+{
+  return this->battery_monitor_.has_voltage_sense();
+}
+
+float AirbourneBoard::battery_voltage_read()
+{
+  return static_cast<float>(this->battery_monitor_.read_voltage());
+}
+
+void AirbourneBoard::battery_voltage_set_multiplier(double multiplier)
+{
+  this->battery_monitor_.set_voltage_multiplier(multiplier);
+}
+
+bool AirbourneBoard::battery_current_present()
+{
+  return this->battery_monitor_.has_current_sense();
+}
+
+float AirbourneBoard::battery_current_read()
+{
+  return static_cast<float>(this->battery_monitor_.read_current());
+}
+
+void AirbourneBoard::battery_current_set_multiplier(double multiplier)
+{
+  this->battery_monitor_.set_current_multiplier(multiplier);
 }
 
 // PWM
