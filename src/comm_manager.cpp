@@ -539,6 +539,11 @@ void CommManager::send_mag(void)
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
+void CommManager::send_battery_status(void)
+{
+    comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
+        RF_.sensors_.data().battery_current);
+}
 
 void CommManager::send_error_data(void)
 {

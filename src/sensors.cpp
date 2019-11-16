@@ -209,6 +209,18 @@ void Sensors::update_other_sensors()
       data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
     }
     break;
+  case BATTERY_MONITOR:
+    if (rf_.board_.battery_voltage_present())
+    {
+      data_.battery_monitor_present = true;
+      data_.battery_voltage = rf_.board_.battery_voltage_read();
+    }
+    if(rf_.board_.battery_current_present())
+    {
+      data_.battery_monitor_present = true;
+      data_.battery_current = rf_.board_.battery_current_read();
+    }
+    break;
   default:
     break;
   }

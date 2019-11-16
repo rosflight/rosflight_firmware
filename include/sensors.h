@@ -162,6 +162,10 @@ public:
     bool mag_present = false;
     bool sonar_present = false;
     bool diff_pressure_present = false;
+
+    bool battery_monitor_present = false;
+    float battery_voltage = 0;
+    float battery_current = 0;
   };
 
   Sensors(ROSflight &rosflight);
@@ -223,6 +227,7 @@ private:
     DIFF_PRESSURE,
     SONAR,
     MAGNETOMETER,
+    BATTERY_MONITOR,
     NUM_LOW_PRIORITY_SENSORS
   };
 
