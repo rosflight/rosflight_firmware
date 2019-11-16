@@ -357,6 +357,12 @@ void Mavlink::send_error_data(uint8_t system_id, const BackupData &error_data)
                                         error_data.reset_count, rearm);
   send_message(msg);
 }
+void Mavlink::send_battery_status(uint8_t system_id, float voltage, float current)
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_battery_status_pack(system_id, compid_, &msg, voltage, current);
+  send_message(msg);
+}
 
 void Mavlink::send_message(const mavlink_message_t &msg)
 {

@@ -98,6 +98,7 @@ public:
   void send_gnss(uint8_t system_id, const GNSSData& data) override;
   void send_gnss_raw(uint8_t system_id, const GNSSRaw& data) override;
   void send_error_data(uint8_t system_id, const BackupData& error_data) override;
+  void send_battery_status(uint8_t system_id, float voltage, float current) override;
 
   inline void set_listener(ListenerInterface * listener) override { listener_ = listener; }
 
