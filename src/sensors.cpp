@@ -35,6 +35,7 @@
 #include <math.h>
 
 #include "sensors.h"
+#include "param.h"
 #include "rosflight.h"
 
 #include <turbomath/turbomath.h>
@@ -105,6 +106,10 @@ void Sensors::param_change_callback(uint16_t param_id)
   case PARAM_FC_PITCH:
   case PARAM_FC_YAW:
     init_imu();
+    break;
+  case PARAM_BATTERY_VOLTAGE_MULTIPLIER:
+  case PARAM_BATTERY_CURRENT_MULTIPLIER:
+    this->update_battery_monitor_multipliers();
     break;
   default:
     // do nothing
@@ -652,6 +657,14 @@ bool Sensors::OutlierFilter::update(float new_val, float *val)
     window_size_++;
     return false;
   }
+}
+
+void Sensors::update_battery_monitor_multipliers()
+{
+  float voltage_multiplier = this->rf_.params_.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
+  float current_multiplier = this->rf_.params_.get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
+  this->rf_.board_.battery_voltage_set_multiplier(voltage_multiplier);
+  this->rf_.board_.battery_current_set_multiplier(current_multiplier);
 }
 
 } // namespace rosflight_firmware

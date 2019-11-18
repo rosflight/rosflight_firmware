@@ -134,6 +134,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_STREAM_SONAR_RATE, "STRM_SONAR", 40); // Rate of sonar stream (Hz) | 0 | 40
   init_param_int(PARAM_STREAM_GNSS_RATE, "STRM_GNSS", 1000); // Maximum rate of GNSS stream (Hz) | 0 | 10
   init_param_int(PARAM_STREAM_GNSS_RAW_RATE, "STRM_GNSS_RAW", 10); //Rate of GNSS raw stream (Hz) | 0 | 10
+  init_param_int(PARAM_STREAM_BATTERY_STATUS_RATE, "STRM_BATTERY", 10); //Rate of GNSS raw stream (Hz) | 0 | 10
 
   init_param_int(PARAM_STREAM_OUTPUT_RAW_RATE, "STRM_SERVO", 50); // Rate of raw output stream | 0 |  490
   init_param_int(PARAM_STREAM_RC_RAW_RATE, "STRM_RC", 50); // Rate of raw RC input stream | 0 | 50
@@ -274,6 +275,12 @@ void Params::set_defaults(void)
   /*** ARMING SETUP ***/
   /********************/
   init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
+
+  /*****************************/
+  /*** BATTERY MONITOR SETUP ***/
+  /*****************************/
+  init_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER, "BATT_VOLT_MULT", 0.0f);
+  init_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER, "BATT_CURR_MULT", 0.0f);
 
   /************************/
   /*** OFFBOARD CONTROL ***/

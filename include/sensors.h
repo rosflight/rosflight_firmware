@@ -295,6 +295,9 @@ private:
   OutlierFilter diff_outlier_filt_;
   OutlierFilter sonar_outlier_filt_;
 
+  // Battery Monitor
+  void update_battery_monitor_multipliers();
+
 };
 
 } // namespace rosflight_firmware
