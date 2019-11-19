@@ -118,6 +118,7 @@ This is a list of all ROSflight parameters, including their types, default value
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
 | STRM_GNSS | Maximum rate of GNSS data streaming. Higher values allow for lower latency| int | 1000 | 0 | 1000 |
 | STRM_GNSS_RAW | Maximum rate of raw GNSS data streaming | int | 0 | 0 | 10 |
+| STRM_BATTERY | Rate of battery status stream | int | 0 | 0 | 50
 | PARAM_MAX_CMD | saturation point for PID controller output | float |  1.0 | 0 | 1.0 |
 | PID_ROLL_RATE_P | Roll Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_I | Roll Rate Integral Gain | float |  0.000f | 0.0 | 1000.0 |
@@ -179,6 +180,8 @@ This is a list of all ROSflight parameters, including their types, default value
 | GROUND_LEVEL | Altitude of ground level (m) | float |  1387.0f | -1000 | 10000 |
 | DIFF_PRESS_BIAS | Differential Pressure Bias (Pa) | float |  0.0f | -10 | 10 |
 | RC_TYPE | Type of RC input 0 - PPM, 1 - SBUS | int |  0 | 0 | 1 |
+| BATT_VOLT_MULT | Battery monitor voltage multiplier | float | 0 | 0 | inf |
+| BATT_CURR_MULT | Battery monitor current multiplier | float | 0 | 0 | inf |
 | RC_X_CHN | RC input channel mapped to x-axis commands [0 - indexed] | int |  0 | 0 | 3 |
 | RC_Y_CHN | RC input channel mapped to y-axis commands [0 - indexed] | int |  1 | 0 | 3 |
 | RC_Z_CHN | RC input channel mapped to z-axis commands [0 - indexed] | int |  3 | 0 | 3 |
