@@ -79,6 +79,8 @@ void Sensors::init()
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
   int_start_us_ = rf_.board_.clock_micros();
+
+  this->update_battery_monitor_multipliers();
 }
 
 void Sensors::init_imu()
