@@ -307,6 +307,31 @@ uint16_t num_sensor_errors()
   return i2cGetErrorCounter();
 }
 
+bool BreezyBoard::battery_voltage_present()
+{
+  return false;
+}
+float BreezyBoard::battery_voltage_read()
+{
+  return 0;
+}
+void BreezyBoard::battery_voltage_set_multiplier(double multiplier)
+{
+  (void)multiplier;
+}
+
+bool BreezyBoard::battery_current_present()
+{
+  return false;
+}
+float BreezyBoard::battery_current_read()
+{
+  return 0;
+}
+void BreezyBoard::battery_current_set_multiplier(double multiplier)
+{
+  (void)multiplier;
+}
 // PWM
 
 void BreezyBoard::rc_init(rc_type_t rc_type)
