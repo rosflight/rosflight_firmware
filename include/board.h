@@ -38,6 +38,7 @@
 
 #include "sensors.h"
 #include "state_manager.h"
+#include "configuration_enum.h"
 
 namespace rosflight_firmware
 {
@@ -88,11 +89,15 @@ public:
   virtual void clock_delay(uint32_t milliseconds) = 0;
 
 // serial
-  virtual void serial_init(uint32_t baud_rate, uint32_t dev) = 0;
+  virtual void serial_init(uint32_t baud_rate, hardware_config_t configuration) = 0;
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
   virtual void serial_flush() = 0;
+
+// hardware config
+  //virtual void enable_resource(resource_t resource);
+  virtual void enable_device(device_t device, hardware_config_t configuration);
 
 // sensors
   virtual void sensors_init() = 0;
