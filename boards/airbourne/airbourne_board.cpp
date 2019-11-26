@@ -45,15 +45,13 @@ void AirbourneBoard::init_board()
   led1_.init(LED1_GPIO, LED1_PIN);
 
   int_i2c_.init(&i2c_config[BARO_I2C]);
-  ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+  //ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
-  uart1_.init(&uart_config[UART1], 115200, UART::MODE_8N1);
-  uart3_.init(&uart_config[UART3], 115200, UART::MODE_8N1);
+  //uart1_.init(&uart_config[UART1], 115200, UART::MODE_8N1);
+  //uart3_.init(&uart_config[UART3], 115200, UART::MODE_8N1);
 
   backup_sram_init();
-
-  current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)
@@ -79,19 +77,27 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 }
 
 // serial
-void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
+void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration)
 {
-  vcp_.init();
-  switch (dev)
+  switch(configuration)
   {
-  case SERIAL_DEVICE_UART3:
-    uart3_.init(&uart_config[UART3], baud_rate);
-    current_serial_ = &uart3_;
-    secondary_serial_device_ = SERIAL_DEVICE_UART3;
-    break;
   default:
+  case 1: // VCP
     current_serial_ = &vcp_;
-    secondary_serial_device_ = SERIAL_DEVICE_VCP;
+    vcp_.init();
+    break;
+  case 2: // UART 1
+    current_serial_ = &uart1_;
+    uart1_.init(&uart_config[UART1], baud_rate);
+    break;
+  case 3: // UART 2
+    current_serial_ = &uart2_;
+    uart2_.init(&uart_config[UART2], baud_rate);
+    break;
+  case 4: // UART 3
+    current_serial_ = &uart3_;
+    uart3_.init(&uart_config[UART3], baud_rate);
+    break;
   }
 }
 
@@ -133,7 +139,37 @@ void AirbourneBoard::serial_flush()
   current_serial_->flush();
 }
 
-
+// Resources
+bool AirbourneBoard::enable_device(device_t device, hardware_config_t configuration)
+{
+  switch(device)
+  {
+  case serial:
+    return true; // This is handled by serial_init
+  case rc:
+    switch(configuration)
+    {
+    case 1:
+      rc_init(RC_TYPE_PPM);
+      break;
+    case 2:
+      rc_init(RC_TYPE_SBUS);
+      break;
+    }
+    return true;
+  case airspeed:
+    break;
+  case gnss:
+    break;
+  case sonar:
+    break;
+  case battery_monitor:
+    break;
+  default:
+    return false;
+  }
+  return false;
+}
 // sensors
 void AirbourneBoard::sensors_init()
 {
