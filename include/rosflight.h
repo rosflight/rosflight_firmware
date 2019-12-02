@@ -47,7 +47,7 @@
 #include "mixer.h"
 #include "state_manager.h"
 #include "command_manager.h"
-#include "device_manager.h"
+#include "config_manager.h"
 
 namespace rosflight_firmware
 {
@@ -70,7 +70,7 @@ public:
   RC rc_;
   Sensors sensors_;
   StateManager state_manager_;
-  DeviceManager device_manager_;
+  ConfigManager device_manager_;
 
   uint32_t loop_time_us;
 
