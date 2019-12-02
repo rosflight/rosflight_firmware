@@ -11,6 +11,21 @@ class ConfigManager
 public:
   ConfigManager(ROSflight &rf);
   bool init();
+  enum: uint8_t
+  {
+    CONFIG_SERIAL,
+    CONFIG_RC,
+    CONFIG_AIRSPEED,
+    CONFIG_GNSS,
+    CONFIG_SONAR,
+    CONFIG_BATTERY_MONITOR,
+    CONFIG_COUNT
+  };
+  typedef struct
+  {
+    uint8_t config[CONFIG_COUNT];
+  } config_t;
+
 private:
   ROSflight *rf_;
 
