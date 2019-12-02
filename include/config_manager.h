@@ -6,10 +6,10 @@
 
 namespace rosflight_firmware
 {
-class DeviceManager
+class ConfigManager
 {
 public:
-  DeviceManager(ROSflight &rf);
+  ConfigManager(ROSflight &rf);
   bool init();
 private:
   ROSflight *rf_;
