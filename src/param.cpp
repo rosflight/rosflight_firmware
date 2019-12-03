@@ -57,8 +57,9 @@
 namespace rosflight_firmware
 {
 
-Params::Params(ROSflight& _rf) :
+Params::Params(ROSflight& _rf, params_t &param_struct) :
   RF_(_rf),
+  params(param_struct),
   listeners_(nullptr),
   num_listeners_(0)
 {
@@ -102,12 +103,11 @@ uint8_t Params::compute_checksum(void)
 // function definitions
 void Params::init()
 {
-  RF_.board_.memory_init();
   if (!read())
   {
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Unable to load parameters; using default values");
     set_defaults();
-    write();
+    RF_.memory_manager_.write_memory();
   }
 }
 
@@ -298,9 +298,8 @@ void Params::set_listeners(ParamListenerInterface * const listeners[], size_t nu
 
 bool Params::read(void)
 {
-  if (!RF_.board_.memory_read(&params, sizeof(params_t)))
+  if (!RF_.memory_manager_.is_ready())
     return false;
-
   if (params.version != GIT_VERSION_HASH)
     return false;
 
@@ -313,17 +312,13 @@ bool Params::read(void)
   return true;
 }
 
-bool Params::write(void)
+void Params::prepare_write(void)
 {
   params.version = GIT_VERSION_HASH;
   params.size = sizeof(params_t);
   params.magic_be = 0xBE;
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
-
-  if (!RF_.board_.memory_write(&params, sizeof(params_t)))
-    return false;
-  return true;
 }
 
 void Params::change_callback(uint16_t id)

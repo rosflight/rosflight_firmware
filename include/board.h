@@ -70,8 +70,7 @@ public:
   virtual void serial_flush() = 0;
 
 // hardware config
-  //virtual void enable_resource(resource_t resource);
-  virtual void enable_device(device_t device, hardware_config_t configuration);
+  virtual bool enable_device(device_t device, hardware_config_t configuration)=0;
 
 // sensors
   virtual void sensors_init() = 0;

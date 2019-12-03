@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-enum device_t
+enum device_t: uint8_t
 {
   serial,
   rc,
