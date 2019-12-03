@@ -48,6 +48,7 @@
 #include "state_manager.h"
 #include "command_manager.h"
 #include "config_manager.h"
+#include "memory_manager.h"
 
 namespace rosflight_firmware
 {
@@ -59,6 +60,7 @@ public:
   ROSflight(Board& board, CommLinkInterface& comm_link);
 
   Board &board_;
+  MemoryManager memory_manager_;
   CommManager comm_manager_;
 
   Params params_;
@@ -70,7 +72,7 @@ public:
   RC rc_;
   Sensors sensors_;
   StateManager state_manager_;
-  ConfigManager device_manager_;
+  ConfigManager config_manager_;
 
   uint32_t loop_time_us;
 

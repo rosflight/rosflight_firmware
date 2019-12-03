@@ -37,8 +37,9 @@ namespace rosflight_firmware
 
 ROSflight::ROSflight(Board& board, CommLinkInterface& comm_link) :
   board_(board),
+  memory_manager_(*this),
   comm_manager_(*this, comm_link),
-  params_(*this),
+  params_(*this, memory_manager_.get_params()),
   command_manager_(*this),
   controller_(*this),
   estimator_(*this),
@@ -46,7 +47,7 @@ ROSflight::ROSflight(Board& board, CommLinkInterface& comm_link) :
   rc_(*this),
   sensors_(*this),
   state_manager_(*this),
-  device_manager_(*this)
+  config_manager_(*this, memory_manager_.get_config())
 {
   comm_link.set_listener(&comm_manager_);
   params_.set_listeners(param_listeners_, num_param_listeners_);
@@ -59,10 +60,11 @@ void ROSflight::init()
   state_manager_.init();
 
   // Read EEPROM to get initial params
+  memory_manager_.read_memory();
   params_.init();
 
   //Initialize devices
-  device_manager_.init();
+  config_manager_.init();
 
   // Initialize Mixer
   mixer_.init();

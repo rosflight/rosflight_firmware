@@ -261,7 +261,7 @@ void CommManager::command_callback(CommLinkInterface::Command command)
       result = RF_.params_.read();
       break;
     case CommLinkInterface::Command::COMMAND_WRITE_PARAMS:
-      result = RF_.params_.write();
+      result = RF_.memory_manager_.write_memory();
       break;
     case CommLinkInterface::Command::COMMAND_SET_PARAM_DEFAULTS:
       RF_.params_.set_defaults();

@@ -1,33 +1,32 @@
-#ifndef HARDWARE_CONFIG_H
+﻿#ifndef HARDWARE_CONFIG_H
 #define HARDWARE_CONFIG_H
 
-#include "rosflight.h"
 #include "configuration_enum.h"
 
 namespace rosflight_firmware
 {
+class ROSflight;
 class ConfigManager
 {
 public:
-  ConfigManager(ROSflight &rf);
-  bool init();
-  enum: uint8_t
+  typedef struct __attribute__ ((packed))
   {
-    CONFIG_SERIAL,
-    CONFIG_RC,
-    CONFIG_AIRSPEED,
-    CONFIG_GNSS,
-    CONFIG_SONAR,
-    CONFIG_BATTERY_MONITOR,
-    CONFIG_COUNT
-  };
-  typedef struct
-  {
-    uint8_t config[CONFIG_COUNT];
+    uint32_t checksum;
+    hardware_config_t config[device_t::device_count];
   } config_t;
 
+  ConfigManager(ROSflight &RF, config_t &config);
+  bool init();
+  void set_configuration(device_t device, uint8_t config);
+  uint8_t get_configuration(device_t device);
+  void prepare_write();
+
 private:
-  ROSflight *rf_;
+  ROSflight &RF_;
+  config_t &config_;
+  bool read();
+  void fill_defaults();
+  uint32_t generate_checksum();
 
 };
 }

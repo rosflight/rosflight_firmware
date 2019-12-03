@@ -232,8 +232,6 @@ class Params
 
 public:
   static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
-
-private:
   union param_value_t
   {
     float fvalue;
@@ -254,8 +252,9 @@ private:
     uint8_t chk;                            // XOR checksum
   } params_t;
 
-  params_t params;
+private:
   ROSflight &RF_;
+  params_t &params;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -266,7 +265,7 @@ private:
 
 
 public:
-  Params(ROSflight &_rf);
+  Params(ROSflight &_rf, params_t &param_struct);
 
   // function declarations
 
@@ -294,10 +293,9 @@ public:
   bool read(void);
 
   /**
-   * @brief Write current parameter values to non-volatile memory
-   * @return True if successful, false otherwise
+   * @brief Prepare the parameter struct to be written to non-volatile memory
    */
-  bool write(void);
+  void prepare_write(void);
 
   /**
    * @brief Callback for executing actions that need to be taken when a parameter value changes

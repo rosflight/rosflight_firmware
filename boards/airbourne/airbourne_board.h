@@ -138,14 +138,14 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate, hardware_config_t config) override;
+  void serial_init(uint32_t baud_rate, hardware_config_t configuration) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
 
   // resource management
-  void enable_device(device_t device, hardware_config_t configuration) override;
+  bool enable_device(device_t device, hardware_config_t configuration) override;
 
   // sensors
   void sensors_init() override;
@@ -212,7 +212,7 @@ public:
 
   //Backup Data
   bool has_backup_data() override;
-  rosflight_firmware::BackupData get_backup_data() override;
+  BackupData get_backup_data() override;
 };
 
 } // namespace rosflight_firmware
