@@ -56,7 +56,7 @@ uint32_t ConfigManager::generate_checksum()
     check_a += config_data[index];
     check_b += check_a;
   }
-  return check_a & (check_b<<8);
+  return check_a & (check_b<<8) & (~check_a<<16) & (~check_b<<24);
 }
 
 }

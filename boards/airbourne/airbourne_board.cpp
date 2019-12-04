@@ -82,19 +82,19 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configura
   switch(configuration)
   {
   default:
-  case 1: // VCP
+  case 0: // VCP
     current_serial_ = &vcp_;
     vcp_.init();
     break;
-  case 2: // UART 1
+  case 1: // UART 1
     current_serial_ = &uart1_;
     uart1_.init(&uart_config[UART1], baud_rate);
     break;
-  case 3: // UART 2
+  case 2: // UART 2
     current_serial_ = &uart2_;
     uart2_.init(&uart_config[UART2], baud_rate);
     break;
-  case 4: // UART 3
+  case 3: // UART 3
     current_serial_ = &uart3_;
     uart3_.init(&uart_config[UART3], baud_rate);
     break;
@@ -108,23 +108,6 @@ void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 
 uint16_t AirbourneBoard::serial_bytes_available()
 {
-  if (vcp_.connected() || secondary_serial_device_ == SERIAL_DEVICE_VCP)
-  {
-    current_serial_ = &vcp_;
-  }
-  else
-  {
-    switch (secondary_serial_device_)
-    {
-    case SERIAL_DEVICE_UART3:
-      current_serial_ = &uart3_;
-      break;
-    default:
-      // no secondary serial device
-      break;
-    }
-  }
-
   return current_serial_->rx_bytes_waiting();
 }
 
@@ -145,20 +128,31 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   switch(device)
   {
   case serial:
-    return true; // This is handled by serial_init
+    serial_init(921600, configuration); // TODO configurable baud rate
+    return true; // TODO serial_init success check
+    break;
   case rc:
     switch(configuration)
     {
-    case 1:
+    case 0:
       rc_init(RC_TYPE_PPM);
       break;
-    case 2:
+    case 1:
       rc_init(RC_TYPE_SBUS);
       break;
+    default:
+      return false;
     }
     return true;
   case airspeed:
+    if(configuration==1)
+    {
+      ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+      //TODO check if I2C is initialized and only initialize if it is not
+      airspeed_.init(&ext_i2c_);
+    }
     break;
+  //TODO other config options
   case gnss:
     break;
   case sonar:
@@ -178,11 +172,8 @@ void AirbourneBoard::sensors_init()
 
   baro_.init(&int_i2c_);
   mag_.init(&int_i2c_);
-  sonar_.init(&ext_i2c_);
-  airspeed_.init(&ext_i2c_);
-  // gnss_.init(&uart1_);
-  battery_adc_.init(battery_monitor_config.adc);
-  battery_monitor_.init(battery_monitor_config, &battery_adc_, 0,0);
+
+  // Most sensors are set up through the configuration manager
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
