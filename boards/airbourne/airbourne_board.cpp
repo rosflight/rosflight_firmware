@@ -146,9 +146,7 @@ void AirbourneBoard::sensors_init()
   airspeed_.init(&ext_i2c_);
   // gnss_.init(&uart1_);
   battery_adc_.init(&adc_config[0]);
-  voltage_pin_.init(&battery_adc_, VOLTAGE_GPIO, VOLTAGE_PIN, VOLTAGE_ADC_CHANNEL);
-  current_pin_.init(&battery_adc_, CURRENT_GPIO, CURRENT_PIN, CURRENT_ADC_CHANNEL);
-  battery_monitor_.init(&voltage_pin_, 0 , &current_pin_, 0);
+  battery_monitor_.init(battery_monitor_config, &battery_adc_, 0,0);
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()

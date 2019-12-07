@@ -92,8 +92,6 @@ private:
   LED led1_;
   M25P16 flash_;
   AnalogDigitalConverter battery_adc_;
-  AnalogPin voltage_pin_;
-  AnalogPin current_pin_;
   BatteryMonitor battery_monitor_;
   // UBLOX gnss_;
 
