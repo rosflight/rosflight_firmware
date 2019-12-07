@@ -124,6 +124,8 @@ public:
       virtual void aux_command_callback(const AuxCommand &command) = 0;
       virtual void external_attitude_callback(const turbomath::Quaternion &q) = 0;
       virtual void heartbeat_callback() = 0;
+      virtual void config_set_callback(uint8_t device, uint8_t configuration) = 0;
+      virtual void config_request_callback(uint8_t device) = 0;
     };
 
     virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
@@ -159,6 +161,7 @@ public:
                                         const char *const name,
                                         float value,
                                         uint16_t param_count) = 0;
+    virtual void send_config_value(uint8_t system_id, uint8_t device, uint8_t config) = 0;
     virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) = 0;
     virtual void send_sonar(uint8_t system_id, /* TODO enum type*/ uint8_t type, float range, float max_range, float min_range) = 0;
     virtual void send_status(uint8_t system_id,

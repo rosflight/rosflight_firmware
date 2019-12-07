@@ -407,6 +407,26 @@ void CommManager::heartbeat_callback(void)
   this->send_heartbeat();
 }
 
+void CommManager::config_set_callback(uint8_t device, uint8_t configuration)
+{
+  //TODO consider checking a system ID to see if the message is intended for this device
+  if(device < device_count)
+    RF_.config_manager_.set_configuration(static_cast<device_t>(device), configuration);
+}
+
+void CommManager::config_request_callback(uint8_t device)
+{
+  //TODO consider checking a system ID to see if the message is intended for this device
+  if(device < device_count)
+    send_config_value(static_cast<device_t>(device));
+}
+
+void CommManager::send_config_value(device_t device)
+{
+  uint8_t config = RF_.config_manager_.get_configuration(device);
+  comm_link_.send_config_value(sysid_, device, config);
+}
+
 // function definitions
 void CommManager::receive(void)
 {

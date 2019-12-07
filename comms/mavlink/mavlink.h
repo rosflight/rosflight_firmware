@@ -84,6 +84,7 @@ public:
                               const char *const name,
                               float value,
                               uint16_t param_count) override;
+  void send_config_value(uint8_t system_id, uint8_t device, uint8_t config) override;
   void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) override;
   void send_sonar(uint8_t system_id, /* TODO enum type*/uint8_t type, float range, float max_range, float min_range) override;
   void send_status(uint8_t system_id,
@@ -116,6 +117,8 @@ private:
   void handle_msg_rosflight_aux_cmd(const mavlink_message_t *const msg);
   void handle_msg_timesync(const mavlink_message_t *const msg);
   void handle_msg_heartbeat(const mavlink_message_t * const msg);
+  void handle_msg_config(const mavlink_message_t *const msg);
+  void handle_msg_config_request(const mavlink_message_t *const msg);
   void handle_mavlink_message();
 
   Board& board_;

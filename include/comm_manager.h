@@ -142,6 +142,8 @@ private:
   void aux_command_callback(const CommLinkInterface::AuxCommand &command) override;
   void external_attitude_callback(const turbomath::Quaternion &q) override;
   void heartbeat_callback() override;
+  void config_set_callback(uint8_t device, uint8_t configuration) override;
+  void config_request_callback(uint8_t device) override;
 
   void send_heartbeat(void);
   void send_status(void);
@@ -194,6 +196,7 @@ public:
   void receive(void);
   void stream();
   void send_param_value(uint16_t param_id);
+  void send_config_value(device_t device);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
   void log(CommLinkInterface::LogSeverity severity, const char *fmt, ...);

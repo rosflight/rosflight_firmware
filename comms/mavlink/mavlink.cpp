@@ -288,6 +288,13 @@ void Mavlink::send_param_value_float(uint8_t system_id,
   send_message(msg);
 }
 
+void Mavlink::send_config_value(uint8_t system_id, uint8_t device, uint8_t config)
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_config_pack(system_id, 0, &msg, device, config);
+  send_message(msg);
+}
+
 void Mavlink::send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8])
 {
   mavlink_message_t msg;
@@ -575,6 +582,25 @@ void Mavlink::handle_msg_heartbeat(const mavlink_message_t *const msg)
     listener_->heartbeat_callback();
 }
 
+void Mavlink::handle_msg_config(const mavlink_message_t *const msg)
+{
+  mavlink_rosflight_config_t config_msg;
+  mavlink_msg_rosflight_config_decode(msg, &config_msg);
+  uint8_t device = config_msg.device;
+  uint8_t config = config_msg.config;
+  if(listener_ != nullptr)
+    listener_->config_set_callback(device, config);
+}
+
+void Mavlink::handle_msg_config_request(const mavlink_message_t *const msg)
+{
+  mavlink_rosflight_config_request_t request_msg;
+  mavlink_msg_rosflight_config_request_decode(msg, &request_msg);
+  uint8_t device = request_msg.device;
+  if(listener_ != nullptr)
+    listener_->config_request_callback(device);
+}
+
 void Mavlink::handle_mavlink_message()
 {
   switch (in_buf_.msgid)
@@ -605,6 +631,12 @@ void Mavlink::handle_mavlink_message()
     break;
   case MAVLINK_MSG_ID_HEARTBEAT:
     handle_msg_heartbeat(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_ROSFLIGHT_CONFIG:
+    handle_msg_config(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_ROSFLIGHT_CONFIG_REQUEST:
+    handle_msg_config_request(&in_buf_);
     break;
   default:
     break;
