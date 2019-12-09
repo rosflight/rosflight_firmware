@@ -12,11 +12,17 @@ bool ConfigManager::init()
 {
   if(!read())
     fill_defaults();
+  return true;
+}
+
+bool ConfigManager::configure_devices()
+{
   bool success = true;
   for(uint8_t device{0}; device < device_t::device_count; device++)
     success = success &&RF_.board_.enable_device(static_cast<device_t>(device), config_.config[device]);
   return success;
 }
+
 void ConfigManager::set_configuration(device_t device, uint8_t config)
 {
   config_.config[device] = config;

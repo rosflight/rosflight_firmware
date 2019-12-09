@@ -145,7 +145,7 @@ public:
   void serial_flush() override;
 
   // resource management
-  bool enable_device(device_t device, hardware_config_t configuration) override;
+  bool enable_device(device_t device, hardware_config_t configuration, const Params *params) override;
 
   // sensors
   void sensors_init() override;

@@ -39,6 +39,7 @@
 #include "sensors.h"
 #include "state_manager.h"
 #include "configuration_enum.h"
+#include "param.h"
 
 namespace rosflight_firmware
 {
@@ -96,7 +97,7 @@ public:
   virtual void serial_flush() = 0;
 
 // hardware config
-  virtual bool enable_device(device_t device, hardware_config_t configuration)=0;
+  virtual bool enable_device(device_t device, hardware_config_t configuration, const Params *params)=0;
 
 // sensors
   virtual void sensors_init() = 0;
