@@ -17,6 +17,7 @@ public:
 
   ConfigManager(ROSflight &RF, config_t &config);
   bool init();
+  bool configure_devices();
   void set_configuration(device_t device, uint8_t config);
   uint8_t get_configuration(device_t device);
   void prepare_write();

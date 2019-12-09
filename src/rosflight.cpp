@@ -62,9 +62,10 @@ void ROSflight::init()
   // Read EEPROM to get initial params
   memory_manager_.read_memory();
   params_.init();
+  config_manager_.init();
 
   //Initialize devices
-  config_manager_.init();
+  config_manager_.configure_devices();
 
   // Initialize Mixer
   mixer_.init();
