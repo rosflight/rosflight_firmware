@@ -123,15 +123,17 @@ void AirbourneBoard::serial_flush()
 }
 
 // Resources
-bool AirbourneBoard::enable_device(device_t device, hardware_config_t configuration, const Params *params)
+bool AirbourneBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
 {
   switch(device)
   {
   case serial:
-    uint32_t baud_rate = params->get_param_int(PARAM_BAUD_RATE);
+  {
+    uint32_t baud_rate = params.get_param_int(PARAM_BAUD_RATE);
     serial_init(baud_rate, configuration);
     return true; // TODO serial_init success check
     break;
+  }
   case rc:
     switch(configuration)
     {
@@ -165,9 +167,10 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   case battery_monitor:
     if(configuration == 1)
     {
-      float voltage_multiplier = params->get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
-      float current_multiplier = params->get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
-      battery_adc_.init(&adc_config[]);
+      float voltage_multiplier = params.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
+      float current_multiplier = params.get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
+      battery_adc_.init(battery_monitor_config.adc);
+      battery_monitor_.init(battery_monitor_config, &battery_adc_, voltage_multiplier, current_multiplier);
     }
     break;
   default:
