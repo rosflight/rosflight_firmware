@@ -97,7 +97,7 @@ public:
   virtual void serial_flush() = 0;
 
 // hardware config
-  virtual bool enable_device(device_t device, hardware_config_t configuration, const Params *params)=0;
+  virtual bool enable_device(device_t device, hardware_config_t configuration, const Params &params)=0;
 
 // sensors
   virtual void sensors_init() = 0;
