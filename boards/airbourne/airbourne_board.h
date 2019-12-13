@@ -60,6 +60,7 @@
 #include "analog_digital_converter.h"
 #include "analog_pin.h"
 #include "battery_monitor.h"
+#include "airbourne_board_config_manager.h"
 // #include "ublox.h"
 
 #include "board.h"
@@ -71,6 +72,8 @@ class AirbourneBoard : public Board
 {
 
 private:
+  AirbourneBoardConfigManager board_config_manager_;
+
   VCP vcp_;
   UART uart1_;
   UART uart2_;
@@ -142,8 +145,10 @@ public:
   uint8_t serial_read() override;
   void serial_flush() override;
 
-  // resource management
+  // hardware config
   bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
+  void init_board_config_manager(ROSflight *rf) override;
+  AirbourneBoardConfigManager *get_board_config_manager() override;
 
   // sensors
   void sensors_init() override;

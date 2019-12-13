@@ -178,6 +178,17 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   }
   return false;
 }
+
+void AirbourneBoard::init_board_config_manager(ROSflight *rf)
+{
+  board_config_manager_.init(rf, this);
+}
+
+AirbourneBoardConfigManager *AirbourneBoard::get_board_config_manager()
+{
+  return &board_config_manager_;
+}
+
 // sensors
 void AirbourneBoard::sensors_init()
 {
