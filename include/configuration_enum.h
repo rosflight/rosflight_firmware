@@ -11,7 +11,9 @@ enum device_t: uint8_t
   gnss,
   sonar,
   battery_monitor,
-  device_count
+  barometer,
+  magnetometer,
+  device_count // make sure this is last
 };
 
 /*
