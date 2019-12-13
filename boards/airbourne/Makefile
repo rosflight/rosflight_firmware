@@ -137,6 +137,7 @@ AIRBOURNE_SRCS = led.cpp \
 # board-specific source files
 VPATH           := $(VPATH):$(BOARD_DIR)
 BOARD_CXX_SRC   = airbourne_board.cpp \
+                  airbourne_board_config_manager.cpp \
                   main.cpp
 
 # Make a list of source files and includes
