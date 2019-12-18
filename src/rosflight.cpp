@@ -61,7 +61,10 @@ void ROSflight::init()
 
   // Read EEPROM to get initial params
   memory_manager_.read_memory();
+
+  // Prepare to initialize devices
   params_.init();
+  board_.init_board_config_manager(this);
   config_manager_.init();
 
   //Initialize devices

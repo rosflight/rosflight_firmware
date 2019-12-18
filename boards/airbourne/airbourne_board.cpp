@@ -184,9 +184,9 @@ void AirbourneBoard::init_board_config_manager(ROSflight *rf)
   board_config_manager_.init(rf, this);
 }
 
-AirbourneBoardConfigManager *AirbourneBoard::get_board_config_manager()
+AirbourneBoardConfigManager &AirbourneBoard::get_board_config_manager()
 {
-  return &board_config_manager_;
+  return board_config_manager_;
 }
 
 // sensors

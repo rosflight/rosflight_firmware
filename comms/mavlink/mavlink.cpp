@@ -295,6 +295,20 @@ void Mavlink::send_config_value(uint8_t system_id, uint8_t device, uint8_t confi
   send_message(msg);
 }
 
+void Mavlink::send_device_info(uint8_t system_id, uint8_t device,  uint8_t max_config, uint8_t (&name)[20])
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_device_info_pack(system_id, 0, &msg, device, max_config, name);
+  send_message(msg);
+}
+
+void Mavlink::send_config_info(uint8_t system_id, uint8_t device, uint8_t config, uint8_t (&name)[20])
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_config_info_pack(system_id, 0, &msg, device, config, name);
+  send_message(msg);
+}
+
 void Mavlink::send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8])
 {
   mavlink_message_t msg;

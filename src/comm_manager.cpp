@@ -86,6 +86,8 @@ void CommManager::init()
 
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
+  send_device_info_index_ = device_count;
+  send_config_info_index_ = 0;
 
   update_system_id(PARAM_SYSTEM_ID);
   set_streaming_rate(STREAM_ID_HEARTBEAT, PARAM_STREAM_HEARTBEAT_RATE);
@@ -419,6 +421,28 @@ void CommManager::config_request_callback(uint8_t device)
   //TODO consider checking a system ID to see if the message is intended for this device
   if(device < device_count)
     send_config_value(static_cast<device_t>(device));
+  if(device == 0xff)
+    send_all_config_info();
+}
+void CommManager::send_all_config_info()
+{
+  send_config_info_index_ = 0;
+  send_device_info_index_ = static_cast<device_t>(0);
+}
+
+void CommManager::send_device_info(device_t device)
+{
+  uint8_t device_name[20];
+  RF_.board_.get_board_config_manager().get_device_name(device, device_name);
+  uint8_t max_config = RF_.board_.get_board_config_manager().get_max_config(device);
+  comm_link_.send_device_info(sysid_, device, max_config, device_name);
+}
+
+void CommManager::send_config_info(device_t device, hardware_config_t config)
+{
+  uint8_t config_name[20];
+  RF_.board_.get_board_config_manager().get_config_name(device, config, config_name);
+  comm_link_.send_config_info(sysid_, device, config, config_name);
 }
 
 void CommManager::send_config_value(device_t device)
@@ -615,6 +639,7 @@ void CommManager::send_gnss_raw()
 void CommManager::send_low_priority(void)
 {
   send_next_param();
+  send_next_config_info();
 
   // send buffered log messages
   if (connected_ && !log_buffer_.empty())
@@ -657,6 +682,23 @@ void CommManager::send_next_param(void)
   {
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
+  }
+}
+
+void CommManager::send_next_config_info(void)
+{
+  if (send_device_info_index_ < device_count)
+  {
+    if (send_config_info_index_ == 0)
+      send_device_info(send_device_info_index_);
+    else
+      send_config_info(send_device_info_index_, send_config_info_index_-1);
+    send_config_info_index_++;
+    if(send_config_info_index_ -1 > RF_.board_.get_board_config_manager().get_max_config(send_device_info_index_))
+    {
+      ++send_device_info_index_;
+      send_config_info_index_ = 0;
+    }
   }
 }
 
