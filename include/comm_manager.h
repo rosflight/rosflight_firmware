@@ -83,6 +83,8 @@ private:
   ROSflight& RF_;
   CommLinkInterface& comm_link_;
   uint8_t send_params_index_;
+  device_t send_device_info_index_;
+  hardware_config_t send_config_info_index_;
   bool initialized_ = false;
   bool connected_ = false;
 
@@ -163,6 +165,7 @@ private:
 //    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
+  void send_next_config_info(void);
 
   Stream streams_[STREAM_COUNT] = {
     Stream(0,     [this]{this->send_heartbeat();}),
@@ -195,6 +198,9 @@ public:
   void stream();
   void send_param_value(uint16_t param_id);
   void send_config_value(device_t device);
+  void send_all_config_info(); // Sends all device and configuration names
+  void send_device_info(device_t device);
+  void send_config_info(device_t device, hardware_config_t config);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
   void log(CommLinkInterface::LogSeverity severity, const char *fmt, ...);

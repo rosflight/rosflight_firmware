@@ -29,44 +29,117 @@ BoardConfigManager::config_response AirbourneBoardConfigManager::check_config_ch
   resp.reboot_required = true;
   return resp;
 }
-void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[20])
+void AirbourneBoardConfigManager::get_device_name(device_t device, uint8_t (&name)[20])
 {
+  char *name_char = reinterpret_cast<char*>(name);
   switch(device)
   {
   case serial:
-    strcpy(name, "Serial");
+    strcpy(name_char, "Serial");
     break;
   case rc:
-    strcpy(name, "RC");
+    strcpy(name_char, "RC");
     break;
   case airspeed:
-    strcpy(name, "Airspeed");
+    strcpy(name_char, "Airspeed");
     break;
   case gnss:
-    strcpy(name, "GNSS");
+    strcpy(name_char, "GNSS");
     break;
   case sonar:
-    strcpy(name, "Sonar");
+    strcpy(name_char, "Sonar");
     break;
   case battery_monitor:
-    strcpy(name, "Battery Monitor");
+    strcpy(name_char, "Battery Monitor");
     break;
   case barometer:
-    strcpy(name, "Barometer");
+    strcpy(name_char, "Barometer");
     break;
   case magnetometer:
-    strcpy(name, "Magnetometer");
+    strcpy(name_char, "Magnetometer");
     break;
   default:
-    strcpy(name, "Error/Unsupported");
+    strcpy(name_char, "Error/Unsupported");
     break;
   }
 }
-void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, char (&name)[20])
+void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[20])
 {
-  //TODO
-  (void)device;
-  (void)config;
-  strcpy(name, "TODO");
+  char *name_char = reinterpret_cast<char*>(name);
+  const char *name_str;
+  switch(device)
+  {
+  case serial:
+    switch(config)
+    {
+    case 0:
+      name_str="VCP over USB";
+      break;
+    case 1:
+      name_str="UART1 on Main";
+      break;
+    case 2:
+      name_str="UART2 on Flex-IO";
+      break;
+    case 3:
+      name_str="UART3 on Flexi";
+      break;
+    }
+    break;
+  case rc:
+    if(config==0)
+      name_str = "PPM on Flex-IO";
+    else
+      name_str = "SBUS on Main";
+    break;
+  case airspeed:
+    if(config==0)
+      name_str = "Disabled";
+    else
+      name_str = "I2C2 on Flexi";
+    break;
+  case gnss:
+    switch(config)
+    {
+    case 0:
+      name_str = "Disabled";
+      break;
+    case 1:
+      name_str = "UART1 on main";
+      break;
+    case 2:
+      name_str = "UART2 on Flex-Io";
+      break;
+    case 3:
+      name_str = "UART3 on Flexi";
+      break;
+    }
+    break;
+  case sonar:
+    if(config ==0)
+      name_str = "Disabled";
+    else
+      name_str = "I2C2 on Flexi";
+    break;
+  case battery_monitor:
+    if(config==0)
+      name_str = "Disabled";
+    else
+      name_str = "ADC3 on Power";
+    break;
+  case barometer:
+    if(config==0)
+      name_str = "Onboard barometer";
+    break;
+  case magnetometer:
+    if(config ==0)
+      name_str = "Onboard magnetometer";
+    break;
+  default:
+    name_str = "Invalid device";
+  }
+  if(config > max_configs[device])
+    name_str = "Invalid config";
+  strcpy(name_char, name_str);
 }
 } //rosflight_firmware

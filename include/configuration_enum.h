@@ -16,19 +16,15 @@ enum device_t: uint8_t
   device_count // make sure this is last
 };
 
-/*
-enum resource_t
+inline device_t& operator++(device_t &dev)
 {
-  vcp,
-  uart,
-  sbus,
-  i2c,
-  spi,
-  ppm,
-  adc
-};
-*/
-
+  uint8_t return_value = dev;
+  return_value++;
+  if (return_value > device_count)
+    return_value--;
+  dev = static_cast<device_t>(return_value);
+  return dev;
+}
 typedef uint8_t hardware_config_t;
 
 
