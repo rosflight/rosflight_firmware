@@ -50,7 +50,7 @@ BoardConfigManager::config_response AirbourneBoardConfigManager::check_config_ch
       break;
   case serial:
   case gnss:
-    for(device_t other_device{0}; other_device != device_count; ++other_device)
+    for(device_t other_device{static_cast<device_t>(0)}; other_device != device_count; ++other_device)
       if(other_device != rc && port == get_port(other_device, cm[other_device]))
       {
         conflict_device = other_device;
