@@ -20,6 +20,8 @@ public:
   bool configure_devices();
   void set_configuration(device_t device, uint8_t config);
   uint8_t get_configuration(device_t device);
+  uint8_t operator[](device_t device); // same as get_configuration, for convenience
+
   void prepare_write();
 
 private:

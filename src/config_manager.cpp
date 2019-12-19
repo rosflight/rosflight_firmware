@@ -32,6 +32,10 @@ uint8_t ConfigManager::get_configuration(device_t device)
 {
   return config_.config[device];
 }
+uint8_t ConfigManager::operator[](device_t device)
+{
+  return get_configuration(device);
+}
 
 void ConfigManager::prepare_write()
 {
