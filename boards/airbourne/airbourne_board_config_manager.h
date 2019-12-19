@@ -17,6 +17,16 @@ public:
   void get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[20]) override;
   inline bool is_initialized(){return is_initialized_;}
 private:
+  enum revo_port
+  {
+    none,
+    main,
+    flex_io,
+    flexi,
+    usb,
+    power
+  };
+  revo_port get_port(uint8_t device, uint8_t config);
   bool is_initialized_{false};
   AirbourneBoard *board_;
   ROSflight *RF_;
