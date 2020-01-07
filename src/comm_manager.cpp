@@ -414,14 +414,15 @@ void CommManager::heartbeat_callback(void)
 
 void CommManager::config_set_callback(uint8_t device, uint8_t configuration)
 {
-  //TODO consider checking a system ID to see if the message is intended for this device
-  if(device < device_count)
-    RF_.config_manager_.set_configuration(static_cast<device_t>(device), configuration);
+  uint8_t requested_device{device};
+  if(device >=device_count)
+    device = device_count;
+  ConfigManager::config_response resp = RF_.config_manager_.attempt_set_configuration(static_cast<device_t>(device), configuration);
+  comm_link_.send_config_status(sysid_, requested_device, resp.successful, resp.reboot_required, resp.error_message);
 }
 
 void CommManager::config_request_callback(uint8_t device)
 {
-  //TODO consider checking a system ID to see if the message is intended for this device
   if(device < device_count)
     send_config_value(static_cast<device_t>(device));
   if(device == 0xff)
