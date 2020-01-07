@@ -22,21 +22,22 @@ hardware_config_t AirbourneBoardConfigManager::get_max_config(device_t device)
   else
     return max_configs[device];
 }
-BoardConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config)
+ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config)
 {
-  BoardConfigManager::config_response resp;
+  ConfigManager::config_response resp;
   resp.reboot_required = false;
   resp.successful = false;
+  char *error_message = reinterpret_cast<char*>(resp.error_message);
 
-  if(device > device_count)
+  if(device >= device_count)
   {
-    strcpy(resp.error_message, "Device not found");
+    strcpy(error_message, "Device not found");
     return resp;
   }
 
   if(config > max_configs[device])
   {
-    strcpy(resp.error_message, "Configuration not found");
+    strcpy(error_message, "Configuration not found");
     return resp;
   }
   revo_port port = get_port(device, config);
@@ -50,12 +51,13 @@ BoardConfigManager::config_response AirbourneBoardConfigManager::check_config_ch
       break;
   case serial:
   case gnss:
-    for(device_t other_device{static_cast<device_t>(0)}; other_device != device_count; ++other_device)
-      if(other_device != rc && port == get_port(other_device, cm[other_device]))
-      {
-        conflict_device = other_device;
-        break;
-      }
+    if(port != none)
+      for(device_t other_device{static_cast<device_t>(0)}; other_device != device_count; ++other_device)
+        if(other_device != rc && port == get_port(other_device, cm[other_device]))
+        {
+          conflict_device = other_device;
+          break;
+        }
     break;
   case airspeed:
   case sonar:
@@ -72,32 +74,32 @@ BoardConfigManager::config_response AirbourneBoardConfigManager::check_config_ch
     switch(conflict_device)
     {
     case serial:
-      strcpy(resp.error_message, "Port is used by serial.");
+      strcpy(error_message, "Port is used by serial.");
       break;
     case rc:
-      strcpy(resp.error_message, "Port is used by RC.");
+      strcpy(error_message, "Port is used by RC.");
       break;
     case airspeed:
-      strcpy(resp.error_message, "Port is used by airspeed sensor.");
+      strcpy(error_message, "Port is used by airspeed sensor.");
       break;
     case gnss:
-      strcpy(resp.error_message, "Port is used by GNSS receiver.");
+      strcpy(error_message, "Port is used by GNSS receiver.");
       break;
     case sonar:
-      strcpy(resp.error_message, "Port is used by sonar sensor.");
+      strcpy(error_message, "Port is used by sonar sensor.");
       break;
     // At the time of this writing, the below should not cause issues
     case battery_monitor:
-      strcpy(resp.error_message, "Port is used by battery monitor.");
+      strcpy(error_message, "Port is used by battery monitor.");
       break;
     case barometer:
-      strcpy(resp.error_message, "Port is used by barometer.");
+      strcpy(error_message, "Port is used by barometer.");
       break;
     case magnetometer:
-      strcpy(resp.error_message, "Port is used by magnetometer.");
+      strcpy(error_message, "Port is used by magnetometer.");
       break;
     default:
-      strcpy(resp.error_message, "Other error.");
+      strcpy(error_message, "Other error.");
       break;
     }
     return resp;
@@ -229,7 +231,7 @@ AirbourneBoardConfigManager::revo_port AirbourneBoardConfigManager::get_port(uin
       return usb;
     // break intentionally ommitted
   case gnss:
-    return static_cast<revo_port>(device);
+    return static_cast<revo_port>(config);
   case rc:
     if(config == 0)
       return flex_io;

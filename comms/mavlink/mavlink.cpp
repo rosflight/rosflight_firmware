@@ -308,6 +308,12 @@ void Mavlink::send_config_info(uint8_t system_id, uint8_t device, uint8_t config
   mavlink_msg_rosflight_config_info_pack(system_id, 0, &msg, device, config, name);
   send_message(msg);
 }
+void Mavlink::send_config_status(uint8_t system_id, uint8_t device, bool success, bool reboot_required, uint8_t (&error_message)[50])
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_config_status_pack(system_id, 0, &msg, device, success, reboot_required, error_message);
+  send_message(msg);
+}
 
 void Mavlink::send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8])
 {
