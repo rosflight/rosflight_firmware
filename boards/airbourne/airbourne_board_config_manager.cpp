@@ -28,7 +28,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   ConfigManager &cm = RF_->config_manager_;
   resp.reboot_required = false;
   resp.successful = false;
-  char *error_message = reinterpret_cast<char*>(resp.error_message);
+  char *error_message = reinterpret_cast<char*>(resp.message); // Because it wasn't converting implicitly
 
   if(device >= Configuration::DEVICE_COUNT)
   {
@@ -52,6 +52,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   revo_port port = get_port(device, config);
   device_t conflict_device = Configuration::DEVICE_COUNT;
 
+  // While a config may conflict with multiple devices, this will only report one
   switch(device)
   {
   case Configuration::RC:
@@ -59,7 +60,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
       break;
   case Configuration::SERIAL:
   case Configuration::GNSS:
-    if(port != none)
+    if(port != NO_PORT)
       for(device_t other_device{static_cast<device_t>(0)}; other_device != Configuration::DEVICE_COUNT; ++other_device)
         if(port == get_port(other_device, cm[other_device]) && (other_device !=Configuration::RC || cm[Configuration::RC]!=0)) // RC over PPM does not conflict with UART, even though both use the same port
         {
@@ -96,7 +97,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
     case Configuration::SONAR:
       strcpy(error_message, "Port is used by sonar sensor.");
       break;
-    // At the time of this writing, the below should not cause issues
+    // At the time of this writing, the below are incapable of conflicts
     case Configuration::BATTERY_MONITOR:
       strcpy(error_message, "Port is used by battery monitor.");
       break;
@@ -114,10 +115,10 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   }
   resp.successful = true;
   resp.reboot_required = true;
-  resp.error_message[0]=0;
+  resp.message[0]=0;
   return resp;
 }
-void AirbourneBoardConfigManager::get_device_name(device_t device, uint8_t (&name)[20])
+void AirbourneBoardConfigManager::get_device_name(device_t device, uint8_t (&name)[DEVICE_NAME_LENGTH])
 {
   char *name_char = reinterpret_cast<char*>(name);
   switch(device)
@@ -151,7 +152,7 @@ void AirbourneBoardConfigManager::get_device_name(device_t device, uint8_t (&nam
     break;
   }
 }
-void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[20])
+void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[CONFIG_NAME_LENGTH])
 {
   char *name_char = reinterpret_cast<char*>(name);
   const char *name_str;
@@ -236,25 +237,25 @@ AirbourneBoardConfigManager::revo_port AirbourneBoardConfigManager::get_port(uin
   {
   case Configuration::SERIAL:
     if(config == 0)
-      return usb;
+      return USB_PORT;
     // break intentionally ommitted
   case Configuration::GNSS:
     return static_cast<revo_port>(config);
   case Configuration::RC:
     if(config == 0)
-      return flex_io;
+      return FLEX_IO_PORT;
     if(config == 1)
-      return main;
+      return MAIN_PORT;
     break;
   case Configuration::AIRSPEED:
   case Configuration::SONAR:
     if(config==1)
-      return flexi;
+      return FLEXI_PORT;
     break;
   case Configuration::BATTERY_MONITOR:
     if(config == 1)
-      return power;
+      return POWER_PORT;
   }
-  return none;
+  return NO_PORT;
 }
 } //rosflight_firmware
