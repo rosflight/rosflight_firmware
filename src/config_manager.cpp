@@ -18,8 +18,9 @@ bool ConfigManager::init()
 bool ConfigManager::configure_devices()
 {
   bool success = true;
-  for(uint8_t device{0}; device < device_t::device_count; device++)
-    success = success &&RF_.board_.enable_device(static_cast<device_t>(device), config_.config[device], RF_.params_);
+  //for(uint8_t device{0}; device < device_t::device_count; device++)
+  for(device_t device{static_cast<device_t>(0)}; device < Configuration::DEVICE_COUNT; ++device)
+    success = success &&RF_.board_.enable_device(device, config_.config[device], RF_.params_);
   return success;
 }
 
@@ -64,7 +65,7 @@ void ConfigManager::fill_defaults()
 }
 uint32_t ConfigManager::generate_checksum()
 {
-  //8 bit fletcher algorithm
+  //8 bit fletcher algorithm, because we can't assume that the struct is a multiple of 16 bits
   const uint8_t *config_data = reinterpret_cast<const uint8_t*>(config_.config);
   uint8_t check_a{0};
   uint8_t check_b{0};
