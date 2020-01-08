@@ -86,7 +86,7 @@ void CommManager::init()
 
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
-  send_device_info_index_ = device_count;
+  send_device_info_index_ = Configuration::DEVICE_COUNT;
   send_config_info_index_ = 0;
 
   update_system_id(PARAM_SYSTEM_ID);
@@ -415,15 +415,15 @@ void CommManager::heartbeat_callback(void)
 void CommManager::config_set_callback(uint8_t device, uint8_t configuration)
 {
   uint8_t requested_device{device};
-  if(device >=device_count)
-    device = device_count;
+  if(device >=Configuration::DEVICE_COUNT)
+    device = Configuration::DEVICE_COUNT;
   ConfigManager::config_response resp = RF_.config_manager_.attempt_set_configuration(static_cast<device_t>(device), configuration);
   comm_link_.send_config_status(sysid_, requested_device, resp.successful, resp.reboot_required, resp.error_message);
 }
 
 void CommManager::config_request_callback(uint8_t device)
 {
-  if(device < device_count)
+  if(device < Configuration::DEVICE_COUNT)
     send_config_value(static_cast<device_t>(device));
   if(device == 0xff)
     send_all_config_info();
@@ -682,7 +682,7 @@ void CommManager::send_next_param(void)
 
 void CommManager::send_next_config_info(void)
 {
-  if (send_device_info_index_ < device_count)
+  if (send_device_info_index_ < Configuration::DEVICE_COUNT)
   {
     if (send_config_info_index_ == 0)
       send_device_info(send_device_info_index_);

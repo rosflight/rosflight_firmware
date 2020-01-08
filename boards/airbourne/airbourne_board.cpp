@@ -127,14 +127,14 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
 {
   switch(device)
   {
-  case serial:
+  case Configuration::SERIAL:
   {
     uint32_t baud_rate = params.get_param_int(PARAM_BAUD_RATE);
     serial_init(baud_rate, configuration);
     return true; // TODO serial_init success check
     break;
   }
-  case rc:
+  case Configuration::RC:
     switch(configuration)
     {
     case 0:
@@ -147,7 +147,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
       return false;
     }
     return true;
-  case airspeed:
+  case Configuration::AIRSPEED:
     if(configuration==1)
     {
       if(!ext_i2c_.is_initialized())
@@ -156,15 +156,15 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     break;
   //TODO other config options
-  case gnss:
+  case Configuration::GNSS:
     // GNSS is currently disabled
     break;
-  case sonar:
+  case Configuration::SONAR:
     if(!ext_i2c_.is_initialized())
       ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
     sonar_.init(&ext_i2c_);
     break;
-  case battery_monitor:
+  case Configuration::BATTERY_MONITOR:
     if(configuration == 1)
     {
       float voltage_multiplier = params.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);

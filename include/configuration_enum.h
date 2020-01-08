@@ -3,29 +3,33 @@
 
 #include <cstdint>
 
+namespace Configuration
+{
+
 enum device_t: uint8_t
 {
-  serial,
-  rc,
-  airspeed,
-  gnss,
-  sonar,
-  battery_monitor,
-  barometer,
-  magnetometer,
-  device_count // make sure this is last
+  SERIAL,
+  RC,
+  AIRSPEED,
+  GNSS,
+  SONAR,
+  BATTERY_MONITOR,
+  BAROMETER,
+  MAGNETOMETER,
+  DEVICE_COUNT // make sure this is last
 };
 
 inline device_t& operator++(device_t &dev)
 {
   uint8_t return_value = dev;
   return_value++;
-  if (return_value > device_count)
+  if (return_value > DEVICE_COUNT)
     return_value--;
   dev = static_cast<device_t>(return_value);
   return dev;
 }
+}
 typedef uint8_t hardware_config_t;
-
+typedef Configuration::device_t device_t;
 
 #endif // CONFIGURATION_ENUM_H

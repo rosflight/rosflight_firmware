@@ -30,7 +30,7 @@ private:
   bool is_initialized_{false};
   AirbourneBoard *board_;
   ROSflight *RF_;
-  const hardware_config_t max_configs[device_count]{3, 1, 1, 3, 1, 1, 0, 0};
+  const hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 0, 0};
 };
 } // namespace rosflight_firmware
 

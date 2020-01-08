@@ -12,7 +12,7 @@ public:
   typedef struct __attribute__ ((packed))
   {
     uint32_t checksum;
-    hardware_config_t config[device_t::device_count];
+    hardware_config_t config[Configuration::DEVICE_COUNT];
   } config_t;
 
   typedef struct
@@ -24,14 +24,14 @@ public:
 
   ConfigManager(ROSflight &RF, config_t &config);
   bool init();
-  bool configure_devices();
+  bool configure_devices(); // Sends configurations to the board via the enable_device method
   // Attempts to set a configuration, failing if the board config manager rejects it
   config_response attempt_set_configuration(device_t device, uint8_t config);
-  void set_configuration(device_t device, uint8_t config); // Directly sets a configuration
+  void set_configuration(device_t device, uint8_t config); // Sets a config without checks
   uint8_t get_configuration(device_t device);
   uint8_t operator[](device_t device); // same as get_configuration, for convenience
 
-  void prepare_write();
+  void prepare_write(); // prepares a checksum, so that the config struct can be saved
 
 private:
   ROSflight &RF_;
