@@ -18,7 +18,6 @@ bool ConfigManager::init()
 bool ConfigManager::configure_devices()
 {
   bool success = true;
-  //for(uint8_t device{0}; device < device_t::device_count; device++)
   for(device_t device{static_cast<device_t>(0)}; device < Configuration::DEVICE_COUNT; ++device)
     success = success &&RF_.board_.enable_device(device, config_.config[device], RF_.params_);
   return success;

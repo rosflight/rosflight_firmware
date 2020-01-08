@@ -23,11 +23,14 @@ public:
   }config_response;
 
   ConfigManager(ROSflight &RF, config_t &config);
+  // Reads the memory, and loads defaults if it is invalid. Call after the memory manager is ready
   bool init();
   bool configure_devices(); // Sends configurations to the board via the enable_device method
   // Attempts to set a configuration, failing if the board config manager rejects it
   config_response attempt_set_configuration(device_t device, uint8_t config);
-  void set_configuration(device_t device, uint8_t config); // Sets a config without checks
+  // Sets a config without checks. This may cause an invalid configuration combo,
+  // so attempt_set_configuration is recommended
+  void set_configuration(device_t device, uint8_t config);
   uint8_t get_configuration(device_t device);
   uint8_t operator[](device_t device); // same as get_configuration, for convenience
 
@@ -36,9 +39,9 @@ public:
 private:
   ROSflight &RF_;
   config_t &config_;
-  bool read();
-  void fill_defaults();
-  uint32_t generate_checksum();
+  bool read(); // currently just checks that the memory manager is ready and the checksum is correct
+  void fill_defaults(); // Default values are 0, by convention
+  uint32_t generate_checksum(); // Based off of fletcher algorithm
 
 };
 }

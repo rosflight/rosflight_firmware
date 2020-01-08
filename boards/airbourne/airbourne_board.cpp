@@ -155,7 +155,6 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
       airspeed_.init(&ext_i2c_);
     }
     break;
-  //TODO other config options
   case Configuration::GNSS:
     // GNSS is currently disabled
     break;
