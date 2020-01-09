@@ -18,6 +18,7 @@ ConfigManager::config_response TestBoardConfigManager::check_config_change(devic
   if(device == Configuration::SERIAL && config == 1)
   {
     response.successful = false;
+    response.reboot_required = false;
     strcpy(reinterpret_cast<char*>(response.message), "Fail for testing");
     return response;
   }

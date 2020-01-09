@@ -196,7 +196,10 @@ void testBoard::pwm_disable() {}
 
 // non-volatile memory
 void testBoard::memory_init() {}
-bool testBoard::memory_read(void *dest, size_t len) { return false; }
+bool testBoard::memory_read(void *dest, size_t len) {
+  memset(dest, 0, len);
+  return true;
+}
 bool testBoard::memory_write(const void *src, size_t len) { return false; }
 
 // LEDs
