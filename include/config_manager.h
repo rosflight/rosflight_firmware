@@ -15,11 +15,12 @@ public:
     hardware_config_t config[Configuration::DEVICE_COUNT];
   } config_t;
 
+  static const int CONFIG_RESPONSE_MESSAGE_LENGTH{50};
   typedef struct
   {
     bool successful;
     bool reboot_required;
-    uint8_t error_message[50];
+    uint8_t message[CONFIG_RESPONSE_MESSAGE_LENGTH]; // Primarily for error messages
   }config_response;
 
   ConfigManager(ROSflight &RF, config_t &config);
