@@ -7,3 +7,9 @@ align-pointer=name
 align-reference=name
 max-code-length=120
 suffix=none
+keep-one-line-blocks
+lineend=linux
+exclude=boards/airbourne/airbourne
+exclude=boards/breezy/breezystm32
+exclude=comms/mavlink/v1.0
+exclude=lib
