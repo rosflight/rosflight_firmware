@@ -45,17 +45,20 @@ Notice that the parameters have been set, but not saved. Parameter changes take 
 
 ### Writing Parameters
 
-To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `param_write`
+To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `settings_write`. This also saves firmware configurations.
 
 ```
-rosservice call /param_write
+rosservice call /settings_write
 ```
+
 
 `rosflight_io` should then respond with
+
 ```
 [ INFO] [1491672597.123201952]: Param write succeeded
 [ INFO] [1491672597.123452908]: Onboard parameters have been saved
 ```
+
 !!! error
     Parameter writing can only happen if the flight controller is disarmed. If the param write failed for some reason, you may want to make sure your FC is disarmed and try again.
 
