@@ -81,9 +81,9 @@ void BreezyBoard::clock_delay(uint32_t milliseconds)
 
 // serial
 
-void BreezyBoard::serial_init(uint32_t baud_rate, uint32_t dev)
+void BreezyBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration)
 {
-  (void)dev;
+  (void)configuration;
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
@@ -108,6 +108,24 @@ uint8_t BreezyBoard::serial_read()
 void BreezyBoard::serial_flush()
 {
   return;
+}
+
+bool BreezyBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
+{
+  (void)device;
+  (void)configuration;
+  (void)params;
+  return true;
+}
+
+void BreezyBoard::init_board_config_manager(ROSflight *rf)
+{
+  (void)rf;
+}
+
+BreezyBoardConfigManager &BreezyBoard::get_board_config_manager()
+{
+  return config_manager_;
 }
 
 // sensors

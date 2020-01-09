@@ -34,6 +34,7 @@
 
 #include "board.h"
 #include "sensors.h"
+#include "test_board_config_manager.h"
 
 namespace rosflight_firmware
 {
@@ -48,6 +49,7 @@ private:
   float acc_[3] = {0, 0, 0};
   float gyro_[3] = {0, 0, 0};
   bool new_imu_ = false;
+  TestBoardConfigManager config_manager_;
 
 public:
 // setup
@@ -60,11 +62,16 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
 // serial
-  void serial_init(uint32_t baud_rate, uint32_t dev) override;
+  void serial_init(uint32_t baud_rate, hardware_config_t configuration) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
+
+// Hardware config
+  bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
+  void init_board_config_manager(ROSflight *rf) override;
+  TestBoardConfigManager & get_board_config_manager() override;
 
 // sensors
   void sensors_init() override;

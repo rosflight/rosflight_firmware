@@ -155,7 +155,7 @@ void AirbourneBoardConfigManager::get_device_name(device_t device, uint8_t (&nam
 void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[CONFIG_NAME_LENGTH])
 {
   char *name_char = reinterpret_cast<char*>(name);
-  const char *name_str;
+  const char *name_str = "Invalid Config";
   switch(device)
   {
   case Configuration::SERIAL:
