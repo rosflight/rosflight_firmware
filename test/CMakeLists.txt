@@ -59,5 +59,6 @@ add_executable(unit_tests
         command_manager_test.cpp
         estimator_test.cpp
         parameters_test.cpp
+	config_manager_test.cpp
         )
 target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)
