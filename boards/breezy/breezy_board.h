@@ -43,6 +43,8 @@ extern "C"
 
 #include "board.h"
 #include "sensors.h"
+#include "configuration_enum.h"
+#include "breezy_board_config_manager.h"
 
 namespace rosflight_firmware
 {
@@ -79,6 +81,7 @@ private:
 
   bool new_imu_data_;
   uint64_t imu_time_us_;
+  BreezyBoardConfigManager config_manager_;
 
 public:
   BreezyBoard();
@@ -93,11 +96,16 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate, uint32_t dev) override;
+  void serial_init(uint32_t baud_rate, hardware_config_t configuration) override;
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
+
+  // hardware config
+  bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
+  void init_board_config_manager(ROSflight *rf) override;
+  BreezyBoardConfigManager & get_board_config_manager() override;
 
   // sensors
   void sensors_init() override;

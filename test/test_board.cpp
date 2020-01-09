@@ -80,12 +80,30 @@ uint64_t testBoard::clock_micros() { return time_us_; }
 void testBoard::clock_delay(uint32_t milliseconds) {}
 
 // serial
-void testBoard::serial_init(uint32_t baud_rate, uint32_t dev) {}
+void testBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration) {}
 void testBoard::serial_write(const uint8_t *src, size_t len) {}
 uint16_t testBoard::serial_bytes_available() { return 0; }
 uint8_t testBoard::serial_read() { return 0; }
 void testBoard::serial_flush() {}
 
+// Hardware config
+bool testBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
+{
+  (void)device;
+  (void)configuration;
+  (void)params;
+  return true;
+}
+
+void testBoard::init_board_config_manager(ROSflight *rf)
+{
+  (void)rf;
+}
+
+TestBoardConfigManager &testBoard::get_board_config_manager()
+{
+  return config_manager_;
+}
 // sensors
 void testBoard::sensors_init() {}
 uint16_t testBoard::num_sensor_errors() { return 0; }
