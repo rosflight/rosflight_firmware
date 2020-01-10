@@ -13,7 +13,7 @@ public:
   typedef struct
   {
     Params::params_t params;
-    ConfigManager::config_t config;
+    ConfigManager::Config config;
   } persistent_memory_t;
 
   MemoryManager(ROSflight &rf);
@@ -22,7 +22,7 @@ public:
   inline bool is_ready() {return ready_;}
 
   inline Params::params_t &get_params(){return memory_.params;}
-  inline ConfigManager::config_t &get_config(){return memory_.config;}
+  inline ConfigManager::Config &get_config(){return memory_.config;}
 
 private:
   ROSflight &RF_;

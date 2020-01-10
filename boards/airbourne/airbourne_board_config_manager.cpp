@@ -18,9 +18,9 @@ hardware_config_t AirbourneBoardConfigManager::get_max_config(device_t device) c
   else
     return AirbourneBoardConfigManager::max_configs[device];
 }
-ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) const
+ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) const
 {
-  ConfigManager::config_response resp;
+  ConfigManager::ConfigResponse resp;
   resp.reboot_required = false;
   resp.successful = false;
 
