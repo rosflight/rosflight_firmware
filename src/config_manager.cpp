@@ -25,7 +25,15 @@ bool ConfigManager::configure_devices() const
 
 ConfigManager::ConfigResponse ConfigManager::attempt_set_configuration(device_t device, uint8_t config)
 {
-  ConfigResponse resp = RF_.board_.get_board_config_manager().check_config_change(device, config, *this);
+  ConfigResponse resp;
+  if(RF_.state_manager_.state().armed)
+  {
+    resp.successful = false;
+    resp.reboot_required = false;
+    strcpy(resp.message, "Config changes while armed are not allowed.");
+    return resp;
+  }
+  resp = RF_.board_.get_board_config_manager().check_config_change(device, config, *this);
   if(resp.successful)
     set_configuration(device, config);
   return resp;
