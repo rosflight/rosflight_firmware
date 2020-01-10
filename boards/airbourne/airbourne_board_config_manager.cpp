@@ -218,10 +218,14 @@ void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_conf
     break;
   case Configuration::BAROMETER:
     if(config==0)
+      name_str = "Disabled";
+    else
       name_str = "Onboard barometer";
     break;
   case Configuration::MAGNETOMETER:
     if(config ==0)
+      name_str = "Disabled";
+    else
       name_str = "Onboard magnetometer";
     break;
   default:
@@ -255,6 +259,11 @@ AirbourneBoardConfigManager::revo_port AirbourneBoardConfigManager::get_port(uin
   case Configuration::BATTERY_MONITOR:
     if(config == 1)
       return POWER_PORT;
+    break;
+  case Configuration::MAGNETOMETER:
+  case Configuration::BAROMETER:
+    if(config == 1)
+      return INTERNAL_I2C;
   }
   return NO_PORT;
 }
