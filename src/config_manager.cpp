@@ -3,7 +3,7 @@
 
 namespace rosflight_firmware
 {
-ConfigManager::ConfigManager(ROSflight &RF, config_t &config):
+ConfigManager::ConfigManager(ROSflight &RF, Config &config):
   RF_{RF},
   config_{config}
 {}
@@ -23,9 +23,9 @@ bool ConfigManager::configure_devices() const
   return success;
 }
 
-ConfigManager::config_response ConfigManager::attempt_set_configuration(device_t device, uint8_t config)
+ConfigManager::ConfigResponse ConfigManager::attempt_set_configuration(device_t device, uint8_t config)
 {
-  config_response resp = RF_.board_.get_board_config_manager().check_config_change(device, config, *this);
+  ConfigResponse resp = RF_.board_.get_board_config_manager().check_config_change(device, config, *this);
   if(resp.successful)
     set_configuration(device, config);
   return resp;

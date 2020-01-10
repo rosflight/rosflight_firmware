@@ -414,7 +414,7 @@ void CommManager::config_set_callback(uint8_t device, uint8_t configuration)
   uint8_t requested_device{device};
   if(device >=Configuration::DEVICE_COUNT)
     device = Configuration::DEVICE_COUNT;
-  ConfigManager::config_response resp = RF_.config_manager_.attempt_set_configuration(static_cast<device_t>(device), configuration);
+  ConfigManager::ConfigResponse resp = RF_.config_manager_.attempt_set_configuration(static_cast<device_t>(device), configuration);
   comm_link_.send_config_status(sysid_, requested_device, resp.successful, resp.reboot_required, resp.message);
 }
 
