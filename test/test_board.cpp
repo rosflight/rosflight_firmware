@@ -92,11 +92,6 @@ bool testBoard::enable_device(device_t device, hardware_config_t configuration, 
   return true;
 }
 
-void testBoard::init_board_config_manager(ROSflight *rf)
-{
-  (void)rf;
-}
-
 TestBoardConfigManager &testBoard::get_board_config_manager()
 {
   return config_manager_;

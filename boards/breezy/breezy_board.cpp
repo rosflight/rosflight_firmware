@@ -118,11 +118,6 @@ bool BreezyBoard::enable_device(device_t device, hardware_config_t configuration
   return true;
 }
 
-void BreezyBoard::init_board_config_manager(ROSflight *rf)
-{
-  (void)rf;
-}
-
 BreezyBoardConfigManager &BreezyBoard::get_board_config_manager()
 {
   return config_manager_;

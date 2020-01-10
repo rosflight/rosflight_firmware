@@ -99,7 +99,6 @@ public:
 
 // hardware config
   virtual bool enable_device(device_t device, hardware_config_t configuration, const Params &params)=0;
-  virtual void init_board_config_manager(ROSflight *rf) = 0;
   virtual BoardConfigManager &get_board_config_manager() = 0;
 
 // sensors

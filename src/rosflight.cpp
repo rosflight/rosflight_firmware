@@ -64,7 +64,6 @@ void ROSflight::init()
 
   // Prepare to initialize devices
   params_.init();
-  board_.init_board_config_manager(this);
   config_manager_.init();
 
   //Initialize devices

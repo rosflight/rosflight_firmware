@@ -9,12 +9,7 @@ namespace rosflight_firmware
 AirbourneBoardConfigManager::AirbourneBoardConfigManager()
 {
 }
-void AirbourneBoardConfigManager::init(ROSflight *rf, AirbourneBoard *board)
-{
-  this->RF_ = rf;
-  this->board_ = board;
-  is_initialized_ = true;
-}
+
 hardware_config_t AirbourneBoardConfigManager::get_max_config(device_t device)
 {
   if(device >= Configuration::DEVICE_COUNT)
@@ -22,10 +17,9 @@ hardware_config_t AirbourneBoardConfigManager::get_max_config(device_t device)
   else
     return max_configs[device];
 }
-ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config)
+ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm)
 {
   ConfigManager::config_response resp;
-  ConfigManager &cm = RF_->config_manager_;
   resp.reboot_required = false;
   resp.successful = false;
   char *error_message = reinterpret_cast<char*>(resp.message); // Because it wasn't converting implicitly
