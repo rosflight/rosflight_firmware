@@ -295,23 +295,23 @@ void Mavlink::send_config_value(uint8_t system_id, uint8_t device, uint8_t confi
   send_message(msg);
 }
 
-void Mavlink::send_device_info(uint8_t system_id, uint8_t device,  uint8_t max_config, uint8_t (&name)[20])
+void Mavlink::send_device_info(uint8_t system_id, uint8_t device,  uint8_t max_config, char (&name)[BoardConfigManager::DEVICE_NAME_LENGTH])
 {
   mavlink_message_t msg;
-  mavlink_msg_rosflight_device_info_pack(system_id, 0, &msg, device, max_config, name);
+  mavlink_msg_rosflight_device_info_pack(system_id, 0, &msg, device, max_config, reinterpret_cast<uint8_t*>(name));
   send_message(msg);
 }
 
-void Mavlink::send_config_info(uint8_t system_id, uint8_t device, uint8_t config, uint8_t (&name)[20])
+void Mavlink::send_config_info(uint8_t system_id, uint8_t device, uint8_t config, char (&name)[BoardConfigManager::CONFIG_NAME_LENGTH])
 {
   mavlink_message_t msg;
-  mavlink_msg_rosflight_config_info_pack(system_id, 0, &msg, device, config, name);
+  mavlink_msg_rosflight_config_info_pack(system_id, 0, &msg, device, config, reinterpret_cast<uint8_t*>(name));
   send_message(msg);
 }
-void Mavlink::send_config_status(uint8_t system_id, uint8_t device, bool success, bool reboot_required, uint8_t (&error_message)[50])
+void Mavlink::send_config_status(uint8_t system_id, uint8_t device, bool success, bool reboot_required, char (&error_message)[ConfigManager::CONFIG_RESPONSE_MESSAGE_LENGTH])
 {
   mavlink_message_t msg;
-  mavlink_msg_rosflight_config_status_pack(system_id, 0, &msg, device, success, reboot_required, error_message);
+  mavlink_msg_rosflight_config_status_pack(system_id, 0, &msg, device, success, reboot_required, reinterpret_cast<uint8_t*>(error_message));
   send_message(msg);
 }
 

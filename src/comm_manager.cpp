@@ -433,7 +433,7 @@ void CommManager::send_all_config_info()
 
 void CommManager::send_device_info(device_t device)
 {
-  uint8_t device_name[20];
+  char device_name[BoardConfigManager::DEVICE_NAME_LENGTH];
   RF_.board_.get_board_config_manager().get_device_name(device, device_name);
   uint8_t max_config = RF_.board_.get_board_config_manager().get_max_config(device);
   comm_link_.send_device_info(sysid_, device, max_config, device_name);
@@ -441,7 +441,7 @@ void CommManager::send_device_info(device_t device)
 
 void CommManager::send_config_info(device_t device, hardware_config_t config)
 {
-  uint8_t config_name[20];
+  char config_name[BoardConfigManager::CONFIG_NAME_LENGTH];
   RF_.board_.get_board_config_manager().get_config_name(device, config, config_name);
   comm_link_.send_config_info(sysid_, device, config, config_name);
 }
