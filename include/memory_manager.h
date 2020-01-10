@@ -10,11 +10,11 @@ class ROSflight;
 class MemoryManager
 {
 public:
-  typedef struct
+  struct PersistentMemory
   {
     Params::params_t params;
     ConfigManager::Config config;
-  } persistent_memory_t;
+  };
 
   MemoryManager(ROSflight &rf);
   bool read_memory();
@@ -26,7 +26,7 @@ public:
 
 private:
   ROSflight &RF_;
-  persistent_memory_t memory_;
+  PersistentMemory memory_;
   bool ready_{false};
 
 };

@@ -60,9 +60,9 @@ public:
   ROSflight(Board& board, CommLinkInterface& comm_link);
 
   Board &board_;
+
   MemoryManager memory_manager_;
   CommManager comm_manager_;
-
   Params params_;
 
   CommandManager command_manager_;
