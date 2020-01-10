@@ -6,18 +6,19 @@
 
 namespace rosflight_firmware
 {
+constexpr hardware_config_t AirbourneBoardConfigManager::max_configs[]; // I can't wait for c++ 17 so that this is optional
 AirbourneBoardConfigManager::AirbourneBoardConfigManager()
 {
 }
 
-hardware_config_t AirbourneBoardConfigManager::get_max_config(device_t device)
+hardware_config_t AirbourneBoardConfigManager::get_max_config(device_t device) const
 {
   if(device >= Configuration::DEVICE_COUNT)
     return 0;
   else
-    return max_configs[device];
+    return AirbourneBoardConfigManager::max_configs[device];
 }
-ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm)
+ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) const
 {
   ConfigManager::config_response resp;
   resp.reboot_required = false;
@@ -29,7 +30,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
     return resp;
   }
 
-  if(config > max_configs[device])
+  if(config > AirbourneBoardConfigManager::max_configs[device])
   {
     strcpy(resp.message, "Configuration not found");
     return resp;
@@ -42,7 +43,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
     return resp;
   }
 
-  revo_port port = get_port(device, config);
+  Port port = get_port(device, config);
   device_t conflict_device = Configuration::DEVICE_COUNT;
 
   // While a config may conflict with multiple devices, this will only report one
@@ -55,11 +56,15 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   case Configuration::GNSS:
     if(port != NO_PORT)
       for(device_t other_device{static_cast<device_t>(0)}; other_device != Configuration::DEVICE_COUNT; ++other_device)
-        if(port == get_port(other_device, cm[other_device]) && (other_device !=Configuration::RC || cm[Configuration::RC]!=0)) // RC over PPM does not conflict with UART, even though both use the same port
+      {
+        if(other_device == Configuration::RC && cm[Configuration::RC] == 0) // RC over PPM does not conflict with UART, even though both use the same port
+          continue;
+        if(port == get_port(other_device, cm[other_device]))
         {
           conflict_device = other_device;
           break;
         }
+      }
     break;
   case Configuration::AIRSPEED:
   case Configuration::SONAR:
@@ -111,7 +116,7 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   resp.message[0]=0;
   return resp;
 }
-void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH])
+void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH]) const
 {
   switch(device)
   {
@@ -144,11 +149,10 @@ void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[
     break;
   }
 }
-void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH])
+void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH]) const
 {
-  const char *name_str = "Invalid Config";
-  if(config > max_configs[device])
-    name_str = "Invalid config";
+  if(config > AirbourneBoardConfigManager::max_configs[device])
+    strcpy(name, "Invalid config");
   else
     switch(device)
     {
@@ -156,87 +160,104 @@ void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_conf
       switch(config)
       {
       case 0:
-        name_str="VCP over USB";
+        strcpy(name, "VCP over USB");
         break;
       case 1:
-        name_str="UART1 on Main";
+        strcpy(name, "UART1 on Main");
         break;
       case 2:
-        name_str="UART2 on Flex-IO";
+        strcpy(name, "UART2 on Flex-IO");
         break;
       case 3:
-        name_str="UART3 on Flexi";
+        strcpy(name, "UART3 on Flexi");
         break;
       }
       break;
     case Configuration::RC:
       if(config==0)
-        name_str = "PPM on Flex-IO";
+        strcpy(name, "PPM on Flex-IO");
       else
-        name_str = "SBUS on Main";
+        strcpy(name, "SBUS on Main");
       break;
     case Configuration::AIRSPEED:
       if(config==0)
-        name_str = "Disabled";
+        strcpy(name, "Disabled");
       else
-        name_str = "I2C2 on Flexi";
+        strcpy(name, "I2C2 on Flexi");
       break;
     case Configuration::GNSS:
       switch(config)
       {
       case 0:
-        name_str = "Disabled";
+        strcpy(name, "Disabled");
         break;
       case 1:
-        name_str = "UART1 on main";
+        strcpy(name, "UART1 on main");
         break;
       case 2:
-        name_str = "UART2 on Flex-Io";
+        strcpy(name, "UART2 on Flex-Io");
         break;
       case 3:
-        name_str = "UART3 on Flexi";
+        strcpy(name, "UART3 on Flexi");
         break;
       }
       break;
     case Configuration::SONAR:
       if(config ==0)
-        name_str = "Disabled";
+        strcpy(name, "Disabled");
       else
-        name_str = "I2C2 on Flexi";
+        strcpy(name, "I2C2 on Flexi");
       break;
     case Configuration::BATTERY_MONITOR:
       if(config==0)
-        name_str = "Disabled";
+        strcpy(name, "Disabled");
       else
-        name_str = "ADC3 on Power";
+        strcpy(name, "ADC3 on Power");
       break;
     case Configuration::BAROMETER:
       if(config==0)
-        name_str = "Disabled";
+        strcpy(name, "Disabled");
       else
-        name_str = "Onboard barometer";
+        strcpy(name, "Onboard barometer");
       break;
     case Configuration::MAGNETOMETER:
       if(config ==0)
-        name_str = "Disabled";
+        strcpy(name, "Disabled");
       else
-        name_str = "Onboard magnetometer";
+        strcpy(name, "Onboard magnetometer");
       break;
     default:
-      name_str = "Invalid device";
+      strcpy(name, "Invalid device");
     }
-  strcpy(name, name_str);
 }
-AirbourneBoardConfigManager::revo_port AirbourneBoardConfigManager::get_port(uint8_t device, uint8_t config)
+AirbourneBoardConfigManager::Port AirbourneBoardConfigManager::get_port(uint8_t device, uint8_t config) const
 {
   switch(device)
   {
   case Configuration::SERIAL:
-    if(config == 0)
+    switch(config)
+    {
+    case 0:
       return USB_PORT;
-    // break intentionally ommitted
+    case 1:
+      return MAIN_PORT;
+    case 2:
+      return FLEX_IO_PORT;
+    case 3:
+      return FLEXI_PORT;
+    }
   case Configuration::GNSS:
-    return static_cast<revo_port>(config);
+    switch(config)
+    {
+    case 0:
+      return USB_PORT;
+    case 1:
+      return MAIN_PORT;
+    case 2:
+      return FLEX_IO_PORT;
+    case 3:
+      return FLEXI_PORT;
+    }
   case Configuration::RC:
     if(config == 0)
       return FLEX_IO_PORT;
