@@ -22,22 +22,21 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   ConfigManager::config_response resp;
   resp.reboot_required = false;
   resp.successful = false;
-  char *error_message = reinterpret_cast<char*>(resp.message); // Because it wasn't converting implicitly
 
   if(device >= Configuration::DEVICE_COUNT)
   {
-    strcpy(error_message, "Device not found");
+    strcpy(resp.message, "Device not found");
     return resp;
   }
 
   if(config > max_configs[device])
   {
-    strcpy(error_message, "Configuration not found");
+    strcpy(resp.message, "Configuration not found");
     return resp;
   }
   if(config == cm[device])
   {
-    strcpy(error_message, "Configuration already set. No change required");
+    strcpy(resp.message, "Configuration already set. No change required");
     resp.successful = true;
     resp.reboot_required = false;
     return resp;
@@ -77,32 +76,32 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
     switch(conflict_device)
     {
     case Configuration::SERIAL:
-      strcpy(error_message, "Port is used by serial.");
+      strcpy(resp.message, "Port is used by serial.");
       break;
     case Configuration::RC:
-      strcpy(error_message, "Port is used by RC.");
+      strcpy(resp.message, "Port is used by RC.");
       break;
     case Configuration::AIRSPEED:
-      strcpy(error_message, "Port is used by airspeed sensor.");
+      strcpy(resp.message, "Port is used by airspeed sensor.");
       break;
     case Configuration::GNSS:
-      strcpy(error_message, "Port is used by GNSS receiver.");
+      strcpy(resp.message, "Port is used by GNSS receiver.");
       break;
     case Configuration::SONAR:
-      strcpy(error_message, "Port is used by sonar sensor.");
+      strcpy(resp.message, "Port is used by sonar sensor.");
       break;
     // At the time of this writing, the below are incapable of conflicts
     case Configuration::BATTERY_MONITOR:
-      strcpy(error_message, "Port is used by battery monitor.");
+      strcpy(resp.message, "Port is used by battery monitor.");
       break;
     case Configuration::BAROMETER:
-      strcpy(error_message, "Port is used by barometer.");
+      strcpy(resp.message, "Port is used by barometer.");
       break;
     case Configuration::MAGNETOMETER:
-      strcpy(error_message, "Port is used by magnetometer.");
+      strcpy(resp.message, "Port is used by magnetometer.");
       break;
     default:
-      strcpy(error_message, "Other error.");
+      strcpy(resp.message, "Other error.");
       break;
     }
     return resp;
@@ -112,122 +111,121 @@ ConfigManager::config_response AirbourneBoardConfigManager::check_config_change(
   resp.message[0]=0;
   return resp;
 }
-void AirbourneBoardConfigManager::get_device_name(device_t device, uint8_t (&name)[DEVICE_NAME_LENGTH])
+void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH])
 {
-  char *name_char = reinterpret_cast<char*>(name);
   switch(device)
   {
   case Configuration::SERIAL:
-    strcpy(name_char, "Serial");
+    strcpy(name, "Serial");
     break;
   case Configuration::RC:
-    strcpy(name_char, "RC");
+    strcpy(name, "RC");
     break;
   case Configuration::AIRSPEED:
-    strcpy(name_char, "Airspeed");
+    strcpy(name, "Airspeed");
     break;
   case Configuration::GNSS:
-    strcpy(name_char, "GNSS");
+    strcpy(name, "GNSS");
     break;
   case Configuration::SONAR:
-    strcpy(name_char, "Sonar");
+    strcpy(name, "Sonar");
     break;
   case Configuration::BATTERY_MONITOR:
-    strcpy(name_char, "Battery Monitor");
+    strcpy(name, "Battery Monitor");
     break;
   case Configuration::BAROMETER:
-    strcpy(name_char, "Barometer");
+    strcpy(name, "Barometer");
     break;
   case Configuration::MAGNETOMETER:
-    strcpy(name_char, "Magnetometer");
+    strcpy(name, "Magnetometer");
     break;
   default:
-    strcpy(name_char, "Error/Unsupported");
+    strcpy(name, "Error/Unsupported");
     break;
   }
 }
-void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[CONFIG_NAME_LENGTH])
+void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH])
 {
-  char *name_char = reinterpret_cast<char*>(name);
   const char *name_str = "Invalid Config";
-  switch(device)
-  {
-  case Configuration::SERIAL:
-    switch(config)
-    {
-    case 0:
-      name_str="VCP over USB";
-      break;
-    case 1:
-      name_str="UART1 on Main";
-      break;
-    case 2:
-      name_str="UART2 on Flex-IO";
-      break;
-    case 3:
-      name_str="UART3 on Flexi";
-      break;
-    }
-    break;
-  case Configuration::RC:
-    if(config==0)
-      name_str = "PPM on Flex-IO";
-    else
-      name_str = "SBUS on Main";
-    break;
-  case Configuration::AIRSPEED:
-    if(config==0)
-      name_str = "Disabled";
-    else
-      name_str = "I2C2 on Flexi";
-    break;
-  case Configuration::GNSS:
-    switch(config)
-    {
-    case 0:
-      name_str = "Disabled";
-      break;
-    case 1:
-      name_str = "UART1 on main";
-      break;
-    case 2:
-      name_str = "UART2 on Flex-Io";
-      break;
-    case 3:
-      name_str = "UART3 on Flexi";
-      break;
-    }
-    break;
-  case Configuration::SONAR:
-    if(config ==0)
-      name_str = "Disabled";
-    else
-      name_str = "I2C2 on Flexi";
-    break;
-  case Configuration::BATTERY_MONITOR:
-    if(config==0)
-      name_str = "Disabled";
-    else
-      name_str = "ADC3 on Power";
-    break;
-  case Configuration::BAROMETER:
-    if(config==0)
-      name_str = "Disabled";
-    else
-      name_str = "Onboard barometer";
-    break;
-  case Configuration::MAGNETOMETER:
-    if(config ==0)
-      name_str = "Disabled";
-    else
-      name_str = "Onboard magnetometer";
-    break;
-  default:
-    name_str = "Invalid device";
-  }
   if(config > max_configs[device])
     name_str = "Invalid config";
-  strcpy(name_char, name_str);
+  else
+    switch(device)
+    {
+    case Configuration::SERIAL:
+      switch(config)
+      {
+      case 0:
+        name_str="VCP over USB";
+        break;
+      case 1:
+        name_str="UART1 on Main";
+        break;
+      case 2:
+        name_str="UART2 on Flex-IO";
+        break;
+      case 3:
+        name_str="UART3 on Flexi";
+        break;
+      }
+      break;
+    case Configuration::RC:
+      if(config==0)
+        name_str = "PPM on Flex-IO";
+      else
+        name_str = "SBUS on Main";
+      break;
+    case Configuration::AIRSPEED:
+      if(config==0)
+        name_str = "Disabled";
+      else
+        name_str = "I2C2 on Flexi";
+      break;
+    case Configuration::GNSS:
+      switch(config)
+      {
+      case 0:
+        name_str = "Disabled";
+        break;
+      case 1:
+        name_str = "UART1 on main";
+        break;
+      case 2:
+        name_str = "UART2 on Flex-Io";
+        break;
+      case 3:
+        name_str = "UART3 on Flexi";
+        break;
+      }
+      break;
+    case Configuration::SONAR:
+      if(config ==0)
+        name_str = "Disabled";
+      else
+        name_str = "I2C2 on Flexi";
+      break;
+    case Configuration::BATTERY_MONITOR:
+      if(config==0)
+        name_str = "Disabled";
+      else
+        name_str = "ADC3 on Power";
+      break;
+    case Configuration::BAROMETER:
+      if(config==0)
+        name_str = "Disabled";
+      else
+        name_str = "Onboard barometer";
+      break;
+    case Configuration::MAGNETOMETER:
+      if(config ==0)
+        name_str = "Disabled";
+      else
+        name_str = "Onboard magnetometer";
+      break;
+    default:
+      name_str = "Invalid device";
+    }
+  strcpy(name, name_str);
 }
 AirbourneBoardConfigManager::revo_port AirbourneBoardConfigManager::get_port(uint8_t device, uint8_t config)
 {

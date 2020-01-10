@@ -24,8 +24,8 @@ public:
   // Do not assume that the device or config are valid numbers
   // When passed an invalid argument, it is better to return a string so indicating than an
   // empty string
-  virtual void get_device_name(device_t device, uint8_t (&name)[DEVICE_NAME_LENGTH])=0;
-  virtual void get_config_name(device_t device, hardware_config_t config, uint8_t (&name)[CONFIG_NAME_LENGTH]) = 0;
+  virtual void get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH])=0;
+  virtual void get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH]) = 0;
 };
 } // namespace rosflight_firmware
 

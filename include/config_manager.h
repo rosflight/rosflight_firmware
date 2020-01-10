@@ -20,7 +20,7 @@ public:
   {
     bool successful;
     bool reboot_required;
-    uint8_t message[CONFIG_RESPONSE_MESSAGE_LENGTH]; // Primarily for error messages
+    char message[CONFIG_RESPONSE_MESSAGE_LENGTH]; // Primarily for error messages
   }config_response;
 
   ConfigManager(ROSflight &RF, config_t &config);
