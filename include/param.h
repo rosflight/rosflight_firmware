@@ -232,12 +232,13 @@ class Params
 
 public:
   static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
+private:
   union param_value_t
   {
     float fvalue;
     int32_t ivalue;
   };
-
+public:
   typedef struct
   {
     uint32_t version;
@@ -251,7 +252,6 @@ public:
     uint8_t magic_ef;                       // magic number, should be 0xEF
     uint8_t chk;                            // XOR checksum
   } params_t;
-
 private:
   ROSflight &RF_;
   params_t &params;

@@ -29,9 +29,6 @@ public:
   bool configure_devices() const; // Sends configurations to the board via the enable_device method
   // Attempts to set a configuration, failing if the board config manager rejects it
   ConfigResponse attempt_set_configuration(device_t device, uint8_t config);
-  // Sets a config without checks. This may cause an invalid configuration combo,
-  // so attempt_set_configuration is recommended
-  void set_configuration(device_t device, uint8_t config);
   uint8_t get_configuration(device_t device) const;
   uint8_t operator[](device_t device) const; // same as get_configuration, for convenience
 
@@ -40,6 +37,9 @@ public:
 private:
   ROSflight &RF_;
   Config &config_;
+  // Sets a config without checks. This may cause an invalid configuration combo,
+  // so attempt_set_configuration is recommended
+  void set_configuration(device_t device, uint8_t config);
   bool read(); // currently just checks that the memory manager is ready and the checksum is correct
   void fill_defaults(); // Default values are 0, by convention
   uint32_t generate_checksum() const; // Based off of fletcher algorithm
