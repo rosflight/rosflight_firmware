@@ -1,5 +1,5 @@
-#ifndef AIRBOURNEBOARDCONFIGMANAGER_H
-#define AIRBOURNEBOARDCONFIGMANAGER_H
+#ifndef AIRBOURNE_BOARD_CONFIG_MANAGER_H
+#define AIRBOURNE_BOARD_CONFIG_MANAGER_H
 
 #include "board_config_manager.h"
 
@@ -10,12 +10,12 @@ class AirbourneBoardConfigManager : public BoardConfigManager
 {
 public:
   AirbourneBoardConfigManager();
-  hardware_config_t get_max_config(device_t device) override;
-  ConfigManager::config_response check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) override;
-  void get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH]) override;
-  void get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH]) override;
+  hardware_config_t get_max_config(device_t device) const override;
+  ConfigManager::config_response check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) const override;
+  void get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH]) const override;
+  void get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH]) const override;
 private:
-  enum revo_port
+  enum Port
   {
     NO_PORT,
     MAIN_PORT,
@@ -25,10 +25,11 @@ private:
     POWER_PORT, // the port labeled "PWR / SONAR" is not to provide power, but rather for a battery monitor
     INTERNAL_I2C
   };
-  revo_port get_port(uint8_t device, uint8_t config); // Get the port used by a given configuration
+  Port get_port(uint8_t device, uint8_t config) const; // Get the port used by a given configuration
+
   ROSflight *RF_;
-  const hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 1, 1};
+  static constexpr hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 1, 1};
 };
 } // namespace rosflight_firmware
 
-#endif // AIRBOURNEBOARDCONFIGMANAGER_H
+#endif // AIRBOURNE_BOARD_CONFIG_MANAGER_H
