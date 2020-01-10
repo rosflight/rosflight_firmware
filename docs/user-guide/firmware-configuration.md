@@ -45,6 +45,8 @@ This response indicates that the configuration could not be set because the airs
 Configurations are saved by calling the `settings_write` service. This service also saves parameters.
 ##Configurations
 Available devices and configurations are dependent on the flight controller. The Naze/Flip32 does not support changing configurations.
+
+For all boards, the default configuration is number 0.
 ###OpenPilot Revolution (Revo) Configurations
 ####Serial
 The serial connection is used to communicate with `rosflight_io`. Change with caution, because doing so may make it difficult to change back.
@@ -94,11 +96,13 @@ Future versions of ROSflight may support more options with barometers
 
 | Configuration | Number | port | Notes |
 | ------------- | ------ | ---- | ----- |
-|Onboard Barometer|0|None||
+|Disabled|0|None||
+|Onboard Barometer|1|None||
 
 ####Magnetometer
 Future versions of ROSflight may support more options with magnetometers
 
 | Configuration | Number | port | Notes |
 | ------------- | ------ | ---- | ----- |
-|Onboard Magnetometer|0|None||
+|Disabled|0|None||
+|Onboard Magnetometer|1|None||

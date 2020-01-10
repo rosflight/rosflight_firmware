@@ -24,13 +24,14 @@ private:
     FLEX_IO_PORT,
     FLEXI_PORT,
     USB_PORT,
-    POWER_PORT // the port labeled "PWR / SONAR" is not to provide power, but rather for a battery monitor
+    POWER_PORT, // the port labeled "PWR / SONAR" is not to provide power, but rather for a battery monitor
+    INTERNAL_I2C
   };
   revo_port get_port(uint8_t device, uint8_t config); // Get the port used by a given configuration
   bool is_initialized_{false};
   AirbourneBoard *board_;
   ROSflight *RF_;
-  const hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 0, 0};
+  const hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 1, 1};
 };
 } // namespace rosflight_firmware
 
