@@ -149,7 +149,7 @@ public:
 
   // hardware config
   bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
-  AirbourneBoardConfigManager &get_board_config_manager() override;
+  AirbourneBoardConfigManager const &get_board_config_manager() const override;
 
   // sensors
   void sensors_init() override;

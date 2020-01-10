@@ -189,7 +189,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   return false;
 }
 
-AirbourneBoardConfigManager &AirbourneBoard::get_board_config_manager()
+AirbourneBoardConfigManager const &AirbourneBoard::get_board_config_manager() const
 {
   return board_config_manager_;
 }
