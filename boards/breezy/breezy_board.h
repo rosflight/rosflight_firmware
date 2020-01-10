@@ -104,7 +104,6 @@ public:
 
   // hardware config
   bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
-  void init_board_config_manager(ROSflight *rf) override;
   BreezyBoardConfigManager & get_board_config_manager() override;
 
   // sensors

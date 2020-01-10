@@ -18,7 +18,7 @@ public:
   // If the response indicates success, then the config manager accepts the change
   // If not, the config manager returns the error indicated
   // Implementations should not assume that either the device or the config are valid
-  virtual ConfigManager::config_response check_config_change(device_t device, hardware_config_t config) = 0;
+  virtual ConfigManager::config_response check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) = 0;
   static const int DEVICE_NAME_LENGTH{20};
   static const int CONFIG_NAME_LENGTH{20};
   // Do not assume that the device or config are valid numbers
