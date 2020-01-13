@@ -2,6 +2,7 @@
 #define AIRBOURNE_BOARD_CONFIG_MANAGER_H
 
 #include "board_config_manager.h"
+#include "airbourne_configuration_enum.h"
 
 namespace rosflight_firmware{
 class ROSflight;

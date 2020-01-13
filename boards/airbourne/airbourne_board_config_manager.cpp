@@ -50,14 +50,14 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
   switch(device)
   {
   case Configuration::RC:
-    if(config ==0) // PPM is not known to conflict with anything
+    if(config ==AirbourneConfiguration::RC_PPM) // PPM is not known to conflict with anything
       break;
   case Configuration::SERIAL:
   case Configuration::GNSS:
     if(port != NO_PORT)
       for(device_t other_device{static_cast<device_t>(0)}; other_device != Configuration::DEVICE_COUNT; ++other_device)
       {
-        if(other_device == Configuration::RC && cm[Configuration::RC] == 0) // RC over PPM does not conflict with UART, even though both use the same port
+        if(other_device == Configuration::RC && cm[Configuration::RC] == AirbourneConfiguration::RC_PPM) // RC over PPM does not conflict with UART, even though both use the same port
           continue;
         if(port == get_port(other_device, cm[other_device]))
         {
@@ -68,9 +68,9 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
     break;
   case Configuration::AIRSPEED:
   case Configuration::SONAR:
-    if(cm[Configuration::GNSS] == 3)
+    if(cm[Configuration::GNSS] == AirbourneConfiguration::GNSS_UART3)
       conflict_device = Configuration::GNSS;
-    if(cm[Configuration::SERIAL] == 3)
+    if(cm[Configuration::SERIAL] == AirbourneConfiguration::GNSS_UART3)
       conflict_device = Configuration::SERIAL;
     break;
   default:
@@ -113,7 +113,7 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
   }
   resp.successful = true;
   resp.reboot_required = true;
-  resp.message[0]=0;
+  resp.message[0]=0; // Ensuring that the message is treated as a zero-length string
   return resp;
 }
 void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH]) const
@@ -159,71 +159,71 @@ void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_conf
     case Configuration::SERIAL:
       switch(config)
       {
-      case 0:
+      case AirbourneConfiguration::SERIAL_VCP:
         strcpy(name, "VCP over USB");
         break;
-      case 1:
+      case AirbourneConfiguration::SERIAL_UART1:
         strcpy(name, "UART1 on Main");
         break;
-      case 2:
+      case AirbourneConfiguration::SERIAL_UART2:
         strcpy(name, "UART2 on Flex-IO");
         break;
-      case 3:
+      case AirbourneConfiguration::SERIAL_UART3:
         strcpy(name, "UART3 on Flexi");
         break;
       }
       break;
     case Configuration::RC:
-      if(config==0)
+      if(config==AirbourneConfiguration::RC_PPM)
         strcpy(name, "PPM on Flex-IO");
-      else
+      else if(config==AirbourneConfiguration::RC_SBUS)
         strcpy(name, "SBUS on Main");
       break;
     case Configuration::AIRSPEED:
-      if(config==0)
+      if(config==AirbourneConfiguration::AIRSPEED_DISABLED)
         strcpy(name, "Disabled");
-      else
+      else if(config == AirbourneConfiguration::AIRSPEED_I2C2)
         strcpy(name, "I2C2 on Flexi");
       break;
     case Configuration::GNSS:
       switch(config)
       {
-      case 0:
+      case AirbourneConfiguration::GNSS_DISABLED:
         strcpy(name, "Disabled");
         break;
-      case 1:
+      case AirbourneConfiguration::GNSS_UART1:
         strcpy(name, "UART1 on main");
         break;
-      case 2:
+      case AirbourneConfiguration::GNSS_UART2:
         strcpy(name, "UART2 on Flex-Io");
         break;
-      case 3:
+      case AirbourneConfiguration::GNSS_UART3:
         strcpy(name, "UART3 on Flexi");
         break;
       }
       break;
     case Configuration::SONAR:
-      if(config ==0)
+      if(config ==AirbourneConfiguration::SONAR_DISABLED)
         strcpy(name, "Disabled");
-      else
+      else if(config == AirbourneConfiguration::SONAR_I2C2)
         strcpy(name, "I2C2 on Flexi");
       break;
     case Configuration::BATTERY_MONITOR:
-      if(config==0)
+      if(config==AirbourneConfiguration::BATTERY_MONITOR_DISABLED)
         strcpy(name, "Disabled");
-      else
+      else if(config==AirbourneConfiguration::BATTERY_MONITOR_ADC3)
         strcpy(name, "ADC3 on Power");
       break;
     case Configuration::BAROMETER:
-      if(config==0)
+      if(config==AirbourneConfiguration::BAROMETER_DISABLED)
         strcpy(name, "Disabled");
-      else
+      else if(config == AirbourneConfiguration::BAROMETER_ONBOARD)
         strcpy(name, "Onboard barometer");
       break;
     case Configuration::MAGNETOMETER:
-      if(config ==0)
+      if(config ==AirbourneConfiguration::MAGNETOMETER_DISABLED)
         strcpy(name, "Disabled");
-      else
+      else if(config == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
         strcpy(name, "Onboard magnetometer");
       break;
     default:
@@ -237,45 +237,51 @@ AirbourneBoardConfigManager::Port AirbourneBoardConfigManager::get_port(uint8_t 
   case Configuration::SERIAL:
     switch(config)
     {
-    case 0:
+    case AirbourneConfiguration::SERIAL_VCP:
       return USB_PORT;
-    case 1:
+    case AirbourneConfiguration::SERIAL_UART1:
       return MAIN_PORT;
-    case 2:
+    case AirbourneConfiguration::SERIAL_UART2:
       return FLEX_IO_PORT;
-    case 3:
+    case AirbourneConfiguration::SERIAL_UART3:
       return FLEXI_PORT;
     }
   case Configuration::GNSS:
     switch(config)
     {
-    case 0:
-      return USB_PORT;
-    case 1:
+    case AirbourneConfiguration::GNSS_DISABLED:
+      return NO_PORT;
+    case AirbourneConfiguration::GNSS_UART1:
       return MAIN_PORT;
-    case 2:
+    case AirbourneConfiguration::GNSS_UART2:
       return FLEX_IO_PORT;
-    case 3:
+    case AirbourneConfiguration::GNSS_UART3:
       return FLEXI_PORT;
     }
   case Configuration::RC:
-    if(config == 0)
+    if(config == AirbourneConfiguration::RC_PPM)
       return FLEX_IO_PORT;
-    if(config == 1)
+    if(config == AirbourneConfiguration::RC_SBUS)
       return MAIN_PORT;
     break;
   case Configuration::AIRSPEED:
+    if(config==AirbourneConfiguration::AIRSPEED_I2C2)
+      return FLEXI_PORT;
+    break;
   case Configuration::SONAR:
-    if(config==1)
+    if(config==AirbourneConfiguration::SONAR_I2C2)
       return FLEXI_PORT;
     break;
   case Configuration::BATTERY_MONITOR:
-    if(config == 1)
+    if(config == AirbourneConfiguration::BATTERY_MONITOR_ADC3)
       return POWER_PORT;
     break;
   case Configuration::MAGNETOMETER:
+    if(config == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
+      return INTERNAL_I2C;
+    break;
   case Configuration::BAROMETER:
-    if(config == 1)
+    if(config == AirbourneConfiguration::BAROMETER_ONBOARD)
       return INTERNAL_I2C;
   }
   return NO_PORT;
