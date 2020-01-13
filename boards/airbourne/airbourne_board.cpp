@@ -174,6 +174,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   case Configuration::BAROMETER:
     if(configuration == AirbourneConfiguration::BAROMETER_ONBOARD)
     {
+      while (millis() < 50) {} // wait for sensors to boot up
       if(!int_i2c_.is_initialized())
         int_i2c_.init(&i2c_config[BARO_I2C]);
       baro_.init(&int_i2c_);
@@ -182,6 +183,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   case Configuration::MAGNETOMETER:
     if(configuration == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
     {
+      while (millis() < 50) {} // wait for sensors to boot up
       if(!int_i2c_.is_initialized())
         int_i2c_.init(&i2c_config[BARO_I2C]);
       mag_.init(&int_i2c_);
