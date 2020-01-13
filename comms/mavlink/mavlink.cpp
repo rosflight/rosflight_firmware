@@ -121,6 +121,9 @@ void Mavlink::send_command_ack(uint8_t system_id, Command command, bool success)
   case CommLinkInterface::Command::COMMAND_SEND_VERSION:
     rosflight_cmd = ROSFLIGHT_CMD_SEND_VERSION;
     break;
+  case CommLinkInterface::Command::COMMAND_SEND_ALL_CONFIG_INFOS:
+    rosflight_cmd = ROSFLIGHT_CMD_SEND_ALL_CONFIG_INFOS;
+    break;
   }
 
   mavlink_message_t msg;
@@ -486,6 +489,9 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
     break;
   case ROSFLIGHT_CMD_SEND_VERSION:
     command = CommLinkInterface::Command::COMMAND_SEND_VERSION;
+    break;
+  case ROSFLIGHT_CMD_SEND_ALL_CONFIG_INFOS:
+    command = CommLinkInterface::Command::COMMAND_SEND_ALL_CONFIG_INFOS;
     break;
   default: // unsupported command; report failure then return without calling command callback
     mavlink_message_t out_msg;
