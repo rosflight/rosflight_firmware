@@ -78,19 +78,19 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configura
   switch(configuration)
   {
   default:
-  case 0: // VCP
+  case AirbourneConfiguration::SERIAL_VCP:
     current_serial_ = &vcp_;
     vcp_.init();
     break;
-  case 1: // UART 1
+  case AirbourneConfiguration::SERIAL_UART1:
     current_serial_ = &uart1_;
     uart1_.init(&uart_config[UART1], baud_rate);
     break;
-  case 2: // UART 2
+  case AirbourneConfiguration::SERIAL_UART2:
     current_serial_ = &uart2_;
     uart2_.init(&uart_config[UART2], baud_rate);
     break;
-  case 3: // UART 3
+  case AirbourneConfiguration::SERIAL_UART3:
     current_serial_ = &uart3_;
     uart3_.init(&uart_config[UART3], baud_rate);
     break;
@@ -133,10 +133,10 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
   case Configuration::RC:
     switch(configuration)
     {
-    case 0:
+    case AirbourneConfiguration::RC_PPM:
       rc_init(RC_TYPE_PPM);
       break;
-    case 1:
+    case AirbourneConfiguration::RC_SBUS:
       rc_init(RC_TYPE_SBUS);
       break;
     default:
@@ -144,7 +144,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     return true;
   case Configuration::AIRSPEED:
-    if(configuration==1)
+    if(configuration==AirbourneConfiguration::AIRSPEED_I2C2)
     {
       if(!ext_i2c_.is_initialized())
         ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
@@ -155,12 +155,15 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     // GNSS is currently disabled
     break;
   case Configuration::SONAR:
-    if(!ext_i2c_.is_initialized())
-      ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
-    sonar_.init(&ext_i2c_);
+    if(configuration == AirbourneConfiguration::SONAR_I2C2)
+    {
+      if(!ext_i2c_.is_initialized())
+        ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+      sonar_.init(&ext_i2c_);
+    }
     break;
   case Configuration::BATTERY_MONITOR:
-    if(configuration == 1)
+    if(configuration == AirbourneConfiguration::BATTERY_MONITOR_ADC3)
     {
       float voltage_multiplier = params.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
       float current_multiplier = params.get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
@@ -169,7 +172,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     break;
   case Configuration::BAROMETER:
-    if(configuration == 1)
+    if(configuration == AirbourneConfiguration::BAROMETER_ONBOARD)
     {
       if(!int_i2c_.is_initialized())
         int_i2c_.init(&i2c_config[BARO_I2C]);
@@ -177,7 +180,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     break;
   case Configuration::MAGNETOMETER:
-    if(configuration == 1)
+    if(configuration == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
     {
       if(!int_i2c_.is_initialized())
         int_i2c_.init(&i2c_config[BARO_I2C]);

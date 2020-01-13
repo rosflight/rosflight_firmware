@@ -28,6 +28,7 @@ inline device_t& operator++(device_t &dev)
   dev = static_cast<device_t>(return_value);
   return dev;
 }
+
 }
 typedef uint8_t hardware_config_t;
 typedef Configuration::device_t device_t;
