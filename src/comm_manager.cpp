@@ -693,10 +693,9 @@ void CommManager::send_next_config_info(void)
   {
     if (send_config_info_index_ == 0)
       send_device_info(send_device_info_index_);
-    else
-      send_config_info(send_device_info_index_, send_config_info_index_-1);
+    send_config_info(send_device_info_index_, send_config_info_index_);
     send_config_info_index_++;
-    if(send_config_info_index_ -1 > RF_.board_.get_board_config_manager().get_max_config(send_device_info_index_))
+    if(send_config_info_index_ > RF_.board_.get_board_config_manager().get_max_config(send_device_info_index_))
     {
       ++send_device_info_index_;
       send_config_info_index_ = 0;
