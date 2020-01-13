@@ -168,12 +168,12 @@ public:
   bool gnss_present() override;
   void gnss_update() override;
 
-  bool battery_voltage_present() override;
-  float battery_voltage_read() override;
+  bool battery_voltage_present() const override;
+  float battery_voltage_read() const override;
   void battery_voltage_set_multiplier(double multiplier) override;
 
-  bool battery_current_present() override;
-  float battery_current_read() override;
+  bool battery_current_present() const override;
+  float battery_current_read() const override;
   void battery_current_set_multiplier(double multiplier) override;
 
   //GNSS

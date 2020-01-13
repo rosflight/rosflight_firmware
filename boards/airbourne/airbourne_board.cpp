@@ -333,12 +333,12 @@ GNSSRaw AirbourneBoard::gnss_raw_read()
   return raw;
 }
 
-bool AirbourneBoard::battery_voltage_present()
+bool AirbourneBoard::battery_voltage_present() const
 {
   return this->battery_monitor_.has_voltage_sense();
 }
 
-float AirbourneBoard::battery_voltage_read()
+float AirbourneBoard::battery_voltage_read() const
 {
   return static_cast<float>(this->battery_monitor_.read_voltage());
 }
@@ -348,12 +348,12 @@ void AirbourneBoard::battery_voltage_set_multiplier(double multiplier)
   this->battery_monitor_.set_voltage_multiplier(multiplier);
 }
 
-bool AirbourneBoard::battery_current_present()
+bool AirbourneBoard::battery_current_present() const
 {
   return this->battery_monitor_.has_current_sense();
 }
 
-float AirbourneBoard::battery_current_read()
+float AirbourneBoard::battery_current_read() const
 {
   return static_cast<float>(this->battery_monitor_.read_current());
 }
