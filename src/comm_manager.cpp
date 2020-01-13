@@ -292,6 +292,9 @@ void CommManager::command_callback(CommLinkInterface::Command command)
     case CommLinkInterface::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
       break;
+    case CommLinkInterface::Command::COMMAND_SEND_ALL_CONFIG_INFOS:
+      send_all_config_info();
+      break;
     }
   }
 
@@ -425,8 +428,6 @@ void CommManager::config_request_callback(uint8_t device)
 {
   if(device < Configuration::DEVICE_COUNT)
     send_config_value(static_cast<device_t>(device));
-  if(device == 0xff)
-    send_all_config_info();
 }
 void CommManager::send_all_config_info()
 {
