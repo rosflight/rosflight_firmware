@@ -75,12 +75,12 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 // serial
 void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration)
 {
+  vcp_.init(); // VCP is always initialized, so that if UART is mistakenly enabled, it can still be used
   switch(configuration)
   {
   default:
   case AirbourneConfiguration::SERIAL_VCP:
     current_serial_ = &vcp_;
-    vcp_.init();
     break;
   case AirbourneConfiguration::SERIAL_UART1:
     current_serial_ = &uart1_;
@@ -99,6 +99,8 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configura
 
 void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
+  if(vcp_.connected())
+    current_serial_ = &vcp;
   current_serial_->write(src, len);
 }
 
