@@ -217,16 +217,26 @@ void Sensors::update_other_sensors()
     }
     break;
   case BATTERY_MONITOR:
-    if (rf_.board_.battery_voltage_present())
-    {
-      data_.battery_monitor_present = true;
-      data_.battery_voltage = rf_.board_.battery_voltage_read();
-    }
-    if(rf_.board_.battery_current_present())
-    {
-      data_.battery_monitor_present = true;
-      data_.battery_current = rf_.board_.battery_current_read();
-    }
+      if(rf_.board_.clock_millis() - last_battery_monitor_update_ms > BATTERY_MONITOR_UPDATE_PERIOD)
+      {
+        last_battery_monitor_update_ms = rf_.board_.clock_millis();
+        if (rf_.board_.battery_voltage_present())
+        {
+          data_.battery_monitor_present = true;
+          battery_voltage_history[battery_montitor_filter_pointer++]=rf_.board_.battery_voltage_read();
+          if(battery_montitor_filter_pointer == BATTERY_MONITOR_MOVING_AVERAGE_COUNT)
+            battery_montitor_filter_pointer = 0;
+          float voltage_sum{0};
+          for(float voltage: battery_voltage_history)
+            voltage_sum += voltage;
+          data_.battery_voltage = voltage_sum / BATTERY_MONITOR_MOVING_AVERAGE_COUNT;
+        }
+        if(rf_.board_.battery_current_present())
+        {
+          data_.battery_monitor_present = true;
+          data_.battery_current = rf_.board_.battery_current_read();
+        }
+      }
     break;
   default:
     break;

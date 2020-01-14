@@ -205,6 +205,8 @@ private:
   static const int SENSOR_CAL_CYCLES;
   static const float BARO_MAX_CALIBRATION_VARIANCE;
   static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
+  static constexpr size_t BATTERY_MONITOR_MOVING_AVERAGE_COUNT = 10;
+  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD = 100;
 
   class OutlierFilter
   {
@@ -295,6 +297,10 @@ private:
   OutlierFilter diff_outlier_filt_;
   OutlierFilter sonar_outlier_filt_;
 
+  // Battery monitor filtering via moving average
+  float battery_voltage_history[BATTERY_MONITOR_MOVING_AVERAGE_COUNT];
+  uint32_t last_battery_monitor_update_ms = 0;
+  size_t battery_montitor_filter_pointer = 0; // Index to the next value in the filter to replace
   // Battery Monitor
   void update_battery_monitor_multipliers();
 
