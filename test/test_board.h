@@ -62,7 +62,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
 // serial
-  void serial_init(uint32_t baud_rate, hardware_config_t configuration) override;
+  void serial_init(uint32_t baud_rate, hardware_config_t configuration);
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
@@ -70,7 +70,7 @@ public:
 
 // Hardware config
   bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
-  TestBoardConfigManager & get_board_config_manager() override;
+  const TestBoardConfigManager & get_board_config_manager() const override;
 
 // sensors
   void sensors_init() override;
@@ -111,7 +111,7 @@ public:
   void battery_current_set_multiplier(double multiplier) override;
 
 // RC
-  void rc_init(rc_type_t rc_type) override;
+  void rc_init();
   bool rc_lost() override;
   float rc_read(uint8_t channel) override;
 

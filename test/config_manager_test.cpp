@@ -35,7 +35,7 @@ TEST_F(ConfigManagerTest, SetValid)
 {
   device_t changed_device = Configuration::SERIAL;
   hardware_config_t config = 27;
-  ConfigManager::config_response response = rf.config_manager_.attempt_set_configuration(changed_device, config);
+  ConfigManager::ConfigResponse response = rf.config_manager_.attempt_set_configuration(changed_device, config);
   EXPECT_TRUE(response.successful);
   EXPECT_TRUE(response.reboot_required);
   EXPECT_EQ(std::string(reinterpret_cast<char*>(response.message)), "Succeed for testing");
@@ -50,7 +50,7 @@ TEST_F(ConfigManagerTest, SetInvalid)
 {
   device_t changed_device = Configuration::SERIAL;
   hardware_config_t config = 1;
-  ConfigManager::config_response response = rf.config_manager_.attempt_set_configuration(changed_device, config);
+  ConfigManager::ConfigResponse response = rf.config_manager_.attempt_set_configuration(changed_device, config);
   EXPECT_FALSE(response.successful);
   EXPECT_FALSE(response.reboot_required);
   EXPECT_EQ(std::string(reinterpret_cast<char*>(response.message)), "Fail for testing");

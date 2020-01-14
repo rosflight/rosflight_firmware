@@ -86,13 +86,22 @@ void testBoard::serial_flush() {}
 // Hardware config
 bool testBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
 {
-  (void)device;
   (void)configuration;
   (void)params;
+  switch(configuration)
+  {
+  case Configuration::SERIAL:
+    serial_init(0,0);
+    break;
+  case Configuration::RC:
+    rc_init();
+    break;
+  }
+
   return true;
 }
 
-TestBoardConfigManager &testBoard::get_board_config_manager()
+const TestBoardConfigManager &testBoard::get_board_config_manager() const
 {
   return config_manager_;
 }
@@ -179,7 +188,7 @@ bool testBoard::gnss_has_new_data() { return false; }
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-void testBoard::rc_init(rc_type_t rc_type) {}
+void testBoard::rc_init() {}
 bool testBoard::rc_lost() { return rc_lost_; }
 float testBoard::rc_read(uint8_t channel)
 {
