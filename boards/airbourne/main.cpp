@@ -36,21 +36,30 @@
 #include "board.h"
 #include "state_manager.h"
 
-//#pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Because this was unnecessary and annoying
+// //#pragma GCC diagnostic ignored "-Wmissing-field-initializers" //Because this was unnecessary and annoying
 
-uint32_t error_count_ = 0;//Used for counting resets
-rosflight_firmware::ROSflight* rosflight=nullptr;//Used to access important variables in case of a hard fault
-rosflight_firmware::StateManager::State get_state()//Used in case of a hard fault
+// uint32_t error_count_ = 0;//Used for counting resets
+// rosflight_firmware::ROSflight* rosflight = nullptr; // used to access important variables in case of a hard fault
+// rosflight_firmware::StateManager::State get_state()//Used in case of a hard fault
+// {
+//     if(rosflight==nullptr)
+//     {
+// #pragma GCC diagnostic push //Ignore blank fields in struct
+// #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+//         rosflight_firmware::StateManager::State ret = {0};
+// #pragma GCC diagnostic pop
+//         return ret;
+//     }
+//     return rosflight->state_manager_.state();
+// }
+
+rosflight_firmware::ROSflight* rosflight = nullptr; // used to access firmware in case of a hard fault
+void write_backup_data(const rosflight_firmware::StateManager::BackupData::DebugInfo& debug)
 {
-    if(rosflight==nullptr)
+    if (rosflight != nullptr)
     {
-#pragma GCC diagnostic push //Ignore blank fields in struct
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-        rosflight_firmware::StateManager::State ret = {0};
-#pragma GCC diagnostic pop
-        return ret;
+        rosflight->state_manager_.write_backup_data(debug);
     }
-    return rosflight->state_manager_.state();
 }
 
 extern "C" {
@@ -101,27 +110,39 @@ void prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
     psr = pulFaultStackAddress[ 7 ];
 
     // avoid compiler warnings about unused variables
-    (void) r0;
-    (void) r1;
-    (void) r2;
-    (void) r3;
-    (void) r12;
-    (void) lr;
-    (void) pc;
-    (void) psr;
+    // (void) r0;
+    // (void) r1;
+    // (void) r2;
+    // (void) r3;
+    // (void) r12;
+    // (void) lr;
+    // (void) pc;
+    // (void) psr;
 
     /* When the following line is hit, the variables contain the register values. */
 
-    //save crash information to backup SRAM
-    rosflight_firmware::BackupData backup_data;
-    backup_data.debug_info={r0,r1,r2,r3,r12,lr,pc,psr};
-    backup_data.reset_count=error_count_+1;
-    backup_data.error_code=1;
-    backup_data.state = get_state();
-    if(backup_data.state.armed)
-        backup_data.arm_status=rosflight_firmware::ARM_MAGIC;//magic number for extra certainty on rearm
-    backup_data.checksum=generate_backup_checksum(backup_data);
-    backup_sram_write(backup_data);
+    // save crash information to backup SRAM
+    rosflight_firmware::StateManager::BackupData::DebugInfo debug = {
+        .r0 = r0,
+        .r1 = r1,
+        .r2 = r2,
+        .r3 = r3,
+        .r12 = r12,
+        .lr = lr,
+        .pc = pc,
+        .psr = psr
+    };
+    write_backup_data(debug);
+
+    // rosflight_firmware::BackupData backup_data;
+    // backup_data.debug_info={r0,r1,r2,r3,r12,lr,pc,psr};
+    // backup_data.reset_count=error_count_+1;
+    // backup_data.error_code=1;
+    // backup_data.state = get_state();
+    // if(backup_data.state.armed)
+    //     backup_data.arm_status=rosflight_firmware::ARM_MAGIC;//magic number for extra certainty on rearm
+    // backup_data.checksum=generate_backup_checksum(backup_data);
+    // backup_sram_write(backup_data);
 
     NVIC_SystemReset();
 }
@@ -151,7 +172,7 @@ void WWDG_IRQHandler()
 {
     while(1) {}
 }
-}
+} // extern "C"
 
 
 
@@ -160,17 +181,21 @@ int main(void)
     rosflight_firmware::AirbourneBoard board;
     rosflight_firmware::Mavlink mavlink(board);
     rosflight_firmware::ROSflight firmware(board, mavlink);
+
     rosflight = &firmware; //this allows crashes to grab some info
+
     board.init_board();
     firmware.init();
+
     //Because the USB driver breaks the backup sram, the backup sram must be initalized after
-    backup_sram_init();
-    rosflight_firmware::BackupData backup_data = backup_sram_read();
-    error_count_ = backup_data.reset_count;
+    // backup_sram_init(); // TODO may be important??
+    // rosflight_firmware::BackupData backup_data = backup_sram_read();
+    // error_count_ = backup_data.reset_count;
 
     while (true)
     {
         firmware.run();
     }
+
     return 0;
 }

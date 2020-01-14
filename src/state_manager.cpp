@@ -46,18 +46,32 @@ StateManager::StateManager(ROSflight& parent) :
 
 void StateManager::init()
 {
+  RF_.board_.backup_memory_init();
+
   set_event(EVENT_INITIALIZED);
   process_errors();
 
   // Initialize LEDs
   RF_.board_.led1_off();
-  if(RF_.board_.has_backup_data())
+
+  // check for hardfault recovery data in backup memory
+  BackupData data;
+  if (RF_.board_.backup_memory_read(reinterpret_cast<void*>(&data), sizeof(data)))
   {
-      rosflight_firmware::BackupData error_data=RF_.board_.get_backup_data();
-      this->state_=error_data.state;
-      //Be very sure that arming is correct
-      if(error_data.arm_status!=rosflight_firmware::ARM_MAGIC)
-          this->state_.armed=false;
+    if (data.valid_checksum())
+    {
+      hardfault_count_ = data.reset_count;
+
+      if (data.arm_flag == BackupData::ARM_MAGIC)
+      {
+        state_.armed = true;
+        fsm_state_ = FSM_STATE_ARMED;
+      }
+
+      //! @todo queue sending backup data over comm link
+    }
+
+    RF_.board_.backup_memory_clear(sizeof(data));
   }
 }
 
@@ -273,6 +287,18 @@ void StateManager::set_event(StateManager::Event event)
   // If there has been a change, then report it to the user
   if (start_state != fsm_state_ || state_.error_codes != start_errors)
     RF_.comm_manager_.update_status();
+}
+
+void StateManager::write_backup_data(const BackupData::DebugInfo& debug)
+{
+  BackupData data;
+  data.reset_count = hardfault_count_ + 1;
+  data.error_code = state_.error_codes;
+  data.arm_flag = state_.armed ? BackupData::ARM_MAGIC : 0;
+  data.debug = debug;
+
+  data.finalize();
+  RF_.board_.backup_memory_write(reinterpret_cast<const void*>(&data), sizeof(data));
 }
 
 void StateManager::process_errors()

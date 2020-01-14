@@ -41,27 +41,6 @@
 
 namespace rosflight_firmware
 {
-struct debug_info_t{
-    uint32_t r0;
-    uint32_t r1;
-    uint32_t r2;
-    uint32_t r3;
-    uint32_t r12;
-    uint32_t lr;
-    uint32_t pc;
-    uint32_t psr;
-};
-struct BackupData{
-    uint32_t error_code;
-    debug_info_t debug_info;
-    uint32_t reset_count;
-    uint32_t arm_status; //This must equals ARM_MAGIC, or else the state manager will not rearm on reboot
-    //TODO add state manager info
-    StateManager::State state;
-    uint32_t checksum; //With the current implementation of the checksum, this must go last
-};
-//This magic number is used to check that the firmware was armed before it reset
-const uint32_t ARM_MAGIC = 0xfa11bad;
 
 class Board
 {
@@ -138,8 +117,10 @@ public:
   virtual void led1_toggle() = 0;
 
 // Backup memory
-  virtual bool has_backup_data() = 0;
-  virtual BackupData get_backup_data() = 0;
+  virtual void backup_memory_init() = 0;
+  virtual bool backup_memory_read(void *dest, size_t len) = 0;
+  virtual void backup_memory_write(const void *src, size_t len) = 0;
+  virtual void backup_memory_clear(size_t len) = 0;
 
 };
 

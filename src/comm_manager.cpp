@@ -282,6 +282,7 @@ void CommManager::attitude_correction_callback(const turbomath::Quaternion &q)
 {
   RF_.estimator_.set_attitude_correction(q);
 }
+
 void CommManager::heartbeat_callback(void)
 {
   static bool error_data_sent = false;
@@ -424,9 +425,10 @@ void CommManager::send_mag(void)
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
+
 void CommManager::send_error_data(void)
 {
-  BackupData error_data = RF_.board_.get_backup_data();
+  StateManager::BackupData error_data = RF_.board_.get_backup_data();
   comm_link_.send_error_data(sysid_, error_data);
 }
 
