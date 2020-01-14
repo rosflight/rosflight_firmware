@@ -6,226 +6,286 @@
 
 using namespace rosflight_firmware;
 
-TEST(state_machine_test, error_check) {
-
-  // Initialize the full firmware, so that the state_manager can do its thing
+class StateMachineTest : public ::testing::Test
+{
+public:
   testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  Mavlink mavlink;
+  ROSflight rf;
 
-  // Initialize just a subset of the modules
-  // (some modules set errors when they initialize)
-  rf.board_.init_board();
-  rf.state_manager_.init();
-  rf.params_.init();
+  StateMachineTest() :
+    mavlink(board),
+    rf(board,mavlink)
+  {}
 
+  void SetUp() override
+  {
+    rf.init();
+    rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
+    rf.params_.set_param_int(PARAM_MIXER, 10);
+    rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
+    stepFirmware(100000);
+  }
+
+  void stepFirmware(uint32_t us)
+  {
+    uint64_t start_time_us = board.clock_micros();
+    float dummy_acc[3] = {0, 0, -9.80665};
+    float dummy_gyro[3] = {0, 0, 0};
+    while (board.clock_micros() < start_time_us + us)
+    {
+      board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
+      rf.run();
+    }
+  }
+
+};
+
+TEST_F(StateMachineTest, Init)
+{
   // Should be in PREFLIGHT MODE
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, 0x00);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+}
 
+TEST_F(StateMachineTest, SetAndClearAllErrors)
+{
   // Try setting and clearing all the errors
   for (int error = 0x0001; error <= StateManager::ERROR_UNCALIBRATED_IMU; error *= 2)
   {
     // set the error
     rf.state_manager_.set_error(error);
-    ASSERT_EQ(rf.state_manager_.state().armed, false);
-    ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-    ASSERT_EQ(rf.state_manager_.state().error_codes, error);
-    ASSERT_EQ(rf.state_manager_.state().error, true);
+    EXPECT_EQ(rf.state_manager_.state().armed, false);
+    EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+    EXPECT_EQ(rf.state_manager_.state().error_codes, error);
+    EXPECT_EQ(rf.state_manager_.state().error, true);
 
     // clear the error
     rf.state_manager_.clear_error(error);
-    ASSERT_EQ(rf.state_manager_.state().armed, false);
-    ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-    ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
-    ASSERT_EQ(rf.state_manager_.state().error, false);
+    EXPECT_EQ(rf.state_manager_.state().armed, false);
+    EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+    EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+    EXPECT_EQ(rf.state_manager_.state().error, false);
   }
-
-  // Try combinations of errors
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-                   StateManager::ERROR_TIME_GOING_BACKWARDS |
-                   StateManager::ERROR_UNCALIBRATED_IMU;
-  rf.state_manager_.set_error(error);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x32);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Add another error
-  rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x33);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Clear an error
-  rf.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x13);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Clear two errors
-  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING |
-                                StateManager::ERROR_TIME_GOING_BACKWARDS);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x01);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Clear final error
-  rf.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST(state_machine_test, arm_check) {
-  // Build the full firmware, so that the state_manager can do its thing
-  testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+TEST_F(StateMachineTest, SetAndClearComboErrors)
+{
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
+      StateManager::ERROR_TIME_GOING_BACKWARDS |
+      StateManager::ERROR_UNCALIBRATED_IMU;
+  rf.state_manager_.set_error(error);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, 0x32);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
 
-  // Initialize just a subset of the modules
-  // (some modules set errors when they initialize)
-  rf.board_.init_board();
-  rf.state_manager_.init();
-  rf.params_.init();
-  rf.params_.set_param_int(PARAM_MIXER, 10);
+TEST_F(StateMachineTest, AddErrorAfterPreviousError)
+{
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
+      StateManager::ERROR_TIME_GOING_BACKWARDS |
+      StateManager::ERROR_UNCALIBRATED_IMU;
+  rf.state_manager_.set_error(error);
+  rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, 0x33);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
 
-  // Should be in PREFLIGHT MODE
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
+TEST_F(StateMachineTest, ClearOneErrorOutOfMany)
+{
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
+      StateManager::ERROR_TIME_GOING_BACKWARDS |
+      StateManager::ERROR_UNCALIBRATED_IMU;
+  rf.state_manager_.set_error(error);
+  rf.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_IMU_NOT_RESPONDING |
+                                                   StateManager::ERROR_TIME_GOING_BACKWARDS);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
 
-  //======================================================
-  // Basic arming test
-  //======================================================
+TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
+{
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
+      StateManager::ERROR_TIME_GOING_BACKWARDS |
+      StateManager::ERROR_UNCALIBRATED_IMU;
+  rf.state_manager_.set_error(error);
+  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING |
+                                StateManager::ERROR_TIME_GOING_BACKWARDS);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_UNCALIBRATED_IMU);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
 
-  // Make sure that the parameter to calibrate before arm is off
-  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false);
+TEST_F(StateMachineTest, ClearAllErrors)
+{
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
+      StateManager::ERROR_TIME_GOING_BACKWARDS |
+      StateManager::ERROR_UNCALIBRATED_IMU;
+  rf.state_manager_.set_error(error);
+  rf.state_manager_.clear_error(error);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, 0x00);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+}
 
+TEST_F (StateMachineTest, DoNotArmIfError)
+{
   // Now add, an error, and then try to arm
   rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_INVALID_MIXER);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_INVALID_MIXER);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
 
-
-  // Clear the error, and then try again to arm
-  rf.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
+TEST_F (StateMachineTest, ArmIfNoError)
+{
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+}
 
-  // Disarm
+TEST_F (StateMachineTest, ArmAndDisarm)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+}
 
-
-  //======================================================
-  // Preflight calibration arming test
-  //======================================================
-  // turn preflight calibration on
+TEST_F (StateMachineTest, WaitForCalibrationToArm)
+{
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
-
   // try to arm
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   // We shouldn't have armed yet
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
 
-  // Set an error
-  rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
-  // We shouldn't have armed yet
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_INVALID_MIXER);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Clear the error, and try again
-  rf.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  // Tell it that the calibration failed
-  rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
-  // We shouldn't have armed yet
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
-  // Try again, but this time the calibration succeeds
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  // Calibration complete, it should arm now
   rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
-  // We should be armed
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
-  //======================================================
-  // Errors while armed test
-  //======================================================
-  // turn preflight calibration off
-  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false);
-
-  // While armed, let's set some errors
-  rf.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-  // We should still be armed, but have an error
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_TIME_GOING_BACKWARDS);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // What happens if we disarm now?
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_TIME_GOING_BACKWARDS);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Try to arm, it should fail
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_TIME_GOING_BACKWARDS);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Clear the error and try again
-  rf.state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, 0x00);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST(state_machine_test, arm_throttle_check)
+TEST_F (StateMachineTest, CalibrationFailedDontArm)
 {
-  testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_FAILED);
 
-  rf.init();
-  rf.params_.set_param_int(PARAM_MIXER, 10);
-  board.set_pwm_lost(false);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+}
 
+TEST_F (StateMachineTest, ErrorDuringCalibrationDontArm)
+{
+  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_INVALID_MIXER);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
+
+TEST_F (StateMachineTest, RCLostDuringCalibrationDontArm)
+{
+  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
+
+TEST_F (StateMachineTest, ClearErrorStayDisarmed)
+{
+  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
+  rf.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+}
+
+TEST_F (StateMachineTest, RecoverRCStayDisarmed)
+{
+  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+}
+
+TEST_F (StateMachineTest, SetErrorsWhileArmed)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  rf.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_TIME_GOING_BACKWARDS);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
+
+TEST_F (StateMachineTest, ErrorsPersistWhenDisarmed)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_TIME_GOING_BACKWARDS);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
+
+TEST_F (StateMachineTest, UnableToArmWithPersistentErrors)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_TIME_GOING_BACKWARDS);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
+
+TEST_F (StateMachineTest, ArmIfThrottleLow)
+{
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
   {
@@ -234,197 +294,98 @@ TEST(state_machine_test, arm_throttle_check)
   rc_values[2] = 1000;
   board.set_rc(rc_values);
   step_firmware(rf, board, 100);
-
-  // clear all errors
-  rf.state_manager_.clear_error(rf.state_manager_.state().error_codes);
-
-  // make sure we start out disarmed
-  ASSERT_EQ(false, rf.state_manager_.state().armed);
-
-  // first, make sure we can arm if all is well
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(true, rf.state_manager_.state().armed);
+  EXPECT_EQ(true, rf.state_manager_.state().armed);
+}
 
-  // now go back to disarmed to prepare for following tests
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
-  ASSERT_EQ(false, rf.state_manager_.state().armed);
-
-  // for first set of tests, have min throttle enabled
+TEST_F (StateMachineTest, ArmIfThrottleHighWithMinThrottle)
+{
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
-
-  // make sure we can't arm with high RC throttle
+  uint16_t rc_values[8];
+  for (int i = 0; i < 8; i++)
+  {
+    rc_values[i] = (i > 3) ? 1000 : 1500;
+  }
   rc_values[2] = 1500;
   board.set_rc(rc_values);
   step_firmware(rf, board, 100000);
 
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   step_firmware(rf, board, 1200000);
-  ASSERT_EQ(false, rf.state_manager_.state().armed);
-
-  // but make sure we can arm with low throttle with override switch off when min throttle is on
-  rc_values[2] = 1000;
-  rc_values[4] = 1000;
-  board.set_rc(rc_values);
-  step_firmware(rf, board, 100000);
-  ASSERT_EQ(false, rf.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE));
-
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  step_firmware(rf, board, 1200000);
-  ASSERT_EQ(true, rf.state_manager_.state().armed);
-
-  // disarm
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
-  step_firmware(rf, board, 1200000);
-  ASSERT_EQ(false, rf.state_manager_.state().armed);
-
-  // now make sure that if min throttle is off, we can't arm with the override switch off
-  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, 0);
-
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  step_firmware(rf, board, 1200000);
-  ASSERT_EQ(false, rf.state_manager_.state().armed);
-
-  // but make sure we can arm with it on
-  rc_values[4] = 2000;
-  board.set_rc(rc_values);
-  step_firmware(rf, board, 100000);
-  ASSERT_EQ(true, rf.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE));
-
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  step_firmware(rf, board, 1200000);
-  ASSERT_EQ(true, rf.state_manager_.state().armed);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST(state_machine_test, failsafe_check) {
-  // Build the full firmware, so that the state_manager can do its thing
-  testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+TEST_F (StateMachineTest, DontArmIfThrottleHighWithoutMinThrottle)
+{
+  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
+  uint16_t rc_values[8];
+  for (int i = 0; i < 8; i++)
+  {
+    rc_values[i] = (i > 3) ? 1000 : 1500;
+  }
+  rc_values[2] = 1500;
+  board.set_rc(rc_values);
+  step_firmware(rf, board, 100000);
 
-  // Initialize just a subset of the modules
-  // (some modules set errors when they initialize)
-  rf.board_.init_board();
-  rf.state_manager_.init();
-  rf.params_.init();
-
-  // Should be in PREFLIGHT MODE
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
-  //======================================================
-  // RC Lost when disarmed - Should not be in failsafe, but in error
-  //======================================================
-  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Try to arm
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-
-  // Oh look!  we have RC again
-  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
-  //======================================================
-  // RC Lost when armed - should enter failsafe
-  //======================================================
-
-  // Let's fly!
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-
-  // Oh crap, we lost RC in the air
-  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, true);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // If by some magic we are able to disarm (perhaps via the computer)
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, true);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
-
-  // Let's regain RC
-  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
-  // Let's try this again!
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-
-  // This is the worst receiver
-  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, true);
-
-  // It's going in and out!
-  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
+  step_firmware(rf, board, 1200000);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST(state_machine_test, corner_cases) {
-  // Build the full firmware, so that the state_manager can do its thing
-  testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
-
-  // Initialize just a subset of the modules
-  // (some modules set errors when they initialize)
-  rf.board_.init_board();
-  rf.state_manager_.init();
-  rf.params_.init();
-  rf.params_.set_param_int(PARAM_MIXER, 10);
-
-  // Should be in PREFLIGHT MODE
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
-  //======================================================
-  // RC Lost when calibrating
-  //======================================================
-
-  // turn preflight calibration on
-  rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
-
-  // Try to arm
-  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-
-  // Lose RC during calibration - error, no failsafe
+TEST_F (StateMachineTest, LostRCWhenDisarmNoFailsafe)
+{
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
-  ASSERT_EQ(rf.state_manager_.state().error, true);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
 
-  // Regain RC, should be in preflight mode, no error
-  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  ASSERT_EQ(rf.state_manager_.state().failsafe, false);
-  ASSERT_EQ(rf.state_manager_.state().error_codes, 0x00);
-  ASSERT_EQ(rf.state_manager_.state().error, false);
-
+TEST_F (StateMachineTest, UnableToArmWithoutRC)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  ASSERT_EQ(rf.state_manager_.state().armed, false);
-  rf.state_manager_.set_event(StateManager::EVENT_CALIBRATION_COMPLETE);
-  ASSERT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+}
+
+TEST_F (StateMachineTest, AbleToArmAfterRCRecovery)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+}
+
+TEST_F (StateMachineTest, RCLostWhileArmedEnterFailsafe)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, true);
+}
+
+TEST_F (StateMachineTest, DisarmWhileInFailsafeGoToError)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, true);
+}
+
+TEST_F (StateMachineTest, RegainRCAfterFailsafe)
+{
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
+  rf.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
 }

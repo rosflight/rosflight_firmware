@@ -1,26 +1,26 @@
 # Parameters
 
-The ROSflight firmware has several dozen parameters which it uses to customize performance.  Parameters are considered semi-static variables.  That is, parameters do not change during flight, but they may change between vehicles.  Examples of parameters you may wish to change are:
+The ROSflight firmware has several dozen parameters which it uses to customize performance. Parameters are considered semi-static variables. That is, parameters do not change during flight, but they may change between vehicles. Examples of parameters you may wish to change are:
 
 * Fixed-wing vehicle flag
 * PID gains
 * Mixer choice
 * IMU low-pass filter constant
-* RC receiver type
+* RC receiver type (PPM or SBUS)
 
-and so on.  All parameter access is enabled via ROS services advertised by `rosflight_io` while the flight controller is connected.
+and so on. Access to all parameters is enabled via ROS services advertised by `rosflight_io` while the flight controller is connected.
 
 ## Parameter Interface
 
 ### Getting Parameter Values
 
-Sometimes it is handy to ask the flight controller what the current value of a parameter is.  This is accomplished using the `param_get` service.  As an example, let's retrieve the roll angle controller P gain.
+Sometimes it is handy to ask the flight controller what the current value of a parameter is. This is accomplished using the `param_get` service. As an example, let's retrieve the roll angle controller proportional (P) gain.
 
 ```
 rosservice call /param_get PID_ROLL_ANG_P
 ```
 
-You should get a response similar to (this happens to be the default value with floating-point error)
+You should get a response similar to the following (this happens to be the default value with floating-point error):
 
 ```
 exists: True
@@ -29,7 +29,7 @@ value: 0.15000000596
 
 ### Changing Parameters
 
-Parameters are changed via the `param_set` service.  As an example, let's change the roll angle controller P gain.  (I will assume that the flight controller is connected and `rosflight_io` is running in the root namespace).
+Parameters are changed via the `param_set` service. As an example, let's change the roll angle controller P gain. (I will assume that the flight controller is connected and `rosflight_io` is running in the root namespace.)
 
 ```
 rosservice call /param_set PID_ROLL_ANG_P 0.08
@@ -41,11 +41,11 @@ You should get a prompt from `rosflight_io` saying
 [ WARN] [1491672408.585508849]: There are unsaved changes to onboard parameters
 ```
 
-Notice that the parameters have been set, but not saved.  Parameter changes take effect immediately, however they will not persist over a reboot unless you *write* them to the non-volatile memory.  This brings us to the next task.
+Notice that the parameters have been set, but not saved. Parameter changes take effect immediately, however they will not persist over a reboot unless you *write* them to the non-volatile memory. This brings us to the next task.
 
 ### Writing Parameters
 
-To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory.  This is done by calling `param_write`
+To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `param_write`
 
 ```
 rosservice call /param_write
@@ -57,11 +57,11 @@ rosservice call /param_write
 [ INFO] [1491672597.123452908]: Onboard parameters have been saved
 ```
 !!! error
-    Parameter writing can only happen if the flight controller is disarmed.  If the param write failed for some reason, you may want to make sure you are disarmed and try again.
+    Parameter writing can only happen if the flight controller is disarmed. If the param write failed for some reason, you may want to make sure your FC is disarmed and try again.
 
 ### Backing Up and Loading Parameters from File
 
-It is good practice to backup your parameter configuration in case you have to re-flash your firmware or you want to share configurations between vehicles.  We can do this via the `param_save_to_file` and `param_load_from_file` services.
+It is good practice to backup your parameter configuration in case you have to re-flash your firmware or you want to share configurations between vehicles. We can do this via the `param_save_to_file` and `param_load_from_file` services.
 
 First, let's back up our current parameter configuration:
 
@@ -69,28 +69,28 @@ First, let's back up our current parameter configuration:
 rosservice call /param_save_to_file ~/parameters.yml
 ```
 
-Parameters are saved in YAML format.  You must also specify the absolute file name of where you would like your parameters to be saved.  The current active set of parameters will be saved, regardless of what is saved in non-volatile memory on the flight controller.
+Parameters are saved in YAML format. You must also specify the absolute file name of where you would like your parameters to be saved. The current active set of parameters will be saved, regardless of what is saved in non-volatile memory on the flight controller.
 
 Now, let's say we want to re-load this parameter file
 ```
 rosservice call /param_load_from_file ~/parameters.yml
 ```
-Again, you must specify the absolute file name of the file to be loaded
+Again, you must specify the absolute file name of the file to be loaded.
 
 
 ## Fixed-Wing Parameter Configuration
 
-Because ROSflight ships with default parameters for multirotors, you will probably want to change the following parameters if you want to fly a fixed wing aircraft.
+Because ROSflight ships with default parameters for multirotors, you will probably want to change the following parameters if you want to fly a fixed-wing aircraft.
 
 
-| Parameter | Description | Type | Fixed Wing Value
+| Parameter | Description | Type | Fixed-Wing Value
 |-----------|-------------|------|---------------|
 | MOTOR_PWM_UPDATE | Refresh rate of motor commands to motors and servos (Hz) - See motor documentation | int |  50 |
 | ARM_SPIN_MOTORS | Enforce MOTOR_IDLE_PWM | int |  false |
 | MOTOR_IDLE_THR | min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | float |  0.1 |
 | ARM_CHANNEL | RC switch channel mapped to arming [0 indexed, -1 to disable] | int |  4 |
-| FIXED_WING | switches on passthrough commands for fixedwing operation | int |  true |
-| MIXER | Which mixer to choose - See [Mixer documentation](hardware-setup/#motor-layouts) | int | 10  |
+| FIXED_WING | switches on passthrough commands for fixed-wing operation | int |  true |
+| MIXER | Which mixer to choose - See [Mixer documentation](hardware-setup.md#motor-layouts) | int | 10  |
 | ELEVATOR_REV | reverses elevator servo output | int |  0/1 |
 | AIL_REV | reverses aileron servo output | int |  0/1 |
 | RUDDER_REV | reverses rudder servo output | int |  0/1 |
@@ -99,19 +99,15 @@ Because ROSflight ships with default parameters for multirotors, you will probab
 
 ## Description of all Parameters
 
-This is a list of all parameters on ROSflight, their types, default values, and minimum and maximum recommended setting:
-
-# Parameter descriptions
-
-# Parameter descriptions
+This is a list of all ROSflight parameters, including their types, default values, and minimum and maximum recommended values:
 
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
-| BAUD_RATE | Baud rate of MAVlink communication with onboard computer | int |  921600 | 9600 | 921600 |
+| BAUD_RATE | Baud rate of MAVlink communication with companion computer | int |  921600 | 9600 | 921600 |
 | SERIAL_DEVICE | Serial Port (for supported devices) | int |  0 | 0 | 3 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
-| STRM_HRTBT | Rate of heartbeat streaming (Hz) | int |  1 | 0 | 1000 |
-| STRM_STATUS | Rate of status streaming (Hz) | int |  10 | 0 | 1000 |
+| STRM_HRTBT | Rate of heartbeat stream (Hz) | int |  1 | 0 | 1000 |
+| STRM_STATUS | Rate of status stream (Hz) | int |  10 | 0 | 1000 |
 | STRM_ATTITUDE | Rate of attitude stream (Hz) | int |  200 | 0 | 1000 |
 | STRM_IMU | Rate of IMU stream (Hz) | int |  250 | 0 | 1000 |
 | STRM_MAG | Rate of magnetometer stream (Hz) | int |  50 | 0 | 75 |
@@ -120,20 +116,22 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | STRM_SONAR | Rate of sonar stream (Hz) | int |  40 | 0 | 40 |
 | STRM_SERVO | Rate of raw output stream | int |  50 | 0 | 490 |
 | STRM_RC | Rate of raw RC input stream | int |  50 | 0 | 50 |
+| STRM_GNSS | Maximum rate of GNSS data streaming. Higher values allow for lower latency| int | 1000 | 0 | 1000 |
+| STRM_GNSS_RAW | Maximum rate of raw GNSS data streaming | int | 0 | 0 | 10 |
 | PARAM_MAX_CMD | saturation point for PID controller output | float |  1.0 | 0 | 1.0 |
 | PID_ROLL_RATE_P | Roll Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_ROLL_RATE_I | Roll Rate Integral Gain | float |  0.000f | 0.0 | 1000.0 |
-| PID_ROLL_RATE_D | Rall Rate Derivative Gain | float |  0.000f | 0.0 | 1000.0 |
-| PID_PITCH_RATE_P | Pitch Rate Proporitional Gain | float |  0.070f | 0.0 | 1000.0 |
+| PID_ROLL_RATE_D | Roll Rate Derivative Gain | float |  0.000f | 0.0 | 1000.0 |
+| PID_PITCH_RATE_P | Pitch Rate Proportional Gain | float |  0.070f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_I | Pitch Rate Integral Gain | float |  0.0000f | 0.0 | 1000.0 |
 | PID_PITCH_RATE_D | Pitch Rate Derivative Gain | float |  0.0000f | 0.0 | 1000.0 |
-| PID_YAW_RATE_P | Yaw Rate Proporitional Gain | float |  0.25f | 0.0 | 1000.0 |
+| PID_YAW_RATE_P | Yaw Rate Proportional Gain | float |  0.25f | 0.0 | 1000.0 |
 | PID_YAW_RATE_I | Yaw Rate Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_YAW_RATE_D | Yaw Rate Derivative Gain | float |  0.0f | 0.0 | 1000.0 |
-| PID_ROLL_ANG_P | Roll Angle Proporitional Gain | float |  0.15f | 0.0 | 1000.0 |
+| PID_ROLL_ANG_P | Roll Angle Proportional Gain | float |  0.15f | 0.0 | 1000.0 |
 | PID_ROLL_ANG_I | Roll Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_ROLL_ANG_D | Roll Angle Derivative Gain | float |  0.05f | 0.0 | 1000.0 |
-| PID_PITCH_ANG_P | Pitch Angle Proporitional Gain | float |  0.15f | 0.0 | 1000.0 |
+| PID_PITCH_ANG_P | Pitch Angle Proportional Gain | float |  0.15f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_I | Pitch Angle Integral Gain | float |  0.0f | 0.0 | 1000.0 |
 | PID_PITCH_ANG_D | Pitch Angle Derivative Gain | float |  0.05f | 0.0 | 1000.0 |
 | X_EQ_TORQUE | Equilibrium torque added to output of controller on x axis | float |  0.0f | -1.0 | 1.0 |
@@ -148,6 +146,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | FILTER_KP | estimator proportional gain - See estimator documentation | float |  0.5f | 0 | 10.0 |
 | FILTER_KI | estimator integral gain - See estimator documentation | float |  0.01f | 0 | 1.0 |
 | FILTER_KP_COR | estimator proportional gain on external attitude correction - See estimator documentation | float |  10.0f | 0 | 1.0 |
+| FILTER_ACCMARGIN | allowable accel norm margin around 1g to determine if accel is usable | float |  0.1f | 0 | 1.0 |
 | FILTER_QUAD_INT | Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | int |  1 | 0 | 1 |
 | FILTER_MAT_EXP | 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | int |  1 | 0 | 1 |
 | FILTER_USE_ACC | Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | int |  1 | 0 | 1 |
@@ -193,7 +192,7 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | SWITCH_6_DIR | RC switch 6 toggle direction | int |  1 | -1 | 1 |
 | SWITCH_7_DIR | RC switch 7 toggle direction | int |  1 | -1 | 1 |
 | SWITCH_8_DIR | RC switch 8 toggle direction | int |  1 | -1 | 1 |
-| RC_OVRD_DEV | RC stick deviation from center for overrride | float |  0.1 | 0.0 | 1.0 |
+| RC_OVRD_DEV | RC stick deviation from center for override | float |  0.1 | 0.0 | 1.0 |
 | OVRD_LAG_TIME | RC stick deviation lag time before returning control (ms) | int |  1000 | 0 | 100000 |
 | MIN_THROTTLE | Take minimum throttle between RC and computer at all times | int |  true | 0 | 1 |
 | RC_ATT_MODE | Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | int |  1 | 0 | 1 |
@@ -203,12 +202,12 @@ This is a list of all parameters on ROSflight, their types, default values, and 
 | RC_MAX_PITCHRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  3.14159f | 0.0 | 3.14159 |
 | RC_MAX_YAWRATE | Maximum pitch command sent by full stick deflection of RC sticks | float |  1.507f | 0.0 | 3.14159 |
 | MIXER | Which mixer to choose - See Mixer documentation | int |  Mixer::INVALID_MIXER | 0 | 10 |
-| FIXED_WING | switches on passthrough commands for fixedwing operation | int |  false | 0 | 1 |
+| FIXED_WING | switches on pass-through commands for fixed-wing operation | int |  false | 0 | 1 |
 | ELEVATOR_REV | reverses elevator servo output | int |  0 | 0 | 1 |
 | AIL_REV | reverses aileron servo output | int |  0 | 0 | 1 |
 | RUDDER_REV | reverses rudder servo output | int |  0 | 0 | 1 |
-| FC_ROLL | roll angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
-| FC_PITCH | pitch angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
-| FC_YAW | yaw angle (deg) of flight controller wrt to aircraft body | float |  0.0f | -180 | 180 |
+| FC_ROLL | roll angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
+| FC_PITCH | pitch angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
+| FC_YAW | yaw angle (deg) of flight controller wrt aircraft body | float |  0.0f | 0 | 360 |
 | ARM_THRESHOLD | RC deviation from max/min in yaw and throttle for arming and disarming check (us) | float |  0.15 | 0 | 500 |
 | OFFBOARD_TIMEOUT | Timeout in milliseconds for offboard commands, after which RC override is activated | int |  100 | 0 | 100000 |

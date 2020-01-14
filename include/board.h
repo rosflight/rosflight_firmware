@@ -32,11 +32,11 @@
 #ifndef ROSFLIGHT_FIRMWARE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_BOARD_H
 
-#include <functional>
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sensors.h"
 #include "state_manager.h"
 
 namespace rosflight_firmware
@@ -73,7 +73,7 @@ public:
   virtual uint16_t num_sensor_errors()  = 0;
 
   virtual bool new_imu_data() = 0;
-  virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t* time) = 0;
+  virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) = 0;
   virtual void imu_not_responding_error() = 0;
 
   virtual bool mag_present() = 0;
@@ -91,6 +91,13 @@ public:
   virtual bool sonar_present() = 0;
   virtual void sonar_update() = 0;
   virtual float sonar_read() = 0;
+
+  virtual bool gnss_present() = 0;
+  virtual void gnss_update() = 0;
+
+  virtual GNSSData gnss_read() = 0;
+  virtual bool gnss_has_new_data() = 0;
+  virtual GNSSRaw gnss_raw_read() = 0;
 
 // RC
   virtual void rc_init(rc_type_t rc_type) = 0;

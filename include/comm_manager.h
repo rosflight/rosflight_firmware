@@ -35,7 +35,9 @@
 #include <cstdint>
 #include <functional>
 
-#include "comm_link.h"
+#include "interface/comm_link.h"
+#include "interface/param_listener.h"
+
 #include "nanoprintf.h"
 
 namespace rosflight_firmware
@@ -43,7 +45,7 @@ namespace rosflight_firmware
 
 class ROSflight;
 
-class CommManager
+class CommManager : public CommLinkInterface::ListenerInterface, public ParamListenerInterface
 {
 private:
   enum StreamId
@@ -60,6 +62,8 @@ private:
     STREAM_ID_MAG,
 
     STREAM_ID_SERVO_OUTPUT_RAW,
+    STREAM_ID_GNSS,
+    STREAM_ID_GNSS_RAW,
     STREAM_ID_RC_RAW,
     STREAM_ID_LOW_PRIORITY,
     STREAM_COUNT
@@ -76,9 +80,38 @@ private:
   uint8_t sysid_;
   uint64_t offboard_control_time_;
   ROSflight& RF_;
-  CommLink& comm_link_;
+  CommLinkInterface& comm_link_;
   uint8_t send_params_index_;
-  bool initialized_;
+  bool initialized_ = false;
+  bool connected_ = false;
+
+
+  static constexpr int LOG_MSG_SIZE = 50;
+  class LogMessageBuffer
+  {
+  public:
+    static constexpr int LOG_BUF_SIZE = 25;
+    LogMessageBuffer();
+
+    struct LogMessage
+    {
+      char msg[LOG_MSG_SIZE];
+      CommLinkInterface::LogSeverity severity;
+    };
+    void add_message(CommLinkInterface::LogSeverity severity, char msg[LOG_MSG_SIZE]);
+    size_t size() const { return length_; }
+    bool empty() const { return length_ == 0; }
+    bool full() const { return length_ == LOG_BUF_SIZE; }
+    const LogMessage& oldest() const { return buffer_[oldest_]; }
+    void pop();
+
+  private:
+    LogMessage buffer_[LOG_BUF_SIZE];
+    size_t oldest_ = 0;
+    size_t newest_ = 0;
+    size_t length_ = 0;
+  };
+  LogMessageBuffer log_buffer_;
 
   class Stream
   {
@@ -95,15 +128,16 @@ private:
 
   void update_system_id(uint16_t param_id);
 
-  void param_request_list_callback(uint8_t target_system);
-  void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index);
-  void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value);
-  void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value);
-  void command_callback(CommLink::Command command);
-  void timesync_callback(int64_t tc1, int64_t ts1);
-  void offboard_control_callback(const CommLink::OffboardControl& control);
-  void attitude_correction_callback(const turbomath::Quaternion &q);
-  void heartbeat_callback(void);
+  void param_request_list_callback(uint8_t target_system) override;
+  void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index) override;
+  void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value) override;
+  void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value) override;
+  void command_callback(CommLinkInterface::Command command) override;
+  void timesync_callback(int64_t tc1, int64_t ts1) override;
+  void offboard_control_callback(const CommLinkInterface::OffboardControl& control) override;
+  void aux_command_callback(const CommLinkInterface::AuxCommand &command) override;
+  void external_attitude_callback(const turbomath::Quaternion &q) override;
+  void heartbeat_callback() override;
 
   void send_heartbeat(void);
   void send_status(void);
@@ -115,12 +149,14 @@ private:
   void send_baro(void);
   void send_sonar(void);
   void send_mag(void);
+  void send_gnss(void);
+  void send_gnss_raw(void);
   void send_low_priority(void);
   void send_error_data(void);
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
-  //  void send_named_command_struct(const char *const name, control_t command_struct);
+//    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
 
@@ -134,21 +170,28 @@ private:
     Stream(0,     [this]{this->send_sonar();}),
     Stream(0,     [this]{this->send_mag();}),
     Stream(0,     [this]{this->send_output_raw();}),
+    Stream(0,     [this]{this->send_gnss();}),
+    Stream(0,     [this]{this->send_gnss_raw();}),
     Stream(0,     [this]{this->send_rc_raw();}),
     Stream(20000, [this]{this->send_low_priority();})
   };
 
+  // the time of week stamp for the last sent GNSS message, to prevent re-sending
+  uint32_t last_sent_gnss_tow_ = 0;
+  uint32_t last_sent_gnss_raw_tow_ = 0;
+
 public:
 
-  CommManager(ROSflight& rf, CommLink& comm_link);
+  CommManager(ROSflight& rf, CommLinkInterface& comm_link);
 
   void init();
+  void param_change_callback(uint16_t param_id) override;
   void receive(void);
   void stream();
   void send_param_value(uint16_t param_id);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
-  void log(CommLink::LogSeverity severity, const char *fmt, ...);
+  void log(CommLinkInterface::LogSeverity severity, const char *fmt, ...);
 
   void send_parameter_list();
   void send_named_value_float(const char *const name, float value);

@@ -41,26 +41,9 @@
 namespace rosflight_firmware
 {
 
-Controller::Controller(ROSflight& rf) :
+Controller::Controller(ROSflight &rf) :
   RF_(rf)
 {
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_P);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_I);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_ANGLE_D);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_P);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_I);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_ROLL_RATE_D);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_P);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_I);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_ANGLE_D);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_P);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_I);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_PITCH_RATE_D);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_P);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_I);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_YAW_RATE_D);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_MAX_COMMAND);
-  RF_.params_.add_callback([this](uint16_t param_id){this->param_change_callback(param_id);}, PARAM_PID_TAU);
 }
 
 void Controller::init()
@@ -103,7 +86,7 @@ void Controller::run()
   }
 
   int32_t dt_us = (RF_.estimator_.state().timestamp_us - prev_time_us_);
-  if ( dt_us < 0 )
+  if (dt_us < 0)
   {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
     return;
@@ -130,7 +113,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
   if (!(RF_.state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
-    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Capturing equilbrium offsets from RC");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Capturing equilbrium offsets from RC");
 
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
@@ -159,22 +142,45 @@ void Controller::calculate_equilbrium_torque_from_rc()
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
 
-    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Equilibrium torques found and applied.");
-    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Please zero out trims on your transmitter");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Equilibrium torques found and applied.");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Please zero out trims on your transmitter");
   }
   else
   {
-    RF_.comm_manager_.log(CommLink::LogSeverity::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
   }
 }
 
 void Controller::param_change_callback(uint16_t param_id)
 {
-  (void) param_id; // suppress unused parameter warning
-  init();
+  switch (param_id)
+  {
+  case PARAM_PID_ROLL_ANGLE_P:
+  case PARAM_PID_ROLL_ANGLE_I:
+  case PARAM_PID_ROLL_ANGLE_D:
+  case PARAM_PID_ROLL_RATE_P:
+  case PARAM_PID_ROLL_RATE_I:
+  case PARAM_PID_ROLL_RATE_D:
+  case PARAM_PID_PITCH_ANGLE_P:
+  case PARAM_PID_PITCH_ANGLE_I:
+  case PARAM_PID_PITCH_ANGLE_D:
+  case PARAM_PID_PITCH_RATE_P:
+  case PARAM_PID_PITCH_RATE_I:
+  case PARAM_PID_PITCH_RATE_D:
+  case PARAM_PID_YAW_RATE_P:
+  case PARAM_PID_YAW_RATE_I:
+  case PARAM_PID_YAW_RATE_D:
+  case PARAM_MAX_COMMAND:
+  case PARAM_PID_TAU:
+    init();
+    break;
+  default:
+    // do nothing
+    break;
+  }
 }
 
-turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State& state, const control_t& command, bool update_integrators)
+turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State &state, const control_t &command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   turbomath::Vector out;
@@ -237,7 +243,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
     differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
-        + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+                      + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
   }
   else
