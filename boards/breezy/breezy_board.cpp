@@ -81,9 +81,8 @@ void BreezyBoard::clock_delay(uint32_t milliseconds)
 
 // serial
 
-void BreezyBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration)
+void BreezyBoard::serial_init(uint32_t baud_rate)
 {
-  (void)configuration;
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
@@ -119,7 +118,7 @@ bool BreezyBoard::enable_device(device_t device, hardware_config_t configuration
     rc_init();
     break;
   case Configuration::SERIAL:
-    serial_init(params.get_param_int(PARAM_BAUD_RATE), 0);
+    serial_init(params.get_param_int(PARAM_BAUD_RATE));
     break;
   default:
     break;
@@ -128,7 +127,7 @@ bool BreezyBoard::enable_device(device_t device, hardware_config_t configuration
   return true;
 }
 
-BreezyBoardConfigManager &BreezyBoard::get_board_config_manager()
+const BreezyBoardConfigManager &BreezyBoard::get_board_config_manager() const
 {
   return config_manager_;
 }
