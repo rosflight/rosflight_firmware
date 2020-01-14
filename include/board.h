@@ -65,7 +65,6 @@ public:
   virtual void clock_delay(uint32_t milliseconds) = 0;
 
 // serial
-  virtual void serial_init(uint32_t baud_rate, hardware_config_t configuration) = 0;
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
@@ -115,7 +114,6 @@ public:
   virtual void battery_current_set_multiplier(double multiplier) = 0;
 
 // RC
-  virtual void rc_init(rc_type_t rc_type) = 0;
   virtual bool rc_lost() = 0;
   virtual float rc_read(uint8_t channel) = 0;
 

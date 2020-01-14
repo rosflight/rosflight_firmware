@@ -50,7 +50,6 @@ void RC::init()
 
 void RC::init_rc()
 {
-  RF_.board_.rc_init(static_cast<Board::rc_type_t>(RF_.params_.get_param_int(PARAM_RC_TYPE)));
   init_sticks();
   init_switches();
 }
@@ -59,9 +58,6 @@ void RC::param_change_callback(uint16_t param_id)
 {
   switch (param_id)
   {
-  case PARAM_RC_TYPE:
-    RF_.board_.rc_init(static_cast<Board::rc_type_t>(RF_.params_.get_param_int(PARAM_RC_TYPE)));
-    break;
   case PARAM_RC_X_CHANNEL:
   case PARAM_RC_Y_CHANNEL:
   case PARAM_RC_Z_CHANNEL:

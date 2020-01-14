@@ -81,8 +81,7 @@ CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) :
 // function definitions
 void CommManager::init()
 {
-  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
-                  static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
+  comm_link_.init();
 
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;

@@ -46,7 +46,6 @@ enum : uint16_t
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BAUD_RATE = 0,
-  PARAM_SERIAL_DEVICE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -158,7 +157,6 @@ enum : uint16_t
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-  PARAM_RC_TYPE,
   PARAM_RC_X_CHANNEL,
   PARAM_RC_Y_CHANNEL,
   PARAM_RC_Z_CHANNEL,
