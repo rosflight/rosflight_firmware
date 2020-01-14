@@ -128,7 +128,7 @@ public:
       virtual void config_request_callback(uint8_t device) = 0;
     };
 
-    virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
+    virtual void init() = 0;
     virtual void receive() = 0;
 
     // send functions

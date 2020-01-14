@@ -41,11 +41,8 @@ Mavlink::Mavlink(Board &board) :
   board_(board)
 {}
 
-void Mavlink::init(uint32_t baud_rate, uint32_t dev)
+void Mavlink::init()
 {
-  // TODO remove unneeded parameters
-  (void)baud_rate;
-  (void)dev;
   initialized_ = true;
 }
 

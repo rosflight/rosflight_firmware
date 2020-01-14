@@ -117,7 +117,6 @@ void Params::set_defaults(void)
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with companion computer | 9600 | 921600
-  init_param_int(PARAM_SERIAL_DEVICE, "SERIAL_DEVICE", 0); // Serial Port (for supported devices) | 0 | 3
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -229,7 +228,6 @@ void Params::set_defaults(void)
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-  init_param_int(PARAM_RC_TYPE, "RC_TYPE", 0); // Type of RC input 0 - PPM, 1 - SBUS | 0 | 1
   init_param_int(PARAM_RC_X_CHANNEL, "RC_X_CHN", 0); // RC input channel mapped to x-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Y_CHANNEL, "RC_Y_CHN", 1); // RC input channel mapped to y-axis commands [0 - indexed] | 0 | 3
   init_param_int(PARAM_RC_Z_CHANNEL, "RC_Z_CHN", 3); // RC input channel mapped to z-axis commands [0 - indexed] | 0 | 3

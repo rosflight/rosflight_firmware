@@ -154,7 +154,7 @@ public:
 
   // PWM
   // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-  void rc_init(rc_type_t rc_type) override;
+  void rc_init() override;
   bool rc_lost() override;
   float rc_read(uint8_t channel) override;
 

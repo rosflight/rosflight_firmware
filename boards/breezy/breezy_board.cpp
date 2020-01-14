@@ -112,9 +112,19 @@ void BreezyBoard::serial_flush()
 
 bool BreezyBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
 {
-  (void)device;
   (void)configuration;
-  (void)params;
+  switch(device)
+  {
+  case Configuration::RC:
+    rc_init();
+    break;
+  case Configuration::SERIAL:
+    serial_init(params.get_param_int(PARAM_BAUD_RATE), 0);
+    break;
+  default:
+    break;
+  }
+
   return true;
 }
 
@@ -347,9 +357,8 @@ void BreezyBoard::battery_current_set_multiplier(double multiplier)
 }
 // PWM
 
-void BreezyBoard::rc_init(rc_type_t rc_type)
+void BreezyBoard::rc_init()
 {
-  (void) rc_type; // TODO SBUS is not supported on F1
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 

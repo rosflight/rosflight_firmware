@@ -141,7 +141,7 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate, hardware_config_t configuration) override;
+  void serial_init(uint32_t baud_rate, hardware_config_t configuration);
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
@@ -191,7 +191,7 @@ public:
   bool gnss_has_new_data() override;
   GNSSRaw gnss_raw_read() override;
   // RC
-  void rc_init(rc_type_t rc_type) override;
+  void rc_init(rc_type_t rc_type);
   bool rc_lost() override;
   float rc_read(uint8_t channel) override;
 
