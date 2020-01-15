@@ -1,6 +1,6 @@
 # Firmware Configuration
 
-The most recent versions of ROSflight allow you to specify the hardware setup of your aircraft in greater detail. These settings are dependant on your choice of flight controller. ROSflight does not support this feature on the Naze/Flip32.
+The most recent versions of ROSflight allow you to specify the hardware setup of your aircraft in greater detail. These settings are dependent on your choice of flight controller. ROSflight does not support this feature on the Naze/Flip32.
 
 For each of a number of devices, there are several choices of configuration. Such configurations may specify the port, the protocol, or other settings for using the device. Many devices can be disabled entirely. Some devices may also use parameters.
 
@@ -61,7 +61,7 @@ The serial connection is used to communicate with `rosflight_io`. Change with ca
 ####RC
 | Configuration | Number | port | Notes |
 | ------------- | ------ | ---- | ----- |
-| PPM on Flex-IO|0|Flex-io|Does not conflict with UART on the Flex-IO port|
+| PPM on Flex-IO|0|Flex-IO|Does not conflict with UART on the Flex-IO port|
 |SBUS on Main|1|Main||
 
 ####Airspeed
