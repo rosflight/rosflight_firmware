@@ -107,7 +107,6 @@ This is a list of all ROSflight parameters, including their types, default value
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with companion computer | int |  921600 | 9600 | 921600 |
-| SERIAL_DEVICE | Serial Port (for supported devices) | int |  0 | 0 | 3 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
 | STRM_HRTBT | Rate of heartbeat stream (Hz) | int |  1 | 0 | 1000 |
 | STRM_STATUS | Rate of status stream (Hz) | int |  10 | 0 | 1000 |
