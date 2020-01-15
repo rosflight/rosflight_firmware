@@ -388,14 +388,11 @@ void CommManager::heartbeat_callback(void)
   // to the off-board computer.
   connected_ = true;
 
-  static bool one_time_data_sent = false;
-  if (!one_time_data_sent)
+  // send backup data if we have it buffered
+  if (have_backup_data_)
   {
-    // error data
-    if (this->RF_.board_.has_backup_data())
-    {
-        this->send_error_data();
-    }
+    comm_link_.send_error_data(sysid_, backup_data_buffer_);
+    have_backup_data_ = false;
   }
 
   /// JSJ: I don't think we need this
@@ -540,10 +537,18 @@ void CommManager::send_mag(void)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
 
-void CommManager::send_error_data(void)
+void CommManager::send_backup_data(const StateManager::BackupData& backup_data)
 {
-  StateManager::BackupData error_data = RF_.board_.get_backup_data();
-  comm_link_.send_error_data(sysid_, error_data);
+  if (connected_)
+  {
+    comm_link_.send_error_data(sysid_, backup_data);
+  }
+  else
+  {
+    backup_data_buffer_ = backup_data;
+    have_backup_data_ = true;
+  }
+
 }
 
 void CommManager::send_gnss(void)

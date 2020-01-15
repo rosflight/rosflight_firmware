@@ -68,7 +68,9 @@ void StateManager::init()
         fsm_state_ = FSM_STATE_ARMED;
       }
 
-      //! @todo queue sending backup data over comm link
+      // queue sending backup data over comm link
+      RF_.comm_manager_.send_backup_data(data);
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Recovered from hardfault!!!");
     }
 
     RF_.board_.backup_memory_clear(sizeof(data));

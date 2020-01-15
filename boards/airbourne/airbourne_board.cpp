@@ -441,6 +441,7 @@ void AirbourneBoard::backup_memory_init()
 bool AirbourneBoard::backup_memory_read(void *dest, size_t len)
 {
   backup_sram_read(dest, len);
+  return true; //!< @todo backup_sram_read() has no return value
 }
 
 void AirbourneBoard::backup_memory_write(const void *src, size_t len)
