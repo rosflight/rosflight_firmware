@@ -96,7 +96,7 @@ Setting and getting of parameters from the companion computer is done through th
 While no other data flow lines are shown on the diagram, all of the other modules interact with the parameter server.
 
 ### Memory Manager
-The memory manager interfaces with the board support layer to read from and write to non-volatile memory. This memory is used by the parameter server and the config manager.
+The memory manager interfaces with the board support layer to read from and write to non-volatile memory. This memory is used by the parameter server and the config manager. At the time of this writing, there is almost no logic in the memory manager. Logic such as checksums are handled by the parameter server and config manager.
 
 ### Comm Manager
 This module handles all serial communication between the flight controller and companion computer.
