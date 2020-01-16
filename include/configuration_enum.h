@@ -3,9 +3,15 @@
 
 #include <cstdint>
 
+/**
+ * The namespace for Configuration options
+ */
 namespace Configuration
 {
 
+/**
+ * @brief An enumeration of configurable devices
+ */
 enum device_t: uint8_t
 {
   SERIAL,
@@ -16,9 +22,12 @@ enum device_t: uint8_t
   BATTERY_MONITOR,
   BAROMETER,
   MAGNETOMETER,
-  DEVICE_COUNT // make sure this is last
+  DEVICE_COUNT /**<Make sure this is last */
 };
 
+/**
+ * @brief Allows incrementing device_t's for use in for loops stops incrementing past DEVICE_COUNT
+ */
 inline device_t& operator++(device_t &dev)
 {
   uint8_t return_value = dev;
@@ -31,6 +40,6 @@ inline device_t& operator++(device_t &dev)
 
 }
 typedef uint8_t hardware_config_t;
-typedef Configuration::device_t device_t;
+typedef Configuration::device_t device_t; /**< typedef'd for your convenience */
 
 #endif // CONFIGURATION_ENUM_H

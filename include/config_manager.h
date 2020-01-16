@@ -8,8 +8,8 @@ namespace rosflight_firmware
 class ROSflight;
 /**
  * @brief A class for managing the configuration of various devices.
- * Devices include the serial connection, RC, and sensors. Devices are represented by
- * @ref device_t and configurations by @ref hardware_config_t
+ * @details Devices include the serial connection, %RC, and sensors. Devices are represented by
+ * @ref<Configuration::device_t>[device_t] and configurations by @ref hardware_config_t
  * @sa Configuration::device_t
  */
 class ConfigManager
@@ -27,9 +27,9 @@ public:
    */
   struct ConfigResponse
   {
-    bool successful; /** If the change was successfully made **/
-    bool reboot_required; /** If a reboot is required for the change to take effect */
-    char message[CONFIG_RESPONSE_MESSAGE_LENGTH]; /** An optional message, often an error message */
+    bool successful; /**< If the change was successfully made **/
+    bool reboot_required; /**< If a reboot is required for the change to take effect */
+    char message[CONFIG_RESPONSE_MESSAGE_LENGTH]; /**< An optional message, often an error message */
   };
 
   ConfigManager(ROSflight &RF, Config &config);
