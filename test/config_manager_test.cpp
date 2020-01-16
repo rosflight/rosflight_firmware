@@ -27,7 +27,7 @@ public:
 
 TEST_F(ConfigManagerTest, DefaultValues)
 {
-  for(device_t device{static_cast<device_t>(0)}; device < Configuration::DEVICE_COUNT; ++device)
+  for(device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
     EXPECT_EQ(rf.config_manager_[device], 0);
 }
 
@@ -39,7 +39,7 @@ TEST_F(ConfigManagerTest, SetValid)
   EXPECT_TRUE(response.successful);
   EXPECT_TRUE(response.reboot_required);
   EXPECT_EQ(std::string(reinterpret_cast<char*>(response.message)), "Succeed for testing");
-  for(device_t device{static_cast<device_t>(0)}; device < Configuration::DEVICE_COUNT; ++device)
+  for(device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
     if(device == changed_device)
       EXPECT_EQ(rf.config_manager_[device], config);
     else
@@ -54,6 +54,6 @@ TEST_F(ConfigManagerTest, SetInvalid)
   EXPECT_FALSE(response.successful);
   EXPECT_FALSE(response.reboot_required);
   EXPECT_EQ(std::string(reinterpret_cast<char*>(response.message)), "Fail for testing");
-  for(device_t device{static_cast<device_t>(0)}; device < Configuration::DEVICE_COUNT; ++device)
+  for(device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
     EXPECT_EQ(rf.config_manager_[device], 0);
 }
