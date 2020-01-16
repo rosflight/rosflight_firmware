@@ -6,7 +6,7 @@ This page provides an overview of the basic operation of the ROSflight firmware 
 
 ROSflight is primarily intended to be used with a companion computer running ROS.
 The ROS interface is provided by the [rosflight_io](http://wiki.ros.org/rosflight) node.
-All configuration of the flight controller is done through the ROS service API provided by `rosflight_io` (see the [parameter configuration](parameter-configuration.md) documentation page).
+All configuration of the flight controller is done through the ROS service API provided by `rosflight_io` (see the [parameter configuration](parameter-configuration.md) and [firmware configuration](firmware-configuration.md) documentation pages).
 Sensor data such as IMU measurements are streamed from the flight controller to the companion computer and published as ROS topics.
 Control setpoints can also be sent to the flight controller by publishing to the appropriate ROS topic (see the [autonomous flight](autonomous-flight.md) documentation page).
 

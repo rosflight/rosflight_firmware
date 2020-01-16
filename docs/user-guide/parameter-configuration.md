@@ -45,10 +45,10 @@ Notice that the parameters have been set, but not saved. Parameter changes take 
 
 ### Writing Parameters
 
-To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `settings_write`. This also saves firmware configurations.
+To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `memory_write`. This also saves firmware configurations.
 
 ```
-rosservice call /settings_write
+rosservice call /memory_write
 ```
 
 

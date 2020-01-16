@@ -2,7 +2,7 @@
 
 ## Binding your Transmitter to your Receiver
 
-As of version 1.0, ROSflight only supports PPM receivers on F1 controllers, while F4 controllers support SBUS and PPM. If your transmitter/receiver setup only supports PWM output, we recommend using a PPM encoder such as the one [here](https://www.getfpv.com/holybro-ppm-encoder-module.html). Be sure to set the `RC_TYPE` parameter to `0` for PPM, or `1` for SBUS.
+As of version 1.0, ROSflight only supports PPM receivers on F1 controllers, while F4 controllers support SBUS and PPM. If your transmitter/receiver setup only supports PWM output, we recommend using a PPM encoder such as the one [here](https://www.getfpv.com/holybro-ppm-encoder-module.html). Be sure to set the `RC` device to the correct configuration, as explained in [Firmware Configuration](firmware-configuration.md).
 
 Follow the instructions in your user manual to bind your transmitter to your RC receiver. You may also be able to find a guide on YouTube with instructions; just search for your particular transmitter and receiver model.
 

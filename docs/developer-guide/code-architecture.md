@@ -84,11 +84,19 @@ The operation of the state manager is defined by the following finite state mach
 
 ![state manager FSM](images/arming-fsm.svg)
 
+### Config Manager
+This module handles the configurations for various devices, such as sensors and the serial connection. Each configuration is stored as an integer. Configurations can be set from the companion computer over the serial connection. On startup, the config manager sends configurations to the board support layer to initialize devices.
+
+The config manager also interacts with the board config manager, which is provided by the board support layer. The board config manager provides information on available configurations (such as name, number of options, etc). Additionally, the board config manager checks if a config change is valid. If the board config manager rejects a change, it explains why in an error message.
+
 ### Parameter Server
 This module handles all parameters for the flight stack.
 It supports the getting and setting of integer and floating-point parameters, and the saving of these parameters to non-volatile memory.
 Setting and getting of parameters from the companion computer is done through the serial communication interface.
 While no other data flow lines are shown on the diagram, all of the other modules interact with the parameter server.
+
+### Memory Manager
+The memory manager interfaces with the board support layer to read from and write to non-volatile memory. This memory is used by the parameter server and the config manager.
 
 ### Comm Manager
 This module handles all serial communication between the flight controller and companion computer.
