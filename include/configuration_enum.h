@@ -25,6 +25,7 @@ enum device_t: uint8_t
   DEVICE_COUNT /**<Make sure this is last */
 };
 
+constexpr device_t FIRST_DEVICE{static_cast<device_t>(0)};
 /**
  * @brief Allows incrementing device_t's for use in for loops stops incrementing past DEVICE_COUNT
  */

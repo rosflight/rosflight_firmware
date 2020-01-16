@@ -9,7 +9,7 @@ class ROSflight;
 /**
  * @brief A class for managing the configuration of various devices.
  * @details Devices include the serial connection, %RC, and sensors. Devices are represented by
- * @ref<Configuration::device_t>[device_t] and configurations by @ref hardware_config_t
+ * @ref device_t and configurations by @ref hardware_config_t
  * @sa Configuration::device_t
  */
 class ConfigManager
