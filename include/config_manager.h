@@ -6,6 +6,12 @@
 namespace rosflight_firmware
 {
 class ROSflight;
+/**
+ * @brief A class for managing the configuration of various devices.
+ * Devices include the serial connection, RC, and sensors. Devices are represented by
+ * @ref device_t and configurations by @ref hardware_config_t
+ * @sa Configuration::device_t
+ */
 class ConfigManager
 {
 public:
@@ -16,22 +22,57 @@ public:
   };
 
   static constexpr int CONFIG_RESPONSE_MESSAGE_LENGTH = 50;
+  /**
+   * @brief A struct to hold responses to attempts to change configurations
+   */
   struct ConfigResponse
   {
-    bool successful;
-    bool reboot_required;
-    char message[CONFIG_RESPONSE_MESSAGE_LENGTH]; // Primarily for error messages
+    bool successful; /** If the change was successfully made **/
+    bool reboot_required; /** If a reboot is required for the change to take effect */
+    char message[CONFIG_RESPONSE_MESSAGE_LENGTH]; /** An optional message, often an error message */
   };
 
   ConfigManager(ROSflight &RF, Config &config);
   // Reads the memory, and loads defaults if it is invalid. Call after the memory manager is ready
+  /**
+   * @brief Reads from memory, and loads defaults if invalid
+   * @pre Memory manager is initialized
+   * @return if the initialization suceeded
+   */
   bool init();
-  bool configure_devices() const; // Sends configurations to the board via the enable_device method
-  // Attempts to set a configuration, failing if the board config manager rejects it
+  /**
+   * @brief Sends configurations to the board via the enable_device method
+   * @pre The config manager is initialized
+   * @return if all devices were configured successfully
+   */
+  bool configure_devices() const;
+  /**
+   * @brief Attempts to set a configuration, failing if the board config manager rejects it.
+   * If the board config manager does not reject the change, the change is made in the config manager.
+   * This does not save the change, and currently does not change any configuration until reboot.
+   * @param device Any device
+   * @param config The new configuration for the device
+   * @return A response, indicating if the change was successful, if a reboot is required for the
+   *         change to take effect, and optionally a message (often an error message)
+   */
   ConfigResponse attempt_set_configuration(device_t device, uint8_t config);
+  /**
+   * @brief Get the current configuration for a device.
+   * This does not necessarily reflect how hardware is currently loaded, as changes via
+   * attempt_set_configuration may require a reboot to take effect, but not to be reflected here.
+   * @param device Any device
+   * @return The current configuration for the device
+   */
   uint8_t get_configuration(device_t device) const;
-  uint8_t operator[](device_t device) const; // same as get_configuration, for convenience
+  /**
+   * @brief Get the current configuration for a device. Alias for ConfigManager::get_configuration
+   * @see ConfigManager::get_configuration
+   */
+  uint8_t operator[](device_t device) const;
 
+  /**
+   * @brief Prepares the checksum, so that the config struct can be saved to non-volatile memory
+   */
   void prepare_write(); // prepares a checksum, so that the config struct can be saved
 
 private:
