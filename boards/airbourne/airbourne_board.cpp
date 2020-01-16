@@ -100,7 +100,7 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configura
 void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
   if(vcp_.connected())
-    current_serial_ = &vcp;
+    current_serial_ = &vcp_;
   current_serial_->write(src, len);
 }
 

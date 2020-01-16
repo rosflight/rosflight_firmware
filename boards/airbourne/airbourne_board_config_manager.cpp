@@ -55,7 +55,7 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
   case Configuration::SERIAL:
   case Configuration::GNSS:
     if(port != NO_PORT)
-      for(device_t other_device{static_cast<device_t>(0)}; other_device != Configuration::DEVICE_COUNT; ++other_device)
+      for(device_t other_device{Configuration::FIRST_DEVICE}; other_device != Configuration::DEVICE_COUNT; ++other_device)
       {
         if(other_device == Configuration::RC && cm[Configuration::RC] == AirbourneConfiguration::RC_PPM) // RC over PPM does not conflict with UART, even though both use the same port
           continue;
