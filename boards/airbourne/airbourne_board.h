@@ -96,8 +96,6 @@ private:
   LED led1_;
   M25P16 flash_;
   AnalogDigitalConverter battery_adc_;
-  AnalogPin voltage_pin_;
-  AnalogPin current_pin_;
   BatteryMonitor battery_monitor_;
   // UBLOX gnss_;
 
@@ -178,12 +176,12 @@ public:
   bool gnss_present() override;
   void gnss_update() override;
 
-  bool battery_voltage_present() override;
-  float battery_voltage_read() override;
+  bool battery_voltage_present() const override;
+  float battery_voltage_read() const override;
   void battery_voltage_set_multiplier(double multiplier) override;
 
-  bool battery_current_present() override;
-  float battery_current_read() override;
+  bool battery_current_present() const override;
+  float battery_current_read() const override;
   void battery_current_set_multiplier(double multiplier) override;
 
   //GNSS

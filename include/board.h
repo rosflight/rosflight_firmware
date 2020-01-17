@@ -131,12 +131,12 @@ public:
   virtual bool gnss_has_new_data() = 0;
   virtual GNSSRaw gnss_raw_read() = 0;
 
-  virtual bool battery_voltage_present() = 0;
-  virtual float battery_voltage_read() = 0;
+  virtual bool battery_voltage_present() const = 0;
+  virtual float battery_voltage_read() const = 0;
   virtual void battery_voltage_set_multiplier(double multiplier) = 0;
 
-  virtual bool battery_current_present() = 0;
-  virtual float battery_current_read() = 0;
+  virtual bool battery_current_present() const = 0;
+  virtual float battery_current_read() const = 0;
   virtual void battery_current_set_multiplier(double multiplier) = 0;
 
 // RC
