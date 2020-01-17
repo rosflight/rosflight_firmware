@@ -33,9 +33,9 @@ public:
   };
 
   ConfigManager(ROSflight &RF, Config &config);
-  // Reads the memory, and loads defaults if it is invalid. Call after the memory manager is ready
   /**
-   * @brief Reads from memory, and loads defaults if invalid
+   * @brief Reads from memory, and loads defaults if invalid.
+   * @details By convention, all default values are 0.
    * @pre Memory manager is initialized
    * @return if the initialization suceeded
    */
