@@ -212,7 +212,7 @@ public:
   CommandManager(ROSflight &_rf);
   void init();
   bool run();
-  bool rc_override_active();
+  uint16_t get_rc_override();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);

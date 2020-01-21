@@ -335,6 +335,10 @@ TEST_F (CommandManagerTest, OffboardCommandMuxNoMinThrottle)
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  EXPECT_EQ(override, 0x0);
+
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
   EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
   EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
@@ -352,6 +356,10 @@ TEST_F (CommandManagerTest, OffboardCommandMuxMinThrottle)
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  EXPECT_EQ(override, 0x20);
+
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
   EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
   EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
@@ -368,6 +376,10 @@ TEST_F (CommandManagerTest, OffboardCommandMuxRollDeviation)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  EXPECT_EQ(override, 0x24);
+
   EXPECT_CLOSE(output.x.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
   EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
   EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
@@ -384,6 +396,10 @@ TEST_F (CommandManagerTest, OffboardCommandMuxPitchDeviation)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  EXPECT_EQ(override, 0x28);
+
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
   EXPECT_CLOSE(output.y.value, 0.5 * rf.params_.get_param_float(PARAM_RC_MAX_PITCH));
   EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
@@ -400,6 +416,10 @@ TEST_F (CommandManagerTest, OffboardCommandMuxYawrateDeviation)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  EXPECT_EQ(override, 0x30);
+
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
   EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
   EXPECT_CLOSE(output.z.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE));
@@ -417,6 +437,8 @@ TEST_F (CommandManagerTest, OffboardCommandMuxLag)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
+  uint16_t override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0x20);
 
   rc_values[0] = 1500; // return stick to center
   board.set_rc(rc_values);
@@ -425,16 +447,22 @@ TEST_F (CommandManagerTest, OffboardCommandMuxLag)
   setOffboard(offboard_command);
   output=rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, 0.0); // lag
+  override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0x24);
 
   stepFirmware(600000);
   setOffboard(offboard_command);
   output=rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, 0.0); // lag
+  override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0x24);
 
   setOffboard(offboard_command);
   stepFirmware(20000);
   output=rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
+  override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0x20);
 }
 
 TEST_F (CommandManagerTest, StaleOffboardCommand)

@@ -205,12 +205,12 @@ void CommandManager::do_muxing(uint16_t rc_override)
 }
 void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override)
 {
-  bool override_this_channel = (rc_override | channel_override_[channel].override_mask);
+  bool override_this_channel = (rc_override & channel_override_[channel].override_mask);
   // set the combined channel output depending on whether RC is overriding for this channel or not
   *muxes[channel].combined = override_this_channel ? *muxes[channel].rc : *muxes[channel].onboard;
 }
 
-bool CommandManager::rc_override_active()
+uint16_t CommandManager::get_rc_override()
 {
   return rc_override_;
 }
