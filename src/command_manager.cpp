@@ -158,78 +158,56 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   uint32_t now = RF_.board_.clock_millis();
 
   // if we are still in the lag time, return true
-  if (now  < rc_stick_override_[channel].last_override_time + RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
+  if (now  < channel_override_[channel].last_override_time + RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
   {
     return true;
   }
   else
   {
-    if (fabsf(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
+    if (fabsf(RF_.rc_.stick(channel_override_[channel].rc_channel))
         > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
-      rc_stick_override_[channel].last_override_time = now;
+      channel_override_[channel].last_override_time = now;
       return true;
     }
     return false;
   }
 }
-
-bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
+uint16_t CommandManager::determine_override_status()
 {
-  bool override_this_channel = false;
-  //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
-  if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
-      || stick_deviated(channel))
+  uint16_t rc_override{OVERRIDE_NO_OVERRIDE};
+  if(RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
+    rc_override |= OVERRIDE_ATT_SWITCH;
+  if(RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE))
+    rc_override |= OVERRIDE_THR_SWITCH;
+  for(uint8_t channel{0}; channel < MUX_F; channel++)
   {
-    override_this_channel = true;
+    if(stick_deviated(static_cast<MuxChannel>(channel)))
+      rc_override |= channel_override_[channel].stick_override_reason;
+    if(!(muxes[channel].onboard->active))
+      rc_override |= channel_override_[channel].offboard_inactive_override_reason;
   }
-  else // Otherwise only have RC override if the offboard channel is inactive
+  if(muxes[MUX_F].onboard->active) // The throttle has unique override behavior
   {
-    if (muxes[channel].onboard->active)
-    {
-      override_this_channel = false;
-    }
-    else
-    {
-      override_this_channel = true;
-    }
+    if(RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
+      if(muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value)
+        rc_override |= OVERRIDE_T;
   }
-  // set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[channel].combined = override_this_channel ? *muxes[channel].rc : *muxes[channel].onboard;
-  return override_this_channel;
+  else
+    rc_override |= OVERRIDE_OFFBOARD_T_INACTIVE;
+  return rc_override;
 }
 
-bool CommandManager::do_throttle_muxing(void)
+void CommandManager::do_muxing(uint16_t rc_override)
 {
-  bool override_this_channel = false;
-  // Check if the override switch exists and is triggered
-  if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE))
-  {
-    override_this_channel = true;
-  }
-  else // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
-  {
-    if (muxes[MUX_F].onboard->active)
-    {
-      // Check if the parameter flag is set to have us always take the smaller throttle
-      if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
-      {
-        override_this_channel = (muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value);
-      }
-      else
-      {
-        override_this_channel = false;
-      }
-    }
-    else
-    {
-      override_this_channel = true;
-    }
-  }
-
-  // Set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[MUX_F].combined = override_this_channel ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
-  return override_this_channel;
+  for(uint8_t channel{0}; channel <=MUX_F; channel++)
+    do_channel_muxing(static_cast<MuxChannel>(channel), rc_override);
+}
+void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override)
+{
+  bool override_this_channel = (rc_override | channel_override_[channel].override_mask);
+  // set the combined channel output depending on whether RC is overriding for this channel or not
+  *muxes[channel].combined = override_this_channel ? *muxes[channel].rc : *muxes[channel].onboard;
 }
 
 bool CommandManager::rc_override_active()
@@ -291,10 +269,8 @@ bool CommandManager::run()
     }
 
     // Perform muxing
-    rc_override_  = do_roll_pitch_yaw_muxing(MUX_X);
-    rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Y);
-    rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Z);
-    rc_override_ |= do_throttle_muxing();
+    rc_override_ = determine_override_status();
+    do_muxing(rc_override_);
 
     // Light to indicate override
     if (rc_override_)
