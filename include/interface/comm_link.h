@@ -171,7 +171,7 @@ public:
     virtual void send_status(uint8_t system_id,
                              bool armed,
                              bool failsafe,
-                             bool rc_override,
+                             uint16_t rc_override,
                              bool offboard,
                              uint8_t error_code,
                              uint8_t control_mode,
