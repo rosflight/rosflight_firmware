@@ -81,7 +81,7 @@ public:
 TEST_F (CommandManagerTest, Default)
 {
   board.set_rc(rc_values);
-  stepFirmware(20000);
+  stepFirmware(20000); // 20 ms
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
@@ -428,41 +428,41 @@ TEST_F (CommandManagerTest, OffboardCommandMuxYawrateDeviation)
 
 TEST_F (CommandManagerTest, OffboardCommandMuxLag)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000); // 1.1s Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
-  rc_values[0] = 1250;
+  rc_values[0] = 1250; // About halfway left
   board.set_rc(rc_values);
   setOffboard(offboard_command);
-  stepFirmware(40000);
+  stepFirmware(40000); // 40 ms
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
   uint16_t override = rf.command_manager_.get_rc_override();
-  EXPECT_EQ(override, 0x20);
+  EXPECT_EQ(override, 0x24); // Throttle and X stick overrides
 
   rc_values[0] = 1500; // return stick to center
   board.set_rc(rc_values);
 
-  stepFirmware(500000);
+  stepFirmware(500000); // 500 ms
   setOffboard(offboard_command);
   output=rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, 0.0); // lag
   override = rf.command_manager_.get_rc_override();
-  EXPECT_EQ(override, 0x24);
+  EXPECT_EQ(override, 0x3E4); // Throttle and X stick overrides, plus stale offboard
 
-  stepFirmware(600000);
+  stepFirmware(600000); // 600 ms
   setOffboard(offboard_command);
   output=rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, 0.0); // lag
   override = rf.command_manager_.get_rc_override();
-  EXPECT_EQ(override, 0x24);
+  EXPECT_EQ(override, 0x3E0); // Throttle override and stale offboard
 
   setOffboard(offboard_command);
-  stepFirmware(20000);
+  stepFirmware(20000); // 20 ms
   output=rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
   override = rf.command_manager_.get_rc_override();
-  EXPECT_EQ(override, 0x20);
+  EXPECT_EQ(override, 0x20); // Throttle override only
 }
 
 TEST_F (CommandManagerTest, StaleOffboardCommand)
@@ -475,6 +475,8 @@ TEST_F (CommandManagerTest, StaleOffboardCommand)
   stepFirmware(timeout_us + 40000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0x3E0); // Offboard not present, plus throttle limited
   EXPECT_CLOSE(output.x.value, 0.0);
 }
 
@@ -486,10 +488,12 @@ TEST_F (CommandManagerTest, PartialMux)
   stepFirmware(30000);
 
   control_t output = rf.command_manager_.combined_control();
+  uint16_t override = rf.command_manager_.get_rc_override();
   EXPECT_CLOSE(output.x.value, 0.0);
   EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
   EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
   EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_EQ(override, 0x60); // X channel stale and Throttle override
 }
 
 TEST_F (CommandManagerTest, MixedTypes)

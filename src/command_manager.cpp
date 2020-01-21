@@ -187,14 +187,11 @@ uint16_t CommandManager::determine_override_status()
     if(!(muxes[channel].onboard->active))
       rc_override |= channel_override_[channel].offboard_inactive_override_reason;
   }
-  if(muxes[MUX_F].onboard->active) // The throttle has unique override behavior
-  {
-    if(RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
-      if(muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value)
-        rc_override |= OVERRIDE_T;
-  }
-  else
+  if(!(muxes[MUX_F].onboard->active)) // The throttle has unique override behavior
     rc_override |= OVERRIDE_OFFBOARD_T_INACTIVE;
+  if(RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE))
+    if(muxes[MUX_F].rc->value < muxes[MUX_F].onboard->value)
+      rc_override |= OVERRIDE_T;
   return rc_override;
 }
 
