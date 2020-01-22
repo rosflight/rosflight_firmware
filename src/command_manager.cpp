@@ -243,7 +243,7 @@ void CommandManager::override_combined_command_with_rc()
 
 bool CommandManager::run()
 {
-  bool last_rc_override = rc_override_;
+  uint16_t last_rc_override = rc_override_;
 
   // Check for and apply failsafe command
   if (RF_.state_manager_.state().failsafe)
