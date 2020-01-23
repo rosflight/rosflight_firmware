@@ -192,7 +192,7 @@ private:
   /**
    * @brief Checks which channels are overridden
    * @details There are many reasons that a channel could be overriden. These reasons include:
-   * 	- A stick is deviated
+   * 	- A stick is deflected
    * 	-	The commanded throttle is less than the RC throttle, and the MIN_THROTTLE parameter is set
    * 	-	The attitude or throttle override switch is flipped
    * 	-	The onboard computer has not sent any commands recently
@@ -212,6 +212,18 @@ public:
   CommandManager(ROSflight &_rf);
   void init();
   bool run();
+   /**
+   * @brief Checks which channels are overridden, and why
+   * @details There are many reasons that a channel could be overriden. These reasons include:
+   * 	- A stick is deflected
+   * 	-	The commanded throttle is less than the RC throttle, and the MIN_THROTTLE parameter is set
+   * 	-	The attitude or throttle override switch is flipped
+   * 	-	The onboard computer has not sent any commands recently
+   * The returned bitfield indicates which reasons have caused an override.
+   * Because c++ can use integers as booleans, this function can be treated as providing a boolean
+   * This value is updated when run is called if a new RC command is available
+   * @return A bitfield, with overriden reasons indicated
+   */
   uint16_t get_rc_override();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
