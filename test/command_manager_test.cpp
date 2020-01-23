@@ -47,10 +47,10 @@ public:
     rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false);
 
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 4; i++)
       rc_values[i] = 1500;
-    }
+    for (int i=4;i<8;i++)
+      rc_values[i]=1000;
     rc_values[2] = 1000;
 
     rf.params_.set_param_int(PARAM_MIXER, Mixer::PASSTHROUGH);
@@ -463,6 +463,48 @@ TEST_F (CommandManagerTest, OffboardCommandMuxLag)
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
   override = rf.command_manager_.get_rc_override();
   EXPECT_EQ(override, 0x20); // Throttle override only
+}
+
+TEST_F (CommandManagerTest, RCAttitudeOverrideSwitch)
+{
+  stepFirmware(1100000); // 1.1s Get past LAG_TIME
+  rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
+  rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, -1);
+  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
+  setOffboard(offboard_command);
+  stepFirmware(50000); // 50ms
+
+  uint16_t override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0);
+
+  rc_values[4] = 2000;
+  board.set_rc(rc_values);
+
+  stepFirmware(50000); // 50ms
+  override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 1);
+
+}
+
+TEST_F (CommandManagerTest, RCThrottleOverrideSwitch)
+{
+  stepFirmware(1100000); // 1.1s Get past LAG_TIME
+  rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, -1);
+  rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
+  rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
+  setOffboard(offboard_command);
+  stepFirmware(50000); // 50ms
+
+  uint16_t override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 0);
+
+  rc_values[4] = 2000;
+  board.set_rc(rc_values);
+
+  stepFirmware(50000); // 50ms
+  override = rf.command_manager_.get_rc_override();
+  EXPECT_EQ(override, 2);
+
 }
 
 TEST_F (CommandManagerTest, StaleOffboardCommand)
