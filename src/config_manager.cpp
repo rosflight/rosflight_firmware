@@ -79,9 +79,11 @@ uint32_t ConfigManager::generate_checksum() const
   for(size_t index{0}; index< sizeof(config_.config); index++ )
   {
     check_a += config_data[index];
+    check_a %= (UINT8_MAX - 1);
     check_b += check_a;
+    check_b %= (UINT8_MAX - 1);
   }
-  return check_a & (check_b<<8) & (~check_a<<16) & (~check_b<<24);
+  return check_a | (check_b<<8) | (~check_a<<16) | (~check_b<<24);
 }
 
 }
