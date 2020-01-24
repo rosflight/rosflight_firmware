@@ -248,7 +248,8 @@ bool AirbourneBoard::mag_present()
 
 void AirbourneBoard::mag_update()
 {
-  mag_.update();
+  if(mag_.is_initialized())
+    mag_.update();
 }
 
 void AirbourneBoard::mag_read(float mag[3])
@@ -264,7 +265,8 @@ bool AirbourneBoard::baro_present()
 
 void AirbourneBoard::baro_update()
 {
-  baro_.update();
+  if(baro_.is_initialized())
+    baro_.update();
 }
 
 void AirbourneBoard::baro_read(float *pressure, float *temperature)
@@ -275,7 +277,9 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
 
 bool AirbourneBoard::diff_pressure_present()
 {
-  return airspeed_.present();
+  if(airspeed_.is_initialized())
+    return airspeed_.present();
+  return false;
 }
 
 void AirbourneBoard::diff_pressure_update()
@@ -299,7 +303,8 @@ bool AirbourneBoard::sonar_present()
 
 void AirbourneBoard::sonar_update()
 {
-  sonar_.update();
+  if(sonar_.is_initialized())
+    sonar_.update();
 }
 
 float AirbourneBoard::sonar_read()
