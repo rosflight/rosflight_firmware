@@ -61,7 +61,7 @@
 #include "analog_pin.h"
 #include "battery_monitor.h"
 #include "airbourne_board_config_manager.h"
-// #include "ublox.h"
+#include "ublox.h"
 
 #include "board.h"
 
@@ -78,6 +78,7 @@ private:
   UART uart1_;
   UART uart2_;
   UART uart3_;
+  UART * gnss_uart_{nullptr};
   Serial *current_serial_;//A pointer to the serial stream currently in use.
   I2C int_i2c_;
   I2C ext_i2c_;
@@ -97,7 +98,7 @@ private:
   M25P16 flash_;
   AnalogDigitalConverter battery_adc_;
   BatteryMonitor battery_monitor_;
-  // UBLOX gnss_;
+  UBLOX gnss_;
 
   enum SerialDevice : uint32_t
   {

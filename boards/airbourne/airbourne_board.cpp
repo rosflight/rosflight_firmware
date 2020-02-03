@@ -154,7 +154,26 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     break;
   case Configuration::GNSS:
-    // GNSS is currently disabled
+    const uart_hardware_struct_t *uart_def;
+    switch(configuration)
+    {
+    case AirbourneConfiguration::GNSS_UART1:
+      uart_def = &uart_config[UART1];
+      gnss_uart_ = &uart1_;
+      break;
+    case AirbourneConfiguration::GNSS_UART2:
+      uart_def = &uart_config[UART2];
+      gnss_uart_ = &uart2_;
+      return false; // UART2 is not currently implemented at all
+    case AirbourneConfiguration::GNSS_UART3:
+      uart_def = &uart_config[UART3];
+      gnss_uart_ = &uart3_;
+      break;
+    default:
+      return false; // This shouldn't even happen
+    }
+    gnss_uart_->init(uart_def, UBLOX::BAUD_RATE, UBLOX::UART_MODE);
+    gnss_.init(gnss_uart_);
     break;
   case Configuration::SONAR:
     if(configuration == AirbourneConfiguration::SONAR_I2C2)
@@ -328,73 +347,73 @@ bool AirbourneBoard::gnss_has_new_data()
 //ECEF velocity data, or both
 GNSSData AirbourneBoard::gnss_read()
 {
-  // UBLOX::GNSSPVT gnss_pvt= gnss_.read();
-  // UBLOX::GNSSPosECEF pos_ecef = gnss_.read_pos_ecef();
-  // UBLOX::GNSSVelECEF vel_ecef = gnss_.read_vel_ecef();
+  UBLOX::GNSSPVT gnss_pvt= gnss_.read();
+  UBLOX::GNSSPosECEF pos_ecef = gnss_.read_pos_ecef();
+  UBLOX::GNSSVelECEF vel_ecef = gnss_.read_vel_ecef();
   GNSSData gnss = {};
-  // gnss.time_of_week = gnss_pvt.time_of_week;
-  // gnss.time = gnss_pvt.time;
-  // gnss.nanos = gnss_pvt.nanos;
-  // gnss.lat = gnss_pvt.lat;
-  // gnss.lon = gnss_pvt.lon;
-  // gnss.height = gnss_pvt.height;
-  // gnss.vel_n = gnss_pvt.vel_n;
-  // gnss.vel_e = gnss_pvt.vel_e;
-  // gnss.vel_d = gnss_pvt.vel_d;
-  // gnss.h_acc = gnss_pvt.h_acc;
-  // gnss.v_acc = gnss_pvt.v_acc;
-  // //Does not include ECEF position data if the timestamp doesn't match
-  // //See UBLOX::new_data() for reasoning
-  // if (gnss.time_of_week == pos_ecef.time_of_week)
-  // {
-  //   gnss.ecef.x = pos_ecef.x;
-  //   gnss.ecef.y = pos_ecef.y;
-  //   gnss.ecef.z = pos_ecef.z;
-  //   gnss.ecef.p_acc = pos_ecef.p_acc;
-  // }
-  // //Does not include ECEF position data if the timestamp doesn't match
-  // //See UBLOX::new_data() for reasoning
-  // if (gnss.time_of_week == vel_ecef.time_of_week)
-  // {
-  //   gnss.ecef.vx = vel_ecef.vx;
-  //   gnss.ecef.vy = vel_ecef.vy;
-  //   gnss.ecef.vz = vel_ecef.vz;
-  //   gnss.ecef.s_acc = vel_ecef.s_acc;
-  // }
+  gnss.time_of_week = gnss_pvt.time_of_week;
+  gnss.time = gnss_pvt.time;
+  gnss.nanos = gnss_pvt.nanos;
+  gnss.lat = gnss_pvt.lat;
+  gnss.lon = gnss_pvt.lon;
+  gnss.height = gnss_pvt.height;
+  gnss.vel_n = gnss_pvt.vel_n;
+  gnss.vel_e = gnss_pvt.vel_e;
+  gnss.vel_d = gnss_pvt.vel_d;
+  gnss.h_acc = gnss_pvt.h_acc;
+  gnss.v_acc = gnss_pvt.v_acc;
+  //Does not include ECEF position data if the timestamp doesn't match
+  //See UBLOX::new_data() for reasoning
+  if (gnss.time_of_week == pos_ecef.time_of_week)
+  {
+    gnss.ecef.x = pos_ecef.x;
+    gnss.ecef.y = pos_ecef.y;
+    gnss.ecef.z = pos_ecef.z;
+    gnss.ecef.p_acc = pos_ecef.p_acc;
+  }
+  //Does not include ECEF position data if the timestamp doesn't match
+  //See UBLOX::new_data() for reasoning
+  if (gnss.time_of_week == vel_ecef.time_of_week)
+  {
+    gnss.ecef.vx = vel_ecef.vx;
+    gnss.ecef.vy = vel_ecef.vy;
+    gnss.ecef.vz = vel_ecef.vz;
+    gnss.ecef.s_acc = vel_ecef.s_acc;
+  }
 
   return gnss;
 }
 GNSSRaw AirbourneBoard::gnss_raw_read()
 {
-//  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
+  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
   GNSSRaw raw = {};
-  // raw.time_of_week = pvt.iTOW;
-  // raw.year = pvt.time.year;
-  // raw.month = pvt.time.month;
-  // raw.day = pvt.time.day;
-  // raw.hour = pvt.time.hour;
-  // raw.min = pvt.time.min;
-  // raw.sec = pvt.time.sec;
-  // raw.valid = pvt.time.valid;
-  // raw.t_acc = pvt.time.tAcc;
-  // raw.nano = pvt.time.nano;
-  // raw.fix_type = pvt.fixType;
-  // raw.num_sat = pvt.numSV;
-  // raw.lon = pvt.lon;
-  // raw.lat = pvt.lat;
-  // raw.height = pvt.height;
-  // raw.height_msl = pvt.hMSL;
-  // raw.h_acc = pvt.hAcc;
-  // raw.v_acc = pvt.vAcc;
-  // raw.vel_n = pvt.velN;
-  // raw.vel_e = pvt.velE;
-  // raw.vel_d = pvt.velD;
-  // raw.g_speed = pvt.gSpeed;
-  // raw.head_mot = pvt.headMot;
-  // raw.s_acc = pvt.sAcc;
-  // raw.head_acc = pvt.headAcc;
-  // raw.p_dop = pvt.pDOP;
-  // raw.rosflight_timestamp = gnss_.get_last_pvt_timestamp();
+  raw.time_of_week = pvt.iTOW;
+  raw.year = pvt.time.year;
+  raw.month = pvt.time.month;
+  raw.day = pvt.time.day;
+  raw.hour = pvt.time.hour;
+  raw.min = pvt.time.min;
+  raw.sec = pvt.time.sec;
+  raw.valid = pvt.time.valid;
+  raw.t_acc = pvt.time.tAcc;
+  raw.nano = pvt.time.nano;
+  raw.fix_type = pvt.fixType;
+  raw.num_sat = pvt.numSV;
+  raw.lon = pvt.lon;
+  raw.lat = pvt.lat;
+  raw.height = pvt.height;
+  raw.height_msl = pvt.hMSL;
+  raw.h_acc = pvt.hAcc;
+  raw.v_acc = pvt.vAcc;
+  raw.vel_n = pvt.velN;
+  raw.vel_e = pvt.velE;
+  raw.vel_d = pvt.velD;
+  raw.g_speed = pvt.gSpeed;
+  raw.head_mot = pvt.headMot;
+  raw.s_acc = pvt.sAcc;
+  raw.head_acc = pvt.headAcc;
+  raw.p_dop = pvt.pDOP;
+  raw.rosflight_timestamp = gnss_.get_last_pvt_timestamp();
   return raw;
 }
 

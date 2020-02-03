@@ -132,6 +132,7 @@ AIRBOURNE_SRCS = led.cpp \
                  analog_digital_converter.cpp \
 		 analog_pin.cpp \
 		 battery_monitor.cpp \
+		 ublox.cpp
 
 
 # board-specific source files
