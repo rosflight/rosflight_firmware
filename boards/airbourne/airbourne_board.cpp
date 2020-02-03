@@ -333,14 +333,14 @@ float AirbourneBoard::sonar_read()
 
 bool AirbourneBoard::gnss_present()
 {
-  // return gnss_.present();
-  return false;
+  if(!gnss_.present())
+    gnss_.continue_search();
+  return gnss_.present();
 }
-void AirbourneBoard::gnss_update() {}
+void AirbourneBoard::gnss_update(){}
 bool AirbourneBoard::gnss_has_new_data()
 {
-  // return this->gnss_.new_data();
-  return false;
+  return this->gnss_.new_data();
 }
 //This method translates the UBLOX driver interface into the ROSFlight interface
 //If not gnss_has_new_data(), then this may return 0's for ECEF position data,
