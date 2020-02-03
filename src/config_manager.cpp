@@ -63,6 +63,10 @@ bool ConfigManager::read()
     return false;
   if(generate_checksum() != config_.checksum)
     return false;
+  const BoardConfigManager &bcm = RF_.board_.get_board_config_manager();
+  for(size_t device{0}; device < sizeof(config_.config); device++)
+    if(config_.config[device] > bcm.get_max_config(static_cast<device_t>(device)))
+      return false;
   return true;
 }
 
