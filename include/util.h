@@ -55,9 +55,10 @@ inline uint16_t checksum_fletcher16(const uint8_t *src, size_t len, bool finaliz
   uint32_t c1 = (start & 0xFF00) >> 8;
   uint32_t c2 = start & 0x00FF;
 
-  for (; len > 0; len -= max_block_length)
+  size_t block_length;
+  for (; len > 0; len -= block_length)
   {
-    size_t block_length = len < max_block_length ? len : max_block_length;
+    block_length = len < max_block_length ? len : max_block_length;
     for (size_t i = 0; i < block_length; i++)
     {
       c1 += *(src++);
