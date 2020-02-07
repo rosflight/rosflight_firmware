@@ -162,9 +162,11 @@ public:
   void led1_off() override;
   void led1_toggle() override;
 
-  // Backup memory
-  bool has_backup_data() override;
-  BackupData get_backup_data() override;
+  // Backup Data
+  void backup_memory_init() override {}
+  bool backup_memory_read(void *dest, size_t len) override { (void)dest; (void)len; return false; }
+  void backup_memory_write(const void *src, size_t len) override { (void)src; (void)len; }
+  void backup_memory_clear(size_t len) override { (void)len; }
 };
 
 } // namespace rosflight_firmware
