@@ -142,10 +142,8 @@ int main(void)
     board.init_board();
     firmware.init();
 
-    //Because the USB driver breaks the backup sram, the backup sram must be initalized after
-    // backup_sram_init(); // TODO may be important??
-    // rosflight_firmware::BackupData backup_data = backup_sram_read();
-    // error_count_ = backup_data.reset_count;
+    // Because the USB driver breaks the backup sram, the backup sram must be re-initalized after
+    backup_sram_init();
 
     while (true)
     {
