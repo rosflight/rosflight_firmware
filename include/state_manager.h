@@ -143,8 +143,6 @@ public:
   void set_error(uint16_t error);
   void clear_error(uint16_t error);
 
-  bool has_backup_data() const;
-
   /**
    * @brief Write recovery data to backup memory in the case of a hard fault
    *
@@ -156,6 +154,8 @@ public:
    * @param debug Low-level debugging data populated by the hardfault handler
    */
   void write_backup_data(const BackupData::DebugInfo& debug);
+
+  void check_backup_memory();
 
 private:
   ROSflight &RF_;

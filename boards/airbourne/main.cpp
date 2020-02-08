@@ -142,9 +142,6 @@ int main(void)
     board.init_board();
     firmware.init();
 
-    // Because the USB driver breaks the backup sram, the backup sram must be re-initalized after
-    backup_sram_init();
-
     while (true)
     {
         firmware.run();

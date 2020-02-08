@@ -53,28 +53,6 @@ void StateManager::init()
 
   // Initialize LEDs
   RF_.board_.led1_off();
-
-  // check for hardfault recovery data in backup memory
-  BackupData data;
-  if (RF_.board_.backup_memory_read(reinterpret_cast<void*>(&data), sizeof(data)))
-  {
-    if (data.valid_checksum())
-    {
-      hardfault_count_ = data.reset_count;
-
-      if (data.arm_flag == BackupData::ARM_MAGIC)
-      {
-        state_.armed = true;
-        fsm_state_ = FSM_STATE_ARMED;
-      }
-
-      // queue sending backup data over comm link
-      RF_.comm_manager_.send_backup_data(data);
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Recovered from hardfault!!!");
-    }
-
-    RF_.board_.backup_memory_clear(sizeof(data));
-  }
 }
 
 void StateManager::run()
@@ -301,6 +279,43 @@ void StateManager::write_backup_data(const BackupData::DebugInfo& debug)
 
   data.finalize();
   RF_.board_.backup_memory_write(reinterpret_cast<const void*>(&data), sizeof(data));
+}
+
+void StateManager::check_backup_memory()
+{
+  // reinitialize to make sure backup memory is in a good state
+  RF_.board_.backup_memory_init();
+
+  // check for hardfault recovery data in backup memory
+  BackupData data;
+  if (RF_.board_.backup_memory_read(reinterpret_cast<void *>(&data), sizeof(data)))
+  {
+    if (data.valid_checksum())
+    {
+      hardfault_count_ = data.reset_count;
+
+      if (data.arm_flag == BackupData::ARM_MAGIC)
+      {
+        // do emergency rearm if in a good state
+        if (fsm_state_ == FSM_STATE_PREFLIGHT)
+        {
+          state_.armed = true;
+          fsm_state_ = FSM_STATE_ARMED;
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Rearming after hardfault!!!");
+        }
+        else
+        {
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Failed to rearm after hardfault!!!");
+        }
+      }
+
+      // queue sending backup data over comm link
+      RF_.comm_manager_.send_backup_data(data);
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Recovered from hardfault!!!");
+    }
+
+    RF_.board_.backup_memory_clear(sizeof(data));
+  }
 }
 
 void StateManager::process_errors()
