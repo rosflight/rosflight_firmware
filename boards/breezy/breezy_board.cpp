@@ -436,20 +436,6 @@ void BreezyBoard::led1_toggle()
   LED1_TOGGLE;
 }
 
-bool BreezyBoard::has_backup_data()
-{
-  return false;
-}
-
-BackupData BreezyBoard::get_backup_data()
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-  BackupData blank_data = {0};
-#pragma GCC diagnostic pop
-  return blank_data;
-}
-
 }
 
 #pragma GCC diagnostic pop

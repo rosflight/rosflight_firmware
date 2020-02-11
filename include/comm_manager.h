@@ -114,6 +114,9 @@ private:
   };
   LogMessageBuffer log_buffer_;
 
+  StateManager::BackupData backup_data_buffer_;
+  bool have_backup_data_ = false;
+
   class Stream
   {
   public:
@@ -154,7 +157,6 @@ private:
   void send_gnss(void);
   void send_gnss_raw(void);
   void send_low_priority(void);
-  void send_error_data(void);
 
   // Debugging Utils
   void send_named_value_int(const char *const name, int32_t value);
@@ -198,6 +200,8 @@ public:
 
   void send_parameter_list();
   void send_named_value_float(const char *const name, float value);
+
+  void send_backup_data(const StateManager::BackupData &backup_data);
 };
 
 } // namespace rosflight_firmware

@@ -464,16 +464,27 @@ void AirbourneBoard::led1_toggle()
   led2_.toggle();
 }
 
-//Backup memory
-bool AirbourneBoard::has_backup_data()
+// Backup memory
+void AirbourneBoard::backup_memory_init()
 {
-  BackupData backup_data = backup_sram_read();
-  return (check_backup_checksum(backup_data) && backup_data.error_code!=0);
+  backup_sram_init();
 }
 
-rosflight_firmware::BackupData AirbourneBoard::get_backup_data()
+bool AirbourneBoard::backup_memory_read(void *dest, size_t len)
 {
-  return backup_sram_read();
+  backup_sram_read(dest, len);
+  return true; //!< @todo backup_sram_read() has no return value
 }
+
+void AirbourneBoard::backup_memory_write(const void *src, size_t len)
+{
+  backup_sram_write(src, len);
+}
+
+void AirbourneBoard::backup_memory_clear(size_t len)
+{
+  backup_sram_clear(len);
+}
+
 
 } // namespace rosflight_firmware
