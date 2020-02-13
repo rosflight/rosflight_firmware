@@ -545,6 +545,7 @@ void CommManager::send_mag(void)
 }
 void CommManager::send_battery_status(void)
 {
+  if(RF_.sensors_.data().battery_monitor_present)
     comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
         RF_.sensors_.data().battery_current);
 }
