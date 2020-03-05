@@ -1,0 +1,35 @@
+name: Unit Tests
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: clone
+      run: git submodule update --init --recursive
+    - name: apt install
+      run: sudo apt-get install -y build-essential cmake libgtest-dev libeigen3-dev
+    - name: install gtest
+      run: |
+        cd /usr/src/gtest
+        sudo cmake CMakeLists.txt 
+        sudo make 
+        sudo cp *.a /usr/lib
+    - name: cmake
+      run: |
+        cd test 
+        mkdir build 
+        cd build 
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+    - name: make
+      run: |
+        cd test/build 
+        make
+    - name: test
+      run: |
+        cd test/build 
+        ./unit_tests
