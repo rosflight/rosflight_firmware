@@ -253,6 +253,7 @@ private:
   void correct_baro(void);
   void correct_diff_pressure(void);
   bool update_imu(void);
+  void update_battery_average(float new_voltage);
   void update_other_sensors(void);
   void look_for_disabled_sensors(void);
   uint32_t last_time_look_for_disarmed_sensors_ = 0;
@@ -298,9 +299,9 @@ private:
   OutlierFilter sonar_outlier_filt_;
 
   // Battery monitor filtering via moving average
-  float battery_voltage_history[BATTERY_MONITOR_MOVING_AVERAGE_COUNT];
-  uint32_t last_battery_monitor_update_ms = 0;
-  size_t battery_montitor_filter_pointer = 0; // Index to the next value in the filter to replace
+  float battery_voltage_history_[BATTERY_MONITOR_MOVING_AVERAGE_COUNT];
+  uint32_t last_battery_monitor_update_ms_ = 0;
+  size_t battery_monitor_filter_pointer_ = 0; // Index to the next value in the filter to replace
   // Battery Monitor
   void update_battery_monitor_multipliers();
 

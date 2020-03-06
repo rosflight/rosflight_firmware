@@ -217,19 +217,13 @@ void Sensors::update_other_sensors()
     }
     break;
   case BATTERY_MONITOR:
-      if(rf_.board_.clock_millis() - last_battery_monitor_update_ms > BATTERY_MONITOR_UPDATE_PERIOD)
+      if(rf_.board_.clock_millis() - last_battery_monitor_update_ms_ > BATTERY_MONITOR_UPDATE_PERIOD)
       {
-        last_battery_monitor_update_ms = rf_.board_.clock_millis();
+        last_battery_monitor_update_ms_ = rf_.board_.clock_millis();
         if (rf_.board_.battery_voltage_present())
         {
           data_.battery_monitor_present = true;
-          battery_voltage_history[battery_montitor_filter_pointer++]=rf_.board_.battery_voltage_read();
-          if(battery_montitor_filter_pointer == BATTERY_MONITOR_MOVING_AVERAGE_COUNT)
-            battery_montitor_filter_pointer = 0;
-          float voltage_sum{0};
-          for(float voltage: battery_voltage_history)
-            voltage_sum += voltage;
-          data_.battery_voltage = voltage_sum / BATTERY_MONITOR_MOVING_AVERAGE_COUNT;
+          update_battery_average(rf_.board_.battery_voltage_read());
         }
         if(rf_.board_.battery_current_present())
         {
@@ -368,6 +362,16 @@ bool Sensors::update_imu(void)
   }
 }
 
+void Sensors::update_battery_average(float new_voltage)
+{
+  battery_voltage_history_[battery_monitor_filter_pointer_++]=new_voltage;
+  if(battery_monitor_filter_pointer_ == BATTERY_MONITOR_MOVING_AVERAGE_COUNT)
+    battery_monitor_filter_pointer_ = 0;
+  float voltage_sum{0};
+  for(float voltage: battery_voltage_history_)
+    voltage_sum += voltage;
+  data_.battery_voltage = voltage_sum / BATTERY_MONITOR_MOVING_AVERAGE_COUNT;
+}
 
 void Sensors::get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us)
 {
