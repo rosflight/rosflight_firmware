@@ -145,7 +145,7 @@ void AirbourneBoard::sensors_init()
   sonar_.init(&ext_i2c_);
   airspeed_.init(&ext_i2c_);
   // gnss_.init(&uart1_);
-  battery_adc_.init(&adc_config[0]);
+  battery_adc_.init(battery_monitor_config.adc);
   battery_monitor_.init(battery_monitor_config, &battery_adc_, 0,0);
 }
 
