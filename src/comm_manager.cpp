@@ -486,14 +486,14 @@ void CommManager::send_output_raw(void)
 void CommManager::send_rc_raw(void)
 {
   // TODO better mechanism for retreiving RC (through RC module, not PWM-specific)
-  uint16_t channels[8] = { static_cast<uint16_t>(RF_.board_.rc_read(0)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(1)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(2)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(3)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(4)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(5)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(6)*1000),
-                           static_cast<uint16_t>(RF_.board_.rc_read(7)*1000) };
+  uint16_t channels[8] = { static_cast<uint16_t>(RF_.board_.rc_read(0)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(1)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(2)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(3)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(4)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(5)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(6)*1000 + 1000),
+                           static_cast<uint16_t>(RF_.board_.rc_read(7)*1000 + 1000) };
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 
