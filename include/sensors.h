@@ -205,8 +205,7 @@ private:
   static const int SENSOR_CAL_CYCLES;
   static const float BARO_MAX_CALIBRATION_VARIANCE;
   static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
-  static constexpr size_t BATTERY_MONITOR_MOVING_AVERAGE_COUNT = 10;
-  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD = 100;
+  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD_MS = 100;
 
   class OutlierFilter
   {
@@ -253,9 +252,10 @@ private:
   void correct_baro(void);
   void correct_diff_pressure(void);
   bool update_imu(void);
-  void update_battery_average(float new_voltage);
+  void update_battery_monitor(void);
   void update_other_sensors(void);
   void look_for_disabled_sensors(void);
+  void update_battery_monitor_multipliers(void);
   uint32_t last_time_look_for_disarmed_sensors_ = 0;
   uint32_t last_imu_update_ms_ = 0;
 
@@ -298,13 +298,10 @@ private:
   OutlierFilter diff_outlier_filt_;
   OutlierFilter sonar_outlier_filt_;
 
-  // Battery monitor filtering via moving average
-  float battery_voltage_history_[BATTERY_MONITOR_MOVING_AVERAGE_COUNT];
   uint32_t last_battery_monitor_update_ms_ = 0;
-  size_t battery_monitor_filter_pointer_ = 0; // Index to the next value in the filter to replace
   // Battery Monitor
-  void update_battery_monitor_multipliers();
-
+  float battery_voltage_alpha_{0.9};
+  float battery_current_alpha_{0.9};
 };
 
 } // namespace rosflight_firmware
