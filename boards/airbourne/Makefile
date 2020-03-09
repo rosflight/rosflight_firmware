@@ -130,8 +130,8 @@ AIRBOURNE_SRCS = led.cpp \
                  ms4525.cpp \
                  backup_sram.cpp \
                  analog_digital_converter.cpp \
-		 analog_pin.cpp \
-		 battery_monitor.cpp \
+                 analog_pin.cpp \
+                 battery_monitor.cpp \
 
 
 # board-specific source files
