@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, James Jackson and Daniel Koch, BYU MAGICC Lab
+ * Copyright (c) 2020, James Jackson, Daniel Koch, and Trey Henrichsen, BYU MAGICC Lab
  *
  * All rights reserved.
  *
