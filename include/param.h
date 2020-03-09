@@ -214,6 +214,8 @@ enum : uint16_t
   /***********************/
   PARAM_BATTERY_VOLTAGE_MULTIPLIER,
   PARAM_BATTERY_CURRENT_MULTIPLIER,
+  PARAM_BATTERY_VOLTAGE_ALPHA,
+  PARAM_BATTERY_CURRENT_ALPHA,
 
   // keep track of size of params array
   PARAMS_COUNT

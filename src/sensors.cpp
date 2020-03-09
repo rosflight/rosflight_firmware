@@ -111,7 +111,13 @@ void Sensors::param_change_callback(uint16_t param_id)
     break;
   case PARAM_BATTERY_VOLTAGE_MULTIPLIER:
   case PARAM_BATTERY_CURRENT_MULTIPLIER:
-    this->update_battery_monitor_multipliers();
+    update_battery_monitor_multipliers();
+    break;
+  case PARAM_BATTERY_VOLTAGE_ALPHA:
+    battery_voltage_alpha_ = rf_.params_.get_param_float(PARAM_BATTERY_VOLTAGE_ALPHA);
+    break;
+  case PARAM_BATTERY_CURRENT_ALPHA:
+    battery_current_alpha_ = rf_.params_.get_param_float(PARAM_BATTERY_CURRENT_ALPHA);
     break;
   default:
     // do nothing
