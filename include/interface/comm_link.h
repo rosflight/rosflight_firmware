@@ -39,6 +39,7 @@
 #include "param.h"
 #include "board.h"
 #include "sensors.h"
+#include "state_manager.h"
 
 namespace rosflight_firmware
 {
@@ -173,7 +174,7 @@ public:
     virtual void send_version(uint8_t system_id, const char *const version) = 0;
     virtual void send_gnss(uint8_t system_id, const GNSSData &data) = 0;
     virtual void send_gnss_raw(uint8_t system_id, const GNSSRaw &data) = 0;
-    virtual void send_error_data(uint8_t system_id, const BackupData &error_data) = 0;
+    virtual void send_error_data(uint8_t system_id, const StateManager::BackupData &error_data) = 0;
 
     // register listener
     virtual void set_listener(ListenerInterface *listener) = 0;

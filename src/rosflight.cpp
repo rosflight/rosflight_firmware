@@ -88,6 +88,12 @@ void ROSflight::init()
 
   // Initialize the command muxer
   command_manager_.init();
+
+  /***************************/
+  /***  Hardfault Recovery ***/
+  /***************************/
+
+  state_manager_.check_backup_memory();
 }
 
 
