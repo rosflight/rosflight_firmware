@@ -205,7 +205,7 @@ private:
   static const int SENSOR_CAL_CYCLES;
   static const float BARO_MAX_CALIBRATION_VARIANCE;
   static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
-  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD_MS = 100;
+  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD_MS = 10;
 
   class OutlierFilter
   {
@@ -300,8 +300,8 @@ private:
 
   uint32_t last_battery_monitor_update_ms_ = 0;
   // Battery Monitor
-  float battery_voltage_alpha_{0.9};
-  float battery_current_alpha_{0.9};
+  float battery_voltage_alpha_{0.99};
+  float battery_current_alpha_{0.99};
 };
 
 } // namespace rosflight_firmware
