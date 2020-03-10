@@ -300,8 +300,8 @@ private:
 
   uint32_t last_battery_monitor_update_ms_ = 0;
   // Battery Monitor
-  float battery_voltage_alpha_{0.99};
-  float battery_current_alpha_{0.99};
+  float battery_voltage_alpha_{0.995};
+  float battery_current_alpha_{0.995};
 };
 
 } // namespace rosflight_firmware
