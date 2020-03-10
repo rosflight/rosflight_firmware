@@ -182,6 +182,8 @@ This is a list of all ROSflight parameters, including their types, default value
 | RC_TYPE | Type of RC input 0 - PPM, 1 - SBUS | int |  0 | 0 | 1 |
 | BATT_VOLT_MULT | Battery monitor voltage multiplier | float | 0 | 0 | inf |
 | BATT_CURR_MULT | Battery monitor current multiplier | float | 0 | 0 | inf |
+| BATT_VOLT_ALPHA | Batter monitor voltage filter alpha. Values closer to 1 smooth the signal more.  | float | 0.995 | 0 | 1 |
+| BATT_CURR_ALPHA | Battery monitor current filter alpha. Values closer to 1 smooth the signal more.| float | 0.995 | 0 | 1 |
 | RC_X_CHN | RC input channel mapped to x-axis commands [0 - indexed] | int |  0 | 0 | 3 |
 | RC_Y_CHN | RC input channel mapped to y-axis commands [0 - indexed] | int |  1 | 0 | 3 |
 | RC_Z_CHN | RC input channel mapped to z-axis commands [0 - indexed] | int |  3 | 0 | 3 |
