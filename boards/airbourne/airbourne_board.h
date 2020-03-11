@@ -57,6 +57,9 @@
 #include "uart.h"
 #include "mb1242.h"
 #include "backup_sram.h"
+#include "analog_digital_converter.h"
+#include "analog_pin.h"
+#include "battery_monitor.h"
 // #include "ublox.h"
 
 #include "board.h"
@@ -88,6 +91,8 @@ private:
   LED led2_;
   LED led1_;
   M25P16 flash_;
+  AnalogDigitalConverter battery_adc_;
+  BatteryMonitor battery_monitor_;
   // UBLOX gnss_;
 
   enum SerialDevice : uint32_t
@@ -162,6 +167,14 @@ public:
 
   bool gnss_present() override;
   void gnss_update() override;
+
+  bool battery_voltage_present() const override;
+  float battery_voltage_read() const override;
+  void battery_voltage_set_multiplier(double multiplier) override;
+
+  bool battery_current_present() const override;
+  float battery_current_read() const override;
+  void battery_current_set_multiplier(double multiplier) override;
 
   //GNSS
   GNSSData gnss_read() override;

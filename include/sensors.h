@@ -162,6 +162,10 @@ public:
     bool mag_present = false;
     bool sonar_present = false;
     bool diff_pressure_present = false;
+
+    bool battery_monitor_present = false;
+    float battery_voltage = 0;
+    float battery_current = 0;
   };
 
   Sensors(ROSflight &rosflight);
@@ -201,6 +205,7 @@ private:
   static const int SENSOR_CAL_CYCLES;
   static const float BARO_MAX_CALIBRATION_VARIANCE;
   static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
+  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD_MS = 10;
 
   class OutlierFilter
   {
@@ -223,6 +228,7 @@ private:
     DIFF_PRESSURE,
     SONAR,
     MAGNETOMETER,
+    BATTERY_MONITOR,
     NUM_LOW_PRIORITY_SENSORS
   };
 
@@ -246,8 +252,10 @@ private:
   void correct_baro(void);
   void correct_diff_pressure(void);
   bool update_imu(void);
+  void update_battery_monitor(void);
   void update_other_sensors(void);
   void look_for_disabled_sensors(void);
+  void update_battery_monitor_multipliers(void);
   uint32_t last_time_look_for_disarmed_sensors_ = 0;
   uint32_t last_imu_update_ms_ = 0;
 
@@ -290,6 +298,10 @@ private:
   OutlierFilter diff_outlier_filt_;
   OutlierFilter sonar_outlier_filt_;
 
+  uint32_t last_battery_monitor_update_ms_ = 0;
+  // Battery Monitor
+  float battery_voltage_alpha_{0.995};
+  float battery_current_alpha_{0.995};
 };
 
 } // namespace rosflight_firmware

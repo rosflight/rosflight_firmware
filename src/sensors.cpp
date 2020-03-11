@@ -35,6 +35,7 @@
 #include <math.h>
 
 #include "sensors.h"
+#include "param.h"
 #include "rosflight.h"
 
 #include <turbomath/turbomath.h>
@@ -78,6 +79,8 @@ void Sensors::init()
   diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
   sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
   int_start_us_ = rf_.board_.clock_micros();
+
+  this->update_battery_monitor_multipliers();
 }
 
 void Sensors::init_imu()
@@ -105,6 +108,16 @@ void Sensors::param_change_callback(uint16_t param_id)
   case PARAM_FC_PITCH:
   case PARAM_FC_YAW:
     init_imu();
+    break;
+  case PARAM_BATTERY_VOLTAGE_MULTIPLIER:
+  case PARAM_BATTERY_CURRENT_MULTIPLIER:
+    update_battery_monitor_multipliers();
+    break;
+  case PARAM_BATTERY_VOLTAGE_ALPHA:
+    battery_voltage_alpha_ = rf_.params_.get_param_float(PARAM_BATTERY_VOLTAGE_ALPHA);
+    break;
+  case PARAM_BATTERY_CURRENT_ALPHA:
+    battery_current_alpha_ = rf_.params_.get_param_float(PARAM_BATTERY_CURRENT_ALPHA);
     break;
   default:
     // do nothing
@@ -208,6 +221,13 @@ void Sensors::update_other_sensors()
       raw_distance = rf_.board_.sonar_read();
       data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
     }
+    break;
+  case BATTERY_MONITOR:
+      if(rf_.board_.clock_millis() - last_battery_monitor_update_ms_ > BATTERY_MONITOR_UPDATE_PERIOD_MS)
+      {
+        last_battery_monitor_update_ms_ = rf_.board_.clock_millis();
+        update_battery_monitor();
+      }
     break;
   default:
     break;
@@ -351,6 +371,21 @@ void Sensors::get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro
   stamp_us = data_.imu_time;
 }
 
+void Sensors::update_battery_monitor()
+{
+  if (rf_.board_.battery_voltage_present())
+  {
+    data_.battery_monitor_present = true;
+    data_.battery_voltage = data_.battery_voltage * battery_voltage_alpha_ +
+        rf_.board_.battery_voltage_read() * (1-battery_voltage_alpha_);
+  }
+  if(rf_.board_.battery_current_present())
+  {
+    data_.battery_monitor_present = true;
+    data_.battery_current = data_.battery_current * battery_current_alpha_ +
+        rf_.board_.battery_current_read() * (1-battery_current_alpha_);
+  }
+}
 //======================================================================
 // Calibration Functions
 void Sensors::calibrate_gyro()
@@ -640,6 +675,14 @@ bool Sensors::OutlierFilter::update(float new_val, float *val)
     window_size_++;
     return false;
   }
+}
+
+void Sensors::update_battery_monitor_multipliers()
+{
+  float voltage_multiplier = this->rf_.params_.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
+  float current_multiplier = this->rf_.params_.get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
+  this->rf_.board_.battery_voltage_set_multiplier(voltage_multiplier);
+  this->rf_.board_.battery_current_set_multiplier(current_multiplier);
 }
 
 } // namespace rosflight_firmware

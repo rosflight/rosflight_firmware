@@ -33,6 +33,9 @@
 #include <string.h>
 
 #include "rosflight.h"
+#include "param.h"
+
+#include "comm_manager.h"
 
 namespace rosflight_firmware
 {
@@ -95,6 +98,7 @@ void CommManager::init()
   set_streaming_rate(STREAM_ID_GNSS, PARAM_STREAM_GNSS_RATE);
   set_streaming_rate(STREAM_ID_GNSS_RAW, PARAM_STREAM_GNSS_RAW_RATE);
   set_streaming_rate(STREAM_ID_MAG, PARAM_STREAM_MAG_RATE);
+  set_streaming_rate(STREAM_ID_BATTERY_STATUS, PARAM_STREAM_BATTERY_STATUS_RATE);
   set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, PARAM_STREAM_OUTPUT_RAW_RATE);
   set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
 
@@ -143,6 +147,9 @@ void CommManager::param_change_callback(uint16_t param_id)
     break;
   case PARAM_STREAM_RC_RAW_RATE:
     set_streaming_rate(STREAM_ID_RC_RAW, param_id);
+    break;
+  case PARAM_STREAM_BATTERY_STATUS_RATE:
+    set_streaming_rate(STREAM_ID_BATTERY_STATUS, param_id);
     break;
   default:
     // do nothing
@@ -535,6 +542,12 @@ void CommManager::send_mag(void)
 {
   if (RF_.sensors_.data().mag_present)
     comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
+}
+void CommManager::send_battery_status(void)
+{
+  if(RF_.sensors_.data().battery_monitor_present)
+    comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
+        RF_.sensors_.data().battery_current);
 }
 
 void CommManager::send_backup_data(const StateManager::BackupData& backup_data)

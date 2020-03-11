@@ -128,7 +128,10 @@ AIRBOURNE_SRCS = led.cpp \
                  uart.cpp \
                  M25P16.cpp \
                  ms4525.cpp \
-                 backup_sram.cpp
+                 backup_sram.cpp \
+                 analog_digital_converter.cpp \
+                 analog_pin.cpp \
+                 battery_monitor.cpp \
 
 
 # board-specific source files

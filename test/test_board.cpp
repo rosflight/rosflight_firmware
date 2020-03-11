@@ -128,6 +128,32 @@ bool testBoard::sonar_present() { return false; }
 void testBoard::sonar_update() {}
 float testBoard::sonar_read() { return 0; }
 
+bool testBoard::battery_voltage_present() const
+{
+  return false;
+}
+float testBoard::battery_voltage_read() const
+{
+  return 0;
+}
+void testBoard::battery_voltage_set_multiplier(double multiplier)
+{
+  (void)multiplier;
+}
+
+bool testBoard::battery_current_present() const
+{
+  return false;
+}
+float testBoard::battery_current_read() const
+{
+  return 0;
+}
+void testBoard::battery_current_set_multiplier(double multiplier)
+{
+  (void)multiplier;
+}
+
 //GNSS is not supported on the test board
 GNSSData testBoard::gnss_read() { return {}; }
 
