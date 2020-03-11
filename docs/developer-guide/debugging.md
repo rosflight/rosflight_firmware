@@ -18,10 +18,9 @@ Also make sure you have configured your computer as described in the [Serial Por
 
 ### Connect debugger to flight controller
 
-The ST-LINK/V2 connects to the microcontroller using the Serial Wire Debug (SWD) interface. You will need to connect the `GND`, `NRST`, `SWDIO`, `SWCLK`, and `VDD` lines of the ST-LINK/V2 to your flight controller.
+The ST-LINK/V2 connects to the microcontroller using the Serial Wire Debug (SWD) interface. You will need to connect the `GND`, `NRST`, `SWDIO`, and `SWCLK` lines of the ST-LINK/V2 to your flight controller. On many F4 boards, these lines are pinned out through a 4-position JST SH connector, although that connector is not always populated. Refer to the documentation for your specific board for details.
 
-!!! warning "TODO"
-    Discuss F1 and F4 connections, including considerations for `VDD`
+The official ST-LINK/V2 also needs a target voltage reference on pin 1 or 2, which for the F4 boards is 3.3V. However, there is no externally accessible 3.3V pinout on the F4 boards. An easy solution to this is to connect pin 19 (VDD 3.3V) of the ST-LINK/V2 to pin 1 or 2 of the ST-LINK/V2 (Target VCC) to provide the voltage reference. You will also need to power the board from another source, either through the USB port or over the servo rail.
 
 ## VS Code
 
@@ -39,7 +38,7 @@ sudo apt install openocd
 
 The embedded debugging functionality is provided by the `Cortex-Debug` extension. Install using the VS Code GUI, or from VS Code press `Ctrl+P` then type `ext install marus25.cortex-debug`.
 
-How to configure this extension is described [below](#configure-debugging).
+Steps for configuring this extension are described next.
 
 ### Download SVD file
 
