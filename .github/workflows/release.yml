@@ -1,0 +1,41 @@
+---
+name: "Release"
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  release:
+    name: "Release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: clone
+      run: git submodule update --init --recursive
+    - name: install toolchain
+      run: curl --retry 10 --retry-max-time 120 -L "https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q1-update/+download/gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2" | tar xfj -
+    - name: check toolchain
+      run: |
+        export PATH=$PATH:$PWD/gcc-arm-none-eabi-5_3-2016q1/bin
+        arm-none-eabi-gcc --version
+    - name: make_f4
+      run: |
+        export PATH=$PATH:$PWD/gcc-arm-none-eabi-5_3-2016q1/bin
+        make BOARD=REVO -j4 -l4
+    - name: make_f1
+      run: |
+        export PATH=$PATH:$PWD/gcc-arm-none-eabi-5_3-2016q1/bin
+        make BOARD=NAZE -j4 -l4
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          boards/airbourne/build/rosflight_REVO_Release.elf
+          boards/airbourne/build/rosflight_REVO_Release.bin
+          boards/breezy/build/rosflight_NAZE_Release.elf
+          boards/breezy/build/rosflight_NAZE_Release.hex
