@@ -20,11 +20,13 @@ Also make sure you have configured your computer as described in the [Serial Por
 
 The ST-LINK/V2 connects to the microcontroller using the Serial Wire Debug (SWD) interface. You will need to connect the `GND`, `NRST`, `SWDIO`, and `SWCLK` lines of the ST-LINK/V2 to your flight controller. On many F4 boards, these lines are pinned out through a 4-position JST SH connector, although that connector is not always populated. Refer to the documentation for your specific board for details.
 
-The official ST-LINK/V2 also needs a target voltage reference on pin 1 or 2, which for the F4 boards is 3.3V. However, there is no externally accessible 3.3V pinout on the F4 boards. An easy solution to this is to connect pin 19 (VDD 3.3V) of the ST-LINK/V2 to pin 1 or 2 of the ST-LINK/V2 (Target VCC) to provide the voltage reference. You will also need to power the board from another source, either through the USB port or over the servo rail.
+The official ST-LINK/V2 also needs a target voltage reference on pin 1 or 2, which for the F4 boards is 3.3V. However, there is no externally accessible 3.3V pinout on the F4 boards. An easy solution to this is to connect pin 19 (VDD 3.3V) of the ST-LINK/V2 to pin 1 or 2 of the ST-LINK/V2 (Target VCC) to provide the voltage reference. You will also need to power the board from another source, either through the USB port or over the servo rail. Note that this connection is not required for the cheap clone versions of the ST-LINK/V2.
 
 ## VS Code
 
-You can install Visual Studio Code by downloading the latest version from [their website](https://code.visualstudio.com). Follow the steps below to configure debugging with the in-circuit debugger
+You can install Visual Studio Code by downloading the latest version from [their website](https://code.visualstudio.com). Follow the steps below to configure debugging with the in-circuit debugger.
+
+You should open the root firmware directory for editing and debugging, e.g. `code /path/to/firmware`.
 
 ### Install OpenOCD
 
@@ -91,7 +93,7 @@ To configure in-circuit debugging of F4 and F1 targets, put something like the f
       "cwd": "${workspaceRoot}",
       "executable": "${workspaceRoot}/boards/airbourne/build/rosflight_REVO_Debug.elf",
       "device": "STM32F405",
-      "svdFile": "/home/dpkoch/Documents/SVD/STM32F405.svd",
+      "svdFile": "/path/to/STM32F405.svd",
       "configFiles": [
         "interface/stlink-v2.cfg",
         "target/stm32f4x.cfg"
@@ -106,7 +108,7 @@ To configure in-circuit debugging of F4 and F1 targets, put something like the f
       "cwd": "${workspaceRoot}",
       "executable": "${workspaceRoot}/boards/breezy/build/rosflight_NAZE_Debug.elf",
       "device": "STM32F103",
-      "svdFile": "/home/dpkoch/Documents/SVD/STM32F103.svd",
+      "svdFile": "/path/to/STM32F103.svd",
       "configFiles": [
         "interface/stlink-v2.cfg",
         "target/stm32f1x.cfg"
@@ -126,33 +128,13 @@ More details on the configuration and use of the `Cortex-Debug` extension can be
 
 ## QtCreator
 
-For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator which can be downloaded [here](https://www.qt.io/download). If you are on 18.04, you can install via apt.
-
-
-The following instructions are for installing Qt from the Qt provided installer:
-
-This downloads a `.run` file; just make it exectuable and run as `sudo`:
+Install QtCreator with apt:
 
 ```bash
-cd ~/Downloads
-chmod +x qt-unified-linux-x64-3.0.4-online.run
-sudo ./qt-unified-linux-x64-3.0.4-online.run
+sudo apt install qtcreator
 ```
 
-If you want the icon to appear in your unity menu, create the following file as `~/.local/share/applications/qtcreator.desktop` (assuming that you installed qtcreator to the Qt folder in the installer)
-
-```
-[Desktop Entry]
-Exec=bash -i -c /opt/Qt/Tools/QtCreator/bin/qtcreator.sh %F
-Icon=qtcreator
-Type=Application
-Terminal=false
-Name=Qt Creator
-GenericName=Integrated Development Environment
-MimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.nokia.qt.qmakeprofile;application/vnd.nokia.xml.qt.resource;
-Categories=Qt;Development;IDE;
-InitialPreference=9
-```
+then follow the steps below to set up ARM debugging.
 
 ### Install OpenOCD
 
@@ -205,7 +187,7 @@ sudo apt install libpython2.7:i386
 
 ### Configure QtCreator for ARM Development
 
-Open up the new QtCreator you just installed (make sure it's the new one, and not the version you get from `apt`)
+Open QtCreator and perform the following steps:
 
 #### Turn on the "Bare Metal Plugin"
 
