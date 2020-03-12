@@ -6,18 +6,16 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v2
-    - name: clone
+    - name: checkout submodules
       run: git submodule update --init --recursive
     - name: install toolchain
-      run: curl --retry 10 --retry-max-time 120 -L "https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q1-update/+download/gcc-arm-none-eabi-5_3-2016q1-20160330-linux.tar.bz2" | tar xfj -
+      run: |
+        sudo add-apt-repository -y -u ppa:team-gcc-arm-embedded/ppa
+        sudo apt -y install gcc-arm-embedded
     - name: check toolchain
-      run: |
-        export PATH=$PATH:$PWD/gcc-arm-none-eabi-5_3-2016q1/bin 
-        arm-none-eabi-gcc --version
-    - name: make 
-      run: |
-        export PATH=$PATH:$PWD/gcc-arm-none-eabi-5_3-2016q1/bin 
-        make BOARD=NAZE -j4 -l4
+      run: arm-none-eabi-gcc --version
+    - name: make
+      run: make BOARD=NAZE -j4 -l4
