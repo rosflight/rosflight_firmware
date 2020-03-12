@@ -1,7 +1,7 @@
 # Contributing to the Firmware
 
 !!! Note
-    These documents are designed to help developers get up and running on developing new features by explaining firmware internals. Development is currently supported only on Ubuntu Linux 16.04 and 18.04.
+    These documents are designed to help developers get up and running on developing new features by explaining firmware internals. Development is currently supported only on Ubuntu Linux 18.04.
 
 Per our vision stated in the [introduction](../index.md), ROSflight is intended to be a streamlined, bare-bones autopilot. We welcome any bug fixes, cleanup, or other contributions which do not add complexity or detract from the readability and simplified nature of the firmware. We hope that the firmware is useful, but in an attempt to avoid "feature creep," we will be very discriminatory in merging pull requests whose purpose is to simply add features. Forking the repository in order to add features is totally acceptable and encouraged, just stay in contact with us, and recognize us as the original authors of the autopilot (per the agreement in the BSD-3 license).
 
