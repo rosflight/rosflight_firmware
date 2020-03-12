@@ -1,64 +1,144 @@
 # Using an In-Circuit Debugger
 
-Debugging a Naze32 is easiest with an ST-Link V2. You can find these on Amazon and other websites. The following guide will get you up and running with QtCreator or Visual Studio Code and the in-circuit debugger.
+Debugging an STM32-based board is accomplished with an ST-LINK/V2 in-circuit debugger and programmer. We have had the best luck with the official version from STMicroelectronics. These devices are reasonably priced, and are available [directly from STMicroelectronics](https://www.st.com/en/development-tools/st-link-v2.html) or from vendors such as [Digi-Key](https://www.digikey.com/product-detail/en/stmicroelectronics/ST-LINK-V2/497-10484-ND/2214535), [Mouser](https://www.mouser.com/ProductDetail/STMicroelectronics/ST-LINK-V2?qs=H4BOwPtf9MC1sDQ8j3cy4w%3D%3D), and [Newark](https://www.newark.com/stmicroelectronics/st-link-v2/icd-programmer-usb-2-0-jtag-for/dp/46T6935).
 
-!!! warning
-    We have had reports of problems with cheap clones of ST-Links not connecting.
+!!! note
+    There are also cheaper clones of the ST-LINK/V2 available. We have had fairly good luck with these, but have also run into some issues. These are a decent alternative, but we recommend the official version if you can afford it.
 
-## Add User to Dialout Group
+The following guide will show you how to get the in-circuit debugger running with either the Visual Studio Code or QtCreator IDE. Start with the steps in the [General Setup](#general-setup) section, then move on to either the [VS Code](#vs-code) or [QtCreator](#qtcreator) sections depending on your choice of IDE.
 
-!!! tip
-    You can see which groups you are in by running `groups $USER` on the command line.
+This guide assumes you are running Ubuntu 18.04, which is the currently supported development environment.
 
-First, make sure you are in the `dialout` group. If you are not in the `dialout` group, run:
+
+## General Setup
+
+Follow the guide in [Building and Flashing](/developer-guide/building-flashing) to install the compiler toolchain.
+
+Also make sure you have configured your computer as described in the [Serial Port Configuration](../user-guide/flight-controller-setup.md#serial-port-configuration) section of the user guide.
+
+### Connect debugger to flight controller
+
+The ST-LINK/V2 connects to the microcontroller using the Serial Wire Debug (SWD) interface. You will need to connect the `GND`, `NRST`, `SWDIO`, and `SWCLK` lines of the ST-LINK/V2 to your flight controller. On many F4 boards, these lines are pinned out through a 4-position JST SH connector, although that connector is not always populated. Refer to the documentation for your specific board for details.
+
+The official ST-LINK/V2 also needs a target voltage reference on pin 1 or 2, which for the F4 boards is 3.3V. However, there is no externally accessible 3.3V pinout on the F4 boards. An easy solution to this is to connect pin 19 (VDD 3.3V) of the ST-LINK/V2 to pin 1 or 2 of the ST-LINK/V2 (Target VCC) to provide the voltage reference. You will also need to power the board from another source, either through the USB port or over the servo rail. Note that this connection is not required for the cheap clone versions of the ST-LINK/V2.
+
+## VS Code
+
+You can install Visual Studio Code by downloading the latest version from [their website](https://code.visualstudio.com). Follow the steps below to configure debugging with the in-circuit debugger.
+
+You should open the root firmware directory for editing and debugging, e.g. `code /path/to/firmware`.
+
+### Install OpenOCD
+
+OpenOCD (On-Chip Debugger) is the software that will control the debugger. Install from the `apt` repositories:
 
 ``` bash
-sudo usermod -aG dialout $USER
+sudo apt install openocd
 ```
 
-Log out and back in for changes to take effect.
+### Install Cortex-Debug extension
 
-## Install IDE
+The embedded debugging functionality is provided by the `Cortex-Debug` extension. Install using the VS Code GUI, or from VS Code press `Ctrl+P` then type `ext install marus25.cortex-debug`.
 
-### QtCreator
+Steps for configuring this extension are described next.
 
-For some reason, the QtCreator bundled with 16.04 is unstable. Use the most recent build of QtCreator which can be downloaded [here](https://www.qt.io/download). If you are on 18.04, you can install via apt.
+### Download SVD file
+
+A System View Description (SVD) file describes the configuration (CPU, peripherals, registers, etc.) of the microcontroller. The Cortex-Debug extension can make use of an SVD file to provide more detailed debugging information, such as the ability to inspect register values.
+
+SVD files can be downloaded from STMicroelectronics. The files for the F4 are contained in the ZIP file that can be downloaded [here](https://www.st.com/resource/en/svd/stm32f4_svd.zip), and the relevant file is `STM32F405.svd`. The files for the F1 are contained in the ZIP file that can be downloaded [here](https://www.st.com/resource/en/svd/stm32f1_svd.zip), and the relevant file is `STM32F103.svd`. Put those files in a convenient location.
+
+### Configure build step
+
+You can configure VS Code to run `make` for you when you press `Ctrl+Shift+B`. To do this, put the following in `.vscode/tasks.json` inside your firmware working directory:
+
+``` json
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "make",
+      "command": "make",
+      "args": ["DEBUG=GDB"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
+```
+
+Note that by default, this will only build the F4 (Revo) firmware. To build the F1 firmware, you will need to edit this to add the argument `BOARD=NAZE`.
+
+### Configure debugging
+
+To configure in-circuit debugging of F4 and F1 targets, put something like the following in `.vscode/launch.json` inside your firmware working repository:
+
+``` json
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "STM32F405",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceRoot}",
+      "executable": "${workspaceRoot}/boards/airbourne/build/rosflight_REVO_Debug.elf",
+      "device": "STM32F405",
+      "svdFile": "/path/to/STM32F405.svd",
+      "configFiles": [
+        "interface/stlink-v2.cfg",
+        "target/stm32f4x.cfg"
+      ],
+      "runToMain": true
+    },
+    {
+      "name": "STM32F103",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceRoot}",
+      "executable": "${workspaceRoot}/boards/breezy/build/rosflight_NAZE_Debug.elf",
+      "device": "STM32F103",
+      "svdFile": "/path/to/STM32F103.svd",
+      "configFiles": [
+        "interface/stlink-v2.cfg",
+        "target/stm32f1x.cfg"
+      ],
+      "runToMain": true
+    }
+  ]
+}
+```
+
+Be sure to edit the values of `"svdFile"` to point to the respective SVD files you downloaded earlier.
+
+To start debugging, enter the debug pane in VS Code, select the desired configuration, then click the green arrow to start debugging. The shortcut key `F5` will also launch the last-selected debug configuration.
+
+More details on the configuration and use of the `Cortex-Debug` extension can be found [here](https://marcelball.ca/projects/cortex-debug/cortex-debug-launch-configurations/) and [here](https://github.com/Marus/cortex-debug).
 
 
-The following instructions are for installing Qt from the Qt provided installer:
+## QtCreator
 
-This downloads a `.run` file; just make it exectuable and run as `sudo`:
+Install QtCreator with apt:
 
 ```bash
-cd ~/Downloads
-chmod +x qt-unified-linux-x64-3.0.4-online.run
-sudo ./qt-unified-linux-x64-3.0.4-online.run
+sudo apt install qtcreator
 ```
 
-If you want the icon to appear in your unity menu, create the following file as `~/.local/share/applications/qtcreator.desktop` (assuming that you installed qtcreator to the Qt folder in the installer)
+then follow the steps below to set up ARM debugging.
 
-```
-[Desktop Entry]
-Exec=bash -i -c /opt/Qt/Tools/QtCreator/bin/qtcreator.sh %F
-Icon=qtcreator
-Type=Application
-Terminal=false
-Name=Qt Creator
-GenericName=Integrated Development Environment
-MimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.nokia.qt.qmakeprofile;application/vnd.nokia.xml.qt.resource;
-Categories=Qt;Development;IDE;
-InitialPreference=9
-```
+### Install OpenOCD
 
-### VSCode
-
-You can install Visual Studio Code by downloading the latest version from **[their website](https://code.visualstudio.com)**. The debugging tools provided by VSCode have been confirmed to work on both Mac and Linux.
-
-## Install openocd
-
-### For QtCreator
-
-Open OCD (On-Chip-Debugger) is the software that will control the debugger. We are going to install the version that is configured to work as a plugin for the eclipse IDE. To get this version, go to the **[releases](https://github.com/gnuarmeclipse/openocd/releases)** page of the OpenOCD github page and download the latest `.tgz` file. You can use the following commands, substituting the version you downloaded for <version>:
+OpenOCD (On-Chip Debugger) is the software that will control the debugger. We are going to install the version that is configured to work as a plugin for the Eclipse IDE. To get this version, go to the [releases](https://github.com/gnuarmeclipse/openocd/releases) page of the OpenOCD github page and download the latest `.tgz` file. You can use the following commands, substituting the version you downloaded for `<version>`:
 
 
 ```bash
@@ -95,35 +175,9 @@ mv start_openocd_f1 /usr/local/bin
 mv start_openocd_f4 /usr/local/bin
 ```
 
-### For VSCode
+### Install 32-bit Dependencies
 
-For VSCode, install the openocd version currently available through your package manager:
-
-Ubuntu:
-```bash
-sudo apt install openocd
-```
-
-Mac:
-```bash
-brew install open-ocd
-```
-
-The `start_openocd_f4` script requires a few additional parameters to ensure proper connection to VSCode and GDB:
-
-```bash
-#!/bin/bash
-cd /opt/openocd/0.10.0-11-20190118-1134/bin
-./openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c "gdb_port 50250" -c init -c "reset init"
-```
-
-As shown above, this script can be added to your `/usr/local/bin` if you want to be able to call it from anywhere.
-
-## Install ARM compiler and 32-bit Dependencies
-
-Follow the guide in [Building and Flashing](/developer-guide/building-flashing) to install the compiler.
-
-QtCreator also needs 32-bit python bindings to run GDB (skip this if using VSCode)
+QtCreator needs 32-bit python bindings to run GDB. Install these with
 
 ``` bash
 sudo dpkg --add-architecture i386
@@ -131,11 +185,11 @@ sudo apt update
 sudo apt install libpython2.7:i386
 ```
 
-## Configure QtCreator for ARM Development
+### Configure QtCreator for ARM Development
 
-Open up the new QtCreator you just installed (make sure it's the new one, and not the version you get from `apt`)
+Open QtCreator and perform the following steps:
 
-### Turn on the "Bare Metal Plugin"
+#### Turn on the "Bare Metal Plugin"
 
 Help -> About Plugins -> Enable "Bare Metal"
 
@@ -143,7 +197,7 @@ Restart QtCreator
 
 Now, we are going to configure a new "Kit" for ARM development. (This allows you to quickly switch back and forth between ARM and normal development.)
 
-### Tell QtCreator where to find the compiler (GCC)
+#### Tell QtCreator where to find the compiler (GCC)
 
 * Tools -> Options -> Build & Run -> Compilers -> Add -> GCC -> C++.
 * Name the new compiler, e.g. "G++ ARM"
@@ -159,7 +213,7 @@ Do the same for GCC (if you are going to be doing any C-only code)
 
 ![choosing_compiler](images/choosing_compiler_screenshot.png)
 
-### Add the Debugger (GDB)
+#### Add the Debugger (GDB)
 
 * Tools -> Options -> Build & Run -> Debuggers -> Add -> GDB.
 * Name it something
@@ -168,7 +222,7 @@ Do the same for GCC (if you are going to be doing any C-only code)
 
 ![choosing_debugger](images/choosing_debugger.png)
 
-### Configure the STLink-V2 with OpenOCD
+#### Configure the STLink-V2 with OpenOCD
 
 Go to the Bare Metal Plugin
 
@@ -182,7 +236,7 @@ Go to the Bare Metal Plugin
 ![configuring_stlink](images/configuring_STLink.png)
 
 
-### Build the new Development Kit
+#### Build the new Development Kit
 
 * Tools -> Options -> Build & Run -> Kits -> Add
 * Name: ARM
@@ -194,56 +248,12 @@ Go to the Bare Metal Plugin
 
 ![ARM_kit](images/ARM_kit.png)
 
-## Configure VSCode for ARM Development
 
-Open the debugger launch.json file by navigating to the Debug pane (Ctrl + Shift + D) and clicking the gear at the top of the screen:
-
-![Open vscode debugger launch.json](images/vscode-debuggerLaunch.png)
-
-Add a configuration entry to the launch.json file that looks something like this (be sure to substitute the correct folder name for your version of the gcc-arm compiler):
-
-```json
-{
-    "name": "GDB-REVO",
-    "type": "cppdbg",
-    "request": "launch",
-    "MIMode": "gdb",
-    "targetArchitecture": "arm",
-    "miDebuggerPath": "/opt/gcc-arm-none-eabi-5_4-2016q3/bin/arm-none-eabi-gdb",
-    "program": "${workspaceRoot}/boards/airbourne/build/rosflight_REVO_Debug.elf",
-    "externalConsole": false,
-    "cwd": "${workspaceRoot}",
-    "setupCommands": [
-        { "text": "file ${workspaceRoot}/boards/airbourne/build/rosflight_REVO_Debug.elf" },
-        { "text": "set remotetimeout 30" },
-        { "text": "target remote localhost:50250" },
-        { "text": "monitor halt" },
-        { "text": "monitor reset init" },
-        { "text": "load" },
-        { "text": "info target" }
-    ],
-}
-```
-
-Note that you will need to change the `program` and first `setupCommands.text` entries if you want to run a different example or version of the firmware.
-
-With a board plugged in and openocd running, you should now be able to press Play on the debug screen and launch the firmware in debug mode!
-
-If you do not want to call `make` from the terminal for every change, you can also create a simple task in VSCode to do it for you. Open tasks.json from Command Pallette -> Tasks: Configure Task
-
-```json
-{
-    "label": "build",
-    "type": "shell",
-    "command": "make"
-}
-```
-
-## Test the Debugger
+### Test the Debugger
 
 Here are the instructions for an F1 target. The instructions are very similar for an F4, just choose the correct `.elf` file.
 
-### Turn on the Debugger
+#### Turn on the Debugger
 
 Connect the debugger to your flight controller. Here is the pinout for the Flip32 and Flip32+:
 ![Flip32 pinout](http://www.dronetrest.com/uploads/db5290/694/14344b7ed01cb324.jpg)
@@ -252,13 +262,13 @@ Plug in the debugger and start openocd (you will need sudo privileges):
 
 `sudo start_openocd_f1`
 
-### Build the Correct Example Code
+#### Build the Correct Example Code
 
 * Import Existing Project
 * Open the root of the firmware
 * Do _**not**_ add .creator files to the Git repository
 
-### Configure the Build Environment
+#### Configure the Build Environment
 
 * Go to the "Projects" tab on the left hand side
 * Switch to the ARM Kit we just created

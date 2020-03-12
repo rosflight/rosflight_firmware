@@ -1,24 +1,17 @@
 # Building and Flashing the Firmware
 
-!!! Warning
-    Deprecation Notice: As of June 2019, plans are to deprecate support for the F1 in the near future. If you need to use an F1, you will need to retrieve an older version of the code that supports the F1. However, if there are issues, we will not be able to help you fix them.
+!!! warning "Deprecation Notice"
+    As of June 2019, plans are to deprecate support for the F1 in the near future. If you need to use an F1, you will need to retrieve an older version of the code that supports the F1. However, if there are issues, we will not be able to help you fix them.
+
+This guide assumes you are running Ubuntu 18.04, which is the currently supported development environment.
 
 ## Installing the ARM Embedded Toolchain
 
-To build the firmware, you will need a supported version of the ARM embedded toolchain (the compiler). If you are running Ubuntu on an ARM computer, you can simply install gcc with `apt`. Otherwise, you will need to manually install the ARM gcc compiler.
+Currently (as of March 2020) we are targeting version 7.3.1 of the ARM embedded toolchain. This toolchain can be installed from the GNU Arm Embedded Toolchain PPA:
 
-Currently (as of June 2019), we are targeting version 6.3.1 of the "gcc-arm-none-eabi" compiler provided by the [6-2017-q2-update](https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2).
-Install this version of the toolchain by downloading the archive from the ARM website and extracting to your `/opt` directory:
-
-```bash
-wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
-tar -C /opt -xf gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
-```
-
-Add the following line to `~/.bashrc` (or your equivalent) to add the toolchain to your path:
-
-```bash
-export PATH=$PATH:/opt/gcc-arm-none-eabi-6-2017-q2-update/bin
+``` bash
+sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+sudo apt install gcc-arm-embedded
 ```
 
 You can test the installation and check which version is installed by running `arm-none-eabi-gcc --version`.
