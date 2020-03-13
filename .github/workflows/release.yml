@@ -1,0 +1,37 @@
+---
+name: "Release"
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  release:
+    name: "Release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: clone
+      run: git submodule update --init --recursive
+    - name: install toolchain
+      run: |
+        sudo add-apt-repository -y -u ppa:team-gcc-arm-embedded/ppa
+        sudo apt -y install gcc-arm-embedded
+    - name: check toolchain
+      run: arm-none-eabi-gcc --version
+    - name: make_f4
+      run: make BOARD=REVO -j4 -l4
+    - name: make_f1
+      run: make BOARD=NAZE -j4 -l4
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          boards/airbourne/build/rosflight_REVO_Release.elf
+          boards/airbourne/build/rosflight_REVO_Release.bin
+          boards/breezy/build/rosflight_NAZE_Release.elf
+          boards/breezy/build/rosflight_NAZE_Release.hex
