@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: clone
+    - name: checkout submodules
       run: git submodule update --init --recursive
     - name: install toolchain
       run: |
@@ -29,11 +29,9 @@ jobs:
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "pre-release"
+        automatic_release_tag: "latest"
         prerelease: true
         title: "Development Build"
         files: |
-          boards/airbourne/build/rosflight_REVO_Release.elf
           boards/airbourne/build/rosflight_REVO_Release.bin
-          boards/breezy/build/rosflight_NAZE_Release.elf
           boards/breezy/build/rosflight_NAZE_Release.hex
