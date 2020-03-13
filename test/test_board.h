@@ -48,6 +48,8 @@ private:
   float acc_[3] = {0, 0, 0};
   float gyro_[3] = {0, 0, 0};
   bool new_imu_ = false;
+  static constexpr size_t BACKUP_MEMORY_SIZE{1024};
+  uint8_t backup_memory_[BACKUP_MEMORY_SIZE];
 
 public:
 // setup
@@ -130,9 +132,10 @@ public:
 
 //Backup memory
   void backup_memory_init() override {}
-  bool backup_memory_read(void *dest, size_t len) override { (void)dest; (void)len; return false; }
-  void backup_memory_write(const void *src, size_t len) override { (void)src; (void)len; }
-  void backup_memory_clear(size_t len) override { (void)len; }
+  bool backup_memory_read(void *dest, size_t len) override;
+  void backup_memory_write(const void *src, size_t len) override;
+  void backup_memory_clear(size_t len) override;
+  void backup_memory_clear(); // Not an override
 
   void set_imu(float *acc, float *gyro, uint64_t time_us);
   void set_rc(uint16_t *values);
