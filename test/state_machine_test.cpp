@@ -389,3 +389,87 @@ TEST_F (StateMachineTest, RegainRCAfterFailsafe)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
 }
+TEST_F (StateMachineTest, NormalBoot)
+{
+  board.backup_memory_clear();
+  rf.state_manager_.check_backup_memory();
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+}
+TEST_F(StateMachineTest, CrashRecoveryDisarmed)
+{
+  StateManager::BackupData data;
+  data.arm_flag = 0;
+  data.error_code = 1;
+  data.reset_count = 1;
+  data.finalize();
+  board.backup_memory_write(&data, sizeof(data));
+  rf.state_manager_.check_backup_memory();
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+}
+TEST_F(StateMachineTest, CrashRecoveryArmed)
+{
+  StateManager::BackupData data;
+  data.arm_flag = data.ARM_MAGIC;
+  data.error_code = 1;
+  data.reset_count = 1;
+  data.finalize();
+  board.backup_memory_write(&data, sizeof(data));
+  rf.state_manager_.check_backup_memory();
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+}
+TEST_F(StateMachineTest, CrashRecoveryInvalidChecksum)
+{
+  StateManager::BackupData data;
+  data.arm_flag = data.ARM_MAGIC;
+  data.error_code = 1;
+  data.reset_count = 1;
+  data.finalize();
+  data.checksum += 1;
+  board.backup_memory_write(&data, sizeof(data));
+  rf.state_manager_.check_backup_memory();
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+}
+TEST_F(StateMachineTest, CrashRecoveryInvalidArmMagic)
+{
+  StateManager::BackupData data;
+  data.arm_flag = data.ARM_MAGIC-101;
+  data.error_code = 1;
+  data.reset_count = 1;
+  data.finalize();
+  board.backup_memory_write(&data, sizeof(data));
+  rf.state_manager_.check_backup_memory();
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
+  EXPECT_EQ(rf.state_manager_.state().failsafe, false);
+}
+TEST_F(StateMachineTest, WriteBackupData)
+{
+  const StateManager::BackupData::DebugInfo debug_info{1, 2, 3, 4, 5, 6, 7, 8};
+  rf.state_manager_.write_backup_data(debug_info);
+  StateManager::BackupData data;
+  board.backup_memory_read(&data, sizeof(data));
+  EXPECT_EQ(data.reset_count, 1);
+  EXPECT_EQ(data.arm_flag, 0);
+  EXPECT_TRUE(data.valid_checksum());
+  EXPECT_EQ(data.debug.r0, debug_info.r0);
+  EXPECT_EQ(data.debug.r1, debug_info.r1);
+  EXPECT_EQ(data.debug.r2, debug_info.r2);
+  EXPECT_EQ(data.debug.r3, debug_info.r3);
+  EXPECT_EQ(data.debug.r12, debug_info.r12);
+  EXPECT_EQ(data.debug.lr, debug_info.lr);
+  EXPECT_EQ(data.debug.pc, debug_info.pc);
+  EXPECT_EQ(data.debug.psr, debug_info.psr);
+}
