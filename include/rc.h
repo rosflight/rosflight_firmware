@@ -32,19 +32,17 @@
 #ifndef ROSFLIGHT_FIRMWARE_RC_H
 #define ROSFLIGHT_FIRMWARE_RC_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "interface/param_listener.h"
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 class ROSflight;
 
 class RC : public ParamListenerInterface
 {
-
 public:
   enum Stick
   {
@@ -110,6 +108,6 @@ private:
   void look_for_arm_disarm_signal();
 };
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
-#endif // ROSLFLIGHT_FIRMWARE_RC_H
+#endif  // ROSLFLIGHT_FIRMWARE_RC_H

@@ -34,8 +34,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 void testBoard::set_rc(uint16_t *values)
 {
@@ -66,29 +65,43 @@ void testBoard::set_imu(float *acc, float *gyro, uint64_t time_us)
   new_imu_ = true;
 }
 
-
 // setup
-void testBoard::init_board() 
+void testBoard::init_board()
 {
   backup_memory_clear();
 }
 void testBoard::board_reset(bool bootloader) {}
 
 // clock
-uint32_t testBoard::clock_millis() { return time_us_/1000; }
-uint64_t testBoard::clock_micros() { return time_us_; }
+uint32_t testBoard::clock_millis()
+{
+  return time_us_ / 1000;
+}
+uint64_t testBoard::clock_micros()
+{
+  return time_us_;
+}
 void testBoard::clock_delay(uint32_t milliseconds) {}
 
 // serial
 void testBoard::serial_init(uint32_t baud_rate, uint32_t dev) {}
 void testBoard::serial_write(const uint8_t *src, size_t len) {}
-uint16_t testBoard::serial_bytes_available() { return 0; }
-uint8_t testBoard::serial_read() { return 0; }
+uint16_t testBoard::serial_bytes_available()
+{
+  return 0;
+}
+uint8_t testBoard::serial_read()
+{
+  return 0;
+}
 void testBoard::serial_flush() {}
 
 // sensors
 void testBoard::sensors_init() {}
-uint16_t testBoard::num_sensor_errors() { return 0; }
+uint16_t testBoard::num_sensor_errors()
+{
+  return 0;
+}
 
 bool testBoard::new_imu_data()
 {
@@ -99,7 +112,6 @@ bool testBoard::new_imu_data()
   }
   return false;
 }
-
 
 bool testBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time)
 {
@@ -116,7 +128,7 @@ bool testBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint
 bool testBoard::backup_memory_read(void *dest, size_t len)
 {
   bool success = true;
-  if(len > BACKUP_MEMORY_SIZE)
+  if (len > BACKUP_MEMORY_SIZE)
   {
     len = BACKUP_MEMORY_SIZE;
     success = false;
@@ -127,7 +139,7 @@ bool testBoard::backup_memory_read(void *dest, size_t len)
 
 void testBoard::backup_memory_write(const void *src, size_t len)
 {
-  if(len > BACKUP_MEMORY_SIZE)
+  if (len > BACKUP_MEMORY_SIZE)
     len = BACKUP_MEMORY_SIZE;
   memcpy(backup_memory_, src, len);
 }
@@ -142,21 +154,36 @@ void testBoard::backup_memory_clear()
 
 void testBoard::imu_not_responding_error() {}
 
-bool testBoard::mag_present() { return false; }
+bool testBoard::mag_present()
+{
+  return false;
+}
 void testBoard::mag_update() {}
 void testBoard::mag_read(float mag[3]) {}
 
-bool testBoard::baro_present() { return false; }
+bool testBoard::baro_present()
+{
+  return false;
+}
 void testBoard::baro_update() {}
 void testBoard::baro_read(float *pressure, float *temperature) {}
 
-bool testBoard::diff_pressure_present() { return false; }
+bool testBoard::diff_pressure_present()
+{
+  return false;
+}
 void testBoard::diff_pressure_update() {}
 void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
 
-bool testBoard::sonar_present() { return false; }
+bool testBoard::sonar_present()
+{
+  return false;
+}
 void testBoard::sonar_update() {}
-float testBoard::sonar_read() { return 0; }
+float testBoard::sonar_read()
+{
+  return 0;
+}
 
 bool testBoard::battery_voltage_present() const
 {
@@ -184,23 +211,34 @@ void testBoard::battery_current_set_multiplier(double multiplier)
   (void)multiplier;
 }
 
-//GNSS is not supported on the test board
-GNSSData testBoard::gnss_read() { return {}; }
+// GNSS is not supported on the test board
+GNSSData testBoard::gnss_read()
+{
+  return {};
+}
 
-//GNSS is not supported on the test board
-GNSSRaw testBoard::gnss_raw_read() { return {}; }
+// GNSS is not supported on the test board
+GNSSRaw testBoard::gnss_raw_read()
+{
+  return {};
+}
 
-//GNSS is not supported on the test board
-bool testBoard::gnss_has_new_data() { return false; }
-
+// GNSS is not supported on the test board
+bool testBoard::gnss_has_new_data()
+{
+  return false;
+}
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
 void testBoard::rc_init(rc_type_t rc_type) {}
-bool testBoard::rc_lost() { return rc_lost_; }
+bool testBoard::rc_lost()
+{
+  return rc_lost_;
+}
 float testBoard::rc_read(uint8_t channel)
 {
-  return static_cast<float>(rc_values[channel] - 1000)/1000.0 ;
+  return static_cast<float>(rc_values[channel] - 1000) / 1000.0;
 }
 void testBoard::pwm_write(uint8_t channel, float value) {}
 void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
@@ -208,8 +246,14 @@ void testBoard::pwm_disable() {}
 
 // non-volatile memory
 void testBoard::memory_init() {}
-bool testBoard::memory_read(void *dest, size_t len) { return false; }
-bool testBoard::memory_write(const void *src, size_t len) { return false; }
+bool testBoard::memory_read(void *dest, size_t len)
+{
+  return false;
+}
+bool testBoard::memory_write(const void *src, size_t len)
+{
+  return false;
+}
 
 // LEDs
 void testBoard::led0_on() {}
@@ -220,6 +264,6 @@ void testBoard::led1_on() {}
 void testBoard::led1_off() {}
 void testBoard::led1_toggle() {}
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop

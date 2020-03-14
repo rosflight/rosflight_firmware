@@ -54,21 +54,15 @@
 //#pragma message( "GIT_VERSION_HASH: " STRINGIFY(GIT_VERSION_HASH))
 //#pragma message( "GIT_VERSION_STRING: " GIT_VERSION_STRING)
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
-Params::Params(ROSflight& _rf) :
-  RF_(_rf),
-  listeners_(nullptr),
-  num_listeners_(0)
-{
-}
+Params::Params(ROSflight &_rf) : RF_(_rf), listeners_(nullptr), num_listeners_(0) {}
 
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   // copy cstr including '\0' or until maxlen
-  const uint8_t len = (strlen(name)>=PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name)+1;
+  const uint8_t len = (strlen(name) >= PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name) + 1;
   memcpy(params.names[id], name, len);
   params.values[id].ivalue = value;
   params.types[id] = PARAM_TYPE_INT32;
@@ -77,7 +71,7 @@ void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], in
 void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value)
 {
   // copy cstr including '\0' or until maxlen
-  const uint8_t len = (strlen(name)>=PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name)+1;
+  const uint8_t len = (strlen(name) >= PARAMS_NAME_LENGTH) ? PARAMS_NAME_LENGTH : strlen(name) + 1;
   memcpy(params.names[id], name, len);
   params.values[id].fvalue = value;
   params.types[id] = PARAM_TYPE_FLOAT;
@@ -88,16 +82,18 @@ uint8_t Params::compute_checksum(void)
   uint8_t chk = 0;
   const char *p;
 
-  for (p = reinterpret_cast<const char *>(&params.values); p < reinterpret_cast<const char *>(&params.values) + 4*PARAMS_COUNT; p++)
+  for (p = reinterpret_cast<const char *>(&params.values);
+       p < reinterpret_cast<const char *>(&params.values) + 4 * PARAMS_COUNT; p++)
     chk ^= *p;
-  for (p = reinterpret_cast<const char *>(&params.names);  p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT*PARAMS_NAME_LENGTH; p++)
+  for (p = reinterpret_cast<const char *>(&params.names);
+       p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT * PARAMS_NAME_LENGTH; p++)
     chk ^= *p;
-  for (p = reinterpret_cast<const char *>(&params.types);  p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++)
+  for (p = reinterpret_cast<const char *>(&params.types);
+       p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++)
     chk ^= *p;
 
   return chk;
 }
-
 
 // function definitions
 void Params::init()
@@ -105,12 +101,14 @@ void Params::init()
   RF_.board_.memory_init();
   if (!read())
   {
-    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Unable to load parameters; using default values");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+                          "Unable to load parameters; using default values");
     set_defaults();
     write();
   }
 }
 
+// clang-format off
 void Params::set_defaults(void)
 {
   /******************************/
@@ -289,8 +287,9 @@ void Params::set_defaults(void)
   /************************/
   init_param_int(PARAM_OFFBOARD_TIMEOUT, "OFFBOARD_TIMEOUT", 100); // Timeout in milliseconds for offboard commands, after which RC override is activated | 0 | 100000
 }
+// clang-format on
 
-void Params::set_listeners(ParamListenerInterface * const listeners[], size_t num_listeners)
+void Params::set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners)
 {
   listeners_ = listeners;
   num_listeners_ = num_listeners;
@@ -400,4 +399,4 @@ bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float 
   tmp.fvalue = value;
   return set_param_by_name_int(name, tmp.ivalue);
 }
-}
+}  // namespace rosflight_firmware

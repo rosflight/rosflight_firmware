@@ -36,8 +36,7 @@
 
 #include <cstdint>
 
-namespace turbomath
-{
+namespace turbomath {
 
 // float-based wrappers
 float cos(float x);
@@ -78,19 +77,24 @@ public:
   float dot(const Vector& v) const;
   Vector cross(const Vector& v) const;
 
-  Vector operator* (float s) const;
-  Vector operator/ (float s) const;
-  Vector& operator*= (float s);
-  Vector& operator/= (float s);
-  Vector operator+ (const Vector& v) const;
-  Vector operator- (const Vector& v) const;
-  Vector& operator+= (const Vector& v);
-  Vector& operator-= (const Vector& v);
+  Vector operator*(float s) const;
+  Vector operator/(float s) const;
+  Vector& operator*=(float s);
+  Vector& operator/=(float s);
+  Vector operator+(const Vector& v) const;
+  Vector operator-(const Vector& v) const;
+  Vector& operator+=(const Vector& v);
+  Vector& operator-=(const Vector& v);
 };
 
-inline Vector operator* (float s, const Vector& v) { return v * s; }
-inline Vector operator/ (float s, const Vector& v) { return v / s; }
-
+inline Vector operator*(float s, const Vector& v)
+{
+  return v * s;
+}
+inline Vector operator/(float s, const Vector& v)
+{
+  return v / s;
+}
 
 class Quaternion
 {
@@ -111,13 +115,13 @@ public:
   Quaternion& invert();
   Quaternion& from_two_unit_vectors(const Vector& u, const Vector& v);
   Quaternion& from_RPY(float roll, float pitch, float yaw);
-  void get_RPY(float *roll, float *pitch, float *yaw) const;
+  void get_RPY(float* roll, float* pitch, float* yaw) const;
 
-  Vector operator* (const Vector& v) const;
-  Quaternion operator* (const Quaternion& q) const;
-  Quaternion& operator*= (const Quaternion& q);
+  Vector operator*(const Vector& v) const;
+  Quaternion operator*(const Quaternion& q) const;
+  Quaternion& operator*=(const Quaternion& q);
   Vector boxminus(const Quaternion& q) const;
-  static Vector log(const Quaternion &q)
+  static Vector log(const Quaternion& q)
   {
     Vector v{q.x, q.y, q.z};
     float norm_v = v.norm();
@@ -129,14 +133,14 @@ public:
     }
     else
     {
-      out = 2.0*atan2(norm_v, q.w)*v/norm_v;
+      out = 2.0 * atan2(norm_v, q.w) * v / norm_v;
     }
     return out;
   }
 
-  Vector operator-(const Quaternion& q) const {return boxminus(q);}
+  Vector operator-(const Quaternion& q) const { return boxminus(q); }
 };
 
-} // namespace turbomath
+}  // namespace turbomath
 
-#endif // TURBOMATH_TURBOMATH_H
+#endif  // TURBOMATH_TURBOMATH_H

@@ -37,14 +37,12 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 class ROSflight;
 
 class StateManager
 {
-
 public:
   struct State
   {
@@ -86,11 +84,13 @@ public:
    */
   struct __attribute__((packed)) BackupData
   {
-    static constexpr uint32_t ARM_MAGIC = 0xbad2fa11; //!< magic number to ensure we only arm on startup if we really intended to
+    static constexpr uint32_t ARM_MAGIC =
+        0xbad2fa11;  //!< magic number to ensure we only arm on startup if we really intended to
 
-    uint16_t reset_count = 0; //!< number of hard faults since normal system startup
-    uint16_t error_code = 0; //!< state manager error codes
-    uint32_t arm_flag = 0; //!< set to ARM_MAGIC if the system was armed when the hard fault occured, 0 otherwise
+    uint16_t reset_count = 0;  //!< number of hard faults since normal system startup
+    uint16_t error_code = 0;   //!< state manager error codes
+    uint32_t arm_flag =
+        0;  //!< set to ARM_MAGIC if the system was armed when the hard fault occured, 0 otherwise
 
     /**
      * @brief Low-level debugging information for case of hard fault
@@ -99,26 +99,28 @@ public:
      */
     struct DebugInfo
     {
-      uint32_t r0; //!< register 0
-      uint32_t r1; //!< register 1
-      uint32_t r2; //!< register 2
-      uint32_t r3; //!< register 3
-      uint32_t r12; //!< register 12
-      uint32_t lr; //!< link register
-      uint32_t pc; //!< program counter
-      uint32_t psr; //!< program status register
+      uint32_t r0;   //!< register 0
+      uint32_t r1;   //!< register 1
+      uint32_t r2;   //!< register 2
+      uint32_t r3;   //!< register 3
+      uint32_t r12;  //!< register 12
+      uint32_t lr;   //!< link register
+      uint32_t pc;   //!< program counter
+      uint32_t psr;  //!< program status register
     } debug;
 
-    uint32_t checksum = 0; //!< checksum for data in the struct, must be the last member
+    uint32_t checksum = 0;  //!< checksum for data in the struct, must be the last member
 
     /**
      * @brief Computes checksum and prepares struct to be written to backup memory
-     * @pre All data fields have been set, no data will be changed between calling this function and writing to memory
+     * @pre All data fields have been set, no data will be changed between calling this function and
+     * writing to memory
      * @post Checksum field is set and the struct is ready to be written to backup memory
      */
     void finalize()
     {
-      checksum = checksum_fletcher16(reinterpret_cast<uint8_t*>(this), sizeof(BackupData) - sizeof(checksum));
+      checksum = checksum_fletcher16(reinterpret_cast<uint8_t*>(this),
+                                     sizeof(BackupData) - sizeof(checksum));
     }
 
     /**
@@ -129,7 +131,8 @@ public:
      */
     bool valid_checksum()
     {
-      return checksum == checksum_fletcher16(reinterpret_cast<uint8_t*>(this), sizeof(BackupData) - sizeof(checksum));
+      return checksum == checksum_fletcher16(reinterpret_cast<uint8_t*>(this),
+                                             sizeof(BackupData) - sizeof(checksum));
     }
   };
 
@@ -137,7 +140,7 @@ public:
   void init();
   void run();
 
-  inline const State &state() const { return state_; }
+  inline const State& state() const { return state_; }
 
   void set_event(Event event);
   void set_error(uint16_t error);
@@ -149,7 +152,8 @@ public:
    * This function should only be called by the hardfault interrupt handler
    *
    * @pre Called from hardfault interrupt handler
-   * @post Recovery data has been written to backup RAM and the hardfault interrupt handler may now reset the system
+   * @post Recovery data has been written to backup RAM and the hardfault interrupt handler may now
+   * reset the system
    *
    * @param debug Low-level debugging data populated by the hardfault handler
    */
@@ -158,7 +162,7 @@ public:
   void check_backup_memory();
 
 private:
-  ROSflight &RF_;
+  ROSflight& RF_;
   State state_;
 
   uint32_t next_led_blink_ms_ = 0;
@@ -182,6 +186,6 @@ private:
   void update_leds();
 };
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_STATE_MANAGER_H
+#endif  // ROSFLIGHT_FIRMWARE_STATE_MANAGER_H

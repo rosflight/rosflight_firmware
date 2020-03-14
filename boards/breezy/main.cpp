@@ -30,8 +30,8 @@
  */
 
 #include "breezy_board.h"
-#include "rosflight.h"
 #include "mavlink.h"
+#include "rosflight.h"
 
 int main()
 {

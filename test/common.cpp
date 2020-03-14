@@ -8,7 +8,8 @@ double quaternion_error(Eigen::Quaternionf q_eig, turbomath::Quaternion q)
     return 0;
   else
   {
-    Eigen::Vector3f v_tilde = atan2(q_tilde.vec().norm(), q_tilde.w())*q_tilde.vec()/q_tilde.vec().norm();
+    Eigen::Vector3f v_tilde =
+        atan2(q_tilde.vec().norm(), q_tilde.w()) * q_tilde.vec() / q_tilde.vec().norm();
     return v_tilde.norm();
   }
 }
@@ -22,12 +23,15 @@ double quaternion_error(turbomath::Quaternion q0, turbomath::Quaternion q)
     return 0;
   else
   {
-    Eigen::Vector3f v_tilde = atan2(q_tilde.vec().norm(), q_tilde.w())*q_tilde.vec()/q_tilde.vec().norm();
+    Eigen::Vector3f v_tilde =
+        atan2(q_tilde.vec().norm(), q_tilde.w()) * q_tilde.vec() / q_tilde.vec().norm();
     return v_tilde.norm();
   }
 }
 
-void step_firmware(rosflight_firmware::ROSflight &rf, rosflight_firmware::testBoard &board, uint32_t us)
+void step_firmware(rosflight_firmware::ROSflight &rf,
+                   rosflight_firmware::testBoard &board,
+                   uint32_t us)
 {
   uint64_t start_time_us = board.clock_micros();
   float dummy_acc[3] = {0, 0, -9.80665};

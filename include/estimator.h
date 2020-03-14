@@ -32,22 +32,20 @@
 #ifndef ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 #define ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include <turbomath/turbomath.h>
 
 #include "interface/param_listener.h"
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 class ROSflight;
 
 class Estimator : public ParamListenerInterface
 {
-
 public:
   struct State
   {
@@ -59,36 +57,27 @@ public:
     uint64_t timestamp_us;
   };
 
-  Estimator(ROSflight &_rf);
+  Estimator(ROSflight& _rf);
 
-  inline const State &state() const { return state_; }
+  inline const State& state() const { return state_; }
 
-  inline const turbomath::Vector& bias()
-  {
-      return bias_;
-  }
+  inline const turbomath::Vector& bias() { return bias_; }
 
-  inline const turbomath::Vector& accLPF()
-  {
-      return accel_LPF_;
-  }
+  inline const turbomath::Vector& accLPF() { return accel_LPF_; }
 
-  inline const turbomath::Vector& gyroLPF()
-  {
-      return gyro_LPF_;
-  }
+  inline const turbomath::Vector& gyroLPF() { return gyro_LPF_; }
 
   void init();
   void param_change_callback(uint16_t param_id) override;
   void run();
   void reset_state();
   void reset_adaptive_bias();
-  void set_external_attitude_update(const turbomath::Quaternion &q);
+  void set_external_attitude_update(const turbomath::Quaternion& q);
 
 private:
   const turbomath::Vector g_ = {0.0f, 0.0f, -1.0f};
 
-  ROSflight &RF_;
+  ROSflight& RF_;
   State state_;
 
   uint64_t last_time_;
@@ -116,11 +105,14 @@ private:
   turbomath::Vector extatt_correction() const;
   turbomath::Vector smoothed_gyro_measurement();
   void integrate_angular_rate(turbomath::Quaternion& quat,
-          const turbomath::Vector& omega, const float dt) const;
-  void quaternion_to_dcm(const turbomath::Quaternion& q, turbomath::Vector& X,
-              turbomath::Vector& Y, turbomath::Vector& Z) const;
+                              const turbomath::Vector& omega,
+                              const float dt) const;
+  void quaternion_to_dcm(const turbomath::Quaternion& q,
+                         turbomath::Vector& X,
+                         turbomath::Vector& Y,
+                         turbomath::Vector& Z) const;
 };
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_ESTIMATOR_H
+#endif  // ROSFLIGHT_FIRMWARE_ESTIMATOR_H

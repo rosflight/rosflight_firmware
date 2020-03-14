@@ -1,8 +1,8 @@
+#include "cmath"
 #include "common.h"
+#include "mavlink.h"
 #include "rosflight.h"
 #include "test_board.h"
-#include "mavlink.h"
-#include "cmath"
 
 #define CHN_LOW 1100
 #define CHN_HIGH 1900
@@ -13,7 +13,7 @@
 #define OFFBOARD_F 0.9
 
 #define RC_X_PWM 1800
-#define RC_X ((RC_X_PWM - 1500)/500.0 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL))
+#define RC_X ((RC_X_PWM - 1500) / 500.0 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL))
 
 using namespace rosflight_firmware;
 
@@ -27,24 +27,19 @@ public:
   uint16_t rc_values[8];
   float max_roll, max_pitch, max_yawrate;
 
-  control_t offboard_command =
-  {
-    20000,
-    {true, ANGLE, OFFBOARD_X},
-    {true, ANGLE, OFFBOARD_Y},
-    {true, RATE,  OFFBOARD_Z},
-    {true, THROTTLE, OFFBOARD_F}
-  };
+  control_t offboard_command = {20000,
+                                {true, ANGLE, OFFBOARD_X},
+                                {true, ANGLE, OFFBOARD_Y},
+                                {true, RATE, OFFBOARD_Z},
+                                {true, THROTTLE, OFFBOARD_F}};
 
-  CommandManagerTest() :
-    mavlink(board),
-    rf(board,mavlink)
-  {}
+  CommandManagerTest() : mavlink(board), rf(board, mavlink) {}
 
   void SetUp() override
   {
     rf.init();
-    rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
+    rf.state_manager_.clear_error(
+        rf.state_manager_.state().error_codes);  // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false);
 
     for (int i = 0; i < 8; i++)
@@ -78,7 +73,7 @@ public:
   }
 };
 
-TEST_F (CommandManagerTest, Default)
+TEST_F(CommandManagerTest, Default)
 {
   board.set_rc(rc_values);
   stepFirmware(20000);
@@ -94,7 +89,7 @@ TEST_F (CommandManagerTest, Default)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, RCCommands)
+TEST_F(CommandManagerTest, RCCommands)
 {
   rc_values[0] = 2000;
   rc_values[1] = 1000;
@@ -105,110 +100,111 @@ TEST_F (CommandManagerTest, RCCommands)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 1.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 1.0 * max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, -1.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, -1.0 * max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, -0.5*max_yawrate);
+  EXPECT_CLOSE(output.z.value, -0.5 * max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
   EXPECT_CLOSE(output.F.value, 0.5);
 }
 
-TEST_F (CommandManagerTest, ArmWithSticksByDefault)
+TEST_F(CommandManagerTest, ArmWithSticksByDefault)
 {
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   rc_values[2] = 1000;
   rc_values[3] = 2000;
   board.set_rc(rc_values);
   stepFirmware(500000);
-  EXPECT_EQ(rf.state_manager_.state().armed, false); // need to wait 1 second, shouldn't be armed yet
+  EXPECT_EQ(rf.state_manager_.state().armed,
+            false);  // need to wait 1 second, shouldn't be armed yet
   stepFirmware(600000);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }
 
-TEST_F (CommandManagerTest, DontArmWithSticksWhenUsingSwitch)
+TEST_F(CommandManagerTest, DontArmWithSticksWhenUsingSwitch)
 {
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
-  rc_values[2] = 1000; // throttle low
-  rc_values[3] = 2000; // yaw right
+  rc_values[2] = 1000;  // throttle low
+  rc_values[3] = 2000;  // yaw right
   board.set_rc(rc_values);
   stepFirmware(1100000);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (CommandManagerTest, DisarmWithSticksByDefault)
+TEST_F(CommandManagerTest, DisarmWithSticksByDefault)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
-  rc_values[2] = 1000; // throttle low
-  rc_values[3] = 1000; // yaw left
+  rc_values[2] = 1000;  // throttle low
+  rc_values[3] = 1000;  // yaw left
   board.set_rc(rc_values);
   stepFirmware(1100000);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (CommandManagerTest, ArmWithSwitch)
+TEST_F(CommandManagerTest, ArmWithSwitch)
 {
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
-  rc_values[2] = 1000; // throttle low
-  rc_values[4] = CHN_HIGH; // switch on
+  rc_values[2] = 1000;      // throttle low
+  rc_values[4] = CHN_HIGH;  // switch on
   board.set_rc(rc_values);
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);  // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }
 
-TEST_F (CommandManagerTest, DisarmWithStick)
+TEST_F(CommandManagerTest, DisarmWithStick)
 {
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-  rc_values[4] = CHN_LOW; // throttle low
+  rc_values[4] = CHN_LOW;  // throttle low
   board.set_rc(rc_values);
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);  // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (CommandManagerTest, DontDisarmWithSticksWhenUsingSwitch)
+TEST_F(CommandManagerTest, DontDisarmWithSticksWhenUsingSwitch)
 {
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
-  rc_values[4] = CHN_HIGH; // switch on
-  rc_values[2] = 1000; // throttle low
+  rc_values[4] = CHN_HIGH;  // switch on
+  rc_values[2] = 1000;      // throttle low
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   board.set_rc(rc_values);
   stepFirmware(50000);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 
-  rc_values[2] = 1000; // throttle low
-  rc_values[3] = 1000; // yaw left
+  rc_values[2] = 1000;  // throttle low
+  rc_values[3] = 1000;  // yaw left
   stepFirmware(1100000);
-  EXPECT_EQ(rf.state_manager_.state().armed, true); // don't disarm
+  EXPECT_EQ(rf.state_manager_.state().armed, true);  // don't disarm
 }
 
-TEST_F (CommandManagerTest, ArmStickReversed)
+TEST_F(CommandManagerTest, ArmStickReversed)
 {
   rf.params_.set_param_int(PARAM_RC_SWITCH_5_DIRECTION, -1);
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
-  rc_values[2] = 1000; // throttle low
-  rc_values[4] = CHN_LOW; // switch on
+  rc_values[2] = 1000;     // throttle low
+  rc_values[4] = CHN_LOW;  // switch on
   board.set_rc(rc_values);
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);  // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }
 
-TEST_F (CommandManagerTest, DisarmStickReversed)
+TEST_F(CommandManagerTest, DisarmStickReversed)
 {
   rf.params_.set_param_int(PARAM_RC_SWITCH_5_DIRECTION, -1);
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 
-  rc_values[2] = 1000; // throttle low
-  rc_values[4] = CHN_HIGH; // switch on
+  rc_values[2] = 1000;      // throttle low
+  rc_values[4] = CHN_HIGH;  // switch on
   board.set_rc(rc_values);
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);  // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (CommandManagerTest, DefaultRCOutputd)
+TEST_F(CommandManagerTest, DefaultRCOutputd)
 {
   board.set_rc(rc_values);
   stepFirmware(600000);
@@ -225,8 +221,7 @@ TEST_F (CommandManagerTest, DefaultRCOutputd)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-
-TEST_F (CommandManagerTest, RCOutput)
+TEST_F(CommandManagerTest, RCOutput)
 {
   rc_values[0] = 1250;
   rc_values[1] = 1750;
@@ -248,18 +243,18 @@ TEST_F (CommandManagerTest, RCOutput)
   EXPECT_CLOSE(output.F.value, 0.5);
 }
 
-TEST_F (CommandManagerTest, LoseRCDisarmed)
+TEST_F(CommandManagerTest, LoseRCDisarmed)
 {
   board.set_pwm_lost(true);
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 0.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 0.0 * max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, 0.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, 0.0 * max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, 0.0*max_yawrate);
+  EXPECT_CLOSE(output.z.value, 0.0 * max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
   EXPECT_CLOSE(output.F.value, 0.0);
 
@@ -270,7 +265,7 @@ TEST_F (CommandManagerTest, LoseRCDisarmed)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
 }
 
-TEST_F (CommandManagerTest, RegainRCDisarmed)
+TEST_F(CommandManagerTest, RegainRCDisarmed)
 {
   board.set_pwm_lost(true);
   stepFirmware(40000);
@@ -281,7 +276,7 @@ TEST_F (CommandManagerTest, RegainRCDisarmed)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
 }
 
-TEST_F (CommandManagerTest, LoseRCArmed)
+TEST_F(CommandManagerTest, LoseRCArmed)
 {
   board.set_rc(rc_values);
   stepFirmware(50000);
@@ -293,11 +288,11 @@ TEST_F (CommandManagerTest, LoseRCArmed)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 0.0*max_roll);
+  EXPECT_CLOSE(output.x.value, 0.0 * max_roll);
   EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, 0.0*max_pitch);
+  EXPECT_CLOSE(output.y.value, 0.0 * max_pitch);
   EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, 0.0*max_yawrate);
+  EXPECT_CLOSE(output.z.value, 0.0 * max_yawrate);
   EXPECT_EQ(output.F.type, THROTTLE);
   EXPECT_CLOSE(output.F.value, rf.params_.get_param_float(PARAM_FAILSAFE_THROTTLE));
 
@@ -308,7 +303,7 @@ TEST_F (CommandManagerTest, LoseRCArmed)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_RC_LOST);
 }
 
-TEST_F (CommandManagerTest, RegainRCArmed)
+TEST_F(CommandManagerTest, RegainRCArmed)
 {
   board.set_rc(rc_values);
   stepFirmware(50000);
@@ -324,9 +319,9 @@ TEST_F (CommandManagerTest, RegainRCArmed)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
 }
 
-TEST_F (CommandManagerTest, OffboardCommandMuxNoMinThrottle)
+TEST_F(CommandManagerTest, OffboardCommandMuxNoMinThrottle)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
 
   // set the new offboard command
@@ -341,9 +336,9 @@ TEST_F (CommandManagerTest, OffboardCommandMuxNoMinThrottle)
   EXPECT_CLOSE(output.F.value, OFFBOARD_F);
 }
 
-TEST_F (CommandManagerTest, OffboardCommandMuxMinThrottle)
+TEST_F(CommandManagerTest, OffboardCommandMuxMinThrottle)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
 
   // set the new offboard command
@@ -358,9 +353,9 @@ TEST_F (CommandManagerTest, OffboardCommandMuxMinThrottle)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, OffboardCommandMuxRollDeviation)
+TEST_F(CommandManagerTest, OffboardCommandMuxRollDeviation)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   rc_values[0] = 1250;
   board.set_rc(rc_values);
@@ -374,9 +369,9 @@ TEST_F (CommandManagerTest, OffboardCommandMuxRollDeviation)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, OffboardCommandMuxPitchDeviation)
+TEST_F(CommandManagerTest, OffboardCommandMuxPitchDeviation)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   rc_values[1] = 1750;
   board.set_rc(rc_values);
@@ -390,9 +385,9 @@ TEST_F (CommandManagerTest, OffboardCommandMuxPitchDeviation)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, OffboardCommandMuxYawrateDeviation)
+TEST_F(CommandManagerTest, OffboardCommandMuxYawrateDeviation)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   rc_values[3] = 1250;
   board.set_rc(rc_values);
@@ -406,9 +401,9 @@ TEST_F (CommandManagerTest, OffboardCommandMuxYawrateDeviation)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, OffboardCommandMuxLag)
+TEST_F(CommandManagerTest, OffboardCommandMuxLag)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   rc_values[0] = 1250;
   board.set_rc(rc_values);
@@ -418,39 +413,39 @@ TEST_F (CommandManagerTest, OffboardCommandMuxLag)
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
 
-  rc_values[0] = 1500; // return stick to center
+  rc_values[0] = 1500;  // return stick to center
   board.set_rc(rc_values);
 
   stepFirmware(500000);
   setOffboard(offboard_command);
-  output=rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, 0.0); // lag
+  output = rf.command_manager_.combined_control();
+  EXPECT_CLOSE(output.x.value, 0.0);  // lag
 
   stepFirmware(600000);
   setOffboard(offboard_command);
-  output=rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, 0.0); // lag
+  output = rf.command_manager_.combined_control();
+  EXPECT_CLOSE(output.x.value, 0.0);  // lag
 
   setOffboard(offboard_command);
   stepFirmware(20000);
-  output=rf.command_manager_.combined_control();
+  output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, OFFBOARD_X);
 }
 
-TEST_F (CommandManagerTest, StaleOffboardCommand)
+TEST_F(CommandManagerTest, StaleOffboardCommand)
 {
-  stepFirmware(1100000); // Get past LAG_TIME
+  stepFirmware(1100000);  // Get past LAG_TIME
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   setOffboard(offboard_command);
 
-  int timeout_us = rf.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT)*1000;
+  int timeout_us = rf.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT) * 1000;
   stepFirmware(timeout_us + 40000);
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.x.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, PartialMux)
+TEST_F(CommandManagerTest, PartialMux)
 {
   offboard_command.x.active = false;
   stepFirmware(1000000);
@@ -464,7 +459,7 @@ TEST_F (CommandManagerTest, PartialMux)
   EXPECT_CLOSE(output.F.value, 0.0);
 }
 
-TEST_F (CommandManagerTest, MixedTypes)
+TEST_F(CommandManagerTest, MixedTypes)
 {
   offboard_command.x.type = RATE;
   stepFirmware(1000000);

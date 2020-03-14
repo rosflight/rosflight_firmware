@@ -38,26 +38,24 @@
 #include "interface/param_listener.h"
 
 #include "board.h"
-#include "param.h"
-#include "sensors.h"
-#include "estimator.h"
-#include "rc.h"
-#include "controller.h"
 #include "comm_manager.h"
-#include "mixer.h"
-#include "state_manager.h"
 #include "command_manager.h"
+#include "controller.h"
+#include "estimator.h"
+#include "mixer.h"
+#include "param.h"
+#include "rc.h"
+#include "sensors.h"
+#include "state_manager.h"
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 class ROSflight
 {
-
 public:
   ROSflight(Board& board, CommLinkInterface& comm_link);
 
-  Board &board_;
+  Board& board_;
   CommManager comm_manager_;
 
   Params params_;
@@ -73,30 +71,23 @@ public:
   uint32_t loop_time_us;
 
   /**
-  * @brief Main initialization routine for the ROSflight autopilot flight stack
-  */
+   * @brief Main initialization routine for the ROSflight autopilot flight stack
+   */
   void init();
 
   /**
-  * @brief Main loop for the ROSflight autopilot flight stack
-  */
+   * @brief Main loop for the ROSflight autopilot flight stack
+   */
   void run();
 
   uint32_t get_loop_time_us();
 
 private:
   static constexpr size_t num_param_listeners_ = 7;
-  ParamListenerInterface * const param_listeners_[num_param_listeners_] = {
-    &comm_manager_,
-    &command_manager_,
-    &controller_,
-    &estimator_,
-    &mixer_,
-    &rc_,
-    &sensors_
-  };
+  ParamListenerInterface* const param_listeners_[num_param_listeners_] = {
+      &comm_manager_, &command_manager_, &controller_, &estimator_, &mixer_, &rc_, &sensors_};
 };
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
+#endif  // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H

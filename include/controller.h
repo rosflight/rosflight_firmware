@@ -32,8 +32,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
 #define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <turbomath/turbomath.h>
 
@@ -42,8 +42,7 @@
 #include "command_manager.h"
 #include "estimator.h"
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 class ROSflight;
 
@@ -109,6 +108,6 @@ private:
   uint64_t prev_time_us_;
 };
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_CONTROLLER_H
+#endif  // ROSFLIGHT_FIRMWARE_CONTROLLER_H

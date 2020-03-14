@@ -31,12 +31,9 @@
 
 #include "airbourne_board.h"
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
-AirbourneBoard::AirbourneBoard()
-{
-}
+AirbourneBoard::AirbourneBoard() {}
 
 void AirbourneBoard::init_board()
 {
@@ -53,7 +50,7 @@ void AirbourneBoard::init_board()
 
   backup_sram_init();
 
-  current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
+  current_serial_ = &vcp_;  // uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)
@@ -124,7 +121,6 @@ uint16_t AirbourneBoard::serial_bytes_available()
 
 uint8_t AirbourneBoard::serial_read()
 {
-
   return current_serial_->read_byte();
 }
 
@@ -133,11 +129,12 @@ void AirbourneBoard::serial_flush()
   current_serial_->flush();
 }
 
-
 // sensors
 void AirbourneBoard::sensors_init()
 {
-  while (millis() < 50) {} // wait for sensors to boot up
+  while (millis() < 50)
+  {
+  }  // wait for sensors to boot up
   imu_.init(&spi1_);
 
   baro_.init(&int_i2c_);
@@ -146,7 +143,7 @@ void AirbourneBoard::sensors_init()
   airspeed_.init(&ext_i2c_);
   // gnss_.init(&uart1_);
   battery_adc_.init(battery_monitor_config.adc);
-  battery_monitor_.init(battery_monitor_config, &battery_adc_, 0,0);
+  battery_monitor_.init(battery_monitor_config, &battery_adc_, 0, 0);
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
@@ -223,11 +220,10 @@ void AirbourneBoard::diff_pressure_update()
   airspeed_.update();
 }
 
-
 void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature)
 {
-  (void) diff_pressure;
-  (void) temperature;
+  (void)diff_pressure;
+  (void)temperature;
   airspeed_.update();
   airspeed_.read(diff_pressure, temperature);
 }
@@ -258,9 +254,9 @@ bool AirbourneBoard::gnss_has_new_data()
   // return this->gnss_.new_data();
   return false;
 }
-//This method translates the UBLOX driver interface into the ROSFlight interface
-//If not gnss_has_new_data(), then this may return 0's for ECEF position data,
-//ECEF velocity data, or both
+// This method translates the UBLOX driver interface into the ROSFlight interface
+// If not gnss_has_new_data(), then this may return 0's for ECEF position data,
+// ECEF velocity data, or both
 GNSSData AirbourneBoard::gnss_read()
 {
   // UBLOX::GNSSPVT gnss_pvt= gnss_.read();
@@ -301,7 +297,7 @@ GNSSData AirbourneBoard::gnss_read()
 }
 GNSSRaw AirbourneBoard::gnss_raw_read()
 {
-//  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
+  //  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
   GNSSRaw raw = {};
   // raw.time_of_week = pvt.iTOW;
   // raw.year = pvt.time.year;
@@ -473,7 +469,7 @@ void AirbourneBoard::backup_memory_init()
 bool AirbourneBoard::backup_memory_read(void *dest, size_t len)
 {
   backup_sram_read(dest, len);
-  return true; //!< @todo backup_sram_read() has no return value
+  return true;  //!< @todo backup_sram_read() has no return value
 }
 
 void AirbourneBoard::backup_memory_write(const void *src, size_t len)
@@ -486,5 +482,4 @@ void AirbourneBoard::backup_memory_clear(size_t len)
   backup_sram_clear(len);
 }
 
-
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware

@@ -34,8 +34,7 @@
 
 #include <cstdint>
 
-namespace rosflight_firmware
-{
+namespace rosflight_firmware {
 
 class ParamListenerInterface
 {
@@ -43,6 +42,6 @@ public:
   virtual void param_change_callback(uint16_t param_id) = 0;
 };
 
-} // namespace rosflight_firmware
+}  // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_INTERFACE_PARAM_LISTENER_H
+#endif  // ROSFLIGHT_FIRMWARE_INTERFACE_PARAM_LISTENER_H
