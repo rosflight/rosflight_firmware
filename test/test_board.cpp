@@ -68,7 +68,10 @@ void testBoard::set_imu(float *acc, float *gyro, uint64_t time_us)
 
 
 // setup
-void testBoard::init_board() {}
+void testBoard::init_board() 
+{
+  backup_memory_clear();
+}
 void testBoard::board_reset(bool bootloader) {}
 
 // clock
@@ -108,6 +111,33 @@ bool testBoard::imu_read(float accel[3], float *temperature, float gyro[3], uint
   *temperature = 25.0;
   *time = time_us_;
   return true;
+}
+
+bool testBoard::backup_memory_read(void *dest, size_t len)
+{
+  bool success = true;
+  if(len > BACKUP_MEMORY_SIZE)
+  {
+    len = BACKUP_MEMORY_SIZE;
+    success = false;
+  }
+  memcpy(dest, backup_memory_, len);
+  return success;
+}
+
+void testBoard::backup_memory_write(const void *src, size_t len)
+{
+  if(len > BACKUP_MEMORY_SIZE)
+    len = BACKUP_MEMORY_SIZE;
+  memcpy(backup_memory_, src, len);
+}
+void testBoard::backup_memory_clear(size_t len)
+{
+  memset(backup_memory_, 0, len);
+}
+void testBoard::backup_memory_clear()
+{
+  backup_memory_clear(BACKUP_MEMORY_SIZE);
 }
 
 void testBoard::imu_not_responding_error() {}
