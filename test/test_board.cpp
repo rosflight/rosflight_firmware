@@ -68,7 +68,10 @@ void testBoard::set_imu(float *acc, float *gyro, uint64_t time_us)
 
 
 // setup
-void testBoard::init_board() {}
+void testBoard::init_board() 
+{
+  backup_memory_clear();
+}
 void testBoard::board_reset(bool bootloader) {}
 
 // clock
