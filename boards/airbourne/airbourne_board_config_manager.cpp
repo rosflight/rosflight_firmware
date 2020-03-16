@@ -52,6 +52,7 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
   case Configuration::RC:
     if(config ==AirbourneConfiguration::RC_PPM) // PPM is not known to conflict with anything
       break;
+    [[gnu::fallthrough]];
   case Configuration::SERIAL:
   case Configuration::GNSS:
     if(port != NO_PORT)

@@ -190,6 +190,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
         int_i2c_.init(&i2c_config[BARO_I2C]);
       mag_.init(&int_i2c_);
     }
+    break;
   default:
     return false;
   }
