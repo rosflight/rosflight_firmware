@@ -52,6 +52,8 @@ The following is a simplified version of the finite state machine that defines l
 
 ![Arming FSM](images/arming-fsm-simplified.svg)
 
+The state manager also includes functionality for recovering from hard faults if one were to occur. If a hard fault occurs while the flight controller is armed, the firmware has the ability to immediately rearm after rebooting to enable continued RC control of the vehicle for recovery.
+
 ## LEDs
 
 The meaning of the various LEDs is summarized in the following table. The colors of the LEDs may change depending on your specific board:
