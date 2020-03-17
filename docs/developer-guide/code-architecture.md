@@ -84,6 +84,8 @@ The operation of the state manager is defined by the following finite state mach
 
 ![state manager FSM](images/arming-fsm.svg)
 
+The state manager also includes functionality for recovering from hard faults. In the case of a hard fault, the firmware writes a small amount of data to backup memory then reboots. This backup memory location is checked and then cleared after every reboot. The backup memory includes the armed state of the flight controller. On reboot, the firmware will initialize then, if this armed-state flag is set, immediately transition back into the armed state. This functionality allows for continued RC control in the case of a hard fault. Hard faults are not expected with the stable firmware code base, but this feature adds an additional layer of safety if experimental changes are being made to the firmware itself.
+
 ### Parameter Server
 This module handles all parameters for the flight stack.
 It supports the getting and setting of integer and floating-point parameters, and the saving of these parameters to non-volatile memory.

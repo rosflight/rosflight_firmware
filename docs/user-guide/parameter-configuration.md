@@ -56,6 +56,10 @@ rosservice call /param_write
 [ INFO] [1491672597.123201952]: Param write succeeded
 [ INFO] [1491672597.123452908]: Onboard parameters have been saved
 ```
+
+!!! important
+    It is highly recommended that you write parameters before arming and flying the vehicle. Among other things, this will ensure that in the rare case that a hard fault is encountered and the flight controller must reboot during flight, the correct configuration will be loaded on reboot.
+
 !!! error
     Parameter writing can only happen if the flight controller is disarmed. If the param write failed for some reason, you may want to make sure your FC is disarmed and try again.
 
