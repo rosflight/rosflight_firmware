@@ -255,12 +255,12 @@ void AirbourneBoard::mag_update()
 
 void AirbourneBoard::mag_read(float mag[3])
 {
-  mag_.update();
+  mag_update();
   mag_.read(mag);
 }
 bool AirbourneBoard::baro_present()
 {
-  baro_.update();
+  baro_update();
   return baro_.present();
 }
 
