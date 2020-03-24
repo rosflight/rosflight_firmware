@@ -23,6 +23,7 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
   ConfigManager::ConfigResponse resp;
   resp.reboot_required = false;
   resp.successful = false;
+  resp.message[0] = 0; // Just in case, because a string without a null terminator causes problems
 
   if(device >= Configuration::DEVICE_COUNT)
   {
@@ -52,20 +53,25 @@ ConfigManager::ConfigResponse AirbourneBoardConfigManager::check_config_change(d
   case Configuration::RC:
     if(config ==AirbourneConfiguration::RC_PPM) // PPM is not known to conflict with anything
       break;
-    [[gnu::fallthrough]];
+    [[gnu::fallthrough]]; // Fallthrough is intentional
   case Configuration::SERIAL:
   case Configuration::GNSS:
     if(port != NO_PORT)
+    {
       for(device_t other_device{Configuration::FIRST_DEVICE}; other_device != Configuration::DEVICE_COUNT; ++other_device)
       {
-        if(other_device == Configuration::RC && cm[Configuration::RC] == AirbourneConfiguration::RC_PPM) // RC over PPM does not conflict with UART, even though both use the same port
+        if(other_device == device)
           continue;
+        if(other_device == Configuration::RC)
+          if(cm[Configuration::RC] == AirbourneConfiguration::RC_PPM) // RC over PPM does not conflict with UART, even though both use the same port
+            continue;
         if(port == get_port(other_device, cm[other_device]))
         {
           conflict_device = other_device;
           break;
         }
       }
+    }
     break;
   case Configuration::AIRSPEED:
   case Configuration::SONAR:
@@ -152,6 +158,9 @@ void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[
 }
 void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH]) const
 {
+  name[0] = 0; // Prevents a string without a terminator being sent in case of programmer error
+  if(device >= Configuration::DEVICE_COUNT) // Although this is handled in the switch statement, this is so that it doesn't attempt to overflow max_configs
+    strcpy(name, "Invalid device");
   if(config > AirbourneBoardConfigManager::max_configs[device])
     strcpy(name, "Invalid config");
   else

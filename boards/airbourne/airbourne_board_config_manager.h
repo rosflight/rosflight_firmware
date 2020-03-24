@@ -16,6 +16,8 @@ public:
   void get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH]) const override;
   void get_config_name(device_t device, hardware_config_t config, char (&name)[CONFIG_NAME_LENGTH]) const override;
 private:
+  static constexpr hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 1, 1};
+
   enum Port
   {
     NO_PORT,
@@ -27,9 +29,6 @@ private:
     INTERNAL_I2C
   };
   Port get_port(uint8_t device, uint8_t config) const; // Get the port used by a given configuration
-
-  ROSflight *RF_;
-  static constexpr hardware_config_t max_configs[Configuration::DEVICE_COUNT]{3, 1, 1, 3, 1, 1, 1, 1};
 };
 } // namespace rosflight_firmware
 

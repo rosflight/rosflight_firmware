@@ -60,10 +60,10 @@
 #include "analog_digital_converter.h"
 #include "analog_pin.h"
 #include "battery_monitor.h"
-#include "airbourne_board_config_manager.h"
 // #include "ublox.h"
 
 #include "board.h"
+#include "airbourne_board_config_manager.h"
 
 namespace rosflight_firmware
 {
