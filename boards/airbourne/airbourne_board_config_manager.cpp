@@ -140,10 +140,10 @@ void AirbourneBoardConfigManager::get_device_name(device_t device, char (&name)[
     strcpy(name, "Battery Monitor");
     break;
   case Configuration::BAROMETER:
-    strcpy(name, "Barometer");
+    strcpy(name, "Baro");
     break;
   case Configuration::MAGNETOMETER:
-    strcpy(name, "Magnetometer");
+    strcpy(name, "Mag");
     break;
   default:
     strcpy(name, "Error/Unsupported");
@@ -219,13 +219,13 @@ void AirbourneBoardConfigManager::get_config_name(device_t device, hardware_conf
       if(config==AirbourneConfiguration::BAROMETER_DISABLED)
         strcpy(name, "Disabled");
       else if(config == AirbourneConfiguration::BAROMETER_ONBOARD)
-        strcpy(name, "Onboard barometer");
+        strcpy(name, "Onboard baro");
       break;
     case Configuration::MAGNETOMETER:
       if(config ==AirbourneConfiguration::MAGNETOMETER_DISABLED)
         strcpy(name, "Disabled");
       else if(config == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
-        strcpy(name, "Onboard magnetometer");
+        strcpy(name, "Onboard mag");
       break;
     default:
       strcpy(name, "Invalid device");

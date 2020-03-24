@@ -1,4 +1,5 @@
 #ifndef BOARD_CONFIG_MANAGER_H
+
 #define BOARD_CONFIG_MANAGER_H
 
 #include "configuration_enum.h"
@@ -32,12 +33,13 @@ public:
    * @param cm The ConfigManager with the current configurations
    */
   virtual ConfigManager::ConfigResponse check_config_change(device_t device, hardware_config_t config, const ConfigManager &cm) const = 0;
-  static constexpr int DEVICE_NAME_LENGTH = 20;
-  static constexpr int CONFIG_NAME_LENGTH = 20;
+  static constexpr int DEVICE_NAME_LENGTH = 20; /**< This includes the null terminator, so 19 is the practical maximum.*/
+  static constexpr int CONFIG_NAME_LENGTH = 20; /**< This includes the null terminator, so 19 is the practical maximum.*/
   /**
    * @brief Returns the name of the device
    * @details Do not assume that the device number is valid.
-   * When passed an invalid device, it is better to return a string so indicating than an empty string
+   * When passed an invalid device, it is better to return a string so indicating than an empty string.
+   * Note the requirement for a null terminator at the end of the string.
    * @param device Any device
    */
   virtual void get_device_name(device_t device, char (&name)[DEVICE_NAME_LENGTH]) const=0;
@@ -46,6 +48,7 @@ public:
    * @details Do not assume that the device number or configuration are valid.
    * When passed an invalid device or configuration, it is better to return a string so indicating
    * than an empty string.
+   * Note the requirement for a null terminator at the end of the string.
    * @param device Any device
    * @param config Any configuration
    */
