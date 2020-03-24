@@ -83,8 +83,8 @@ private:
   ROSflight& RF_;
   CommLinkInterface& comm_link_;
   uint8_t send_params_index_;
-  device_t send_device_info_index_;
-  hardware_config_t send_config_info_index_;
+  device_t send_device_info_index_{Configuration::DEVICE_COUNT};
+  hardware_config_t send_config_info_index_{0};
   bool initialized_ = false;
   bool connected_ = false;
 
