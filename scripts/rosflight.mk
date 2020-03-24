@@ -40,8 +40,8 @@ ROSFLIGHT_SRC = rosflight.cpp \
                 rc.cpp \
                 mixer.cpp \
                 nanoprintf.cpp \
-		config_manager.cpp \
-		memory_manager.cpp \
+                config_manager.cpp \
+                memory_manager.cpp \
 
 # Math Source Files
 VPATH := $(VPATH):$(TURBOMATH_DIR)
