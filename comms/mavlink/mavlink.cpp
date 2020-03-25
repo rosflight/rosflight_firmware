@@ -295,10 +295,10 @@ void Mavlink::send_config_value(uint8_t system_id, uint8_t device, uint8_t confi
   send_message(msg);
 }
 
-void Mavlink::send_device_info(uint8_t system_id, uint8_t device,  uint8_t max_config, char (&name)[BoardConfigManager::DEVICE_NAME_LENGTH])
+void Mavlink::send_device_info(uint8_t system_id, uint8_t device,  uint8_t max_config, char (&name)[BoardConfigManager::DEVICE_NAME_LENGTH], uint8_t num_devices)
 {
   mavlink_message_t msg;
-  mavlink_msg_rosflight_device_info_pack(system_id, 0, &msg, device, max_config, reinterpret_cast<uint8_t*>(name));
+  mavlink_msg_rosflight_device_info_pack(system_id, 0, &msg, device, max_config, reinterpret_cast<uint8_t*>(name), num_devices);
   send_message(msg);
 }
 
