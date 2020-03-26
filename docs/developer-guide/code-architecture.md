@@ -84,10 +84,13 @@ The operation of the state manager is defined by the following finite state mach
 
 ![state manager FSM](images/arming-fsm.svg)
 
+The state manager also includes functionality for recovering from hard faults. In the case of a hard fault, the firmware writes a small amount of data to backup memory then reboots. This backup memory location is checked and then cleared after every reboot. The backup memory includes the armed state of the flight controller. On reboot, the firmware will initialize then, if this armed-state flag is set, immediately transition back into the armed state. This functionality allows for continued RC control in the case of a hard fault. Hard faults are not expected with the stable firmware code base, but this feature adds an additional layer of safety if experimental changes are being made to the firmware itself.
+
 ### Config Manager
 This module handles the configurations for various devices, such as sensors and the serial connection. Each configuration is stored as an integer. Configurations can be set from the companion computer over the serial connection. On startup, the config manager sends configurations to the board support layer to initialize devices.
 
 The config manager also interacts with the board config manager, which is provided by the board support layer. The board config manager provides information on available configurations (such as name, number of options, etc). Additionally, the board config manager checks if a config change is valid. If the board config manager rejects a change, it explains why in an error message.
+
 
 ### Parameter Server
 This module handles all parameters for the flight stack.
