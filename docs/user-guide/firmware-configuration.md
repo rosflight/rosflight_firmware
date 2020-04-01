@@ -18,6 +18,48 @@ successful: True
 configuration: "ADC3 on Power"
 message: ''
 ```
+## Listing Available Configurations
+The firmware reports to rosflight_io what configurations are available for each device. A list of all devices and configurations can be obtained through the `config_list` service while rosflight_io is running. This does not show which configurations are currently active. Rosservice displays the output with quirky formatting, so note that the first configuration option is displayed on the same line as "configuration_names". An example output of `config_list` is shown below.
+```
+$ rosservice call /config_list
+devices: 
+  - 
+    device_name: "Serial"
+    configuration_names: - VCP over USB
+- UART1 on Main
+- UART2 on Flex-IO
+- UART3 on Flexi
+  - 
+    device_name: "RC"
+    configuration_names: - PPM on Flex-IO
+- SBUS on Main
+  - 
+    device_name: "Airspeed"
+    configuration_names: - Disabled
+- I2C2 on Flexi
+  - 
+    device_name: "GNSS"
+    configuration_names: - Disabled
+- UART1 on main
+- UART2 on Flex-Io
+- UART3 on Flexi
+  - 
+    device_name: "Sonar"
+    configuration_names: - Disabled
+- I2C2 on Flexi
+  - 
+    device_name: "Battery Monitor"
+    configuration_names: - Disabled
+- ADC3 on Power
+  - 
+    device_name: "Baro"
+    configuration_names: - Disabled
+- Onboard baro
+  - 
+    device_name: "Mag"
+    configuration_names: - Disabled
+- Onboard mag
+```
 
 ##Setting Configurations
 Setting configurations is done similarly to getting them, but using the `config_set` service, which also requires `rosflight_io` to be running. The service takes the name of the device and the name of the configuration as parameters.
@@ -87,22 +129,22 @@ See [Using Secondary Serial Links](hardware-setup.md#using-secondary-serial-link
 |Disabled|0|None||
 |I2C2 on Flexi|1|Flexi|Multiple I2C devices can share the port.|
 
-####Battery Montior
+####Battery Monitor
 | Configuration | Number | port | Notes |
 | ------------- | ------ | ---- | ----- |
 |Disabled|0|None||
 |ADC3 on Power|1|PWR / Sonar||
 
-####Barometer
+####Baro (Barometer)
 
 | Configuration | Number | port | Notes |
 | ------------- | ------ | ---- | ----- |
 |Disabled|0|None||
-|Onboard Barometer|1|None||
+|Onboard Baro|1|None||
 
-####Magnetometer
+####Mag (Magnetometer)
 
 | Configuration | Number | port | Notes |
 | ------------- | ------ | ---- | ----- |
 |Disabled|0|None||
-|Onboard Magnetometer|1|None||
+|Onboard Mag|1|None||
