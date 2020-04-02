@@ -72,6 +72,7 @@ CommandManager::CommandManager(ROSflight &_rf) :
 void CommandManager::init()
 {
   init_failsafe();
+  rc_override_ = determine_override_status();
 }
 
 void CommandManager::param_change_callback(uint16_t param_id)
