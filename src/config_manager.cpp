@@ -63,6 +63,9 @@ bool ConfigManager::read()
     return false;
   if(generate_checksum() != config_.checksum)
     return false;
+  for (device_t device=Configuration::FIRST_DEVICE; device < Configuration::DEVICE_COUNT; ++device)
+    if (config_.config[device] > RF_.board_.get_board_config_manager().get_max_config(device))
+      return false;
   return true;
 }
 
