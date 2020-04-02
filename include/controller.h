@@ -32,8 +32,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
 #define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstdint>
 
 #include <turbomath/turbomath.h>
 

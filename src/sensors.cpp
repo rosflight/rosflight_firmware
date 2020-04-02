@@ -30,9 +30,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <cmath>
+#include <cstdbool>
+#include <cstdint>
 
 #include "param.h"
 #include "rosflight.h"

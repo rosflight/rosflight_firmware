@@ -1,8 +1,7 @@
 #include <cmath>
 #include <fstream>
 #include "common.h"
-#include "eigen3/unsupported/Eigen/MatrixFunctions"
-#include "math.h"
+#include <eigen3/unsupported/Eigen/MatrixFunctions>
 #include "mavlink.h"
 #include "rosflight.h"
 #include "test_board.h"

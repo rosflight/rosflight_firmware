@@ -32,9 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_BREEZY_BOARD_H
 #define ROSFLIGHT_FIRMWARE_BREEZY_BOARD_H
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 
 extern "C" {
 #include <breezystm32.h>

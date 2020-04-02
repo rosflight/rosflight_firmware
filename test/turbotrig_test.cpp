@@ -31,9 +31,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include "common.h"
-#include "math.h"
+#include <cmath>
 
 turbomath::Vector random_vectors[25] = {
     turbomath::Vector(-0.0376278050814, 0.471775699711, -0.336572370974),

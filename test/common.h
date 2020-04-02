@@ -5,9 +5,9 @@
 #include "rosflight.h"
 #include "test_board.h"
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/Geometry"
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
 
 #include <cstdint>
 

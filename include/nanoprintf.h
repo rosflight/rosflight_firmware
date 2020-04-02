@@ -105,7 +105,7 @@ regs Kusti, 23.10.2004
 #ifndef ROSFLIGHT_FIRWMARE_NANO_PRINTF_H
 #define ROSFLIGHT_FIRWMARE_NANO_PRINTF_H
 
-#include <stdarg.h>
+#include <cstdarg>
 
 namespace rosflight_firmware {
 namespace nanoprintf {

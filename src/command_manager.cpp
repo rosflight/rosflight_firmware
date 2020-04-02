@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include <cstdbool>
+#include <cstdlib>
 
 #include "command_manager.h"
 #include "rosflight.h"

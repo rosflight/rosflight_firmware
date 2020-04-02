@@ -32,8 +32,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_RC_H
 #define ROSFLIGHT_FIRMWARE_RC_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstdint>
 
 #include "interface/param_listener.h"
 

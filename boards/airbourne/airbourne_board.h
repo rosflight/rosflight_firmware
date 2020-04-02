@@ -32,9 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 
 #include <revo_f4.h>
 

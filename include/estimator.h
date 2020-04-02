@@ -32,9 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 #define ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <cmath>
+#include <cstdbool>
+#include <cstdint>
 
 #include <turbomath/turbomath.h>
 
