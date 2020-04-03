@@ -39,6 +39,8 @@ set(ROSFLIGHT_SRC
     ../src/command_manager.cpp
     ../src/rc.cpp
     ../src/mixer.cpp
+    ../src/memory_manager.cpp
+    ../src/config_manager.cpp
     ../comms/mavlink/mavlink.cpp
     ../lib/turbomath/turbomath.cpp
     )
@@ -51,10 +53,12 @@ add_executable(unit_tests
         common.cpp
         command_manager_test.cpp
         test_board.cpp
+	test_board_config_manager.cpp
         turbotrig_test.cpp
         state_machine_test.cpp
         command_manager_test.cpp
         estimator_test.cpp
         parameters_test.cpp
+	config_manager_test.cpp
         )
 target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)

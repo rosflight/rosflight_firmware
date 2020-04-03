@@ -45,17 +45,20 @@ Notice that the parameters have been set, but not saved. Parameter changes take 
 
 ### Writing Parameters
 
-To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `param_write`
+To ensure that parameter values persist between reboots, you must write the parameters to the non-volatile memory. This is done by calling `memory_write`. This also saves firmware configurations.
 
 ```
-rosservice call /param_write
+rosservice call /memory_write
 ```
+
 
 `rosflight_io` should then respond with
+
 ```
 [ INFO] [1491672597.123201952]: Param write succeeded
 [ INFO] [1491672597.123452908]: Onboard parameters have been saved
 ```
+
 
 !!! important
     It is highly recommended that you write parameters before arming and flying the vehicle. Among other things, this will ensure that in the rare case that a hard fault is encountered and the flight controller must reboot during flight, the correct configuration will be loaded on reboot.
@@ -108,7 +111,6 @@ This is a list of all ROSflight parameters, including their types, default value
 | Parameter | Description | Type | Default Value | Min | Max |
 |-----------|-------------|------|---------------|-----|-----|
 | BAUD_RATE | Baud rate of MAVlink communication with companion computer | int |  921600 | 9600 | 921600 |
-| SERIAL_DEVICE | Serial Port (for supported devices) | int |  0 | 0 | 3 |
 | SYS_ID | Mavlink System ID | int |  1 | 1 | 255 |
 | STRM_HRTBT | Rate of heartbeat stream (Hz) | int |  1 | 0 | 1000 |
 | STRM_STATUS | Rate of status stream (Hz) | int |  10 | 0 | 1000 |

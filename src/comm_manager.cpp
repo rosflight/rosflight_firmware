@@ -76,11 +76,12 @@ CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) : RF_(rf),
 // function definitions
 void CommManager::init()
 {
-  comm_link_.init(static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_BAUD_RATE)),
-                  static_cast<uint32_t>(RF_.params_.get_param_int(PARAM_SERIAL_DEVICE)));
+  comm_link_.init();
 
   offboard_control_time_ = 0;
   send_params_index_ = PARAMS_COUNT;
+  send_device_info_index_ = Configuration::DEVICE_COUNT;
+  send_config_info_index_ = 0;
 
   update_system_id(PARAM_SYSTEM_ID);
   set_streaming_rate(STREAM_ID_HEARTBEAT, PARAM_STREAM_HEARTBEAT_RATE);
@@ -250,7 +251,7 @@ void CommManager::command_callback(CommLinkInterface::Command command)
       result = RF_.params_.read();
       break;
     case CommLinkInterface::Command::COMMAND_WRITE_PARAMS:
-      result = RF_.params_.write();
+      result = RF_.memory_manager_.write_memory();
       break;
     case CommLinkInterface::Command::COMMAND_SET_PARAM_DEFAULTS:
       RF_.params_.set_defaults();
@@ -278,6 +279,9 @@ void CommManager::command_callback(CommLinkInterface::Command command)
       break;
     case CommLinkInterface::Command::COMMAND_SEND_VERSION:
       comm_link_.send_version(sysid_, GIT_VERSION_STRING);
+      break;
+    case CommLinkInterface::Command::COMMAND_SEND_ALL_CONFIG_INFOS:
+      send_all_config_info();
       break;
     }
   }
@@ -396,6 +400,48 @@ void CommManager::heartbeat_callback(void)
   this->send_heartbeat();
 }
 
+void CommManager::config_set_callback(uint8_t device, uint8_t configuration)
+{
+  uint8_t requested_device{device};
+  if (device >= Configuration::DEVICE_COUNT)
+    device = Configuration::DEVICE_COUNT;
+  ConfigManager::ConfigResponse resp =
+      RF_.config_manager_.attempt_set_configuration(static_cast<device_t>(device), configuration);
+  comm_link_.send_config_status(sysid_, requested_device, resp.successful, resp.reboot_required, resp.message);
+}
+
+void CommManager::config_request_callback(uint8_t device)
+{
+  if (device < Configuration::DEVICE_COUNT)
+    send_config_value(static_cast<device_t>(device));
+}
+void CommManager::send_all_config_info()
+{
+  send_config_info_index_ = 0;
+  send_device_info_index_ = static_cast<device_t>(0);
+}
+
+void CommManager::send_device_info(device_t device)
+{
+  char device_name[BoardConfigManager::DEVICE_NAME_LENGTH];
+  RF_.board_.get_board_config_manager().get_device_name(device, device_name);
+  uint8_t max_config = RF_.board_.get_board_config_manager().get_max_config(device);
+  comm_link_.send_device_info(sysid_, device, max_config, device_name, Configuration::DEVICE_COUNT);
+}
+
+void CommManager::send_config_info(device_t device, hardware_config_t config)
+{
+  char config_name[BoardConfigManager::CONFIG_NAME_LENGTH];
+  RF_.board_.get_board_config_manager().get_config_name(device, config, config_name);
+  comm_link_.send_config_info(sysid_, device, config, config_name);
+}
+
+void CommManager::send_config_value(device_t device)
+{
+  uint8_t config = RF_.config_manager_.get_configuration(device);
+  comm_link_.send_config_value(sysid_, device, config);
+}
+
 // function definitions
 void CommManager::receive(void)
 {
@@ -440,7 +486,7 @@ void CommManager::send_status(void)
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
 
   comm_link_.send_status(sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
-                         RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
+                         RF_.command_manager_.get_rc_override(), RF_.command_manager_.offboard_control_active(),
                          RF_.state_manager_.state().error_codes, control_mode, RF_.board_.num_sensor_errors(),
                          RF_.get_loop_time_us());
 }
@@ -561,6 +607,7 @@ void CommManager::send_gnss_raw()
 void CommManager::send_low_priority(void)
 {
   send_next_param();
+  send_next_config_info();
 
   // send buffered log messages
   if (connected_ && !log_buffer_.empty())
@@ -603,6 +650,22 @@ void CommManager::send_next_param(void)
   {
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
+  }
+}
+
+void CommManager::send_next_config_info(void)
+{
+  if (send_device_info_index_ < Configuration::DEVICE_COUNT)
+  {
+    if (send_config_info_index_ == 0)
+      send_device_info(send_device_info_index_);
+    send_config_info(send_device_info_index_, send_config_info_index_);
+    send_config_info_index_++;
+    if (send_config_info_index_ > RF_.board_.get_board_config_manager().get_max_config(send_device_info_index_))
+    {
+      ++send_device_info_index_;
+      send_config_info_index_ = 0;
+    }
   }
 }
 

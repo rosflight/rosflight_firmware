@@ -76,46 +76,39 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 }
 
 // serial
-void AirbourneBoard::serial_init(uint32_t baud_rate, uint32_t dev)
+void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration)
 {
-  vcp_.init();
-  switch (dev)
+  vcp_.init(); // VCP is always initialized, so that if UART is mistakenly enabled, it can still be used
+  switch (configuration)
   {
-  case SERIAL_DEVICE_UART3:
-    uart3_.init(&uart_config[UART3], baud_rate);
-    current_serial_ = &uart3_;
-    secondary_serial_device_ = SERIAL_DEVICE_UART3;
-    break;
   default:
+  case AirbourneConfiguration::SERIAL_VCP:
     current_serial_ = &vcp_;
-    secondary_serial_device_ = SERIAL_DEVICE_VCP;
+    break;
+  case AirbourneConfiguration::SERIAL_UART1:
+    current_serial_ = &uart1_;
+    uart1_.init(&uart_config[UART1], baud_rate);
+    break;
+  case AirbourneConfiguration::SERIAL_UART2:
+    current_serial_ = &uart2_;
+    uart2_.init(&uart_config[UART2], baud_rate);
+    break;
+  case AirbourneConfiguration::SERIAL_UART3:
+    current_serial_ = &uart3_;
+    uart3_.init(&uart_config[UART3], baud_rate);
+    break;
   }
 }
 
 void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
+  if (vcp_.connected())
+    current_serial_ = &vcp_;
   current_serial_->write(src, len);
 }
 
 uint16_t AirbourneBoard::serial_bytes_available()
 {
-  if (vcp_.connected() || secondary_serial_device_ == SERIAL_DEVICE_VCP)
-  {
-    current_serial_ = &vcp_;
-  }
-  else
-  {
-    switch (secondary_serial_device_)
-    {
-    case SERIAL_DEVICE_UART3:
-      current_serial_ = &uart3_;
-      break;
-    default:
-      // no secondary serial device
-      break;
-    }
-  }
-
   return current_serial_->rx_bytes_waiting();
 }
 
@@ -129,6 +122,92 @@ void AirbourneBoard::serial_flush()
   current_serial_->flush();
 }
 
+// Resources
+bool AirbourneBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
+{
+  switch (device)
+  {
+  case Configuration::SERIAL:
+  {
+    uint32_t baud_rate = params.get_param_int(PARAM_BAUD_RATE);
+    serial_init(baud_rate, configuration);
+    return true; // TODO serial_init success check
+    break;
+  }
+  case Configuration::RC:
+    switch (configuration)
+    {
+    case AirbourneConfiguration::RC_PPM:
+      rc_init(RC_TYPE_PPM);
+      break;
+    case AirbourneConfiguration::RC_SBUS:
+      rc_init(RC_TYPE_SBUS);
+      break;
+    default:
+      return false;
+    }
+    return true;
+  case Configuration::AIRSPEED:
+    if (configuration == AirbourneConfiguration::AIRSPEED_I2C2)
+    {
+      if (!ext_i2c_.is_initialized())
+        ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+      airspeed_.init(&ext_i2c_);
+    }
+    break;
+  case Configuration::GNSS:
+    // GNSS is currently disabled
+    break;
+  case Configuration::SONAR:
+    if (configuration == AirbourneConfiguration::SONAR_I2C2)
+    {
+      if (!ext_i2c_.is_initialized())
+        ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
+      sonar_.init(&ext_i2c_);
+    }
+    break;
+  case Configuration::BATTERY_MONITOR:
+    if (configuration == AirbourneConfiguration::BATTERY_MONITOR_ADC3)
+    {
+      float voltage_multiplier = params.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
+      float current_multiplier = params.get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
+      battery_adc_.init(battery_monitor_config.adc);
+      battery_monitor_.init(battery_monitor_config, &battery_adc_, voltage_multiplier, current_multiplier);
+    }
+    break;
+  case Configuration::BAROMETER:
+    if (configuration == AirbourneConfiguration::BAROMETER_ONBOARD)
+    {
+      while (millis() < 50)
+      {
+      } // wait for sensors to boot up
+      if (!int_i2c_.is_initialized())
+        int_i2c_.init(&i2c_config[BARO_I2C]);
+      baro_.init(&int_i2c_);
+    }
+    break;
+  case Configuration::MAGNETOMETER:
+    if (configuration == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
+    {
+      while (millis() < 50)
+      {
+      } // wait for sensors to boot up
+      if (!int_i2c_.is_initialized())
+        int_i2c_.init(&i2c_config[BARO_I2C]);
+      mag_.init(&int_i2c_);
+    }
+    break;
+  default:
+    return false;
+  }
+  return false;
+}
+
+AirbourneBoardConfigManager const &AirbourneBoard::get_board_config_manager() const
+{
+  return board_config_manager_;
+}
+
 // sensors
 void AirbourneBoard::sensors_init()
 {
@@ -136,14 +215,7 @@ void AirbourneBoard::sensors_init()
   {
   } // wait for sensors to boot up
   imu_.init(&spi1_);
-
-  baro_.init(&int_i2c_);
-  mag_.init(&int_i2c_);
-  sonar_.init(&ext_i2c_);
-  airspeed_.init(&ext_i2c_);
-  // gnss_.init(&uart1_);
-  battery_adc_.init(battery_monitor_config.adc);
-  battery_monitor_.init(battery_monitor_config, &battery_adc_, 0, 0);
+  // Most sensors are set up through the configuration manager
 }
 
 uint16_t AirbourneBoard::num_sensor_errors()
@@ -185,23 +257,25 @@ bool AirbourneBoard::mag_present()
 
 void AirbourneBoard::mag_update()
 {
-  mag_.update();
+  if (mag_.is_initialized())
+    mag_.update();
 }
 
 void AirbourneBoard::mag_read(float mag[3])
 {
-  mag_.update();
+  mag_update();
   mag_.read(mag);
 }
 bool AirbourneBoard::baro_present()
 {
-  baro_.update();
+  baro_update();
   return baro_.present();
 }
 
 void AirbourneBoard::baro_update()
 {
-  baro_.update();
+  if (baro_.is_initialized())
+    baro_.update();
 }
 
 void AirbourneBoard::baro_read(float *pressure, float *temperature)
@@ -212,7 +286,9 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
 
 bool AirbourneBoard::diff_pressure_present()
 {
-  return airspeed_.present();
+  if (airspeed_.is_initialized())
+    return airspeed_.present();
+  return false;
 }
 
 void AirbourneBoard::diff_pressure_update()
@@ -235,7 +311,8 @@ bool AirbourneBoard::sonar_present()
 
 void AirbourneBoard::sonar_update()
 {
-  sonar_.update();
+  if (sonar_.is_initialized())
+    sonar_.update();
 }
 
 float AirbourneBoard::sonar_read()

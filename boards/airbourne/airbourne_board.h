@@ -61,6 +61,7 @@
 #include <cstdint>
 // #include "ublox.h"
 
+#include "airbourne_board_config_manager.h"
 #include "board.h"
 
 namespace rosflight_firmware
@@ -68,8 +69,11 @@ namespace rosflight_firmware
 class AirbourneBoard : public Board
 {
 private:
+  AirbourneBoardConfigManager board_config_manager_;
+
   VCP vcp_;
   UART uart1_;
+  UART uart2_;
   UART uart3_;
   Serial *current_serial_; // A pointer to the serial stream currently in use.
   I2C int_i2c_;
@@ -132,11 +136,15 @@ public:
   void clock_delay(uint32_t milliseconds) override;
 
   // serial
-  void serial_init(uint32_t baud_rate, uint32_t dev) override;
+  void serial_init(uint32_t baud_rate, hardware_config_t configuration);
   void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
+
+  // hardware config
+  bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
+  AirbourneBoardConfigManager const &get_board_config_manager() const override;
 
   // sensors
   void sensors_init() override;
@@ -178,7 +186,7 @@ public:
   bool gnss_has_new_data() override;
   GNSSRaw gnss_raw_read() override;
   // RC
-  void rc_init(rc_type_t rc_type) override;
+  void rc_init(rc_type_t rc_type);
   bool rc_lost() override;
   float rc_read(uint8_t channel) override;
 

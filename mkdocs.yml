@@ -52,6 +52,7 @@ nav:
     - Flight Controller Setup: user-guide/flight-controller-setup.md
     - RC Configuration: user-guide/rc-configuration.md
     - ROS Setup: user-guide/ros-setup.md
+    - Firmware Configuration: user-guide/firmware-configuration.md
     - Parameter Configuration: user-guide/parameter-configuration.md
     - Pre-Flight Checks: user-guide/preflight-checks.md
     - Improving Performance: user-guide/performance.md

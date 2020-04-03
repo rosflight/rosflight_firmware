@@ -72,7 +72,8 @@ STDPERIPH_SRC	 = $(notdir $(wildcard $(STDPERIPH_DIR)/src/*.c))
 VPATH			:= $(VPATH):$(BOARD_DIR)
 BOARD_C_SRC     = flash.c
 BOARD_CXX_SRC   = breezy_board.cpp \
-                  main.cpp
+                  main.cpp \
+                  breezy_board_config_manager.cpp
 
 # Hardware Driver Source Files
 BREEZY_SRC = drv_gpio.c \

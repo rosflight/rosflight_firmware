@@ -32,6 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_BOARD_H
 
+#include "board_config_manager.h"
+#include "configuration_enum.h"
+#include "param.h"
 #include "sensors.h"
 #include "state_manager.h"
 
@@ -60,11 +63,14 @@ public:
   virtual void clock_delay(uint32_t milliseconds) = 0;
 
   // serial
-  virtual void serial_init(uint32_t baud_rate, uint32_t dev) = 0;
   virtual void serial_write(const uint8_t *src, size_t len) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
   virtual void serial_flush() = 0;
+
+  // hardware config
+  virtual bool enable_device(device_t device, hardware_config_t configuration, const Params &params) = 0;
+  virtual const BoardConfigManager &get_board_config_manager() const = 0;
 
   // sensors
   virtual void sensors_init() = 0;
@@ -106,7 +112,6 @@ public:
   virtual void battery_current_set_multiplier(double multiplier) = 0;
 
   // RC
-  virtual void rc_init(rc_type_t rc_type) = 0;
   virtual bool rc_lost() = 0;
   virtual float rc_read(uint8_t channel) = 0;
 
