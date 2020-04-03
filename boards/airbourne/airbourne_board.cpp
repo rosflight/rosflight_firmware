@@ -41,10 +41,16 @@ void AirbourneBoard::init_board()
   led2_.init(LED2_GPIO, LED2_PIN);
   led1_.init(LED1_GPIO, LED1_PIN);
 
+  int_i2c_.init(&i2c_config[BARO_I2C]);
+  ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
   spi1_.init(&spi_config[MPU6000_SPI]);
   spi3_.init(&spi_config[FLASH_SPI]);
+  uart1_.init(&uart_config[UART1], 115200, UART::MODE_8N1);
+  uart3_.init(&uart_config[UART3], 115200, UART::MODE_8N1);
 
   backup_sram_init();
+
+  current_serial_ = &vcp_; // uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)

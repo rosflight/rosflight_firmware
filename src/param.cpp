@@ -113,6 +113,7 @@ void Params::init()
   }
 }
 
+// clang-format off
 void Params::set_defaults(void)
 {
   /******************************/
@@ -335,6 +336,7 @@ void Params::set_defaults(void)
       PARAM_OFFBOARD_TIMEOUT, "OFFBOARD_TIMEOUT",
       100); // Timeout in milliseconds for offboard commands, after which RC override is activated | 0 | 100000
 }
+// clang-format on
 
 void Params::set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners)
 {

@@ -46,7 +46,8 @@
 
 #define FLASH_PAGE_SIZE ((uint16_t)0x400)
 #define NUM_PAGES 3
-// if sizeof(_params) is over this number, compile-time error will occur. so, need to add another page to config data.
+// if sizeof(_params) is over this number, compile-time error will occur. so, need to add another
+// page to config data.
 // TODO compile time check is currently disabled
 #define CONFIG_SIZE (FLASH_PAGE_SIZE * NUM_PAGES)
 

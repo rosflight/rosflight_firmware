@@ -38,9 +38,9 @@
 #include "sensors.h"
 #include "state_manager.h"
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 
 namespace rosflight_firmware
 {

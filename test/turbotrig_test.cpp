@@ -32,9 +32,9 @@
  */
 
 #include "common.h"
-#include "math.h"
 
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 
 turbomath::Vector random_vectors[25] = {turbomath::Vector(-0.0376278050814, 0.471775699711, -0.336572370974),
                                         turbomath::Vector(0.842139998851, -0.113277302409, -0.435361598132),

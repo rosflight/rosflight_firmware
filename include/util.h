@@ -43,14 +43,16 @@ namespace rosflight_firmware
  *
  * @param src Pointer to data on which to compute the checksum
  * @param len Number of bytes in the data
- * @param finalize Whether to finalize the checksum; set to false for intermediate chunks of non-contiguous data
- * @param start Value at which to start the checksum, set for subsequent calls on chunks of non-contiguous data
+ * @param finalize Whether to finalize the checksum; set to false for intermediate chunks of
+ * non-contiguous data
+ * @param start Value at which to start the checksum, set for subsequent calls on chunks of
+ * non-contiguous data
  * @return uint16_t Fletcher 16-bit checksum
  */
 inline uint16_t checksum_fletcher16(const uint8_t *src, size_t len, bool finalize = true, uint16_t start = 0)
 {
-  static constexpr size_t max_block_length =
-      5800; // guarantee that no overflow will occur (reduce from standard value to account for values in 'start')
+  static constexpr size_t max_block_length = 5800; // guarantee that no overflow will occur (reduce from standard value
+                                                   // to account for values in 'start')
 
   uint32_t c1 = (start & 0xFF00) >> 8;
   uint32_t c2 = start & 0x00FF;

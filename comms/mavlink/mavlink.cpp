@@ -504,7 +504,8 @@ void Mavlink::handle_msg_rosflight_aux_cmd(const mavlink_message_t *const msg)
       break;
     default:
       // Invalid channel mode; log an error and return with calling callback
-      // log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unsupported AUX_CMD_CHANNEL_MODE %d", cmd.type_array[i]);
+      // log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unsupported AUX_CMD_CHANNEL_MODE %d",
+      // cmd.type_array[i]);
       return;
     }
 

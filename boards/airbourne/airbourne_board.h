@@ -55,9 +55,10 @@
 #include "vcp.h"
 
 #include <revo_f4.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 // #include "ublox.h"
 
 #include "airbourne_board_config_manager.h"

@@ -5,6 +5,8 @@
 
 #include "rosflight.h"
 
+#include <cmath>
+
 #define CHN_LOW 1100
 #define CHN_HIGH 1900
 
@@ -114,7 +116,8 @@ TEST_F(CommandManagerTest, ArmWithSticksByDefault)
   rc_values[3] = 2000;
   board.set_rc(rc_values);
   stepFirmware(500000);
-  EXPECT_EQ(rf.state_manager_.state().armed, false); // need to wait 1 second, shouldn't be armed yet
+  EXPECT_EQ(rf.state_manager_.state().armed,
+            false); // need to wait 1 second, shouldn't be armed yet
   stepFirmware(600000);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }

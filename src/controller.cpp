@@ -36,8 +36,8 @@
 
 #include "rosflight.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstdint>
 
 namespace rosflight_firmware
 {
@@ -236,8 +236,8 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
   float xdot;
   if (dt > 0.0001f)
   {
-    // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
-    // The dirty derivative is a sort of low-pass filtered version of the derivative.
+    // calculate D term (use dirty derivative if we don't have access to a measurement of the
+    // derivative) The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
     differentiator_ =
         (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_ + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
