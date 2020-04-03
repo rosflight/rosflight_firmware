@@ -38,7 +38,6 @@
 
 namespace rosflight_firmware
 {
-
 /**
  * @brief Fletcher 16-bit checksum
  *
@@ -50,7 +49,8 @@ namespace rosflight_firmware
  */
 inline uint16_t checksum_fletcher16(const uint8_t *src, size_t len, bool finalize = true, uint16_t start = 0)
 {
-  static constexpr size_t max_block_length = 5800; // guarantee that no overflow will occur (reduce from standard value to account for values in 'start')
+  static constexpr size_t max_block_length =
+      5800; // guarantee that no overflow will occur (reduce from standard value to account for values in 'start')
 
   uint32_t c1 = (start & 0xFF00) >> 8;
   uint32_t c2 = start & 0x00FF;

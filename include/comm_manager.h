@@ -32,17 +32,16 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
 #define ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
 
-#include <cstdint>
-#include <functional>
-
 #include "interface/comm_link.h"
 #include "interface/param_listener.h"
 
 #include "nanoprintf.h"
 
+#include <cstdint>
+#include <functional>
+
 namespace rosflight_firmware
 {
-
 class ROSflight;
 
 class CommManager : public CommLinkInterface::ListenerInterface, public ParamListenerInterface
@@ -87,7 +86,6 @@ private:
   hardware_config_t send_config_info_index_{0};
   bool initialized_ = false;
   bool connected_ = false;
-
 
   static constexpr int LOG_MSG_SIZE = 50;
   class LogMessageBuffer
@@ -141,8 +139,8 @@ private:
   void command_callback(CommLinkInterface::Command command) override;
   void timesync_callback(int64_t tc1, int64_t ts1) override;
   void offboard_control_callback(const CommLinkInterface::OffboardControl& control) override;
-  void aux_command_callback(const CommLinkInterface::AuxCommand &command) override;
-  void external_attitude_callback(const turbomath::Quaternion &q) override;
+  void aux_command_callback(const CommLinkInterface::AuxCommand& command) override;
+  void external_attitude_callback(const turbomath::Quaternion& q) override;
   void heartbeat_callback() override;
   void config_set_callback(uint8_t device, uint8_t configuration) override;
   void config_request_callback(uint8_t device) override;
@@ -163,35 +161,26 @@ private:
   void send_low_priority(void);
 
   // Debugging Utils
-  void send_named_value_int(const char *const name, int32_t value);
-//    void send_named_command_struct(const char *const name, control_t command_struct);
+  void send_named_value_int(const char* const name, int32_t value);
+  //    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
   void send_next_config_info(void);
 
   Stream streams_[STREAM_COUNT] = {
-    Stream(0,     [this]{this->send_heartbeat();}),
-    Stream(0,     [this]{this->send_status();}),
-    Stream(0,     [this]{this->send_attitude();}),
-    Stream(0,     [this]{this->send_imu();}),
-    Stream(0,     [this]{this->send_diff_pressure();}),
-    Stream(0,     [this]{this->send_baro();}),
-    Stream(0,     [this]{this->send_sonar();}),
-    Stream(0,     [this]{this->send_mag();}),
-    Stream(0,     [this]{this->send_battery_status();}),
-    Stream(0,     [this]{this->send_output_raw();}),
-    Stream(0,     [this]{this->send_gnss();}),
-    Stream(0,     [this]{this->send_gnss_raw();}),
-    Stream(0,     [this]{this->send_rc_raw();}),
-    Stream(20000, [this]{this->send_low_priority();})
-  };
+      Stream(0, [this] {this->send_heartbeat(); }),      Stream(0, [this] {this->send_status(); }),
+      Stream(0, [this] {this->send_attitude(); }),       Stream(0, [this] {this->send_imu(); }),
+      Stream(0, [this] {this->send_diff_pressure(); }),  Stream(0, [this] {this->send_baro(); }),
+      Stream(0, [this] {this->send_sonar(); }),          Stream(0, [this] {this->send_mag(); }),
+      Stream(0, [this] {this->send_battery_status(); }), Stream(0, [this] {this->send_output_raw(); }),
+      Stream(0, [this] {this->send_gnss(); }),           Stream(0, [this] {this->send_gnss_raw(); }),
+      Stream(0, [this] {this->send_rc_raw(); }),         Stream(20000, [this] {this->send_low_priority(); })};
 
   // the time of week stamp for the last sent GNSS message, to prevent re-sending
   uint32_t last_sent_gnss_tow_ = 0;
   uint32_t last_sent_gnss_raw_tow_ = 0;
 
 public:
-
   CommManager(ROSflight& rf, CommLinkInterface& comm_link);
 
   void init();
@@ -205,12 +194,12 @@ public:
   void send_config_info(device_t device, hardware_config_t config);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
-  void log(CommLinkInterface::LogSeverity severity, const char *fmt, ...);
+  void log(CommLinkInterface::LogSeverity severity, const char* fmt, ...);
 
   void send_parameter_list();
-  void send_named_value_float(const char *const name, float value);
+  void send_named_value_float(const char* const name, float value);
 
-  void send_backup_data(const StateManager::BackupData &backup_data);
+  void send_backup_data(const StateManager::BackupData& backup_data);
 };
 
 } // namespace rosflight_firmware

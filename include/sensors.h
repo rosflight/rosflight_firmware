@@ -33,12 +33,13 @@
 #ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
 #define ROSFLIGHT_FIRMWARE_SENSORS_H
 
-#include <cstdint>
-#include <cstdbool>
-#include <cstring>
+#include "interface/param_listener.h"
+
 #include <turbomath/turbomath.h>
 
-#include "interface/param_listener.h"
+#include <cstdbool>
+#include <cstdint>
+#include <cstring>
 
 namespace rosflight_firmware
 {
@@ -55,26 +56,26 @@ struct GNSSData
 {
   struct ECEF
   {
-    int32_t x; // cm
-    int32_t y; // cm
-    int32_t z; // cm
+    int32_t x;      // cm
+    int32_t y;      // cm
+    int32_t z;      // cm
     uint32_t p_acc; // cm
-    int32_t vx; // cm/s
-    int32_t vy; // cm/s
-    int32_t vz; // cm/s
+    int32_t vx;     // cm/s
+    int32_t vy;     // cm/s
+    int32_t vz;     // cm/s
     uint32_t s_acc; // cm/s
   };
 
   GNSSFixType fix_type;
   uint32_t time_of_week;
-  uint64_t time; // Unix time, in seconds
+  uint64_t time;  // Unix time, in seconds
   uint64_t nanos; // Fractional time
-  int32_t lat; // deg*10^-7
-  int32_t lon; // deg*10^-7
+  int32_t lat;    // deg*10^-7
+  int32_t lon;    // deg*10^-7
   int32_t height; // mm
-  int32_t vel_n; // mm/s
-  int32_t vel_e; // mm/s
-  int32_t vel_d; // mm/s
+  int32_t vel_n;  // mm/s
+  int32_t vel_e;  // mm/s
+  int32_t vel_d;  // mm/s
   uint32_t h_acc; // mm
   uint32_t v_acc; // mm
 
@@ -82,10 +83,7 @@ struct GNSSData
 
   uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
 
-  GNSSData()
-  {
-    memset(this, 0, sizeof(GNSSData));
-  }
+  GNSSData() { memset(this, 0, sizeof(GNSSData)); }
 };
 
 struct GNSSRaw
@@ -118,10 +116,7 @@ struct GNSSRaw
   uint16_t p_dop;
   uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
 
-  GNSSRaw()
-  {
-    memset(this, 0, sizeof(GNSSRaw));
-  }
+  GNSSRaw() { memset(this, 0, sizeof(GNSSRaw)); }
 };
 
 class ROSflight;

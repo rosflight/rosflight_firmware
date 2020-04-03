@@ -1,13 +1,10 @@
 #include "memory_manager.h"
+
 #include "rosflight.h"
 
 namespace rosflight_firmware
 {
-
-MemoryManager::MemoryManager(ROSflight &rf):
-  RF_{rf}
-{
-}
+MemoryManager::MemoryManager(ROSflight &rf) : RF_{rf} {}
 bool MemoryManager::read_memory()
 {
   RF_.board_.memory_init();

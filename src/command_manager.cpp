@@ -29,15 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "command_manager.h"
+
+#include "rosflight.h"
+
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "command_manager.h"
-#include "rosflight.h"
-
 namespace rosflight_firmware
 {
-
 typedef enum
 {
   ATT_MODE_RATE,
@@ -50,12 +50,7 @@ typedef struct
   uint32_t last_override_time;
 } rc_stick_override_t;
 
-rc_stick_override_t rc_stick_override[] =
-{
-  { RC::STICK_X, 0 },
-  { RC::STICK_Y, 0 },
-  { RC::STICK_Z, 0 }
-};
+rc_stick_override_t rc_stick_override[] = {{RC::STICK_X, 0}, {RC::STICK_Y, 0}, {RC::STICK_Z, 0}};
 
 typedef struct
 {
@@ -64,10 +59,7 @@ typedef struct
   control_channel_t *combined;
 } mux_t;
 
-CommandManager::CommandManager(ROSflight &_rf) :
-  RF_(_rf),
-  failsafe_command_(multirotor_failsafe_command_)
-{}
+CommandManager::CommandManager(ROSflight &_rf) : RF_(_rf), failsafe_command_(multirotor_failsafe_command_) {}
 
 void CommandManager::init()
 {
@@ -124,7 +116,7 @@ void CommandManager::interpret_rc(void)
     }
     else
     {
-      roll_pitch_type = (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE: ANGLE;
+      roll_pitch_type = (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE : ANGLE;
     }
 
     rc_command_.x.type = roll_pitch_type;
@@ -158,7 +150,7 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   uint32_t now = RF_.board_.clock_millis();
 
   // if we are still in the lag time, return true
-  if (now  < rc_stick_override_[channel].last_override_time + RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
+  if (now < rc_stick_override_[channel].last_override_time + RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
   {
     return true;
   }
@@ -177,7 +169,7 @@ bool CommandManager::stick_deviated(MuxChannel channel)
 bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
 {
   bool override_this_channel = false;
-  //Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
+  // Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
   if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
       || stick_deviated(channel))
   {
@@ -265,7 +257,6 @@ void CommandManager::override_combined_command_with_rc()
   combined_command_ = rc_command_;
 }
 
-
 bool CommandManager::run()
 {
   bool last_rc_override = rc_override_;
@@ -291,7 +282,7 @@ bool CommandManager::run()
     }
 
     // Perform muxing
-    rc_override_  = do_roll_pitch_yaw_muxing(MUX_X);
+    rc_override_ = do_roll_pitch_yaw_muxing(MUX_X);
     rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Y);
     rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Z);
     rc_override_ |= do_throttle_muxing();
@@ -315,5 +306,4 @@ bool CommandManager::run()
   return true;
 }
 
-
-}
+} // namespace rosflight_firmware

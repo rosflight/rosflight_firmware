@@ -39,12 +39,10 @@
 
 namespace rosflight_firmware
 {
-
 class ROSflight;
 
 class StateManager
 {
-
 public:
   struct State
   {
@@ -86,11 +84,12 @@ public:
    */
   struct __attribute__((packed)) BackupData
   {
-    static constexpr uint32_t ARM_MAGIC = 0xbad2fa11; //!< magic number to ensure we only arm on startup if we really intended to
+    static constexpr uint32_t ARM_MAGIC =
+        0xbad2fa11; //!< magic number to ensure we only arm on startup if we really intended to
 
     uint16_t reset_count = 0; //!< number of hard faults since normal system startup
-    uint16_t error_code = 0; //!< state manager error codes
-    uint32_t arm_flag = 0; //!< set to ARM_MAGIC if the system was armed when the hard fault occured, 0 otherwise
+    uint16_t error_code = 0;  //!< state manager error codes
+    uint32_t arm_flag = 0;    //!< set to ARM_MAGIC if the system was armed when the hard fault occured, 0 otherwise
 
     /**
      * @brief Low-level debugging information for case of hard fault
@@ -99,13 +98,13 @@ public:
      */
     struct DebugInfo
     {
-      uint32_t r0; //!< register 0
-      uint32_t r1; //!< register 1
-      uint32_t r2; //!< register 2
-      uint32_t r3; //!< register 3
+      uint32_t r0;  //!< register 0
+      uint32_t r1;  //!< register 1
+      uint32_t r2;  //!< register 2
+      uint32_t r3;  //!< register 3
       uint32_t r12; //!< register 12
-      uint32_t lr; //!< link register
-      uint32_t pc; //!< program counter
+      uint32_t lr;  //!< link register
+      uint32_t pc;  //!< program counter
       uint32_t psr; //!< program status register
     } debug;
 
@@ -137,7 +136,7 @@ public:
   void init();
   void run();
 
-  inline const State &state() const { return state_; }
+  inline const State& state() const { return state_; }
 
   void set_event(Event event);
   void set_error(uint16_t error);
@@ -158,7 +157,7 @@ public:
   void check_backup_memory();
 
 private:
-  ROSflight &RF_;
+  ROSflight& RF_;
   State state_;
 
   uint32_t next_led_blink_ms_ = 0;

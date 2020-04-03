@@ -32,14 +32,13 @@
 #ifndef ROSFLIGHT_FIRMWARE_PARAM_H
 #define ROSFLIGHT_FIRMWARE_PARAM_H
 
+#include "interface/param_listener.h"
+
 #include <cstddef>
 #include <cstdint>
 
-#include "interface/param_listener.h"
-
 namespace rosflight_firmware
 {
-
 enum : uint16_t
 {
   /******************************/
@@ -66,7 +65,6 @@ enum : uint16_t
 
   PARAM_STREAM_OUTPUT_RAW_RATE,
   PARAM_STREAM_RC_RAW_RATE,
-
 
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
@@ -229,29 +227,31 @@ typedef enum
 class ROSflight;
 class Params
 {
-
 public:
   static constexpr uint8_t PARAMS_NAME_LENGTH = 16;
+
 private:
   union param_value_t
   {
     float fvalue;
     int32_t ivalue;
   };
+
 public:
   typedef struct
   {
     uint32_t version;
     uint16_t size;
-    uint8_t magic_be;                       // magic number, should be 0xBE
+    uint8_t magic_be; // magic number, should be 0xBE
 
     param_value_t values[PARAMS_COUNT];
     char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
     param_type_t types[PARAMS_COUNT];
 
-    uint8_t magic_ef;                       // magic number, should be 0xEF
-    uint8_t chk;                            // XOR checksum
+    uint8_t magic_ef; // magic number, should be 0xEF
+    uint8_t chk;      // XOR checksum
   } params_t;
+
 private:
   ROSflight &RF_;
   params_t &params;
@@ -260,9 +260,8 @@ private:
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
   uint8_t compute_checksum(void);
 
-  ParamListenerInterface *const * listeners_;
+  ParamListenerInterface *const *listeners_;
   size_t num_listeners_;
-
 
 public:
   Params(ROSflight &_rf, params_t &param_struct);
@@ -280,11 +279,11 @@ public:
   void set_defaults(void);
 
   /**
-  * @brief Specify listeners for parameter changes
-  * @param listeners An array of pointers to objects that implement the ParamListenerInterface interface
-  * @param num_listeners The length of the array passed as the listeners parameter
-  */
-  void set_listeners(ParamListenerInterface * const listeners[], size_t num_listeners);
+   * @brief Specify listeners for parameter changes
+   * @param listeners An array of pointers to objects that implement the ParamListenerInterface interface
+   * @param num_listeners The length of the array passed as the listeners parameter
+   */
+  void set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners);
 
   /**
    * @brief Read parameter values from non-volatile memory
@@ -315,30 +314,21 @@ public:
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline int get_param_int(uint16_t id) const
-  {
-    return params.values[id].ivalue;
-  }
+  inline int get_param_int(uint16_t id) const { return params.values[id].ivalue; }
 
   /**
    * @brief Get the value of a floating point parameter by id
    * @param id The ID of the parameter
    * @return The value of the parameter
    */
-  inline float get_param_float(uint16_t id) const
-  {
-    return params.values[id].fvalue;
-  }
+  inline float get_param_float(uint16_t id) const { return params.values[id].fvalue; }
 
   /**
    * @brief Get the name of a parameter
    * @param id The ID of the parameter
    * @return The name of the parameter
    */
-  inline const char *get_param_name(uint16_t id) const
-  {
-    return params.names[id];
-  }
+  inline const char *get_param_name(uint16_t id) const { return params.names[id]; }
 
   /**
    * @brief Get the type of a parameter
@@ -348,10 +338,7 @@ public:
    * PARAM_TYPE_INT32, PARAM_TYPE_FLOAT, or PARAM_TYPE_INVALID
    * See line 165
    */
-  inline param_type_t get_param_type(uint16_t id) const
-  {
-    return params.types[id];
-  }
+  inline param_type_t get_param_type(uint16_t id) const { return params.types[id]; }
 
   /**
    * @brief Sets the value of a parameter by ID and calls the parameter change callback
@@ -384,7 +371,6 @@ public:
    * @return True if a parameter value was changed, false otherwise
    */
   bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
-
 };
 
 } // namespace rosflight_firmware

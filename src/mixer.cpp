@@ -29,17 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "mixer.h"
+
+#include "rosflight.h"
 
 #include <stdint.h>
 
-#include "mixer.h"
-#include "rosflight.h"
-
 namespace rosflight_firmware
 {
-
-Mixer::Mixer(ROSflight &_rf) :
-  RF_(_rf)
+Mixer::Mixer(ROSflight &_rf) : RF_(_rf)
 {
   mixer_to_use_ = nullptr;
 }
@@ -65,7 +63,6 @@ void Mixer::param_change_callback(uint16_t param_id)
   }
 }
 
-
 void Mixer::init_mixing()
 {
   // clear the invalid mixer error
@@ -85,7 +82,6 @@ void Mixer::init_mixing()
   {
     mixer_to_use_ = array_of_mixers_[mixer_choice];
   }
-
 
   init_PWM();
 
@@ -110,7 +106,6 @@ void Mixer::init_PWM()
   else
     RF_.board_.pwm_init(refresh_rate, off_pwm);
 }
-
 
 void Mixer::write_motor(uint8_t index, float value)
 {
@@ -137,7 +132,6 @@ void Mixer::write_motor(uint8_t index, float value)
   raw_outputs_[index] = value;
   RF_.board_.pwm_write(index, raw_outputs_[index]);
 }
-
 
 void Mixer::write_servo(uint8_t index, float value)
 {
@@ -188,8 +182,8 @@ void Mixer::mix_output()
     if (mixer_to_use_->output_type[i] != NONE)
     {
       // Matrix multiply to mix outputs
-      outputs_[i] = (commands.F*mixer_to_use_->F[i] + commands.x*mixer_to_use_->x[i] +
-                                 commands.y*mixer_to_use_->y[i] + commands.z*mixer_to_use_->z[i]);
+      outputs_[i] = (commands.F * mixer_to_use_->F[i] + commands.x * mixer_to_use_->x[i]
+                     + commands.y * mixer_to_use_->y[i] + commands.z * mixer_to_use_->z[i]);
 
       // Save off the largest control output if it is greater than 1.0 for future scaling
       if (outputs_[i] > max_output)
@@ -203,14 +197,14 @@ void Mixer::mix_output()
   float scale_factor = 1.0;
   if (max_output > 1.0)
   {
-    scale_factor = 1.0/max_output;
+    scale_factor = 1.0 / max_output;
   }
 
   // Perform Motor Output Scaling
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++)
   {
-      // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
-      outputs_[i] *= scale_factor;
+    // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
+    outputs_[i] *= scale_factor;
   }
 
   // Insert AUX Commands, and assemble combined_output_types array (Does not override mixer values)
@@ -250,4 +244,4 @@ void Mixer::mix_output()
   }
 }
 
-}
+} // namespace rosflight_firmware
