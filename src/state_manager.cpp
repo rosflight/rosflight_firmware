@@ -30,13 +30,12 @@
  */
 
 #include "state_manager.h"
+
 #include "rosflight.h"
 
 namespace rosflight_firmware
 {
-
-StateManager::StateManager(ROSflight &parent) :
-  RF_(parent), fsm_state_(FSM_STATE_INIT)
+StateManager::StateManager(ROSflight &parent) : RF_(parent), fsm_state_(FSM_STATE_INIT)
 {
   state_.armed = false;
   state_.error = false;
@@ -138,7 +137,8 @@ void StateManager::set_event(StateManager::Event event)
         }
         else
         {
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "RC throttle override must be active to arm");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
+                                "RC throttle override must be active to arm");
         }
       }
       else
@@ -269,7 +269,7 @@ void StateManager::set_event(StateManager::Event event)
     RF_.comm_manager_.update_status();
 }
 
-void StateManager::write_backup_data(const BackupData::DebugInfo& debug)
+void StateManager::write_backup_data(const BackupData::DebugInfo &debug)
 {
   BackupData data;
   data.reset_count = hardfault_count_ + 1;
@@ -278,7 +278,7 @@ void StateManager::write_backup_data(const BackupData::DebugInfo& debug)
   data.debug = debug;
 
   data.finalize();
-  RF_.board_.backup_memory_write(reinterpret_cast<const void*>(&data), sizeof(data));
+  RF_.board_.backup_memory_write(reinterpret_cast<const void *>(&data), sizeof(data));
 }
 
 void StateManager::check_backup_memory()
@@ -334,7 +334,7 @@ void StateManager::update_leds()
     if (next_led_blink_ms_ < RF_.board_.clock_millis())
     {
       RF_.board_.led1_toggle();
-      next_led_blink_ms_ =  RF_.board_.clock_millis() + 100;
+      next_led_blink_ms_ = RF_.board_.clock_millis() + 100;
     }
   }
   // blink slowly if in error
@@ -343,7 +343,7 @@ void StateManager::update_leds()
     if (next_led_blink_ms_ < RF_.board_.clock_millis())
     {
       RF_.board_.led1_toggle();
-      next_led_blink_ms_ =  RF_.board_.clock_millis() + 500;
+      next_led_blink_ms_ = RF_.board_.clock_millis() + 500;
     }
   }
   // off if disarmed, on if armed
@@ -353,4 +353,4 @@ void StateManager::update_leds()
     RF_.board_.led1_on();
 }
 
-} //namespace rosflight_firmware
+} // namespace rosflight_firmware

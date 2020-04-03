@@ -33,10 +33,7 @@
 
 namespace rosflight_firmware
 {
-
-AirbourneBoard::AirbourneBoard()
-{
-}
+AirbourneBoard::AirbourneBoard() {}
 
 void AirbourneBoard::init_board()
 {
@@ -76,7 +73,7 @@ void AirbourneBoard::clock_delay(uint32_t milliseconds)
 void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration)
 {
   vcp_.init(); // VCP is always initialized, so that if UART is mistakenly enabled, it can still be used
-  switch(configuration)
+  switch (configuration)
   {
   default:
   case AirbourneConfiguration::SERIAL_VCP:
@@ -99,7 +96,7 @@ void AirbourneBoard::serial_init(uint32_t baud_rate, hardware_config_t configura
 
 void AirbourneBoard::serial_write(const uint8_t *src, size_t len)
 {
-  if(vcp_.connected())
+  if (vcp_.connected())
     current_serial_ = &vcp_;
   current_serial_->write(src, len);
 }
@@ -111,7 +108,6 @@ uint16_t AirbourneBoard::serial_bytes_available()
 
 uint8_t AirbourneBoard::serial_read()
 {
-
   return current_serial_->read_byte();
 }
 
@@ -123,7 +119,7 @@ void AirbourneBoard::serial_flush()
 // Resources
 bool AirbourneBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
 {
-  switch(device)
+  switch (device)
   {
   case Configuration::SERIAL:
   {
@@ -133,7 +129,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     break;
   }
   case Configuration::RC:
-    switch(configuration)
+    switch (configuration)
     {
     case AirbourneConfiguration::RC_PPM:
       rc_init(RC_TYPE_PPM);
@@ -146,9 +142,9 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     return true;
   case Configuration::AIRSPEED:
-    if(configuration==AirbourneConfiguration::AIRSPEED_I2C2)
+    if (configuration == AirbourneConfiguration::AIRSPEED_I2C2)
     {
-      if(!ext_i2c_.is_initialized())
+      if (!ext_i2c_.is_initialized())
         ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
       airspeed_.init(&ext_i2c_);
     }
@@ -157,15 +153,15 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     // GNSS is currently disabled
     break;
   case Configuration::SONAR:
-    if(configuration == AirbourneConfiguration::SONAR_I2C2)
+    if (configuration == AirbourneConfiguration::SONAR_I2C2)
     {
-      if(!ext_i2c_.is_initialized())
+      if (!ext_i2c_.is_initialized())
         ext_i2c_.init(&i2c_config[EXTERNAL_I2C]);
       sonar_.init(&ext_i2c_);
     }
     break;
   case Configuration::BATTERY_MONITOR:
-    if(configuration == AirbourneConfiguration::BATTERY_MONITOR_ADC3)
+    if (configuration == AirbourneConfiguration::BATTERY_MONITOR_ADC3)
     {
       float voltage_multiplier = params.get_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER);
       float current_multiplier = params.get_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER);
@@ -174,19 +170,23 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     break;
   case Configuration::BAROMETER:
-    if(configuration == AirbourneConfiguration::BAROMETER_ONBOARD)
+    if (configuration == AirbourneConfiguration::BAROMETER_ONBOARD)
     {
-      while (millis() < 50) {} // wait for sensors to boot up
-      if(!int_i2c_.is_initialized())
+      while (millis() < 50)
+      {
+      } // wait for sensors to boot up
+      if (!int_i2c_.is_initialized())
         int_i2c_.init(&i2c_config[BARO_I2C]);
       baro_.init(&int_i2c_);
     }
     break;
   case Configuration::MAGNETOMETER:
-    if(configuration == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
+    if (configuration == AirbourneConfiguration::MAGNETOMETER_ONBOARD)
     {
-      while (millis() < 50) {} // wait for sensors to boot up
-      if(!int_i2c_.is_initialized())
+      while (millis() < 50)
+      {
+      } // wait for sensors to boot up
+      if (!int_i2c_.is_initialized())
         int_i2c_.init(&i2c_config[BARO_I2C]);
       mag_.init(&int_i2c_);
     }
@@ -205,7 +205,9 @@ AirbourneBoardConfigManager const &AirbourneBoard::get_board_config_manager() co
 // sensors
 void AirbourneBoard::sensors_init()
 {
-  while (millis() < 50) {} // wait for sensors to boot up
+  while (millis() < 50)
+  {
+  } // wait for sensors to boot up
   imu_.init(&spi1_);
   // Most sensors are set up through the configuration manager
 }
@@ -249,7 +251,7 @@ bool AirbourneBoard::mag_present()
 
 void AirbourneBoard::mag_update()
 {
-  if(mag_.is_initialized())
+  if (mag_.is_initialized())
     mag_.update();
 }
 
@@ -266,7 +268,7 @@ bool AirbourneBoard::baro_present()
 
 void AirbourneBoard::baro_update()
 {
-  if(baro_.is_initialized())
+  if (baro_.is_initialized())
     baro_.update();
 }
 
@@ -278,7 +280,7 @@ void AirbourneBoard::baro_read(float *pressure, float *temperature)
 
 bool AirbourneBoard::diff_pressure_present()
 {
-  if(airspeed_.is_initialized())
+  if (airspeed_.is_initialized())
     return airspeed_.present();
   return false;
 }
@@ -288,11 +290,10 @@ void AirbourneBoard::diff_pressure_update()
   airspeed_.update();
 }
 
-
 void AirbourneBoard::diff_pressure_read(float *diff_pressure, float *temperature)
 {
-  (void) diff_pressure;
-  (void) temperature;
+  (void)diff_pressure;
+  (void)temperature;
   airspeed_.update();
   airspeed_.read(diff_pressure, temperature);
 }
@@ -304,7 +305,7 @@ bool AirbourneBoard::sonar_present()
 
 void AirbourneBoard::sonar_update()
 {
-  if(sonar_.is_initialized())
+  if (sonar_.is_initialized())
     sonar_.update();
 }
 
@@ -324,9 +325,9 @@ bool AirbourneBoard::gnss_has_new_data()
   // return this->gnss_.new_data();
   return false;
 }
-//This method translates the UBLOX driver interface into the ROSFlight interface
-//If not gnss_has_new_data(), then this may return 0's for ECEF position data,
-//ECEF velocity data, or both
+// This method translates the UBLOX driver interface into the ROSFlight interface
+// If not gnss_has_new_data(), then this may return 0's for ECEF position data,
+// ECEF velocity data, or both
 GNSSData AirbourneBoard::gnss_read()
 {
   // UBLOX::GNSSPVT gnss_pvt= gnss_.read();
@@ -367,7 +368,7 @@ GNSSData AirbourneBoard::gnss_read()
 }
 GNSSRaw AirbourneBoard::gnss_raw_read()
 {
-//  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
+  //  UBLOX::NAV_PVT_t pvt = gnss_.read_raw();
   GNSSRaw raw = {};
   // raw.time_of_week = pvt.iTOW;
   // raw.year = pvt.time.year;
@@ -551,6 +552,5 @@ void AirbourneBoard::backup_memory_clear(size_t len)
 {
   backup_sram_clear(len);
 }
-
 
 } // namespace rosflight_firmware

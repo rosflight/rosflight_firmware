@@ -13,11 +13,10 @@ namespace rosflight_firmware
  */
 namespace Configuration
 {
-
 /**
  * @brief An enumeration of configurable devices
  */
-enum device_t: uint8_t
+enum device_t : uint8_t
 {
   SERIAL,
   RC,
@@ -34,7 +33,7 @@ constexpr device_t FIRST_DEVICE{static_cast<device_t>(0)};
 /**
  * @brief Allows incrementing device_t's for use in for loops. Stops incrementing past DEVICE_COUNT
  */
-inline device_t& operator++(device_t &dev)
+inline device_t& operator++(device_t& dev)
 {
   uint8_t return_value = dev;
   return_value++;
@@ -44,9 +43,9 @@ inline device_t& operator++(device_t &dev)
   return dev;
 }
 
-}
+} // namespace Configuration
 typedef uint8_t hardware_config_t;
 typedef Configuration::device_t device_t; /**< typedef'd for your convenience */
-}
+} // namespace rosflight_firmware
 
 #endif // CONFIGURATION_ENUM_H

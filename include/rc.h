@@ -32,19 +32,17 @@
 #ifndef ROSFLIGHT_FIRMWARE_RC_H
 #define ROSFLIGHT_FIRMWARE_RC_H
 
-#include <stdint.h>
-#include <stdbool.h>
-
 #include "interface/param_listener.h"
+
+#include <stdbool.h>
+#include <stdint.h>
 
 namespace rosflight_firmware
 {
-
 class ROSflight;
 
 class RC : public ParamListenerInterface
 {
-
 public:
   enum Stick
   {

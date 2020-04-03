@@ -66,10 +66,10 @@ To use the printf you need to supply your own character output function,
 something like :
 
 void putc ( void* p, char c)
-	{
-	while (!SERIAL_PORT_EMPTY) ;
-	SERIAL_PORT_TX_REGISTER = c;
-	}
+        {
+        while (!SERIAL_PORT_EMPTY) ;
+        SERIAL_PORT_TX_REGISTER = c;
+        }
 
 Before you can call printf you need to initialize it to use your
 character output function with something like:
@@ -111,13 +111,12 @@ namespace rosflight_firmware
 {
 namespace nanoprintf
 {
-
-void init_printf(void *putp,void (*putf)(void *,char));
+void init_printf(void *putp, void (*putf)(void *, char));
 
 void tfp_printf(const char *fmt, ...);
 void tfp_sprintf(char *s, const char *fmt, va_list va);
 
-void tfp_format(void *putp, void (*putf)(void *,char), const char *fmt, va_list va);
+void tfp_format(void *putp, void (*putf)(void *, char), const char *fmt, va_list va);
 
 } // namespace nanoprintf
 } // namespace rosflight_firmware

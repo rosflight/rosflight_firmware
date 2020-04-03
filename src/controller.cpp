@@ -29,22 +29,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "controller.h"
 
 #include "command_manager.h"
 #include "estimator.h"
+
 #include "rosflight.h"
 
-#include "controller.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 namespace rosflight_firmware
 {
-
-Controller::Controller(ROSflight &rf) :
-  RF_(rf)
-{
-}
+Controller::Controller(ROSflight &rf) : RF_(rf) {}
 
 void Controller::init()
 {
@@ -54,26 +51,19 @@ void Controller::init()
   float min = -max;
   float tau = RF_.params_.get_param_float(PARAM_PID_TAU);
 
-  roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P),
-             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
-             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D),
-             max, min, tau);
+  roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P), RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
+             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max, min, tau);
   roll_rate_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_P),
                   RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_I),
-                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D),
-                  max, min, tau);
+                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D), max, min, tau);
   pitch_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_P),
               RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_I),
-              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D),
-              max, min, tau);
+              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max, min, tau);
   pitch_rate_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_P),
                    RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_I),
-                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D),
-                   max, min, tau);
-  yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P),
-                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
-                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D),
-                 max, min, tau);
+                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max, min, tau);
+  yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P), RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
+                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max, min, tau);
 }
 
 void Controller::run()
@@ -95,10 +85,12 @@ void Controller::run()
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
+  bool update_integrators =
+      (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
 
   // Run the PID loops
-  turbomath::Vector pid_output = run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
+  turbomath::Vector pid_output =
+      run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
@@ -147,7 +139,8 @@ void Controller::calculate_equilbrium_torque_from_rc()
   }
   else
   {
-    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Cannot perform equilibrium offset calibration while armed");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+                          "Cannot perform equilibrium offset calibration while armed");
   }
 }
 
@@ -180,12 +173,15 @@ void Controller::param_change_callback(uint16_t param_id)
   }
 }
 
-turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State &state, const control_t &command, bool update_integrators)
+turbomath::Vector Controller::run_pid_loops(uint32_t dt_us,
+                                            const Estimator::State &state,
+                                            const control_t &command,
+                                            bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   turbomath::Vector out;
 
-  float dt = 1e-6*dt_us;
+  float dt = 1e-6 * dt_us;
 
   // ROLL
   if (command.x.type == RATE)
@@ -222,7 +218,8 @@ Controller::PID::PID() :
   differentiator_(0.0f),
   prev_x_(0.0f),
   tau_(0.05)
-{}
+{
+}
 
 void Controller::PID::init(float kp, float ki, float kd, float max, float min, float tau)
 {
@@ -242,8 +239,8 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
     // calculate D term (use dirty derivative if we don't have access to a measurement of the derivative)
     // The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
-    differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
-                      + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+    differentiator_ =
+        (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_ + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
   }
   else
@@ -271,7 +268,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
     d_term = kd_ * xdot;
   }
 
-  //If there is an integrator term and we are updating integrators
+  // If there is an integrator term and we are updating integrators
   if ((ki_ > 0.0f) && update_integrator)
   {
     // integrate
@@ -287,7 +284,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   //// Include reference to Dr. Beard's notes here
   float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
   if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f)
-    integrator_ = (u_sat - p_term + d_term)/ki_;
+    integrator_ = (u_sat - p_term + d_term) / ki_;
 
   // Set output
   return u_sat;

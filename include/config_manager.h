@@ -15,7 +15,7 @@ class ROSflight;
 class ConfigManager
 {
 public:
-  struct __attribute__ ((packed)) Config
+  struct __attribute__((packed)) Config
   {
     uint32_t checksum;
     hardware_config_t config[Configuration::DEVICE_COUNT];
@@ -27,8 +27,8 @@ public:
    */
   struct ConfigResponse
   {
-    bool successful; /**< If the change was successfully made **/
-    bool reboot_required; /**< If a reboot is required for the change to take effect */
+    bool successful;                              /**< If the change was successfully made **/
+    bool reboot_required;                         /**< If a reboot is required for the change to take effect */
     char message[CONFIG_RESPONSE_MESSAGE_LENGTH]; /**< An optional message, often an error message */
   };
 
@@ -81,10 +81,9 @@ private:
   // Sets a config without checks. This may cause an invalid configuration combo,
   // so attempt_set_configuration is recommended
   void set_configuration(device_t device, uint8_t config);
-  bool read(); // currently just checks that the memory manager is ready and the checksum is correct
+  bool read();          // currently just checks that the memory manager is ready and the checksum is correct
   void fill_defaults(); // Default values are 0, by convention
   uint32_t generate_checksum() const; // Based off of fletcher algorithm
-
 };
-}
+} // namespace rosflight_firmware
 #endif // HARDWARE_CONFIG_H

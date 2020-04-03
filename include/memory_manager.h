@@ -1,8 +1,8 @@
 #ifndef MEMORY_MANAGER_H
 #define MEMORY_MANAGER_H
 
-#include "param.h"
 #include "config_manager.h"
+#include "param.h"
 
 namespace rosflight_firmware
 {
@@ -32,24 +32,23 @@ public:
    * @brief Checks if memory has been read successfully at some point in the past
    * @return if memory has been successfully loaded
    */
-  inline bool is_ready() {return ready_;}
+  inline bool is_ready() { return ready_; }
 
   /**
    * @brief Get a pointer to the parameter structure, which was stored in persistent memory
    * @return A pointer to the parameter struct
    */
-  inline Params::params_t &get_params(){return memory_.params;}
+  inline Params::params_t &get_params() { return memory_.params; }
   /**
    * @brief Get a pointer to the config structure, which was stored in persistent memory
    * @return A pointer to the config struct
    */
-  inline ConfigManager::Config &get_config(){return memory_.config;}
+  inline ConfigManager::Config &get_config() { return memory_.config; }
 
 private:
   ROSflight &RF_;
   PersistentMemory memory_;
   bool ready_{false};
-
 };
 } // namespace rosflight_firmware
 
