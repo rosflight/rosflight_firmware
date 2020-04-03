@@ -354,7 +354,6 @@ void BreezyBoard::battery_current_set_multiplier(double multiplier)
 
 void BreezyBoard::rc_init()
 {
-  (void) rc_type; // TODO SBUS is not supported on F1
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
