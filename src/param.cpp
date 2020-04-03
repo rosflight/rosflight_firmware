@@ -56,7 +56,13 @@
 
 namespace rosflight_firmware
 {
-Params::Params(ROSflight &_rf, params_t &param_struct) : RF_(_rf), params(param_struct), listeners_(nullptr), num_listeners_(0) {}
+Params::Params(ROSflight &_rf, params_t &param_struct) :
+  RF_(_rf),
+  params(param_struct),
+  listeners_(nullptr),
+  num_listeners_(0)
+{
+}
 
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)

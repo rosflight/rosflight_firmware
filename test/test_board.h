@@ -68,9 +68,9 @@ public:
   uint8_t serial_read() override;
   void serial_flush() override;
 
-// Hardware config
+  // Hardware config
   bool enable_device(device_t device, hardware_config_t configuration, const Params &params) override;
-  const TestBoardConfigManager & get_board_config_manager() const override;
+  const TestBoardConfigManager &get_board_config_manager() const override;
 
   // sensors
   void sensors_init() override;

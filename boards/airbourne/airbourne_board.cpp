@@ -50,7 +50,7 @@ void AirbourneBoard::init_board()
 
   backup_sram_init();
 
-  current_serial_ = &vcp_;    //uncomment this to switch to VCP as the main output
+  current_serial_ = &vcp_; // uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)

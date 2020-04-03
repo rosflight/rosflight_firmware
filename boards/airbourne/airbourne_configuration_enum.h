@@ -5,7 +5,7 @@ namespace rosflight_firmware
 {
 namespace AirbourneConfiguration
 {
-enum serial_config_t: uint8_t
+enum serial_config_t : uint8_t
 {
   SERIAL_VCP,
   SERIAL_UART1,
@@ -13,19 +13,19 @@ enum serial_config_t: uint8_t
   SERIAL_UART3
 };
 
-enum rc_config_t: uint8_t
+enum rc_config_t : uint8_t
 {
   RC_PPM,
   RC_SBUS
 };
 
-enum airspeed_config_t: uint8_t
+enum airspeed_config_t : uint8_t
 {
   AIRSPEED_DISABLED,
   AIRSPEED_I2C2
 };
 
-enum gnss_config_t: uint8_t
+enum gnss_config_t : uint8_t
 {
   GNSS_DISABLED,
   GNSS_UART1,
@@ -33,30 +33,30 @@ enum gnss_config_t: uint8_t
   GNSS_UART3
 };
 
-enum sonar_config_t: uint8_t
+enum sonar_config_t : uint8_t
 {
   SONAR_DISABLED,
   SONAR_I2C2
 };
 
-enum battery_monitor_config_t: uint8_t
+enum battery_monitor_config_t : uint8_t
 {
   BATTERY_MONITOR_DISABLED,
   BATTERY_MONITOR_ADC3
 };
 
-enum barometer_config_t: uint8_t
+enum barometer_config_t : uint8_t
 {
   BAROMETER_DISABLED,
   BAROMETER_ONBOARD
 };
 
-enum magnetometer_config_t: uint8_t
+enum magnetometer_config_t : uint8_t
 {
   MAGNETOMETER_DISABLED,
   MAGNETOMETER_ONBOARD
 };
 
-}
+} // namespace AirbourneConfiguration
 } // namespace rosflight_firmware
 #endif // AIRBOURNE_CONFIGURATION_ENUM_H

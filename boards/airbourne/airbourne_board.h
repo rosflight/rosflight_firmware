@@ -61,8 +61,8 @@
 #include <cstdint>
 // #include "ublox.h"
 
-#include "board.h"
 #include "airbourne_board_config_manager.h"
+#include "board.h"
 
 namespace rosflight_firmware
 {
