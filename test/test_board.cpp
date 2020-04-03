@@ -34,8 +34,8 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 void testBoard::set_rc(uint16_t *values)
 {
   for (int i = 0; i < 8; i++)
@@ -264,6 +264,6 @@ void testBoard::led1_on() {}
 void testBoard::led1_off() {}
 void testBoard::led1_toggle() {}
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop

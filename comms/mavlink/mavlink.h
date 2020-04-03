@@ -42,11 +42,12 @@
 #include "v1.0/rosflight/mavlink.h"
 #pragma GCC diagnostic pop
 
-#include "board.h"
 #include "interface/comm_link.h"
 
-namespace rosflight_firmware {
+#include "board.h"
 
+namespace rosflight_firmware
+{
 class Board;
 
 class Mavlink : public CommLinkInterface
@@ -62,10 +63,7 @@ public:
                                 const turbomath::Vector &angular_velocity) override;
   void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) override;
   void send_command_ack(uint8_t system_id, Command command, bool success) override;
-  void send_diff_pressure(uint8_t system_id,
-                          float velocity,
-                          float pressure,
-                          float temperature) override;
+  void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) override;
   void send_heartbeat(uint8_t system_id, bool fixed_wing) override;
   void send_imu(uint8_t system_id,
                 uint64_t timestamp_us,
@@ -74,17 +72,9 @@ public:
                 float temperature) override;
   void send_log_message(uint8_t system_id, LogSeverity severity, const char *text) override;
   void send_mag(uint8_t system_id, const turbomath::Vector &mag) override;
-  void send_named_value_int(uint8_t system_id,
-                            uint32_t timestamp_ms,
-                            const char *const name,
-                            int32_t value) override;
-  void send_named_value_float(uint8_t system_id,
-                              uint32_t timestamp_ms,
-                              const char *const name,
-                              float value) override;
-  void send_output_raw(uint8_t system_id,
-                       uint32_t timestamp_ms,
-                       const float raw_outputs[14]) override;
+  void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char *const name, int32_t value) override;
+  void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char *const name, float value) override;
+  void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) override;
   void send_param_value_int(uint8_t system_id,
                             uint16_t index,
                             const char *const name,
@@ -143,6 +133,6 @@ private:
   ListenerInterface *listener_ = nullptr;
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_MAVLINK_H
+#endif // ROSFLIGHT_FIRMWARE_MAVLINK_H

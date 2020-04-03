@@ -30,10 +30,11 @@
  */
 
 #include "estimator.h"
+
 #include "rosflight.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 Estimator::Estimator(ROSflight& _rf) : RF_(_rf) {}
 
 void Estimator::reset_state()
@@ -227,8 +228,8 @@ void Estimator::run()
 
   // If it has been more than 0.5 seconds since the accel update ran and we
   // are supposed to be getting them then trigger an unhealthy estimator error.
-  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_ &&
-      !RF_.params_.get_param_int(PARAM_FIXED_WING))
+  if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_
+      && !RF_.params_.get_param_int(PARAM_FIXED_WING))
   {
     RF_.state_manager_.set_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }
@@ -284,7 +285,7 @@ turbomath::Vector Estimator::accel_correction() const
   turbomath::Vector w_acc;
   w_acc.x = -2.0f * q_tilde.w * q_tilde.x;
   w_acc.y = -2.0f * q_tilde.w * q_tilde.y;
-  w_acc.z = 0.0f;  // Don't correct z, because it's unobservable from the accelerometer
+  w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
   return w_acc;
 }
@@ -307,8 +308,7 @@ turbomath::Vector Estimator::extatt_correction() const
   // level but extatt had a different yaw angle than the internal estimate, xext_BW.cross(xhat_BW)
   // would be a measure of how the filter needs to update in order to the internal estimate's yaw
   // to closer to the extatt measurement. This is done for each axis.
-  turbomath::Vector w_ext =
-      xext_BW.cross(xhat_BW) + yext_BW.cross(yhat_BW) + zext_BW.cross(zhat_BW);
+  turbomath::Vector w_ext = xext_BW.cross(xhat_BW) + yext_BW.cross(yhat_BW) + zext_BW.cross(zhat_BW);
 
   return w_ext;
 }
@@ -364,10 +364,9 @@ void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
   {
     // Euler Integration
     // (Eq. 47a Mahony Paper)
-    turbomath::Quaternion qdot(0.5f * (-p * quat.x - q * quat.y - r * quat.z),
-                               0.5f * (p * quat.w + r * quat.y - q * quat.z),
-                               0.5f * (q * quat.w - r * quat.x + p * quat.z),
-                               0.5f * (r * quat.w + q * quat.x - p * quat.y));
+    turbomath::Quaternion qdot(
+        0.5f * (-p * quat.x - q * quat.y - r * quat.z), 0.5f * (p * quat.w + r * quat.y - q * quat.z),
+        0.5f * (q * quat.w - r * quat.x + p * quat.z), 0.5f * (r * quat.w + q * quat.x - p * quat.y));
     quat.w += qdot.w * dt;
     quat.x += qdot.x * dt;
     quat.y += qdot.y * dt;
@@ -397,4 +396,4 @@ void Estimator::quaternion_to_dcm(const turbomath::Quaternion& q,
   Z.z = 1.0f - 2.0f * (x * x + y * y);
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

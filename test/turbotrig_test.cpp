@@ -31,36 +31,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstdio>
 #include "common.h"
-#include <cmath>
 
-turbomath::Vector random_vectors[25] = {
-    turbomath::Vector(-0.0376278050814, 0.471775699711, -0.336572370974),
-    turbomath::Vector(0.842139998851, -0.113277302409, -0.435361598132),
-    turbomath::Vector(0.402876930871, -0.998517068538, 0.956603957591),
-    turbomath::Vector(0.366004030077, -0.966554559399, 0.236455814495),
-    turbomath::Vector(0.170963581611, -0.892193316086, -0.360102936987),
-    turbomath::Vector(-0.675191763273, -0.794118513048, 0.561367212903),
-    turbomath::Vector(-0.0299477253533, 0.0938177650483, 0.525814272724),
-    turbomath::Vector(-0.676191678521, -0.0780862208203, -0.272955681219),
-    turbomath::Vector(-0.435749833209, -0.673810649938, -0.896559097382),
-    turbomath::Vector(0.709083915552, -0.135067363969, -0.385492450532),
-    turbomath::Vector(-0.38728558039, -0.502219301225, 0.323557018529),
-    turbomath::Vector(-0.186870345154, 0.554827454101, 0.921567682061),
-    turbomath::Vector(-0.142106787605, -0.764876359963, 0.00303689980819),
-    turbomath::Vector(-0.677798963582, -0.664595954482, 0.339274533414),
-    turbomath::Vector(-0.700464041114, 0.325731535871, -0.621492014391),
-    turbomath::Vector(-0.604865828708, 0.270639620454, 0.188624833185),
-    turbomath::Vector(0.464205180183, -0.461504601245, -0.578708441515),
-    turbomath::Vector(0.498899172115, -0.582342366402, -0.694758083436),
-    turbomath::Vector(0.0710544604541, -0.63603887083, -0.521799692437),
-    turbomath::Vector(-0.372025413205, 0.83531212357, 0.232484576742),
-    turbomath::Vector(0.790872496361, -0.89600683592, 0.783984438621),
-    turbomath::Vector(0.236462609786, -0.636362560394, 0.203951290805),
-    turbomath::Vector(0.831924307534, -0.482532468579, 0.0600026189612),
-    turbomath::Vector(0.0562194856302, -0.605799189029, -0.556494338297),
-    turbomath::Vector(-0.85014432598, 0.0632157037573, 0.0272188414114)};
+#include <cmath>
+#include <cstdio>
+
+turbomath::Vector random_vectors[25] = {turbomath::Vector(-0.0376278050814, 0.471775699711, -0.336572370974),
+                                        turbomath::Vector(0.842139998851, -0.113277302409, -0.435361598132),
+                                        turbomath::Vector(0.402876930871, -0.998517068538, 0.956603957591),
+                                        turbomath::Vector(0.366004030077, -0.966554559399, 0.236455814495),
+                                        turbomath::Vector(0.170963581611, -0.892193316086, -0.360102936987),
+                                        turbomath::Vector(-0.675191763273, -0.794118513048, 0.561367212903),
+                                        turbomath::Vector(-0.0299477253533, 0.0938177650483, 0.525814272724),
+                                        turbomath::Vector(-0.676191678521, -0.0780862208203, -0.272955681219),
+                                        turbomath::Vector(-0.435749833209, -0.673810649938, -0.896559097382),
+                                        turbomath::Vector(0.709083915552, -0.135067363969, -0.385492450532),
+                                        turbomath::Vector(-0.38728558039, -0.502219301225, 0.323557018529),
+                                        turbomath::Vector(-0.186870345154, 0.554827454101, 0.921567682061),
+                                        turbomath::Vector(-0.142106787605, -0.764876359963, 0.00303689980819),
+                                        turbomath::Vector(-0.677798963582, -0.664595954482, 0.339274533414),
+                                        turbomath::Vector(-0.700464041114, 0.325731535871, -0.621492014391),
+                                        turbomath::Vector(-0.604865828708, 0.270639620454, 0.188624833185),
+                                        turbomath::Vector(0.464205180183, -0.461504601245, -0.578708441515),
+                                        turbomath::Vector(0.498899172115, -0.582342366402, -0.694758083436),
+                                        turbomath::Vector(0.0710544604541, -0.63603887083, -0.521799692437),
+                                        turbomath::Vector(-0.372025413205, 0.83531212357, 0.232484576742),
+                                        turbomath::Vector(0.790872496361, -0.89600683592, 0.783984438621),
+                                        turbomath::Vector(0.236462609786, -0.636362560394, 0.203951290805),
+                                        turbomath::Vector(0.831924307534, -0.482532468579, 0.0600026189612),
+                                        turbomath::Vector(0.0562194856302, -0.605799189029, -0.556494338297),
+                                        turbomath::Vector(-0.85014432598, 0.0632157037573, 0.0272188414114)};
 
 turbomath::Quaternion random_quaternions[25] = {
     turbomath::Quaternion(0.10377420365, -0.583993115868, -0.731526280531, -0.0530049846003),
@@ -141,9 +141,8 @@ TEST(TurboMath, fastAlt)
   float trueResult = 0.0;
   for (int i = 69682; i < 106597; i++)
   {
-    trueResult =
-        static_cast<float>((1.0 - pow(static_cast<float>(i) / 101325, 0.190284)) * 145366.45) *
-        static_cast<float>(0.3048);
+    trueResult = static_cast<float>((1.0 - pow(static_cast<float>(i) / 101325, 0.190284)) * 145366.45)
+                 * static_cast<float>(0.3048);
     EXPECT_NEAR(turbomath::alt(i), trueResult, .15);
     // arbitrarily chose <= .15m since fast_alt isn't accurate enough for EXPECT_CLOSE,
     // but being within .15 meters of the correct result seems pretty good to me
@@ -215,10 +214,8 @@ TEST(TurboMath, Quaternion)
     EXPECT_QUAT_SUPERCLOSE(quat2, eig2);
 
     // Check normalization
-    EXPECT_SUPERCLOSE(quat1.x * quat1.x + quat1.y * quat1.y + quat1.z * quat1.z + quat1.w * quat1.w,
-                      1.0f);
-    EXPECT_SUPERCLOSE(quat2.x * quat2.x + quat2.y * quat2.y + quat2.z * quat2.z + quat2.w * quat2.w,
-                      1.0f);
+    EXPECT_SUPERCLOSE(quat1.x * quat1.x + quat1.y * quat1.y + quat1.z * quat1.z + quat1.w * quat1.w, 1.0f);
+    EXPECT_SUPERCLOSE(quat2.x * quat2.x + quat2.y * quat2.y + quat2.z * quat2.z + quat2.w * quat2.w, 1.0f);
 
     // Test Quaternion Operators
     ASSERT_QUAT_SUPERCLOSE((quat1 * quat2), (eig2 * eig1));
@@ -232,7 +229,7 @@ TEST(TurboMath, Quaternion)
     // Test rotate_vector by rotating vector to new frame
     turbomath::Vector vec2 = quat1.rotate(vec1);
     Eigen::Vector3f veig2 = veig1.transpose() * eig1.toRotationMatrix();
-    EXPECT_VEC3_SUPERCLOSE(vec2, veig2);  // compare with eigen
+    EXPECT_VEC3_SUPERCLOSE(vec2, veig2); // compare with eigen
 
     // And rotate back
     turbomath::Vector vec3 = quat1.inverse() * vec2;
@@ -247,8 +244,7 @@ TEST(TurboMath, Quaternion)
     Eigen::Vector3f jhat(0, 1, 0);
     Eigen::Vector3f khat(0, 0, 1);
 
-    Eigen::Quaternionf eig3 =
-        Eigen::AngleAxisf(s, khat) * Eigen::AngleAxisf(t, jhat) * Eigen::AngleAxisf(p, ihat);
+    Eigen::Quaternionf eig3 = Eigen::AngleAxisf(s, khat) * Eigen::AngleAxisf(t, jhat) * Eigen::AngleAxisf(p, ihat);
 
     EXPECT_QUAT_SUPERCLOSE(quat3, eig3);
     EXPECT_SUPERCLOSE(quat1.w, quat3.w);

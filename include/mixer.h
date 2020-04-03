@@ -32,13 +32,13 @@
 #ifndef ROSFLIGHT_FIRMWARE_MIXER_H
 #define ROSFLIGHT_FIRMWARE_MIXER_H
 
+#include "interface/param_listener.h"
+
 #include <cstdbool>
 #include <cstdint>
 
-#include "interface/param_listener.h"
-
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 class ROSflight;
 
 class Mixer : public ParamListenerInterface
@@ -67,10 +67,10 @@ public:
 
   typedef enum
   {
-    NONE,  // None
-    S,     // Servo
-    M,     // Motor
-    G      // GPIO
+    NONE, // None
+    S,    // Servo
+    M,    // Motor
+    G     // GPIO
   } output_type_t;
 
   typedef struct
@@ -105,111 +105,104 @@ private:
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
 
-  const mixer_t esc_calibration_mixing = {
-      {M, M, M, M, M, M, NONE, NONE},
-      {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},  // F Mix
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-      490};
+  const mixer_t esc_calibration_mixing = {{M, M, M, M, M, M, NONE, NONE},
+                                          {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
+                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                          490};
 
-  const mixer_t quadcopter_plus_mixing = {
-      {M, M, M, M, NONE, NONE, NONE, NONE},  // output_type
+  const mixer_t quadcopter_plus_mixing = {{M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
-      {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},    // F Mix
-      {0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // X Mix
-      {1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // Y Mix
-      {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
-      490};
+                                          {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
+                                          {0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+                                          {1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
+                                          {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+                                          490};
 
-  const mixer_t quadcopter_x_mixing = {{M, M, M, M, NONE, NONE, NONE, NONE},  // output_type
+  const mixer_t quadcopter_x_mixing = {{M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
-                                       {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},    // F Mix
-                                       {-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-                                       {1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
-                                       {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
+                                       {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
+                                       {-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                       {1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                       {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
                                        490};
 
-  const mixer_t hex_plus_mixing = {
-      {M, M, M, M, M, M, M, M},  // output_type
+  const mixer_t hex_plus_mixing = {{M, M, M, M, M, M, M, M}, // output_type
 
-      {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                        //  F  Mix
-      {0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.866025f, 0.0f, 0.0f},  //  X  Mix
-      {1.0f, 0.5f, -0.5f, -1.0f, -0.5f, 0.5f, 0.0f, 0.0f},                     //  Y  Mix
-      {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},                     //  Z  Mix
-      490};
+                                   {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                       //  F  Mix
+                                   {0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.866025f, 0.0f, 0.0f}, //  X  Mix
+                                   {1.0f, 0.5f, -0.5f, -1.0f, -0.5f, 0.5f, 0.0f, 0.0f},                    //  Y  Mix
+                                   {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},                    //  Z  Mix
+                                   490};
 
-  const mixer_t hex_x_mixing = {
-      {M, M, M, M, M, M, M, M},  // output_type
+  const mixer_t hex_x_mixing = {{M, M, M, M, M, M, M, M}, // output_type
 
-      {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                        //  F  Mix
-      {-0.5f, -1.0f, -0.5f, 0.5f, 1.0f, 0.5f, 0.0f, 0.0f},                     //  X  Mix
-      {0.866025f, 0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.0f, 0.0f},  //  Y  Mix
-      {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},                     //  Z  Mix
-      490};
+                                {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                       //  F  Mix
+                                {-0.5f, -1.0f, -0.5f, 0.5f, 1.0f, 0.5f, 0.0f, 0.0f},                    //  X  Mix
+                                {0.866025f, 0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.0f, 0.0f}, //  Y  Mix
+                                {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},                    //  Z  Mix
+                                490};
 
-  const mixer_t octocopter_plus_mixing = {
-      {M, M, M, M, M, M, M, M},  // output_type
+  const mixer_t octocopter_plus_mixing = {{M, M, M, M, M, M, M, M}, // output_type
 
-      {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},             //  F  Mix
-      {0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f, 1.0f, 0.707f},  //  X  Mix
-      {1.0f, 0.707f, 0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f},  //  Y  Mix
-      {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},         //  Z  Mix
-      490};
+                                          {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},            //  F  Mix
+                                          {0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f, 1.0f, 0.707f}, //  X  Mix
+                                          {1.0f, 0.707f, 0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f}, //  Y  Mix
+                                          {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},        //  Z  Mix
+                                          490};
 
-  const mixer_t octocopter_x_mixing = {
-      {M, M, M, M, M, M, M, M},  // output_type
+  const mixer_t octocopter_x_mixing = {{M, M, M, M, M, M, M, M}, // output_type
 
-      {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},             // F Mix
-      {-0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0f, 1.0f, 0.414},  // X Mix
-      {1.0f, 0.414f, -0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0},  // Y Mix
-      {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},         // Z Mix
-      490};
+                                       {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},            // F Mix
+                                       {-0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0f, 1.0f, 0.414}, // X Mix
+                                       {1.0f, 0.414f, -0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0}, // Y Mix
+                                       {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},        // Z Mix
+                                       490};
 
-  const mixer_t Y6_mixing = {
-      {M, M, M, M, M, M, NONE, NONE},  // output_type
+  const mixer_t Y6_mixing = {{M, M, M, M, M, M, NONE, NONE}, // output_type
 
-      {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                // F Mix
-      {-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f},              // X Mix
-      {0.667f, 0.667f, -1.333f, -1.333f, 0.667f, 0.667f, 0.0f, 0.0f},  // Y Mix
-      {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},             // Z Mix
-      490};
-
-  const mixer_t X8_mixing = {{M, M, M, M, M, M, M, M},  // output_type
-
-                             {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},      // F Mix
-                             {-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f},  // X Mix
-                             {1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f},  // Y Mix
-                             {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},  // Z Mix
+                             {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},               // F Mix
+                             {-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f},             // X Mix
+                             {0.667f, 0.667f, -1.333f, -1.333f, 0.667f, 0.667f, 0.0f, 0.0f}, // Y Mix
+                             {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},            // Z Mix
                              490};
 
-  const mixer_t tricopter_mixing = {
-      {M, M, M, S, NONE, NONE, NONE, NONE},  // output_type
+  const mixer_t X8_mixing = {{M, M, M, M, M, M, M, M}, // output_type
 
-      {1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},         // F Mix
-      {-1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // X Mix
-      {0.667f, 0.0f, 0.667f, -1.333f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
-      {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},         // Z Mix
-      490};
+                             {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},     // F Mix
+                             {-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // X Mix
+                             {1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f}, // Y Mix
+                             {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f}, // Z Mix
+                             490};
+
+  const mixer_t tricopter_mixing = {{M, M, M, S, NONE, NONE, NONE, NONE}, // output_type
+
+                                    {1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // F Mix
+                                    {-1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},       // X Mix
+                                    {0.667f, 0.0f, 0.667f, -1.333f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // Z Mix
+                                    490};
 
   const mixer_t fixedwing_mixing = {{S, S, M, S, S, M, NONE, NONE},
 
-                                    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
-                                    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-                                    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
-                                    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
+                                    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+                                    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
                                     50};
 
   const mixer_t passthrough_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
 
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
                                       50};
 
   const mixer_t* mixer_to_use_;
 
+  // clang-format off
   const mixer_t* array_of_mixers_[NUM_MIXERS] = {&esc_calibration_mixing,
                                                  &quadcopter_plus_mixing,
                                                  &quadcopter_x_mixing,
@@ -222,6 +215,7 @@ private:
                                                  &tricopter_mixing,
                                                  &fixedwing_mixing,
                                                  &passthrough_mixing};
+  // clang-format on
 
 public:
   Mixer(ROSflight& _rf);
@@ -234,6 +228,6 @@ public:
   inline const float* get_outputs() const { return raw_outputs_; }
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_MIXER_H
+#endif // ROSFLIGHT_FIRMWARE_MIXER_H

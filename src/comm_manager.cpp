@@ -29,16 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "comm_manager.h"
+
+#include "param.h"
+
+#include "rosflight.h"
+
 #include <cstdint>
 #include <cstring>
 
-#include "param.h"
-#include "rosflight.h"
-
-#include "comm_manager.h"
-
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 CommManager::LogMessageBuffer::LogMessageBuffer()
 {
   memset(buffer_, 0, sizeof(buffer_));
@@ -70,10 +71,7 @@ void CommManager::LogMessageBuffer::pop()
   }
 }
 
-CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link)
-    : RF_(rf), comm_link_(comm_link)
-{
-}
+CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) : RF_(rf), comm_link_(comm_link) {}
 
 // function definitions
 void CommManager::init()
@@ -172,13 +170,11 @@ void CommManager::send_param_value(uint16_t param_id)
     {
     case PARAM_TYPE_INT32:
       comm_link_.send_param_value_int(sysid_, param_id, RF_.params_.get_param_name(param_id),
-                                      RF_.params_.get_param_int(param_id),
-                                      static_cast<uint16_t>(PARAMS_COUNT));
+                                      RF_.params_.get_param_int(param_id), static_cast<uint16_t>(PARAMS_COUNT));
       break;
     case PARAM_TYPE_FLOAT:
       comm_link_.send_param_value_float(sysid_, param_id, RF_.params_.get_param_name(param_id),
-                                        RF_.params_.get_param_float(param_id),
-                                        static_cast<uint16_t>(PARAMS_COUNT));
+                                        RF_.params_.get_param_float(param_id), static_cast<uint16_t>(PARAMS_COUNT));
       break;
     default:
       break;
@@ -197,23 +193,18 @@ void CommManager::send_parameter_list()
   send_params_index_ = 0;
 }
 
-void CommManager::param_request_read_callback(uint8_t target_system,
-                                              const char* const param_name,
-                                              int16_t param_index)
+void CommManager::param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index)
 {
   if (target_system == sysid_)
   {
-    uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name)
-                                    : static_cast<uint16_t>(param_index);
+    uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name) : static_cast<uint16_t>(param_index);
 
     if (id < PARAMS_COUNT)
       send_param_value(id);
   }
 }
 
-void CommManager::param_set_int_callback(uint8_t target_system,
-                                         const char* const param_name,
-                                         int32_t param_value)
+void CommManager::param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value)
 {
   if (target_system == sysid_)
   {
@@ -226,9 +217,7 @@ void CommManager::param_set_int_callback(uint8_t target_system,
   }
 }
 
-void CommManager::param_set_float_callback(uint8_t target_system,
-                                           const char* const param_name,
-                                           float param_value)
+void CommManager::param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value)
 {
   if (target_system == sysid_)
   {
@@ -307,7 +296,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 {
   uint64_t now_us = RF_.board_.clock_micros();
 
-  if (tc1 == 0)  // check that this is a request, not a response
+  if (tc1 == 0) // check that this is a request, not a response
     comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us) * 1000, ts1);
 }
 
@@ -450,17 +439,15 @@ void CommManager::send_status(void)
   else
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
 
-  comm_link_.send_status(
-      sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
-      RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
-      RF_.state_manager_.state().error_codes, control_mode, RF_.board_.num_sensor_errors(),
-      RF_.get_loop_time_us());
+  comm_link_.send_status(sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
+                         RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
+                         RF_.state_manager_.state().error_codes, control_mode, RF_.board_.num_sensor_errors(),
+                         RF_.get_loop_time_us());
 }
 
 void CommManager::send_attitude(void)
 {
-  comm_link_.send_attitude_quaternion(sysid_, RF_.estimator_.state().timestamp_us,
-                                      RF_.estimator_.state().attitude,
+  comm_link_.send_attitude_quaternion(sysid_, RF_.estimator_.state().timestamp_us, RF_.estimator_.state().attitude,
                                       RF_.estimator_.state().angular_velocity);
 }
 
@@ -495,8 +482,7 @@ void CommManager::send_diff_pressure(void)
 {
   if (RF_.sensors_.data().diff_pressure_valid)
   {
-    comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_velocity,
-                                  RF_.sensors_.data().diff_pressure,
+    comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_velocity, RF_.sensors_.data().diff_pressure,
                                   RF_.sensors_.data().diff_pressure_temp);
   }
 }
@@ -505,8 +491,8 @@ void CommManager::send_baro(void)
 {
   if (RF_.sensors_.data().baro_valid)
   {
-    comm_link_.send_baro(sysid_, RF_.sensors_.data().baro_altitude,
-                         RF_.sensors_.data().baro_pressure, RF_.sensors_.data().baro_temperature);
+    comm_link_.send_baro(sysid_, RF_.sensors_.data().baro_altitude, RF_.sensors_.data().baro_pressure,
+                         RF_.sensors_.data().baro_temperature);
   }
 }
 
@@ -515,7 +501,7 @@ void CommManager::send_sonar(void)
   if (RF_.sensors_.data().sonar_range_valid)
   {
     comm_link_.send_sonar(sysid_,
-                          0,  // TODO set sensor type (sonar/lidar), use enum
+                          0, // TODO set sensor type (sonar/lidar), use enum
                           RF_.sensors_.data().sonar_range, 8.0, 0.25);
   }
 }
@@ -528,8 +514,7 @@ void CommManager::send_mag(void)
 void CommManager::send_battery_status(void)
 {
   if (RF_.sensors_.data().battery_monitor_present)
-    comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
-                                   RF_.sensors_.data().battery_current);
+    comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage, RF_.sensors_.data().battery_current);
 }
 
 void CommManager::send_backup_data(const StateManager::BackupData& backup_data)
@@ -621,8 +606,10 @@ void CommManager::send_next_param(void)
   }
 }
 
-CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function)
-    : period_us_(period_us), next_time_us_(0), send_function_(send_function)
+CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :
+  period_us_(period_us),
+  next_time_us_(0),
+  send_function_(send_function)
 {
 }
 
@@ -682,4 +669,4 @@ void CommManager::Stream::set_rate(uint32_t rate_hz)
 //  send_message(msg);
 //}
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

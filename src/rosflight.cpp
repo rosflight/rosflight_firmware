@@ -30,21 +30,22 @@
  */
 
 #include "rosflight.h"
+
 #include "interface/param_listener.h"
 
-namespace rosflight_firmware {
-
-ROSflight::ROSflight(Board& board, CommLinkInterface& comm_link)
-    : board_(board),
-      comm_manager_(*this, comm_link),
-      params_(*this),
-      command_manager_(*this),
-      controller_(*this),
-      estimator_(*this),
-      mixer_(*this),
-      rc_(*this),
-      sensors_(*this),
-      state_manager_(*this)
+namespace rosflight_firmware
+{
+ROSflight::ROSflight(Board& board, CommLinkInterface& comm_link) :
+  board_(board),
+  comm_manager_(*this, comm_link),
+  params_(*this),
+  command_manager_(*this),
+  controller_(*this),
+  estimator_(*this),
+  mixer_(*this),
+  rc_(*this),
+  sensors_(*this),
+  state_manager_(*this)
 {
   comm_link.set_listener(&comm_manager_);
   params_.set_listeners(param_listeners_, num_param_listeners_);
@@ -135,4 +136,4 @@ uint32_t ROSflight::get_loop_time_us()
   return loop_time_us;
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

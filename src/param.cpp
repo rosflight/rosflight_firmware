@@ -29,15 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include "param.h"
 
 #include "board.h"
 #include "mixer.h"
 
-#include "param.h"
-
 #include "rosflight.h"
+
+#include <cstdint>
+#include <cstring>
 
 #ifndef GIT_VERSION_HASH
 #define GIT_VERSION_HASH 0x00
@@ -54,8 +54,8 @@
 //#pragma message( "GIT_VERSION_HASH: " STRINGIFY(GIT_VERSION_HASH))
 //#pragma message( "GIT_VERSION_STRING: " GIT_VERSION_STRING)
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 Params::Params(ROSflight &_rf) : RF_(_rf), listeners_(nullptr), num_listeners_(0) {}
 
 // local function definitions
@@ -399,4 +399,4 @@ bool Params::set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float 
   tmp.fvalue = value;
   return set_param_by_name_int(name, tmp.ivalue);
 }
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

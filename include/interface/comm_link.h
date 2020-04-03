@@ -32,17 +32,17 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMM_LINK_H
 #define ROSFLIGHT_FIRMWARE_COMM_LINK_H
 
-#include <cstdint>
-
-#include <turbomath/turbomath.h>
-
 #include "board.h"
 #include "param.h"
 #include "sensors.h"
 #include "state_manager.h"
 
-namespace rosflight_firmware {
+#include <turbomath/turbomath.h>
 
+#include <cstdint>
+
+namespace rosflight_firmware
+{
 class CommLinkInterface
 {
 public:
@@ -116,12 +116,8 @@ public:
     virtual void param_request_read_callback(uint8_t target_system,
                                              const char *const param_name,
                                              int16_t param_index) = 0;
-    virtual void param_set_int_callback(uint8_t target_system,
-                                        const char *const param_name,
-                                        int32_t param_value) = 0;
-    virtual void param_set_float_callback(uint8_t target_system,
-                                          const char *const param_name,
-                                          float param_value) = 0;
+    virtual void param_set_int_callback(uint8_t target_system, const char *const param_name, int32_t param_value) = 0;
+    virtual void param_set_float_callback(uint8_t target_system, const char *const param_name, float param_value) = 0;
     virtual void command_callback(Command command) = 0;
     virtual void timesync_callback(int64_t tc1, int64_t ts1) = 0;
     virtual void offboard_control_callback(const OffboardControl &control) = 0;
@@ -141,10 +137,7 @@ public:
                                         const turbomath::Vector &angular_velocity) = 0;
   virtual void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) = 0;
   virtual void send_command_ack(uint8_t system_id, Command command, bool success) = 0;
-  virtual void send_diff_pressure(uint8_t system_id,
-                                  float velocity,
-                                  float pressure,
-                                  float temperature) = 0;
+  virtual void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) = 0;
   virtual void send_heartbeat(uint8_t system_id, bool fixed_wing) = 0;
   virtual void send_imu(uint8_t system_id,
                         uint64_t timestamp_us,
@@ -161,9 +154,7 @@ public:
                                       uint32_t timestamp_ms,
                                       const char *const name,
                                       float value) = 0;
-  virtual void send_output_raw(uint8_t system_id,
-                               uint32_t timestamp_ms,
-                               const float raw_outputs[14]) = 0;
+  virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) = 0;
   virtual void send_param_value_int(uint8_t system_id,
                                     uint16_t index,
                                     const char *const name,
@@ -174,9 +165,7 @@ public:
                                       const char *const name,
                                       float value,
                                       uint16_t param_count) = 0;
-  virtual void send_rc_raw(uint8_t system_id,
-                           uint32_t timestamp_ms,
-                           const uint16_t channels[8]) = 0;
+  virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) = 0;
   virtual void send_sonar(uint8_t system_id,
                           /* TODO enum type*/ uint8_t type,
                           float range,
@@ -202,6 +191,6 @@ public:
   virtual void set_listener(ListenerInterface *listener) = 0;
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_COMM_LINK_H
+#endif // ROSFLIGHT_FIRMWARE_COMM_LINK_H

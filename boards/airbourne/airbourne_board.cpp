@@ -31,8 +31,8 @@
 
 #include "airbourne_board.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 AirbourneBoard::AirbourneBoard() {}
 
 void AirbourneBoard::init_board()
@@ -50,7 +50,7 @@ void AirbourneBoard::init_board()
 
   backup_sram_init();
 
-  current_serial_ = &vcp_;  // uncomment this to switch to VCP as the main output
+  current_serial_ = &vcp_; // uncomment this to switch to VCP as the main output
 }
 
 void AirbourneBoard::board_reset(bool bootloader)
@@ -134,7 +134,7 @@ void AirbourneBoard::sensors_init()
 {
   while (millis() < 50)
   {
-  }  // wait for sensors to boot up
+  } // wait for sensors to boot up
   imu_.init(&spi1_);
 
   baro_.init(&int_i2c_);
@@ -469,7 +469,7 @@ void AirbourneBoard::backup_memory_init()
 bool AirbourneBoard::backup_memory_read(void *dest, size_t len)
 {
   backup_sram_read(dest, len);
-  return true;  //!< @todo backup_sram_read() has no return value
+  return true; //!< @todo backup_sram_read() has no return value
 }
 
 void AirbourneBoard::backup_memory_write(const void *src, size_t len)
@@ -482,4 +482,4 @@ void AirbourneBoard::backup_memory_clear(size_t len)
   backup_sram_clear(len);
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

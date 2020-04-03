@@ -32,16 +32,16 @@
 #ifndef ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 #define ROSFLIGHT_FIRMWARE_ESTIMATOR_H
 
+#include "interface/param_listener.h"
+
+#include <turbomath/turbomath.h>
+
 #include <cmath>
 #include <cstdbool>
 #include <cstdint>
 
-#include <turbomath/turbomath.h>
-
-#include "interface/param_listener.h"
-
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 class ROSflight;
 
 class Estimator : public ParamListenerInterface
@@ -104,15 +104,13 @@ private:
   turbomath::Vector accel_correction() const;
   turbomath::Vector extatt_correction() const;
   turbomath::Vector smoothed_gyro_measurement();
-  void integrate_angular_rate(turbomath::Quaternion& quat,
-                              const turbomath::Vector& omega,
-                              const float dt) const;
+  void integrate_angular_rate(turbomath::Quaternion& quat, const turbomath::Vector& omega, const float dt) const;
   void quaternion_to_dcm(const turbomath::Quaternion& q,
                          turbomath::Vector& X,
                          turbomath::Vector& Y,
                          turbomath::Vector& Z) const;
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_ESTIMATOR_H
+#endif // ROSFLIGHT_FIRMWARE_ESTIMATOR_H

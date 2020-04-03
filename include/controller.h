@@ -32,18 +32,18 @@
 #ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
 #define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
-#include <cstdbool>
-#include <cstdint>
-
-#include <turbomath/turbomath.h>
-
 #include "interface/param_listener.h"
 
 #include "command_manager.h"
 #include "estimator.h"
 
-namespace rosflight_firmware {
+#include <turbomath/turbomath.h>
 
+#include <cstdbool>
+#include <cstdint>
+
+namespace rosflight_firmware
+{
 class ROSflight;
 
 class Controller : public ParamListenerInterface
@@ -108,6 +108,6 @@ private:
   uint64_t prev_time_us_;
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_CONTROLLER_H
+#endif // ROSFLIGHT_FIRMWARE_CONTROLLER_H

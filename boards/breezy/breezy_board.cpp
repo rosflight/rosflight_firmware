@@ -32,17 +32,18 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
-extern "C" {
+extern "C"
+{
+#include "flash.h"
 
 #include <breezystm32.h>
-#include "flash.h"
-extern void SetSysClock(bool overclock);
+  extern void SetSysClock(bool overclock);
 }
 
 #include "breezy_board.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 BreezyBoard::BreezyBoard() {}
 
 void BreezyBoard::init_board()
@@ -331,7 +332,7 @@ void BreezyBoard::battery_current_set_multiplier(double multiplier)
 
 void BreezyBoard::rc_init(rc_type_t rc_type)
 {
-  (void)rc_type;  // TODO SBUS is not supported on F1
+  (void)rc_type; // TODO SBUS is not supported on F1
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
@@ -431,6 +432,6 @@ void BreezyBoard::led1_toggle()
   LED1_TOGGLE;
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop

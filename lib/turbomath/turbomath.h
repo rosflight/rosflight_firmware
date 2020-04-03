@@ -36,8 +36,8 @@
 
 #include <cstdint>
 
-namespace turbomath {
-
+namespace turbomath
+{
 // float-based wrappers
 float cos(float x);
 float sin(float x);
@@ -141,6 +141,6 @@ public:
   Vector operator-(const Quaternion& q) const { return boxminus(q); }
 };
 
-}  // namespace turbomath
+} // namespace turbomath
 
-#endif  // TURBOMATH_TURBOMATH_H
+#endif // TURBOMATH_TURBOMATH_H

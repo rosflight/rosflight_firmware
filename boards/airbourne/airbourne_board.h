@@ -32,12 +32,6 @@
 #ifndef ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 
-#include <cstdbool>
-#include <cstddef>
-#include <cstdint>
-
-#include <revo_f4.h>
-
 #include "M25P16.h"
 #include "analog_digital_converter.h"
 #include "analog_pin.h"
@@ -59,19 +53,25 @@
 #include "system.h"
 #include "uart.h"
 #include "vcp.h"
+
+#include <revo_f4.h>
+
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 // #include "ublox.h"
 
 #include "board.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 class AirbourneBoard : public Board
 {
 private:
   VCP vcp_;
   UART uart1_;
   UART uart3_;
-  Serial *current_serial_;  // A pointer to the serial stream currently in use.
+  Serial *current_serial_; // A pointer to the serial stream currently in use.
   I2C int_i2c_;
   I2C ext_i2c_;
   SPI spi1_;
@@ -208,6 +208,6 @@ public:
   void backup_memory_clear(size_t len) override;
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
+#endif // ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H

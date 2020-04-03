@@ -32,8 +32,6 @@
 #ifndef ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 #define ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
 
-#include <cstdint>
-
 #include "interface/comm_link.h"
 #include "interface/param_listener.h"
 
@@ -48,8 +46,10 @@
 #include "sensors.h"
 #include "state_manager.h"
 
-namespace rosflight_firmware {
+#include <cstdint>
 
+namespace rosflight_firmware
+{
 class ROSflight
 {
 public:
@@ -88,6 +88,6 @@ private:
       &comm_manager_, &command_manager_, &controller_, &estimator_, &mixer_, &rc_, &sensors_};
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H
+#endif // ROSFLIGHT_FIRMWARE_ROSFLIGHT_H

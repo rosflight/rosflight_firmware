@@ -1,13 +1,13 @@
-#include <gtest/gtest.h>
-
-#include <turbomath/turbomath.h>
+#include "test_board.h"
 
 #include "rosflight.h"
-#include "test_board.h"
+
+#include <turbomath/turbomath.h>
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+#include <gtest/gtest.h>
 
 #include <cstdint>
 
@@ -60,6 +60,4 @@
 double quaternion_error(turbomath::Quaternion q0, turbomath::Quaternion q);
 double quaternion_error(Eigen::Quaternionf q_eig, turbomath::Quaternion q);
 
-void step_firmware(rosflight_firmware::ROSflight &rf,
-                   rosflight_firmware::testBoard &board,
-                   uint32_t us);
+void step_firmware(rosflight_firmware::ROSflight &rf, rosflight_firmware::testBoard &board, uint32_t us);

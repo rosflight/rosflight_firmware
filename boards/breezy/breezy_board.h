@@ -36,15 +36,16 @@
 #include <cstddef>
 #include <cstdint>
 
-extern "C" {
+extern "C"
+{
 #include <breezystm32.h>
 }
 
 #include "board.h"
 #include "sensors.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 class BreezyBoard : public Board
 {
 private:
@@ -175,6 +176,6 @@ public:
   void backup_memory_clear(size_t len) override { (void)len; }
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_BREEZY_BOARD_H
+#endif // ROSFLIGHT_FIRMWARE_BREEZY_BOARD_H

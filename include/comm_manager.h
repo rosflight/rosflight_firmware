@@ -32,16 +32,16 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
 #define ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
 
-#include <cstdint>
-#include <functional>
-
 #include "interface/comm_link.h"
 #include "interface/param_listener.h"
 
 #include "nanoprintf.h"
 
-namespace rosflight_firmware {
+#include <cstdint>
+#include <functional>
 
+namespace rosflight_firmware
+{
 class ROSflight;
 
 class CommManager : public CommLinkInterface::ListenerInterface, public ParamListenerInterface
@@ -131,15 +131,9 @@ private:
   void update_system_id(uint16_t param_id);
 
   void param_request_list_callback(uint8_t target_system) override;
-  void param_request_read_callback(uint8_t target_system,
-                                   const char* const param_name,
-                                   int16_t param_index) override;
-  void param_set_int_callback(uint8_t target_system,
-                              const char* const param_name,
-                              int32_t param_value) override;
-  void param_set_float_callback(uint8_t target_system,
-                                const char* const param_name,
-                                float param_value) override;
+  void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index) override;
+  void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value) override;
+  void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value) override;
   void command_callback(CommLinkInterface::Command command) override;
   void timesync_callback(int64_t tc1, int64_t ts1) override;
   void offboard_control_callback(const CommLinkInterface::OffboardControl& control) override;
@@ -168,20 +162,14 @@ private:
 
   void send_next_param(void);
 
-  Stream streams_[STREAM_COUNT] = {Stream(0, [this] { this->send_heartbeat(); }),
-                                   Stream(0, [this] { this->send_status(); }),
-                                   Stream(0, [this] { this->send_attitude(); }),
-                                   Stream(0, [this] { this->send_imu(); }),
-                                   Stream(0, [this] { this->send_diff_pressure(); }),
-                                   Stream(0, [this] { this->send_baro(); }),
-                                   Stream(0, [this] { this->send_sonar(); }),
-                                   Stream(0, [this] { this->send_mag(); }),
-                                   Stream(0, [this] { this->send_battery_status(); }),
-                                   Stream(0, [this] { this->send_output_raw(); }),
-                                   Stream(0, [this] { this->send_gnss(); }),
-                                   Stream(0, [this] { this->send_gnss_raw(); }),
-                                   Stream(0, [this] { this->send_rc_raw(); }),
-                                   Stream(20000, [this] { this->send_low_priority(); })};
+  Stream streams_[STREAM_COUNT] = {
+      Stream(0, [this] { this->send_heartbeat(); }),      Stream(0, [this] { this->send_status(); }),
+      Stream(0, [this] { this->send_attitude(); }),       Stream(0, [this] { this->send_imu(); }),
+      Stream(0, [this] { this->send_diff_pressure(); }),  Stream(0, [this] { this->send_baro(); }),
+      Stream(0, [this] { this->send_sonar(); }),          Stream(0, [this] { this->send_mag(); }),
+      Stream(0, [this] { this->send_battery_status(); }), Stream(0, [this] { this->send_output_raw(); }),
+      Stream(0, [this] { this->send_gnss(); }),           Stream(0, [this] { this->send_gnss_raw(); }),
+      Stream(0, [this] { this->send_rc_raw(); }),         Stream(20000, [this] { this->send_low_priority(); })};
 
   // the time of week stamp for the last sent GNSS message, to prevent re-sending
   uint32_t last_sent_gnss_tow_ = 0;
@@ -205,6 +193,6 @@ public:
   void send_backup_data(const StateManager::BackupData& backup_data);
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_COMM_MANAGER_H
+#endif // ROSFLIGHT_FIRMWARE_COMM_MANAGER_H

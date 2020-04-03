@@ -1,7 +1,10 @@
 ---
-Language:        Cpp
-BasedOnStyle:  google
+Language:      Cpp
+BasedOnStyle:  Google
 IndentWidth: 2
+UseTab: Never
+ColumnLimit: 120
+BreakBeforeBraces: Custom
 BraceWrapping:
   AfterClass:      true
   AfterControlStatement: true
@@ -11,27 +14,40 @@ BraceWrapping:
   AfterObjCDeclaration: true
   AfterStruct:     true
   AfterUnion:      true
+  AfterExternBlock: true
   BeforeCatch:     true
   BeforeElse:      true
   IndentBraces:    false
-  AfterNamespace: false
-BreakBeforeBraces: Custom
-ColumnLimit: 100
-AlignTrailingComments: true
 PointerAlignment: Left
-UseTab: Never
-AllowShortIfStatementsOnASingleLine: false
 AccessModifierOffset: -2
 IndentCaseLabels: false
-AlignAfterOpenBracket:  Align
+AlignAfterOpenBracket: Align
 BinPackArguments: true
 BinPackParameters: false
 ExperimentalAutoDetectBinPacking: false
 AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
+AlignTrailingComments: true
+SpacesBeforeTrailingComments: 1
+FixNamespaceComments: true
+BreakBeforeBinaryOperators: NonAssignment
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerIndentWidth: 2
 
+IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex:           '^<'
-    Priority:        1
-  - Regex:           '.*'
-    Priority:        2
+  - Regex:    '"rosflight\.h"'
+    Priority: 3
+  - Regex:    '"interface\/[[:alnum:]_]+\.h"'
+    Priority: 1
+  - Regex:    '<turbomath\/[[:alnum:]_]+\.h>'
+    Priority: 4
+  - Regex:    '<[[:alpha:]]+>'
+    Priority: 6
+  - Regex:    '<.*>'
+    Priority: 5
+  - Regex:    '".*"'
+    Priority: 2

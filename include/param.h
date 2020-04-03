@@ -32,13 +32,13 @@
 #ifndef ROSFLIGHT_FIRMWARE_PARAM_H
 #define ROSFLIGHT_FIRMWARE_PARAM_H
 
+#include "interface/param_listener.h"
+
 #include <cstddef>
 #include <cstdint>
 
-#include "interface/param_listener.h"
-
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 enum : uint16_t
 {
   /******************************/
@@ -243,14 +243,14 @@ private:
   {
     uint32_t version;
     uint16_t size;
-    uint8_t magic_be;  // magic number, should be 0xBE
+    uint8_t magic_be; // magic number, should be 0xBE
 
     param_value_t values[PARAMS_COUNT];
     char names[PARAMS_COUNT][PARAMS_NAME_LENGTH];
     param_type_t types[PARAMS_COUNT];
 
-    uint8_t magic_ef;  // magic number, should be 0xEF
-    uint8_t chk;       // XOR checksum
+    uint8_t magic_ef; // magic number, should be 0xEF
+    uint8_t chk;      // XOR checksum
   } params_t;
 
   params_t params;
@@ -376,6 +376,6 @@ public:
   bool set_param_by_name_float(const char name[PARAMS_NAME_LENGTH], float value);
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_PARAM_H
+#endif // ROSFLIGHT_FIRMWARE_PARAM_H

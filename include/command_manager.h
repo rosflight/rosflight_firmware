@@ -32,30 +32,30 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
 #define ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
 
-#include <cstdbool>
-#include <cstdint>
-
 #include "interface/param_listener.h"
 
 #include "rc.h"
 
-namespace rosflight_firmware {
+#include <cstdbool>
+#include <cstdint>
 
+namespace rosflight_firmware
+{
 class ROSflight;
 
 typedef enum
 {
-  RATE,         // Channel is is in rate mode (mrad/s)
-  ANGLE,        // Channel command is in angle mode (mrad)
-  THROTTLE,     // Channel is direcly controlling throttle max/1000
-  PASSTHROUGH,  // Channel directly passes PWM input to the mixer
+  RATE,        // Channel is is in rate mode (mrad/s)
+  ANGLE,       // Channel command is in angle mode (mrad)
+  THROTTLE,    // Channel is direcly controlling throttle max/1000
+  PASSTHROUGH, // Channel directly passes PWM input to the mixer
 } control_type_t;
 
 typedef struct
 {
-  bool active;          // Whether or not the channel is active
-  control_type_t type;  // What type the channel is
-  float value;          // The value of the channel
+  bool active;         // Whether or not the channel is active
+  control_type_t type; // What type the channel is
+  float value;         // The value of the channel
 } control_channel_t;
 
 typedef struct
@@ -82,6 +82,7 @@ private:
                     {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
                     {&rc_command_.F, &offboard_command_.F, &combined_command_.F}};
 
+  // clang-format off
   control_t rc_command_ = {0,
                            {false, ANGLE, 0.0},
                            {false, ANGLE, 0.0},
@@ -108,6 +109,7 @@ private:
                                            {true, PASSTHROUGH, 0.0},
                                            {true, PASSTHROUGH, 0.0},
                                            {true, THROTTLE, 0.0}};
+  // clang-format on
 
   typedef enum
   {
@@ -129,9 +131,7 @@ private:
     uint32_t last_override_time;
   } rc_stick_override_t;
 
-  rc_stick_override_t rc_stick_override_[3] = {{RC::STICK_X, 0},
-                                               {RC::STICK_Y, 0},
-                                               {RC::STICK_Z, 0}};
+  rc_stick_override_t rc_stick_override_[3] = {{RC::STICK_X, 0}, {RC::STICK_Y, 0}, {RC::STICK_Z, 0}};
 
   ROSflight &RF_;
 
@@ -163,6 +163,6 @@ public:
   inline const control_t &rc_control() const { return rc_command_; }
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
+#endif // ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H

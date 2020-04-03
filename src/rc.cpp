@@ -29,13 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstring>
-
 #include "rc.h"
+
 #include "rosflight.h"
 
-namespace rosflight_firmware {
+#include <cstring>
 
+namespace rosflight_firmware
+{
 RC::RC(ROSflight &_rf) : RF_(_rf) {}
 
 void RC::init()
@@ -140,8 +141,7 @@ void RC::init_switches()
     }
 
     switches[chan].mapped =
-        switches[chan].channel > 3 &&
-        switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
+        switches[chan].channel > 3 && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
 
     switch (switches[chan].channel)
     {
@@ -163,12 +163,10 @@ void RC::init_switches()
     }
 
     if (switches[chan].mapped)
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                            "%s switch mapped to RC channel %d", channel_name,
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch mapped to RC channel %d", channel_name,
                             switches[chan].channel);
     else
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch not mapped",
-                            channel_name);
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch not mapped", channel_name);
   }
 }
 
@@ -212,11 +210,11 @@ void RC::look_for_arm_disarm_signal()
   // check for arming switch
   if (!switch_mapped(SWITCH_ARM))
   {
-    if (!RF_.state_manager_.state().armed)  // we are DISARMED
+    if (!RF_.state_manager_.state().armed) // we are DISARMED
     {
       // if left stick is down and to the right
-      if ((RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)) &&
-          (RF_.rc_.stick(STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
+      if ((RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
+          && (RF_.rc_.stick(STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -229,11 +227,11 @@ void RC::look_for_arm_disarm_signal()
         RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
       }
     }
-    else  // we are ARMED
+    else // we are ARMED
     {
       // if left stick is down and to the left
-      if (RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD) &&
-          RF_.rc_.stick(STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
+      if (RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
+          && RF_.rc_.stick(STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))
       {
         time_sticks_have_been_in_arming_position_ms += dt;
       }
@@ -248,7 +246,7 @@ void RC::look_for_arm_disarm_signal()
       }
     }
   }
-  else  // ARMING WITH SWITCH
+  else // ARMING WITH SWITCH
   {
     if (RF_.rc_.switch_on(SWITCH_ARM))
     {
@@ -282,7 +280,7 @@ bool RC::run()
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
     float pwm = RF_.board_.rc_read(sticks[channel].channel);
-    if (sticks[channel].one_sided)  // generally only F is one_sided
+    if (sticks[channel].one_sided) // generally only F is one_sided
     {
       stick_values[channel] = pwm;
     }
@@ -332,4 +330,4 @@ bool RC::new_command()
   ;
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

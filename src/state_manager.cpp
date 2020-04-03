@@ -30,10 +30,11 @@
  */
 
 #include "state_manager.h"
+
 #include "rosflight.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 StateManager::StateManager(ROSflight &parent) : RF_(parent), fsm_state_(FSM_STATE_INIT)
 {
   state_.armed = false;
@@ -58,7 +59,7 @@ void StateManager::run()
   // I'm putting this here for the case where we've switched states with existing errors,
   // but those errors might not have been processed yet for the new state. We could replace
   // this with a recursive call to process_errors() if the state changed in update_fsm()?
-  process_errors();  // check for any error events
+  process_errors(); // check for any error events
   update_leds();
 }
 
@@ -119,8 +120,8 @@ void StateManager::set_event(StateManager::Event event)
       if (RF_.rc_.stick(RC::Stick::STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
       {
         // require either min throttle to be enabled or throttle override switch to be on
-        if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE) ||
-            RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
+        if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)
+            || RF_.rc_.switch_on(RC::Switch::SWITCH_THROTTLE_OVERRIDE))
         {
           if (RF_.params_.get_param_int(PARAM_CALIBRATE_GYRO_ON_ARM))
           {
@@ -142,8 +143,7 @@ void StateManager::set_event(StateManager::Event event)
       }
       else
       {
-        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                              "Cannot arm with RC throttle high");
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Cannot arm with RC throttle high");
       }
       break;
     default:
@@ -155,8 +155,8 @@ void StateManager::set_event(StateManager::Event event)
     switch (event)
     {
     case EVENT_RC_LOST:
-      set_error(ERROR_RC_LOST);  // sometimes redundant, but reports RC lost error if another error
-                                 // got reported first
+      set_error(ERROR_RC_LOST); // sometimes redundant, but reports RC lost error if another error
+                                // got reported first
       break;
     case EVENT_RC_FOUND:
       clear_error(ERROR_RC_LOST);
@@ -170,25 +170,19 @@ void StateManager::set_event(StateManager::Event event)
       if (next_arming_error_msg_ms_ < RF_.board_.clock_millis())
       {
         if (state_.error_codes & StateManager::ERROR_INVALID_MIXER)
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                                "Unable to arm: Invalid mixer");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Invalid mixer");
         if (state_.error_codes & StateManager::ERROR_IMU_NOT_RESPONDING)
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                                "Unable to arm: IMU not responding");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not responding");
         if (state_.error_codes & StateManager::ERROR_RC_LOST)
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                                "Unable to arm: RC signal lost");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: RC signal lost");
         if (state_.error_codes & StateManager::ERROR_UNHEALTHY_ESTIMATOR)
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                                "Unable to arm: Unhealthy estimator");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Unhealthy estimator");
         if (state_.error_codes & StateManager::ERROR_TIME_GOING_BACKWARDS)
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                                "Unable to arm: Time going backwards");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
         if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU)
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                                "Unable to arm: IMU not calibrated");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
 
-        next_arming_error_msg_ms_ = RF_.board_.clock_millis() + 1000;  // throttle messages to 1 Hz
+        next_arming_error_msg_ms_ = RF_.board_.clock_millis() + 1000; // throttle messages to 1 Hz
       }
       break;
     default:
@@ -308,20 +302,17 @@ void StateManager::check_backup_memory()
         {
           state_.armed = true;
           fsm_state_ = FSM_STATE_ARMED;
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL,
-                                "Rearming after hardfault!!!");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Rearming after hardfault!!!");
         }
         else
         {
-          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL,
-                                "Failed to rearm after hardfault!!!");
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Failed to rearm after hardfault!!!");
         }
       }
 
       // queue sending backup data over comm link
       RF_.comm_manager_.send_backup_data(data);
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL,
-                            "Recovered from hardfault!!!");
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_CRITICAL, "Recovered from hardfault!!!");
     }
 
     RF_.board_.backup_memory_clear(sizeof(data));
@@ -363,4 +354,4 @@ void StateManager::update_leds()
     RF_.board_.led1_on();
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

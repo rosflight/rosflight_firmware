@@ -29,17 +29,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstdbool>
-#include <cstdint>
+#include "controller.h"
 
 #include "command_manager.h"
 #include "estimator.h"
+
 #include "rosflight.h"
 
-#include "controller.h"
+#include <cstdbool>
+#include <cstdint>
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 Controller::Controller(ROSflight &rf) : RF_(rf) {}
 
 void Controller::init()
@@ -50,8 +51,7 @@ void Controller::init()
   float min = -max;
   float tau = RF_.params_.get_param_float(PARAM_PID_TAU);
 
-  roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P),
-             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
+  roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P), RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
              RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max, min, tau);
   roll_rate_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_P),
                   RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_I),
@@ -62,8 +62,7 @@ void Controller::init()
   pitch_rate_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_P),
                    RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_I),
                    RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max, min, tau);
-  yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P),
-                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
+  yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P), RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
                  RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max, min, tau);
 }
 
@@ -86,13 +85,12 @@ void Controller::run()
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
-  bool update_integrators = (RF_.state_manager_.state().armed) &&
-                            (RF_.command_manager_.combined_control().F.value > 0.1f) &&
-                            dt_us < 10000;
+  bool update_integrators =
+      (RF_.state_manager_.state().armed) && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
 
   // Run the PID loops
-  turbomath::Vector pid_output = run_pid_loops(
-      dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
+  turbomath::Vector pid_output =
+      run_pid_loops(dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
@@ -107,8 +105,7 @@ void Controller::calculate_equilbrium_torque_from_rc()
   if (!(RF_.state_manager_.state().armed))
   {
     // Tell the user that we are doing a equilibrium torque calibration
-    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
-                          "Capturing equilbrium offsets from RC");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Capturing equilbrium offsets from RC");
 
     // Prepare for calibration
     // artificially tell the flight controller it is leveled
@@ -130,21 +127,15 @@ void Controller::calculate_equilbrium_torque_from_rc()
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
     // the static offset torques
-    turbomath::Vector pid_output =
-        run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
+    turbomath::Vector pid_output = run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
-    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE,
-                                pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
-    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE,
-                                pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
-    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE,
-                                pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_X_EQ_TORQUE, pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE, pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
+    RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE, pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
 
-    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
-                          "Equilibrium torques found and applied.");
-    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
-                          "Please zero out trims on your transmitter");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Equilibrium torques found and applied.");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Please zero out trims on your transmitter");
   }
   else
   {
@@ -196,8 +187,7 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us,
   if (command.x.type == RATE)
     out.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
   else if (command.x.type == ANGLE)
-    out.x =
-        roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
+    out.x = roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
   else
     out.x = command.x.value;
 
@@ -205,8 +195,7 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us,
   if (command.y.type == RATE)
     out.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
   else if (command.y.type == ANGLE)
-    out.y =
-        pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
+    out.y = pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
   else
     out.y = command.y.value;
 
@@ -219,16 +208,16 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us,
   return out;
 }
 
-Controller::PID::PID()
-    : kp_(0.0f),
-      ki_(0.0f),
-      kd_(0.0f),
-      max_(1.0f),
-      min_(-1.0f),
-      integrator_(0.0f),
-      differentiator_(0.0f),
-      prev_x_(0.0f),
-      tau_(0.05)
+Controller::PID::PID() :
+  kp_(0.0f),
+  ki_(0.0f),
+  kd_(0.0f),
+  max_(1.0f),
+  min_(-1.0f),
+  integrator_(0.0f),
+  differentiator_(0.0f),
+  prev_x_(0.0f),
+  tau_(0.05)
 {
 }
 
@@ -250,8 +239,8 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
     // calculate D term (use dirty derivative if we don't have access to a measurement of the
     // derivative) The dirty derivative is a sort of low-pass filtered version of the derivative.
     //// (Include reference to Dr. Beard's notes here)
-    differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_ +
-                      2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
+    differentiator_ =
+        (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_ + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
   }
   else
@@ -301,4 +290,4 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   return u_sat;
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

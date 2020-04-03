@@ -35,8 +35,8 @@
 #include "board.h"
 #include "sensors.h"
 
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 class testBoard : public Board
 {
 private:
@@ -133,7 +133,7 @@ public:
   bool backup_memory_read(void *dest, size_t len) override;
   void backup_memory_write(const void *src, size_t len) override;
   void backup_memory_clear(size_t len) override;
-  void backup_memory_clear();  // Not an override
+  void backup_memory_clear(); // Not an override
 
   void set_imu(float *acc, float *gyro, uint64_t time_us);
   void set_rc(uint16_t *values);
@@ -141,6 +141,6 @@ public:
   void set_pwm_lost(bool lost);
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSLFIGHT_FIRMWARE_TEST_BOARD_H
+#endif // ROSLFIGHT_FIRMWARE_TEST_BOARD_H

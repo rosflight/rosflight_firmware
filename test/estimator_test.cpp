@@ -1,10 +1,13 @@
+#include "common.h"
+#include "mavlink.h"
+#include "test_board.h"
+
+#include "rosflight.h"
+
+#include <eigen3/unsupported/Eigen/MatrixFunctions>
+
 #include <cmath>
 #include <fstream>
-#include "common.h"
-#include <eigen3/unsupported/Eigen/MatrixFunctions>
-#include "mavlink.h"
-#include "rosflight.h"
-#include "test_board.h"
 
 // #define DEBUG
 
@@ -222,11 +225,9 @@ public:
   Vector3d getTrueRPY()
   {
     Vector3d rpy;
-    rpy(0) = std::atan2(2.0f * (q_.w() * q_.x() + q_.y() * q_.z()),
-                        1.0f - 2.0f * (q_.x() * q_.x() + q_.y() * q_.y()));
+    rpy(0) = std::atan2(2.0f * (q_.w() * q_.x() + q_.y() * q_.z()), 1.0f - 2.0f * (q_.x() * q_.x() + q_.y() * q_.y()));
     rpy(1) = std::asin(2.0f * (q_.w() * q_.y() - q_.z() * q_.x()));
-    rpy(2) = std::atan2(2.0f * (q_.w() * q_.z() + q_.x() * q_.y()),
-                        1.0f - 2.0f * (q_.y() * q_.y() + q_.z() * q_.z()));
+    rpy(2) = std::atan2(2.0f * (q_.w() * q_.z() + q_.x() * q_.y()), 1.0f - 2.0f * (q_.y() * q_.y() + q_.z() * q_.z()));
     return rpy;
   }
 };

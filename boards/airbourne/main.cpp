@@ -33,11 +33,11 @@
 #include "backup_sram.h"
 #include "board.h"
 #include "mavlink.h"
-#include "rosflight.h"
 #include "state_manager.h"
 
-rosflight_firmware::ROSflight* rosflight_ptr =
-    nullptr;  // used to access firmware in case of a hard fault
+#include "rosflight.h"
+
+rosflight_firmware::ROSflight* rosflight_ptr = nullptr; // used to access firmware in case of a hard fault
 void write_backup_data(const rosflight_firmware::StateManager::BackupData::DebugInfo& debug)
 {
   if (rosflight_ptr != nullptr)
@@ -46,97 +46,97 @@ void write_backup_data(const rosflight_firmware::StateManager::BackupData::Debug
   }
 }
 
-extern "C" {
-/* The prototype shows it is a naked function - in effect this is just an
-assembly function. */
-void HardFault_Handler(void) __attribute__((naked));
-
-/* The fault handler implementation calls a function called
-prvGetRegistersFromStack(). */
-void HardFault_Handler(void)
+extern "C"
 {
-  __asm volatile(
-      " tst lr, #4                                                \n"
-      " ite eq                                                    \n"
-      " mrseq r0, msp                                             \n"
-      " mrsne r0, psp                                             \n"
-      " ldr r1, [r0, #24]                                         \n"
-      " ldr r2, handler2_address_const                            \n"
-      " bx r2                                                     \n"
-      " handler2_address_const: .word prvGetRegistersFromStack    \n");
-}
+  /* The prototype shows it is a naked function - in effect this is just an
+  assembly function. */
+  void HardFault_Handler(void) __attribute__((naked));
 
-void prvGetRegistersFromStack(uint32_t* pulFaultStackAddress)
-{
-  /* These are volatile to try and prevent the compiler/linker optimising them
-  away as the variables never actually get used.  If the debugger won't show the
-  values of the variables, make them global my moving their declaration outside
-  of this function. */
-  volatile uint32_t r0;
-  volatile uint32_t r1;
-  volatile uint32_t r2;
-  volatile uint32_t r3;
-  volatile uint32_t r12;
-  volatile uint32_t lr;  /* Link register. */
-  volatile uint32_t pc;  /* Program counter. */
-  volatile uint32_t psr; /* Program status register. */
-
-  r0 = pulFaultStackAddress[0];
-  r1 = pulFaultStackAddress[1];
-  r2 = pulFaultStackAddress[2];
-  r3 = pulFaultStackAddress[3];
-
-  r12 = pulFaultStackAddress[4];
-  lr = pulFaultStackAddress[5];
-  pc = pulFaultStackAddress[6];
-  psr = pulFaultStackAddress[7];
-
-  /* When the following line is hit, the variables contain the register values. */
-
-  // save crash information to backup SRAM
-  rosflight_firmware::StateManager::BackupData::DebugInfo debug = {r0,  r1, r2, r3,
-                                                                   r12, lr, pc, psr};
-  write_backup_data(debug);
-
-  // reboot
-  NVIC_SystemReset();
-}
-
-void NMI_Handler()
-{
-  while (1)
+  /* The fault handler implementation calls a function called
+  prvGetRegistersFromStack(). */
+  void HardFault_Handler(void)
   {
+    __asm volatile(
+        " tst lr, #4                                                \n"
+        " ite eq                                                    \n"
+        " mrseq r0, msp                                             \n"
+        " mrsne r0, psp                                             \n"
+        " ldr r1, [r0, #24]                                         \n"
+        " ldr r2, handler2_address_const                            \n"
+        " bx r2                                                     \n"
+        " handler2_address_const: .word prvGetRegistersFromStack    \n");
   }
-}
 
-void MemManage_Handler()
-{
-  while (1)
+  void prvGetRegistersFromStack(uint32_t* pulFaultStackAddress)
   {
-  }
-}
+    /* These are volatile to try and prevent the compiler/linker optimising them
+    away as the variables never actually get used.  If the debugger won't show the
+    values of the variables, make them global my moving their declaration outside
+    of this function. */
+    volatile uint32_t r0;
+    volatile uint32_t r1;
+    volatile uint32_t r2;
+    volatile uint32_t r3;
+    volatile uint32_t r12;
+    volatile uint32_t lr;  /* Link register. */
+    volatile uint32_t pc;  /* Program counter. */
+    volatile uint32_t psr; /* Program status register. */
 
-void BusFault_Handler()
-{
-  while (1)
-  {
-  }
-}
+    r0 = pulFaultStackAddress[0];
+    r1 = pulFaultStackAddress[1];
+    r2 = pulFaultStackAddress[2];
+    r3 = pulFaultStackAddress[3];
 
-void UsageFault_Handler()
-{
-  while (1)
-  {
-  }
-}
+    r12 = pulFaultStackAddress[4];
+    lr = pulFaultStackAddress[5];
+    pc = pulFaultStackAddress[6];
+    psr = pulFaultStackAddress[7];
 
-void WWDG_IRQHandler()
-{
-  while (1)
-  {
+    /* When the following line is hit, the variables contain the register values. */
+
+    // save crash information to backup SRAM
+    rosflight_firmware::StateManager::BackupData::DebugInfo debug = {r0, r1, r2, r3, r12, lr, pc, psr};
+    write_backup_data(debug);
+
+    // reboot
+    NVIC_SystemReset();
   }
-}
-}  // extern "C"
+
+  void NMI_Handler()
+  {
+    while (1)
+    {
+    }
+  }
+
+  void MemManage_Handler()
+  {
+    while (1)
+    {
+    }
+  }
+
+  void BusFault_Handler()
+  {
+    while (1)
+    {
+    }
+  }
+
+  void UsageFault_Handler()
+  {
+    while (1)
+    {
+    }
+  }
+
+  void WWDG_IRQHandler()
+  {
+    while (1)
+    {
+    }
+  }
+} // extern "C"
 
 int main(void)
 {
@@ -144,7 +144,7 @@ int main(void)
   rosflight_firmware::Mavlink mavlink(board);
   rosflight_firmware::ROSflight firmware(board, mavlink);
 
-  rosflight_ptr = &firmware;  // this allows crashes to grab some info
+  rosflight_ptr = &firmware; // this allows crashes to grab some info
 
   board.init_board();
   firmware.init();

@@ -29,14 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "command_manager.h"
+
+#include "rosflight.h"
+
 #include <cstdbool>
 #include <cstdlib>
 
-#include "command_manager.h"
-#include "rosflight.h"
-
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 typedef enum
 {
   ATT_MODE_RATE,
@@ -58,10 +59,7 @@ typedef struct
   control_channel_t *combined;
 } mux_t;
 
-CommandManager::CommandManager(ROSflight &_rf)
-    : RF_(_rf), failsafe_command_(multirotor_failsafe_command_)
-{
-}
+CommandManager::CommandManager(ROSflight &_rf) : RF_(_rf), failsafe_command_(multirotor_failsafe_command_) {}
 
 void CommandManager::init()
 {
@@ -118,8 +116,7 @@ void CommandManager::interpret_rc(void)
     }
     else
     {
-      roll_pitch_type =
-          (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE : ANGLE;
+      roll_pitch_type = (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE : ANGLE;
     }
 
     rc_command_.x.type = roll_pitch_type;
@@ -153,15 +150,14 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   uint32_t now = RF_.board_.clock_millis();
 
   // if we are still in the lag time, return true
-  if (now < rc_stick_override_[channel].last_override_time +
-                RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
+  if (now < rc_stick_override_[channel].last_override_time + RF_.params_.get_param_int(PARAM_OVERRIDE_LAG_TIME))
   {
     return true;
   }
   else
   {
-    if (fabsf(RF_.rc_.stick(rc_stick_override_[channel].rc_channel)) >
-        RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
+    if (fabsf(RF_.rc_.stick(rc_stick_override_[channel].rc_channel))
+        > RF_.params_.get_param_float(PARAM_RC_OVERRIDE_DEVIATION))
     {
       rc_stick_override_[channel].last_override_time = now;
       return true;
@@ -175,13 +171,12 @@ bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
   bool override_this_channel = false;
   // Check if the override switch exists and is triggered, or if the sticks have deviated enough to
   // trigger an override
-  if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) &&
-       RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE)) ||
-      stick_deviated(channel))
+  if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
+      || stick_deviated(channel))
   {
     override_this_channel = true;
   }
-  else  // Otherwise only have RC override if the offboard channel is inactive
+  else // Otherwise only have RC override if the offboard channel is inactive
   {
     if (muxes[channel].onboard->active)
     {
@@ -201,12 +196,11 @@ bool CommandManager::do_throttle_muxing(void)
 {
   bool override_this_channel = false;
   // Check if the override switch exists and is triggered
-  if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) &&
-      RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE))
+  if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE))
   {
     override_this_channel = true;
   }
-  else  // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
+  else // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
   {
     if (muxes[MUX_F].onboard->active)
     {
@@ -279,8 +273,7 @@ bool CommandManager::run()
     interpret_rc();
 
     // Check for offboard control timeout (100 ms)
-    if (RF_.board_.clock_millis() >
-        offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT))
+    if (RF_.board_.clock_millis() > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT))
     {
       // If it has been longer than 100 ms, then disable the offboard control
       offboard_command_.F.active = false;
@@ -314,4 +307,4 @@ bool CommandManager::run()
   return true;
 }
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware

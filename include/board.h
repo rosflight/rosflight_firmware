@@ -32,15 +32,15 @@
 #ifndef ROSFLIGHT_FIRMWARE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_BOARD_H
 
+#include "sensors.h"
+#include "state_manager.h"
+
 #include <cstdbool>
 #include <cstddef>
 #include <cstdint>
 
-#include "sensors.h"
-#include "state_manager.h"
-
-namespace rosflight_firmware {
-
+namespace rosflight_firmware
+{
 class Board
 {
 public:
@@ -136,6 +136,6 @@ public:
   virtual void backup_memory_clear(size_t len) = 0;
 };
 
-}  // namespace rosflight_firmware
+} // namespace rosflight_firmware
 
-#endif  // ROSLFIGHT_FIRMWARE_BOARD_H
+#endif // ROSLFIGHT_FIRMWARE_BOARD_H

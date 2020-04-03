@@ -1,9 +1,9 @@
 #include "common.h"
-
 #include "mavlink.h"
-#include "rosflight.h"
 #include "state_manager.h"
 #include "test_board.h"
+
+#include "rosflight.h"
 
 using namespace rosflight_firmware;
 
@@ -20,10 +20,9 @@ public:
   {
     board.backup_memory_clear();
     rf.init();
-    rf.state_manager_.clear_error(
-        rf.state_manager_.state().error_codes);  // Clear All Errors to Start
+    rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_MIXER, 10);
-    rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false);  // default to turning this off
+    rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
     stepFirmware(100000);
   }
 
@@ -72,8 +71,8 @@ TEST_F(StateMachineTest, SetAndClearAllErrors)
 
 TEST_F(StateMachineTest, SetAndClearComboErrors)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-                   StateManager::ERROR_TIME_GOING_BACKWARDS | StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
@@ -83,8 +82,8 @@ TEST_F(StateMachineTest, SetAndClearComboErrors)
 
 TEST_F(StateMachineTest, AddErrorAfterPreviousError)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-                   StateManager::ERROR_TIME_GOING_BACKWARDS | StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -95,8 +94,8 @@ TEST_F(StateMachineTest, AddErrorAfterPreviousError)
 
 TEST_F(StateMachineTest, ClearOneErrorOutOfMany)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-                   StateManager::ERROR_TIME_GOING_BACKWARDS | StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -108,11 +107,10 @@ TEST_F(StateMachineTest, ClearOneErrorOutOfMany)
 
 TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-                   StateManager::ERROR_TIME_GOING_BACKWARDS | StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
-  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING |
-                                StateManager::ERROR_TIME_GOING_BACKWARDS);
+  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_UNCALIBRATED_IMU);
@@ -121,8 +119,8 @@ TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
 
 TEST_F(StateMachineTest, ClearAllErrors)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-                   StateManager::ERROR_TIME_GOING_BACKWARDS | StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.clear_error(error);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -383,7 +381,7 @@ TEST_F(StateMachineTest, RegainRCAfterFailsafe)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
 }
-constexpr uint32_t StateManager::BackupData::ARM_MAGIC;  // C++ is weird
+constexpr uint32_t StateManager::BackupData::ARM_MAGIC; // C++ is weird
 TEST_F(StateMachineTest, NormalBoot)
 {
   board.backup_memory_clear();
