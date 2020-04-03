@@ -38,9 +38,8 @@ namespace rosflight_firmware
 {
 Mavlink::Mavlink(Board &board) : board_(board) {}
 
-void Mavlink::init(uint32_t baud_rate, uint32_t dev)
+void Mavlink::init()
 {
-  board_.serial_init(baud_rate, dev);
   initialized_ = true;
 }
 
@@ -109,6 +108,9 @@ void Mavlink::send_command_ack(uint8_t system_id, Command command, bool success)
     break;
   case CommLinkInterface::Command::COMMAND_SEND_VERSION:
     rosflight_cmd = ROSFLIGHT_CMD_SEND_VERSION;
+    break;
+  case CommLinkInterface::Command::COMMAND_SEND_ALL_CONFIG_INFOS:
+    rosflight_cmd = ROSFLIGHT_CMD_SEND_ALL_CONFIG_INFOS;
     break;
   }
 
@@ -263,6 +265,46 @@ void Mavlink::send_param_value_float(uint8_t system_id,
 {
   mavlink_message_t msg;
   mavlink_msg_param_value_pack(system_id, 0, &msg, name, value, MAV_PARAM_TYPE_REAL32, param_count, index);
+  send_message(msg);
+}
+
+void Mavlink::send_config_value(uint8_t system_id, uint8_t device, uint8_t config)
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_config_pack(system_id, 0, &msg, device, config);
+  send_message(msg);
+}
+
+void Mavlink::send_device_info(uint8_t system_id,
+                               uint8_t device,
+                               uint8_t max_config,
+                               char (&name)[BoardConfigManager::DEVICE_NAME_LENGTH],
+                               uint8_t num_devices)
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_device_info_pack(system_id, 0, &msg, device, max_config, reinterpret_cast<uint8_t *>(name),
+                                         num_devices);
+  send_message(msg);
+}
+
+void Mavlink::send_config_info(uint8_t system_id,
+                               uint8_t device,
+                               uint8_t config,
+                               char (&name)[BoardConfigManager::CONFIG_NAME_LENGTH])
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_config_info_pack(system_id, 0, &msg, device, config, reinterpret_cast<uint8_t *>(name));
+  send_message(msg);
+}
+void Mavlink::send_config_status(uint8_t system_id,
+                                 uint8_t device,
+                                 bool success,
+                                 bool reboot_required,
+                                 char (&error_message)[ConfigManager::CONFIG_RESPONSE_MESSAGE_LENGTH])
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight_config_status_pack(system_id, 0, &msg, device, success, reboot_required,
+                                           reinterpret_cast<uint8_t *>(error_message));
   send_message(msg);
 }
 
@@ -425,6 +467,9 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t *const msg)
   case ROSFLIGHT_CMD_SEND_VERSION:
     command = CommLinkInterface::Command::COMMAND_SEND_VERSION;
     break;
+  case ROSFLIGHT_CMD_SEND_ALL_CONFIG_INFOS:
+    command = CommLinkInterface::Command::COMMAND_SEND_ALL_CONFIG_INFOS;
+    break;
   default: // unsupported command; report failure then return without calling command callback
     mavlink_message_t out_msg;
     mavlink_msg_rosflight_cmd_ack_pack(msg->sysid, compid_, &out_msg, cmd.command, ROSFLIGHT_CMD_FAILED);
@@ -541,6 +586,25 @@ void Mavlink::handle_msg_heartbeat(const mavlink_message_t *const msg)
     listener_->heartbeat_callback();
 }
 
+void Mavlink::handle_msg_config(const mavlink_message_t *const msg)
+{
+  mavlink_rosflight_config_t config_msg;
+  mavlink_msg_rosflight_config_decode(msg, &config_msg);
+  uint8_t device = config_msg.device;
+  uint8_t config = config_msg.config;
+  if (listener_ != nullptr)
+    listener_->config_set_callback(device, config);
+}
+
+void Mavlink::handle_msg_config_request(const mavlink_message_t *const msg)
+{
+  mavlink_rosflight_config_request_t request_msg;
+  mavlink_msg_rosflight_config_request_decode(msg, &request_msg);
+  uint8_t device = request_msg.device;
+  if (listener_ != nullptr)
+    listener_->config_request_callback(device);
+}
+
 void Mavlink::handle_mavlink_message()
 {
   switch (in_buf_.msgid)
@@ -571,6 +635,12 @@ void Mavlink::handle_mavlink_message()
     break;
   case MAVLINK_MSG_ID_HEARTBEAT:
     handle_msg_heartbeat(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_ROSFLIGHT_CONFIG:
+    handle_msg_config(&in_buf_);
+    break;
+  case MAVLINK_MSG_ID_ROSFLIGHT_CONFIG_REQUEST:
+    handle_msg_config_request(&in_buf_);
     break;
   default:
     break;

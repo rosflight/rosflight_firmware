@@ -1,3 +1,4 @@
+#include "cmath"
 #include "common.h"
 #include "mavlink.h"
 #include "test_board.h"

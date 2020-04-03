@@ -86,11 +86,20 @@ The operation of the state manager is defined by the following finite state mach
 
 The state manager also includes functionality for recovering from hard faults. In the case of a hard fault, the firmware writes a small amount of data to backup memory then reboots. This backup memory location is checked and then cleared after every reboot. The backup memory includes the armed state of the flight controller. On reboot, the firmware will initialize then, if this armed-state flag is set, immediately transition back into the armed state. This functionality allows for continued RC control in the case of a hard fault. Hard faults are not expected with the stable firmware code base, but this feature adds an additional layer of safety if experimental changes are being made to the firmware itself.
 
+### Config Manager
+This module handles the configurations for various devices, such as sensors and the serial connection. Each configuration is stored as an integer. Configurations can be set from the companion computer over the serial connection. On startup, the config manager sends configurations to the board support layer to initialize devices.
+
+The config manager also interacts with the board config manager, which is provided by the board support layer. The board config manager provides information on available configurations (such as name, number of options, etc). Additionally, the board config manager checks if a config change is valid. If the board config manager rejects a change, it explains why in an error message.
+
+
 ### Parameter Server
 This module handles all parameters for the flight stack.
 It supports the getting and setting of integer and floating-point parameters, and the saving of these parameters to non-volatile memory.
 Setting and getting of parameters from the companion computer is done through the serial communication interface.
 While no other data flow lines are shown on the diagram, all of the other modules interact with the parameter server.
+
+### Memory Manager
+The memory manager interfaces with the board support layer to read from and write to non-volatile memory. This memory is used by the parameter server and the config manager. At the time of this writing, there is almost no logic in the memory manager. Logic such as checksums are handled by the parameter server and config manager.
 
 ### Comm Manager
 This module handles all serial communication between the flight controller and companion computer.

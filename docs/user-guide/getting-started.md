@@ -17,8 +17,8 @@ The following checklists should help you get a new vehicle set up for the first 
 
 ### General Setup
 
-  1. Set the `FIXED_WING` parameter (`1` if a fixed-wing, `0` if a multirotor)
-  2. Set the `RC_TYPE` parameter (`0` if PPM, `1` if SBUS)
+  1. [Configure the firmware](firmware-configuration.md) for your specific RC, serial, and sensor setup
+  2. Set the `FIXED_WING` parameter (`1` if a fixed-wing, `0` if a multirotor)
   3. Set the `MIXER` parameter to the appropriate value described in the [Hardware Setup](hardware-setup.md) page
   4. Set the `MOTOR_PWM_UPDATE` parameter (typically `490` for SimonK ESCs, `50` for standard servos)
   5. Make sure your [RC transmitter is set up correctly](rc-configuration.md)
@@ -27,7 +27,7 @@ The following checklists should help you get a new vehicle set up for the first 
       * If you want to use a switch to enable RC override, set the `RC_ATT_OVRD_CHN` and `RC_THR_OVRD_CHN` parameters to the appropriate channel(s) (0-indexed). If you want complete control (attitude and throttle) when you flip the switch, set both these parameters to the same channel.
   7. Calibrate your IMU: start `rosflight_io`, then run `rosservice call /calibrate_imu`
   8. Complete the multirotor-specific or fixed-wing-specific checklist below
-  9. Save the parameters (`rosservice call /param_write`)
+  9. Save the parameters (`rosservice call /memory_write`)
   10. You'll probably want to save a backup of your parameters (call `rosservice call /param_save_to_file /path/to/file.yml`)
   11. Make sure you run through the [Preflight Checklist](preflight-checks.md) before flying
 

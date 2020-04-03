@@ -66,7 +66,8 @@ public:
     COMMAND_RC_CALIBRATION,
     COMMAND_REBOOT,
     COMMAND_REBOOT_TO_BOOTLOADER,
-    COMMAND_SEND_VERSION
+    COMMAND_SEND_VERSION,
+    COMMAND_SEND_ALL_CONFIG_INFOS
   };
 
   struct OffboardControl
@@ -124,9 +125,11 @@ public:
     virtual void aux_command_callback(const AuxCommand &command) = 0;
     virtual void external_attitude_callback(const turbomath::Quaternion &q) = 0;
     virtual void heartbeat_callback() = 0;
+    virtual void config_set_callback(uint8_t device, uint8_t configuration) = 0;
+    virtual void config_request_callback(uint8_t device) = 0;
   };
 
-  virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
+  virtual void init() = 0;
   virtual void receive() = 0;
 
   // send functions
@@ -165,6 +168,21 @@ public:
                                       const char *const name,
                                       float value,
                                       uint16_t param_count) = 0;
+  virtual void send_config_value(uint8_t system_id, uint8_t device, uint8_t config) = 0;
+  virtual void send_device_info(uint8_t system_id,
+                                uint8_t device,
+                                uint8_t max_config,
+                                char (&name)[BoardConfigManager::DEVICE_NAME_LENGTH],
+                                uint8_t num_devices) = 0;
+  virtual void send_config_info(uint8_t system_id,
+                                uint8_t device,
+                                uint8_t config,
+                                char (&name)[BoardConfigManager::CONFIG_NAME_LENGTH]) = 0;
+  virtual void send_config_status(uint8_t system_id,
+                                  uint8_t device,
+                                  bool success,
+                                  bool reboot_required,
+                                  char (&error_message)[ConfigManager::CONFIG_RESPONSE_MESSAGE_LENGTH]) = 0;
   virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) = 0;
   virtual void send_sonar(uint8_t system_id,
                           /* TODO enum type*/ uint8_t type,

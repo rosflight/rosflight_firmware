@@ -84,7 +84,7 @@ uint64_t testBoard::clock_micros()
 void testBoard::clock_delay(uint32_t milliseconds) {}
 
 // serial
-void testBoard::serial_init(uint32_t baud_rate, uint32_t dev) {}
+void testBoard::serial_init(uint32_t baud_rate, hardware_config_t configuration) {}
 void testBoard::serial_write(const uint8_t *src, size_t len) {}
 uint16_t testBoard::serial_bytes_available()
 {
@@ -96,6 +96,28 @@ uint8_t testBoard::serial_read()
 }
 void testBoard::serial_flush() {}
 
+// Hardware config
+bool testBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
+{
+  (void)configuration;
+  (void)params;
+  switch (configuration)
+  {
+  case Configuration::SERIAL:
+    serial_init(0, 0);
+    break;
+  case Configuration::RC:
+    rc_init();
+    break;
+  }
+
+  return true;
+}
+
+const TestBoardConfigManager &testBoard::get_board_config_manager() const
+{
+  return config_manager_;
+}
 // sensors
 void testBoard::sensors_init() {}
 uint16_t testBoard::num_sensor_errors()
@@ -231,7 +253,7 @@ bool testBoard::gnss_has_new_data()
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
-void testBoard::rc_init(rc_type_t rc_type) {}
+void testBoard::rc_init() {}
 bool testBoard::rc_lost()
 {
   return rc_lost_;
@@ -248,7 +270,8 @@ void testBoard::pwm_disable() {}
 void testBoard::memory_init() {}
 bool testBoard::memory_read(void *dest, size_t len)
 {
-  return false;
+  memset(dest, 0, len);
+  return true;
 }
 bool testBoard::memory_write(const void *src, size_t len)
 {

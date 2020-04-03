@@ -45,7 +45,6 @@ enum : uint16_t
   /*** HARDWARE CONFIGURATION ***/
   /******************************/
   PARAM_BAUD_RATE = 0,
-  PARAM_SERIAL_DEVICE,
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -156,7 +155,6 @@ enum : uint16_t
   /************************/
   /*** RC CONFIGURATION ***/
   /************************/
-  PARAM_RC_TYPE,
   PARAM_RC_X_CHANNEL,
   PARAM_RC_Y_CHANNEL,
   PARAM_RC_Z_CHANNEL,
@@ -239,6 +237,7 @@ private:
     int32_t ivalue;
   };
 
+public:
   typedef struct
   {
     uint32_t version;
@@ -253,8 +252,9 @@ private:
     uint8_t chk;      // XOR checksum
   } params_t;
 
-  params_t params;
+private:
   ROSflight &RF_;
+  params_t &params;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
@@ -264,7 +264,7 @@ private:
   size_t num_listeners_;
 
 public:
-  Params(ROSflight &_rf);
+  Params(ROSflight &_rf, params_t &param_struct);
 
   // function declarations
 
@@ -293,10 +293,9 @@ public:
   bool read(void);
 
   /**
-   * @brief Write current parameter values to non-volatile memory
-   * @return True if successful, false otherwise
+   * @brief Prepare the parameter struct to be written to non-volatile memory
    */
-  bool write(void);
+  void prepare_write(void);
 
   /**
    * @brief Callback for executing actions that need to be taken when a parameter value changes

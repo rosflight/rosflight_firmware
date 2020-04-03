@@ -38,8 +38,10 @@
 #include "board.h"
 #include "comm_manager.h"
 #include "command_manager.h"
+#include "config_manager.h"
 #include "controller.h"
 #include "estimator.h"
+#include "memory_manager.h"
 #include "mixer.h"
 #include "param.h"
 #include "rc.h"
@@ -56,8 +58,9 @@ public:
   ROSflight(Board& board, CommLinkInterface& comm_link);
 
   Board& board_;
-  CommManager comm_manager_;
 
+  MemoryManager memory_manager_;
+  CommManager comm_manager_;
   Params params_;
 
   CommandManager command_manager_;
@@ -67,6 +70,7 @@ public:
   RC rc_;
   Sensors sensors_;
   StateManager state_manager_;
+  ConfigManager config_manager_;
 
   uint32_t loop_time_us;
 

@@ -78,9 +78,8 @@ void BreezyBoard::clock_delay(uint32_t milliseconds)
 
 // serial
 
-void BreezyBoard::serial_init(uint32_t baud_rate, uint32_t dev)
+void BreezyBoard::serial_init(uint32_t baud_rate)
 {
-  (void)dev;
   Serial1 = uartOpen(USART1, NULL, baud_rate, MODE_RXTX);
 }
 
@@ -105,6 +104,29 @@ uint8_t BreezyBoard::serial_read()
 void BreezyBoard::serial_flush()
 {
   return;
+}
+
+bool BreezyBoard::enable_device(device_t device, hardware_config_t configuration, const Params &params)
+{
+  (void)configuration;
+  switch (device)
+  {
+  case Configuration::RC:
+    rc_init();
+    break;
+  case Configuration::SERIAL:
+    serial_init(params.get_param_int(PARAM_BAUD_RATE));
+    break;
+  default:
+    break;
+  }
+
+  return true;
+}
+
+const BreezyBoardConfigManager &BreezyBoard::get_board_config_manager() const
+{
+  return config_manager_;
 }
 
 // sensors
@@ -330,9 +352,8 @@ void BreezyBoard::battery_current_set_multiplier(double multiplier)
 }
 // PWM
 
-void BreezyBoard::rc_init(rc_type_t rc_type)
+void BreezyBoard::rc_init()
 {
-  (void)rc_type; // TODO SBUS is not supported on F1
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 

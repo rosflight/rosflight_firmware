@@ -82,6 +82,8 @@ private:
   ROSflight& RF_;
   CommLinkInterface& comm_link_;
   uint8_t send_params_index_;
+  device_t send_device_info_index_{Configuration::DEVICE_COUNT};
+  hardware_config_t send_config_info_index_{0};
   bool initialized_ = false;
   bool connected_ = false;
 
@@ -140,6 +142,8 @@ private:
   void aux_command_callback(const CommLinkInterface::AuxCommand& command) override;
   void external_attitude_callback(const turbomath::Quaternion& q) override;
   void heartbeat_callback() override;
+  void config_set_callback(uint8_t device, uint8_t configuration) override;
+  void config_request_callback(uint8_t device) override;
 
   void send_heartbeat(void);
   void send_status(void);
@@ -161,15 +165,16 @@ private:
   //    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
+  void send_next_config_info(void);
 
   Stream streams_[STREAM_COUNT] = {
-      Stream(0, [this] { this->send_heartbeat(); }),      Stream(0, [this] { this->send_status(); }),
-      Stream(0, [this] { this->send_attitude(); }),       Stream(0, [this] { this->send_imu(); }),
-      Stream(0, [this] { this->send_diff_pressure(); }),  Stream(0, [this] { this->send_baro(); }),
-      Stream(0, [this] { this->send_sonar(); }),          Stream(0, [this] { this->send_mag(); }),
-      Stream(0, [this] { this->send_battery_status(); }), Stream(0, [this] { this->send_output_raw(); }),
-      Stream(0, [this] { this->send_gnss(); }),           Stream(0, [this] { this->send_gnss_raw(); }),
-      Stream(0, [this] { this->send_rc_raw(); }),         Stream(20000, [this] { this->send_low_priority(); })};
+      Stream(0, [this] {this->send_heartbeat(); }),      Stream(0, [this] {this->send_status(); }),
+      Stream(0, [this] {this->send_attitude(); }),       Stream(0, [this] {this->send_imu(); }),
+      Stream(0, [this] {this->send_diff_pressure(); }),  Stream(0, [this] {this->send_baro(); }),
+      Stream(0, [this] {this->send_sonar(); }),          Stream(0, [this] {this->send_mag(); }),
+      Stream(0, [this] {this->send_battery_status(); }), Stream(0, [this] {this->send_output_raw(); }),
+      Stream(0, [this] {this->send_gnss(); }),           Stream(0, [this] {this->send_gnss_raw(); }),
+      Stream(0, [this] {this->send_rc_raw(); }),         Stream(20000, [this] {this->send_low_priority(); })};
 
   // the time of week stamp for the last sent GNSS message, to prevent re-sending
   uint32_t last_sent_gnss_tow_ = 0;
@@ -183,6 +188,10 @@ public:
   void receive(void);
   void stream();
   void send_param_value(uint16_t param_id);
+  void send_config_value(device_t device);
+  void send_all_config_info(); // Sends all device and configuration names
+  void send_device_info(device_t device);
+  void send_config_info(device_t device, hardware_config_t config);
   void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
   void log(CommLinkInterface::LogSeverity severity, const char* fmt, ...);

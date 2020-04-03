@@ -84,9 +84,9 @@ private:
 
   // clang-format off
   control_t rc_command_ = {0,
-                           {false, ANGLE, 0.0},
-                           {false, ANGLE, 0.0},
-                           {false, RATE, 0.0},
+                                 {false, ANGLE, 0.0},
+                                 {false, ANGLE, 0.0},
+                                 {false, RATE, 0.0},
                            {false, THROTTLE, 0.0}};
   control_t offboard_command_ = {0,
                                  {false, ANGLE, 0.0},

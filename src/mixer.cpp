@@ -55,7 +55,6 @@ void Mixer::param_change_callback(uint16_t param_id)
     init_mixing();
     break;
   case PARAM_MOTOR_PWM_SEND_RATE:
-  case PARAM_RC_TYPE:
     init_PWM();
     break;
   default:
