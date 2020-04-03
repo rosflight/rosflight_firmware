@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
-#include "test_board.h"
 #include "mavlink.h"
+#include "test_board.h"
+
 #include "rosflight.h"
+
+#include <gtest/gtest.h>
 
 using namespace rosflight_firmware;
 

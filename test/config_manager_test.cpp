@@ -1,11 +1,14 @@
-#include <gtest/gtest.h>
-#include <string>
+#include "config_manager.h"
 
-#include "rosflight.h"
+#include "configuration_enum.h"
 #include "mavlink.h"
 #include "test_board.h"
-#include "configuration_enum.h"
-#include "config_manager.h"
+
+#include "rosflight.h"
+
+#include <gtest/gtest.h>
+
+#include <string>
 
 using namespace rosflight_firmware;
 
@@ -16,18 +19,13 @@ public:
   Mavlink mavlink;
   ROSflight rf;
 
-  ConfigManagerTest() :
-    mavlink(board),
-    rf(board, mavlink) {}
-  void SetUp() override
-  {
-    rf.init();
-  }
+  ConfigManagerTest() : mavlink(board), rf(board, mavlink) {}
+  void SetUp() override { rf.init(); }
 };
 
 TEST_F(ConfigManagerTest, DefaultValues)
 {
-  for(device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
+  for (device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
     EXPECT_EQ(rf.config_manager_[device], 0);
 }
 
@@ -39,8 +37,8 @@ TEST_F(ConfigManagerTest, SetValid)
   EXPECT_TRUE(response.successful);
   EXPECT_TRUE(response.reboot_required);
   EXPECT_EQ(std::string(reinterpret_cast<char*>(response.message)), "Succeed for testing");
-  for(device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
-    if(device == changed_device)
+  for (device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
+    if (device == changed_device)
       EXPECT_EQ(rf.config_manager_[device], config);
     else
       EXPECT_EQ(rf.config_manager_[device], 0);
@@ -54,6 +52,6 @@ TEST_F(ConfigManagerTest, SetInvalid)
   EXPECT_FALSE(response.successful);
   EXPECT_FALSE(response.reboot_required);
   EXPECT_EQ(std::string(reinterpret_cast<char*>(response.message)), "Fail for testing");
-  for(device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
+  for (device_t device{Configuration::FIRST_DEVICE}; device < Configuration::DEVICE_COUNT; ++device)
     EXPECT_EQ(rf.config_manager_[device], 0);
 }

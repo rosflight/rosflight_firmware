@@ -36,7 +36,6 @@
 
 namespace rosflight_firmware
 {
-
 class ParamListenerInterface
 {
 public:
