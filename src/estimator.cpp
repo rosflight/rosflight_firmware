@@ -30,14 +30,12 @@
  */
 
 #include "estimator.h"
+
 #include "rosflight.h"
 
 namespace rosflight_firmware
 {
-
-Estimator::Estimator(ROSflight &_rf):
-  RF_(_rf)
-{}
+Estimator::Estimator(ROSflight& _rf) : RF_(_rf) {}
 
 void Estimator::reset_state()
 {
@@ -99,26 +97,26 @@ void Estimator::init()
 
 void Estimator::param_change_callback(uint16_t param_id)
 {
-  (void) param_id;
+  (void)param_id;
 }
 
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
-  const turbomath::Vector &raw_accel = RF_.sensors_.data().accel;
-  accel_LPF_.x = (1.0f-alpha_acc)*raw_accel.x + alpha_acc*accel_LPF_.x;
-  accel_LPF_.y = (1.0f-alpha_acc)*raw_accel.y + alpha_acc*accel_LPF_.y;
-  accel_LPF_.z = (1.0f-alpha_acc)*raw_accel.z + alpha_acc*accel_LPF_.z;
+  const turbomath::Vector& raw_accel = RF_.sensors_.data().accel;
+  accel_LPF_.x = (1.0f - alpha_acc) * raw_accel.x + alpha_acc * accel_LPF_.x;
+  accel_LPF_.y = (1.0f - alpha_acc) * raw_accel.y + alpha_acc * accel_LPF_.y;
+  accel_LPF_.z = (1.0f - alpha_acc) * raw_accel.z + alpha_acc * accel_LPF_.z;
 
   float alpha_gyro_xy = RF_.params_.get_param_float(PARAM_GYRO_XY_ALPHA);
   float alpha_gyro_z = RF_.params_.get_param_float(PARAM_GYRO_Z_ALPHA);
-  const turbomath::Vector &raw_gyro = RF_.sensors_.data().gyro;
-  gyro_LPF_.x = (1.0f-alpha_gyro_xy)*raw_gyro.x + alpha_gyro_xy*gyro_LPF_.x;
-  gyro_LPF_.y = (1.0f-alpha_gyro_xy)*raw_gyro.y + alpha_gyro_xy*gyro_LPF_.y;
-  gyro_LPF_.z = (1.0f-alpha_gyro_z)*raw_gyro.z + alpha_gyro_z*gyro_LPF_.z;
+  const turbomath::Vector& raw_gyro = RF_.sensors_.data().gyro;
+  gyro_LPF_.x = (1.0f - alpha_gyro_xy) * raw_gyro.x + alpha_gyro_xy * gyro_LPF_.x;
+  gyro_LPF_.y = (1.0f - alpha_gyro_xy) * raw_gyro.y + alpha_gyro_xy * gyro_LPF_.y;
+  gyro_LPF_.z = (1.0f - alpha_gyro_z) * raw_gyro.z + alpha_gyro_z * gyro_LPF_.z;
 }
 
-void Estimator::set_external_attitude_update(const turbomath::Quaternion &q)
+void Estimator::set_external_attitude_update(const turbomath::Quaternion& q)
 {
   extatt_update_next_run_ = true;
   q_extatt_ = q;
@@ -126,7 +124,6 @@ void Estimator::set_external_attitude_update(const turbomath::Quaternion &q)
 
 void Estimator::run()
 {
-
   //
   // Timing Setup
   //
@@ -194,10 +191,10 @@ void Estimator::run()
   }
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME))*1000)
+  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)) * 1000)
   {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC)*10.0f;
-    ki = RF_.params_.get_param_float(PARAM_FILTER_KI)*10.0f;
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC) * 10.0f;
+    ki = RF_.params_.get_param_float(PARAM_FILTER_KI) * 10.0f;
   }
 
   //
@@ -206,7 +203,7 @@ void Estimator::run()
 
   // Integrate biases driven by measured angular error
   // eq 47b Mahony Paper, using correction term w_err found above
-  bias_ -= ki*w_err*dt;
+  bias_ -= ki * w_err * dt;
 
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
@@ -245,7 +242,8 @@ void Estimator::run()
 bool Estimator::can_use_accel() const
 {
   // if we are not using accel, just bail
-  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)) return false;
+  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC))
+    return false;
 
   // current magnitude of LPF'd accelerometer
   const float a_sqrd_norm = accel_LPF_.sqrd_norm();
@@ -256,8 +254,8 @@ bool Estimator::can_use_accel() const
   // Since there is noise, we give some margin to what a "non-accelerated state" means.
   // Establish allowed acceleration deviation from 1g (i.e., non-accelerated flight).
   const float margin = RF_.params_.get_param_float(PARAM_FILTER_ACCEL_MARGIN);
-  const float lowerbound = (1.0f - margin)*(1.0f - margin)*9.80665f*9.80665f;
-  const float upperbound = (1.0f + margin)*(1.0f + margin)*9.80665f*9.80665f;
+  const float lowerbound = (1.0f - margin) * (1.0f - margin) * 9.80665f * 9.80665f;
+  const float upperbound = (1.0f + margin) * (1.0f + margin) * 9.80665f * 9.80665f;
 
   // if the magnitude of the accel measurement is close to 1g, we can use the
   // accelerometer to correct roll and pitch and estimate gyro biases.
@@ -285,8 +283,8 @@ turbomath::Vector Estimator::accel_correction() const
   // Correction Term of Eq. 47a and 47b Mahony Paper
   // w_acc = 2*s_tilde*v_tilde
   turbomath::Vector w_acc;
-  w_acc.x = -2.0f*q_tilde.w*q_tilde.x;
-  w_acc.y = -2.0f*q_tilde.w*q_tilde.y;
+  w_acc.x = -2.0f * q_tilde.w * q_tilde.x;
+  w_acc.y = -2.0f * q_tilde.w * q_tilde.y;
   w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
   return w_acc;
@@ -322,7 +320,7 @@ turbomath::Vector Estimator::smoothed_gyro_measurement()
   {
     // Quadratic Interpolation (Eq. 14 Casey Paper)
     // this step adds 12 us on the STM32F10x chips
-    wbar = (w2_/-12.0f) + w1_*(8.0f/12.0f) + gyro_LPF_ * (5.0f/12.0f);
+    wbar = (w2_ / -12.0f) + w1_ * (8.0f / 12.0f) + gyro_LPF_ * (5.0f / 12.0f);
     w2_ = w1_;
     w1_ = gyro_LPF_;
   }
@@ -335,12 +333,14 @@ turbomath::Vector Estimator::smoothed_gyro_measurement()
 }
 
 void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
-                        const turbomath::Vector& omega, const float dt) const
+                                       const turbomath::Vector& omega,
+                                       const float dt) const
 {
   // only propagate if we've moved
   // TODO[PCL]: Will this ever be true? We should add a margin to this
   const float sqrd_norm_w = omega.sqrd_norm();
-  if (sqrd_norm_w == 0.0f) return;
+  if (sqrd_norm_w == 0.0f)
+    return;
 
   // for convenience
   const float &p = omega.x, &q = omega.y, &r = omega.z;
@@ -352,41 +352,48 @@ void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
     // (Eq. 12 Casey Paper)
     // This adds 90 us on STM32F10x chips
     float norm_w = sqrtf(sqrd_norm_w);
-    float t1 = cosf((norm_w*dt)/2.0f);
-    float t2 = 1.0f/norm_w * sinf((norm_w*dt)/2.0f);
-    quat.w = t1*quat.w + t2*(-p*quat.x - q*quat.y - r*quat.z);
-    quat.x = t1*quat.x + t2*( p*quat.w + r*quat.y - q*quat.z);
-    quat.y = t1*quat.y + t2*( q*quat.w - r*quat.x + p*quat.z);
-    quat.z = t1*quat.z + t2*( r*quat.w + q*quat.x - p*quat.y);
+    float t1 = cosf((norm_w * dt) / 2.0f);
+    float t2 = 1.0f / norm_w * sinf((norm_w * dt) / 2.0f);
+    quat.w = t1 * quat.w + t2 * (-p * quat.x - q * quat.y - r * quat.z);
+    quat.x = t1 * quat.x + t2 * (p * quat.w + r * quat.y - q * quat.z);
+    quat.y = t1 * quat.y + t2 * (q * quat.w - r * quat.x + p * quat.z);
+    quat.z = t1 * quat.z + t2 * (r * quat.w + q * quat.x - p * quat.y);
     quat.normalize();
   }
   else
   {
     // Euler Integration
     // (Eq. 47a Mahony Paper)
-    turbomath::Quaternion qdot(0.5f * (-p*quat.x - q*quat.y - r*quat.z),
-                               0.5f * ( p*quat.w + r*quat.y - q*quat.z),
-                               0.5f * ( q*quat.w - r*quat.x + p*quat.z),
-                               0.5f * ( r*quat.w + q*quat.x - p*quat.y));
-    quat.w += qdot.w*dt;
-    quat.x += qdot.x*dt;
-    quat.y += qdot.y*dt;
-    quat.z += qdot.z*dt;
+    turbomath::Quaternion qdot(
+        0.5f * (-p * quat.x - q * quat.y - r * quat.z), 0.5f * (p * quat.w + r * quat.y - q * quat.z),
+        0.5f * (q * quat.w - r * quat.x + p * quat.z), 0.5f * (r * quat.w + q * quat.x - p * quat.y));
+    quat.w += qdot.w * dt;
+    quat.x += qdot.x * dt;
+    quat.y += qdot.y * dt;
+    quat.z += qdot.z * dt;
     quat.normalize();
   }
 }
 
 void Estimator::quaternion_to_dcm(const turbomath::Quaternion& q,
-        turbomath::Vector& X, turbomath::Vector& Y, turbomath::Vector& Z) const
+                                  turbomath::Vector& X,
+                                  turbomath::Vector& Y,
+                                  turbomath::Vector& Z) const
 {
   // R(q) = [X.x X.y X.z]
   //        [Y.x Y.y Y.z]
   //        [Z.x Z.y Z.z]
-  
+
   const float &w = q.w, &x = q.x, &y = q.y, &z = q.z;
-  X.x = 1.0f - 2.0f*(y*y + z*z);   X.y =        2.0f*(x*y - z*w);   X.z =        2.0f*(x*z + y*w);
-  Y.x =        2.0f*(x*y + z*w);   Y.y = 1.0f - 2.0f*(x*x + z*z);   Y.z =        2.0f*(y*z - x*w);
-  Z.x =        2.0f*(x*z - y*w);   Z.y =        2.0f*(y*z + x*w);   Z.z = 1.0f - 2.0f*(x*x + y*y);
+  X.x = 1.0f - 2.0f * (y * y + z * z);
+  X.y = 2.0f * (x * y - z * w);
+  X.z = 2.0f * (x * z + y * w);
+  Y.x = 2.0f * (x * y + z * w);
+  Y.y = 1.0f - 2.0f * (x * x + z * z);
+  Y.z = 2.0f * (y * z - x * w);
+  Z.x = 2.0f * (x * z - y * w);
+  Z.y = 2.0f * (y * z + x * w);
+  Z.z = 1.0f - 2.0f * (x * x + y * y);
 }
 
 } // namespace rosflight_firmware

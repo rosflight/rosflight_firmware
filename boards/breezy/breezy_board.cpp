@@ -34,19 +34,16 @@
 
 extern "C"
 {
+#include "flash.h"
 
 #include <breezystm32.h>
-#include "flash.h"
   extern void SetSysClock(bool overclock);
-
 }
-
 
 #include "breezy_board.h"
 
 namespace rosflight_firmware
 {
-
 BreezyBoard::BreezyBoard() {}
 
 void BreezyBoard::init_board()
@@ -117,9 +114,10 @@ void BreezyBoard::sensors_init()
   // Initialize I2c
   i2cInit(I2CDEV_2);
 
-  while (millis() < 50);
+  while (millis() < 50)
+    ;
 
-  i2cWrite(0,0,0);
+  i2cWrite(0, 0, 0);
   if (bmp280_init())
     baro_type = BARO_BMP280;
   else if (ms5611_init())
@@ -129,11 +127,10 @@ void BreezyBoard::sensors_init()
   mb1242_init();
   ms4525_init();
 
-
   // IMU
   uint16_t acc1G;
   mpu6050_init(true, &acc1G, &_gyro_scale, _board_revision);
-  _accel_scale = 9.80665f/acc1G;
+  _accel_scale = 9.80665f / acc1G;
 }
 
 uint16_t BreezyBoard::num_sensor_errors()
@@ -160,13 +157,14 @@ bool BreezyBoard::imu_read(float accel[3], float *temperature, float gyro[3], ui
   gyro[1] = -gyro_raw[1] * _gyro_scale;
   gyro[2] = -gyro_raw[2] * _gyro_scale;
 
-  (*temperature) = (float)raw_temp/340.0f + 36.53f;
+  (*temperature) = (float)raw_temp / 340.0f + 36.53f;
 
   if (accel[0] == 0 && accel[1] == 0 && accel[2] == 0)
   {
     return false;
   }
-  else return true;
+  else
+    return true;
 }
 
 void BreezyBoard::imu_not_responding_error()
@@ -204,8 +202,6 @@ void BreezyBoard::baro_update()
     ms5611_async_update();
   }
 }
-
-
 
 void BreezyBoard::baro_read(float *pressure, float *temperature)
 {
@@ -336,7 +332,7 @@ void BreezyBoard::battery_current_set_multiplier(double multiplier)
 
 void BreezyBoard::rc_init(rc_type_t rc_type)
 {
-  (void) rc_type; // TODO SBUS is not supported on F1
+  (void)rc_type; // TODO SBUS is not supported on F1
   pwmInit(true, false, false, pwm_refresh_rate_, pwm_idle_pwm_);
 }
 
@@ -356,7 +352,7 @@ void BreezyBoard::pwm_disable()
 
 float BreezyBoard::rc_read(uint8_t channel)
 {
-  return (float)(pwmRead(channel) - 1000)/1000.0;
+  return (float)(pwmRead(channel) - 1000) / 1000.0;
 }
 
 void BreezyBoard::pwm_write(uint8_t channel, float value)
@@ -386,19 +382,19 @@ bool BreezyBoard::memory_write(const void *src, size_t len)
   return writeEEPROM(src, len);
 }
 
-//GNSS is not supported on breezy boards
+// GNSS is not supported on breezy boards
 GNSSData BreezyBoard::gnss_read()
 {
   return {};
 }
 
-//GNSS is not supported on breezy boards
+// GNSS is not supported on breezy boards
 GNSSRaw BreezyBoard::gnss_raw_read()
 {
   return {};
 }
 
-//GNSS is not supported on breezy boards
+// GNSS is not supported on breezy boards
 bool BreezyBoard::gnss_has_new_data()
 {
   return false;
@@ -436,6 +432,6 @@ void BreezyBoard::led1_toggle()
   LED1_TOGGLE;
 }
 
-}
+} // namespace rosflight_firmware
 
 #pragma GCC diagnostic pop

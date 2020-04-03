@@ -1,9 +1,9 @@
 #include "common.h"
+#include "mavlink.h"
+#include "state_manager.h"
+#include "test_board.h"
 
 #include "rosflight.h"
-#include "mavlink.h"
-#include "test_board.h"
-#include "state_manager.h"
 
 using namespace rosflight_firmware;
 
@@ -14,10 +14,7 @@ public:
   Mavlink mavlink;
   ROSflight rf;
 
-  StateMachineTest() :
-    mavlink(board),
-    rf(board,mavlink)
-  {}
+  StateMachineTest() : mavlink(board), rf(board, mavlink) {}
 
   void SetUp() override
   {
@@ -40,7 +37,6 @@ public:
       rf.run();
     }
   }
-
 };
 
 TEST_F(StateMachineTest, Init)
@@ -75,9 +71,8 @@ TEST_F(StateMachineTest, SetAndClearAllErrors)
 
 TEST_F(StateMachineTest, SetAndClearComboErrors)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-      StateManager::ERROR_TIME_GOING_BACKWARDS |
-      StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
@@ -87,9 +82,8 @@ TEST_F(StateMachineTest, SetAndClearComboErrors)
 
 TEST_F(StateMachineTest, AddErrorAfterPreviousError)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-      StateManager::ERROR_TIME_GOING_BACKWARDS |
-      StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -100,26 +94,23 @@ TEST_F(StateMachineTest, AddErrorAfterPreviousError)
 
 TEST_F(StateMachineTest, ClearOneErrorOutOfMany)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-      StateManager::ERROR_TIME_GOING_BACKWARDS |
-      StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
-  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_IMU_NOT_RESPONDING |
-                                                   StateManager::ERROR_TIME_GOING_BACKWARDS);
+  EXPECT_EQ(rf.state_manager_.state().error_codes,
+            StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS);
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
 TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-      StateManager::ERROR_TIME_GOING_BACKWARDS |
-      StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
-  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING |
-                                StateManager::ERROR_TIME_GOING_BACKWARDS);
+  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_UNCALIBRATED_IMU);
@@ -128,9 +119,8 @@ TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
 
 TEST_F(StateMachineTest, ClearAllErrors)
 {
-  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING |
-      StateManager::ERROR_TIME_GOING_BACKWARDS |
-      StateManager::ERROR_UNCALIBRATED_IMU;
+  uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
+                   | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.clear_error(error);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -139,7 +129,7 @@ TEST_F(StateMachineTest, ClearAllErrors)
   EXPECT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST_F (StateMachineTest, DoNotArmIfError)
+TEST_F(StateMachineTest, DoNotArmIfError)
 {
   // Now add, an error, and then try to arm
   rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
@@ -150,7 +140,7 @@ TEST_F (StateMachineTest, DoNotArmIfError)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, ArmIfNoError)
+TEST_F(StateMachineTest, ArmIfNoError)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
@@ -159,7 +149,7 @@ TEST_F (StateMachineTest, ArmIfNoError)
   EXPECT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST_F (StateMachineTest, ArmAndDisarm)
+TEST_F(StateMachineTest, ArmAndDisarm)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
@@ -171,7 +161,7 @@ TEST_F (StateMachineTest, ArmAndDisarm)
   EXPECT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST_F (StateMachineTest, WaitForCalibrationToArm)
+TEST_F(StateMachineTest, WaitForCalibrationToArm)
 {
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
   // try to arm
@@ -190,7 +180,7 @@ TEST_F (StateMachineTest, WaitForCalibrationToArm)
   EXPECT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST_F (StateMachineTest, CalibrationFailedDontArm)
+TEST_F(StateMachineTest, CalibrationFailedDontArm)
 {
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
@@ -202,7 +192,7 @@ TEST_F (StateMachineTest, CalibrationFailedDontArm)
   EXPECT_EQ(rf.state_manager_.state().error, false);
 }
 
-TEST_F (StateMachineTest, ErrorDuringCalibrationDontArm)
+TEST_F(StateMachineTest, ErrorDuringCalibrationDontArm)
 {
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
@@ -214,7 +204,7 @@ TEST_F (StateMachineTest, ErrorDuringCalibrationDontArm)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, RCLostDuringCalibrationDontArm)
+TEST_F(StateMachineTest, RCLostDuringCalibrationDontArm)
 {
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
@@ -226,7 +216,7 @@ TEST_F (StateMachineTest, RCLostDuringCalibrationDontArm)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, ClearErrorStayDisarmed)
+TEST_F(StateMachineTest, ClearErrorStayDisarmed)
 {
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
@@ -238,7 +228,7 @@ TEST_F (StateMachineTest, ClearErrorStayDisarmed)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
 }
 
-TEST_F (StateMachineTest, RecoverRCStayDisarmed)
+TEST_F(StateMachineTest, RecoverRCStayDisarmed)
 {
   rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, true);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
@@ -250,7 +240,7 @@ TEST_F (StateMachineTest, RecoverRCStayDisarmed)
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_NONE);
 }
 
-TEST_F (StateMachineTest, SetErrorsWhileArmed)
+TEST_F(StateMachineTest, SetErrorsWhileArmed)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   EXPECT_EQ(rf.state_manager_.state().armed, true);
@@ -262,7 +252,7 @@ TEST_F (StateMachineTest, SetErrorsWhileArmed)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, ErrorsPersistWhenDisarmed)
+TEST_F(StateMachineTest, ErrorsPersistWhenDisarmed)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   rf.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
@@ -274,7 +264,7 @@ TEST_F (StateMachineTest, ErrorsPersistWhenDisarmed)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, UnableToArmWithPersistentErrors)
+TEST_F(StateMachineTest, UnableToArmWithPersistentErrors)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   rf.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
@@ -286,7 +276,7 @@ TEST_F (StateMachineTest, UnableToArmWithPersistentErrors)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, ArmIfThrottleLow)
+TEST_F(StateMachineTest, ArmIfThrottleLow)
 {
   uint16_t rc_values[8];
   for (int i = 0; i < 8; i++)
@@ -300,7 +290,7 @@ TEST_F (StateMachineTest, ArmIfThrottleLow)
   EXPECT_EQ(true, rf.state_manager_.state().armed);
 }
 
-TEST_F (StateMachineTest, ArmIfThrottleHighWithMinThrottle)
+TEST_F(StateMachineTest, ArmIfThrottleHighWithMinThrottle)
 {
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   uint16_t rc_values[8];
@@ -317,7 +307,7 @@ TEST_F (StateMachineTest, ArmIfThrottleHighWithMinThrottle)
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (StateMachineTest, DontArmIfThrottleHighWithoutMinThrottle)
+TEST_F(StateMachineTest, DontArmIfThrottleHighWithoutMinThrottle)
 {
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
   uint16_t rc_values[8];
@@ -334,7 +324,7 @@ TEST_F (StateMachineTest, DontArmIfThrottleHighWithoutMinThrottle)
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (StateMachineTest, LostRCWhenDisarmNoFailsafe)
+TEST_F(StateMachineTest, LostRCWhenDisarmNoFailsafe)
 {
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -343,14 +333,14 @@ TEST_F (StateMachineTest, LostRCWhenDisarmNoFailsafe)
   EXPECT_EQ(rf.state_manager_.state().error, true);
 }
 
-TEST_F (StateMachineTest, UnableToArmWithoutRC)
+TEST_F(StateMachineTest, UnableToArmWithoutRC)
 {
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F (StateMachineTest, AbleToArmAfterRCRecovery)
+TEST_F(StateMachineTest, AbleToArmAfterRCRecovery)
 {
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
@@ -360,7 +350,7 @@ TEST_F (StateMachineTest, AbleToArmAfterRCRecovery)
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }
 
-TEST_F (StateMachineTest, RCLostWhileArmedEnterFailsafe)
+TEST_F(StateMachineTest, RCLostWhileArmedEnterFailsafe)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
@@ -370,7 +360,7 @@ TEST_F (StateMachineTest, RCLostWhileArmedEnterFailsafe)
   EXPECT_EQ(rf.state_manager_.state().failsafe, true);
 }
 
-TEST_F (StateMachineTest, DisarmWhileInFailsafeGoToError)
+TEST_F(StateMachineTest, DisarmWhileInFailsafeGoToError)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
@@ -381,7 +371,7 @@ TEST_F (StateMachineTest, DisarmWhileInFailsafeGoToError)
   EXPECT_EQ(rf.state_manager_.state().failsafe, true);
 }
 
-TEST_F (StateMachineTest, RegainRCAfterFailsafe)
+TEST_F(StateMachineTest, RegainRCAfterFailsafe)
 {
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   rf.state_manager_.set_event(StateManager::EVENT_RC_LOST);
@@ -392,7 +382,7 @@ TEST_F (StateMachineTest, RegainRCAfterFailsafe)
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
 }
 constexpr uint32_t StateManager::BackupData::ARM_MAGIC; // C++ is weird
-TEST_F (StateMachineTest, NormalBoot)
+TEST_F(StateMachineTest, NormalBoot)
 {
   board.backup_memory_clear();
   rf.state_manager_.check_backup_memory();
@@ -451,7 +441,7 @@ TEST_F(StateMachineTest, CrashRecoveryInvalidArmMagic)
 {
   board.backup_memory_clear();
   StateManager::BackupData data;
-  data.arm_flag = StateManager::BackupData::ARM_MAGIC-101;
+  data.arm_flag = StateManager::BackupData::ARM_MAGIC - 101;
   data.error_code = 1;
   data.reset_count = 1;
   data.finalize();

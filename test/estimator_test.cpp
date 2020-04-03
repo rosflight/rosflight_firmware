@@ -1,9 +1,11 @@
 #include "common.h"
-#include "math.h"
-#include "rosflight.h"
 #include "mavlink.h"
 #include "test_board.h"
-#include "eigen3/unsupported/Eigen/MatrixFunctions"
+
+#include "rosflight.h"
+
+#include <eigen3/unsupported/Eigen/MatrixFunctions>
+
 #include <cmath>
 #include <fstream>
 
@@ -35,10 +37,7 @@ public:
   int ext_att_update_rate_;
   int ext_att_count_;
 
-  EstimatorTest() :
-    mavlink(board),
-    rf(board, mavlink)
-  {}
+  EstimatorTest() : mavlink(board), rf(board, mavlink) {}
 
   void SetUp() override
   {
@@ -70,10 +69,7 @@ public:
     rf.init();
   }
 
-  void initFile(const std::string& filename)
-  {
-    file_.open(filename);
-  }
+  void initFile(const std::string& filename) { file_.open(filename); }
 
   double run()
   {
@@ -86,24 +82,24 @@ public:
       for (int i = 0; i < oversampling_factor_; i++)
       {
         Vector3d w;
-        w[0] = x_amp_*sin(x_freq_/(2.0*M_PI)*t_);
-        w[1] = y_amp_*sin(y_freq_/(2.0*M_PI)*t_);
-        w[2] = z_amp_*sin(z_freq_/(2.0*M_PI)*t_);
-        integrate(q_, w, dt_/double(oversampling_factor_));
-        t_ += dt_/double(oversampling_factor_);
+        w[0] = x_amp_ * sin(x_freq_ / (2.0 * M_PI) * t_);
+        w[1] = y_amp_ * sin(y_freq_ / (2.0 * M_PI) * t_);
+        w[2] = z_amp_ * sin(z_freq_ / (2.0 * M_PI) * t_);
+        integrate(q_, w, dt_ / double(oversampling_factor_));
+        t_ += dt_ / double(oversampling_factor_);
       }
 
       simulateIMU(acc, gyro);
       extAttUpdate();
-      board.set_imu(acc, gyro, t_*1e6);
-      board.set_time(t_*1e6);
+      board.set_imu(acc, gyro, t_ * 1e6);
+      board.set_time(t_ * 1e6);
       rf.run();
       Vector3d err = computeError();
 
       double err_norm = err.norm();
-      if (std::abs(err_norm - 2.0*M_PI) < err_norm)
+      if (std::abs(err_norm - 2.0 * M_PI) < err_norm)
       {
-        err_norm = std::abs(err_norm - 2.0*M_PI);
+        err_norm = std::abs(err_norm - 2.0 * M_PI);
       }
       max_error = (err_norm > max_error) ? err_norm : max_error;
     }
@@ -112,14 +108,14 @@ public:
 
   void integrate(Quaterniond& q, const Vector3d& _w, double dt)
   {
-    Vector3d w = _w*dt;
+    Vector3d w = _w * dt;
 
     Quaterniond w_exp;
     double w_norm = w.norm();
     if (w_norm > 1e-4)
     {
-      w_exp.w() = std::cos(w_norm/2.0);
-      double scale = std::sin(w_norm/2.0)/w_norm;
+      w_exp.w() = std::cos(w_norm / 2.0);
+      double scale = std::sin(w_norm / 2.0) / w_norm;
       w_exp.x() = scale * w(0);
       w_exp.y() = scale * w(1);
       w_exp.z() = scale * w(2);
@@ -128,9 +124,9 @@ public:
     else
     {
       w_exp.w() = 1.0;
-      w_exp.x() = w(0)/2.0;
-      w_exp.y() = w(1)/2.0;
-      w_exp.z() = w(2)/2.0;
+      w_exp.x() = w(0) / 2.0;
+      w_exp.y() = w(1) / 2.0;
+      w_exp.z() = w(2) / 2.0;
       w_exp.normalize();
     }
     q = q * w_exp;
@@ -139,15 +135,15 @@ public:
 
   void simulateIMU(float* acc, float* gyro)
   {
-    Vector3d y_acc  = q_.inverse() * gravity;
+    Vector3d y_acc = q_.inverse() * gravity;
     acc[0] = y_acc.x();
     acc[1] = y_acc.y();
     acc[2] = y_acc.z();
 
     // Create gyro measurement
-    gyro[0] = x_amp_*sin(x_freq_/(2.0*M_PI)*t_) + x_gyro_bias_;
-    gyro[1] = y_amp_*sin(y_freq_/(2.0*M_PI)*t_) + y_gyro_bias_;
-    gyro[2] = z_amp_*sin(z_freq_/(2.0*M_PI)*t_) + z_gyro_bias_;
+    gyro[0] = x_amp_ * sin(x_freq_ / (2.0 * M_PI) * t_) + x_gyro_bias_;
+    gyro[1] = y_amp_ * sin(y_freq_ / (2.0 * M_PI) * t_) + y_gyro_bias_;
+    gyro[2] = z_amp_ * sin(z_freq_ / (2.0 * M_PI) * t_) + z_gyro_bias_;
   }
 
   void extAttUpdate()
@@ -165,17 +161,12 @@ public:
     }
   }
 
-  double sign(double x)
-  {
-    return x < 0 ? -1 : 1;
-  }
+  double sign(double x) { return x < 0 ? -1 : 1; }
 
   Vector3d computeError()
   {
-    Quaterniond rf_quat(rf.estimator_.state().attitude.w,
-                        rf.estimator_.state().attitude.x,
-                        rf.estimator_.state().attitude.y,
-                        rf.estimator_.state().attitude.z);
+    Quaterniond rf_quat(rf.estimator_.state().attitude.w, rf.estimator_.state().attitude.x,
+                        rf.estimator_.state().attitude.y, rf.estimator_.state().attitude.z);
 
     Quaterniond err = q_ * rf_quat.inverse();
     Vector3d v(err.x(), err.y(), err.z());
@@ -191,7 +182,7 @@ public:
     Vector3d log_err;
     if (norm_v > 1e-4)
     {
-      log_err = 2.0 * std::atan(norm_v/w) * v / norm_v;
+      log_err = 2.0 * std::atan(norm_v / w) * v / norm_v;
     }
     else
     {
@@ -201,11 +192,11 @@ public:
     if (file_.is_open())
     {
       file_.write(reinterpret_cast<char*>(&t_), sizeof(t_));
-      file_.write(reinterpret_cast<char*>(&q_), sizeof(double)*4);
-      file_.write(reinterpret_cast<const char*>(&rf_quat), sizeof(double)*4);
-      file_.write(reinterpret_cast<char*>(log_err.data()), sizeof(double)*3);
-      file_.write(reinterpret_cast<char*>(eulerError().data()), sizeof(double)*3);
-      file_.write(reinterpret_cast<const char*>(&rf.estimator_.bias().x), sizeof(float)*3);
+      file_.write(reinterpret_cast<char*>(&q_), sizeof(double) * 4);
+      file_.write(reinterpret_cast<const char*>(&rf_quat), sizeof(double) * 4);
+      file_.write(reinterpret_cast<char*>(log_err.data()), sizeof(double) * 3);
+      file_.write(reinterpret_cast<char*>(eulerError().data()), sizeof(double) * 3);
+      file_.write(reinterpret_cast<const char*>(&rf.estimator_.bias().x), sizeof(float) * 3);
     }
 
     return log_err;
@@ -228,20 +219,17 @@ public:
     double xerr = x_gyro_bias_ - rf.estimator_.bias().x;
     double yerr = y_gyro_bias_ - rf.estimator_.bias().y;
     double zerr = z_gyro_bias_ - rf.estimator_.bias().z;
-    return std::sqrt(xerr*xerr + yerr*yerr + zerr*zerr);
+    return std::sqrt(xerr * xerr + yerr * yerr + zerr * zerr);
   }
 
   Vector3d getTrueRPY()
   {
     Vector3d rpy;
-    rpy(0) = std::atan2(2.0f * (q_.w()*q_.x() + q_.y()* q_.z()),
-                        1.0f - 2.0f * (q_.x()*q_.x() + q_.y()*q_.y()));
-    rpy(1) = std::asin(2.0f*(q_.w()*q_.y() - q_.z()*q_.x()));
-    rpy(2) =std::atan2(2.0f * (q_.w()*q_.z() + q_.x()*q_.y()),
-                       1.0f - 2.0f * (q_.y()*q_.y() + q_.z()*q_.z()));
+    rpy(0) = std::atan2(2.0f * (q_.w() * q_.x() + q_.y() * q_.z()), 1.0f - 2.0f * (q_.x() * q_.x() + q_.y() * q_.y()));
+    rpy(1) = std::asin(2.0f * (q_.w() * q_.y() - q_.z() * q_.x()));
+    rpy(2) = std::atan2(2.0f * (q_.w() * q_.z() + q_.x() * q_.y()), 1.0f - 2.0f * (q_.y() * q_.y() + q_.z() * q_.z()));
     return rpy;
   }
-
 };
 
 TEST_F(EstimatorTest, LinearGyro)
@@ -435,7 +423,6 @@ TEST_F(EstimatorTest, EstimateBiasAccel)
 #endif
 }
 
-
 TEST_F(EstimatorTest, StaticExtAtt)
 {
   rf.params_.set_param_int(PARAM_FILTER_USE_ACC, false);
@@ -486,48 +473,47 @@ TEST_F(EstimatorTest, StaticExtAtt)
 // This test is fixed by #357
 TEST_F(EstimatorTest, MovingExtAtt)
 {
- rf.params_.set_param_int(PARAM_FILTER_USE_ACC, false);
- rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
- rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
- rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
- rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
- rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
- rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
+  rf.params_.set_param_int(PARAM_FILTER_USE_ACC, false);
+  rf.params_.set_param_int(PARAM_FILTER_USE_QUAD_INT, true);
+  rf.params_.set_param_int(PARAM_FILTER_USE_MAT_EXP, true);
+  rf.params_.set_param_int(PARAM_ACC_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_XY_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_GYRO_Z_ALPHA, 0);
+  rf.params_.set_param_int(PARAM_INIT_TIME, 0.0f);
 
- turbomath::Quaternion q_tweaked;
- q_tweaked.from_RPY(0.2, 0.1, 0.0);
- q_.w() = q_tweaked.w;
- q_.x() = q_tweaked.x;
- q_.y() = q_tweaked.y;
- q_.z() = q_tweaked.z;
+  turbomath::Quaternion q_tweaked;
+  q_tweaked.from_RPY(0.2, 0.1, 0.0);
+  q_.w() = q_tweaked.w;
+  q_.x() = q_tweaked.x;
+  q_.y() = q_tweaked.y;
+  q_.z() = q_tweaked.z;
 
- x_freq_ = 2.0;
- y_freq_ = 3.0;
- z_freq_ = 0.5;
- x_amp_ = 0.1;
- y_amp_ = 0.2;
- z_amp_ = -0.1;
+  x_freq_ = 2.0;
+  y_freq_ = 3.0;
+  z_freq_ = 0.5;
+  x_amp_ = 0.1;
+  y_amp_ = 0.2;
+  z_amp_ = -0.1;
 
+  tmax_ = 150.0;
+  x_gyro_bias_ = 0.01;
+  y_gyro_bias_ = -0.03;
+  z_gyro_bias_ = 0.01;
 
- tmax_ = 150.0;
- x_gyro_bias_ = 0.01;
- y_gyro_bias_ = -0.03;
- z_gyro_bias_ = 0.01;
+  oversampling_factor_ = 1;
 
- oversampling_factor_ = 1;
-
- ext_att_update_rate_ = 3;
+  ext_att_update_rate_ = 3;
 
 #ifdef DEBUG
- initFile("movingExtAtt.bin");
+  initFile("movingExtAtt.bin");
 #endif
- run();
+  run();
 
- double error = computeError().norm();
- EXPECT_LE(error, 4e-3);
- EXPECT_LE(biasError(), 2e-2);
+  double error = computeError().norm();
+  EXPECT_LE(error, 4e-3);
+  EXPECT_LE(biasError(), 2e-2);
 #ifdef DEBUG
- std::cout << "stateError = " << error << std::endl;
- std::cout << "biasError = " << biasError() << std::endl;
+  std::cout << "stateError = " << error << std::endl;
+  std::cout << "biasError = " << biasError() << std::endl;
 #endif
 }

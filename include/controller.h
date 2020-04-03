@@ -32,19 +32,18 @@
 #ifndef ROSFLIGHT_FIRMWARE_CONTROLLER_H
 #define ROSFLIGHT_FIRMWARE_CONTROLLER_H
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#include <turbomath/turbomath.h>
-
 #include "interface/param_listener.h"
 
 #include "command_manager.h"
 #include "estimator.h"
 
+#include <turbomath/turbomath.h>
+
+#include <cstdbool>
+#include <cstdint>
+
 namespace rosflight_firmware
 {
-
 class ROSflight;
 
 class Controller : public ParamListenerInterface

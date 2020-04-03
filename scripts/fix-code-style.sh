@@ -1,9 +1,11 @@
 #!/bin/bash
 
-CMD="astyle --options=.astylerc"
+SCRIPT=$(readlink -f $0)
+echo $SCRIPT
+SCRIPTPATH=`dirname $SCRIPT`
+echo #SCRIPTPATH
+cd $SCRIPTPATH/..
 
-$CMD ../include/*
-$CMD ../src/*
-$CMD ../lib/turbotrig/*
-$CMD ../boards/F1/*
-$CMD ../boards/F4/*
+find . -iname "*.h" -o -iname "*.cpp" | \
+egrep -v "^(./comms/mavlink/v1.0/|./boards/airbourne/airbourne/|./boards/breezy/breezystm32|./.git|./test/build)" | \
+xargs clang-format -i

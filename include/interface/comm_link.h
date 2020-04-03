@@ -32,22 +32,20 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMM_LINK_H
 #define ROSFLIGHT_FIRMWARE_COMM_LINK_H
 
-#include <cstdint>
-
-#include <turbomath/turbomath.h>
-
-#include "param.h"
 #include "board.h"
+#include "param.h"
 #include "sensors.h"
 #include "state_manager.h"
 
+#include <turbomath/turbomath.h>
+
+#include <cstdint>
+
 namespace rosflight_firmware
 {
-
 class CommLinkInterface
 {
 public:
-
   enum class LogSeverity
   {
     LOG_INFO,
@@ -111,74 +109,86 @@ public:
     AuxChannel cmd_array[14];
   };
 
-    class ListenerInterface
-    {
-    public:
-      virtual void param_request_list_callback(uint8_t target_system) = 0;
-      virtual void param_request_read_callback(uint8_t target_system, const char *const param_name, int16_t param_index) = 0;
-      virtual void param_set_int_callback(uint8_t target_system, const char *const param_name, int32_t param_value) = 0;
-      virtual void param_set_float_callback(uint8_t target_system, const char *const param_name, float param_value) = 0;
-      virtual void command_callback(Command command) = 0;
-      virtual void timesync_callback(int64_t tc1, int64_t ts1) = 0;
-      virtual void offboard_control_callback(const OffboardControl &control) = 0;
-      virtual void aux_command_callback(const AuxCommand &command) = 0;
-      virtual void external_attitude_callback(const turbomath::Quaternion &q) = 0;
-      virtual void heartbeat_callback() = 0;
-    };
+  class ListenerInterface
+  {
+  public:
+    virtual void param_request_list_callback(uint8_t target_system) = 0;
+    virtual void param_request_read_callback(uint8_t target_system,
+                                             const char *const param_name,
+                                             int16_t param_index) = 0;
+    virtual void param_set_int_callback(uint8_t target_system, const char *const param_name, int32_t param_value) = 0;
+    virtual void param_set_float_callback(uint8_t target_system, const char *const param_name, float param_value) = 0;
+    virtual void command_callback(Command command) = 0;
+    virtual void timesync_callback(int64_t tc1, int64_t ts1) = 0;
+    virtual void offboard_control_callback(const OffboardControl &control) = 0;
+    virtual void aux_command_callback(const AuxCommand &command) = 0;
+    virtual void external_attitude_callback(const turbomath::Quaternion &q) = 0;
+    virtual void heartbeat_callback() = 0;
+  };
 
-    virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
-    virtual void receive() = 0;
+  virtual void init(uint32_t baud_rate, uint32_t dev) = 0;
+  virtual void receive() = 0;
 
-    // send functions
+  // send functions
 
-    virtual void send_attitude_quaternion(uint8_t system_id,
-                                          uint64_t timestamp_us,
-                                          const turbomath::Quaternion &attitude,
-                                          const turbomath::Vector &angular_velocity) = 0;
-    virtual void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) = 0;
-    virtual void send_command_ack(uint8_t system_id, Command command, bool success) = 0;
-    virtual void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) = 0;
-    virtual void send_heartbeat(uint8_t system_id, bool fixed_wing) = 0;
-    virtual void send_imu(uint8_t system_id,
-                          uint64_t timestamp_us,
-                          const turbomath::Vector &accel,
-                          const turbomath::Vector &gyro,
-                          float temperature) = 0;
-    virtual void send_log_message(uint8_t system_id, LogSeverity severity, const char *text) = 0;
-    virtual void send_mag(uint8_t system_id, const turbomath::Vector &mag) = 0;
-    virtual void send_named_value_int(uint8_t system_id, uint32_t timestamp_ms, const char *const name, int32_t value) = 0;
-    virtual void send_named_value_float(uint8_t system_id, uint32_t timestamp_ms, const char *const name, float value) = 0;
-    virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) = 0;
-    virtual void send_param_value_int(uint8_t system_id,
+  virtual void send_attitude_quaternion(uint8_t system_id,
+                                        uint64_t timestamp_us,
+                                        const turbomath::Quaternion &attitude,
+                                        const turbomath::Vector &angular_velocity) = 0;
+  virtual void send_baro(uint8_t system_id, float altitude, float pressure, float temperature) = 0;
+  virtual void send_command_ack(uint8_t system_id, Command command, bool success) = 0;
+  virtual void send_diff_pressure(uint8_t system_id, float velocity, float pressure, float temperature) = 0;
+  virtual void send_heartbeat(uint8_t system_id, bool fixed_wing) = 0;
+  virtual void send_imu(uint8_t system_id,
+                        uint64_t timestamp_us,
+                        const turbomath::Vector &accel,
+                        const turbomath::Vector &gyro,
+                        float temperature) = 0;
+  virtual void send_log_message(uint8_t system_id, LogSeverity severity, const char *text) = 0;
+  virtual void send_mag(uint8_t system_id, const turbomath::Vector &mag) = 0;
+  virtual void send_named_value_int(uint8_t system_id,
+                                    uint32_t timestamp_ms,
+                                    const char *const name,
+                                    int32_t value) = 0;
+  virtual void send_named_value_float(uint8_t system_id,
+                                      uint32_t timestamp_ms,
+                                      const char *const name,
+                                      float value) = 0;
+  virtual void send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14]) = 0;
+  virtual void send_param_value_int(uint8_t system_id,
+                                    uint16_t index,
+                                    const char *const name,
+                                    int32_t value,
+                                    uint16_t param_count) = 0;
+  virtual void send_param_value_float(uint8_t system_id,
                                       uint16_t index,
                                       const char *const name,
-                                      int32_t value,
+                                      float value,
                                       uint16_t param_count) = 0;
-    virtual void send_param_value_float(uint8_t system_id,
-                                        uint16_t index,
-                                        const char *const name,
-                                        float value,
-                                        uint16_t param_count) = 0;
-    virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) = 0;
-    virtual void send_sonar(uint8_t system_id, /* TODO enum type*/ uint8_t type, float range, float max_range, float min_range) = 0;
-    virtual void send_status(uint8_t system_id,
-                             bool armed,
-                             bool failsafe,
-                             bool rc_override,
-                             bool offboard,
-                             uint8_t error_code,
-                             uint8_t control_mode,
-                             int16_t num_errors,
-                             int16_t loop_time_us) = 0;
-    virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
-    virtual void send_version(uint8_t system_id, const char *const version) = 0;
-    virtual void send_gnss(uint8_t system_id, const GNSSData &data) = 0;
-    virtual void send_gnss_raw(uint8_t system_id, const GNSSRaw &data) = 0;
-    virtual void send_error_data(uint8_t system_id, const StateManager::BackupData &error_data) = 0;
-    virtual void send_battery_status(uint8_t system_id,float voltage, float current) = 0;
+  virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) = 0;
+  virtual void send_sonar(uint8_t system_id,
+                          /* TODO enum type*/ uint8_t type,
+                          float range,
+                          float max_range,
+                          float min_range) = 0;
+  virtual void send_status(uint8_t system_id,
+                           bool armed,
+                           bool failsafe,
+                           bool rc_override,
+                           bool offboard,
+                           uint8_t error_code,
+                           uint8_t control_mode,
+                           int16_t num_errors,
+                           int16_t loop_time_us) = 0;
+  virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
+  virtual void send_version(uint8_t system_id, const char *const version) = 0;
+  virtual void send_gnss(uint8_t system_id, const GNSSData &data) = 0;
+  virtual void send_gnss_raw(uint8_t system_id, const GNSSRaw &data) = 0;
+  virtual void send_error_data(uint8_t system_id, const StateManager::BackupData &error_data) = 0;
+  virtual void send_battery_status(uint8_t system_id, float voltage, float current) = 0;
 
-    // register listener
-    virtual void set_listener(ListenerInterface *listener) = 0;
+  // register listener
+  virtual void set_listener(ListenerInterface *listener) = 0;
 };
 
 } // namespace rosflight_firmware

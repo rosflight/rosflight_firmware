@@ -29,18 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "rc.h"
+
+#include "rosflight.h"
 
 #include <cstring>
 
-#include "rc.h"
-#include "rosflight.h"
-
 namespace rosflight_firmware
 {
-
-RC::RC(ROSflight &_rf) :
-  RF_(_rf)
-{}
+RC::RC(ROSflight &_rf) : RF_(_rf) {}
 
 void RC::init()
 {
@@ -99,7 +96,6 @@ bool RC::switch_mapped(Switch channel)
   return switches[channel].mapped;
 }
 
-
 void RC::init_sticks(void)
 {
   sticks[STICK_X].channel = RF_.params_.get_param_int(PARAM_RC_X_CHANNEL);
@@ -144,8 +140,8 @@ void RC::init_switches()
       break;
     }
 
-    switches[chan].mapped = switches[chan].channel > 3
-                            && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
+    switches[chan].mapped =
+        switches[chan].channel > 3 && switches[chan].channel < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS);
 
     switch (switches[chan].channel)
     {
@@ -167,7 +163,8 @@ void RC::init_switches()
     }
 
     if (switches[chan].mapped)
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch mapped to RC channel %d", channel_name, switches[chan].channel);
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch mapped to RC channel %d", channel_name,
+                            switches[chan].channel);
     else
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch not mapped", channel_name);
   }
@@ -185,7 +182,7 @@ bool RC::check_rc_lost()
   else
   {
     // go into failsafe if we get an invalid RC command for any channel
-    for (int8_t i = 0; i<RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
+    for (int8_t i = 0; i < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++)
     {
       float pwm = RF_.board_.rc_read(i);
       if (pwm < -0.25 || pwm > 1.25)
@@ -254,7 +251,8 @@ void RC::look_for_arm_disarm_signal()
     if (RF_.rc_.switch_on(SWITCH_ARM))
     {
       if (!RF_.state_manager_.state().armed)
-        RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);;
+        RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+      ;
     }
     else
     {
@@ -262,7 +260,6 @@ void RC::look_for_arm_disarm_signal()
     }
   }
 }
-
 
 bool RC::run()
 {
@@ -275,17 +272,15 @@ bool RC::run()
   }
   last_rc_receive_time = now;
 
-
   // Check for rc lost
   if (check_rc_lost())
     return false;
-
 
   // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
     float pwm = RF_.board_.rc_read(sticks[channel].channel);
-    if (sticks[channel].one_sided) //generally only F is one_sided
+    if (sticks[channel].one_sided) // generally only F is one_sided
     {
       stick_values[channel] = pwm;
     }
@@ -331,7 +326,8 @@ bool RC::new_command()
     return true;
   }
   else
-    return false;;
+    return false;
+  ;
 }
 
-}
+} // namespace rosflight_firmware

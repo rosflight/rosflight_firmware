@@ -32,49 +32,46 @@
 #ifndef ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdint.h>
-
-#include <revo_f4.h>
-
-#include "vcp.h"
-#include "uart.h"
-#include "i2c.h"
-#include "spi.h"
-#include "mpu6000.h"
-#include "ms5611.h"
 #include "M25P16.h"
+#include "analog_digital_converter.h"
+#include "analog_pin.h"
+#include "backup_sram.h"
+#include "battery_monitor.h"
 #include "hmc5883l.h"
+#include "i2c.h"
+#include "led.h"
+#include "mb1242.h"
+#include "mpu6000.h"
 #include "ms4525.h"
+#include "ms5611.h"
+#include "pwm.h"
 #include "rc_base.h"
 #include "rc_ppm.h"
 #include "rc_sbus.h"
-#include "pwm.h"
-#include "led.h"
 #include "serial.h"
+#include "spi.h"
 #include "system.h"
 #include "uart.h"
-#include "mb1242.h"
-#include "backup_sram.h"
-#include "analog_digital_converter.h"
-#include "analog_pin.h"
-#include "battery_monitor.h"
+#include "vcp.h"
+
+#include <revo_f4.h>
+
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 // #include "ublox.h"
 
 #include "board.h"
 
 namespace rosflight_firmware
 {
-
 class AirbourneBoard : public Board
 {
-
 private:
   VCP vcp_;
   UART uart1_;
   UART uart3_;
-  Serial *current_serial_;//A pointer to the serial stream currently in use.
+  Serial *current_serial_; // A pointer to the serial stream currently in use.
   I2C int_i2c_;
   I2C ext_i2c_;
   SPI spi1_;
@@ -176,7 +173,7 @@ public:
   float battery_current_read() const override;
   void battery_current_set_multiplier(double multiplier) override;
 
-  //GNSS
+  // GNSS
   GNSSData gnss_read() override;
   bool gnss_has_new_data() override;
   GNSSRaw gnss_raw_read() override;
@@ -186,7 +183,7 @@ public:
   float rc_read(uint8_t channel) override;
 
   // PWM
-  void pwm_init(uint32_t refresh_rate, uint16_t  idle_pwm) override;
+  void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) override;
   void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
 

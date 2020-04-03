@@ -32,9 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_BREEZY_BOARD_H
 #define ROSFLIGHT_FIRMWARE_BREEZY_BOARD_H
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstddef>
+#include <cstdint>
 
 extern "C"
 {
@@ -46,10 +46,8 @@ extern "C"
 
 namespace rosflight_firmware
 {
-
 class BreezyBoard : public Board
 {
-
 private:
   serialPort_t *Serial1;
 
@@ -123,15 +121,9 @@ public:
   void sonar_update() override;
   float sonar_read() override;
 
-  bool gnss_present() override
-  {
-    return false;
-  }
+  bool gnss_present() override { return false; }
 
-  void gnss_update() override
-  {
-    return;
-  }
+  void gnss_update() override { return; }
   bool battery_voltage_present() const override;
   float battery_voltage_read() const override;
   void battery_voltage_set_multiplier(double multiplier) override;
@@ -143,7 +135,6 @@ public:
   GNSSData gnss_read() override;
   bool gnss_has_new_data() override;
   GNSSRaw gnss_raw_read() override;
-
 
   // PWM
   // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
@@ -171,8 +162,17 @@ public:
 
   // Backup Data
   void backup_memory_init() override {}
-  bool backup_memory_read(void *dest, size_t len) override { (void)dest; (void)len; return false; }
-  void backup_memory_write(const void *src, size_t len) override { (void)src; (void)len; }
+  bool backup_memory_read(void *dest, size_t len) override
+  {
+    (void)dest;
+    (void)len;
+    return false;
+  }
+  void backup_memory_write(const void *src, size_t len) override
+  {
+    (void)src;
+    (void)len;
+  }
   void backup_memory_clear(size_t len) override { (void)len; }
 };
 

@@ -32,31 +32,30 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
 #define ROSFLIGHT_FIRMWARE_COMMAND_MANAGER_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "interface/param_listener.h"
 
 #include "rc.h"
 
+#include <cstdbool>
+#include <cstdint>
+
 namespace rosflight_firmware
 {
-
 class ROSflight;
 
 typedef enum
 {
-  RATE,         // Channel is is in rate mode (mrad/s)
-  ANGLE,        // Channel command is in angle mode (mrad)
-  THROTTLE,     // Channel is direcly controlling throttle max/1000
-  PASSTHROUGH,  // Channel directly passes PWM input to the mixer
+  RATE,        // Channel is is in rate mode (mrad/s)
+  ANGLE,       // Channel command is in angle mode (mrad)
+  THROTTLE,    // Channel is direcly controlling throttle max/1000
+  PASSTHROUGH, // Channel directly passes PWM input to the mixer
 } control_type_t;
 
 typedef struct
 {
-  bool active;          // Whether or not the channel is active
-  control_type_t type;  // What type the channel is
-  float value;          // The value of the channel
+  bool active;         // Whether or not the channel is active
+  control_type_t type; // What type the channel is
+  float value;         // The value of the channel
 } control_channel_t;
 
 typedef struct
@@ -70,9 +69,7 @@ typedef struct
 
 class CommandManager : public ParamListenerInterface
 {
-
 private:
-
   typedef struct
   {
     control_channel_t *rc;
@@ -80,55 +77,39 @@ private:
     control_channel_t *combined;
   } mux_t;
 
-  mux_t muxes[4] =
-  {
-    {&rc_command_.x, &offboard_command_.x, &combined_command_.x},
-    {&rc_command_.y, &offboard_command_.y, &combined_command_.y},
-    {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
-    {&rc_command_.F, &offboard_command_.F, &combined_command_.F}
-  };
+  mux_t muxes[4] = {{&rc_command_.x, &offboard_command_.x, &combined_command_.x},
+                    {&rc_command_.y, &offboard_command_.y, &combined_command_.y},
+                    {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
+                    {&rc_command_.F, &offboard_command_.F, &combined_command_.F}};
 
-  control_t rc_command_ =
-  {
-    0,
-    {false, ANGLE, 0.0},
-    {false, ANGLE, 0.0},
-    {false, RATE, 0.0},
-    {false, THROTTLE, 0.0}
-  };
-  control_t offboard_command_ =
-  {
-    0,
-    {false, ANGLE, 0.0},
-    {false, ANGLE, 0.0},
-    {false, RATE, 0.0},
-    {false, THROTTLE, 0.0}
-  };
-  control_t combined_command_ =
-  {
-    0,
-    {false, ANGLE, 0.0},
-    {false, ANGLE, 0.0},
-    {false, RATE, 0.0},
-    {false, THROTTLE, 0.0}
-  };
+  // clang-format off
+  control_t rc_command_ = {0,
+                           {false, ANGLE, 0.0},
+                           {false, ANGLE, 0.0},
+                           {false, RATE, 0.0},
+                           {false, THROTTLE, 0.0}};
+  control_t offboard_command_ = {0,
+                                 {false, ANGLE, 0.0},
+                                 {false, ANGLE, 0.0},
+                                 {false, RATE, 0.0},
+                                 {false, THROTTLE, 0.0}};
+  control_t combined_command_ = {0,
+                                 {false, ANGLE, 0.0},
+                                 {false, ANGLE, 0.0},
+                                 {false, RATE, 0.0},
+                                 {false, THROTTLE, 0.0}};
 
-  control_t multirotor_failsafe_command_ =
-  {
-    0,
-    {true, ANGLE, 0.0},
-    {true, ANGLE, 0.0},
-    {true, RATE, 0.0},
-    {true, THROTTLE, 0.0}
-  };
-  control_t fixedwing_failsafe_command_ =
-  {
-    0,
-    {true, PASSTHROUGH, 0.0},
-    {true, PASSTHROUGH, 0.0},
-    {true, PASSTHROUGH, 0.0},
-    {true, THROTTLE, 0.0}
-  };
+  control_t multirotor_failsafe_command_ = {0,
+                                            {true, ANGLE, 0.0},
+                                            {true, ANGLE, 0.0},
+                                            {true, RATE, 0.0},
+                                            {true, THROTTLE, 0.0}};
+  control_t fixedwing_failsafe_command_ = {0,
+                                           {true, PASSTHROUGH, 0.0},
+                                           {true, PASSTHROUGH, 0.0},
+                                           {true, PASSTHROUGH, 0.0},
+                                           {true, THROTTLE, 0.0}};
+  // clang-format on
 
   typedef enum
   {
@@ -150,12 +131,7 @@ private:
     uint32_t last_override_time;
   } rc_stick_override_t;
 
-  rc_stick_override_t rc_stick_override_[3] =
-  {
-    { RC::STICK_X, 0 },
-    { RC::STICK_Y, 0 },
-    { RC::STICK_Z, 0 }
-  };
+  rc_stick_override_t rc_stick_override_[3] = {{RC::STICK_X, 0}, {RC::STICK_Y, 0}, {RC::STICK_Z, 0}};
 
   ROSflight &RF_;
 
@@ -175,7 +151,6 @@ private:
   bool stick_deviated(MuxChannel channel);
 
 public:
-
   CommandManager(ROSflight &_rf);
   void init();
   bool run();
