@@ -36,8 +36,8 @@
 
 #include "rc.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <cstdbool>
+#include <cstdint>
 
 namespace rosflight_firmware
 {
@@ -82,7 +82,12 @@ private:
                     {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
                     {&rc_command_.F, &offboard_command_.F, &combined_command_.F}};
 
-  control_t rc_command_ = {0, {false, ANGLE, 0.0}, {false, ANGLE, 0.0}, {false, RATE, 0.0}, {false, THROTTLE, 0.0}};
+  // clang-format off
+  control_t rc_command_ = {0,
+                                 {false, ANGLE, 0.0},
+                                 {false, ANGLE, 0.0},
+                                 {false, RATE, 0.0},
+                           {false, THROTTLE, 0.0}};
   control_t offboard_command_ = {0,
                                  {false, ANGLE, 0.0},
                                  {false, ANGLE, 0.0},
@@ -104,6 +109,7 @@ private:
                                            {true, PASSTHROUGH, 0.0},
                                            {true, PASSTHROUGH, 0.0},
                                            {true, THROTTLE, 0.0}};
+  // clang-format on
 
   typedef enum
   {

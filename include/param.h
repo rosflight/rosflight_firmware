@@ -280,7 +280,8 @@ public:
 
   /**
    * @brief Specify listeners for parameter changes
-   * @param listeners An array of pointers to objects that implement the ParamListenerInterface interface
+   * @param listeners An array of pointers to objects that implement the ParamListenerInterface
+   * interface
    * @param num_listeners The length of the array passed as the listeners parameter
    */
   void set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners);
@@ -365,7 +366,8 @@ public:
   bool set_param_by_name_int(const char name[PARAMS_NAME_LENGTH], int32_t value);
 
   /**
-   * @brief Sets the value of a floating point parameter by name and calls the parameter change callback
+   * @brief Sets the value of a floating point parameter by name and calls the parameter change
+   * callback
    * @param name The name of the parameter
    * @param value The new value
    * @return True if a parameter value was changed, false otherwise

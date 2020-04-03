@@ -202,10 +202,20 @@ private:
 
   const mixer_t* mixer_to_use_;
 
-  const mixer_t* array_of_mixers_[NUM_MIXERS] = {
-      &esc_calibration_mixing, &quadcopter_plus_mixing, &quadcopter_x_mixing, &hex_plus_mixing, &hex_x_mixing,
-      &octocopter_plus_mixing, &octocopter_x_mixing,    &Y6_mixing,           &X8_mixing,       &tricopter_mixing,
-      &fixedwing_mixing,       &passthrough_mixing};
+  // clang-format off
+  const mixer_t* array_of_mixers_[NUM_MIXERS] = {&esc_calibration_mixing,
+                                                 &quadcopter_plus_mixing,
+                                                 &quadcopter_x_mixing,
+                                                 &hex_plus_mixing,
+                                                 &hex_x_mixing,
+                                                 &octocopter_plus_mixing,
+                                                 &octocopter_x_mixing,
+                                                 &Y6_mixing,
+                                                 &X8_mixing,
+                                                 &tricopter_mixing,
+                                                 &fixedwing_mixing,
+                                                 &passthrough_mixing};
+  // clang-format on
 
 public:
   Mixer(ROSflight& _rf);

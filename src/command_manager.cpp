@@ -33,8 +33,8 @@
 
 #include "rosflight.h"
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include <cstdbool>
+#include <cstdlib>
 
 namespace rosflight_firmware
 {
@@ -169,7 +169,8 @@ bool CommandManager::stick_deviated(MuxChannel channel)
 bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
 {
   bool override_this_channel = false;
-  // Check if the override switch exists and is triggered, or if the sticks have deviated enough to trigger an override
+  // Check if the override switch exists and is triggered, or if the sticks have deviated enough to
+  // trigger an override
   if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
       || stick_deviated(channel))
   {

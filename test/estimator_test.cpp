@@ -1,10 +1,10 @@
 #include "common.h"
-#include "eigen3/unsupported/Eigen/MatrixFunctions"
-#include "math.h"
 #include "mavlink.h"
 #include "test_board.h"
 
 #include "rosflight.h"
+
+#include <eigen3/unsupported/Eigen/MatrixFunctions>
 
 #include <cmath>
 #include <fstream>

@@ -56,13 +56,7 @@
 
 namespace rosflight_firmware
 {
-Params::Params(ROSflight &_rf, params_t &param_struct) :
-  RF_(_rf),
-  params(param_struct),
-  listeners_(nullptr),
-  num_listeners_(0)
-{
-}
+Params::Params(ROSflight &_rf) : RF_(_rf), params(param_struct), listeners_(nullptr), num_listeners_(0) {}
 
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -113,6 +107,7 @@ void Params::init()
   }
 }
 
+// clang-format off
 void Params::set_defaults(void)
 {
   /******************************/
@@ -335,6 +330,7 @@ void Params::set_defaults(void)
       PARAM_OFFBOARD_TIMEOUT, "OFFBOARD_TIMEOUT",
       100); // Timeout in milliseconds for offboard commands, after which RC override is activated | 0 | 100000
 }
+// clang-format on
 
 void Params::set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners)
 {

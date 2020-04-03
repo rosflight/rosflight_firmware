@@ -35,8 +35,8 @@
 
 #include "rosflight.h"
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 namespace rosflight_firmware
 {

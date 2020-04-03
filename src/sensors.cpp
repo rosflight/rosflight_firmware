@@ -38,9 +38,9 @@
 
 #include <turbomath/turbomath.h>
 
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <cmath>
+#include <cstdbool>
+#include <cstdint>
 
 namespace rosflight_firmware
 {
@@ -190,7 +190,8 @@ void Sensors::update_other_sensors()
     {
       // if diff_pressure is currently present OR if it has historically been
       //   present (diff_pressure_present default is false)
-      rf_.board_.diff_pressure_update(); // update assists in recovering sensor if it temporarily disappears
+      rf_.board_.diff_pressure_update(); // update assists in recovering sensor if it temporarily
+                                         // disappears
 
       if (rf_.board_.diff_pressure_present())
       {
@@ -381,6 +382,7 @@ void Sensors::update_battery_monitor()
                             + rf_.board_.battery_current_read() * (1 - battery_current_alpha_);
   }
 }
+
 //======================================================================
 // Calibration Functions
 void Sensors::calibrate_gyro()

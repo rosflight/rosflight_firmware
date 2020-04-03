@@ -33,7 +33,7 @@
 
 #include "rosflight.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace rosflight_firmware
 {
@@ -170,7 +170,8 @@ void Mixer::mix_output()
   }
   else if (commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE))
   {
-    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while arming/disarming
+    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
+    // arming/disarming
     commands.z = 0.0;
   }
 
@@ -209,7 +210,8 @@ void Mixer::mix_output()
 
   // Insert AUX Commands, and assemble combined_output_types array (Does not override mixer values)
 
-  // For the first NUM_MIXER_OUTPUTS channels, only write aux_command to channels the mixer is not using
+  // For the first NUM_MIXER_OUTPUTS channels, only write aux_command to channels the mixer is not
+  // using
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++)
   {
     if (mixer_to_use_->output_type[i] == NONE)

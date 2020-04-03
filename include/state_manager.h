@@ -112,7 +112,8 @@ public:
 
     /**
      * @brief Computes checksum and prepares struct to be written to backup memory
-     * @pre All data fields have been set, no data will be changed between calling this function and writing to memory
+     * @pre All data fields have been set, no data will be changed between calling this function and
+     * writing to memory
      * @post Checksum field is set and the struct is ready to be written to backup memory
      */
     void finalize()
@@ -148,7 +149,8 @@ public:
    * This function should only be called by the hardfault interrupt handler
    *
    * @pre Called from hardfault interrupt handler
-   * @post Recovery data has been written to backup RAM and the hardfault interrupt handler may now reset the system
+   * @post Recovery data has been written to backup RAM and the hardfault interrupt handler may now
+   * reset the system
    *
    * @param debug Low-level debugging data populated by the hardfault handler
    */
