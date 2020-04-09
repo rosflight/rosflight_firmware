@@ -59,7 +59,7 @@
 #include <cstdbool>
 #include <cstddef>
 #include <cstdint>
-// #include "ublox.h"
+#include "ublox.h"
 
 #include "board.h"
 
@@ -90,7 +90,7 @@ private:
   M25P16 flash_;
   AnalogDigitalConverter battery_adc_;
   BatteryMonitor battery_monitor_;
-  // UBLOX gnss_;
+  UBLOX gnss_;
 
   enum SerialDevice : uint32_t
   {
