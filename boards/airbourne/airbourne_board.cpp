@@ -245,6 +245,7 @@ float AirbourneBoard::sonar_read()
 
 bool AirbourneBoard::gnss_present()
 {
+  gnss_.check_connection_status();
   return gnss_.present();
 }
 void AirbourneBoard::gnss_update() {}
