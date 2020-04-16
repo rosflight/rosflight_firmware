@@ -261,6 +261,7 @@ GNSSData AirbourneBoard::gnss_read()
   UBLOX::GNSSPVT gnss_pvt = gnss_.read();
   UBLOX::GNSSPosECEF pos_ecef = gnss_.read_pos_ecef();
   UBLOX::GNSSVelECEF vel_ecef = gnss_.read_vel_ecef();
+  uint64_t timestamp = gnss_.get_last_pvt_timestamp();
   GNSSData gnss = {};
   gnss.time_of_week = gnss_pvt.time_of_week;
   gnss.time = gnss_pvt.time;
@@ -291,7 +292,7 @@ GNSSData AirbourneBoard::gnss_read()
     gnss.ecef.vz = vel_ecef.vz;
     gnss.ecef.s_acc = vel_ecef.s_acc;
   }
-
+  gnss.rosflight_timestamp = timestamp;
   return gnss;
 }
 GNSSRaw AirbourneBoard::gnss_raw_read()

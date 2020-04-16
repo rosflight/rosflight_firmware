@@ -37,6 +37,7 @@
 #include "analog_pin.h"
 #include "backup_sram.h"
 #include "battery_monitor.h"
+#include "board.h"
 #include "hmc5883l.h"
 #include "i2c.h"
 #include "led.h"
@@ -52,6 +53,7 @@
 #include "spi.h"
 #include "system.h"
 #include "uart.h"
+#include "ublox.h"
 #include "vcp.h"
 
 #include <revo_f4.h>
@@ -59,9 +61,6 @@
 #include <cstdbool>
 #include <cstddef>
 #include <cstdint>
-#include "ublox.h"
-
-#include "board.h"
 
 namespace rosflight_firmware
 {
