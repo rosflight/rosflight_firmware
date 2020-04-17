@@ -7,5 +7,5 @@ echo #SCRIPTPATH
 cd $SCRIPTPATH/..
 
 find . -iname "*.h" -o -iname "*.cpp" | \
-egrep -v "^(./comms/mavlink/v1.0/|./board/airbourne/airbourne/lib/|./boards/breezy/breezystm32|./.git|./test/build)" | \
+egrep -v "^(./comms/mavlink/v1.0/|./boards/airbourne/airbourne/lib/|./boards/breezy/breezystm32|./.git|./test/build)" | \
 xargs clang-format -i
