@@ -43,13 +43,12 @@
 
 namespace rosflight_firmware
 {
-// Fix type, as defined in sensor_msgs/NavSatStatus
 enum GNSSFixType
 {
-  GNSS_FIX_TYPE_NO_FIX,   // Unable to fix position
-  GNSS_FIX_TYPE_FIX,      // Unaugmented fix
-  GNSS_FIX_TYPE_SBAS_FIX, // with satellite-based augmentation
-  GNSS_FIX_TYPE_GBAS_FIX  // with ground-based augmentation
+  GNSS_FIX_TYPE_NO_FIX,
+  GNSS_FIX_TYPE_FIX,
+  GNSS_FIX_RTK_FLOAT, // The two RTK fix types are for possible future use.
+  GNSS_FIX_RTK_FIXED
 };
 
 struct GNSSData

@@ -264,6 +264,8 @@ GNSSData AirbourneBoard::gnss_read()
   uint64_t timestamp = gnss_.get_last_pvt_timestamp();
   GNSSData gnss = {};
   gnss.time_of_week = gnss_pvt.time_of_week;
+  bool has_fix = (gnss_pvt.fix_type == UBLOX::FIX_TYPE_3D);
+  gnss.fix_type = has_fix ? GNSS_FIX_TYPE_FIX : GNSS_FIX_TYPE_NO_FIX;
   gnss.time = gnss_pvt.time;
   gnss.nanos = gnss_pvt.nanos;
   gnss.lat = gnss_pvt.lat;
