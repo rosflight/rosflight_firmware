@@ -85,7 +85,7 @@ struct GNSSData
   GNSSData() { memset(this, 0, sizeof(GNSSData)); }
 };
 
-struct GNSSRaw
+struct GNSSFull
 {
   uint64_t time_of_week;
   uint16_t year;
@@ -115,7 +115,7 @@ struct GNSSRaw
   uint16_t p_dop;
   uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
 
-  GNSSRaw() { memset(this, 0, sizeof(GNSSRaw)); }
+  GNSSFull() { memset(this, 0, sizeof(GNSSFull)); }
 };
 
 class ROSflight;
@@ -148,7 +148,7 @@ public:
     bool gnss_new_data = false;
     float gps_CNO = 0; // What is this?
     bool gnss_present = false;
-    GNSSRaw gnss_raw;
+    GNSSFull gnss_full;
 
     turbomath::Vector mag = {0, 0, 0};
 

@@ -154,38 +154,38 @@ void Mavlink::send_gnss(uint8_t system_id, const GNSSData &data)
   send_message(msg);
 }
 
-void Mavlink::send_gnss_raw(uint8_t system_id, const GNSSRaw &raw)
+void Mavlink::send_gnss_full(uint8_t system_id, const GNSSFull &full)
 {
   mavlink_message_t msg;
-  mavlink_rosflight_gnss_raw_t data = {};
-  data.time_of_week = raw.time_of_week;
-  data.year = raw.year;
-  data.month = raw.month;
-  data.day = raw.day;
-  data.hour = raw.hour;
-  data.min = raw.min;
-  data.sec = raw.sec;
-  data.valid = raw.valid;
-  data.t_acc = raw.t_acc;
-  data.nano = raw.nano;
-  data.fix_type = raw.fix_type;
-  data.num_sat = raw.num_sat;
-  data.lon = raw.lon;
-  data.lat = raw.lat;
-  data.height = raw.height;
-  data.height_msl = raw.height_msl;
-  data.h_acc = raw.h_acc;
-  data.v_acc = raw.v_acc;
-  data.vel_n = raw.vel_n;
-  data.vel_e = raw.vel_e;
-  data.vel_d = raw.vel_d;
-  data.g_speed = raw.g_speed;
-  data.head_mot = raw.head_mot;
-  data.s_acc = raw.s_acc;
-  data.head_acc = raw.head_acc;
-  data.p_dop = raw.p_dop;
-  data.rosflight_timestamp = raw.rosflight_timestamp;
-  mavlink_msg_rosflight_gnss_raw_encode(system_id, compid_, &msg, &data);
+  mavlink_rosflight_gnss_full_t data = {};
+  data.time_of_week = full.time_of_week;
+  data.year = full.year;
+  data.month = full.month;
+  data.day = full.day;
+  data.hour = full.hour;
+  data.min = full.min;
+  data.sec = full.sec;
+  data.valid = full.valid;
+  data.t_acc = full.t_acc;
+  data.nano = full.nano;
+  data.fix_type = full.fix_type;
+  data.num_sat = full.num_sat;
+  data.lon = full.lon;
+  data.lat = full.lat;
+  data.height = full.height;
+  data.height_msl = full.height_msl;
+  data.h_acc = full.h_acc;
+  data.v_acc = full.v_acc;
+  data.vel_n = full.vel_n;
+  data.vel_e = full.vel_e;
+  data.vel_d = full.vel_d;
+  data.g_speed = full.g_speed;
+  data.head_mot = full.head_mot;
+  data.s_acc = full.s_acc;
+  data.head_acc = full.head_acc;
+  data.p_dop = full.p_dop;
+  data.rosflight_timestamp = full.rosflight_timestamp;
+  mavlink_msg_rosflight_gnss_full_encode(system_id, compid_, &msg, &data);
   send_message(msg);
 }
 

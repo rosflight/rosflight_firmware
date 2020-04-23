@@ -175,7 +175,7 @@ public:
   // GNSS
   GNSSData gnss_read() override;
   bool gnss_has_new_data() override;
-  GNSSRaw gnss_raw_read() override;
+  GNSSFull gnss_full_read() override;
   // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;
