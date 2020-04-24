@@ -71,7 +71,10 @@ void CommandManager::param_change_callback(uint16_t param_id)
   switch (param_id)
   {
   case PARAM_FIXED_WING:
+  case PARAM_FAILSAFE_AILERON:
+  case PARAM_FAILSAFE_ELEVATOR:
   case PARAM_FAILSAFE_THROTTLE:
+  case PARAM_FAILSAFE_RUDDER:
     init_failsafe();
     break;
   default:
@@ -83,6 +86,10 @@ void CommandManager::param_change_callback(uint16_t param_id)
 void CommandManager::init_failsafe()
 {
   multirotor_failsafe_command_.F.value = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
+  fixedwing_failsafe_command_.x.value = RF_.params_.get_param_float(PARAM_FAILSAFE_AILERON);
+  fixedwing_failsafe_command_.y.value = RF_.params_.get_param_float(PARAM_FAILSAFE_ELEVATOR);
+  fixedwing_failsafe_command_.F.value = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
+  fixedwing_failsafe_command_.z.value = RF_.params_.get_param_float(PARAM_FAILSAFE_RUDDER);
 
   if (RF_.params_.get_param_int(PARAM_FIXED_WING))
     failsafe_command_ = fixedwing_failsafe_command_;
