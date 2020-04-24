@@ -43,13 +43,12 @@
 
 namespace rosflight_firmware
 {
-// Fix type, as defined in sensor_msgs/NavSatStatus
 enum GNSSFixType
 {
-  GNSS_FIX_TYPE_NO_FIX,   // Unable to fix position
-  GNSS_FIX_TYPE_FIX,      // Unaugmented fix
-  GNSS_FIX_TYPE_SBAS_FIX, // with satellite-based augmentation
-  GNSS_FIX_TYPE_GBAS_FIX  // with ground-based augmentation
+  GNSS_FIX_TYPE_NO_FIX,
+  GNSS_FIX_TYPE_FIX,
+  GNSS_FIX_RTK_FLOAT, // The two RTK fix types are for possible future use.
+  GNSS_FIX_RTK_FIXED
 };
 
 struct GNSSData
@@ -86,7 +85,7 @@ struct GNSSData
   GNSSData() { memset(this, 0, sizeof(GNSSData)); }
 };
 
-struct GNSSRaw
+struct GNSSFull
 {
   uint64_t time_of_week;
   uint16_t year;
@@ -116,7 +115,7 @@ struct GNSSRaw
   uint16_t p_dop;
   uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
 
-  GNSSRaw() { memset(this, 0, sizeof(GNSSRaw)); }
+  GNSSFull() { memset(this, 0, sizeof(GNSSFull)); }
 };
 
 class ROSflight;
@@ -149,7 +148,7 @@ public:
     bool gnss_new_data = false;
     float gps_CNO = 0; // What is this?
     bool gnss_present = false;
-    GNSSRaw gnss_raw;
+    GNSSFull gnss_full;
 
     turbomath::Vector mag = {0, 0, 0};
 

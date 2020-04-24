@@ -134,7 +134,7 @@ public:
 
   GNSSData gnss_read() override;
   bool gnss_has_new_data() override;
-  GNSSRaw gnss_raw_read() override;
+  GNSSFull gnss_full_read() override;
 
   // PWM
   // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
