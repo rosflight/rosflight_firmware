@@ -496,6 +496,7 @@ TEST_F(StateMachineTest, WriteBackupDataArmed)
 
 TEST_F(StateMachineTest, DoNotArmIfInvalidFailsafe)
 {
+  rf.params_.set_param_int(PARAM_FIXED_WING, 0);
   rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, -1.0);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
 
@@ -506,6 +507,7 @@ TEST_F(StateMachineTest, DoNotArmIfInvalidFailsafe)
 
 TEST_F(StateMachineTest, ArmAfterCorrectFailsafe)
 {
+  rf.params_.set_param_int(PARAM_FIXED_WING, 0);
   rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, -1.0);
   rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 1.0);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);

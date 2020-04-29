@@ -83,7 +83,8 @@ void CommandManager::param_change_callback(uint16_t param_id)
 void CommandManager::init_failsafe()
 {
   float failsafe_thr_param = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
-  if (failsafe_thr_param < 0. || failsafe_thr_param > 1.0)
+  bool fixedwing = RF_.params_.get_param_int(PARAM_FIXED_WING);
+  if (!fixedwing && (failsafe_thr_param < 0. || failsafe_thr_param > 1.0)) // fixed wings always have 0 failsafe throttle
   {
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_FAILSAFE);
     failsafe_thr_param = 0.;
@@ -95,7 +96,7 @@ void CommandManager::init_failsafe()
 
   multirotor_failsafe_command_.F.value = failsafe_thr_param;
 
-  if (RF_.params_.get_param_int(PARAM_FIXED_WING))
+  if (fixedwing)
     failsafe_command_ = fixedwing_failsafe_command_;
   else
     failsafe_command_ = multirotor_failsafe_command_;
