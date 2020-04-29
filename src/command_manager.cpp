@@ -88,6 +88,10 @@ void CommandManager::init_failsafe()
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_FAILSAFE);
     failsafe_thr_param = 0.;
   }
+  else
+  {
+    RF_.state_manager_.clear_error(StateManager::ERROR_INVALID_FAILSAFE);
+  }
 
   multirotor_failsafe_command_.F.value = failsafe_thr_param;
 
