@@ -88,11 +88,6 @@ void CommandManager::init_failsafe()
   float failsafe_thr_param = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
   bool fixedwing = RF_.params_.get_param_int(PARAM_FIXED_WING);
 
-  multirotor_failsafe_command_.F.value = failsafe_thr_param;
-  fixedwing_failsafe_command_.x.value = RF_.params_.get_param_float(PARAM_FAILSAFE_AILERON);
-  fixedwing_failsafe_command_.y.value = RF_.params_.get_param_float(PARAM_FAILSAFE_ELEVATOR);
-  fixedwing_failsafe_command_.F.value = failsafe_thr_param;
-  fixedwing_failsafe_command_.z.value = RF_.params_.get_param_float(PARAM_FAILSAFE_RUDDER);
   if (failsafe_thr_param < 0. || failsafe_thr_param > 1.0)
   {
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_FAILSAFE);
@@ -102,6 +97,13 @@ void CommandManager::init_failsafe()
   {
     RF_.state_manager_.clear_error(StateManager::ERROR_INVALID_FAILSAFE);
   }
+
+  multirotor_failsafe_command_.F.value = failsafe_thr_param;
+  fixedwing_failsafe_command_.x.value = RF_.params_.get_param_float(PARAM_FAILSAFE_AILERON);
+  fixedwing_failsafe_command_.y.value = RF_.params_.get_param_float(PARAM_FAILSAFE_ELEVATOR);
+  fixedwing_failsafe_command_.F.value = failsafe_thr_param;
+  fixedwing_failsafe_command_.z.value = RF_.params_.get_param_float(PARAM_FAILSAFE_RUDDER);
+
   if (fixedwing)
     failsafe_command_ = fixedwing_failsafe_command_;
   else
