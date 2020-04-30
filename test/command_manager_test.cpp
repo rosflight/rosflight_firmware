@@ -50,6 +50,7 @@ public:
     rc_values[2] = 1000;
 
     rf.params_.set_param_int(PARAM_MIXER, Mixer::PASSTHROUGH);
+    rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0);
     max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
     max_pitch = rf.params_.get_param_float(PARAM_RC_MAX_PITCH);
     max_yawrate = rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE);

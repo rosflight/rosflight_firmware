@@ -176,7 +176,7 @@ void Params::set_defaults(void)
   init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_AILERON, "FAILSAFE_AIL", 0.0); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_ELEVATOR, "FAILSAFE_ELEV", 0.0); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
-  init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", 0.3); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
+  init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", -1.0); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_RUDDER, "FAILSAFE_RUD", 0.0); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_THR | 0 | 1
 

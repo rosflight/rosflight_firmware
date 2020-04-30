@@ -23,6 +23,7 @@ public:
     rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_MIXER, 10);
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
+    rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0f);
     stepFirmware(100000);
   }
 
@@ -51,7 +52,7 @@ TEST_F(StateMachineTest, Init)
 TEST_F(StateMachineTest, SetAndClearAllErrors)
 {
   // Try setting and clearing all the errors
-  for (int error = 0x0001; error <= StateManager::ERROR_UNCALIBRATED_IMU; error *= 2)
+  for (int error = 0x0001; error <= StateManager::ERROR_INVALID_FAILSAFE; error *= 2)
   {
     // set the error
     rf.state_manager_.set_error(error);
@@ -491,4 +492,27 @@ TEST_F(StateMachineTest, WriteBackupDataArmed)
   EXPECT_EQ(data.debug.lr, debug_info.lr);
   EXPECT_EQ(data.debug.pc, debug_info.pc);
   EXPECT_EQ(data.debug.psr, debug_info.psr);
+}
+
+TEST_F(StateMachineTest, DoNotArmIfInvalidFailsafe)
+{
+  rf.params_.set_param_int(PARAM_FIXED_WING, 0);
+  rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, -1.0);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, false);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_INVALID_FAILSAFE);
+  EXPECT_EQ(rf.state_manager_.state().error, true);
+}
+
+TEST_F(StateMachineTest, ArmAfterCorrectFailsafe)
+{
+  rf.params_.set_param_int(PARAM_FIXED_WING, 0);
+  rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, -1.0);
+  rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 1.0);
+  rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
+
+  EXPECT_EQ(rf.state_manager_.state().armed, true);
+  EXPECT_EQ(rf.state_manager_.state().error_codes, 0);
+  EXPECT_EQ(rf.state_manager_.state().error, false);
 }

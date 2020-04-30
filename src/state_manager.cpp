@@ -181,6 +181,8 @@ void StateManager::set_event(StateManager::Event event)
           RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Time going backwards");
         if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU)
           RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: IMU not calibrated");
+        if (state_.error_codes & StateManager::ERROR_INVALID_FAILSAFE)
+          RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Unable to arm: Invalid failsafe setting");
 
         next_arming_error_msg_ms_ = RF_.board_.clock_millis() + 1000; // throttle messages to 1 Hz
       }
