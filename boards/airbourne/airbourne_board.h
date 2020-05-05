@@ -33,10 +33,12 @@
 #define ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 
 #include "M25P16.h"
+#include "airbourne_board_config_manager.h"
 #include "analog_digital_converter.h"
 #include "analog_pin.h"
 #include "backup_sram.h"
 #include "battery_monitor.h"
+#include "board.h"
 #include "hmc5883l.h"
 #include "i2c.h"
 #include "led.h"
@@ -52,6 +54,7 @@
 #include "spi.h"
 #include "system.h"
 #include "uart.h"
+#include "ublox.h"
 #include "vcp.h"
 
 #include <revo_f4.h>
@@ -59,10 +62,6 @@
 #include <cstdbool>
 #include <cstddef>
 #include <cstdint>
-// #include "ublox.h"
-
-#include "airbourne_board_config_manager.h"
-#include "board.h"
 
 namespace rosflight_firmware
 {
@@ -94,7 +93,7 @@ private:
   M25P16 flash_;
   AnalogDigitalConverter battery_adc_;
   BatteryMonitor battery_monitor_;
-  // UBLOX gnss_;
+  UBLOX gnss_;
 
   enum SerialDevice : uint32_t
   {
@@ -184,7 +183,7 @@ public:
   // GNSS
   GNSSData gnss_read() override;
   bool gnss_has_new_data() override;
-  GNSSRaw gnss_raw_read() override;
+  GNSSFull gnss_full_read() override;
   // RC
   void rc_init(rc_type_t rc_type);
   bool rc_lost() override;

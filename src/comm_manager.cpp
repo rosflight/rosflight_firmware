@@ -92,7 +92,7 @@ void CommManager::init()
   set_streaming_rate(STREAM_ID_BARO, PARAM_STREAM_BARO_RATE);
   set_streaming_rate(STREAM_ID_SONAR, PARAM_STREAM_SONAR_RATE);
   set_streaming_rate(STREAM_ID_GNSS, PARAM_STREAM_GNSS_RATE);
-  set_streaming_rate(STREAM_ID_GNSS_RAW, PARAM_STREAM_GNSS_RAW_RATE);
+  set_streaming_rate(STREAM_ID_GNSS_FULL, PARAM_STREAM_GNSS_FULL_RATE);
   set_streaming_rate(STREAM_ID_MAG, PARAM_STREAM_MAG_RATE);
   set_streaming_rate(STREAM_ID_BATTERY_STATUS, PARAM_STREAM_BATTERY_STATUS_RATE);
   set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, PARAM_STREAM_OUTPUT_RAW_RATE);
@@ -132,8 +132,8 @@ void CommManager::param_change_callback(uint16_t param_id)
   case PARAM_STREAM_GNSS_RATE:
     set_streaming_rate(STREAM_ID_GNSS, param_id);
     break;
-  case PARAM_STREAM_GNSS_RAW_RATE:
-    set_streaming_rate(STREAM_ID_GNSS_RAW, param_id);
+  case PARAM_STREAM_GNSS_FULL_RATE:
+    set_streaming_rate(STREAM_ID_GNSS_FULL, param_id);
     break;
   case PARAM_STREAM_MAG_RATE:
     set_streaming_rate(STREAM_ID_MAG, param_id);
@@ -590,16 +590,16 @@ void CommManager::send_gnss(void)
   }
 }
 
-void CommManager::send_gnss_raw()
+void CommManager::send_gnss_full()
 {
-  const GNSSRaw& gnss_raw = RF_.sensors_.data().gnss_raw;
+  const GNSSFull& gnss_full = RF_.sensors_.data().gnss_full;
 
   if (RF_.sensors_.data().gnss_present)
   {
-    if (gnss_raw.time_of_week != last_sent_gnss_raw_tow_)
+    if (gnss_full.time_of_week != last_sent_gnss_full_tow_)
     {
-      comm_link_.send_gnss_raw(sysid_, RF_.sensors_.data().gnss_raw);
-      last_sent_gnss_raw_tow_ = gnss_raw.time_of_week;
+      comm_link_.send_gnss_full(sysid_, RF_.sensors_.data().gnss_full);
+      last_sent_gnss_full_tow_ = gnss_full.time_of_week;
     }
   }
 }

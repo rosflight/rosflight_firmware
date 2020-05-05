@@ -240,7 +240,7 @@ GNSSData testBoard::gnss_read()
 }
 
 // GNSS is not supported on the test board
-GNSSRaw testBoard::gnss_raw_read()
+GNSSFull testBoard::gnss_full_read()
 {
   return {};
 }

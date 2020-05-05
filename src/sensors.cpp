@@ -150,7 +150,7 @@ void Sensors::update_other_sensors()
       data_.gnss_new_data = true;
       rf_.board_.gnss_update();
       this->data_.gnss_data = rf_.board_.gnss_read();
-      this->data_.gnss_raw = rf_.board_.gnss_raw_read();
+      this->data_.gnss_full = rf_.board_.gnss_full_read();
     }
     break;
 

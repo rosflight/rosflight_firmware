@@ -410,7 +410,7 @@ GNSSData BreezyBoard::gnss_read()
 }
 
 // GNSS is not supported on breezy boards
-GNSSRaw BreezyBoard::gnss_raw_read()
+GNSSFull BreezyBoard::gnss_full_read()
 {
   return {};
 }
