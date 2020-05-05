@@ -127,8 +127,7 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
 {
   switch (device)
   {
-  case Configuration::SERIAL:
-  {
+  case Configuration::SERIAL: {
     uint32_t baud_rate = params.get_param_int(PARAM_BAUD_RATE);
     serial_init(baud_rate, configuration);
     return true; // TODO serial_init success check
@@ -156,7 +155,22 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
     }
     break;
   case Configuration::GNSS:
-    // GNSS is currently disabled
+    UART *gnss_uart_ptr;
+    switch (configuration)
+    {
+    case AirbourneConfiguration::GNSS_DISABLED:
+      return true;
+    case AirbourneConfiguration::GNSS_UART1:
+      gnss_uart_ptr = &uart1_;
+      break;
+    case AirbourneConfiguration::GNSS_UART2:
+      gnss_uart_ptr = &uart2_;
+      break;
+    case AirbourneConfiguration::GNSS_UART3:
+      gnss_uart_ptr = &uart3_;
+      break;
+    }
+    gnss_.init(gnss_uart_ptr);
     break;
   case Configuration::SONAR:
     if (configuration == AirbourneConfiguration::SONAR_I2C2)
