@@ -123,7 +123,8 @@ bool AirbourneBoard::enable_device(device_t device, hardware_config_t configurat
 {
   switch (device)
   {
-  case Configuration::SERIAL: {
+  case Configuration::SERIAL:
+  {
     uint32_t baud_rate = params.get_param_int(PARAM_BAUD_RATE);
     serial_init(baud_rate, configuration);
     return true; // TODO serial_init success check
