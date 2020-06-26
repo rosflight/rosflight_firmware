@@ -262,6 +262,7 @@ AirbourneBoardConfigManager::Port AirbourneBoardConfigManager::get_port(uint8_t 
     case AirbourneConfiguration::SERIAL_UART3:
       return FLEXI_PORT;
     }
+    break;
   case Configuration::GNSS:
     switch (config)
     {
@@ -274,6 +275,7 @@ AirbourneBoardConfigManager::Port AirbourneBoardConfigManager::get_port(uint8_t 
     case AirbourneConfiguration::GNSS_UART3:
       return FLEXI_PORT;
     }
+    break;
   case Configuration::RC:
     if (config == AirbourneConfiguration::RC_PPM)
       return FLEX_IO_PORT;
