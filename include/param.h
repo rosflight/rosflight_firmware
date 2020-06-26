@@ -206,6 +206,7 @@ enum : uint16_t
   /*** OFFBOARD CONTROL ***/
   /************************/
   PARAM_OFFBOARD_TIMEOUT,
+  PARAM_ALLOW_OFFBOARD_FAILSAFE,
 
   /***********************/
   /*** BATTERY MONITOR ***/
