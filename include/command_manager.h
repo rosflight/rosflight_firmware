@@ -150,6 +150,8 @@ private:
   void interpret_rc(void);
   bool stick_deviated(MuxChannel channel);
 
+  bool is_offboard_command_stale();
+
 public:
   CommandManager(ROSflight &_rf);
   void init();

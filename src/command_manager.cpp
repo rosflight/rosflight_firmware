@@ -271,6 +271,10 @@ void CommandManager::override_combined_command_with_rc()
   combined_command_ = rc_command_;
 }
 
+bool CommandManager::is_offboard_command_stale(){
+  return RF_.board_.clock_millis() > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT);
+}
+
 bool CommandManager::run()
 {
   bool last_rc_override = rc_override_;
@@ -278,7 +282,10 @@ bool CommandManager::run()
   // Check for and apply failsafe command
   if (RF_.state_manager_.state().failsafe)
   {
-    combined_command_ = failsafe_command_;
+    if( RF_.params_.get_param_int(PARAM_ALLOW_OFFBOARD_FAILSAFE) == 1 && !is_offboard_command_stale())
+      combined_command_ = offboard_command_;
+    else
+      combined_command_ = failsafe_command_;
   }
   else if (RF_.rc_.new_command())
   {
@@ -286,7 +293,7 @@ bool CommandManager::run()
     interpret_rc();
 
     // Check for offboard control timeout (100 ms)
-    if (RF_.board_.clock_millis() > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT))
+    if (is_offboard_command_stale())
     {
       // If it has been longer than 100 ms, then disable the offboard control
       offboard_command_.F.active = false;
