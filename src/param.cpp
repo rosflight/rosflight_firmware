@@ -286,7 +286,7 @@ void Params::set_defaults(void)
   /*** OFFBOARD CONTROL ***/
   /************************/
   init_param_int(PARAM_OFFBOARD_TIMEOUT, "OFFBOARD_TIMEOUT", 100); // Timeout in milliseconds for offboard commands, after which RC override is activated | 0 | 100000
-  init_param_int(PARAM_ALLOW_OFFBOARD_FAILSAFE, "OFFBOARD_FAILSAFE", 0);
+  init_param_int(PARAM_ALLOW_OFFBOARD_FAILSAFE, "OFFBRD_FAILSAFE", 0);
 }
 // clang-format on
 
