@@ -48,7 +48,7 @@ PARALLEL_JOBS	:= $(shell grep -c ^processor /proc/cpuinfo)
 #################################
 # List of valid boards (update with new boards)
 VALID_F1_BOARDS = NAZE
-VALID_F4_BOARDS = REVO
+VALID_F4_BOARDS = REVO REVO_EEPROM
 
 # Make sure that the supplied board is supported, and if so,
 # set the proper board directory

@@ -35,6 +35,14 @@ DEBUG ?= GDB
 SERIAL_DEVICE ?= /dev/ttyACM0
 
 
+#################################
+# Custom board configurations
+#################################
+BOARD_CXX_FLAGS = 
+ifeq ($(BOARD), REVO_EEPROM)
+BOARD_CXX_FLAGS += -DPARAM_EEPROM_PERSISTENT
+endif
+
 
 #################################
 # Working directories
@@ -174,7 +182,7 @@ INCLUDE_DIRS += $(AIRBOURNE_SRC_DIR) \
 MCFLAGS= -mcpu=cortex-m4 -mthumb -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 DEFS+=-DSTM32F40_41xxx -D__CORTEX_M4 -D__FPU_PRESENT -DWORDS_STACK_SIZE=200 -DUSE_STDPERIPH_DRIVER -D__FPU_USED -DHSE_VALUE=8000000 -DUSE_USB_OTG_FS
 CFLAGS += $(MCFLAGS) $(OPTIMIZE) $(addprefix -I,$(INCLUDE_DIRS))
-CXXFLAGS += $(MCFLAGS) $(OPTIMIZE) $(addprefix -I,$(INCLUDE_DIRS))
+CXXFLAGS += $(MCFLAGS) $(OPTIMIZE) $(addprefix -I,$(INCLUDE_DIRS)) $(BOARD_CXX_FLAGS)
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) -lm -lc --specs=nano.specs --specs=rdimon.specs $(ARCH_FLAGS)  $(LTO_FLAGS)  $(DEBUG_FLAGS) -static  -Wl,-gc-sections -Wl,-Map=main.map
 
 $(info VPATH = $(VPATH))
