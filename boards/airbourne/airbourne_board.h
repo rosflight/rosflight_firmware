@@ -32,7 +32,12 @@
 #ifndef ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_AIRBOURNE_BOARD_H
 
+#ifdef PARAM_EEPROM_PERSISTENT
+#include "eeprom.h"
+#else
 #include "M25P16.h"
+#endif
+
 #include "analog_digital_converter.h"
 #include "analog_pin.h"
 #include "backup_sram.h"
@@ -86,10 +91,13 @@ private:
   PWM_OUT esc_out_[PWM_NUM_OUTPUTS];
   LED led2_;
   LED led1_;
-  M25P16 flash_;
   AnalogDigitalConverter battery_adc_;
   BatteryMonitor battery_monitor_;
   UBLOX gnss_;
+  
+  #ifndef PARAM_EEPROM_PERSISTENT
+  M25P16 flash_;
+  #endif
 
   enum SerialDevice : uint32_t
   {

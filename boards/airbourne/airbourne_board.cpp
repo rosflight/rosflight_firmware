@@ -415,22 +415,6 @@ bool AirbourneBoard::rc_lost()
   return rc_->lost();
 }
 
-// non-volatile memory
-void AirbourneBoard::memory_init()
-{
-  return flash_.init(&spi3_);
-}
-
-bool AirbourneBoard::memory_read(void *data, size_t len)
-{
-  return flash_.read_config(reinterpret_cast<uint8_t *>(data), len);
-}
-
-bool AirbourneBoard::memory_write(const void *data, size_t len)
-{
-  return flash_.write_config(reinterpret_cast<const uint8_t *>(data), len);
-}
-
 // LED
 void AirbourneBoard::led0_on()
 {
@@ -460,6 +444,34 @@ void AirbourneBoard::led1_off()
 void AirbourneBoard::led1_toggle()
 {
   led2_.toggle();
+}
+
+// non-volatile memory
+void AirbourneBoard::memory_init()
+{
+#ifdef PARAM_EEPROM_PERSISTENT
+  return eeprom_init();
+#else
+  return flash_.init(&spi3_);
+#endif
+}
+
+bool AirbourneBoard::memory_read(void *data, size_t len)
+{
+#ifdef PARAM_EEPROM_PERSISTENT
+  return eeprom_read(data, len);
+#else
+  return flash_.read_config(reinterpret_cast<uint8_t *>(data), len);
+#endif
+}
+
+bool AirbourneBoard::memory_write(const void *data, size_t len)
+{
+#ifdef PARAM_EEPROM_PERSISTENT
+  return eeprom_write(data, len);
+#else
+  return flash_.write_config(reinterpret_cast<const uint8_t *>(data), len);
+#endif
 }
 
 // Backup memory
