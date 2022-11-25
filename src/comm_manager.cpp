@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <turbomath/turbomath.h>
 #include "comm_manager.h"
 
 #include "param.h"
@@ -38,6 +39,7 @@
 #include <cstdint>
 #include <cstring>
 
+using namespace turbomath;
 namespace rosflight_firmware
 {
 CommManager::LogMessageBuffer::LogMessageBuffer()
@@ -166,11 +168,14 @@ void CommManager::send_param_value(uint16_t param_id)
 {
   if (param_id < PARAMS_COUNT)
   {
+
+      RF_.board_.led0_on();
     switch (RF_.params_.get_param_type(param_id))
     {
     case PARAM_TYPE_INT32:
       comm_link_.send_param_value_int(sysid_, param_id, RF_.params_.get_param_name(param_id),
                                       RF_.params_.get_param_int(param_id), static_cast<uint16_t>(PARAMS_COUNT));
+
       break;
     case PARAM_TYPE_FLOAT:
       comm_link_.send_param_value_float(sysid_, param_id, RF_.params_.get_param_name(param_id),
@@ -179,6 +184,7 @@ void CommManager::send_param_value(uint16_t param_id)
     default:
       break;
     }
+    RF_.board_.led0_off();
   }
 }
 
@@ -390,6 +396,7 @@ void CommManager::heartbeat_callback(void)
     comm_link_.send_error_data(sysid_, backup_data_buffer_);
     have_backup_data_ = false;
   }
+
 
   /// JSJ: I don't think we need this
   // respond to heartbeats with a heartbeat
@@ -615,15 +622,16 @@ CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_f
 
 void CommManager::Stream::stream(uint64_t now_us)
 {
-  if (period_us_ > 0 && now_us >= next_time_us_)
+  if (this->period_us_ > 0 && (now_us - this->next_time_us_ ) > this->period_us_)
   {
     // if you fall behind, skip messages
-    do
+   /* do
     {
       next_time_us_ += period_us_;
-    } while (next_time_us_ < now_us);
+    } while (next_time_us_ < now_us);*/
+      this->next_time_us_ = now_us;
 
-    send_function_();
+    this->send_function_();
   }
 }
 
