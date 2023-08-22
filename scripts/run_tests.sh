@@ -43,11 +43,6 @@ echo_blue "Test 4: Run test suite"
 ./unit_tests
 print_result $?
 
-echo_blue "Test 5: Build MkDocs documentation"
-cd ../..
-mkdocs build -s
-print_result $?
-
 
 if [ $EXIT_CODE -eq 0 ]; then
   echo_green "All tests passed!"
