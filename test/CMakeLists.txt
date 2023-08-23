@@ -19,6 +19,7 @@ add_definitions(-DGIT_VERSION_STRING=\"${GIT_VERSION_STRING}\")
 
 # Locate GTest
 find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)  # Required for current gtest version, may be a bug with gtest?
 include_directories(${GTEST_INCLUDE_DIRS})
 
 include_directories(../include)

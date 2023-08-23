@@ -29,6 +29,8 @@
  * OF SUCH DAMAGE.
  */
 
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+
 #include "nanoprintf.h"
 
 namespace rosflight_firmware

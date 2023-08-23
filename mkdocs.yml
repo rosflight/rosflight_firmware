@@ -8,10 +8,6 @@ repo_name: 'rosflight/firmware'
 repo_url: 'https://github.com/rosflight/firmware'
 edit_uri: 'blob/master/docs/'
 
-google_analytics:
-  - 'UA-96018590-2'
-  - 'auto'
-
 theme:
   name: 'material'
   language: 'en'
@@ -22,6 +18,8 @@ theme:
   logo: 'assets/logo.png'
   feature:
     tabs: true
+  analytics:
+    gtag: UA-96018590-2
 
 extra_javascript:
     - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
