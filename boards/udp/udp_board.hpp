@@ -37,32 +37,33 @@
 #ifndef ROSFLIGHT_FIRMWARE_UDP_BOARD_H
 #define ROSFLIGHT_FIRMWARE_UDP_BOARD_H
 
-#include <list>
-#include <string>
+#include "board.h"
+#include "mavlink/mavlink.h"
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
-#include "board.h"
-#include "mavlink/mavlink.h"
+#include <list>
+#include <string>
 
 namespace rosflight_firmware
 {
 class UDPBoard : public Board
 {
 public:
-  explicit UDPBoard(std::string bind_host = "localhost", uint16_t bind_port = 14525,
-                    std::string remote_host = "localhost", uint16_t remote_port = 14520);
+  explicit UDPBoard(std::string bind_host = "localhost",
+                    uint16_t bind_port = 14525,
+                    std::string remote_host = "localhost",
+                    uint16_t remote_port = 14520);
   ~UDPBoard();
 
   void serial_init(uint32_t baud_rate, uint32_t dev) override;
-  void serial_write(const uint8_t * src, size_t len) override;
+  void serial_write(const uint8_t *src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
 
-  void set_ports(std::string bind_host, uint16_t bind_port, std::string remote_host,
-                 uint16_t remote_port);
+  void set_ports(std::string bind_host, uint16_t bind_port, std::string remote_host, uint16_t remote_port);
 
 private:
   struct Buffer
@@ -73,13 +74,13 @@ private:
 
     Buffer() : len(0), pos(0) {}
 
-    Buffer(const uint8_t * src, size_t length) : len(length), pos(0)
+    Buffer(const uint8_t *src, size_t length) : len(length), pos(0)
     {
       assert(length <= MAVLINK_MAX_PACKET_LEN); //! \todo Do something less catastrophic here
       memcpy(data, src, length);
     }
 
-    const uint8_t * dpos() const { return data + pos; }
+    const uint8_t *dpos() const { return data + pos; }
     size_t nbytes() const { return len - pos; }
     void add_byte(uint8_t byte) { data[len++] = byte; }
     uint8_t consume_byte() { return data[pos++]; }
@@ -90,10 +91,10 @@ private:
   typedef boost::lock_guard<boost::recursive_mutex> MutexLock;
 
   void async_read();
-  void async_read_end(const boost::system::error_code & error, size_t bytes_transferred);
+  void async_read_end(const boost::system::error_code &error, size_t bytes_transferred);
 
   void async_write(bool check_write_state);
-  void async_write_end(const boost::system::error_code & error, size_t bytes_transferred);
+  void async_write_end(const boost::system::error_code &error, size_t bytes_transferred);
 
   std::string bind_host_;
   uint16_t bind_port_;
