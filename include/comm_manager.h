@@ -35,8 +35,9 @@
 #include "interface/comm_link.h"
 #include "interface/param_listener.h"
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
+
 #include <cstdint>
 #include <functional>
 
