@@ -408,7 +408,7 @@ void CommManager::log(CommLinkInterface::LogSeverity severity, const char* fmt, 
   va_list args;
   va_start(args, fmt);
   char text[LOG_MSG_SIZE];
-  rosflight_firmware::nanoprintf::tfp_sprintf(text, fmt, args);
+  vsnprintf(text, LOG_MSG_SIZE, fmt, args);
   va_end(args);
 
   if (initialized_ && connected_)

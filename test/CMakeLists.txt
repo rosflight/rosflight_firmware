@@ -34,7 +34,6 @@ set(ROSFLIGHT_SRC
     ../src/sensors.cpp
     ../src/state_manager.cpp
     ../src/estimator.cpp
-    ../src/nanoprintf.cpp
     ../src/controller.cpp
     ../src/comm_manager.cpp
     ../src/command_manager.cpp

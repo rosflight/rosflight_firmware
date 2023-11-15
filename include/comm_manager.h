@@ -35,7 +35,8 @@
 #include "interface/comm_link.h"
 #include "interface/param_listener.h"
 
-#include "nanoprintf.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #include <cstdint>
 #include <functional>
