@@ -128,10 +128,10 @@ void Sensors::param_change_callback(uint16_t param_id)
 
 got_flags Sensors::run()
 {
-  memset(&got,0,sizeof(got));
+  memset(&got, 0, sizeof(got));
 
   // IMU:
-  if ((got.imu = rf_.board_.imu_has_new_data())>0)
+  if ((got.imu = rf_.board_.imu_has_new_data()) > 0)
   {
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
@@ -165,16 +165,15 @@ got_flags Sensors::run()
     accel_int_ += dt * data_.accel;
     gyro_int_ += dt * data_.gyro;
     prev_imu_read_time_us_ = data_.imu_time;
-
   }
 
   // GNSS:
   if (rf_.board_.gnss_present())
   {
     data_.gnss_present = true;
-    if((got.gnss = rf_.board_.gnss_has_new_data())>0)
+    if ((got.gnss = rf_.board_.gnss_has_new_data()) > 0)
     {
-       rf_.board_.gnss_read(&this->data_.gnss_data, &this->data_.gnss_full);
+      rf_.board_.gnss_read(&this->data_.gnss_data, &this->data_.gnss_full);
     }
     got.gnss_full = got.gnss; // bot come with the pvt GPS data
   }
@@ -183,8 +182,8 @@ got_flags Sensors::run()
   if (rf_.board_.baro_present())
   {
     data_.baro_present = true;
-    if((got.baro = rf_.board_.baro_has_new_data())>0)
-    { 
+    if ((got.baro = rf_.board_.baro_has_new_data()) > 0)
+    {
       float raw_pressure;
       float raw_temp;
       rf_.board_.baro_read(&raw_pressure, &raw_temp);
@@ -202,7 +201,7 @@ got_flags Sensors::run()
   {
     data_.mag_present = true;
     float mag[3];
-    if((got.mag=rf_.board_.mag_has_new_data())>0)
+    if ((got.mag = rf_.board_.mag_has_new_data()) > 0)
     {
       rf_.board_.mag_read(mag);
       data_.mag.x = mag[0];
@@ -216,7 +215,7 @@ got_flags Sensors::run()
   if (rf_.board_.diff_pressure_present())
   {
     data_.diff_pressure_present = true;
-    if((got.diff_pressure = rf_.board_.diff_pressure_has_new_data())>0)
+    if ((got.diff_pressure = rf_.board_.diff_pressure_has_new_data()) > 0)
     {
       float raw_pressure;
       float raw_temp;
@@ -234,33 +233,33 @@ got_flags Sensors::run()
   if (rf_.board_.sonar_present())
   {
     data_.sonar_present = true;
-    if((got.sonar = rf_.board_.sonar_has_new_data())>0)
+    if ((got.sonar = rf_.board_.sonar_has_new_data()) > 0)
     {
       float raw_distance;
-      rf_.board_.sonar_read( &raw_distance);
+      rf_.board_.sonar_read(&raw_distance);
       data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
     }
   }
 
   // BATTERY_MONITOR:
-  if((got.battery = rf_.board_.battery_has_new_data())>0)
+  if ((got.battery = rf_.board_.battery_has_new_data()) > 0)
   {
     last_battery_monitor_update_ms_ = rf_.board_.clock_millis();
     update_battery_monitor();
   }
 
   // RC
-  if((got.rc = rf_.board_.rc_has_new_data())>0)
+  if ((got.rc = rf_.board_.rc_has_new_data()) > 0)
   {
     rf_.board_.rc_read(0);
   }
 
-    return got;
+  return got;
 }
 
-void Sensors::update_other_sensors(){}
+void Sensors::update_other_sensors() {}
 
-void Sensors::look_for_disabled_sensors(){}
+void Sensors::look_for_disabled_sensors() {}
 
 bool Sensors::start_imu_calibration(void)
 {
@@ -312,7 +311,7 @@ bool Sensors::gyro_calibration_complete(void)
 bool Sensors::update_imu(void)
 {
   bool new_data;
-  if ((new_data = rf_.board_.imu_has_new_data())>0)
+  if ((new_data = rf_.board_.imu_has_new_data()) > 0)
   {
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
@@ -345,9 +344,8 @@ bool Sensors::update_imu(void)
     accel_int_ += dt * data_.accel;
     gyro_int_ += dt * data_.gyro;
     prev_imu_read_time_us_ = data_.imu_time;
-
-   }
-   return new_data;
+  }
+  return new_data;
 }
 
 void Sensors::get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us)
@@ -365,8 +363,8 @@ void Sensors::update_battery_monitor()
 {
   if (rf_.board_.battery_present())
   {
-    float battery_voltage,battery_current;
-    rf_.board_.battery_read(&battery_voltage,&battery_current);
+    float battery_voltage, battery_current;
+    rf_.board_.battery_read(&battery_voltage, &battery_current);
     data_.battery_monitor_present = true;
     data_.battery_voltage = battery_voltage;
     data_.battery_current = battery_current;

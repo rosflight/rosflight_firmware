@@ -49,10 +49,10 @@
 #endif
 
 // Uncomment to view contents of GIT_VERSION_HASH and GIT_VERSION STRING
-//#define STRINGIFY(s) XSTRINGIFY(s)
-//#define XSTRINGIFY(s) #s
-//#pragma message( "GIT_VERSION_HASH: " STRINGIFY(GIT_VERSION_HASH))
-//#pragma message( "GIT_VERSION_STRING: " GIT_VERSION_STRING)
+// #define STRINGIFY(s) XSTRINGIFY(s)
+// #define XSTRINGIFY(s) #s
+// #pragma message( "GIT_VERSION_HASH: " STRINGIFY(GIT_VERSION_HASH))
+// #pragma message( "GIT_VERSION_STRING: " GIT_VERSION_STRING)
 
 namespace rosflight_firmware
 {

@@ -162,7 +162,7 @@ public:
     GNSSFull gnss_full;
     float gps_CNO = 0; // What is this?
     bool gnss_present = false;
- 
+
     turbomath::Vector mag = {0, 0, 0};
 
     bool baro_present = false;

@@ -522,40 +522,57 @@ void CommManager::stream(got_flags got)
 
   // Send out data
 
-  if(got.imu) // Nominally 400Hz
+  if (got.imu) // Nominally 400Hz
   {
     send_imu();
     send_attitude();
-    static uint64_t ro_count=0;
-    if(!((ro_count++)%8)) send_output_raw();      // Raw output at 400Hz/8 = 50Hz
-   }
+    static uint64_t ro_count = 0;
+    if (!((ro_count++) % 8))
+      send_output_raw(); // Raw output at 400Hz/8 = 50Hz
+  }
 
-  if(got.diff_pressure)   send_diff_pressure();   // Pitot sensor
-  if(got.baro)            send_baro();            // Baro altimeter
-  if(got.mag)             send_mag();             // Manetometer
-  if(got.sonar)           send_sonar();           // Height above ground sensor (not enabled)
-  if(got.battery)         send_battery_status();  // Battery V & I
-  if(got.gnss)            send_gnss();            // GPS data (GNSS Packed)
-  if(got.gnss_full)       send_gnss_full();       // GPS full data (not needed)
-  if(got.rc) // report at half the S.Bus rate.
+  // Pitot sensor
+  if (got.diff_pressure)
+    send_diff_pressure();
+  // Baro altitude
+  if (got.baro)
+    send_baro();
+  // Magnetometer
+  if (got.mag)
+    send_mag();
+  // Height above ground sensor (not enabled)
+  if (got.sonar)
+    send_sonar();
+  // Battery V & I
+  if (got.battery)
+    send_battery_status();
+  // GPS data (GNSS Packed)
+  if (got.gnss)
+    send_gnss();
+  // GPS full data (not needed)
+  if (got.gnss_full)
+    send_gnss_full();
+  if (got.rc) // report at half the S.Bus rate.
   {
-    static uint64_t rc_count=0;
-    if(!((rc_count++)%2)) send_rc_raw();      	// RC (S.Bus) inputs, scaled 1000-2000
+    static uint64_t rc_count = 0;
+    // RC (S.Bus) inputs, scaled 1000-2000
+    if (!((rc_count++) % 2))
+      send_rc_raw();
   }
 
   {
-  	static uint64_t next_heartbeat = 0, next_status =0;
+    static uint64_t next_heartbeat = 0, next_status = 0;
 
-  	if((time_us)/1000000 >= next_heartbeat ) // 1 Hz
-  	{
-  		send_heartbeat();
-  		next_heartbeat = time_us/1000000+1;
-  	}
-  	if((time_us)/100000 >= next_status ) // 10 Hz
-  	{
-  		send_status();
-  		next_status = time_us/100000+1;
-  	}
+    if ((time_us) / 1000000 >= next_heartbeat) // 1 Hz
+    {
+      send_heartbeat();
+      next_heartbeat = time_us / 1000000 + 1;
+    }
+    if ((time_us) / 100000 >= next_status) // 10 Hz
+    {
+      send_status();
+      next_status = time_us / 100000 + 1;
+    }
   }
 
   send_low_priority(); // parameter values and logging messages
@@ -581,9 +598,7 @@ void CommManager::send_next_param(void)
 }
 
 CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :
-  period_us_(period_us),
-  next_time_us_(0),
-  send_function_(send_function)
+  period_us_(period_us), next_time_us_(0), send_function_(send_function)
 {
 }
 

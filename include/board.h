@@ -93,17 +93,17 @@ public:
   // Sonar
   virtual bool sonar_present() = 0;
   virtual uint8_t sonar_has_new_data() = 0;
-  virtual bool sonar_read(float *range) =0;
+  virtual bool sonar_read(float *range) = 0;
 
   // GPS
   virtual bool gnss_present() = 0;
   virtual uint8_t gnss_has_new_data() = 0;
-  virtual bool gnss_read( GNSSData *gnss, GNSSFull *gnss_full) = 0;
+  virtual bool gnss_read(GNSSData *gnss, GNSSFull *gnss_full) = 0;
 
   // Battery
-  virtual bool battery_present()  = 0;
-  virtual uint8_t battery_has_new_data()  = 0;  
-  virtual bool battery_read(float *voltage, float* current)  = 0;
+  virtual bool battery_present() = 0;
+  virtual uint8_t battery_has_new_data() = 0;
+  virtual bool battery_read(float *voltage, float *current) = 0;
   virtual void battery_voltage_set_multiplier(double multiplier) = 0;
   virtual void battery_current_set_multiplier(double multiplier) = 0;
 
