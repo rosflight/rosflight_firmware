@@ -44,10 +44,12 @@
 
 namespace rosflight_firmware
 {
+// TODO: These values don't change actual rates, is there a way to just reference actual rates
+//  as defined in hardware board implementation?
 const float Sensors::BARO_MAX_CHANGE_RATE = 200.0f; // approx 200 m/s
-const float Sensors::BARO_SAMPLE_RATE = 50.0f;
+const float Sensors::BARO_SAMPLE_RATE = 60.0f;
 const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f; // approx 15 m/s^2
-const float Sensors::DIFF_SAMPLE_RATE = 50.0f;
+const float Sensors::DIFF_SAMPLE_RATE = 100.0f;
 const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f; // 100 m/s
 const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
 
@@ -124,41 +126,65 @@ void Sensors::param_change_callback(uint16_t param_id)
   }
 }
 
-bool Sensors::run(void)
+got_flags Sensors::run()
 {
-  // First, check for new IMU data
-  bool got_imu = update_imu();
+  memset(&got,0,sizeof(got));
 
-  // Look for sensors that may not have been recognized at start because they weren't attached
-  // to the 5V rail (only if disarmed)
-  if (!rf_.state_manager_.state().armed)
-    look_for_disabled_sensors();
-
-  // Update other sensors
-  update_other_sensors();
-  return got_imu;
-}
-
-void Sensors::update_other_sensors()
-{
-  switch (next_sensor_to_update_)
+  // IMU:
+  if ((got.imu = rf_.board_.imu_has_new_data())>0)
   {
-  case GNSS:
-    if (rf_.board_.gnss_present() && rf_.board_.gnss_has_new_data())
-    {
-      data_.gnss_present = true;
-      data_.gnss_new_data = true;
-      rf_.board_.gnss_update();
-      this->data_.gnss_data = rf_.board_.gnss_read();
-      this->data_.gnss_full = rf_.board_.gnss_full_read();
-    }
-    break;
+    rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
+    last_imu_update_ms_ = rf_.board_.clock_millis();
 
-  case BAROMETER:
-    if (rf_.board_.baro_present())
+    if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
+      got.imu = 0;
+
+    // Move data into local copy
+    data_.accel.x = accel_[0];
+    data_.accel.y = accel_[1];
+    data_.accel.z = accel_[2];
+
+    data_.accel = data_.fcu_orientation * data_.accel;
+
+    data_.gyro.x = gyro_[0];
+    data_.gyro.y = gyro_[1];
+    data_.gyro.z = gyro_[2];
+
+    data_.gyro = data_.fcu_orientation * data_.gyro;
+
+    if (calibrating_acc_flag_)
+      calibrate_accel();
+    if (calibrating_gyro_flag_)
+      calibrate_gyro();
+
+    // Apply bias correction
+    correct_imu();
+
+    // Integrate for filtered IMU
+    float dt = (data_.imu_time - prev_imu_read_time_us_) * 1e-6;
+    accel_int_ += dt * data_.accel;
+    gyro_int_ += dt * data_.gyro;
+    prev_imu_read_time_us_ = data_.imu_time;
+
+  }
+
+  // GNSS:
+  if (rf_.board_.gnss_present())
+  {
+    data_.gnss_present = true;
+    if((got.gnss = rf_.board_.gnss_has_new_data())>0)
     {
-      data_.baro_present = true;
-      rf_.board_.baro_update();
+       rf_.board_.gnss_read(&this->data_.gnss_data, &this->data_.gnss_full);
+    }
+    got.gnss_full = got.gnss; // bot come with the pvt GPS data
+  }
+
+  // BAROMETER:
+  if (rf_.board_.baro_present())
+  {
+    data_.baro_present = true;
+    if((got.baro = rf_.board_.baro_has_new_data())>0)
+    { 
       float raw_pressure;
       float raw_temp;
       rf_.board_.baro_read(&raw_pressure, &raw_temp);
@@ -169,86 +195,72 @@ void Sensors::update_other_sensors()
         correct_baro();
       }
     }
-    break;
+  }
 
-  case MAGNETOMETER:
-    if (rf_.board_.mag_present())
+  // MAGNETOMETER:
+  if (rf_.board_.mag_present())
+  {
+    data_.mag_present = true;
+    float mag[3];
+    if((got.mag=rf_.board_.mag_has_new_data())>0)
     {
-      data_.mag_present = true;
-      float mag[3];
-      rf_.board_.mag_update();
       rf_.board_.mag_read(mag);
       data_.mag.x = mag[0];
       data_.mag.y = mag[1];
       data_.mag.z = mag[2];
       correct_mag();
     }
-    break;
+  }
 
-  case DIFF_PRESSURE:
-    if (rf_.board_.diff_pressure_present() || data_.diff_pressure_present)
+  // DIFF_PRESSURE:
+  if (rf_.board_.diff_pressure_present())
+  {
+    data_.diff_pressure_present = true;
+    if((got.diff_pressure = rf_.board_.diff_pressure_has_new_data())>0)
     {
-      // if diff_pressure is currently present OR if it has historically been
-      //   present (diff_pressure_present default is false)
-      rf_.board_.diff_pressure_update(); // update assists in recovering sensor if it temporarily
-                                         // disappears
-
-      if (rf_.board_.diff_pressure_present())
+      float raw_pressure;
+      float raw_temp;
+      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
+      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
+      if (data_.diff_pressure_valid)
       {
-        data_.diff_pressure_present = true;
-        float raw_pressure;
-        float raw_temp;
-        rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
-        data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
-        if (data_.diff_pressure_valid)
-        {
-          data_.diff_pressure_temp = raw_temp;
-          correct_diff_pressure();
-        }
+        data_.diff_pressure_temp = raw_temp;
+        correct_diff_pressure();
       }
     }
-    break;
+  }
 
-  case SONAR:
-    rf_.board_.sonar_update();
-    if (rf_.board_.sonar_present())
+  // SONAR:
+  if (rf_.board_.sonar_present())
+  {
+    data_.sonar_present = true;
+    if((got.sonar = rf_.board_.sonar_has_new_data())>0)
     {
-      data_.sonar_present = true;
       float raw_distance;
-      rf_.board_.sonar_update();
-      raw_distance = rf_.board_.sonar_read();
+      rf_.board_.sonar_read( &raw_distance);
       data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
     }
-    break;
-  case BATTERY_MONITOR:
-    if (rf_.board_.clock_millis() - last_battery_monitor_update_ms_ > BATTERY_MONITOR_UPDATE_PERIOD_MS)
-    {
-      last_battery_monitor_update_ms_ = rf_.board_.clock_millis();
-      update_battery_monitor();
-    }
-    break;
-  default:
-    break;
   }
 
-  next_sensor_to_update_ = (next_sensor_to_update_ + 1) % NUM_LOW_PRIORITY_SENSORS;
-}
-
-void Sensors::look_for_disabled_sensors()
-{
-  // Look for disabled sensors while disarmed (poll every second)
-  // These sensors need power to respond, so they might not have been
-  // detected on startup, but will be detected whenever power is applied
-  // to the 5V rail.
-  if (rf_.board_.clock_millis() > last_time_look_for_disarmed_sensors_ + 1000)
+  // BATTERY_MONITOR:
+  if((got.battery = rf_.board_.battery_has_new_data())>0)
   {
-    last_time_look_for_disarmed_sensors_ = rf_.board_.clock_millis();
-    rf_.board_.baro_update();
-    rf_.board_.mag_update();
-    rf_.board_.diff_pressure_update();
-    rf_.board_.sonar_update();
+    last_battery_monitor_update_ms_ = rf_.board_.clock_millis();
+    update_battery_monitor();
   }
+
+  // RC
+  if((got.rc = rf_.board_.rc_has_new_data())>0)
+  {
+    rf_.board_.rc_read(0);
+  }
+
+    return got;
 }
+
+void Sensors::update_other_sensors(){}
+
+void Sensors::look_for_disabled_sensors(){}
 
 bool Sensors::start_imu_calibration(void)
 {
@@ -299,7 +311,8 @@ bool Sensors::gyro_calibration_complete(void)
 // local function definitions
 bool Sensors::update_imu(void)
 {
-  if (rf_.board_.new_imu_data())
+  bool new_data;
+  if ((new_data = rf_.board_.imu_has_new_data())>0)
   {
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
@@ -333,27 +346,8 @@ bool Sensors::update_imu(void)
     gyro_int_ += dt * data_.gyro;
     prev_imu_read_time_us_ = data_.imu_time;
 
-    return true;
-  }
-  else
-  {
-    // if we have lost 10 IMU messages then something is wrong
-    // However, because we look for disabled sensors while disarmed,
-    // we get IMU timeouts, which last for at least 10 ms.  Therefore
-    // we have an adjustable imu_timeout.
-    int imu_timeout = rf_.state_manager_.state().armed ? 10 : 1000;
-    if (rf_.board_.clock_millis() > last_imu_update_ms_ + imu_timeout)
-    {
-      // Tell the board to fix it
-      last_imu_update_ms_ = rf_.board_.clock_millis();
-      if (!rf_.state_manager_.state().armed)
-        rf_.board_.imu_not_responding_error();
-
-      // Indicate an IMU error
-      rf_.state_manager_.set_error(StateManager::ERROR_IMU_NOT_RESPONDING);
-    }
-    return false;
-  }
+   }
+   return new_data;
 }
 
 void Sensors::get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us)
@@ -369,17 +363,13 @@ void Sensors::get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro
 
 void Sensors::update_battery_monitor()
 {
-  if (rf_.board_.battery_voltage_present())
+  if (rf_.board_.battery_present())
   {
+    float battery_voltage,battery_current;
+    rf_.board_.battery_read(&battery_voltage,&battery_current);
     data_.battery_monitor_present = true;
-    data_.battery_voltage = data_.battery_voltage * battery_voltage_alpha_
-                            + rf_.board_.battery_voltage_read() * (1 - battery_voltage_alpha_);
-  }
-  if (rf_.board_.battery_current_present())
-  {
-    data_.battery_monitor_present = true;
-    data_.battery_current = data_.battery_current * battery_current_alpha_
-                            + rf_.board_.battery_current_read() * (1 - battery_current_alpha_);
+    data_.battery_voltage = battery_voltage;
+    data_.battery_current = battery_current;
   }
 }
 
@@ -629,6 +619,7 @@ void Sensors::correct_diff_pressure()
   if (!diff_pressure_calibrated_)
     calibrate_diff_pressure();
   data_.diff_pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
+
   float atm = 101325.0f;
   if (data_.baro_present)
     atm = data_.baro_pressure;

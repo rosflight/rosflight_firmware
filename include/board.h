@@ -70,45 +70,48 @@ public:
   virtual void sensors_init() = 0;
   virtual uint16_t num_sensor_errors() = 0;
 
-  virtual bool new_imu_data() = 0;
+  // IMU
+  virtual uint8_t imu_has_new_data() = 0;
   virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) = 0;
   virtual void imu_not_responding_error() = 0;
 
+  // Mag
   virtual bool mag_present() = 0;
-  virtual void mag_update() = 0;
-  virtual void mag_read(float mag[3]) = 0;
+  virtual uint8_t mag_has_new_data() = 0;
+  virtual bool mag_read(float mag[3]) = 0;
 
+  // Baro
   virtual bool baro_present() = 0;
-  virtual void baro_update() = 0;
-  virtual void baro_read(float *pressure, float *temperature) = 0;
+  virtual uint8_t baro_has_new_data() = 0;
+  virtual bool baro_read(float *pressure, float *temperature) = 0;
 
+  // Pitot
   virtual bool diff_pressure_present() = 0;
-  virtual void diff_pressure_update() = 0;
-  virtual void diff_pressure_read(float *diff_pressure, float *temperature) = 0;
+  virtual uint8_t diff_pressure_has_new_data() = 0;
+  virtual bool diff_pressure_read(float *diff_pressure, float *temperature) = 0;
 
+  // Sonar
   virtual bool sonar_present() = 0;
-  virtual void sonar_update() = 0;
-  virtual float sonar_read() = 0;
+  virtual uint8_t sonar_has_new_data() = 0;
+  virtual bool sonar_read(float *range) =0;
 
+  // GPS
   virtual bool gnss_present() = 0;
-  virtual void gnss_update() = 0;
+  virtual uint8_t gnss_has_new_data() = 0;
+  virtual bool gnss_read( GNSSData *gnss, GNSSFull *gnss_full) = 0;
 
-  virtual GNSSData gnss_read() = 0;
-  virtual bool gnss_has_new_data() = 0;
-  virtual GNSSFull gnss_full_read() = 0;
-
-  virtual bool battery_voltage_present() const = 0;
-  virtual float battery_voltage_read() const = 0;
+  // Battery
+  virtual bool battery_present()  = 0;
+  virtual uint8_t battery_has_new_data()  = 0;  
+  virtual bool battery_read(float *voltage, float* current)  = 0;
   virtual void battery_voltage_set_multiplier(double multiplier) = 0;
-
-  virtual bool battery_current_present() const = 0;
-  virtual float battery_current_read() const = 0;
   virtual void battery_current_set_multiplier(double multiplier) = 0;
 
   // RC
   virtual void rc_init(rc_type_t rc_type) = 0;
   virtual bool rc_lost() = 0;
-  virtual float rc_read(uint8_t channel) = 0;
+  virtual uint8_t rc_has_new_data() = 0;
+  virtual float rc_read(uint8_t chan) = 0;
 
   // PWM
   virtual void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) = 0;

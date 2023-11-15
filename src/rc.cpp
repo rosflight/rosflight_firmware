@@ -265,28 +265,19 @@ bool RC::run()
 {
   uint32_t now = RF_.board_.clock_millis();
 
-  // if it has been more than 20ms then look for new RC values and parse them
-  if (now - last_rc_receive_time < 20)
-  {
-    return false;
-  }
-  last_rc_receive_time = now;
-
   // Check for rc lost
   if (check_rc_lost())
     return false;
 
-  // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
-    float pwm = RF_.board_.rc_read(sticks[channel].channel);
     if (sticks[channel].one_sided) // generally only F is one_sided
     {
-      stick_values[channel] = pwm;
+      stick_values[channel] = RF_.board_.rc_read(sticks[channel].channel);
     }
     else
     {
-      stick_values[channel] = 2.0 * (pwm - 0.5);
+      stick_values[channel] = 2.0 * (RF_.board_.rc_read(sticks[channel].channel) - 0.5);
     }
   }
 
