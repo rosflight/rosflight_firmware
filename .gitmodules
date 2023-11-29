@@ -1,9 +1,3 @@
 [submodule "comms/mavlink/v1.0"]
 	path = comms/mavlink/v1.0
 	url = https://github.com/rosflight/mavlink_c_library.git
-[submodule "boards/breezy/breezystm32"]
-	path = boards/breezy/breezystm32
-	url = https://github.com/rosflight/BreezySTM32.git
-[submodule "boards/airbourne/airbourne"]
-	path = boards/airbourne/airbourne
-	url = https://github.com/rosflight/airbourne_f4.git
