@@ -40,12 +40,10 @@
 
 #include "stm32h7xx_hal.h"
 
-#include <string.h> // for memset
-
-#include<Time64.h>
-
 #include <BoardConfig.h>
 #include <Driver.h>
+#include <Time64.h>
+#include <string.h> // for memset
 
 extern Time64 time64;
 
@@ -55,94 +53,92 @@ extern Time64 time64;
 
 class Spi
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
+  /**
+   * \brief
+   *
+   *
+   */
 
 private:
-	SPI_HandleTypeDef *hspi_;
-	uint8_t *txBuffer_;
-	uint8_t *rxBuffer_;
-
+  SPI_HandleTypeDef *hspi_;
+  uint8_t *txBuffer_;
+  uint8_t *rxBuffer_;
 
 public:
-	//uint16_t size_;
-	GPIO_TypeDef *port_;
-	uint16_t pin_;
-	uint32_t init
-	(
-			SPI_HandleTypeDef *hspi,
-			uint8_t *tx_buffer,
-			uint8_t *rx_buffer,
-			GPIO_TypeDef *cs_port,
-			uint16_t cs_pin
-	)
-	{
-		hspi_ 		= hspi;
-		txBuffer_ = tx_buffer;
-		rxBuffer_ = rx_buffer;
-		port_  		= cs_port;
-		pin_ 			= cs_pin;
-		return DRIVER_OK;
-	}
+  // uint16_t size_;
+  GPIO_TypeDef *port_;
+  uint16_t pin_;
+  uint32_t init(SPI_HandleTypeDef *hspi, uint8_t *tx_buffer, uint8_t *rx_buffer, GPIO_TypeDef *cs_port, uint16_t cs_pin)
+  {
+    hspi_ = hspi;
+    txBuffer_ = tx_buffer;
+    rxBuffer_ = rx_buffer;
+    port_ = cs_port;
+    pin_ = cs_pin;
+    return DRIVER_OK;
+  }
 
-	SPI_HandleTypeDef *hspi(void) { return hspi_; }
+  SPI_HandleTypeDef *hspi(void) { return hspi_; }
 
-	uint8_t *endDma(void)
-	{
-		bool software_nss 	= !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
+  uint8_t *endDma(void)
+  {
+    bool software_nss = !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
 
-		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
+    if (software_nss)
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
 
-		#if CACHE_MANAGEMENT_FUNCTIONS
-			SCB_InvalidateDCache_by_Addr((uint32_t *)rxBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force read from SRAM
-		#endif
-		time64.dUs(2);
-		return rxBuffer_;
-	}
+#if CACHE_MANAGEMENT_FUNCTIONS
+    SCB_InvalidateDCache_by_Addr((uint32_t *)rxBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force read from SRAM
+#endif
+    time64.dUs(2);
+    return rxBuffer_;
+  }
 
-	HAL_StatusTypeDef startDma(uint8_t tx_byte, uint16_t size)
-	{
-		bool software_nss 	= !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
+  HAL_StatusTypeDef startDma(uint8_t tx_byte, uint16_t size)
+  {
+    bool software_nss = !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
 
-		memset(txBuffer_,0,SPI_DMA_MAX_BUFFER_SIZE);
-		memset(rxBuffer_,0xFF,SPI_DMA_MAX_BUFFER_SIZE);
-		txBuffer_[0] = tx_byte;
+    memset(txBuffer_, 0, SPI_DMA_MAX_BUFFER_SIZE);
+    memset(rxBuffer_, 0xFF, SPI_DMA_MAX_BUFFER_SIZE);
+    txBuffer_[0] = tx_byte;
 
-		#if CACHE_MANAGEMENT_FUNCTIONS
-				SCB_CleanDCache_by_Addr((uint32_t *)txBuffer_, SPI_DMA_MAX_BUFFER_SIZE) ; // Force data from cache to SRAM
-		#endif
+#if CACHE_MANAGEMENT_FUNCTIONS
+    SCB_CleanDCache_by_Addr((uint32_t *)txBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force data from cache to SRAM
+#endif
 
-		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
-		HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive_DMA(hspi_, txBuffer_, rxBuffer_, size);
-		if((HAL_OK!=hal_status) && (software_nss)) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
-		time64.dUs(2);
+    if (software_nss)
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
+    HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive_DMA(hspi_, txBuffer_, rxBuffer_, size);
+    if ((HAL_OK != hal_status) && (software_nss))
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
+    time64.dUs(2);
 
-		return hal_status;
-	}
+    return hal_status;
+  }
 
+  HAL_StatusTypeDef rx(uint8_t *tx_buffer, uint8_t *rx_buffer, uint16_t size, uint16_t timeout_ms)
+  {
+    bool software_nss = !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
+    if (software_nss)
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
+    HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive(hspi_, tx_buffer, rx_buffer, size, timeout_ms);
+    if (software_nss)
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
+    time64.dUs(2);
+    return hal_status;
+  }
 
-	HAL_StatusTypeDef rx(uint8_t *tx_buffer, uint8_t *rx_buffer, uint16_t size, uint16_t timeout_ms)
-	{
-		bool software_nss 	= !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
-		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
-		HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive(hspi_, tx_buffer, rx_buffer, size, timeout_ms);
-		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
-		time64.dUs(2);
-		return hal_status;
-	}
-
-	HAL_StatusTypeDef tx(uint8_t *tx_buffer, uint16_t size, uint16_t timeout_ms)
-	{
-		bool software_nss 	= !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
-		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
-		HAL_StatusTypeDef hal_status = HAL_SPI_Transmit(hspi_, tx_buffer, size, timeout_ms);
-		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
-		time64.dUs(2);
-		return hal_status;
-	}
+  HAL_StatusTypeDef tx(uint8_t *tx_buffer, uint16_t size, uint16_t timeout_ms)
+  {
+    bool software_nss = !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
+    if (software_nss)
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
+    HAL_StatusTypeDef hal_status = HAL_SPI_Transmit(hspi_, tx_buffer, size, timeout_ms);
+    if (software_nss)
+      HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
+    time64.dUs(2);
+    return hal_status;
+  }
 };
 
 #endif /* SPI_H_ */

@@ -217,47 +217,48 @@
 #define J106_PWM07_GPIO_Port GPIOD
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stm32h7xx_hal.h>
 
-void SystemClock_Config(void);
-void PeriphCommonClock_Config(void);
-void MPU_Initialize(void);
-void MPU_Config(void);
+  void SystemClock_Config(void);
+  void PeriphCommonClock_Config(void);
+  void MPU_Initialize(void);
+  void MPU_Config(void);
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-void Error_Handler(void);
-void SystemClock_Config(void);
-void PeriphCommonClock_Config(void);
-void MPU_Config(void);
-void MX_GPIO_Init(void);
-void MX_DMA_Init(void);
-void MX_BDMA_Init(void);
-void MX_I2C1_Init(void);
-void MX_I2C2_Init(void);
-void MX_SPI1_Init(void);
-void MX_SPI3_Init(void);
-void MX_TIM3_Init(void);
-void MX_TIM4_Init(void);
-void MX_USART1_UART_Init(void);
-void MX_USART2_UART_Init(void);
-void MX_USART3_UART_Init(void);
-void MX_FDCAN1_Init(void);
-void MX_SPI4_Init(void);
-void MX_TIM1_Init(void);
-void MX_TIM12_Init(void);
-void MX_ADC1_Init(void);
-void MX_RTC_Init(void);
-void MX_TIM7_Init(void);
-void MX_TIM5_Init(void);
-void MX_SDMMC1_SD_Init(void);
-void MX_ADC3_Init(void);
-void MX_SPI2_Init(void);
-void MX_RNG_Init(void);
-void MX_TIM8_Init(void);
-void MX_CRC_Init(void);
+  void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+  void Error_Handler(void);
+  void SystemClock_Config(void);
+  void PeriphCommonClock_Config(void);
+  void MPU_Config(void);
+  void MX_GPIO_Init(void);
+  void MX_DMA_Init(void);
+  void MX_BDMA_Init(void);
+  void MX_I2C1_Init(void);
+  void MX_I2C2_Init(void);
+  void MX_SPI1_Init(void);
+  void MX_SPI3_Init(void);
+  void MX_TIM3_Init(void);
+  void MX_TIM4_Init(void);
+  void MX_USART1_UART_Init(void);
+  void MX_USART2_UART_Init(void);
+  void MX_USART3_UART_Init(void);
+  void MX_FDCAN1_Init(void);
+  void MX_SPI4_Init(void);
+  void MX_TIM1_Init(void);
+  void MX_TIM12_Init(void);
+  void MX_ADC1_Init(void);
+  void MX_RTC_Init(void);
+  void MX_TIM7_Init(void);
+  void MX_TIM5_Init(void);
+  void MX_SDMMC1_SD_Init(void);
+  void MX_ADC3_Init(void);
+  void MX_SPI2_Init(void);
+  void MX_RNG_Init(void);
+  void MX_TIM8_Init(void);
+  void MX_CRC_Init(void);
 
 #ifdef __cplusplus
 }

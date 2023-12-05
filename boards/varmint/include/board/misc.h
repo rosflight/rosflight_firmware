@@ -38,22 +38,22 @@
 #ifndef MISC_H_
 #define MISC_H_
 
-#include <stm32h7xx_hal.h>
-#include <stdint.h>
 #include <Driver.h>
+#include <stdint.h>
+#include <stm32h7xx_hal.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void misc_printf(const char* format, ...);
-void misc_header(char *name, uint64_t drdy, uint64_t timestamp, uint64_t delay);
-uint16_t misc_bytes_in_dma( DMA_HandleTypeDef *hdma_uart_rx, uint16_t dma_buffer_size);
-void misc_exit_status(uint32_t status);
+  void misc_printf(const char *format, ...);
+  void misc_header(char *name, uint64_t drdy, uint64_t timestamp, uint64_t delay);
+  uint16_t misc_bytes_in_dma(DMA_HandleTypeDef *hdma_uart_rx, uint16_t dma_buffer_size);
+  void misc_exit_status(uint32_t status);
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* MISC_H_ */

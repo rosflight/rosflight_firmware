@@ -42,43 +42,40 @@
 #include <Driver.h>
 #include <Packets.h>
 
-
 /*
  *
  */
 class Sbus : public Driver
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
+  /**
+   * \brief
+   *
+   *
+   */
 public:
-	uint32_t init
-	(
-			// Driver initializers
-			uint16_t					sample_rate_hz,
-			// UART initializers
-			UART_HandleTypeDef  *huart,
-			USART_TypeDef				*huart_instance,
-			DMA_HandleTypeDef 	*hdma_uart_rx,
-			uint32_t						baud
-		);
+  uint32_t init(
+      // Driver initializers
+      uint16_t sample_rate_hz,
+      // UART initializers
+      UART_HandleTypeDef *huart,
+      USART_TypeDef *huart_instance,
+      DMA_HandleTypeDef *hdma_uart_rx,
+      uint32_t baud);
 
-	bool poll(void);
-	void endDma(void) override;
-	bool startDma(void) override;
-	bool display(void) override;
-	bool lol(void) { return lol_;}
+  bool poll(void);
+  void endDma(void) override;
+  bool startDma(void) override;
+  bool display(void) override;
+  bool lol(void) { return lol_; }
 
-	UART_HandleTypeDef* huart(void) {return huart_;}
-	bool isMy(UART_HandleTypeDef* huart) {return huart_==huart;}
+  UART_HandleTypeDef *huart(void) { return huart_; }
+  bool isMy(UART_HandleTypeDef *huart) { return huart_ == huart; }
 
 private:
-	bool lol_;
-	uint64_t timeout_, dtimeout_;
-	UART_HandleTypeDef 	*huart_;
-	DMA_HandleTypeDef 	*hdmaUartRx_;
+  bool lol_;
+  uint64_t timeout_, dtimeout_;
+  UART_HandleTypeDef *huart_;
+  DMA_HandleTypeDef *hdmaUartRx_;
 };
 
 #endif /* SBUS_H_ */

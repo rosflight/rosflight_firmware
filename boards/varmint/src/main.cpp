@@ -35,24 +35,23 @@
  ******************************************************************************
  **/
 
-#include <main.h>
-
-#include <Varmint.h>
-#include <mavlink.h>
-#include <rosflight.h>
-#include <CubeMX.h>
-
 #include <BoardConfig.h>
-#include <sandbox.h>
+#include <CubeMX.h>
+#include <Varmint.h>
+#include <main.h>
+#include <mavlink.h>
 #include <param.h>
+#include <rosflight.h>
+#include <sandbox.h>
 
 extern Varmint varmint;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-int main(void);
+  int main(void);
 
 #ifdef __cplusplus
 }
@@ -67,21 +66,20 @@ int main(void);
 
 int main(void)
 {
-	// Rosflight board code
-	varmint.init_board();
-//	sandbox();
+  // Rosflight board code
+  varmint.init_board();
+  //	sandbox();
 
-	// Rosflight base code
-	rosflight_firmware::Mavlink mavlink(varmint);
-	rosflight_firmware::ROSflight firmware(varmint, mavlink);
+  // Rosflight base code
+  rosflight_firmware::Mavlink mavlink(varmint);
+  rosflight_firmware::ROSflight firmware(varmint, mavlink);
 
-	firmware.init();
+  firmware.init();
 
-	while (true)
-	{
-		firmware.run();
-	}
+  while (true)
+  {
+    firmware.run();
+  }
 
-	return 0;
+  return 0;
 }
-

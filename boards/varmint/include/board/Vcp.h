@@ -50,32 +50,31 @@ extern Time64 time64;
  *
  */
 
-
 class Vcp
 {
 public:
-	uint32_t init(uint16_t sample_rate_hz);
+  uint32_t init(uint16_t sample_rate_hz);
 
-	void poll(void);
-	bool display(void){return false;}
+  void poll(void);
+  bool display(void) { return false; }
 
-	uint16_t writePacket(SerialTxPacket* p);
-	void txCdcCallback(void);
-	void txStart(void);
+  uint16_t writePacket(SerialTxPacket* p);
+  void txCdcCallback(void);
+  void txStart(void);
 
-	void rxCdcCallback(uint8_t* buffer, uint16_t size)	{	rxFifo_.writeBlock(buffer,size); }
-	uint16_t byteCount(void) {return rxFifo_.byteCount();}
-	bool readByte(uint8_t *data) { return rxFifo_.read(data);}
+  void rxCdcCallback(uint8_t* buffer, uint16_t size) { rxFifo_.writeBlock(buffer, size); }
+  uint16_t byteCount(void) { return rxFifo_.byteCount(); }
+  bool readByte(uint8_t* data) { return rxFifo_.read(data); }
 
 private:
-	int16_t			sampleRateHz_;
-	uint64_t 		txTimeout_=0;
-	uint64_t		txDtimeout_;
+  int16_t sampleRateHz_;
+  uint64_t txTimeout_ = 0;
+  uint64_t txDtimeout_;
 
-	PacketFifo 	txFifo_;
-	bool 				txIdle_;
-	uint16_t		retry_;
+  PacketFifo txFifo_;
+  bool txIdle_;
+  uint16_t retry_;
 
-	ByteFifo 		rxFifo_;
+  ByteFifo rxFifo_;
 };
 #endif /* VCP_H_ */

@@ -41,50 +41,58 @@
 class ByteFifo
 {
 public:
+  void init(uint16_t buffer_size, uint8_t *buffer)
+  {
+    bufferSize_ = buffer_size;
+    buffer_ = buffer;
+    bufferEnd_ = buffer_ + bufferSize_ - 1;
+    flush();
+  }
 
-	void init(uint16_t buffer_size, uint8_t *buffer)
-	{
-		bufferSize_ = buffer_size;
-		buffer_ 		= buffer;
-		bufferEnd_  = buffer_ + bufferSize_-1;
-		flush();
-	}
+  void flush(void)
+  {
+    head_ = buffer_;
+    tail_ = buffer_;
+  }
 
-	void flush(void) 	{ head_ = buffer_; tail_ = buffer_; }
+  bool write(uint8_t data)
+  {
+    if ((bufferSize_ + tail_ - head_) % bufferSize_ == 1)
+      return false; // buffer full
+    *(head_++) = data;
 
-	bool write(uint8_t data)
-	{
-		if((bufferSize_+tail_-head_)%bufferSize_ == 1) return false; // buffer full
-		*(head_++) = data;
+    if (head_ > bufferEnd_)
+      head_ = buffer_;
 
-		if(head_>bufferEnd_) head_ = buffer_;
+    return true;
+  }
+  bool writeBlock(uint8_t *data, uint32_t size)
+  {
+    uint32_t i;
+    for (i = 0; i < size; i++)
+    {
+      if (!write(data[i]))
+        break;
+    }
+    return i;
+  }
 
-		return true;
-	}
-	bool writeBlock(uint8_t *data, uint32_t size)
-	{
-		uint32_t i;
-		for(i = 0; i<size; i++)
-		{
-			if(!write(data[i])) break;
-		}
-		return i;
-	}
+  bool read(uint8_t *data)
+  {
+    if (head_ == tail_)
+      return false; // buffer is empty
+    *data = *(tail_++);
+    if (tail_ > bufferEnd_)
+      tail_ = buffer_;
+    return true;
+  }
 
-	bool read(uint8_t *data)
-	{
-		if(head_ == tail_) return false; // buffer is empty
-		*data = *(tail_++);
-		if(tail_>bufferEnd_) tail_ = buffer_;
-		return true;
-	}
-
-	uint16_t byteCount(void) { return (bufferSize_+head_-tail_)%bufferSize_;}
+  uint16_t byteCount(void) { return (bufferSize_ + head_ - tail_) % bufferSize_; }
 
 private:
-	volatile uint8_t *head_, *tail_;
-	volatile uint8_t *buffer_, *bufferEnd_;
-	uint32_t bufferSize_;
+  volatile uint8_t *head_, *tail_;
+  volatile uint8_t *buffer_, *bufferEnd_;
+  uint32_t bufferSize_;
 };
 
 #endif /* BYTEFIFO_H_ */

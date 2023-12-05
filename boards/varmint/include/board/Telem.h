@@ -39,14 +39,18 @@
 #define TELEM_H_
 
 #include <BoardConfig.h>
-#include <Driver.h>
 #include <ByteFifo.h>
+#include <Driver.h>
 #include <Packets.h>
 #include <Time64.h>
 
 extern Time64 time64;
-enum DmaItType { HALF, FULL, IDLE};
-
+enum DmaItType
+{
+  HALF,
+  FULL,
+  IDLE
+};
 
 /**
  * @class Telem
@@ -55,54 +59,51 @@ enum DmaItType { HALF, FULL, IDLE};
  */
 class Telem
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
-
+  /**
+   * \brief
+   *
+   *
+   */
 
 public:
+  uint32_t init(
+      // Driver initializers
+      uint16_t sample_rate_hz,
+      // UART initializers
+      UART_HandleTypeDef *huart,
+      USART_TypeDef *huart_instance,
+      DMA_HandleTypeDef *hdma_uart_rx,
+      uint32_t baud,
+      void (*RxISR)(UART_HandleTypeDef *huart));
+  uint32_t reset_baud(uint32_t baud);
 
-	uint32_t init
-	(
-		// Driver initializers
-		uint16_t					sample_rate_hz,
-		// UART initializers
-		UART_HandleTypeDef  *huart,
-		USART_TypeDef				*huart_instance,
-		DMA_HandleTypeDef 	*hdma_uart_rx,
-		uint32_t 						baud,
-		void (*RxISR)(UART_HandleTypeDef *huart)
-	);
-	uint32_t reset_baud(uint32_t baud);
+  void poll(void);
+  bool display(void) { return 0; }
+  uint16_t byteCount(void) { return rxFifo_.byteCount(); }
+  bool readByte(uint8_t *data) { return rxFifo_.read(data); }
 
-	void poll(void) ;
-	bool display(void)  {return 0;}
-	uint16_t byteCount(void) {return rxFifo_.byteCount();}
-	bool readByte(uint8_t *data) { return rxFifo_.read(data);}
+  uint16_t writePacket(SerialTxPacket *p);
+  bool newPacket(SerialTxPacket *p);
 
-	uint16_t writePacket(SerialTxPacket* p);
-	bool newPacket(SerialTxPacket* p);
+  UART_HandleTypeDef *huart(void) { return huart_; }
+  bool isMy(UART_HandleTypeDef *huart) { return huart_ == huart; }
+  bool rxStart(void);
+  void rxIsrCallback(UART_HandleTypeDef *huart);
+  bool txStart(void);
 
-	UART_HandleTypeDef* huart(void) 			{return huart_;}
-	bool isMy(UART_HandleTypeDef* huart) 	{return huart_==huart;}
-	bool rxStart(void);
-	void rxIsrCallback(UART_HandleTypeDef *huart);
-	bool txStart(void);
 private:
-	int16_t			sampleRateHz_;
-	uint32_t		baud_;
+  int16_t sampleRateHz_;
+  uint32_t baud_;
 
-	PacketFifo *txFifo_;
-	int64_t  		txFrameSizeUs_, txFrameEndUs_,usPerByte_;
-	volatile bool txIdle_;
-	uint16_t		  retry_;
+  PacketFifo *txFifo_;
+  int64_t txFrameSizeUs_, txFrameEndUs_, usPerByte_;
+  volatile bool txIdle_;
+  uint16_t retry_;
 
-	ByteFifo 			rxFifo_;
+  ByteFifo rxFifo_;
 
-	UART_HandleTypeDef 	*huart_;
-	DMA_HandleTypeDef 	*hdmaUartRx_;
+  UART_HandleTypeDef *huart_;
+  DMA_HandleTypeDef *hdmaUartRx_;
 };
 
 #endif /* TELEM_H_ */

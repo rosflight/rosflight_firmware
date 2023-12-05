@@ -45,62 +45,64 @@ uint32_t init_pwm_timers_1_3_4(uint32_t servo_pwm_period_us);
 class Pwm
 {
 public:
-	uint32_t init(TIM_HandleTypeDef *htim, uint16_t chan, uint16_t min, uint16_t center, uint16_t max)
-	{
-		htim_ 	= htim;
-		chan_ 	= chan;
-		min_ 		= min;
-		center_ = center;
-		max_ 		= max;
+  uint32_t init(TIM_HandleTypeDef *htim, uint16_t chan, uint16_t min, uint16_t center, uint16_t max)
+  {
+    htim_ = htim;
+    chan_ = chan;
+    min_ = min;
+    center_ = center;
+    max_ = max;
 
-		disable();
-		writeUs(center_);
-		return DRIVER_OK;
-	}
-	void enable()
-	{
-		if(htim_)
-		{
-			HAL_TIM_PWM_Start(htim_, chan_);
-		}
-	}
+    disable();
+    writeUs(center_);
+    return DRIVER_OK;
+  }
+  void enable()
+  {
+    if (htim_)
+    {
+      HAL_TIM_PWM_Start(htim_, chan_);
+    }
+  }
 
-	void disable()
-	{
-		if(htim_) HAL_TIM_PWM_Stop(htim_, chan_);
-	}
+  void disable()
+  {
+    if (htim_)
+      HAL_TIM_PWM_Stop(htim_, chan_);
+  }
 
-	void writeUs(uint16_t us)
-	{
-		if(htim_)
-		{
-			us = (us<min_)?min_:us;
-			us = (us>max_)?max_:us;
-			__HAL_TIM_SET_COMPARE(htim_, chan_, us);
-		}
-	}
-	void write(double val)
-	{
-		if(htim_)
-		{
-			val = (val<0)?0:val;
-			val = (val>1)?1:val;
-			uint16_t us = val*(double)(max_-min_)+min_;
-			__HAL_TIM_SET_COMPARE(htim_, chan_, us);
-		}
-	}
+  void writeUs(uint16_t us)
+  {
+    if (htim_)
+    {
+      us = (us < min_) ? min_ : us;
+      us = (us > max_) ? max_ : us;
+      __HAL_TIM_SET_COMPARE(htim_, chan_, us);
+    }
+  }
+  void write(double val)
+  {
+    if (htim_)
+    {
+      val = (val < 0) ? 0 : val;
+      val = (val > 1) ? 1 : val;
+      uint16_t us = val * (double)(max_ - min_) + min_;
+      __HAL_TIM_SET_COMPARE(htim_, chan_, us);
+    }
+  }
 
-	void set_rate(uint32_t rate)
-	{
-		if((rate>0) && (rate <=400)) htim_->Instance->ARR = 1000000/rate;
-	}
+  void set_rate(uint32_t rate)
+  {
+    if ((rate > 0) && (rate <= 400))
+      htim_->Instance->ARR = 1000000 / rate;
+  }
 
 private:
-	TIM_HandleTypeDef *htim_;
-	uint32_t chan_;
-	uint16_t min_; // us
-	uint16_t center_; // us
-	uint16_t max_; // us
+  TIM_HandleTypeDef *htim_;
+  uint32_t chan_;
+  uint16_t min_;    // us
+  uint16_t center_; // us
+  uint16_t max_;    // us
 };
 
 #endif /* PWM_H_ */

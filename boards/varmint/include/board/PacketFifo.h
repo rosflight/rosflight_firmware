@@ -1,4 +1,4 @@
-	/**
+/**
  ******************************************************************************
  * File     : PacketFifo.h
  * Date     : Sep 20, 2023
@@ -41,104 +41,108 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #define PACKET_FIFO_MAX_BUFFERS 64
 
 typedef struct
 {
-	uint16_t size;
-	uint8_t  *data;
+  uint16_t size;
+  uint8_t *data;
 } Packet;
-
 
 class PacketFifo
 {
 public:
-	void init
-	(
-			uint16_t max_packets,
-			uint16_t max_data_size,
-			uint8_t *buffer_head
-	)
-	{
-		if(max_packets> PACKET_FIFO_MAX_BUFFERS) packetCountMax_ = PACKET_FIFO_MAX_BUFFERS;
-		else 																		 packetCountMax_ = max_packets;
-		dataSizeMax_		= max_data_size;
-		reset();
+  void init(uint16_t max_packets, uint16_t max_data_size, uint8_t *buffer_head)
+  {
+    if (max_packets > PACKET_FIFO_MAX_BUFFERS)
+      packetCountMax_ = PACKET_FIFO_MAX_BUFFERS;
+    else
+      packetCountMax_ = max_packets;
+    dataSizeMax_ = max_data_size;
+    reset();
 
-		for(uint16_t i=0; i<packetCountMax_; i++)
-		{
-			packet_[i].size = dataSizeMax_;
-			packet_[i].data = buffer_head + i*dataSizeMax_;
-		}
-	}
+    for (uint16_t i = 0; i < packetCountMax_; i++)
+    {
+      packet_[i].size = dataSizeMax_;
+      packet_[i].data = buffer_head + i * dataSizeMax_;
+    }
+  }
 
-	void reset(void) { head_ = 0; tail_= 0; }
+  void reset(void)
+  {
+    head_ = 0;
+    tail_ = 0;
+  }
 
-	uint16_t write(uint8_t *data, uint16_t size)
-	{
-		if(tail_== (head_+1)%packetCountMax_) return false;
-		size = (size > dataSizeMax_) ? dataSizeMax_ : size;
-		packet_[head_].size = size;
-		memcpy(packet_[head_].data, data, size);
-		if(++head_ == packetCountMax_) head_ = 0;
-		return size;
-	}
-/**
- * @fn uint16_t read(uint8_t*, uint16_t)
- * @brief Gets oldest buffer in the Fifo.
- *
- * @param data Data gets copied here
- * @param size Maximum size of data buffer
- * @return Actual size of data buffer read
- */
-	uint16_t read(uint8_t *data,  uint16_t size)
-	{
-		if(head_ == tail_) return 0; // buffer is empty
-		if(size > packet_[tail_].size) size =  packet_[tail_].size;
-		memcpy(data,packet_[tail_].data, size);
-		if(++tail_ == packetCountMax_) tail_ = 0;
-		return size;
-	}
-/**
- * @fn uint16_t readMostRecent(uint8_t*, uint16_t)
- * @brief Get the most recent data in the Fifo, drop the older buffers.
- *
- * @param data Data gets copied here
- * @param size Maximum size of data buffer
- * @return Actual size of data buffer read
- */
-	uint16_t readMostRecent(uint8_t *data,  uint16_t size)
-	{
-		if(head_ == tail_) return 0; // buffer is empty
-		if(head_ == 0) 	tail_ = packetCountMax_-1;
-		else 						tail_ = head_-1;
-		return read(data,size);
-	}
+  uint16_t write(uint8_t *data, uint16_t size)
+  {
+    if (tail_ == (head_ + 1) % packetCountMax_)
+      return false;
+    size = (size > dataSizeMax_) ? dataSizeMax_ : size;
+    packet_[head_].size = size;
+    memcpy(packet_[head_].data, data, size);
+    if (++head_ == packetCountMax_)
+      head_ = 0;
+    return size;
+  }
+  /**
+   * @fn uint16_t read(uint8_t*, uint16_t)
+   * @brief Gets oldest buffer in the Fifo.
+   *
+   * @param data Data gets copied here
+   * @param size Maximum size of data buffer
+   * @return Actual size of data buffer read
+   */
+  uint16_t read(uint8_t *data, uint16_t size)
+  {
+    if (head_ == tail_)
+      return 0; // buffer is empty
+    if (size > packet_[tail_].size)
+      size = packet_[tail_].size;
+    memcpy(data, packet_[tail_].data, size);
+    if (++tail_ == packetCountMax_)
+      tail_ = 0;
+    return size;
+  }
+  /**
+   * @fn uint16_t readMostRecent(uint8_t*, uint16_t)
+   * @brief Get the most recent data in the Fifo, drop the older buffers.
+   *
+   * @param data Data gets copied here
+   * @param size Maximum size of data buffer
+   * @return Actual size of data buffer read
+   */
+  uint16_t readMostRecent(uint8_t *data, uint16_t size)
+  {
+    if (head_ == tail_)
+      return 0; // buffer is empty
+    if (head_ == 0)
+      tail_ = packetCountMax_ - 1;
+    else
+      tail_ = head_ - 1;
+    return read(data, size);
+  }
 
-/**
- * @fn Packet peek*(void)
- * @brief	Get a pointer to the current read buffer.
- *        User must check packetCount()>0 before calling this to ensure data is not volatile.
- *
- * @return Pointer to the packet with index dataOut_.
- *
- */
-	Packet *peek(void)
-	{
-		return &(packet_[tail_]);
-	}
+  /**
+   * @fn Packet peek*(void)
+   * @brief	Get a pointer to the current read buffer.
+   *        User must check packetCount()>0 before calling this to ensure data is not volatile.
+   *
+   * @return Pointer to the packet with index dataOut_.
+   *
+   */
+  Packet *peek(void) { return &(packet_[tail_]); }
 
-	uint16_t packetCount(void)    { return (packetCountMax_+head_-tail_)%packetCountMax_; }
-	uint16_t packetCountMax(void) { return packetCountMax_; }
+  uint16_t packetCount(void) { return (packetCountMax_ + head_ - tail_) % packetCountMax_; }
+  uint16_t packetCountMax(void) { return packetCountMax_; }
 
 private:
-	volatile uint16_t	head_	, tail_;
-	uint16_t dataSizeMax_;
-	uint16_t packetCountMax_;
+  volatile uint16_t head_, tail_;
+  uint16_t dataSizeMax_;
+  uint16_t packetCountMax_;
 
-	volatile uint16_t bufferSize_;
-	Packet	packet_[PACKET_FIFO_MAX_BUFFERS];
+  volatile uint16_t bufferSize_;
+  Packet packet_[PACKET_FIFO_MAX_BUFFERS];
 };
 
 #endif /* PACKETFIFO_H_ */

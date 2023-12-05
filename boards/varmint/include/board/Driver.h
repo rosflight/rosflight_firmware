@@ -40,30 +40,27 @@
 
 #include "stm32h7xx_hal.h"
 
-#include <stdint.h>
 #include <PacketFifo.h>
+#include <stdint.h>
 
 class Driver
 {
 public:
-	virtual bool startDma(void)=0;						// Called in response to a data ready signal
-	virtual void endDma(void)=0;	// Called when DMA read is complete
-	virtual bool display(void)=0;
+  virtual bool startDma(void) = 0; // Called in response to a data ready signal
+  virtual void endDma(void) = 0;   // Called when DMA read is complete
+  virtual bool display(void) = 0;
 
-	uint16_t rxFifoCount(void) { return rxFifo_.packetCount(); }
-	uint16_t rxFifoRead( uint8_t *data, uint16_t size) { return rxFifo_.read(data, size); }
-	uint16_t rxFifoReadMostRecent( uint8_t *data, uint16_t size) { return rxFifo_.readMostRecent(data, size); }
+  uint16_t rxFifoCount(void) { return rxFifo_.packetCount(); }
+  uint16_t rxFifoRead(uint8_t *data, uint16_t size) { return rxFifo_.read(data, size); }
+  uint16_t rxFifoReadMostRecent(uint8_t *data, uint16_t size) { return rxFifo_.readMostRecent(data, size); }
 
 protected:
-	PacketFifo 				rxFifo_;
-	GPIO_TypeDef* 		drdyPort_;
-	uint16_t      		drdyPin_;
-	uint16_t					sampleRateHz_;
-	uint64_t					timestamp_, drdy_, timeout_;
-	uint64_t					groupDelay_=0;
+  PacketFifo rxFifo_;
+  GPIO_TypeDef *drdyPort_;
+  uint16_t drdyPin_;
+  uint16_t sampleRateHz_;
+  uint64_t timestamp_, drdy_, timeout_;
+  uint64_t groupDelay_ = 0;
 };
-
-
-
 
 #endif /* DRIVER_H_ */

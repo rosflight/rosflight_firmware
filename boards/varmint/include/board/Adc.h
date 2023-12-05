@@ -38,8 +38,8 @@
 #ifndef ADC_H_
 #define ADC_H_
 
-#include <Driver.h>
 #include <BoardConfig.h>
+#include <Driver.h>
 #include <Packets.h>
 
 /*
@@ -48,22 +48,22 @@
 class Adc : public Driver
 {
 public:
-	uint32_t init
-	(
-		uint16_t	sample_rate_hz,
-		ADC_HandleTypeDef *hadc,  ADC_TypeDef *adc_instance,
-		ADC_HandleTypeDef *hadc_internal,  ADC_TypeDef *adc_instance_internal
-	);
-	bool poll(void){return false;};
-	bool poll(uint16_t poll_offset);
-	bool startDma(void) override;
-	void endDma(void) override;
-	bool display(void) override;
-	bool isMy(ADC_HandleTypeDef *hadc) { return hadcExt_==hadc; }
-	void setScaleFactor(uint16_t n, float scale_factor);
+  uint32_t init(uint16_t sample_rate_hz,
+                ADC_HandleTypeDef *hadc,
+                ADC_TypeDef *adc_instance,
+                ADC_HandleTypeDef *hadc_internal,
+                ADC_TypeDef *adc_instance_internal);
+  bool poll(void) { return false; };
+  bool poll(uint16_t poll_offset);
+  bool startDma(void) override;
+  void endDma(void) override;
+  bool display(void) override;
+  bool isMy(ADC_HandleTypeDef *hadc) { return hadcExt_ == hadc; }
+  void setScaleFactor(uint16_t n, float scale_factor);
+
 private:
-	ADC_HandleTypeDef *hadcExt_,*hadcInt_;				// The shared SPI handle
-	double scaleFactor_[ADC_CHANNELS_EXT] = {1.1, 2.69, 4.01, 1.68, 10.00, 11.215};
+  ADC_HandleTypeDef *hadcExt_, *hadcInt_; // The shared SPI handle
+  double scaleFactor_[ADC_CHANNELS_EXT] = {1.1, 2.69, 4.01, 1.68, 10.00, 11.215};
 };
 
 #endif /* ADC_H_ */

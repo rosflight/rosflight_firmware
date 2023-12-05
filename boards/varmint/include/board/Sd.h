@@ -41,24 +41,23 @@
 #include <BoardConfig.h>
 #include <Driver.h>
 
-
 /*
  *
  */
 class Sd
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
+  /**
+   * \brief
+   *
+   *
+   */
 public:
-	uint32_t init(SD_HandleTypeDef *hsd, SD_TypeDef *hsd_instance);
-	bool read(uint8_t *dest, size_t len);
-	bool write(uint8_t *src, size_t len);
+  uint32_t init(SD_HandleTypeDef *hsd, SD_TypeDef *hsd_instance);
+  bool read(uint8_t *dest, size_t len);
+  bool write(uint8_t *src, size_t len);
 
 private:
-	SD_HandleTypeDef *hsd_;
+  SD_HandleTypeDef *hsd_;
 };
 
 #endif /* SD_H_ */

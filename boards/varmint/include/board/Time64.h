@@ -39,93 +39,103 @@
 #define TIME64_H_
 
 #include <BoardConfig.h>
-#include <stdint.h>
 #include <Driver.h>
+#include <stdint.h>
 
 class Time64
 {
 public:
-	Time64(){};
-	uint32_t init
-	(
-			TIM_HandleTypeDef *htim_low, TIM_TypeDef *instance_low,
-			TIM_HandleTypeDef *htim_high, TIM_TypeDef *instance_high
-	)
-	{
-		htimLow_  = htim_low;
-		htimHigh_ = htim_high;
+  Time64(){};
+  uint32_t init(TIM_HandleTypeDef *htim_low,
+                TIM_TypeDef *instance_low,
+                TIM_HandleTypeDef *htim_high,
+                TIM_TypeDef *instance_high)
+  {
+    htimLow_ = htim_low;
+    htimHigh_ = htim_high;
 
-		{
-			TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-			TIM_MasterConfigTypeDef sMasterConfig = {0};
-			htimLow_->Instance = instance_low;
-			htimLow_->Init.Prescaler = 199;
-			htimLow_->Init.CounterMode = TIM_COUNTERMODE_UP;
-			htimLow_->Init.Period = 0xffffffff;
-			htimLow_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-			htimLow_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-			if (HAL_TIM_Base_Init(htimLow_) != HAL_OK) return DRIVER_HAL_ERROR;
-			sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-			if (HAL_TIM_ConfigClockSource(htimLow_, &sClockSourceConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-			sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-			sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-			if (HAL_TIMEx_MasterConfigSynchronization(htimLow_, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-		}
+    {
+      TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+      TIM_MasterConfigTypeDef sMasterConfig = {0};
+      htimLow_->Instance = instance_low;
+      htimLow_->Init.Prescaler = 199;
+      htimLow_->Init.CounterMode = TIM_COUNTERMODE_UP;
+      htimLow_->Init.Period = 0xffffffff;
+      htimLow_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+      htimLow_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+      if (HAL_TIM_Base_Init(htimLow_) != HAL_OK)
+        return DRIVER_HAL_ERROR;
+      sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+      if (HAL_TIM_ConfigClockSource(htimLow_, &sClockSourceConfig) != HAL_OK)
+        return DRIVER_HAL_ERROR;
+      sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+      sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+      if (HAL_TIMEx_MasterConfigSynchronization(htimLow_, &sMasterConfig) != HAL_OK)
+        return DRIVER_HAL_ERROR;
+    }
 
-		{
-			TIM_SlaveConfigTypeDef sSlaveConfig = {0};
-			TIM_MasterConfigTypeDef sMasterConfig = {0};
-			htimHigh_->Instance = instance_high;
-			htimHigh_->Init.Prescaler = 0;
-			htimHigh_->Init.CounterMode = TIM_COUNTERMODE_UP;
-			htimHigh_->Init.Period = 65535;
-			htimHigh_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-			htimHigh_->Init.RepetitionCounter = 0;
-			htimHigh_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-			if (HAL_TIM_Base_Init(htimHigh_) != HAL_OK) return DRIVER_HAL_ERROR;
-			sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
-			sSlaveConfig.InputTrigger = TIM_TS_ITR3;
-			if (HAL_TIM_SlaveConfigSynchro(htimHigh_, &sSlaveConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-			sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-			sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
-			sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-		  if (HAL_TIMEx_MasterConfigSynchronization(htimHigh_, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-		}
+    {
+      TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+      TIM_MasterConfigTypeDef sMasterConfig = {0};
+      htimHigh_->Instance = instance_high;
+      htimHigh_->Init.Prescaler = 0;
+      htimHigh_->Init.CounterMode = TIM_COUNTERMODE_UP;
+      htimHigh_->Init.Period = 65535;
+      htimHigh_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+      htimHigh_->Init.RepetitionCounter = 0;
+      htimHigh_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+      if (HAL_TIM_Base_Init(htimHigh_) != HAL_OK)
+        return DRIVER_HAL_ERROR;
+      sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
+      sSlaveConfig.InputTrigger = TIM_TS_ITR3;
+      if (HAL_TIM_SlaveConfigSynchro(htimHigh_, &sSlaveConfig) != HAL_OK)
+        return DRIVER_HAL_ERROR;
+      sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+      sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+      sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+      if (HAL_TIMEx_MasterConfigSynchronization(htimHigh_, &sMasterConfig) != HAL_OK)
+        return DRIVER_HAL_ERROR;
+    }
 
-		// Note priority is set in HAL_TIM_Base_MspInit().
+    // Note priority is set in HAL_TIM_Base_MspInit().
 
-	  __HAL_TIM_SET_COUNTER(htimHigh_,0);
-		__HAL_TIM_SET_COUNTER(htimLow_, 0);
-		HAL_TIM_Base_Start_IT(htimHigh_);	// Startup our overflow counter.
-		HAL_TIM_Base_Start_IT(htimLow_);		// Startup our us counter.
-		return DRIVER_OK;
-	}
+    __HAL_TIM_SET_COUNTER(htimHigh_, 0);
+    __HAL_TIM_SET_COUNTER(htimLow_, 0);
+    HAL_TIM_Base_Start_IT(htimHigh_); // Startup our overflow counter.
+    HAL_TIM_Base_Start_IT(htimLow_);  // Startup our us counter.
+    return DRIVER_OK;
+  }
 
-	uint64_t Us(void)
-	{
-		volatile uint32_t low1  = __HAL_TIM_GET_COUNTER(htimLow_); // htimLow_->Instance->CNT;
-		volatile uint32_t high1 = __HAL_TIM_GET_COUNTER(htimHigh_);
-		volatile uint32_t low2  = __HAL_TIM_GET_COUNTER(htimLow_);
-		volatile uint32_t high2 = __HAL_TIM_GET_COUNTER(htimHigh_);
-		if( (low1 > low2) && (high1 == high2)) high1--; // rollover correction
-		return (uint64_t)high1<<32 | (uint64_t)low1;
-	}
+  uint64_t Us(void)
+  {
+    volatile uint32_t low1 = __HAL_TIM_GET_COUNTER(htimLow_); // htimLow_->Instance->CNT;
+    volatile uint32_t high1 = __HAL_TIM_GET_COUNTER(htimHigh_);
+    volatile uint32_t low2 = __HAL_TIM_GET_COUNTER(htimLow_);
+    volatile uint32_t high2 = __HAL_TIM_GET_COUNTER(htimHigh_);
+    if ((low1 > low2) && (high1 == high2))
+      high1--; // rollover correction
+    return (uint64_t)high1 << 32 | (uint64_t)low1;
+  }
 
-	void dUs(uint32_t dt)
-	{
-		uint64_t endtimestamp =  Us()+dt;
-		while (Us()<endtimestamp){};
-	}
+  void dUs(uint32_t dt)
+  {
+    uint64_t endtimestamp = Us() + dt;
+    while (Us() < endtimestamp)
+    {
+    };
+  }
 
-	void dMs(uint32_t dt)
-	{
-		uint64_t endtimestamp =  Us()+1000LLU*dt;
-		while (Us()<endtimestamp){};
-	}
+  void dMs(uint32_t dt)
+  {
+    uint64_t endtimestamp = Us() + 1000LLU * dt;
+    while (Us() < endtimestamp)
+    {
+    };
+  }
+
 private:
-	TIM_HandleTypeDef *htimLow_;
-	TIM_HandleTypeDef *htimHigh_;
+  TIM_HandleTypeDef *htimLow_;
+  TIM_HandleTypeDef *htimHigh_;
 };
-
 
 #endif /* TIME64_H_ */

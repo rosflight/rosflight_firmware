@@ -39,44 +39,43 @@
 #define DLHRL20G_H_
 
 #include <BoardConfig.h>
-#include <Time64.h>
 #include <Driver.h>
 #include <Packets.h>
+#include <Time64.h>
 
 /*
  *
  */
 class DlhrL20G : public Driver
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
+  /**
+   * \brief
+   *
+   *
+   */
 public:
-	uint32_t init
-	(
-			// Driver initializers
-			uint16_t					sample_rate_hz,
-			GPIO_TypeDef 			*drdy_port,	// Reset GPIO Port
-			uint16_t      		drdy_pin,  	// Reset GPIO Pin
-			// I2C initializers
-			I2C_HandleTypeDef 	*hi2c,		// The SPI handle
-			uint16_t 						i2c_address	// Chip select Port
-	);
-	bool poll(uint16_t poll_offset);
-	bool startDma(void) override;
-	void endDma(void) override;
-	bool display(void);
-	//I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
-	bool isMy(I2C_HandleTypeDef* hi2c) {return hi2c_==hi2c;}
+  uint32_t init(
+      // Driver initializers
+      uint16_t sample_rate_hz,
+      GPIO_TypeDef *drdy_port, // Reset GPIO Port
+      uint16_t drdy_pin,       // Reset GPIO Pin
+      // I2C initializers
+      I2C_HandleTypeDef *hi2c, // The SPI handle
+      uint16_t i2c_address     // Chip select Port
+  );
+  bool poll(uint16_t poll_offset);
+  bool startDma(void) override;
+  void endDma(void) override;
+  bool display(void);
+  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
+  bool isMy(I2C_HandleTypeDef *hi2c) { return hi2c_ == hi2c; }
 
 private:
-	I2C_HandleTypeDef 	*hi2c_;
-	uint16_t 						address_;
-	uint8_t							cmdByte_;
-	double							dtMs_;
-	uint64_t						launchUs_;
+  I2C_HandleTypeDef *hi2c_;
+  uint16_t address_;
+  uint8_t cmdByte_;
+  double dtMs_;
+  uint64_t launchUs_;
 };
 
 #endif /* DLHRL20G_H_ */

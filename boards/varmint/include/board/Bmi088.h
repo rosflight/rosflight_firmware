@@ -47,51 +47,50 @@
  */
 class Bmi088 : public Driver
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
+  /**
+   * \brief
+   *
+   *
+   */
 public:
-	uint32_t init
-	(
-		// Driver initializers
-		uint16_t					sample_rate,
-		GPIO_TypeDef 			*drdy_port,	// DRDY GPIO Port
-		uint16_t      		drdy_pin,  	// DRDY GPIO Pin
-		// SPI initializers
-		SPI_HandleTypeDef *hspi,
-		GPIO_TypeDef 			*cs_port_a,		// Chip Select GPIO Port
-		uint16_t      		cs_pin_a,  		// Chip Select GPIO Pin
-		GPIO_TypeDef 			*cs_port_g,		// Chip Select GPIO Port
-		uint16_t      		cs_pin_g,  		// Chip Select GPIO Pin
-		// Sensor Specific
-		uint8_t         range_a, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-		uint8_t         range_g // // 0,1,2,3 --> 3,6,12,24g
-	);
+  uint32_t init(
+      // Driver initializers
+      uint16_t sample_rate,
+      GPIO_TypeDef *drdy_port, // DRDY GPIO Port
+      uint16_t drdy_pin,       // DRDY GPIO Pin
+      // SPI initializers
+      SPI_HandleTypeDef *hspi,
+      GPIO_TypeDef *cs_port_a, // Chip Select GPIO Port
+      uint16_t cs_pin_a,       // Chip Select GPIO Pin
+      GPIO_TypeDef *cs_port_g, // Chip Select GPIO Port
+      uint16_t cs_pin_g,       // Chip Select GPIO Pin
+      // Sensor Specific
+      uint8_t range_a, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+      uint8_t range_g  // // 0,1,2,3 --> 3,6,12,24g
+  );
 
-	void endDma(void) override;
-	bool startDma(void) override;
-	bool display(void) override;
+  void endDma(void) override;
+  bool startDma(void) override;
+  bool display(void) override;
 
-	bool isMy(uint16_t exti_pin)       	{ return drdyPin_== exti_pin; }
-	bool isMy(SPI_HandleTypeDef *hspi) 	{ return hspi==spiA_.hspi(); }
-	SPI_HandleTypeDef *hspi(void) 			{ return spiA_.hspi(); }
+  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  bool isMy(SPI_HandleTypeDef *hspi) { return hspi == spiA_.hspi(); }
+  SPI_HandleTypeDef *hspi(void) { return spiA_.hspi(); }
 
 private:
-	// SPI Stuff
-	Spi								spiA_;
-	Spi								spiG_;
-	uint16_t 					timeoutMs_;
-	uint16_t					seqCount_;
-	// BMI088 Stuff
-	uint8_t						rangeA_,rangeG_;
-	uint16_t 					syncCfgMode_;
+  // SPI Stuff
+  Spi spiA_;
+  Spi spiG_;
+  uint16_t timeoutMs_;
+  uint16_t seqCount_;
+  // BMI088 Stuff
+  uint8_t rangeA_, rangeG_;
+  uint16_t syncCfgMode_;
 
-	void writeRegisterA(uint8_t address, uint8_t value);
-	uint8_t readRegisterA(uint8_t address);
-	void writeRegisterG(uint8_t address, uint8_t value);
-	uint8_t readRegisterG(uint8_t address);
+  void writeRegisterA(uint8_t address, uint8_t value);
+  uint8_t readRegisterA(uint8_t address);
+  void writeRegisterG(uint8_t address, uint8_t value);
+  uint8_t readRegisterG(uint8_t address);
 };
 
 #endif /* BMI088_H_ */

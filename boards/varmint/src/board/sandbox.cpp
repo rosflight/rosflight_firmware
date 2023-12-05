@@ -35,12 +35,10 @@
  ******************************************************************************
  **/
 
-#include <sandbox.h>
-
 #include <BoardConfig.h>
-#include <misc.h>
-
 #include <Varmint.h>
+#include <misc.h>
+#include <sandbox.h>
 extern Varmint varmint;
 
 extern Time64 time64;
@@ -52,75 +50,82 @@ extern bool verbose;
 
 void verbose_dashes(void)
 {
-	for(int i=0;i<ROWSIZE;i++) misc_printf("-");
-	misc_printf("\n\r");
+  for (int i = 0; i < ROWSIZE; i++) misc_printf("-");
+  misc_printf("\n\r");
 }
 
 void verbose_equals(void)
 {
-	for(int i=0;i<ROWSIZE;i++) misc_printf("=");
-	misc_printf("\n\r");
+  for (int i = 0; i < ROWSIZE; i++) misc_printf("=");
+  misc_printf("\n\r");
 }
 
 void sandbox(void)
 {
+  time64.dMs(5000);
 
-	time64.dMs(5000);
+  //	while(1)
+  //	{
+  //		for(uint32_t t = 1; t<=100 ; t++)
+  //		{
+  //			PB1_HI;
+  //			PH1_HI;
+  //			time64.dMs(t);
+  //			PB1_LO;
+  //			PH1_LO;
+  //			time64.dMs(t);
+  //		}
+  //	}
 
-	//	while(1)
-	//	{
-	//		for(uint32_t t = 1; t<=100 ; t++)
-	//		{
-	//			PB1_HI;
-	//			PH1_HI;
-	//			time64.dMs(t);
-	//			PB1_LO;
-	//			PH1_LO;
-	//			time64.dMs(t);
-	//		}
-	//	}
+  //	{
+  //		uint32_t n=2;
+  //		varmint.pwm_[n].enable();
+  //
+  //		while(1)
+  //		{
+  //			PH1_LO;
+  //			varmint.pwm_[n].writeUs(1000);
+  //			time64.dMs(500);
+  //			PH1_HI;
+  //			varmint.pwm_[n].writeUs(2000);
+  //			time64.dMs(500);
+  //		}
+  //	}
 
-
-//	{
-//		uint32_t n=2;
-//		varmint.pwm_[n].enable();
-//
-//		while(1)
-//		{
-//			PH1_LO;
-//			varmint.pwm_[n].writeUs(1000);
-//			time64.dMs(500);
-//			PH1_HI;
-//			varmint.pwm_[n].writeUs(2000);
-//			time64.dMs(500);
-//		}
-//	}
-
-	verbose=true;
-	uint32_t n = 0;
-	while(1)
-	{
-		sandbox_dashboard( (n++)%100 == 0);
-		time64.dMs(100);
-	}
+  verbose = true;
+  uint32_t n = 0;
+  while (1)
+  {
+    sandbox_dashboard((n++) % 100 == 0);
+    time64.dMs(100);
+  }
 }
 
 void sandbox_dashboard(bool clear)
 {
-	verbose=true;
+  verbose = true;
 
-	if(clear)	misc_printf( "%c[2J", ASCII_ESC );
+  if (clear)
+    misc_printf("%c[2J", ASCII_ESC);
 
-	misc_printf( "%c[H", ASCII_ESC ); // home
-	verbose_equals();
-	misc_printf("SANDBOX DASHBOARD\n\r"); verbose_dashes();
-	varmint.imu0_.display();	verbose_dashes();
-	varmint.imu1_.display(); 	verbose_dashes();
-	varmint.mag_.display(); 	verbose_dashes();
-	varmint.pitot_.display();	verbose_dashes();
-	varmint.baro_.display(); 	verbose_dashes();
-	varmint.adc_.display();		verbose_dashes();
-	varmint.rc_.display(); 		verbose_dashes();
-	varmint.gps_.display();
-	verbose_equals();
+  misc_printf("%c[H", ASCII_ESC); // home
+  verbose_equals();
+  misc_printf("SANDBOX DASHBOARD\n\r");
+  verbose_dashes();
+  varmint.imu0_.display();
+  verbose_dashes();
+  varmint.imu1_.display();
+  verbose_dashes();
+  varmint.mag_.display();
+  verbose_dashes();
+  varmint.pitot_.display();
+  verbose_dashes();
+  varmint.baro_.display();
+  verbose_dashes();
+  varmint.adc_.display();
+  verbose_dashes();
+  varmint.rc_.display();
+  verbose_dashes();
+  varmint.gps_.display();
+  verbose_equals();
 }

@@ -39,54 +39,53 @@
 #define DPS310_H_
 
 #include <BoardConfig.h>
-#include <Time64.h>
 #include <Driver.h>
 #include <Packets.h>
 #include <Spi.h>
+#include <Time64.h>
 
 /*
  *
  */
 class Dps310 : public Driver
 {
-	/**
-	 * \brief 
-	 *
-	 *
-	 */
+  /**
+   * \brief
+   *
+   *
+   */
 public:
-	uint32_t init
-	(
-		// Driver initializers
-		uint16_t					sample_rate_hz,
-		GPIO_TypeDef 			*drdy_port,	// Reset GPIO Port
-		uint16_t      		drdy_pin,  	// Reset GPIO Pin
-		// SPI initializers
-		SPI_HandleTypeDef *hspi,
-		GPIO_TypeDef 			*cs_port,		// Chip Select GPIO Port
-		uint16_t      		cs_pin 		// Chip Select GPIO Pin
-	);
+  uint32_t init(
+      // Driver initializers
+      uint16_t sample_rate_hz,
+      GPIO_TypeDef *drdy_port, // Reset GPIO Port
+      uint16_t drdy_pin,       // Reset GPIO Pin
+      // SPI initializers
+      SPI_HandleTypeDef *hspi,
+      GPIO_TypeDef *cs_port, // Chip Select GPIO Port
+      uint16_t cs_pin        // Chip Select GPIO Pin
+  );
 
-	bool poll(void);
-	void endDma(void) override;
-	bool startDma(void) override;
-	bool display(void) override;
+  bool poll(void);
+  void endDma(void) override;
+  bool startDma(void) override;
+  bool display(void) override;
 
-	bool isMy(uint16_t exti_pin)       	{ return drdyPin_== exti_pin; }
-	bool isMy(SPI_HandleTypeDef *hspi) 	{ return hspi==spi_.hspi(); }
-	SPI_HandleTypeDef *hspi(void) 			{ return spi_.hspi(); }
+  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  bool isMy(SPI_HandleTypeDef *hspi) { return hspi == spi_.hspi(); }
+  SPI_HandleTypeDef *hspi(void) { return spi_.hspi(); }
 
 private:
-	// SPI Stuff
-	Spi								spi_;
-	uint16_t 					timeoutMs_;
-	uint64_t					launchUs_;
+  // SPI Stuff
+  Spi spi_;
+  uint16_t timeoutMs_;
+  uint64_t launchUs_;
 
-// Dps310 Stuff
-	double 	C0_, C1_, C01_, C11_, C20_, C21_, C30_, C00_, C10_;
+  // Dps310 Stuff
+  double C0_, C1_, C01_, C11_, C20_, C21_, C30_, C00_, C10_;
 
-	void writeRegister(uint8_t address, uint8_t value);
-	uint8_t readRegister(uint8_t address);
+  void writeRegister(uint8_t address, uint8_t value);
+  uint8_t readRegister(uint8_t address);
 };
 
 #endif /* DPS310_H_ */
