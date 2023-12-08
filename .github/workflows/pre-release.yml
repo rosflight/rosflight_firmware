@@ -4,7 +4,7 @@ name: "pre-release"
 on:
   push:
     branches:
-      - "master"
+      - "main"
 
 jobs:
   pre-release:
@@ -19,10 +19,8 @@ jobs:
       run: sudo apt -y install gcc-arm-none-eabi
     - name: check toolchain
       run: arm-none-eabi-gcc --version
-    - name: make_f4
-      run: make BOARD=REVO -j4 -l4
-    - name: make_f1
-      run: make BOARD=NAZE -j4 -l4
+    - name: build varmint
+      run: mkdir build && cd build && cmake .. -DBUILD_VARMINT=true && make
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
@@ -31,5 +29,4 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          boards/airbourne/build/rosflight_REVO_Release.bin
-          boards/breezy/build/rosflight_NAZE_Release.hex
+          build/varmint.hex
