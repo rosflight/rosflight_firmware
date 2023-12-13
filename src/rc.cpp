@@ -263,8 +263,6 @@ void RC::look_for_arm_disarm_signal()
 
 bool RC::run()
 {
-  uint32_t now = RF_.board_.clock_millis();
-
   // Check for rc lost
   if (check_rc_lost())
     return false;

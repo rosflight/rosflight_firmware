@@ -41,6 +41,7 @@ class testBoard : public Board
 {
 private:
   uint16_t rc_values[8] = {1500, 1500, 1000, 1500, 1500, 1500, 1500, 1500};
+  bool new_rc_ = false;
   uint64_t time_us_ = 0;
   bool rc_lost_ = false;
   float acc_[3] = {0, 0, 0};
@@ -68,45 +69,42 @@ public:
 
   // sensors
   void sensors_init() override;
-  uint16_t num_sensor_errors();
+  uint16_t num_sensor_errors() override;
 
-  bool new_imu_data() override;
+  bool imu_has_new_data() override;
   bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
-  void mag_update() override;
-  void mag_read(float mag[3]) override;
+  bool mag_has_new_data() override;
+  bool mag_read(float mag[3]) override;
 
   bool baro_present() override;
-  void baro_update() override;
-  void baro_read(float *pressure, float *temperature) override;
+  bool baro_has_new_data() override;
+  bool baro_read(float *pressure, float *temperature) override;
 
   bool diff_pressure_present() override;
-  void diff_pressure_update() override;
-  void diff_pressure_read(float *diff_pressure, float *temperature) override;
+  bool diff_pressure_has_new_data() override;
+  bool diff_pressure_read(float *diff_pressure, float *temperature) override;
 
   bool sonar_present() override;
-  void sonar_update() override;
-  float sonar_read() override;
+  bool sonar_has_new_data() override;
+  bool sonar_read(float *range) override;
 
-  bool gnss_present() override { return false; }
-  void gnss_update() override {}
-  GNSSData gnss_read() override;
-  GNSSFull gnss_full_read() override;
+  bool gnss_present() override;
   bool gnss_has_new_data() override;
+  bool gnss_read(GNSSData *gnss, GNSSFull *gnss_full) override;
 
-  bool battery_voltage_present() const override;
-  float battery_voltage_read() const override;
+  bool battery_present() override;
+  bool battery_has_new_data() override;
+  bool battery_read(float *voltage, float *current) override;
   void battery_voltage_set_multiplier(double multiplier) override;
-
-  bool battery_current_present() const override;
-  float battery_current_read() const override;
   void battery_current_set_multiplier(double multiplier) override;
 
   // RC
   void rc_init(rc_type_t rc_type) override;
   bool rc_lost() override;
+  bool rc_has_new_data() override;
   float rc_read(uint8_t channel) override;
 
   // PWM
@@ -135,8 +133,7 @@ public:
   void backup_memory_clear(size_t len) override;
   void backup_memory_clear(); // Not an override
 
-  void set_imu(float *acc, float *gyro, uint64_t time_us);
-  void set_rc(uint16_t *values);
+  void set_imu(float *acc, float *gyro, uint64_t time_us); void set_rc(uint16_t *values);
   void set_time(uint64_t time_us);
   void set_pwm_lost(bool lost);
 };

@@ -42,6 +42,7 @@ void testBoard::set_rc(uint16_t *values)
   {
     rc_values[i] = values[i];
   }
+  new_rc_ = true;
 }
 
 void testBoard::set_time(uint64_t time_us)
@@ -103,7 +104,7 @@ uint16_t testBoard::num_sensor_errors()
   return 0;
 }
 
-bool testBoard::new_imu_data()
+bool testBoard::imu_has_new_data()
 {
   if (new_imu_)
   {
@@ -158,76 +159,80 @@ bool testBoard::mag_present()
 {
   return false;
 }
-void testBoard::mag_update() {}
-void testBoard::mag_read(float mag[3]) {}
+bool testBoard::mag_has_new_data()
+{
+  return false;
+}
+bool testBoard::mag_read(float mag[3]) {
+  return false;
+}
 
 bool testBoard::baro_present()
 {
   return false;
 }
-void testBoard::baro_update() {}
-void testBoard::baro_read(float *pressure, float *temperature) {}
+bool testBoard::baro_has_new_data()
+{
+  return false;
+}
+bool testBoard::baro_read(float *pressure, float *temperature) 
+{
+  return false;
+}
 
 bool testBoard::diff_pressure_present()
 {
   return false;
 }
-void testBoard::diff_pressure_update() {}
-void testBoard::diff_pressure_read(float *diff_pressure, float *temperature) {}
+bool testBoard::diff_pressure_has_new_data() 
+{
+  return false;
+}
+bool testBoard::diff_pressure_read(float *diff_pressure, float *temperature) 
+{
+  return false;
+}
 
 bool testBoard::sonar_present()
 {
   return false;
 }
-void testBoard::sonar_update() {}
-float testBoard::sonar_read()
-{
-  return 0;
-}
-
-bool testBoard::battery_voltage_present() const
+bool testBoard::sonar_has_new_data() 
 {
   return false;
 }
-float testBoard::battery_voltage_read() const
-{
-  return 0;
-}
-void testBoard::battery_voltage_set_multiplier(double multiplier)
-{
-  (void)multiplier;
-}
-
-bool testBoard::battery_current_present() const
+bool testBoard::sonar_read(float *range)
 {
   return false;
 }
-float testBoard::battery_current_read() const
-{
-  return 0;
-}
-void testBoard::battery_current_set_multiplier(double multiplier)
-{
-  (void)multiplier;
-}
 
-// GNSS is not supported on the test board
-GNSSData testBoard::gnss_read()
+bool testBoard::gnss_present()
 {
-  return {};
+  return false;
 }
-
-// GNSS is not supported on the test board
-GNSSFull testBoard::gnss_full_read()
-{
-  return {};
-}
-
-// GNSS is not supported on the test board
 bool testBoard::gnss_has_new_data()
 {
   return false;
 }
+bool testBoard::gnss_read(GNSSData *gnss, GNSSFull *gnss_full) 
+{
+  return false;
+}
+
+bool testBoard::battery_present()
+{
+  return false;
+}
+bool testBoard::battery_has_new_data()
+{
+  return false;
+}
+bool testBoard::battery_read(float *voltage, float *current)
+{
+  return false;
+}
+void testBoard::battery_voltage_set_multiplier(double multiplier) {}
+void testBoard::battery_current_set_multiplier(double multiplier) {}
 
 // PWM
 // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
@@ -236,8 +241,13 @@ bool testBoard::rc_lost()
 {
   return rc_lost_;
 }
+bool testBoard::rc_has_new_data()
+{
+  return new_rc_;
+}
 float testBoard::rc_read(uint8_t channel)
 {
+  new_rc_ = false;
   return static_cast<float>(rc_values[channel] - 1000) / 1000.0;
 }
 void testBoard::pwm_write(uint8_t channel, float value) {}
