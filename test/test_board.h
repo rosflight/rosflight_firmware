@@ -62,7 +62,7 @@ public:
 
   // serial
   void serial_init(uint32_t baud_rate, uint32_t dev) override;
-  void serial_write(const uint8_t *src, size_t len) override;
+  void serial_write(const uint8_t * src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
@@ -72,7 +72,7 @@ public:
   uint16_t num_sensor_errors() override;
 
   bool imu_has_new_data() override;
-  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) override;
+  bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
@@ -81,23 +81,23 @@ public:
 
   bool baro_present() override;
   bool baro_has_new_data() override;
-  bool baro_read(float *pressure, float *temperature) override;
+  bool baro_read(float * pressure, float * temperature) override;
 
   bool diff_pressure_present() override;
   bool diff_pressure_has_new_data() override;
-  bool diff_pressure_read(float *diff_pressure, float *temperature) override;
+  bool diff_pressure_read(float * diff_pressure, float * temperature) override;
 
   bool sonar_present() override;
   bool sonar_has_new_data() override;
-  bool sonar_read(float *range) override;
+  bool sonar_read(float * range) override;
 
   bool gnss_present() override;
   bool gnss_has_new_data() override;
-  bool gnss_read(GNSSData *gnss, GNSSFull *gnss_full) override;
+  bool gnss_read(GNSSData * gnss, GNSSFull * gnss_full) override;
 
   bool battery_present() override;
   bool battery_has_new_data() override;
-  bool battery_read(float *voltage, float *current) override;
+  bool battery_read(float * voltage, float * current) override;
   void battery_voltage_set_multiplier(double multiplier) override;
   void battery_current_set_multiplier(double multiplier) override;
 
@@ -114,8 +114,8 @@ public:
 
   // non-volatile memory
   void memory_init() override;
-  bool memory_read(void *dest, size_t len) override;
-  bool memory_write(const void *src, size_t len) override;
+  bool memory_read(void * dest, size_t len) override;
+  bool memory_write(const void * src, size_t len) override;
 
   // LEDs
   void led0_on() override;
@@ -128,13 +128,13 @@ public:
 
   // Backup memory
   void backup_memory_init() override {}
-  bool backup_memory_read(void *dest, size_t len) override;
-  void backup_memory_write(const void *src, size_t len) override;
+  bool backup_memory_read(void * dest, size_t len) override;
+  void backup_memory_write(const void * src, size_t len) override;
   void backup_memory_clear(size_t len) override;
   void backup_memory_clear(); // Not an override
 
-  void set_imu(float *acc, float *gyro, uint64_t time_us);
-  void set_rc(uint16_t *values);
+  void set_imu(float * acc, float * gyro, uint64_t time_us);
+  void set_rc(uint16_t * values);
   void set_time(uint64_t time_us);
   void set_pwm_lost(bool lost);
 };

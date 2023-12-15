@@ -37,7 +37,10 @@ public:
   int ext_att_update_rate_;
   int ext_att_count_;
 
-  EstimatorTest() : mavlink(board), rf(board, mavlink) {}
+  EstimatorTest()
+      : mavlink(board)
+      , rf(board, mavlink)
+  {}
 
   void SetUp() override
   {
@@ -69,7 +72,7 @@ public:
     rf.init();
   }
 
-  void initFile(const std::string& filename) { file_.open(filename); }
+  void initFile(const std::string & filename) { file_.open(filename); }
 
   double run()
   {
@@ -77,10 +80,8 @@ public:
 
     double max_error = 0.0;
     t_ = 0.0;
-    while (t_ < tmax_)
-    {
-      for (int i = 0; i < oversampling_factor_; i++)
-      {
+    while (t_ < tmax_) {
+      for (int i = 0; i < oversampling_factor_; i++) {
         Vector3d w;
         w[0] = x_amp_ * sin(x_freq_ / (2.0 * M_PI) * t_);
         w[1] = y_amp_ * sin(y_freq_ / (2.0 * M_PI) * t_);
@@ -97,8 +98,7 @@ public:
       Vector3d err = computeError();
 
       double err_norm = err.norm();
-      if (std::abs(err_norm - 2.0 * M_PI) < err_norm)
-      {
+      if (std::abs(err_norm - 2.0 * M_PI) < err_norm) {
         err_norm = std::abs(err_norm - 2.0 * M_PI);
       }
       max_error = (err_norm > max_error) ? err_norm : max_error;
@@ -106,23 +106,20 @@ public:
     return max_error;
   }
 
-  void integrate(Quaterniond& q, const Vector3d& _w, double dt)
+  void integrate(Quaterniond & q, const Vector3d & _w, double dt)
   {
     Vector3d w = _w * dt;
 
     Quaterniond w_exp;
     double w_norm = w.norm();
-    if (w_norm > 1e-4)
-    {
+    if (w_norm > 1e-4) {
       w_exp.w() = std::cos(w_norm / 2.0);
       double scale = std::sin(w_norm / 2.0) / w_norm;
       w_exp.x() = scale * w(0);
       w_exp.y() = scale * w(1);
       w_exp.z() = scale * w(2);
       w_exp.normalize();
-    }
-    else
-    {
+    } else {
       w_exp.w() = 1.0;
       w_exp.x() = w(0) / 2.0;
       w_exp.y() = w(1) / 2.0;
@@ -133,7 +130,7 @@ public:
     q.coeffs() *= sign(q.w());
   }
 
-  void simulateIMU(float* acc, float* gyro)
+  void simulateIMU(float * acc, float * gyro)
   {
     Vector3d y_acc = q_.inverse() * gravity;
     acc[0] = y_acc.x();
@@ -148,8 +145,7 @@ public:
 
   void extAttUpdate()
   {
-    if (ext_att_update_rate_ && ++ext_att_count_ >= ext_att_update_rate_)
-    {
+    if (ext_att_update_rate_ && ++ext_att_count_ >= ext_att_update_rate_) {
       ext_att_count_ = 0;
       turbomath::Quaternion q_ext;
       q_ext.w = q_.w();
@@ -173,30 +169,25 @@ public:
     float w = err.w();
     double norm_v = v.norm();
 
-    if (t_ > 20.698)
-    {
+    if (t_ > 20.698) {
       int debug = 1;
-      (void)debug;
+      (void) debug;
     }
 
     Vector3d log_err;
-    if (norm_v > 1e-4)
-    {
+    if (norm_v > 1e-4) {
       log_err = 2.0 * std::atan(norm_v / w) * v / norm_v;
-    }
-    else
-    {
+    } else {
       log_err = 2.0 * sign(w) * v;
     }
 
-    if (file_.is_open())
-    {
-      file_.write(reinterpret_cast<char*>(&t_), sizeof(t_));
-      file_.write(reinterpret_cast<char*>(&q_), sizeof(double) * 4);
-      file_.write(reinterpret_cast<const char*>(&rf_quat), sizeof(double) * 4);
-      file_.write(reinterpret_cast<char*>(log_err.data()), sizeof(double) * 3);
-      file_.write(reinterpret_cast<char*>(eulerError().data()), sizeof(double) * 3);
-      file_.write(reinterpret_cast<const char*>(&rf.estimator_.bias().x), sizeof(float) * 3);
+    if (file_.is_open()) {
+      file_.write(reinterpret_cast<char *>(&t_), sizeof(t_));
+      file_.write(reinterpret_cast<char *>(&q_), sizeof(double) * 4);
+      file_.write(reinterpret_cast<const char *>(&rf_quat), sizeof(double) * 4);
+      file_.write(reinterpret_cast<char *>(log_err.data()), sizeof(double) * 3);
+      file_.write(reinterpret_cast<char *>(eulerError().data()), sizeof(double) * 3);
+      file_.write(reinterpret_cast<const char *>(&rf.estimator_.bias().x), sizeof(float) * 3);
     }
 
     return log_err;
@@ -225,9 +216,11 @@ public:
   Vector3d getTrueRPY()
   {
     Vector3d rpy;
-    rpy(0) = std::atan2(2.0f * (q_.w() * q_.x() + q_.y() * q_.z()), 1.0f - 2.0f * (q_.x() * q_.x() + q_.y() * q_.y()));
+    rpy(0) = std::atan2(2.0f * (q_.w() * q_.x() + q_.y() * q_.z()),
+                        1.0f - 2.0f * (q_.x() * q_.x() + q_.y() * q_.y()));
     rpy(1) = std::asin(2.0f * (q_.w() * q_.y() - q_.z() * q_.x()));
-    rpy(2) = std::atan2(2.0f * (q_.w() * q_.z() + q_.x() * q_.y()), 1.0f - 2.0f * (q_.y() * q_.y() + q_.z() * q_.z()));
+    rpy(2) = std::atan2(2.0f * (q_.w() * q_.z() + q_.x() * q_.y()),
+                        1.0f - 2.0f * (q_.y() * q_.y() + q_.z() * q_.z()));
     return rpy;
   }
 };

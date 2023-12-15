@@ -86,11 +86,12 @@ public:
   struct __attribute__((packed)) BackupData
   {
     static constexpr uint32_t ARM_MAGIC =
-        0xbad2fa11; //!< magic number to ensure we only arm on startup if we really intended to
+      0xbad2fa11; //!< magic number to ensure we only arm on startup if we really intended to
 
     uint16_t reset_count = 0; //!< number of hard faults since normal system startup
     uint16_t error_code = 0;  //!< state manager error codes
-    uint32_t arm_flag = 0;    //!< set to ARM_MAGIC if the system was armed when the hard fault occured, 0 otherwise
+    uint32_t arm_flag =
+      0; //!< set to ARM_MAGIC if the system was armed when the hard fault occured, 0 otherwise
 
     /**
      * @brief Low-level debugging information for case of hard fault
@@ -119,7 +120,8 @@ public:
      */
     void finalize()
     {
-      checksum = checksum_fletcher16(reinterpret_cast<uint8_t*>(this), sizeof(BackupData) - sizeof(checksum));
+      checksum = checksum_fletcher16(reinterpret_cast<uint8_t *>(this),
+                                     sizeof(BackupData) - sizeof(checksum));
     }
 
     /**
@@ -130,15 +132,17 @@ public:
      */
     bool valid_checksum()
     {
-      return checksum == checksum_fletcher16(reinterpret_cast<uint8_t*>(this), sizeof(BackupData) - sizeof(checksum));
+      return checksum
+        == checksum_fletcher16(reinterpret_cast<uint8_t *>(this),
+                               sizeof(BackupData) - sizeof(checksum));
     }
   };
 
-  StateManager(ROSflight& parent);
+  StateManager(ROSflight & parent);
   void init();
   void run();
 
-  inline const State& state() const { return state_; }
+  inline const State & state() const { return state_; }
 
   void set_event(Event event);
   void set_error(uint16_t error);
@@ -155,12 +159,12 @@ public:
    *
    * @param debug Low-level debugging data populated by the hardfault handler
    */
-  void write_backup_data(const BackupData::DebugInfo& debug);
+  void write_backup_data(const BackupData::DebugInfo & debug);
 
   void check_backup_memory();
 
 private:
-  ROSflight& RF_;
+  ROSflight & RF_;
   State state_;
 
   uint32_t next_led_blink_ms_ = 0;

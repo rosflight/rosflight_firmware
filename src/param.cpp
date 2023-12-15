@@ -56,7 +56,11 @@
 
 namespace rosflight_firmware
 {
-Params::Params(ROSflight &_rf) : RF_(_rf), listeners_(nullptr), num_listeners_(0) {}
+Params::Params(ROSflight & _rf)
+    : RF_(_rf)
+    , listeners_(nullptr)
+    , num_listeners_(0)
+{}
 
 // local function definitions
 void Params::init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -80,7 +84,7 @@ void Params::init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], 
 uint8_t Params::compute_checksum(void)
 {
   uint8_t chk = 0;
-  const char *p;
+  const char * p;
 
   for (p = reinterpret_cast<const char *>(&params.values);
        p < reinterpret_cast<const char *>(&params.values) + 4 * PARAMS_COUNT; p++)
@@ -99,8 +103,7 @@ uint8_t Params::compute_checksum(void)
 void Params::init()
 {
   RF_.board_.memory_init();
-  if (!read())
-  {
+  if (!read()) {
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
                           "Unable to load parameters; using default values");
     set_defaults();
@@ -274,7 +277,7 @@ void Params::set_defaults(void)
 }
 // clang-format on
 
-void Params::set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners)
+void Params::set_listeners(ParamListenerInterface * const listeners[], size_t num_listeners)
 {
   listeners_ = listeners;
   num_listeners_ = num_listeners;
@@ -282,17 +285,14 @@ void Params::set_listeners(ParamListenerInterface *const listeners[], size_t num
 
 bool Params::read(void)
 {
-  if (!RF_.board_.memory_read(&params, sizeof(params_t)))
-    return false;
+  if (!RF_.board_.memory_read(&params, sizeof(params_t))) return false;
 
-  if (params.version != GIT_VERSION_HASH)
-    return false;
+  if (params.version != GIT_VERSION_HASH) return false;
 
   if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
     return false;
 
-  if (compute_checksum() != params.chk)
-    return false;
+  if (compute_checksum() != params.chk) return false;
 
   return true;
 }
@@ -305,44 +305,34 @@ bool Params::write(void)
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
 
-  if (!RF_.board_.memory_write(&params, sizeof(params_t)))
-    return false;
+  if (!RF_.board_.memory_write(&params, sizeof(params_t))) return false;
   return true;
 }
 
 void Params::change_callback(uint16_t id)
 {
   // call the callback function for all listeners
-  if (listeners_ != nullptr)
-  {
-    for (size_t i = 0; i < num_listeners_; i++)
-    {
-      listeners_[i]->param_change_callback(id);
-    }
+  if (listeners_ != nullptr) {
+    for (size_t i = 0; i < num_listeners_; i++) { listeners_[i]->param_change_callback(id); }
   }
 }
 
 uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 {
-  for (uint16_t id = 0; id < PARAMS_COUNT; id++)
-  {
+  for (uint16_t id = 0; id < PARAMS_COUNT; id++) {
     bool match = true;
-    for (uint8_t i = 0; i < PARAMS_NAME_LENGTH; i++)
-    {
+    for (uint8_t i = 0; i < PARAMS_NAME_LENGTH; i++) {
       // compare each character
-      if (name[i] != params.names[id][i])
-      {
+      if (name[i] != params.names[id][i]) {
         match = false;
         break;
       }
 
       // stop comparing if end of string is reached
-      if (params.names[id][i] == '\0')
-        break;
+      if (params.names[id][i] == '\0') break;
     }
 
-    if (match)
-      return id;
+    if (match) return id;
   }
 
   return PARAMS_COUNT;
@@ -350,8 +340,7 @@ uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
 
 bool Params::set_param_int(uint16_t id, int32_t value)
 {
-  if (id < PARAMS_COUNT && value != params.values[id].ivalue)
-  {
+  if (id < PARAMS_COUNT && value != params.values[id].ivalue) {
     params.values[id].ivalue = value;
     change_callback(id);
     RF_.comm_manager_.send_param_value(id);
@@ -362,8 +351,7 @@ bool Params::set_param_int(uint16_t id, int32_t value)
 
 bool Params::set_param_float(uint16_t id, float value)
 {
-  if (id < PARAMS_COUNT && value != params.values[id].fvalue)
-  {
+  if (id < PARAMS_COUNT && value != params.values[id].fvalue) {
     params.values[id].fvalue = value;
     change_callback(id);
     RF_.comm_manager_.send_parameter_list();

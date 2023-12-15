@@ -40,14 +40,11 @@
 
 namespace rosflight_firmware
 {
-CommManager::LogMessageBuffer::LogMessageBuffer()
-{
-  memset(buffer_, 0, sizeof(buffer_));
-}
+CommManager::LogMessageBuffer::LogMessageBuffer() { memset(buffer_, 0, sizeof(buffer_)); }
 
 void CommManager::LogMessageBuffer::add_message(CommLinkInterface::LogSeverity severity, char msg[])
 {
-  LogMessage& newest_msg = buffer_[newest_];
+  LogMessage & newest_msg = buffer_[newest_];
   strcpy(newest_msg.msg, msg);
   newest_msg.severity = severity;
 
@@ -55,8 +52,7 @@ void CommManager::LogMessageBuffer::add_message(CommLinkInterface::LogSeverity s
 
   // quietly over-write old messages (what else can we do?)
   length_ += 1;
-  if (length_ > LOG_BUF_SIZE)
-  {
+  if (length_ > LOG_BUF_SIZE) {
     length_ = LOG_BUF_SIZE;
     oldest_ = (oldest_ + 1) % LOG_BUF_SIZE;
   }
@@ -64,14 +60,16 @@ void CommManager::LogMessageBuffer::add_message(CommLinkInterface::LogSeverity s
 
 void CommManager::LogMessageBuffer::pop()
 {
-  if (length_ > 0)
-  {
+  if (length_ > 0) {
     length_--;
     oldest_ = (oldest_ + 1) % LOG_BUF_SIZE;
   }
 }
 
-CommManager::CommManager(ROSflight& rf, CommLinkInterface& comm_link) : RF_(rf), comm_link_(comm_link) {}
+CommManager::CommManager(ROSflight & rf, CommLinkInterface & comm_link)
+    : RF_(rf)
+    , comm_link_(comm_link)
+{}
 
 // function definitions
 void CommManager::init()
@@ -89,14 +87,13 @@ void CommManager::init()
 
 void CommManager::param_change_callback(uint16_t param_id)
 {
-  switch (param_id)
-  {
-  case PARAM_SYSTEM_ID:
-    update_system_id(param_id);
-    break;
-  default:
-    // do nothing
-    break;
+  switch (param_id) {
+    case PARAM_SYSTEM_ID:
+      update_system_id(param_id);
+      break;
+    default:
+      // do nothing
+      break;
   }
 }
 
@@ -105,74 +102,65 @@ void CommManager::update_system_id(uint16_t param_id)
   sysid_ = static_cast<uint8_t>(RF_.params_.get_param_int(param_id));
 }
 
-void CommManager::update_status()
-{
-  send_status();
-}
+void CommManager::update_status() { send_status(); }
 
 void CommManager::send_param_value(uint16_t param_id)
 {
-  if (param_id < PARAMS_COUNT)
-  {
-    switch (RF_.params_.get_param_type(param_id))
-    {
-    case PARAM_TYPE_INT32:
-      comm_link_.send_param_value_int(sysid_, param_id, RF_.params_.get_param_name(param_id),
-                                      RF_.params_.get_param_int(param_id), static_cast<uint16_t>(PARAMS_COUNT));
-      break;
-    case PARAM_TYPE_FLOAT:
-      comm_link_.send_param_value_float(sysid_, param_id, RF_.params_.get_param_name(param_id),
-                                        RF_.params_.get_param_float(param_id), static_cast<uint16_t>(PARAMS_COUNT));
-      break;
-    default:
-      break;
+  if (param_id < PARAMS_COUNT) {
+    switch (RF_.params_.get_param_type(param_id)) {
+      case PARAM_TYPE_INT32:
+        comm_link_.send_param_value_int(sysid_, param_id, RF_.params_.get_param_name(param_id),
+                                        RF_.params_.get_param_int(param_id),
+                                        static_cast<uint16_t>(PARAMS_COUNT));
+        break;
+      case PARAM_TYPE_FLOAT:
+        comm_link_.send_param_value_float(sysid_, param_id, RF_.params_.get_param_name(param_id),
+                                          RF_.params_.get_param_float(param_id),
+                                          static_cast<uint16_t>(PARAMS_COUNT));
+        break;
+      default:
+        break;
     }
   }
 }
 
 void CommManager::param_request_list_callback(uint8_t target_system)
 {
-  if (target_system == sysid_)
-    send_params_index_ = 0;
+  if (target_system == sysid_) send_params_index_ = 0;
 }
 
-void CommManager::send_parameter_list()
-{
-  send_params_index_ = 0;
-}
+void CommManager::send_parameter_list() { send_params_index_ = 0; }
 
-void CommManager::param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index)
+void CommManager::param_request_read_callback(uint8_t target_system, const char * const param_name,
+                                              int16_t param_index)
 {
-  if (target_system == sysid_)
-  {
-    uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name) : static_cast<uint16_t>(param_index);
+  if (target_system == sysid_) {
+    uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name)
+                                    : static_cast<uint16_t>(param_index);
 
-    if (id < PARAMS_COUNT)
-      send_param_value(id);
+    if (id < PARAMS_COUNT) send_param_value(id);
   }
 }
 
-void CommManager::param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value)
+void CommManager::param_set_int_callback(uint8_t target_system, const char * const param_name,
+                                         int32_t param_value)
 {
-  if (target_system == sysid_)
-  {
+  if (target_system == sysid_) {
     uint16_t id = RF_.params_.lookup_param_id(param_name);
 
-    if (id < PARAMS_COUNT && RF_.params_.get_param_type(id) == PARAM_TYPE_INT32)
-    {
+    if (id < PARAMS_COUNT && RF_.params_.get_param_type(id) == PARAM_TYPE_INT32) {
       RF_.params_.set_param_int(id, param_value);
     }
   }
 }
 
-void CommManager::param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value)
+void CommManager::param_set_float_callback(uint8_t target_system, const char * const param_name,
+                                           float param_value)
 {
-  if (target_system == sysid_)
-  {
+  if (target_system == sysid_) {
     uint16_t id = RF_.params_.lookup_param_id(param_name);
 
-    if (id < PARAMS_COUNT && RF_.params_.get_param_type(id) == PARAM_TYPE_FLOAT)
-    {
+    if (id < PARAMS_COUNT && RF_.params_.get_param_type(id) == PARAM_TYPE_FLOAT) {
       RF_.params_.set_param_float(id, param_value);
     }
   }
@@ -185,55 +173,50 @@ void CommManager::command_callback(CommLinkInterface::Command command)
   bool reboot_to_bootloader_flag = false;
 
   // None of these actions can be performed if we are armed
-  if (RF_.state_manager_.state().armed)
-  {
+  if (RF_.state_manager_.state().armed) {
     result = false;
-  }
-  else
-  {
+  } else {
     result = true;
-    switch (command)
-    {
-    case CommLinkInterface::Command::COMMAND_READ_PARAMS:
-      result = RF_.params_.read();
-      break;
-    case CommLinkInterface::Command::COMMAND_WRITE_PARAMS:
-      result = RF_.params_.write();
-      break;
-    case CommLinkInterface::Command::COMMAND_SET_PARAM_DEFAULTS:
-      RF_.params_.set_defaults();
-      break;
-    case CommLinkInterface::Command::COMMAND_ACCEL_CALIBRATION:
-      result = RF_.sensors_.start_imu_calibration();
-      break;
-    case CommLinkInterface::Command::COMMAND_GYRO_CALIBRATION:
-      result = RF_.sensors_.start_gyro_calibration();
-      break;
-    case CommLinkInterface::Command::COMMAND_BARO_CALIBRATION:
-      result = RF_.sensors_.start_baro_calibration();
-      break;
-    case CommLinkInterface::Command::COMMAND_AIRSPEED_CALIBRATION:
-      result = RF_.sensors_.start_diff_pressure_calibration();
-      break;
-    case CommLinkInterface::Command::COMMAND_RC_CALIBRATION:
-      RF_.controller_.calculate_equilbrium_torque_from_rc();
-      break;
-    case CommLinkInterface::Command::COMMAND_REBOOT:
-      reboot_flag = true;
-      break;
-    case CommLinkInterface::Command::COMMAND_REBOOT_TO_BOOTLOADER:
-      reboot_to_bootloader_flag = true;
-      break;
-    case CommLinkInterface::Command::COMMAND_SEND_VERSION:
-      comm_link_.send_version(sysid_, GIT_VERSION_STRING);
-      break;
+    switch (command) {
+      case CommLinkInterface::Command::COMMAND_READ_PARAMS:
+        result = RF_.params_.read();
+        break;
+      case CommLinkInterface::Command::COMMAND_WRITE_PARAMS:
+        result = RF_.params_.write();
+        break;
+      case CommLinkInterface::Command::COMMAND_SET_PARAM_DEFAULTS:
+        RF_.params_.set_defaults();
+        break;
+      case CommLinkInterface::Command::COMMAND_ACCEL_CALIBRATION:
+        result = RF_.sensors_.start_imu_calibration();
+        break;
+      case CommLinkInterface::Command::COMMAND_GYRO_CALIBRATION:
+        result = RF_.sensors_.start_gyro_calibration();
+        break;
+      case CommLinkInterface::Command::COMMAND_BARO_CALIBRATION:
+        result = RF_.sensors_.start_baro_calibration();
+        break;
+      case CommLinkInterface::Command::COMMAND_AIRSPEED_CALIBRATION:
+        result = RF_.sensors_.start_diff_pressure_calibration();
+        break;
+      case CommLinkInterface::Command::COMMAND_RC_CALIBRATION:
+        RF_.controller_.calculate_equilbrium_torque_from_rc();
+        break;
+      case CommLinkInterface::Command::COMMAND_REBOOT:
+        reboot_flag = true;
+        break;
+      case CommLinkInterface::Command::COMMAND_REBOOT_TO_BOOTLOADER:
+        reboot_to_bootloader_flag = true;
+        break;
+      case CommLinkInterface::Command::COMMAND_SEND_VERSION:
+        comm_link_.send_version(sysid_, GIT_VERSION_STRING);
+        break;
     }
   }
 
   comm_link_.send_command_ack(sysid_, command, result);
 
-  if (reboot_flag || reboot_to_bootloader_flag)
-  {
+  if (reboot_flag || reboot_to_bootloader_flag) {
     RF_.board_.clock_delay(20);
     RF_.board_.board_reset(reboot_to_bootloader_flag);
   }
@@ -248,7 +231,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
     comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us) * 1000, ts1);
 }
 
-void CommManager::offboard_control_callback(const CommLinkInterface::OffboardControl& control)
+void CommManager::offboard_control_callback(const CommLinkInterface::OffboardControl & control)
 {
   // put values into a new command struct
   control_t new_offboard_command;
@@ -264,26 +247,25 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
   new_offboard_command.F.active = control.F.valid;
 
   // translate modes into standard message
-  switch (control.mode)
-  {
-  case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
-    new_offboard_command.x.type = PASSTHROUGH;
-    new_offboard_command.y.type = PASSTHROUGH;
-    new_offboard_command.z.type = PASSTHROUGH;
-    new_offboard_command.F.type = THROTTLE;
-    break;
-  case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-    new_offboard_command.x.type = RATE;
-    new_offboard_command.y.type = RATE;
-    new_offboard_command.z.type = RATE;
-    new_offboard_command.F.type = THROTTLE;
-    break;
-  case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
-    new_offboard_command.x.type = ANGLE;
-    new_offboard_command.y.type = ANGLE;
-    new_offboard_command.z.type = RATE;
-    new_offboard_command.F.type = THROTTLE;
-    break;
+  switch (control.mode) {
+    case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
+      new_offboard_command.x.type = PASSTHROUGH;
+      new_offboard_command.y.type = PASSTHROUGH;
+      new_offboard_command.z.type = PASSTHROUGH;
+      new_offboard_command.F.type = THROTTLE;
+      break;
+    case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
+      new_offboard_command.x.type = RATE;
+      new_offboard_command.y.type = RATE;
+      new_offboard_command.z.type = RATE;
+      new_offboard_command.F.type = THROTTLE;
+      break;
+    case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
+      new_offboard_command.x.type = ANGLE;
+      new_offboard_command.y.type = ANGLE;
+      new_offboard_command.z.type = RATE;
+      new_offboard_command.F.type = THROTTLE;
+      break;
   }
 
   // Tell the command_manager that we have a new command we need to mux
@@ -291,29 +273,27 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
   RF_.command_manager_.set_new_offboard_command(new_offboard_command);
 }
 
-void CommManager::aux_command_callback(const CommLinkInterface::AuxCommand& command)
+void CommManager::aux_command_callback(const CommLinkInterface::AuxCommand & command)
 {
   Mixer::aux_command_t new_aux_command;
 
-  for (int i = 0; i < 14; i++)
-  {
-    switch (command.cmd_array[i].type)
-    {
-    case CommLinkInterface::AuxCommand::Type::DISABLED:
-      // Channel is either not used or is controlled by the mixer
-      new_aux_command.channel[i].type = Mixer::NONE;
-      new_aux_command.channel[i].value = 0;
-      break;
-    case CommLinkInterface::AuxCommand::Type::SERVO:
-      // PWM value should be mapped to servo position
-      new_aux_command.channel[i].type = Mixer::S;
-      new_aux_command.channel[i].value = command.cmd_array[i].value;
-      break;
-    case CommLinkInterface::AuxCommand::Type::MOTOR:
-      // PWM value should be mapped to motor speed
-      new_aux_command.channel[i].type = Mixer::M;
-      new_aux_command.channel[i].value = command.cmd_array[i].value;
-      break;
+  for (int i = 0; i < 14; i++) {
+    switch (command.cmd_array[i].type) {
+      case CommLinkInterface::AuxCommand::Type::DISABLED:
+        // Channel is either not used or is controlled by the mixer
+        new_aux_command.channel[i].type = Mixer::NONE;
+        new_aux_command.channel[i].value = 0;
+        break;
+      case CommLinkInterface::AuxCommand::Type::SERVO:
+        // PWM value should be mapped to servo position
+        new_aux_command.channel[i].type = Mixer::S;
+        new_aux_command.channel[i].value = command.cmd_array[i].value;
+        break;
+      case CommLinkInterface::AuxCommand::Type::MOTOR:
+        // PWM value should be mapped to motor speed
+        new_aux_command.channel[i].type = Mixer::M;
+        new_aux_command.channel[i].value = command.cmd_array[i].value;
+        break;
     }
   }
 
@@ -321,7 +301,7 @@ void CommManager::aux_command_callback(const CommLinkInterface::AuxCommand& comm
   RF_.mixer_.set_new_aux_command(new_aux_command);
 }
 
-void CommManager::external_attitude_callback(const turbomath::Quaternion& q)
+void CommManager::external_attitude_callback(const turbomath::Quaternion & q)
 {
   RF_.estimator_.set_external_attitude_update(q);
 }
@@ -333,20 +313,16 @@ void CommManager::heartbeat_callback(void)
   connected_ = true;
 
   // send backup data if we have it buffered
-  if (have_backup_data_)
-  {
+  if (have_backup_data_) {
     comm_link_.send_error_data(sysid_, backup_data_buffer_);
     have_backup_data_ = false;
   }
 }
 
 // function definitions
-void CommManager::receive(void)
-{
-  comm_link_.receive();
-}
+void CommManager::receive(void) { comm_link_.receive(); }
 
-void CommManager::log(CommLinkInterface::LogSeverity severity, const char* fmt, ...)
+void CommManager::log(CommLinkInterface::LogSeverity severity, const char * fmt, ...)
 {
   // Convert the format string to a raw char array
   va_list args;
@@ -355,12 +331,9 @@ void CommManager::log(CommLinkInterface::LogSeverity severity, const char* fmt, 
   vsnprintf(text, LOG_MSG_SIZE, fmt, args);
   va_end(args);
 
-  if (initialized_ && connected_)
-  {
+  if (initialized_ && connected_) {
     comm_link_.send_log_message(sysid_, severity, text);
-  }
-  else
-  {
+  } else {
     log_buffer_.add_message(severity, text);
   }
 }
@@ -372,26 +345,26 @@ void CommManager::send_heartbeat(void)
 
 void CommManager::send_status(void)
 {
-  if (!initialized_)
-    return;
+  if (!initialized_) return;
 
   uint8_t control_mode = 0;
-  if (RF_.params_.get_param_int(PARAM_FIXED_WING))
-    control_mode = MODE_PASS_THROUGH;
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) control_mode = MODE_PASS_THROUGH;
   else if (RF_.command_manager_.combined_control().x.type == ANGLE)
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
   else
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
 
-  comm_link_.send_status(sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
-                         RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
-                         RF_.state_manager_.state().error_codes, control_mode, RF_.board_.num_sensor_errors(),
-                         RF_.get_loop_time_us());
+  comm_link_.send_status(
+    sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
+    RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
+    RF_.state_manager_.state().error_codes, control_mode, RF_.board_.num_sensor_errors(),
+    RF_.get_loop_time_us());
 }
 
 void CommManager::send_attitude(void)
 {
-  comm_link_.send_attitude_quaternion(sysid_, RF_.estimator_.state().timestamp_us, RF_.estimator_.state().attitude,
+  comm_link_.send_attitude_quaternion(sysid_, RF_.estimator_.state().timestamp_us,
+                                      RF_.estimator_.state().attitude,
                                       RF_.estimator_.state().angular_velocity);
 }
 
@@ -424,26 +397,24 @@ void CommManager::send_rc_raw(void)
 
 void CommManager::send_diff_pressure(void)
 {
-  if (RF_.sensors_.data().diff_pressure_valid)
-  {
-    comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_velocity, RF_.sensors_.data().diff_pressure,
+  if (RF_.sensors_.data().diff_pressure_valid) {
+    comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_velocity,
+                                  RF_.sensors_.data().diff_pressure,
                                   RF_.sensors_.data().diff_pressure_temp);
   }
 }
 
 void CommManager::send_baro(void)
 {
-  if (RF_.sensors_.data().baro_valid)
-  {
-    comm_link_.send_baro(sysid_, RF_.sensors_.data().baro_altitude, RF_.sensors_.data().baro_pressure,
-                         RF_.sensors_.data().baro_temperature);
+  if (RF_.sensors_.data().baro_valid) {
+    comm_link_.send_baro(sysid_, RF_.sensors_.data().baro_altitude,
+                         RF_.sensors_.data().baro_pressure, RF_.sensors_.data().baro_temperature);
   }
 }
 
 void CommManager::send_sonar(void)
 {
-  if (RF_.sensors_.data().sonar_range_valid)
-  {
+  if (RF_.sensors_.data().sonar_range_valid) {
     comm_link_.send_sonar(sysid_,
                           0, // TODO set sensor type (sonar/lidar), use enum
                           RF_.sensors_.data().sonar_range, 8.0, 0.25);
@@ -452,23 +423,20 @@ void CommManager::send_sonar(void)
 
 void CommManager::send_mag(void)
 {
-  if (RF_.sensors_.data().mag_present)
-    comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
+  if (RF_.sensors_.data().mag_present) comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
 void CommManager::send_battery_status(void)
 {
   if (RF_.sensors_.data().battery_monitor_present)
-    comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage, RF_.sensors_.data().battery_current);
+    comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
+                                   RF_.sensors_.data().battery_current);
 }
 
-void CommManager::send_backup_data(const StateManager::BackupData& backup_data)
+void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
 {
-  if (connected_)
-  {
+  if (connected_) {
     comm_link_.send_error_data(sysid_, backup_data);
-  }
-  else
-  {
+  } else {
     backup_data_buffer_ = backup_data;
     have_backup_data_ = true;
   }
@@ -476,12 +444,10 @@ void CommManager::send_backup_data(const StateManager::BackupData& backup_data)
 
 void CommManager::send_gnss(void)
 {
-  const GNSSData& gnss_data = RF_.sensors_.data().gnss_data;
+  const GNSSData & gnss_data = RF_.sensors_.data().gnss_data;
 
-  if (RF_.sensors_.data().gnss_present)
-  {
-    if (gnss_data.time_of_week != last_sent_gnss_tow_)
-    {
+  if (RF_.sensors_.data().gnss_present) {
+    if (gnss_data.time_of_week != last_sent_gnss_tow_) {
       comm_link_.send_gnss(sysid_, gnss_data);
       last_sent_gnss_tow_ = gnss_data.time_of_week;
     }
@@ -490,12 +456,10 @@ void CommManager::send_gnss(void)
 
 void CommManager::send_gnss_full()
 {
-  const GNSSFull& gnss_full = RF_.sensors_.data().gnss_full;
+  const GNSSFull & gnss_full = RF_.sensors_.data().gnss_full;
 
-  if (RF_.sensors_.data().gnss_present)
-  {
-    if (gnss_full.time_of_week != last_sent_gnss_full_tow_)
-    {
+  if (RF_.sensors_.data().gnss_present) {
+    if (gnss_full.time_of_week != last_sent_gnss_full_tow_) {
       comm_link_.send_gnss_full(sysid_, RF_.sensors_.data().gnss_full);
       last_sent_gnss_full_tow_ = gnss_full.time_of_week;
     }
@@ -507,9 +471,8 @@ void CommManager::send_low_priority(void)
   send_next_param();
 
   // send buffered log messages
-  if (connected_ && !log_buffer_.empty())
-  {
-    const LogMessageBuffer::LogMessage& msg = log_buffer_.oldest();
+  if (connected_ && !log_buffer_.empty()) {
+    const LogMessageBuffer::LogMessage & msg = log_buffer_.oldest();
     comm_link_.send_log_message(sysid_, msg.severity, msg.msg);
     log_buffer_.pop();
   }
@@ -527,33 +490,24 @@ void CommManager::stream(got_flags got)
     send_imu();
     send_attitude();
     static uint64_t ro_count = 0;
-    if (!((ro_count++) % 8))
-      send_output_raw(); // Raw output at 400Hz/8 = 50Hz
+    if (!((ro_count++) % 8)) send_output_raw(); // Raw output at 400Hz/8 = 50Hz
   }
 
   // Pitot sensor
-  if (got.diff_pressure)
-    send_diff_pressure();
+  if (got.diff_pressure) send_diff_pressure();
   // Baro altitude
-  if (got.baro)
-    send_baro();
+  if (got.baro) send_baro();
   // Magnetometer
-  if (got.mag)
-    send_mag();
+  if (got.mag) send_mag();
   // Height above ground sensor (not enabled)
-  if (got.sonar)
-    send_sonar();
+  if (got.sonar) send_sonar();
   // Battery V & I
-  if (got.battery)
-    send_battery_status();
+  if (got.battery) send_battery_status();
   // GPS data (GNSS Packed)
-  if (got.gnss)
-    send_gnss();
+  if (got.gnss) send_gnss();
   // GPS full data (not needed)
-  if (got.gnss_full)
-    send_gnss_full();
-  if (got.rc)
-    send_rc_raw();
+  if (got.gnss_full) send_gnss_full();
+  if (got.rc) send_rc_raw();
 
   {
     static uint64_t next_heartbeat = 0, next_status = 0;
@@ -573,39 +527,35 @@ void CommManager::stream(got_flags got)
   send_low_priority(); // parameter values and logging messages
 }
 
-void CommManager::send_named_value_int(const char* const name, int32_t value)
+void CommManager::send_named_value_int(const char * const name, int32_t value)
 {
   comm_link_.send_named_value_int(sysid_, RF_.board_.clock_millis(), name, value);
 }
 
-void CommManager::send_named_value_float(const char* const name, float value)
+void CommManager::send_named_value_float(const char * const name, float value)
 {
   comm_link_.send_named_value_float(sysid_, RF_.board_.clock_millis(), name, value);
 }
 
 void CommManager::send_next_param(void)
 {
-  if (send_params_index_ < PARAMS_COUNT)
-  {
+  if (send_params_index_ < PARAMS_COUNT) {
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
   }
 }
 
-CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :
-  period_us_(period_us),
-  next_time_us_(0),
-  send_function_(send_function)
-{
-}
+CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function)
+    : period_us_(period_us)
+    , next_time_us_(0)
+    , send_function_(send_function)
+{}
 
 void CommManager::Stream::stream(uint64_t now_us)
 {
-  if (period_us_ > 0 && now_us >= next_time_us_)
-  {
+  if (period_us_ > 0 && now_us >= next_time_us_) {
     // if you fall behind, skip messages
-    do
-    {
+    do {
       next_time_us_ += period_us_;
     } while (next_time_us_ < now_us);
 

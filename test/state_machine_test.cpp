@@ -14,22 +14,23 @@ public:
   Mavlink mavlink;
   ROSflight rf;
 
-  StateMachineTest() : mavlink(board), rf(board, mavlink) {}
+  StateMachineTest()
+      : mavlink(board)
+      , rf(board, mavlink)
+  {}
 
   void SetUp() override
   {
     board.backup_memory_clear();
     rf.init();
-    rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
+    rf.state_manager_.clear_error(
+      rf.state_manager_.state().error_codes); // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_MIXER, 10);
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
     rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0f);
 
     uint16_t rc_values[8];
-    for (int i = 0; i < 8; i++)
-    {
-      rc_values[i] = 1500;
-    }
+    for (int i = 0; i < 8; i++) { rc_values[i] = 1500; }
     rc_values[2] = 1000;
     board.set_rc(rc_values);
 
@@ -41,8 +42,7 @@ public:
     uint64_t start_time_us = board.clock_micros();
     float dummy_acc[3] = {0, 0, -9.80665};
     float dummy_gyro[3] = {0, 0, 0};
-    while (board.clock_micros() < start_time_us + us)
-    {
+    while (board.clock_micros() < start_time_us + us) {
       board.set_imu(dummy_acc, dummy_gyro, board.clock_micros() + 1000);
       rf.run();
     }
@@ -61,8 +61,7 @@ TEST_F(StateMachineTest, Init)
 TEST_F(StateMachineTest, SetAndClearAllErrors)
 {
   // Try setting and clearing all the errors
-  for (int error = 0x0001; error <= StateManager::ERROR_INVALID_FAILSAFE; error *= 2)
-  {
+  for (int error = 0x0001; error <= StateManager::ERROR_INVALID_FAILSAFE; error *= 2) {
     // set the error
     rf.state_manager_.set_error(error);
     EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -82,7 +81,7 @@ TEST_F(StateMachineTest, SetAndClearAllErrors)
 TEST_F(StateMachineTest, SetAndClearComboErrors)
 {
   uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
-                   | StateManager::ERROR_UNCALIBRATED_IMU;
+    | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
@@ -93,7 +92,7 @@ TEST_F(StateMachineTest, SetAndClearComboErrors)
 TEST_F(StateMachineTest, AddErrorAfterPreviousError)
 {
   uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
-                   | StateManager::ERROR_UNCALIBRATED_IMU;
+    | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -105,7 +104,7 @@ TEST_F(StateMachineTest, AddErrorAfterPreviousError)
 TEST_F(StateMachineTest, ClearOneErrorOutOfMany)
 {
   uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
-                   | StateManager::ERROR_UNCALIBRATED_IMU;
+    | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.clear_error(StateManager::ERROR_UNCALIBRATED_IMU);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -118,9 +117,10 @@ TEST_F(StateMachineTest, ClearOneErrorOutOfMany)
 TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
 {
   uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
-                   | StateManager::ERROR_UNCALIBRATED_IMU;
+    | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
-  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS);
+  rf.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING
+                                | StateManager::ERROR_TIME_GOING_BACKWARDS);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   EXPECT_EQ(rf.state_manager_.state().failsafe, false);
   EXPECT_EQ(rf.state_manager_.state().error_codes, StateManager::ERROR_UNCALIBRATED_IMU);
@@ -130,7 +130,7 @@ TEST_F(StateMachineTest, ClearMultipleErrorsAtOnce)
 TEST_F(StateMachineTest, ClearAllErrors)
 {
   uint32_t error = StateManager::ERROR_IMU_NOT_RESPONDING | StateManager::ERROR_TIME_GOING_BACKWARDS
-                   | StateManager::ERROR_UNCALIBRATED_IMU;
+    | StateManager::ERROR_UNCALIBRATED_IMU;
   rf.state_manager_.set_error(error);
   rf.state_manager_.clear_error(error);
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -289,10 +289,7 @@ TEST_F(StateMachineTest, UnableToArmWithPersistentErrors)
 TEST_F(StateMachineTest, ArmIfThrottleLow)
 {
   uint16_t rc_values[8];
-  for (int i = 0; i < 8; i++)
-  {
-    rc_values[i] = (i > 3) ? 1000 : 1500;
-  }
+  for (int i = 0; i < 8; i++) { rc_values[i] = (i > 3) ? 1000 : 1500; }
   rc_values[2] = 1000;
   board.set_rc(rc_values);
   step_firmware(rf, board, 100);
@@ -304,10 +301,7 @@ TEST_F(StateMachineTest, ArmIfThrottleHighWithMinThrottle)
 {
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, true);
   uint16_t rc_values[8];
-  for (int i = 0; i < 8; i++)
-  {
-    rc_values[i] = (i > 3) ? 1000 : 1500;
-  }
+  for (int i = 0; i < 8; i++) { rc_values[i] = (i > 3) ? 1000 : 1500; }
   rc_values[2] = 1500;
   board.set_rc(rc_values);
   step_firmware(rf, board, 100000);
@@ -321,10 +315,7 @@ TEST_F(StateMachineTest, DontArmIfThrottleHighWithoutMinThrottle)
 {
   rf.params_.set_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, false);
   uint16_t rc_values[8];
-  for (int i = 0; i < 8; i++)
-  {
-    rc_values[i] = (i > 3) ? 1000 : 1500;
-  }
+  for (int i = 0; i < 8; i++) { rc_values[i] = (i > 3) ? 1000 : 1500; }
   rc_values[2] = 1500;
   board.set_rc(rc_values);
   step_firmware(rf, board, 100000);

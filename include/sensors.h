@@ -174,10 +174,10 @@ public:
     float battery_current = 0;
   };
 
-  Sensors(ROSflight &rosflight);
+  Sensors(ROSflight & rosflight);
 
-  inline const Data &data() const { return data_; }
-  void get_filtered_IMU(turbomath::Vector &accel, turbomath::Vector &gyro, uint64_t &stamp_us);
+  inline const Data & data() const { return data_; }
+  void get_filtered_IMU(turbomath::Vector & accel, turbomath::Vector & gyro, uint64_t & stamp_us);
 
   // function declarations
   void init();
@@ -193,8 +193,7 @@ public:
 
   inline bool should_send_imu_data(void)
   {
-    if (imu_data_sent_)
-      return false;
+    if (imu_data_sent_) return false;
     else
       imu_data_sent_ = true;
     return true;
@@ -226,7 +225,7 @@ private:
   public:
     OutlierFilter() {}
     void init(float max_change_rate, float update_rate, float center);
-    bool update(float new_val, float *val);
+    bool update(float new_val, float * val);
   };
 
   enum : uint8_t
@@ -240,7 +239,7 @@ private:
     NUM_LOW_PRIORITY_SENSORS
   };
 
-  ROSflight &rf_;
+  ROSflight & rf_;
 
   Data data_;
 

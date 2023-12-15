@@ -239,17 +239,17 @@ private:
   } params_t;
 
   params_t params;
-  ROSflight &RF_;
+  ROSflight & RF_;
 
   void init_param_int(uint16_t id, const char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(uint16_t id, const char name[PARAMS_NAME_LENGTH], float value);
   uint8_t compute_checksum(void);
 
-  ParamListenerInterface *const *listeners_;
+  ParamListenerInterface * const * listeners_;
   size_t num_listeners_;
 
 public:
-  Params(ROSflight &_rf);
+  Params(ROSflight & _rf);
 
   // function declarations
 
@@ -269,7 +269,7 @@ public:
    * interface
    * @param num_listeners The length of the array passed as the listeners parameter
    */
-  void set_listeners(ParamListenerInterface *const listeners[], size_t num_listeners);
+  void set_listeners(ParamListenerInterface * const listeners[], size_t num_listeners);
 
   /**
    * @brief Read parameter values from non-volatile memory
@@ -315,7 +315,7 @@ public:
    * @param id The ID of the parameter
    * @return The name of the parameter
    */
-  inline const char *get_param_name(uint16_t id) const { return params.names[id]; }
+  inline const char * get_param_name(uint16_t id) const { return params.names[id]; }
 
   /**
    * @brief Get the type of a parameter

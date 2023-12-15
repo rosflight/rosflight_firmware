@@ -80,8 +80,8 @@ private:
 
   uint8_t sysid_;
   uint64_t offboard_control_time_;
-  ROSflight& RF_;
-  CommLinkInterface& comm_link_;
+  ROSflight & RF_;
+  CommLinkInterface & comm_link_;
   uint8_t send_params_index_;
   bool initialized_ = false;
   bool connected_ = false;
@@ -102,7 +102,7 @@ private:
     size_t size() const { return length_; }
     bool empty() const { return length_ == 0; }
     bool full() const { return length_ == LOG_BUF_SIZE; }
-    const LogMessage& oldest() const { return buffer_[oldest_]; }
+    const LogMessage & oldest() const { return buffer_[oldest_]; }
     void pop();
 
   private:
@@ -132,14 +132,17 @@ private:
   void update_system_id(uint16_t param_id);
 
   void param_request_list_callback(uint8_t target_system) override;
-  void param_request_read_callback(uint8_t target_system, const char* const param_name, int16_t param_index) override;
-  void param_set_int_callback(uint8_t target_system, const char* const param_name, int32_t param_value) override;
-  void param_set_float_callback(uint8_t target_system, const char* const param_name, float param_value) override;
+  void param_request_read_callback(uint8_t target_system, const char * const param_name,
+                                   int16_t param_index) override;
+  void param_set_int_callback(uint8_t target_system, const char * const param_name,
+                              int32_t param_value) override;
+  void param_set_float_callback(uint8_t target_system, const char * const param_name,
+                                float param_value) override;
   void command_callback(CommLinkInterface::Command command) override;
   void timesync_callback(int64_t tc1, int64_t ts1) override;
-  void offboard_control_callback(const CommLinkInterface::OffboardControl& control) override;
-  void aux_command_callback(const CommLinkInterface::AuxCommand& command) override;
-  void external_attitude_callback(const turbomath::Quaternion& q) override;
+  void offboard_control_callback(const CommLinkInterface::OffboardControl & control) override;
+  void aux_command_callback(const CommLinkInterface::AuxCommand & command) override;
+  void external_attitude_callback(const turbomath::Quaternion & q) override;
   void heartbeat_callback() override;
 
   void send_heartbeat(void);
@@ -158,7 +161,7 @@ private:
   void send_low_priority(void);
 
   // Debugging Utils
-  void send_named_value_int(const char* const name, int32_t value);
+  void send_named_value_int(const char * const name, int32_t value);
   //    void send_named_command_struct(const char *const name, control_t command_struct);
 
   void send_next_param(void);
@@ -168,7 +171,7 @@ private:
   uint32_t last_sent_gnss_full_tow_ = 0;
 
 public:
-  CommManager(ROSflight& rf, CommLinkInterface& comm_link);
+  CommManager(ROSflight & rf, CommLinkInterface & comm_link);
 
   void init();
   void param_change_callback(uint16_t param_id) override;
@@ -176,12 +179,12 @@ public:
   void stream(got_flags got);
   void send_param_value(uint16_t param_id);
   void update_status();
-  void log(CommLinkInterface::LogSeverity severity, const char* fmt, ...);
+  void log(CommLinkInterface::LogSeverity severity, const char * fmt, ...);
 
   void send_parameter_list();
-  void send_named_value_float(const char* const name, float value);
+  void send_named_value_float(const char * const name, float value);
 
-  void send_backup_data(const StateManager::BackupData& backup_data);
+  void send_backup_data(const StateManager::BackupData & backup_data);
 };
 
 } // namespace rosflight_firmware

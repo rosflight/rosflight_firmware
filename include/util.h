@@ -49,20 +49,20 @@ namespace rosflight_firmware
  * non-contiguous data
  * @return uint16_t Fletcher 16-bit checksum
  */
-inline uint16_t checksum_fletcher16(const uint8_t *src, size_t len, bool finalize = true, uint16_t start = 0)
+inline uint16_t checksum_fletcher16(const uint8_t * src, size_t len, bool finalize = true,
+                                    uint16_t start = 0)
 {
-  static constexpr size_t max_block_length = 5800; // guarantee that no overflow will occur (reduce from standard value
-                                                   // to account for values in 'start')
+  static constexpr size_t max_block_length =
+    5800; // guarantee that no overflow will occur (reduce from standard value
+          // to account for values in 'start')
 
   uint32_t c1 = (start & 0xFF00) >> 8;
   uint32_t c2 = start & 0x00FF;
 
   size_t block_length;
-  for (; len > 0; len -= block_length)
-  {
+  for (; len > 0; len -= block_length) {
     block_length = len < max_block_length ? len : max_block_length;
-    for (size_t i = 0; i < block_length; i++)
-    {
+    for (size_t i = 0; i < block_length; i++) {
       c1 += *(src++);
       c2 += c1;
     }
@@ -73,8 +73,7 @@ inline uint16_t checksum_fletcher16(const uint8_t *src, size_t len, bool finaliz
 
   uint16_t checksum = c1 << 8 | c2;
 
-  if (finalize && checksum == 0)
-    checksum = 0xFFFF;
+  if (finalize && checksum == 0) checksum = 0xFFFF;
 
   return checksum;
 }

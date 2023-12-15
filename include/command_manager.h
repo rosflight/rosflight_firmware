@@ -72,9 +72,9 @@ class CommandManager : public ParamListenerInterface
 private:
   typedef struct
   {
-    control_channel_t *rc;
-    control_channel_t *onboard;
-    control_channel_t *combined;
+    control_channel_t * rc;
+    control_channel_t * onboard;
+    control_channel_t * combined;
   } mux_t;
 
   mux_t muxes[4] = {{&rc_command_.x, &offboard_command_.x, &combined_command_.x},
@@ -131,14 +131,16 @@ private:
     uint32_t last_override_time;
   } rc_stick_override_t;
 
-  rc_stick_override_t rc_stick_override_[3] = {{RC::STICK_X, 0}, {RC::STICK_Y, 0}, {RC::STICK_Z, 0}};
+  rc_stick_override_t rc_stick_override_[3] = {{RC::STICK_X, 0},
+                                               {RC::STICK_Y, 0},
+                                               {RC::STICK_Z, 0}};
 
-  ROSflight &RF_;
+  ROSflight & RF_;
 
   bool new_command_;
   bool rc_override_;
 
-  control_t &failsafe_command_;
+  control_t & failsafe_command_;
 
   void param_change_callback(uint16_t param_id) override;
   void init_failsafe();
@@ -151,7 +153,7 @@ private:
   bool stick_deviated(MuxChannel channel);
 
 public:
-  CommandManager(ROSflight &_rf);
+  CommandManager(ROSflight & _rf);
   void init();
   bool run();
   bool rc_override_active();
@@ -159,8 +161,8 @@ public:
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
   void override_combined_command_with_rc();
-  inline const control_t &combined_control() const { return combined_command_; }
-  inline const control_t &rc_control() const { return rc_command_; }
+  inline const control_t & combined_control() const { return combined_command_; }
+  inline const control_t & rc_control() const { return rc_command_; }
 };
 
 } // namespace rosflight_firmware
