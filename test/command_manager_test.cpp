@@ -151,7 +151,7 @@ TEST_F(CommandManagerTest, ArmWithSwitch)
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
   rc_values[2] = 1000;     // throttle low
   rc_values[4] = CHN_HIGH; // switch on
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);     // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }
 
@@ -160,7 +160,7 @@ TEST_F(CommandManagerTest, DisarmWithStick)
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
   rf.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
   rc_values[4] = CHN_LOW; // throttle low
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);    // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
@@ -185,7 +185,7 @@ TEST_F(CommandManagerTest, ArmStickReversed)
   rf.params_.set_param_int(PARAM_RC_ARM_CHANNEL, 4);
   rc_values[2] = 1000;    // throttle low
   rc_values[4] = CHN_LOW; // switch on
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);    // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, true);
 }
 
@@ -198,7 +198,7 @@ TEST_F(CommandManagerTest, DisarmStickReversed)
 
   rc_values[2] = 1000;     // throttle low
   rc_values[4] = CHN_HIGH; // switch on
-  stepFirmware(50000); // Immediate
+  stepFirmware(50000);     // Immediate
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 

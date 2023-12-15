@@ -163,7 +163,8 @@ bool testBoard::mag_has_new_data()
 {
   return false;
 }
-bool testBoard::mag_read(float mag[3]) {
+bool testBoard::mag_read(float mag[3])
+{
   return false;
 }
 
@@ -175,7 +176,7 @@ bool testBoard::baro_has_new_data()
 {
   return false;
 }
-bool testBoard::baro_read(float *pressure, float *temperature) 
+bool testBoard::baro_read(float *pressure, float *temperature)
 {
   return false;
 }
@@ -184,11 +185,11 @@ bool testBoard::diff_pressure_present()
 {
   return false;
 }
-bool testBoard::diff_pressure_has_new_data() 
+bool testBoard::diff_pressure_has_new_data()
 {
   return false;
 }
-bool testBoard::diff_pressure_read(float *diff_pressure, float *temperature) 
+bool testBoard::diff_pressure_read(float *diff_pressure, float *temperature)
 {
   return false;
 }
@@ -197,7 +198,7 @@ bool testBoard::sonar_present()
 {
   return false;
 }
-bool testBoard::sonar_has_new_data() 
+bool testBoard::sonar_has_new_data()
 {
   return false;
 }
@@ -214,7 +215,7 @@ bool testBoard::gnss_has_new_data()
 {
   return false;
 }
-bool testBoard::gnss_read(GNSSData *gnss, GNSSFull *gnss_full) 
+bool testBoard::gnss_read(GNSSData *gnss, GNSSFull *gnss_full)
 {
   return false;
 }

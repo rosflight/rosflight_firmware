@@ -593,7 +593,9 @@ void CommManager::send_next_param(void)
 }
 
 CommManager::Stream::Stream(uint32_t period_us, std::function<void(void)> send_function) :
-  period_us_(period_us), next_time_us_(0), send_function_(send_function)
+  period_us_(period_us),
+  next_time_us_(0),
+  send_function_(send_function)
 {
 }
 

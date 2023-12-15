@@ -43,7 +43,6 @@
 
 namespace rosflight_firmware
 {
-
 typedef struct
 {
   bool imu;
