@@ -369,9 +369,9 @@ uint16_t Varmint::num_sensor_errors()
 }
 
 // IMU
-uint8_t Varmint::imu_has_new_data()
+bool Varmint::imu_has_new_data()
 {
-  return imu0_.rxFifoCount();
+  return imu0_.rxFifoCount() > 0;
 }
 bool Varmint::imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us)
 {
@@ -398,11 +398,11 @@ void Varmint::imu_not_responding_error()
 // MAG
 bool Varmint::mag_present()
 {
-  return 1;
+  return true;
 }
-uint8_t Varmint::mag_has_new_data()
+bool Varmint::mag_has_new_data()
 {
-  return mag_.rxFifoCount();
+  return mag_.rxFifoCount() > 0;
 }
 
 bool Varmint::mag_read(float mag[3])
@@ -421,11 +421,11 @@ bool Varmint::mag_read(float mag[3])
 // Baro
 bool Varmint::baro_present()
 {
-  return 1;
+  return true;
 }
-uint8_t Varmint::baro_has_new_data()
+bool Varmint::baro_has_new_data()
 {
-  return baro_.rxFifoCount();
+  return baro_.rxFifoCount() > 0;
 }
 bool Varmint::baro_read(float *pressure, float *temperature)
 {
@@ -442,11 +442,11 @@ bool Varmint::baro_read(float *pressure, float *temperature)
 // Pitot
 bool Varmint::diff_pressure_present()
 {
-  return 1;
+  return true;
 }
-uint8_t Varmint::diff_pressure_has_new_data()
+bool Varmint::diff_pressure_has_new_data()
 {
-  return pitot_.rxFifoCount();
+  return pitot_.rxFifoCount() > 0;
 }
 
 bool Varmint::diff_pressure_read(float *diff_pressure, float *temperature)
@@ -464,11 +464,11 @@ bool Varmint::diff_pressure_read(float *diff_pressure, float *temperature)
 // Sonar
 bool Varmint::sonar_present()
 {
-  return 0;
+  return false;
 }
-uint8_t Varmint::sonar_has_new_data()
+bool Varmint::sonar_has_new_data()
 {
-  return 0;
+  return false;
 }
 bool Varmint::sonar_read(float *range)
 {
@@ -478,11 +478,11 @@ bool Varmint::sonar_read(float *range)
 // Battery
 bool Varmint::battery_present()
 {
-  return 1;
+  return true;
 }
-uint8_t Varmint::battery_has_new_data()
+bool Varmint::battery_has_new_data()
 {
-  return adc_.rxFifoCount();
+  return adc_.rxFifoCount() > 0;
 }
 bool Varmint::battery_read(float *voltage, float *current)
 {
@@ -511,11 +511,11 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 // GNSS
 bool Varmint::gnss_present()
 {
-  return 1;
+  return true;
 }
-uint8_t Varmint::gnss_has_new_data()
+bool Varmint::gnss_has_new_data()
 {
-  return gps_.rxFifoCount();
+  return gps_.rxFifoCount() > 0;
 }
 
 bool Varmint::gnss_read(rosflight_firmware::GNSSData *gnss, rosflight_firmware::GNSSFull *gnss_full)
@@ -602,9 +602,9 @@ bool Varmint::rc_lost()
   return rc_.lol();
 }
 
-uint8_t Varmint::rc_has_new_data()
+bool Varmint::rc_has_new_data()
 {
-  return rc_.rxFifoCount();
+  return rc_.rxFifoCount() > 0;
 }
 
 float Varmint::rc_read(uint8_t chan)
@@ -680,7 +680,7 @@ bool Varmint::backup_memory_read(void *dest, size_t len)
   //	HAL_PWR_EnableBkUpAccess();
   //	memcpy(dest, (void*)D3_BKPSRAM_BASE, len);
   //	HAL_PWR_DisableBkUpAccess();
-  return 1;
+  return true;
 }
 void Varmint::backup_memory_write(const void *src, size_t len)
 {

@@ -115,28 +115,28 @@ public:
   void sensors_init() override;
   uint16_t num_sensor_errors() override;
 
-  uint8_t imu_has_new_data() override;
+  bool imu_has_new_data() override;
   bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
-  uint8_t mag_has_new_data() override;
+  bool mag_has_new_data() override;
   bool mag_read(float mag[3]) override;
 
   bool baro_present() override;
-  uint8_t baro_has_new_data() override;
+  bool baro_has_new_data() override;
   bool baro_read(float *pressure, float *temperature) override;
 
   bool diff_pressure_present() override;
-  uint8_t diff_pressure_has_new_data() override;
+  bool diff_pressure_has_new_data() override;
   bool diff_pressure_read(float *diff_pressure, float *temperature) override;
 
   bool sonar_present() override;
-  uint8_t sonar_has_new_data() override;
+  bool sonar_has_new_data() override;
   bool sonar_read(float *range) override;
 
   // Battery
-  uint8_t battery_has_new_data() override;
+  bool battery_has_new_data() override;
   bool battery_read(float *voltage, float *current) override;
   bool battery_present() override;
   void battery_voltage_set_multiplier(double multiplier) override;
@@ -144,12 +144,12 @@ public:
 
   // GNSS
   bool gnss_present() override;
-  uint8_t gnss_has_new_data() override;
+  bool gnss_has_new_data() override;
   bool gnss_read(rosflight_firmware::GNSSData *gnss, rosflight_firmware::GNSSFull *gnss_full) override;
 
   // RC
   void rc_init(rc_type_t rc_type) override;
-  uint8_t rc_has_new_data() override;
+  bool rc_has_new_data() override;
   bool rc_lost() override;
   //		float rc_read(uint8_t channel) override;
   float rc_read(uint8_t chan) override;
