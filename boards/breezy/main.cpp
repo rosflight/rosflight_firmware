@@ -43,9 +43,6 @@ int main()
 
   firmware.init();
 
-  while (true)
-  {
-    firmware.run();
-  }
+  while (true) { firmware.run(); }
   return 0;
 }

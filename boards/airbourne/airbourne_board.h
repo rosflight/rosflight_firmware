@@ -70,7 +70,7 @@ private:
   VCP vcp_;
   UART uart1_;
   UART uart3_;
-  Serial *current_serial_; // A pointer to the serial stream currently in use.
+  Serial * current_serial_; // A pointer to the serial stream currently in use.
   I2C int_i2c_;
   I2C ext_i2c_;
   SPI spi1_;
@@ -98,7 +98,7 @@ private:
   };
   SerialDevice secondary_serial_device_ = SERIAL_DEVICE_VCP;
 
-  RC_BASE *rc_ = nullptr;
+  RC_BASE * rc_ = nullptr;
 
   std::function<void()> imu_callback_;
 
@@ -132,7 +132,7 @@ public:
 
   // serial
   void serial_init(uint32_t baud_rate, uint32_t dev) override;
-  void serial_write(const uint8_t *src, size_t len) override;
+  void serial_write(const uint8_t * src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
@@ -142,7 +142,7 @@ public:
   uint16_t num_sensor_errors() override;
 
   bool new_imu_data() override;
-  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us) override;
+  bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time_us) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
@@ -151,11 +151,11 @@ public:
 
   bool baro_present() override;
   void baro_update() override;
-  void baro_read(float *pressure, float *temperature) override;
+  void baro_read(float * pressure, float * temperature) override;
 
   bool diff_pressure_present() override;
   void diff_pressure_update() override;
-  void diff_pressure_read(float *diff_pressure, float *temperature) override;
+  void diff_pressure_read(float * diff_pressure, float * temperature) override;
 
   bool sonar_present() override;
   void sonar_update() override;
@@ -188,8 +188,8 @@ public:
 
   // non-volatile memory
   void memory_init() override;
-  bool memory_read(void *dest, size_t len) override;
-  bool memory_write(const void *src, size_t len) override;
+  bool memory_read(void * dest, size_t len) override;
+  bool memory_write(const void * src, size_t len) override;
 
   // LEDs
   void led0_on() override;
@@ -202,8 +202,8 @@ public:
 
   // Backup Data
   void backup_memory_init() override;
-  bool backup_memory_read(void *dest, size_t len) override;
-  void backup_memory_write(const void *src, size_t len) override;
+  bool backup_memory_read(void * dest, size_t len) override;
+  void backup_memory_write(const void * src, size_t len) override;
   void backup_memory_clear(size_t len) override;
 };
 

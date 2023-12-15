@@ -36,8 +36,7 @@
 #include <cstddef>
 #include <cstdint>
 
-extern "C"
-{
+extern "C" {
 #include <breezystm32.h>
 }
 
@@ -49,7 +48,7 @@ namespace rosflight_firmware
 class BreezyBoard : public Board
 {
 private:
-  serialPort_t *Serial1;
+  serialPort_t * Serial1;
 
   int _board_revision = 2;
 
@@ -92,7 +91,7 @@ public:
 
   // serial
   void serial_init(uint32_t baud_rate, uint32_t dev) override;
-  void serial_write(const uint8_t *src, size_t len) override;
+  void serial_write(const uint8_t * src, size_t len) override;
   uint16_t serial_bytes_available() override;
   uint8_t serial_read() override;
   void serial_flush() override;
@@ -102,7 +101,7 @@ public:
   uint16_t num_sensor_errors() override;
 
   bool new_imu_data() override;
-  bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time_us) override;
+  bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time_us) override;
   void imu_not_responding_error() override;
 
   bool mag_present() override;
@@ -111,11 +110,11 @@ public:
 
   bool baro_present() override;
   void baro_update() override;
-  void baro_read(float *pressure, float *temperature) override;
+  void baro_read(float * pressure, float * temperature) override;
 
   bool diff_pressure_present() override;
   void diff_pressure_update() override;
-  void diff_pressure_read(float *diff_pressure, float *temperature) override;
+  void diff_pressure_read(float * diff_pressure, float * temperature) override;
 
   bool sonar_present() override;
   void sonar_update() override;
@@ -148,8 +147,8 @@ public:
 
   // non-volatile memory
   void memory_init() override;
-  bool memory_read(void *dest, size_t len) override;
-  bool memory_write(const void *src, size_t len) override;
+  bool memory_read(void * dest, size_t len) override;
+  bool memory_write(const void * src, size_t len) override;
 
   // LEDs
   void led0_on() override;
@@ -162,18 +161,18 @@ public:
 
   // Backup Data
   void backup_memory_init() override {}
-  bool backup_memory_read(void *dest, size_t len) override
+  bool backup_memory_read(void * dest, size_t len) override
   {
-    (void)dest;
-    (void)len;
+    (void) dest;
+    (void) len;
     return false;
   }
-  void backup_memory_write(const void *src, size_t len) override
+  void backup_memory_write(const void * src, size_t len) override
   {
-    (void)src;
-    (void)len;
+    (void) src;
+    (void) len;
   }
-  void backup_memory_clear(size_t len) override { (void)len; }
+  void backup_memory_clear(size_t len) override { (void) len; }
 };
 
 } // namespace rosflight_firmware

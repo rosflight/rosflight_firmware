@@ -35,7 +35,9 @@
 
 namespace rosflight_firmware
 {
-Estimator::Estimator(ROSflight& _rf) : RF_(_rf) {}
+Estimator::Estimator(ROSflight & _rf)
+    : RF_(_rf)
+{}
 
 void Estimator::reset_state()
 {
@@ -95,28 +97,25 @@ void Estimator::init()
   reset_state();
 }
 
-void Estimator::param_change_callback(uint16_t param_id)
-{
-  (void)param_id;
-}
+void Estimator::param_change_callback(uint16_t param_id) { (void) param_id; }
 
 void Estimator::run_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
-  const turbomath::Vector& raw_accel = RF_.sensors_.data().accel;
+  const turbomath::Vector & raw_accel = RF_.sensors_.data().accel;
   accel_LPF_.x = (1.0f - alpha_acc) * raw_accel.x + alpha_acc * accel_LPF_.x;
   accel_LPF_.y = (1.0f - alpha_acc) * raw_accel.y + alpha_acc * accel_LPF_.y;
   accel_LPF_.z = (1.0f - alpha_acc) * raw_accel.z + alpha_acc * accel_LPF_.z;
 
   float alpha_gyro_xy = RF_.params_.get_param_float(PARAM_GYRO_XY_ALPHA);
   float alpha_gyro_z = RF_.params_.get_param_float(PARAM_GYRO_Z_ALPHA);
-  const turbomath::Vector& raw_gyro = RF_.sensors_.data().gyro;
+  const turbomath::Vector & raw_gyro = RF_.sensors_.data().gyro;
   gyro_LPF_.x = (1.0f - alpha_gyro_xy) * raw_gyro.x + alpha_gyro_xy * gyro_LPF_.x;
   gyro_LPF_.y = (1.0f - alpha_gyro_xy) * raw_gyro.y + alpha_gyro_xy * gyro_LPF_.y;
   gyro_LPF_.z = (1.0f - alpha_gyro_z) * raw_gyro.z + alpha_gyro_z * gyro_LPF_.z;
 }
 
-void Estimator::set_external_attitude_update(const turbomath::Quaternion& q)
+void Estimator::set_external_attitude_update(const turbomath::Quaternion & q)
 {
   extatt_update_next_run_ = true;
   q_extatt_ = q;
@@ -129,15 +128,12 @@ void Estimator::run()
   //
 
   const uint64_t now_us = RF_.sensors_.data().imu_time;
-  if (last_time_ == 0)
-  {
+  if (last_time_ == 0) {
     last_time_ = now_us;
     last_acc_update_us_ = now_us;
     last_extatt_update_us_ = now_us;
     return;
-  }
-  else if (now_us < last_time_)
-  {
+  } else if (now_us < last_time_) {
     // this shouldn't happen
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
     last_time_ = now_us;
@@ -162,8 +158,7 @@ void Estimator::run()
 
   turbomath::Vector w_err;
 
-  if (can_use_accel())
-  {
+  if (can_use_accel()) {
     // Get error estimated by accelerometer measurement
     w_err = accel_correction();
     kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC);
@@ -171,8 +166,7 @@ void Estimator::run()
     last_acc_update_us_ = now_us;
   }
 
-  if (can_use_extatt())
-  {
+  if (can_use_extatt()) {
     // Get error estimated by external attitude measurement. Overwrite any
     // correction based on the accelerometer (assumption: extatt is better).
     w_err = extatt_correction();
@@ -191,8 +185,7 @@ void Estimator::run()
   }
 
   // Crank up the gains for the first few seconds for quick convergence
-  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)) * 1000)
-  {
+  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)) * 1000) {
     kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC) * 10.0f;
     ki = RF_.params_.get_param_float(PARAM_FILTER_KI) * 10.0f;
   }
@@ -229,12 +222,9 @@ void Estimator::run()
   // If it has been more than 0.5 seconds since the accel update ran and we
   // are supposed to be getting them then trigger an unhealthy estimator error.
   if (RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) && now_us > 500000 + last_acc_update_us_
-      && !RF_.params_.get_param_int(PARAM_FIXED_WING))
-  {
+      && !RF_.params_.get_param_int(PARAM_FIXED_WING)) {
     RF_.state_manager_.set_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
-  }
-  else
-  {
+  } else {
     RF_.state_manager_.clear_error(StateManager::ERROR_UNHEALTHY_ESTIMATOR);
   }
 }
@@ -242,8 +232,7 @@ void Estimator::run()
 bool Estimator::can_use_accel() const
 {
   // if we are not using accel, just bail
-  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC))
-    return false;
+  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)) return false;
 
   // current magnitude of LPF'd accelerometer
   const float a_sqrd_norm = accel_LPF_.sqrd_norm();
@@ -262,10 +251,7 @@ bool Estimator::can_use_accel() const
   return (lowerbound < a_sqrd_norm && a_sqrd_norm < upperbound);
 }
 
-bool Estimator::can_use_extatt() const
-{
-  return extatt_update_next_run_;
-}
+bool Estimator::can_use_extatt() const { return extatt_update_next_run_; }
 
 turbomath::Vector Estimator::accel_correction() const
 {
@@ -308,7 +294,8 @@ turbomath::Vector Estimator::extatt_correction() const
   // level but extatt had a different yaw angle than the internal estimate, xext_BW.cross(xhat_BW)
   // would be a measure of how the filter needs to update in order to the internal estimate's yaw
   // to closer to the extatt measurement. This is done for each axis.
-  turbomath::Vector w_ext = xext_BW.cross(xhat_BW) + yext_BW.cross(yhat_BW) + zext_BW.cross(zhat_BW);
+  turbomath::Vector w_ext =
+    xext_BW.cross(xhat_BW) + yext_BW.cross(yhat_BW) + zext_BW.cross(zhat_BW);
 
   return w_ext;
 }
@@ -316,37 +303,31 @@ turbomath::Vector Estimator::extatt_correction() const
 turbomath::Vector Estimator::smoothed_gyro_measurement()
 {
   turbomath::Vector wbar;
-  if (RF_.params_.get_param_int(PARAM_FILTER_USE_QUAD_INT))
-  {
+  if (RF_.params_.get_param_int(PARAM_FILTER_USE_QUAD_INT)) {
     // Quadratic Interpolation (Eq. 14 Casey Paper)
     // this step adds 12 us on the STM32F10x chips
     wbar = (w2_ / -12.0f) + w1_ * (8.0f / 12.0f) + gyro_LPF_ * (5.0f / 12.0f);
     w2_ = w1_;
     w1_ = gyro_LPF_;
-  }
-  else
-  {
+  } else {
     wbar = gyro_LPF_;
   }
 
   return wbar;
 }
 
-void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
-                                       const turbomath::Vector& omega,
-                                       const float dt) const
+void Estimator::integrate_angular_rate(turbomath::Quaternion & quat,
+                                       const turbomath::Vector & omega, const float dt) const
 {
   // only propagate if we've moved
   // TODO[PCL]: Will this ever be true? We should add a margin to this
   const float sqrd_norm_w = omega.sqrd_norm();
-  if (sqrd_norm_w == 0.0f)
-    return;
+  if (sqrd_norm_w == 0.0f) return;
 
   // for convenience
   const float &p = omega.x, &q = omega.y, &r = omega.z;
 
-  if (RF_.params_.get_param_int(PARAM_FILTER_USE_MAT_EXP))
-  {
+  if (RF_.params_.get_param_int(PARAM_FILTER_USE_MAT_EXP)) {
     // Matrix Exponential Approximation (From Attitude Representation and Kinematic
     // Propagation for Low-Cost UAVs by Robert T. Casey)
     // (Eq. 12 Casey Paper)
@@ -359,14 +340,12 @@ void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
     quat.y = t1 * quat.y + t2 * (q * quat.w - r * quat.x + p * quat.z);
     quat.z = t1 * quat.z + t2 * (r * quat.w + q * quat.x - p * quat.y);
     quat.normalize();
-  }
-  else
-  {
+  } else {
     // Euler Integration
     // (Eq. 47a Mahony Paper)
     turbomath::Quaternion qdot(
-        0.5f * (-p * quat.x - q * quat.y - r * quat.z), 0.5f * (p * quat.w + r * quat.y - q * quat.z),
-        0.5f * (q * quat.w - r * quat.x + p * quat.z), 0.5f * (r * quat.w + q * quat.x - p * quat.y));
+      0.5f * (-p * quat.x - q * quat.y - r * quat.z), 0.5f * (p * quat.w + r * quat.y - q * quat.z),
+      0.5f * (q * quat.w - r * quat.x + p * quat.z), 0.5f * (r * quat.w + q * quat.x - p * quat.y));
     quat.w += qdot.w * dt;
     quat.x += qdot.x * dt;
     quat.y += qdot.y * dt;
@@ -375,10 +354,8 @@ void Estimator::integrate_angular_rate(turbomath::Quaternion& quat,
   }
 }
 
-void Estimator::quaternion_to_dcm(const turbomath::Quaternion& q,
-                                  turbomath::Vector& X,
-                                  turbomath::Vector& Y,
-                                  turbomath::Vector& Z) const
+void Estimator::quaternion_to_dcm(const turbomath::Quaternion & q, turbomath::Vector & X,
+                                  turbomath::Vector & Y, turbomath::Vector & Z) const
 {
   // R(q) = [X.x X.y X.z]
   //        [Y.x Y.y Y.z]

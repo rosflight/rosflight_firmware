@@ -36,18 +36,19 @@ public:
                                 {true, RATE, OFFBOARD_Z},
                                 {true, THROTTLE, OFFBOARD_F}};
 
-  CommandManagerTest() : mavlink(board), rf(board, mavlink) {}
+  CommandManagerTest()
+      : mavlink(board)
+      , rf(board, mavlink)
+  {}
 
   void SetUp() override
   {
     rf.init();
-    rf.state_manager_.clear_error(rf.state_manager_.state().error_codes); // Clear All Errors to Start
+    rf.state_manager_.clear_error(
+      rf.state_manager_.state().error_codes); // Clear All Errors to Start
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false);
 
-    for (int i = 0; i < 8; i++)
-    {
-      rc_values[i] = 1500;
-    }
+    for (int i = 0; i < 8; i++) { rc_values[i] = 1500; }
     rc_values[2] = 1000;
 
     rf.params_.set_param_int(PARAM_MIXER, Mixer::PASSTHROUGH);
@@ -57,7 +58,7 @@ public:
     max_yawrate = rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
   }
 
-  void setOffboard(control_t& command)
+  void setOffboard(control_t & command)
   {
     command.stamp_ms = rf.board_.clock_millis();
     rf.command_manager_.set_new_offboard_command(command);
@@ -68,10 +69,8 @@ public:
     uint64_t start_time_us = board.clock_micros();
     float dummy_acc[3] = {0, 0, -9.80665};
     float dummy_gyro[3] = {0, 0, 0};
-    while (board.clock_micros() < start_time_us + us)
-    {
-      if (board.clock_millis() > last_set_rc + 20)
-      {
+    while (board.clock_micros() < start_time_us + us) {
+      if (board.clock_millis() > last_set_rc + 20) {
         last_set_rc = board.clock_millis();
         board.set_rc(rc_values);
       }

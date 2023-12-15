@@ -61,7 +61,7 @@ public:
 
   // serial
   virtual void serial_init(uint32_t baud_rate, uint32_t dev) = 0;
-  virtual void serial_write(const uint8_t *src, size_t len) = 0;
+  virtual void serial_write(const uint8_t * src, size_t len) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
   virtual void serial_flush() = 0;
@@ -72,7 +72,7 @@ public:
 
   // IMU
   virtual bool imu_has_new_data() = 0;
-  virtual bool imu_read(float accel[3], float *temperature, float gyro[3], uint64_t *time) = 0;
+  virtual bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time) = 0;
   virtual void imu_not_responding_error() = 0;
 
   // Mag
@@ -83,27 +83,27 @@ public:
   // Baro
   virtual bool baro_present() = 0;
   virtual bool baro_has_new_data() = 0;
-  virtual bool baro_read(float *pressure, float *temperature) = 0;
+  virtual bool baro_read(float * pressure, float * temperature) = 0;
 
   // Pitot
   virtual bool diff_pressure_present() = 0;
   virtual bool diff_pressure_has_new_data() = 0;
-  virtual bool diff_pressure_read(float *diff_pressure, float *temperature) = 0;
+  virtual bool diff_pressure_read(float * diff_pressure, float * temperature) = 0;
 
   // Sonar
   virtual bool sonar_present() = 0;
   virtual bool sonar_has_new_data() = 0;
-  virtual bool sonar_read(float *range) = 0;
+  virtual bool sonar_read(float * range) = 0;
 
   // GPS
   virtual bool gnss_present() = 0;
   virtual bool gnss_has_new_data() = 0;
-  virtual bool gnss_read(GNSSData *gnss, GNSSFull *gnss_full) = 0;
+  virtual bool gnss_read(GNSSData * gnss, GNSSFull * gnss_full) = 0;
 
   // Battery
   virtual bool battery_present() = 0;
   virtual bool battery_has_new_data() = 0;
-  virtual bool battery_read(float *voltage, float *current) = 0;
+  virtual bool battery_read(float * voltage, float * current) = 0;
   virtual void battery_voltage_set_multiplier(double multiplier) = 0;
   virtual void battery_current_set_multiplier(double multiplier) = 0;
 
@@ -120,8 +120,8 @@ public:
 
   // non-volatile memory
   virtual void memory_init() = 0;
-  virtual bool memory_read(void *dest, size_t len) = 0;
-  virtual bool memory_write(const void *src, size_t len) = 0;
+  virtual bool memory_read(void * dest, size_t len) = 0;
+  virtual bool memory_write(const void * src, size_t len) = 0;
 
   // LEDs
   virtual void led0_on() = 0;
@@ -134,8 +134,8 @@ public:
 
   // Backup memory
   virtual void backup_memory_init() = 0;
-  virtual bool backup_memory_read(void *dest, size_t len) = 0;
-  virtual void backup_memory_write(const void *src, size_t len) = 0;
+  virtual bool backup_memory_read(void * dest, size_t len) = 0;
+  virtual void backup_memory_write(const void * src, size_t len) = 0;
   virtual void backup_memory_clear(size_t len) = 0;
 };
 

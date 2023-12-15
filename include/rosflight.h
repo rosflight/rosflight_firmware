@@ -53,9 +53,9 @@ namespace rosflight_firmware
 class ROSflight
 {
 public:
-  ROSflight(Board& board, CommLinkInterface& comm_link);
+  ROSflight(Board & board, CommLinkInterface & comm_link);
 
-  Board& board_;
+  Board & board_;
   CommManager comm_manager_;
 
   Params params_;
@@ -84,8 +84,8 @@ public:
 
 private:
   static constexpr size_t num_param_listeners_ = 7;
-  ParamListenerInterface* const param_listeners_[num_param_listeners_] = {
-      &comm_manager_, &command_manager_, &controller_, &estimator_, &mixer_, &rc_, &sensors_};
+  ParamListenerInterface * const param_listeners_[num_param_listeners_] = {
+    &comm_manager_, &command_manager_, &controller_, &estimator_, &mixer_, &rc_, &sensors_};
 };
 
 } // namespace rosflight_firmware
