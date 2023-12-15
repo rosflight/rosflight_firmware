@@ -43,16 +43,8 @@
 #include <Packets.h>
 #include <Time64.h>
 
-/*
- *
- */
 class DlhrL20G : public Driver
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(
       // Driver initializers

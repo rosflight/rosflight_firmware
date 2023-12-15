@@ -42,9 +42,6 @@
 #include <Driver.h>
 #include <Packets.h>
 
-/*
- *
- */
 class Adc : public Driver
 {
 public:

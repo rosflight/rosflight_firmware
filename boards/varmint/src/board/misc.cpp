@@ -70,17 +70,6 @@ extern "C"
   }
 }
 
-#define MAX_SPRINTF_CHARS 256
-char sprintf_buffer[MAX_SPRINTF_CHARS];
-
-// typedef enum
-//{
-//   USBD_OK = 0U,
-//   USBD_BUSY,
-//   USBD_EMEM,
-//   USBD_FAIL,
-// } USBD_StatusTypeDef;
-
 void misc_printf(const char *format, ...)
 {
   if (verbose)
@@ -90,18 +79,6 @@ void misc_printf(const char *format, ...)
     vprintf(format, argp);
     va_end(argp);
   }
-
-  //	uint8_t vcp_status=USBD_OK;
-  //	uint64_t timeout = time64.Us()+1000000;
-  //	va_list argp;
-  //	va_start(argp, format);
-  //	vsnprintf(sprintf_buffer, MAX_SPRINTF_CHARS, format, argp);
-  //	while( (time64.Us()<timeout) && (USBD_OK!=(vcp_status=CDC_Transmit_FS((uint8_t*)sprintf_buffer,
-  //strlen(sprintf_buffer)))))
-  //	{
-  //		time64.dUs(100);
-  //	}
-  //	va_end(argp);
 }
 
 void misc_header(char *name, uint64_t drdy, uint64_t timestamp, uint64_t delay)

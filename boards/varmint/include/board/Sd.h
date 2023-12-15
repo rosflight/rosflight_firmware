@@ -41,16 +41,8 @@
 #include <BoardConfig.h>
 #include <Driver.h>
 
-/*
- *
- */
 class Sd
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(SD_HandleTypeDef *hsd, SD_TypeDef *hsd_instance);
   bool read(uint8_t *dest, size_t len);

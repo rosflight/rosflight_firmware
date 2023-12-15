@@ -42,7 +42,6 @@
 #include <mavlink.h>
 #include <param.h>
 #include <rosflight.h>
-#include <sandbox.h>
 
 extern Varmint varmint;
 
@@ -60,15 +59,11 @@ extern "C"
 /**
  * @fn int main(void)
  * @brief Program Start
- *
- * @return Never returns
  */
-
 int main(void)
 {
   // Rosflight board code
   varmint.init_board();
-  //	sandbox();
 
   // Rosflight base code
   rosflight_firmware::Mavlink mavlink(varmint);
@@ -80,6 +75,4 @@ int main(void)
   {
     firmware.run();
   }
-
-  return 0;
 }

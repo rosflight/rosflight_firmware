@@ -51,25 +51,6 @@
 
 bool verbose = true;
 
-// #ifdef __cplusplus
-// extern "C" {
-// #endif
-//
-// void __stack_chk_fail(void);
-//
-// #ifdef __cplusplus
-// }
-// #endif
-//
-//
-// void *__stack_chk_guard = (void *)0xDEADD00D;
-//
-// void __stack_chk_fail(void)
-//{
-//   misc_printf("Stack smashing detected.\n");
-//	while(1){}
-// }
-
 Varmint varmint;
 Time64 time64;
 
@@ -354,10 +335,7 @@ uint8_t Varmint::serial_read(void)
   return c;
 }
 
-void Varmint::serial_flush(void)
-{
-  // do nothing
-}
+void Varmint::serial_flush(void) {}
 
 // sensors
 

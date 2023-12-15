@@ -44,16 +44,8 @@
 #include <Spi.h>
 #include <Time64.h>
 
-/*
- *
- */
 class Dps310 : public Driver
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(
       // Driver initializers

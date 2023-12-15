@@ -52,19 +52,8 @@ enum DmaItType
   IDLE
 };
 
-/**
- * @class Telem
- * @brief
- *
- */
 class Telem
 {
-  /**
-   * \brief
-   *
-   *
-   */
-
 public:
   uint32_t init(
       // Driver initializers

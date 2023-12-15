@@ -42,16 +42,8 @@
 #include <Packets.h>
 #include <Spi.h>
 
-/*
- *
- */
 class Bmi088 : public Driver
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(
       // Driver initializers

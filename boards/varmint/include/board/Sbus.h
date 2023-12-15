@@ -42,16 +42,8 @@
 #include <Driver.h>
 #include <Packets.h>
 
-/*
- *
- */
 class Sbus : public Driver
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(
       // Driver initializers

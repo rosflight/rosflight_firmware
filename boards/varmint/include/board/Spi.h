@@ -47,18 +47,8 @@
 
 extern Time64 time64;
 
-/*
- *
- */
-
 class Spi
 {
-  /**
-   * \brief
-   *
-   *
-   */
-
 private:
   SPI_HandleTypeDef *hspi_;
   uint8_t *txBuffer_;

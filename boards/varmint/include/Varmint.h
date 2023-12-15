@@ -52,27 +52,8 @@
 #include <Vcp.h>
 #include <board.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-  int varmint_main(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-/*
- *
- */
 class Varmint : public rosflight_firmware::Board
 {
-  /**
-   * \brief
-   *
-   *
-   */
 private:
   uint32_t serial_device_;
 
@@ -95,7 +76,6 @@ public:
   // Required ROSflight Board HAL functions:
 
   // setup
-
   void init_board(void) override;
   void board_reset(bool bootloader) override;
 
@@ -151,7 +131,6 @@ public:
   void rc_init(rc_type_t rc_type) override;
   bool rc_has_new_data() override;
   bool rc_lost() override;
-  //		float rc_read(uint8_t channel) override;
   float rc_read(uint8_t chan) override;
 
   // PWM

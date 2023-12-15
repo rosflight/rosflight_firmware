@@ -44,12 +44,6 @@
 #include <Time64.h>
 extern Time64 time64;
 
-/**
- * @class Vcp
- * @brief
- *
- */
-
 class Vcp
 {
 public:

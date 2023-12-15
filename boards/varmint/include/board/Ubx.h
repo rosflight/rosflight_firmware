@@ -149,19 +149,8 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
 //	uint32_t    sAcc;
 // } UbxVelEcef;
 
-/**
- * @class Ubx
- * @brief
- *
- */
-
 class Ubx : public Driver
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(
       // Driver initializers

@@ -43,16 +43,8 @@
 #include <Packets.h>
 #include <Spi.h>
 
-/*
- *
- */
 class Iis2mdc : public Driver
 {
-  /**
-   * \brief
-   *
-   *
-   */
 public:
   uint32_t init(
       // Driver initializers

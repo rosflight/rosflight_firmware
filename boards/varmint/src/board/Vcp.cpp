@@ -71,14 +71,6 @@ uint32_t Vcp::init(uint16_t sample_rate_hz)
   return DRIVER_OK;
 }
 
-// typedef enum
-//{
-//   USBD_OK = 0U,
-//   USBD_BUSY,
-//   USBD_EMEM,
-//   USBD_FAIL,
-// } USBD_StatusTypeDef;
-
 /**
  * @fn uint16_t writePacket(SerialTxPacket*)
  * @brief Comms Tx (to companion computer) Rosflight/VCP interface.
