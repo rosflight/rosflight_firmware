@@ -133,7 +133,8 @@ public:
   void backup_memory_clear(size_t len) override;
   void backup_memory_clear(); // Not an override
 
-  void set_imu(float *acc, float *gyro, uint64_t time_us); void set_rc(uint16_t *values);
+  void set_imu(float *acc, float *gyro, uint64_t time_us);
+  void set_rc(uint16_t *values);
   void set_time(uint64_t time_us);
   void set_pwm_lost(bool lost);
 };

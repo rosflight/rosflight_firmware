@@ -267,15 +267,17 @@ bool RC::run()
   if (check_rc_lost())
     return false;
 
+  // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++)
   {
+    float pwm = RF_.board_.rc_read(sticks[channel].channel);
     if (sticks[channel].one_sided) // generally only F is one_sided
     {
-      stick_values[channel] = RF_.board_.rc_read(sticks[channel].channel);
+      stick_values[channel] = pwm;
     }
     else
     {
-      stick_values[channel] = 2.0 * (RF_.board_.rc_read(sticks[channel].channel) - 0.5);
+      stick_values[channel] = 2.0 * (pwm - 0.5);
     }
   }
 
@@ -284,13 +286,14 @@ bool RC::run()
   {
     if (switches[channel].mapped)
     {
+      float pwm = RF_.board_.rc_read(switches[channel].channel);
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) < 0.2;
+        switch_values[channel] = pwm < 0.2;
       }
       else
       {
-        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) >= 0.8;
+        switch_values[channel] = pwm >= 0.8;
       }
     }
     else

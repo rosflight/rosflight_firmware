@@ -552,13 +552,8 @@ void CommManager::stream(got_flags got)
   // GPS full data (not needed)
   if (got.gnss_full)
     send_gnss_full();
-  if (got.rc) // report at half the S.Bus rate.
-  {
-    static uint64_t rc_count = 0;
-    // RC (S.Bus) inputs, scaled 1000-2000
-    if (!((rc_count++) % 2))
-      send_rc_raw();
-  }
+  if (got.rc)
+    send_rc_raw();
 
   {
     static uint64_t next_heartbeat = 0, next_status = 0;

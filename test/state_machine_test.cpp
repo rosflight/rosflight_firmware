@@ -24,6 +24,15 @@ public:
     rf.params_.set_param_int(PARAM_MIXER, 10);
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
     rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0f);
+
+    uint16_t rc_values[8];
+    for (int i = 0; i < 8; i++)
+    {
+      rc_values[i] = 1500;
+    }
+    rc_values[2] = 1000;
+    board.set_rc(rc_values);
+
     stepFirmware(100000);
   }
 

@@ -46,15 +46,15 @@ namespace rosflight_firmware
 
 typedef struct
 {
-  uint8_t imu;
-  uint8_t gnss;
-  uint8_t gnss_full;
-  uint8_t baro;
-  uint8_t mag;
-  uint8_t diff_pressure;
-  uint8_t sonar;
-  uint8_t battery;
-  uint8_t rc;
+  bool imu;
+  bool gnss;
+  bool gnss_full;
+  bool baro;
+  bool mag;
+  bool diff_pressure;
+  bool sonar;
+  bool battery;
+  bool rc;
 } got_flags;
 
 enum GNSSFixType
