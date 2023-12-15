@@ -19,27 +19,25 @@ function print_result() {
 BASENAME=`basename "$PWD"`
 
 if [ $BASENAME == "scripts" ]; then
-	cd ..
+  cd ..
 fi
 
-echo_blue "Test 1: Build F1 firmware"
-make clean BOARD=NAZE
-make BOARD=NAZE
+echo_blue "Test 1: Build varmint firmware"
+rm -rf build
+mkdir build
+cd build
+cmake .. -DBUILD_VARMINT=true -DCMAKE_BUILD_TYPE=RELEASE && make -j4 -l4
 print_result $?
+cd ..
 
-echo_blue "Test 2: Build F4 firmware"
-make clean BOARD=REVO
-make BOARD=REVO
-print_result $?
-
-echo_blue "Test 3: Build test suite"
+echo_blue "Test 2: Build test suite"
 mkdir -p test/build
 cd test/build
 rm -rf *
 cmake .. -DCMAKE_BUILD_TYPE=RELEASE && make -j4 -l4
 print_result $?
 
-echo_blue "Test 4: Run test suite"
+echo_blue "Test 3: Run test suite"
 ./unit_tests
 print_result $?
 
