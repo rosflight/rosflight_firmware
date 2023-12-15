@@ -83,19 +83,6 @@ void CommManager::init()
   send_params_index_ = PARAMS_COUNT;
 
   update_system_id(PARAM_SYSTEM_ID);
-  set_streaming_rate(STREAM_ID_HEARTBEAT, PARAM_STREAM_HEARTBEAT_RATE);
-  set_streaming_rate(STREAM_ID_STATUS, PARAM_STREAM_STATUS_RATE);
-  set_streaming_rate(STREAM_ID_IMU, PARAM_STREAM_IMU_RATE);
-  set_streaming_rate(STREAM_ID_ATTITUDE, PARAM_STREAM_ATTITUDE_RATE);
-  set_streaming_rate(STREAM_ID_DIFF_PRESSURE, PARAM_STREAM_AIRSPEED_RATE);
-  set_streaming_rate(STREAM_ID_BARO, PARAM_STREAM_BARO_RATE);
-  set_streaming_rate(STREAM_ID_SONAR, PARAM_STREAM_SONAR_RATE);
-  set_streaming_rate(STREAM_ID_GNSS, PARAM_STREAM_GNSS_RATE);
-  set_streaming_rate(STREAM_ID_GNSS_FULL, PARAM_STREAM_GNSS_FULL_RATE);
-  set_streaming_rate(STREAM_ID_MAG, PARAM_STREAM_MAG_RATE);
-  set_streaming_rate(STREAM_ID_BATTERY_STATUS, PARAM_STREAM_BATTERY_STATUS_RATE);
-  set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, PARAM_STREAM_OUTPUT_RAW_RATE);
-  set_streaming_rate(STREAM_ID_RC_RAW, PARAM_STREAM_RC_RAW_RATE);
 
   initialized_ = true;
 }
@@ -106,45 +93,6 @@ void CommManager::param_change_callback(uint16_t param_id)
   {
   case PARAM_SYSTEM_ID:
     update_system_id(param_id);
-    break;
-  case PARAM_STREAM_HEARTBEAT_RATE:
-    set_streaming_rate(STREAM_ID_HEARTBEAT, param_id);
-    break;
-  case PARAM_STREAM_STATUS_RATE:
-    set_streaming_rate(STREAM_ID_STATUS, param_id);
-    break;
-  case PARAM_STREAM_IMU_RATE:
-    set_streaming_rate(STREAM_ID_IMU, param_id);
-    break;
-  case PARAM_STREAM_ATTITUDE_RATE:
-    set_streaming_rate(STREAM_ID_ATTITUDE, param_id);
-    break;
-  case PARAM_STREAM_AIRSPEED_RATE:
-    set_streaming_rate(STREAM_ID_DIFF_PRESSURE, param_id);
-    break;
-  case PARAM_STREAM_BARO_RATE:
-    set_streaming_rate(STREAM_ID_BARO, param_id);
-    break;
-  case PARAM_STREAM_SONAR_RATE:
-    set_streaming_rate(STREAM_ID_SONAR, param_id);
-    break;
-  case PARAM_STREAM_GNSS_RATE:
-    set_streaming_rate(STREAM_ID_GNSS, param_id);
-    break;
-  case PARAM_STREAM_GNSS_FULL_RATE:
-    set_streaming_rate(STREAM_ID_GNSS_FULL, param_id);
-    break;
-  case PARAM_STREAM_MAG_RATE:
-    set_streaming_rate(STREAM_ID_MAG, param_id);
-    break;
-  case PARAM_STREAM_OUTPUT_RAW_RATE:
-    set_streaming_rate(STREAM_ID_SERVO_OUTPUT_RAW, param_id);
-    break;
-  case PARAM_STREAM_RC_RAW_RATE:
-    set_streaming_rate(STREAM_ID_RC_RAW, param_id);
-    break;
-  case PARAM_STREAM_BATTERY_STATUS_RATE:
-    set_streaming_rate(STREAM_ID_BATTERY_STATUS, param_id);
     break;
   default:
     // do nothing
@@ -390,10 +338,6 @@ void CommManager::heartbeat_callback(void)
     comm_link_.send_error_data(sysid_, backup_data_buffer_);
     have_backup_data_ = false;
   }
-
-  /// JSJ: I don't think we need this
-  // respond to heartbeats with a heartbeat
-  this->send_heartbeat();
 }
 
 // function definitions
@@ -572,19 +516,61 @@ void CommManager::send_low_priority(void)
 }
 
 // function definitions
-void CommManager::stream()
+void CommManager::stream(got_flags got)
 {
   uint64_t time_us = RF_.board_.clock_micros();
-  for (int i = 0; i < STREAM_COUNT; i++)
-  {
-    streams_[i].stream(time_us);
-  }
-  RF_.board_.serial_flush();
-}
 
-void CommManager::set_streaming_rate(uint8_t stream_id, int16_t param_id)
-{
-  streams_[stream_id].set_rate(RF_.params_.get_param_int(param_id));
+  // Send out data
+
+  if (got.imu) // Nominally 400Hz
+  {
+    send_imu();
+    send_attitude();
+    static uint64_t ro_count = 0;
+    if (!((ro_count++) % 8))
+      send_output_raw(); // Raw output at 400Hz/8 = 50Hz
+  }
+
+  // Pitot sensor
+  if (got.diff_pressure)
+    send_diff_pressure();
+  // Baro altitude
+  if (got.baro)
+    send_baro();
+  // Magnetometer
+  if (got.mag)
+    send_mag();
+  // Height above ground sensor (not enabled)
+  if (got.sonar)
+    send_sonar();
+  // Battery V & I
+  if (got.battery)
+    send_battery_status();
+  // GPS data (GNSS Packed)
+  if (got.gnss)
+    send_gnss();
+  // GPS full data (not needed)
+  if (got.gnss_full)
+    send_gnss_full();
+  if (got.rc)
+    send_rc_raw();
+
+  {
+    static uint64_t next_heartbeat = 0, next_status = 0;
+
+    if ((time_us) / 1000000 >= next_heartbeat) // 1 Hz
+    {
+      send_heartbeat();
+      next_heartbeat = time_us / 1000000 + 1;
+    }
+    if ((time_us) / 100000 >= next_status) // 10 Hz
+    {
+      send_status();
+      next_status = time_us / 100000 + 1;
+    }
+  }
+
+  send_low_priority(); // parameter values and logging messages
 }
 
 void CommManager::send_named_value_int(const char* const name, int32_t value)

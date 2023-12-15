@@ -43,6 +43,19 @@
 
 namespace rosflight_firmware
 {
+typedef struct
+{
+  bool imu;
+  bool gnss;
+  bool gnss_full;
+  bool baro;
+  bool mag;
+  bool diff_pressure;
+  bool sonar;
+  bool battery;
+  bool rc;
+} got_flags;
+
 enum GNSSFixType
 {
   GNSS_FIX_TYPE_NO_FIX,
@@ -145,10 +158,9 @@ public:
     bool sonar_range_valid = false;
 
     GNSSData gnss_data;
-    bool gnss_new_data = false;
+    GNSSFull gnss_full;
     float gps_CNO = 0; // What is this?
     bool gnss_present = false;
-    GNSSFull gnss_full;
 
     turbomath::Vector mag = {0, 0, 0};
 
@@ -169,7 +181,7 @@ public:
 
   // function declarations
   void init();
-  bool run();
+  got_flags run();
   void param_change_callback(uint16_t param_id) override;
 
   // Calibration Functions
@@ -187,6 +199,8 @@ public:
       imu_data_sent_ = true;
     return true;
   }
+
+  got_flags got;
 
 private:
   static const float BARO_MAX_CHANGE_RATE;

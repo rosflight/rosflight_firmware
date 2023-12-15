@@ -96,16 +96,22 @@ void ROSflight::init()
   state_manager_.check_backup_memory();
 }
 
-// Main loop
+/**
+ * @fn void run()
+ * @brief Main Loop
+ *
+ */
 void ROSflight::run()
 {
   /*********************/
   /***  Control Loop ***/
   /*********************/
   uint64_t start = board_.clock_micros();
-  if (sensors_.run())
+
+  got_flags got = sensors_.run(); // IMU, GNSS, Baro, Mag, Pitot, SONAR, Battery
+
+  if (got.imu)
   {
-    // If I have new IMU data, then perform control
     estimator_.run();
     controller_.run();
     mixer_.mix_output();
@@ -116,7 +122,7 @@ void ROSflight::run()
   /***  Post-Process ***/
   /*********************/
   // internal timers figure out what and when to send
-  comm_manager_.stream();
+  comm_manager_.stream(got);
 
   // receive mavlink messages
   comm_manager_.receive();
@@ -124,8 +130,9 @@ void ROSflight::run()
   // update the state machine, an internal timer runs this at a fixed rate
   state_manager_.run();
 
-  // get RC, an internal timer runs this every 20 ms (50 Hz)
-  rc_.run();
+  // get RC, synchronous with rc data acquisition
+  if (got.rc)
+    rc_.run();
 
   // update commands (internal logic tells whether or not we should do anything or not)
   command_manager_.run();

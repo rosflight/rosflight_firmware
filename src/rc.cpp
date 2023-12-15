@@ -263,15 +263,6 @@ void RC::look_for_arm_disarm_signal()
 
 bool RC::run()
 {
-  uint32_t now = RF_.board_.clock_millis();
-
-  // if it has been more than 20ms then look for new RC values and parse them
-  if (now - last_rc_receive_time < 20)
-  {
-    return false;
-  }
-  last_rc_receive_time = now;
-
   // Check for rc lost
   if (check_rc_lost())
     return false;
@@ -295,13 +286,14 @@ bool RC::run()
   {
     if (switches[channel].mapped)
     {
+      float pwm = RF_.board_.rc_read(switches[channel].channel);
       if (switches[channel].direction < 0)
       {
-        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) < 0.2;
+        switch_values[channel] = pwm < 0.2;
       }
       else
       {
-        switch_values[channel] = RF_.board_.rc_read(switches[channel].channel) >= 0.8;
+        switch_values[channel] = pwm >= 0.8;
       }
     }
     else

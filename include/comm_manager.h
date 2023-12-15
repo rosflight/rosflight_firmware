@@ -163,15 +163,6 @@ private:
 
   void send_next_param(void);
 
-  Stream streams_[STREAM_COUNT] = {
-      Stream(0, [this] { this->send_heartbeat(); }),      Stream(0, [this] { this->send_status(); }),
-      Stream(0, [this] { this->send_attitude(); }),       Stream(0, [this] { this->send_imu(); }),
-      Stream(0, [this] { this->send_diff_pressure(); }),  Stream(0, [this] { this->send_baro(); }),
-      Stream(0, [this] { this->send_sonar(); }),          Stream(0, [this] { this->send_mag(); }),
-      Stream(0, [this] { this->send_battery_status(); }), Stream(0, [this] { this->send_output_raw(); }),
-      Stream(0, [this] { this->send_gnss(); }),           Stream(0, [this] { this->send_gnss_full(); }),
-      Stream(0, [this] { this->send_rc_raw(); }),         Stream(20000, [this] { this->send_low_priority(); })};
-
   // the time of week stamp for the last sent GNSS message, to prevent re-sending
   uint32_t last_sent_gnss_tow_ = 0;
   uint32_t last_sent_gnss_full_tow_ = 0;
@@ -182,9 +173,8 @@ public:
   void init();
   void param_change_callback(uint16_t param_id) override;
   void receive(void);
-  void stream();
+  void stream(got_flags got);
   void send_param_value(uint16_t param_id);
-  void set_streaming_rate(uint8_t stream_id, int16_t param_id);
   void update_status();
   void log(CommLinkInterface::LogSeverity severity, const char* fmt, ...);
 

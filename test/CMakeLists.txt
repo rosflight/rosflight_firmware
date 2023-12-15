@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.8)
+project(rosflight_tests)
 
 # C++ standard
-add_definitions(-std=c++11)
+add_definitions(-std=c++17)
 
 # Strict Compilation
 set(CMAKE_CXX_FLAGS "-pedantic -pedantic-errors -Werror -Wall -Wextra \
