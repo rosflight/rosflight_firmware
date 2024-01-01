@@ -4,7 +4,8 @@ set(BOARD_NAME varmint)
 
 include_directories(
     include
-    include/board
+    include/drivers
+    include/drivers/interfaces
     lib/usb_device/App
     lib/usb_device/Target
     lib/drivers/STM32H7xx_HAL_Driver/Inc
@@ -22,7 +23,7 @@ file(GLOB_RECURSE VARMINT_SOURCES
     "lib/middleware/*.c"
 )
 
-set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32H753VIHX_FLASH.ld)
+set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/src/STM32H753VIHX_FLASH.ld)
 add_link_options(-T ${LINKER_SCRIPT})
 
 
