@@ -96,7 +96,7 @@ public:
   inline void set_listener(ListenerInterface * listener) override { listener_ = listener; }
 
 private:
-  void send_message(const mavlink_message_t & msg);
+  void send_message(const mavlink_message_t & msg, uint8_t qos = UINT8_MAX);
 
   void handle_msg_param_request_list(const mavlink_message_t * const msg);
   void handle_msg_param_request_read(const mavlink_message_t * const msg);
