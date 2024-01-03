@@ -10,9 +10,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-add_compile_options(-Wall)
-
-
 ### git ###
 
 # clone mavlink submodule if it is missing
@@ -41,7 +38,6 @@ if("${GIT_VERSION_HASH}" STREQUAL "")
   set(GIT_VERSION_HASH "0")
 endif()
 
-
 ### source files ###
 
 include_directories(
@@ -60,13 +56,17 @@ file(GLOB_RECURSE ROSFLIGHT_SOURCES
     "comms/mavlink/mavlink.cpp"
 )
 
-
 ### select boards to compile ###
 
-option(BUILD_VARMINT "Build the varmint board target" ON)
+option(BUILD_VARMINT "Build the varmint board target" OFF)
+option(BUILD_TEST "Build the test board target" OFF)
 
 if(BUILD_VARMINT)
-    message(STATUS "Selecting varmint board target")
+    message("===== Selecting varmint board target. =====")
     add_subdirectory(boards/varmint)
-endif()
-
+elseif(BUILD_TEST)
+    message("===== Selecting test board target. ======")
+#    add_subdirectory()
+else()
+    message(FATAL_ERROR "No board selected! Please select the varmint or test board with -DBUILD_VARMINT=true or -DBUILD_TEST=true.")
+endif ()

@@ -35,18 +35,22 @@
  ******************************************************************************
  **/
 
-#include <Varmint.h>
 #include <mavlink.h>
 #include <rosflight.h>
 
-extern Varmint varmint;
+// Select which board implementation to include based on cmake variable
+#ifdef BUILD_VARMINT_BOARD
+#include <Varmint.h>
+extern Varmint varmint;  // TODO: Eliminate global variable
+#endif
+#ifdef BUILD_TEST_BOARD
+#include <test.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 int main(void);
-
 #ifdef __cplusplus
 }
 #endif
@@ -57,12 +61,18 @@ int main(void);
  */
 int main(void)
 {
-  // Rosflight board code
-  varmint.init_board();
+  // Select which board implementation to instantiate based on cmake variable
+#ifdef BUILD_VARMINT_BOARD
+  rosflight_firmware::Board * board = &varmint;
+#endif
+#ifdef BUILD_TEST_BOARD
+  return 0;
+#endif
 
   // Rosflight base code
-  rosflight_firmware::Mavlink mavlink(varmint);
-  rosflight_firmware::ROSflight firmware(varmint, mavlink);
+  board->init_board();
+  rosflight_firmware::Mavlink mavlink(* board);
+  rosflight_firmware::ROSflight firmware(* board, mavlink);
 
   firmware.init();
 
