@@ -43,9 +43,7 @@
 #include <Varmint.h>
 extern Varmint varmint;  // TODO: Eliminate global variable
 #endif
-#ifdef BUILD_TEST_BOARD
-#include <test.h>
-#endif
+#ifndef BUILD_TEST_BOARD // Skip main function for gtest
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,9 +63,6 @@ int main(void)
 #ifdef BUILD_VARMINT_BOARD
   rosflight_firmware::Board * board = &varmint;
 #endif
-#ifdef BUILD_TEST_BOARD
-  return 0;
-#endif
 
   // Rosflight base code
   board->init_board();
@@ -78,3 +73,5 @@ int main(void)
 
   while (true) { firmware.run(); }
 }
+
+#endif // BUILD_TEST_BOARD
