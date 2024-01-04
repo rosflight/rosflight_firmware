@@ -12,16 +12,6 @@ endif()
 
 ### git ###
 
-# clone mavlink submodule if it is missing
-set(MAVLINK_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink/v1.0")
-if(NOT EXISTS "${MAVLINK_SUBMODULE_DIR}/.git")
-    message(STATUS "MAVlink submodule not found at ${MAVLINK_SUBMODULE_DIR}")
-    execute_process(
-        COMMAND git submodule update --init --recursive
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-endif()
-
 # get version info
 execute_process(COMMAND git rev-parse --short=8 HEAD
         OUTPUT_VARIABLE GIT_VERSION_HASH
