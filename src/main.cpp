@@ -41,7 +41,7 @@
 // Select which board implementation to include based on cmake variable
 #ifdef BUILD_VARMINT_BOARD
 #include <Varmint.h>
-extern Varmint varmint; // TODO: Eliminate global variable
+extern Varmint varmint;
 #endif
 #ifndef BUILD_TEST_BOARD // Skip main function for gtest
 
