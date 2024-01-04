@@ -7,5 +7,5 @@ echo #SCRIPTPATH
 cd $SCRIPTPATH/..
 
 find . -iname "*.h" -o -iname "*.hpp" -o -iname "*.cpp" | \
-    grep -Ev "^(./comms/mavlink/v1.0/|./.git|./boards/varmint/lib/)" | \
+    grep -Ev "^(./comms/mavlink/v1.0|./.git|./boards)" | \
 xargs clang-format -i
