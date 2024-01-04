@@ -21,15 +21,14 @@ jobs:
         sudo cp ./lib/libgtest*.a /usr/lib
     - name: cmake
       run: |
-        cd test
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DBUILD_TEST=true -DCMAKE_BUILD_TYPE=Release
     - name: make
       run: |
-        cd test/build
+        cd build
         make
     - name: test
       run: |
-        cd test/build
-        ./unit_tests
+        cd /build
+        ./test/unit_tests
