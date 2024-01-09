@@ -12,10 +12,11 @@
 .vscode/
 *.o
 *.html
-/boards/*/build/
+/build/
 /test/build/
 /site/
-*.idea*
+.idea/
+cmake-build*
 *.map
 scripts/parameter-descriptions.md
 

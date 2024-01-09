@@ -61,7 +61,8 @@ public:
 
   // serial
   virtual void serial_init(uint32_t baud_rate, uint32_t dev) = 0;
-  virtual void serial_write(const uint8_t * src, size_t len) = 0;
+  // qos defines the 'priority' of the packet, with 0 being the highest
+  virtual void serial_write(const uint8_t * src, size_t len, uint8_t qos) = 0;
   virtual uint16_t serial_bytes_available() = 0;
   virtual uint8_t serial_read() = 0;
   virtual void serial_flush() = 0;

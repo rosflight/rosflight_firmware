@@ -1,12 +1,10 @@
 # ROSflight
 
-![Unit Tests](https://github.com/rosflight/firmware/workflows/Unit%20Tests/badge.svg)
-![F4 Firmware](https://github.com/rosflight/firmware/workflows/F4%20Firmware/badge.svg)
-![F1 Firmware](https://github.com/rosflight/firmware/workflows/F1%20Firmware/badge.svg)
+[![Unit Tests](https://github.com/rosflight/rosflight_firmware/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/rosflight/rosflight_firmware/actions/workflows/unit_tests.yml)
+[![Varmint Firmware](https://github.com/rosflight/rosflight_firmware/actions/workflows/varmint_firmware.yml/badge.svg)](https://github.com/rosflight/rosflight_firmware/actions/workflows/varmint_firmware.yml)
 
-![Documentation](https://github.com/rosflight/firmware/workflows/Documentation/badge.svg)
 
-This is the firmware required for STM32F10x-based flight controllers (Naze32, Flip32 etc...) and STM32F4x5 boards (Revo) to run ROSflight. ROSflight is a software architecture which uses a simple, inexpensive flight controller in tandem with a much more capable companion computer running ROS. The companion computer is given a high-bandwidth connection to the flight controller to access sensor information and perform actuator commands at high rates. This architecture provides direct control of lower-level functions via the embedded processor while also enabling more complicated functionality such as vision processing and optimization via the ROS middleware.
+This is the core firmware library for ROSflight. ROSflight is a software architecture which uses a flight controller in tandem with a companion computer running ROS. The companion computer is given a high-bandwidth connection to the flight controller to access sensor information and perform actuator commands at high rates. This architecture provides direct control of lower-level functions via the embedded processor while also enabling more complicated functionality such as vision processing and optimization via the companion computer and ROS.
 
 ROSflight is designed to accomplish the following objectives:
 

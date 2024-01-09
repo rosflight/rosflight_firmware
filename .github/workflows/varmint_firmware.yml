@@ -1,4 +1,4 @@
-name: F1 Firmware
+name: Varmint Firmware
 
 on: [push]
 
@@ -15,5 +15,5 @@ jobs:
       run: sudo apt -y install gcc-arm-none-eabi
     - name: check toolchain
       run: arm-none-eabi-gcc --version
-    - name: make
-      run: make BOARD=NAZE -j4 -l4
+    - name: build
+      run: mkdir build && cd build && cmake .. -DBUILD_VARMINT=true && make

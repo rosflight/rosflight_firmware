@@ -67,7 +67,7 @@ void testBoard::clock_delay(uint32_t milliseconds) {}
 
 // serial
 void testBoard::serial_init(uint32_t baud_rate, uint32_t dev) {}
-void testBoard::serial_write(const uint8_t * src, size_t len) {}
+void testBoard::serial_write(const uint8_t * src, size_t len, uint8_t qos) {}
 uint16_t testBoard::serial_bytes_available() { return 0; }
 uint8_t testBoard::serial_read() { return 0; }
 void testBoard::serial_flush() {}

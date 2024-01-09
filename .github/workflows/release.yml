@@ -12,22 +12,19 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-    - uses: actions/checkout@v2
-    - name: checkout submodules
-      run: git submodule update --init --recursive
-    - name: install toolchain
-      run: sudo apt -y install gcc-arm-none-eabi
-    - name: check toolchain
-      run: arm-none-eabi-gcc --version
-    - name: make_f4
-      run: make BOARD=REVO -j4 -l4
-    - name: make_f1
-      run: make BOARD=NAZE -j4 -l4
+      - uses: actions/checkout@v2
+      - name: checkout submodules
+        run: git submodule update --init --recursive
+      - name: install toolchain
+        run: sudo apt -y install gcc-arm-none-eabi
+      - name: check toolchain
+        run: arm-none-eabi-gcc --version
+      - name: build varmint
+        run: mkdir build && cd build && cmake .. -DBUILD_VARMINT=true && make
 
-    - uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: false
-        files: |
-          boards/airbourne/build/rosflight_REVO_Release.bin
-          boards/breezy/build/rosflight_NAZE_Release.hex
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            build/varmint.hex

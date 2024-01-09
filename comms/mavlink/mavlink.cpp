@@ -139,7 +139,7 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, const turbomath
   mavlink_message_t msg;
   mavlink_msg_small_imu_pack(system_id, compid_, &msg, timestamp_us, accel.x, accel.y, accel.z,
                              gyro.x, gyro.y, gyro.z, temperature);
-  send_message(msg);
+  send_message(msg, 0);
 }
 void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
 {
@@ -296,7 +296,7 @@ void Mavlink::send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1)
 {
   mavlink_message_t msg;
   mavlink_msg_timesync_pack(system_id, compid_, &msg, tc1, ts1);
-  send_message(msg);
+  send_message(msg, 1);
 }
 
 void Mavlink::send_version(uint8_t system_id, const char * const version)
@@ -320,12 +320,12 @@ void Mavlink::send_battery_status(uint8_t system_id, float voltage, float curren
   send_message(msg);
 }
 
-void Mavlink::send_message(const mavlink_message_t & msg)
+void Mavlink::send_message(const mavlink_message_t & msg, uint8_t qos)
 {
   if (initialized_) {
     uint8_t data[MAVLINK_MAX_PACKET_LEN];
     uint16_t len = mavlink_msg_to_send_buffer(data, &msg);
-    board_.serial_write(data, len);
+    board_.serial_write(data, len, qos);
   }
 }
 
