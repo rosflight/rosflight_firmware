@@ -31,3 +31,11 @@ scripts/parameter-descriptions.md
 *.blg
 *.cflags
 *.cxxflags
+
+# STM32Cube
+.cproject*
+.mxproject*
+*.launch
+.project*
+.settings/
+config_*/
