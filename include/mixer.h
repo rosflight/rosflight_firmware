@@ -106,14 +106,13 @@ private:
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
 
-  const mixer_t esc_calibration_mixing = {
-    {M, M, M, M, M, M, NONE, NONE},
-    
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    490};
+  const mixer_t esc_calibration_mixing = {{M, M, M, M, M, M, NONE, NONE},
+
+                                          {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
+                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                          490};
 
   const mixer_t quadcopter_plus_mixing = {
     {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
@@ -124,14 +123,13 @@ private:
     {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
     490};
 
-  const mixer_t quadcopter_x_mixing = {
-    {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
+  const mixer_t quadcopter_x_mixing = {{M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
 
-    {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
-    {-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    {1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-    490};
+                                       {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
+                                       {-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                       {1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                       {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+                                       490};
 
   const mixer_t hex_plus_mixing = {
     {M, M, M, M, M, M, M, M}, // output_type
@@ -178,14 +176,13 @@ private:
     {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},            // Z Mix
     490};
 
-  const mixer_t X8_mixing = {
-    {M, M, M, M, M, M, M, M}, // output_type
+  const mixer_t X8_mixing = {{M, M, M, M, M, M, M, M}, // output_type
 
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},     // F Mix
-    {-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // X Mix
-    {1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f}, // Y Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f}, // Z Mix
-    490};
+                             {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},     // F Mix
+                             {-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // X Mix
+                             {1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f}, // Y Mix
+                             {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f}, // Z Mix
+                             490};
 
   const mixer_t tricopter_mixing = {
     {M, M, M, S, NONE, NONE, NONE, NONE}, // output_type
@@ -196,32 +193,31 @@ private:
     {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // Z Mix
     490};
 
-  const mixer_t fixedwing_mixing = {
-    {S, S, M, S, S, M, NONE, NONE}, // output type
+  const mixer_t fixedwing_mixing = {{S, S, M, S, S, M, NONE, NONE}, // output type
 
-    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-    50};
+                                    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+                                    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+                                    50};
 
-  const mixer_t fixedwing_vtail_mixing =  { 
-    {M, S, S, S, S, S, S, S}, // output type - Motor | LAil | RAil | LRudVator | RRudVator | LAirBrake | RAirBrake | LandingGear
+  const mixer_t fixedwing_vtail_mixing = {
+    {M, S, S, S, S, S, S,
+     S}, // output type - Motor | LAil | RAil | LRudVator | RRudVator | LAirBrake | RAirBrake | LandingGear
 
-    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-    {0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
+    {0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
     {0.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f}, // Z Mix
+    {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f},  // Z Mix
     50};
 
-  const mixer_t custom_mixing = {
-    {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE}, // output type
+  const mixer_t custom_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE}, // output type
 
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-    50};
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+                                 50};
 
   const mixer_t * mixer_to_use_;
 
