@@ -60,8 +60,9 @@ public:
     X8 = 8,
     TRICOPTER = 9,
     FIXEDWING = 10,
-    VTAIL = 11,
-    CUSTOM = 12,
+    PASSTHROUGH = 11,
+    VTAIL = 12,
+    CUSTOM = 13,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
@@ -201,6 +202,14 @@ private:
                                     {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
                                     50};
 
+  const mixer_t passthrough_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
+
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+                                      50};
+
   const mixer_t fixedwing_vtail_mixing = {
     {M, S, S, S, S, S, S,
      S}, // output type - Motor | LAil | RAil | LRudVator | RRudVator | LAirBrake | RAirBrake | LandingGear
@@ -233,6 +242,7 @@ private:
                                                  &X8_mixing,
                                                  &tricopter_mixing,
                                                  &fixedwing_mixing,
+                                                 &passthrough_mixing,
                                                  &fixedwing_vtail_mixing,
                                                  &custom_mixing};
   // clang-format on
