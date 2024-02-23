@@ -211,13 +211,12 @@ private:
                                       50};
 
   const mixer_t fixedwing_vtail_mixing = {
-    {M, S, S, S, S, S, S,
-     S}, // output type - Motor | LAil | RAil | LRudVator | RRudVator | LAirBrake | RAirBrake | LandingGear
+    {S, S, M, S, NONE, NONE, NONE, NONE}, // Ailerons, LRuddervator, Motor, RRuddervator
 
-    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
-    {0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-    {0.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f},  // Z Mix
+    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
+    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+    {0.0f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    {0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
     50};
 
   const mixer_t custom_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE}, // output type
