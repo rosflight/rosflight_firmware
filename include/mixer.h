@@ -61,6 +61,8 @@ public:
     TRICOPTER = 9,
     FIXEDWING = 10,
     PASSTHROUGH = 11,
+    VTAIL = 12,
+    CUSTOM = 13,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
@@ -106,6 +108,7 @@ private:
   void write_servo(uint8_t index, float value);
 
   const mixer_t esc_calibration_mixing = {{M, M, M, M, M, M, NONE, NONE},
+
                                           {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
                                           {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
                                           {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
@@ -191,7 +194,7 @@ private:
     {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // Z Mix
     490};
 
-  const mixer_t fixedwing_mixing = {{S, S, M, S, S, M, NONE, NONE},
+  const mixer_t fixedwing_mixing = {{S, S, M, S, S, M, NONE, NONE}, // output type
 
                                     {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
                                     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
@@ -207,6 +210,23 @@ private:
                                       {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
                                       50};
 
+  const mixer_t fixedwing_vtail_mixing = {
+    {S, S, M, S, NONE, NONE, NONE, NONE}, // Ailerons, LRuddervator, Motor, RRuddervator
+
+    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
+    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+    {0.0f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+    {0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
+    50};
+
+  const mixer_t custom_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE}, // output type
+
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
+                                 50};
+
   const mixer_t * mixer_to_use_;
 
   // clang-format off
@@ -221,7 +241,9 @@ private:
                                                  &X8_mixing,
                                                  &tricopter_mixing,
                                                  &fixedwing_mixing,
-                                                 &passthrough_mixing};
+                                                 &passthrough_mixing,
+                                                 &fixedwing_vtail_mixing,
+                                                 &custom_mixing};
   // clang-format on
 
 public:
