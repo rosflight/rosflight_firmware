@@ -53,7 +53,7 @@ option(BUILD_TEST "Build the test board target" OFF)
 
 if(BUILD_VARMINT)
     message("===== Selecting varmint board target. =====")
-    add_subdirectory(boards/varmint)
+    add_subdirectory(boards/varmint_h7)
 elseif(BUILD_TEST)
     message("===== Selecting test board target. ======")
     add_subdirectory(test)
