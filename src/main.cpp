@@ -40,7 +40,7 @@
 
 #ifndef BUILD_TEST_BOARD // Skip main function for gtest
 
-extern rosflight_firmware::Board &board;
+extern rosflight_firmware::Board & board;
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,14 +56,14 @@ int main(void);
  */
 int main(void)
 {
-    // Rosflight base code
-    board.init_board();
-    rosflight_firmware::Mavlink mavlink(board);
-    rosflight_firmware::ROSflight firmware(board, mavlink);
+  // Rosflight base code
+  board.init_board();
+  rosflight_firmware::Mavlink mavlink(board);
+  rosflight_firmware::ROSflight firmware(board, mavlink);
 
-    firmware.init();
+  firmware.init();
 
-    while (true) { firmware.run(); }
+  while (true) { firmware.run(); }
 }
 
 #endif // BUILD_TEST_BOARD
