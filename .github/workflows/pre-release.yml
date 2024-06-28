@@ -20,7 +20,9 @@ jobs:
     - name: check toolchain
       run: arm-none-eabi-gcc --version
     - name: build varmint
-      run: mkdir build && cd build && cmake .. -DBUILD_VARMINT=true && make
+      run: mkdir varmint_build && cd varmint_build && cmake .. -DBOARD_TO_BUILD=varmint && make
+    - name: build pixracer pro
+      run: mkdir pixracer_pro_build && cd pixracer_pro_build && cmake .. -DBOARD_TO_BUILD=pixracer_pro && make
 
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
@@ -29,4 +31,6 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          build/varmint.hex
+          varmint_build/varmint_10X.hex
+          pixracer_pro_build/pixracer_pro.hex
+
