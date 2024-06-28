@@ -37,7 +37,7 @@
 
 #include <Bmi088.h>
 #include <Bmi088_config.h>
-#include <Bmi08_defs.h>
+#include <bmi08_defs.h>
 #include <Packets.h>
 #include <Time64.h>
 #include <misc.h>
