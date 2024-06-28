@@ -1,4 +1,4 @@
-name: Varmint Firmware
+name: Varmint Boards Build
 
 on: [push]
 
@@ -15,5 +15,7 @@ jobs:
       run: sudo apt -y install gcc-arm-none-eabi
     - name: check toolchain
       run: arm-none-eabi-gcc --version
-    - name: build
-      run: mkdir build && cd build && cmake .. -DBUILD_VARMINT=true && make
+    - name: build varmint
+      run: mkdir varmint_build && cd varmint_build && cmake .. -DBOARD_TO_BUILD=varmint && make
+    - name: build pixracer pro
+      run: mkdir pixracer_pro_build && cd pixracer_pro_build && cmake .. -DBOARD_TO_BUILD=pixracer_pro && make

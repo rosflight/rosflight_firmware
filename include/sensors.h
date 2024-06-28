@@ -58,10 +58,12 @@ typedef struct
 
 enum GNSSFixType
 {
-  GNSS_FIX_TYPE_NO_FIX,
-  GNSS_FIX_TYPE_FIX,
-  GNSS_FIX_RTK_FLOAT, // The two RTK fix types are for possible future use.
-  GNSS_FIX_RTK_FIXED
+  GNSS_FIX_TYPE_NO_FIX = 0,
+  GNSS_FIX_TYPE_DEAD_RECKONING_ONLY = 1,
+  GNSS_FIX_TYPE_2D_FIX = 2,
+  GNSS_FIX_TYPE_3D_FIX = 3,
+  GNSS_FIX_TYPE_GNSS_PLUS_DEAD_RECKONING = 4,
+  GNSS_FIX_TYPE_TIME_FIX_ONLY = 5,
 };
 
 struct GNSSData
