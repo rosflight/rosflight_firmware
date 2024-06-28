@@ -26,7 +26,15 @@ echo_blue "Test 1: Build varmint firmware"
 rm -rf build
 mkdir build
 cd build
-cmake .. -DBUILD_VARMINT=TRUE -DCMAKE_BUILD_TYPE=RELEASE && make -j4 -l4
+cmake .. -DBUILD_VARMINT=TRUE -DCMAKE_BUILD_TYPE=RELEASE && make -j8 -l8
+print_result $?
+cd ..
+
+echo_blue "Test 1: Build pixracer pro firmware"
+rm -rf build
+mkdir build
+cd build
+cmake .. -DBUILD_PIXRACER_PRO=TRUE -DCMAKE_BUILD_TYPE=RELEASE && make -j8 -l8
 print_result $?
 cd ..
 
@@ -34,7 +42,7 @@ echo_blue "Test 2: Build test suite"
 rm -rf build
 mkdir build
 cd build
-cmake .. -DBUILD_TEST=TRUE -DCMAKE_BUILD_TYPE=RELEASE && make -j4 -l4
+cmake .. -DBUILD_TEST=TRUE -DCMAKE_BUILD_TYPE=RELEASE && make -j8 -l8
 print_result $?
 
 echo_blue "Test 3: Run test suite"
