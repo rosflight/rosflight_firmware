@@ -53,10 +53,6 @@ extern bool verbose;
 
 // extern UART_HandleTypeDef huart1;
 
-#include <mavlink.h>
-#include <rosflight.h>
-extern rosflight_firmware::ROSflight firmware;
-
 extern "C"
 {
     int __io_putchar(int ch)
