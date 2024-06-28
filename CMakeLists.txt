@@ -48,19 +48,16 @@ file(GLOB_RECURSE ROSFLIGHT_SOURCES
 
 ### select boards to compile ###
 
-option(BUILD_VARMINT "Build the varmint board target" OFF)
-option(BUILD_PIXRACER_PRO "Build the pixracer pro board target" OFF)
-option(BUILD_TEST "Build the test board target" OFF)
-
-if(BUILD_VARMINT)
+set(BOARD_TO_BUILD "" CACHE STRING "Select the board to build")
+if("${BOARD_TO_BUILD}" STREQUAL "varmint")
     message("===== Selecting varmint board target. =====")
     add_subdirectory(boards/varmint_h7/varmint_10X)
-elseif (BUILD_PIXRACER_PRO)
+elseif("${BOARD_TO_BUILD}" STREQUAL "pixracer_pro")
     message("===== Selecting pixracer pro board target. =====")
     add_subdirectory(boards/varmint_h7/pixracer_pro)
-elseif(BUILD_TEST)
+elseif("${BOARD_TO_BUILD}" STREQUAL "test")
     message("===== Selecting test board target. ======")
     add_subdirectory(test)
 else()
-    message(FATAL_ERROR "No board selected! Please select the varmint, pixracer pro, or test board with -DBUILD_VARMINT=TRUE, -DBUILD_PIXRACER_PRO=TRUE, OR -DBUILD_TEST=TRUE.")
-endif ()
+    message(FATAL_ERROR "No valid board selected! Please select the varmint, pixracer pro, or test board with -DBOARD_TO_BUILD=varmint, -DBOARD_TO_BUILD=pixracer_pro, OR -DBOARD_TO_BUILD=test.")
+endif()
