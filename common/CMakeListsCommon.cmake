@@ -20,8 +20,8 @@ set(SIZE arm-none-eabi-size)
 #  provided by the CMakeLists.txt file in the root of the firmware repo and has the source files
 #  for the firmware.
 if(NOT DEFINED ROSFLIGHT_SOURCES)
-    include_directories(test)
-    set(ROSFLIGHT_SOURCES "test/main.cpp")
+    include_directories(../test)
+    set(ROSFLIGHT_SOURCES "../test/main.cpp")
 endif()
 
 include_directories(

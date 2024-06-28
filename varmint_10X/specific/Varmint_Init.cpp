@@ -36,14 +36,10 @@
  **/
 #include <Varmint.h>
 
-#include <rosflight.h>
-
 #include <BoardConfig.h>
-#include <Misc.h>
+#include <misc.h>
 #include <Spi.h>
 #include <Time64.h>
-
-#include <Util.h>
 
 #include <usb_device.h>
 #include <usbd_cdc_acm_if.h>
