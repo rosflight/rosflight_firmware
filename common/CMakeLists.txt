@@ -24,6 +24,10 @@ if(NOT DEFINED ROSFLIGHT_SOURCES)
     set(ROSFLIGHT_SOURCES "../test/main.cpp")
 endif()
 
+if(NOT DEFINED TARGET_NAME)
+    set(TARGET_NAME "varmint")
+endif()
+
 include_directories(
     Core/Inc
     Drivers/STM32H7xx_HAL_Driver/Inc
@@ -73,8 +77,8 @@ add_link_options(-mcpu=cortex-m7 -mthumb -mthumb-interwork -u _printf_float )
 
 add_executable(${TARGET_NAME}.elf ${ROSFLIGHT_SOURCES} ${VARMINT_SOURCES} ${LINKER_SCRIPT})
 target_compile_definitions(${TARGET_NAME}.elf PUBLIC
-  GIT_VERSION_HASH=0x${GIT_VERSION_HASH}
-  GIT_VERSION_STRING=\"${GIT_VERSION_STRING}\"
+    GIT_VERSION_HASH=0x${GIT_VERSION_HASH}
+    GIT_VERSION_STRING=\"${GIT_VERSION_STRING}\"
 )
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${TARGET_NAME}.hex)
