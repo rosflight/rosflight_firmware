@@ -1,3 +1,5 @@
+[![Build Varmint 10X](https://github.com/rosflight/varmint_h7/actions/workflows/build_varmint_10X.yml/badge.svg)](https://github.com/rosflight/varmint_h7/actions/workflows/build_varmint_10X.yml) [![Build Pixracer Pro](https://github.com/rosflight/varmint_h7/actions/workflows/build_pixracer_pro.yml/badge.svg)](https://github.com/rosflight/varmint_h7/actions/workflows/build_pixracer_pro.yml)
+
 # Varmint H7
 
 This repository contains a board implementation of the [ROSflight firmware](https://github.com/rosflight/rosflight_firmware) for AeroVironment's Varmint FCU package, a STM32H753 based flight controller with a NVIDIA Jetson Orin NX on board. It also has an implementation for 3DR's [PixRacer Pro](https://docs.3dr.com/autopilots/pixracer-pro/#downloads) autopilot, which has a very similar configuration to the Varmint board.
