@@ -45,7 +45,7 @@ class Mixer : public ParamListenerInterface
 {
 public:
   static constexpr uint8_t NUM_TOTAL_OUTPUTS = 14;
-  static constexpr uint8_t NUM_MIXER_OUTPUTS = 8;
+  static constexpr uint8_t NUM_MIXER_OUTPUTS = 10;
 
   enum
   {
@@ -62,27 +62,36 @@ public:
     FIXEDWING = 10,
     PASSTHROUGH = 11,
     VTAIL = 12,
-    CUSTOM = 13,
+	QUADPLANE = 13,
+    CUSTOM = 14,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
 
-  typedef enum
+  typedef enum :uint8_t
   {
-    NONE, // None
-    S,    // Servo
-    M,    // Motor
-    G     // GPIO
+    NONE = 0, // None
+    S = 1,    // Servo
+    M = 2,    // Motor
+ //   G     // GPIO // TODO this option is not supported in the code.
   } output_type_t;
+
+  typedef enum : uint8_t
+  {
+	PWM  =0,
+	DSHOT=1,
+  } pwm_protocol_t;
+
 
   typedef struct
   {
     output_type_t output_type[NUM_MIXER_OUTPUTS];
+//    pwm_protocol_t pwm_protocol[NUM_MIXER_OUTPUTS]; // Note: Let the rate determine the protocol PWM vs. DSHOT
+    float default_pwm_rate[NUM_MIXER_OUTPUTS];
     float F[NUM_MIXER_OUTPUTS];
     float x[NUM_MIXER_OUTPUTS];
     float y[NUM_MIXER_OUTPUTS];
     float z[NUM_MIXER_OUTPUTS];
-    uint32_t default_pwm_rate;
   } mixer_t;
 
   typedef struct
@@ -107,130 +116,148 @@ private:
   void write_motor(uint8_t index, float value);
   void write_servo(uint8_t index, float value);
 
-  const mixer_t esc_calibration_mixing = {{M, M, M, M, M, M, NONE, NONE},
+  // clang-format off
 
-                                          {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // F Mix
-                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                          490};
+  const mixer_t esc_calibration_mixing = { //
+	{M, M, M, M, M, M, NONE, NONE, NONE, NONE}, //
+//	{ PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM}, // PWM or DSHOT
+	{ 50,  50,  50,  50,  50,  50,  50,  50,  50,  50}, // Rate (Hz or kHz)
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f}, // F Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // X Mix
 
-  const mixer_t quadcopter_plus_mixing = {
+  const mixer_t quadcopter_plus_mixing = { //
+    {M, M, M, M, NONE, NONE, NONE, NONE, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+    {  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
+    {  0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+    {  1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
+    {  1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
+
+  const mixer_t quadcopter_x_mixing = { //
     {M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+	{1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
+	{-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+	{1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+	{1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
-    {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
-    {0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-    {1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-    490};
+  const mixer_t hex_plus_mixing = { //
+    {M, M, M, M, M, M, M, M, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},                       //  F  Mix
+    {0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.866025f, 0.0f, 0.0f, 0.0f, 0.0f}, //  X  Mix
+    {1.0f, 0.5f, -0.5f, -1.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f},                    //  Y  Mix
+    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};                    //  Z  Mix
 
-  const mixer_t quadcopter_x_mixing = {{M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
+  const mixer_t hex_x_mixing = { //
+    {M, M, M, M, M, M, M, M, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},                       //  F  Mix
+    {-0.5f, -1.0f, -0.5f, 0.5f, 1.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f},                    //  X  Mix
+    {0.866025f, 0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.0f, 0.0f, 0.0f, 0.0f}, //  Y  Mix
+    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f} };                   //  Z  Mix
 
-                                       {1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F Mix
-                                       {-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                       {1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-                                       {1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-                                       490};
+  const mixer_t octocopter_plus_mixing = { //
+    {M, M, M, M, M, M, M, M, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},            //  F  Mix
+    {0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f, 1.0f, 0.707f, 0.0f, 0.0f}, //  X  Mix
+    {1.0f, 0.707f, 0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f, 0.0f, 0.0f}, //  Y  Mix
+    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f}};        //  Z  Mix
 
-  const mixer_t hex_plus_mixing = {
-    {M, M, M, M, M, M, M, M}, // output_type
+  const mixer_t octocopter_x_mixing = { //
+    {M, M, M, M, M, M, M, M, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},            // F Mix
+    {-0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0f, 1.0f, 0.414, 0.0f, 0.0f}, // X Mix
+    {1.0f, 0.414f, -0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0, 0.0f, 0.0f}, // Y Mix
+    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f}};        // Z Mix
 
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                       //  F  Mix
-    {0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.866025f, 0.0f, 0.0f}, //  X  Mix
-    {1.0f, 0.5f, -0.5f, -1.0f, -0.5f, 0.5f, 0.0f, 0.0f},                    //  Y  Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},                    //  Z  Mix
-    490};
+  const mixer_t Y6_mixing = { //
+	{M, M, M, M, M, M, NONE, NONE, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},               // F Mix
+	{-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},             // X Mix
+	{0.667f, 0.667f, -1.333f, -1.333f, 0.667f, 0.667f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+	{1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};            // Z Mix
 
-  const mixer_t hex_x_mixing = {
-    {M, M, M, M, M, M, M, M}, // output_type
-
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},                       //  F  Mix
-    {-0.5f, -1.0f, -0.5f, 0.5f, 1.0f, 0.5f, 0.0f, 0.0f},                    //  X  Mix
-    {0.866025f, 0.0f, -0.866025f, -0.866025f, 0.0f, 0.866025f, 0.0f, 0.0f}, //  Y  Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},                    //  Z  Mix
-    490};
-
-  const mixer_t octocopter_plus_mixing = {
-    {M, M, M, M, M, M, M, M}, // output_type
-
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},            //  F  Mix
-    {0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f, 1.0f, 0.707f}, //  X  Mix
-    {1.0f, 0.707f, 0.0f, -0.707f, -1.0f, -0.707f, 0.0f, 0.707f}, //  Y  Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},        //  Z  Mix
-    490};
-
-  const mixer_t octocopter_x_mixing = {
-    {M, M, M, M, M, M, M, M}, // output_type
-
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},            // F Mix
-    {-0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0f, 1.0f, 0.414}, // X Mix
-    {1.0f, 0.414f, -0.414f, -1.0f, -1.0f, -0.414f, 0.414f, 1.0}, // Y Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f},        // Z Mix
-    490};
-
-  const mixer_t Y6_mixing = {
-    {M, M, M, M, M, M, NONE, NONE}, // output_type
-
-    {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},               // F Mix
-    {-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f},             // X Mix
-    {0.667f, 0.667f, -1.333f, -1.333f, 0.667f, 0.667f, 0.0f, 0.0f}, // Y Mix
-    {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f},            // Z Mix
-    490};
-
-  const mixer_t X8_mixing = {{M, M, M, M, M, M, M, M}, // output_type
-
-                             {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},     // F Mix
-                             {-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, // X Mix
-                             {1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f}, // Y Mix
-                             {1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f}, // Z Mix
-                             490};
+  const mixer_t X8_mixing = { //
+	{M, M, M, M, M, M, M, M, NONE, NONE}, // output_type
+//	{ DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  DSHOT}, // PWM or DSHOT
+	{3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5,  3e5}, // Rate (Hz)
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},     // F Mix
+	{-1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f}, // X Mix
+	{1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f}, // Y Mix
+	{1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f} };// Z Mix
 
   const mixer_t tricopter_mixing = {
-    {M, M, M, S, NONE, NONE, NONE, NONE}, // output_type
+	{      M,       M,      M,    NONE,        S,   NONE,   NONE,   NONE,   NONE,   NONE}, // output_type
+//	{  DSHOT,   DSHOT,  DSHOT,   DSHOT,      PWM,    PWM,    PWM,    PWM,    PWM,    PWM}, // PWM or DSHOT
+	{    3e5,     3e5,    3e5,     3e5,      3e5,     50,     50,     50,     50,     50}, // Rate (Hz or kHz)
+	{ 1.000f,  0.000f, 1.000f,  0.000f,   1.000f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f}, // F Mix
+	{-1.000f,  0.000f, 0.000f,  0.000f,   1.000f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f}, // X Mix
+	{ 0.667f,  0.000f, 0.667f,  0.000f,  -1.333f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f}, // Y Mix
+	{ 0.000f,  1.000f, 0.000f,  0.000f,   0.000f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f} }; // Z Mix
 
-    {1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // F Mix
-    {-1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},       // X Mix
-    {0.667f, 0.0f, 0.667f, -1.333f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},        // Z Mix
-    490};
-
-  const mixer_t fixedwing_mixing = {{S, S, M, S, S, M, NONE, NONE}, // output type
-
-                                    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-                                    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-                                    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-                                    50};
-
-  const mixer_t passthrough_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
-
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-                                      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-                                      50};
+  const mixer_t fixedwing_mixing = {
+	{   S,    S,    S, NONE,    M, NONE, NONE, NONE, NONE, NONE},  // output type
+//	{ PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM},  // PWM or DSHOT
+	{ 50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz or kHz)
+	{0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
+	{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+	{0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
+	{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
   const mixer_t fixedwing_vtail_mixing = {
-    {S, S, M, S, NONE, NONE, NONE, NONE}, // Ailerons, LRuddervator, Motor, RRuddervator
+    {   S,     S,    S, NONE,    M, NONE, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
+//	{ PWM,   PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM},  // PWM or DSHOT
+	{ 50,     50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz or kHz)
+    {0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
+    {1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+    {0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
+    {0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
-    {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
-    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-    {0.0f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-    {0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f},  // Z Mix
-    50};
+  const mixer_t quadplane_mixing = {
+    {   S,     S,    S,    M,    M,    M,    M,    M, NONE, NONE},  // Ailerons, Rudder, Elevator, Tractor Motor, Quadrotors
+	{ PWM,   PWM,  PWM,  PWM,  DSHOT,  DSHOT,  DSHOT,  DSHOT,  PWM,  PWM},  // PWM or DSHOT
+//	{ 50,     50,   50,   50,   3e5,   3e5,   3e5,   3e5,   50,   50},  // Rate (Hz or kHz)
+    {0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f},  // F Mix
+    {1.0f,  0.0f, 0.0f, 0.0f, 0.0f,-1.0f, 0.0f, 1.0f, 0.0f, 0.0f},  // X Mix
+    {0.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,-1.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
+    {0.0f,  0.0f, 1.0f, 0.0f, 1.0f,-1.0f, 1.0f,-1.0f, 0.0f, 0.0f}}; // Z Mix
 
-  const mixer_t custom_mixing = {{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE}, // output type
+  const mixer_t passthrough_mixing = { //
+	{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
+//	{ PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM}, // PWM or DSHOT
+	{ 50,  50,  50,  50,  50,  50,  50,  50,  50,  50}, // Rate (Hz or kHz)
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
-                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
-                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
-                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
-                                 {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Z Mix
-                                 50};
+  const mixer_t custom_mixing = { //
+	{NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE}, // output type
+//	{ PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM,  PWM}, // PWM or DSHOT
+	{ 50,  50,  50,  50,  50,  50,  50,  50,  50,  50}, // Rate (Hz or kHz)
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // F Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // X Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Y Mix
+	{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
   const mixer_t * mixer_to_use_;
 
-  // clang-format off
-  const mixer_t* array_of_mixers_[NUM_MIXERS] = {&esc_calibration_mixing,
+  const mixer_t* array_of_mixers_[NUM_MIXERS] =
+	{
+		&esc_calibration_mixing,
                                                  &quadcopter_plus_mixing,
                                                  &quadcopter_x_mixing,
                                                  &hex_plus_mixing,
@@ -243,7 +270,9 @@ private:
                                                  &fixedwing_mixing,
                                                  &passthrough_mixing,
                                                  &fixedwing_vtail_mixing,
-                                                 &custom_mixing};
+		&quadplane_mixing,
+		&custom_mixing
+	};
   // clang-format on
 
 public:
