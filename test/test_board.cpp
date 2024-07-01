@@ -154,7 +154,9 @@ float testBoard::rc_read(uint8_t channel)
   return static_cast<float>(rc_values[channel] - 1000) / 1000.0;
 }
 void testBoard::pwm_write(uint8_t channel, float value) {}
+void testBoard::pwm_write_multi(float *value, uint32_t channels) {}
 void testBoard::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) {}
+void testBoard::pwm_init_multi(const float *rate, uint32_t channels) {}
 void testBoard::pwm_disable() {}
 
 // non-volatile memory

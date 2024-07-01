@@ -109,8 +109,10 @@ public:
 
   // PWM
   void pwm_init(uint32_t refresh_rate, uint16_t idle_pwm) override;
+  void pwm_init_multi(const float *rate, uint32_t channels) override;
   void pwm_disable() override;
   void pwm_write(uint8_t channel, float value) override;
+  void pwm_write_multi(float *value, uint32_t channels) override;
 
   // non-volatile memory
   void memory_init() override;
