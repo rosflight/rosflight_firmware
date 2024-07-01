@@ -89,9 +89,9 @@ void Mixer::init_mixing()
 void Mixer::init_PWM()
 {
 	if(mixer_to_use_ != nullptr)
-		RF_.board_.pwm_init( mixer_to_use_->default_pwm_rate, NUM_MIXER_OUTPUTS);
+		RF_.board_.pwm_init_multi( mixer_to_use_->default_pwm_rate, NUM_MIXER_OUTPUTS);
 	else
-		RF_.board_.pwm_init( passthrough_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
+		RF_.board_.pwm_init_multi( passthrough_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
 }
 
 void Mixer::write_motor(uint8_t index, float value)
@@ -222,7 +222,7 @@ void Mixer::mix_output()
     }
   }
 
-   RF_.board_.pwm_write(raw_outputs_, NUM_TOTAL_OUTPUTS);
+   RF_.board_.pwm_write_multi(raw_outputs_, NUM_TOTAL_OUTPUTS);
 
 }
 
