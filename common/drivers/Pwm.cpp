@@ -46,57 +46,82 @@
 //  600	  600kbit/s	1.25	0.625	1.67	26.72
 // 1200	 1200kbit/s	0.625	0.313	0.83	13.28
 
-typedef enum
+__attribute__((section(".data"))) PwmBlockStructure pwm_init[PWM_TIMER_BLOCKS] = PWM_INIT_DEFINE;
+
+__attribute__((section("my_dma_buffers")))
+__attribute__((aligned(32))) static uint32_t pwm_dma_buf[PWM_TIMER_BLOCKS][PWM_DMA_BUFFER_LEN] = {0};
+
+
+void Pwm::updateConfig(const float *rate, uint32_t channels)
 {
-    PWM_STD,
-    PWM_DSHOT,
-} PwmProtocol;
+	channels = (channels<PWM_CHANNELS)?channels:PWM_CHANNELS;
 
-//typedef struct __attribute__((__packed__))
-//{
-//	TIM_HandleTypeDef *htim;
-//	uint16_t channel;
-//	uint16_t min;
-//	uint16_t center;
-//	uint16_t max;
-//} PwmChannelCfg;
+	for(uint32_t ch=0;ch<channels;ch++)
+		HAL_TIM_PWM_Stop(htim_[ch], chan_[ch]);
 
-typedef struct __attribute__((__packed__))
-{
-	TIM_TypeDef *instance;
-	PwmProtocol protocol;
-	uint32_t	period_counts;
-} PwmBlockCfg;
+	for(uint32_t ch=0;ch<channels;ch++)
+		setRate(ch,rate[ch]);
 
-__attribute__((section(".data"))) PwmChannelCfg pwm_ch[PWM_CHANNELS] = PWM_CHANNELS_DEFINE;
-__attribute__((section(".data"))) PwmBlockCfg pwm_blk[PWM_BLOCKS] = PWM_BLOCKS_DEFINE;
+	for(uint32_t ch=0;ch<channels;ch++)
+		HAL_TIM_PWM_Start(htim_[ch], chan_[ch]);
+}
 
-//#define PWM_CLOCK (2e8) // 200 MHz
 
 uint32_t Pwm::init(void)
 {
-	chan_ = pwm_ch;
-	for(uint8_t bk=0;bk<PWM_BLOCKS;bk++)
+	block_  = pwm_init;
+	dmaBuf_ = pwm_dma_buf;
+
+	// Clear lookup table
+	for(uint32_t output_index = 0; output_index<PWM_CHANNELS; output_index++)
 	{
-		TIM_HandleTypeDef *htim;
-		if(pwm_blk[bk].instance==TIM1) htim = &htim1;
-		else if(pwm_blk[bk].instance==TIM3) htim = &htim3;
-		else if(pwm_blk[bk].instance==TIM4) htim = &htim4;
-		else if(pwm_blk[bk].instance==TIM8) htim = &htim8;
+		htim_[output_index] = nullptr;
+		chan_[output_index] = PWM_CHAN_IGNORE;
+		blockIndex_[output_index] = (uint32_t)(-1);
+	}
 
-	    uint32_t prescaler; // yields 1us per count with a 200MHz clock input
-        if(pwm_blk[bk].protocol==PWM_DSHOT)
-        	prescaler = 0;   // 5ns per count.
-        else // PWM_STD
-        	prescaler = 199; // 1us per count
+	// Fill-in lookup tables
+	for(uint32_t bk=0;bk<PWM_TIMER_BLOCKS;bk++)
+	{
+		for( uint32_t ch=0; ch<4; ch++)
+		{
+			uint32_t output_index = block_[bk].chan[ch];
+			if( output_index<PWM_CHANNELS )
+			{
+				blockIndex_[output_index] = bk;
+				htim_[output_index] = block_[bk].htim;
+				chan_[output_index] = (uint32_t)ch<<2; // Note: TIM_CHANNEL_x = (x-1)*4; up to x==4
+			}
+		}
+	}
 
-        TIM_MasterConfigTypeDef sMasterConfig = {0};
-        TIM_OC_InitTypeDef sConfigOC = {0};
+	for(uint32_t bk=0;bk<PWM_TIMER_BLOCKS;bk++)
+	{
+		TIM_MasterConfigTypeDef sMasterConfig = {0};
+		TIM_OC_InitTypeDef sConfigOC = {0};
 
-        htim->Instance = pwm_blk[bk].instance;
-        htim->Init.Prescaler = prescaler;
+		TIM_HandleTypeDef *htim = block_[bk].htim;
+
+		if(htim == &htim1) 		htim->Instance = TIM1;
+		else if(htim == &htim3) htim->Instance = TIM3;
+		else if(htim == &htim4) htim->Instance = TIM4;
+		else if(htim == &htim8) htim->Instance = TIM8;
+		else return DRIVER_HAL_ERROR;
+
+        if((block_[bk].rate >= 150000) && (block_[bk].type ==  PWM_DSHOT)) // DSHOT
+        {
+            htim->Init.Prescaler = 0;
+            htim->Init.Period = (uint64_t)200000000/block_[bk].rate;
+        }
+        else if((block_[bk].type ==  PWM_STANDARD) && (block_[bk].rate < 490))
+        {
+            htim->Init.Prescaler = 199;
+            htim->Init.Period = (uint64_t)1000000/block_[bk].rate;
+        }
+        else
+        	return DRIVER_HAL_ERROR;
+
         htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-        htim->Init.Period = pwm_blk[bk].period_counts;
         htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
         htim->Init.RepetitionCounter = 0;
         htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -108,24 +133,24 @@ uint32_t Pwm::init(void)
         if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK)
             return DRIVER_HAL_ERROR;
         sConfigOC.OCMode = TIM_OCMODE_PWM1;
- //       sConfigOC.Pulse = (SERVO_PWM_CENTER);
+//        sConfigOC.Pulse = 1500;
         sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
         sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
         sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
         sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
         sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
 
-        for(uint8_t ch=0;ch<PWM_CHANNELS;ch++)
+        for(uint32_t ch=0;ch<4;ch++)
         {
-        	if(pwm_ch[ch].htim==htim)
+        	if(block_[bk].chan[ch]<PWM_CHANNELS)
         	{
-        		sConfigOC.Pulse = pwm_ch[ch].center;
- 				if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, pwm_ch[ch].channel) != HAL_OK)
+        		sConfigOC.Pulse = 0; // default to flat line output
+ 				if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC,(uint32_t)ch*4) != HAL_OK)
 					return DRIVER_HAL_ERROR;
         	}
         }
 
-        if( (pwm_blk[bk].instance==TIM1) || (pwm_blk[bk].instance==TIM8))
+        if( (htim==&htim1) || (htim==&htim8))
         {
 			TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 			sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
@@ -142,9 +167,8 @@ uint32_t Pwm::init(void)
 			if (HAL_TIMEx_ConfigBreakDeadTime(htim, &sBreakDeadTimeConfig) != HAL_OK)
 			 return DRIVER_HAL_ERROR;
         }
-
-         HAL_TIM_MspPostInit(htim);
-
+    	HAL_TIM_MspPostInit(htim);
 	}
+
     return DRIVER_OK;
 }

@@ -390,22 +390,34 @@ float Varmint::rc_read(uint8_t chan)
         ever_read = true;
     }
 
-    if ((chan < PWM_CHANNELS) & ever_read)
+    if ((chan < RC_PACKET_CHANNELS) & ever_read)
         return p.chan[chan];
     return -1; // out of range or no data in p
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // PWM
+
+// legacy, all channels are pwm and set to the same 'refresh_rate'
 void Varmint::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
 {
     for (int ch = 0; ch < PWM_CHANNELS; ch++)
         pwm_.disable(ch);
     for (int ch = 0; ch < PWM_CHANNELS; ch++)
-        pwm_.set_rate(ch, refresh_rate);
+    {
+        pwm_.setRate(ch, refresh_rate);
+        if(idle_pwm==0)  pwm_.writeUs(ch, 0); // OFF
+        else pwm_.write(ch, 0.0);             // Channel minimum value
+    }
     for (int ch = 0; ch < PWM_CHANNELS; ch++)
         pwm_.enable(ch);
 }
+
+void Varmint::pwm_init_multi(const float *rate, uint32_t channels)
+{
+	pwm_.updateConfig(rate,channels);
+}
+
 void Varmint::pwm_disable(void)
 {
 	for (int ch = 0; ch < PWM_CHANNELS; ch++)
@@ -415,6 +427,13 @@ void Varmint::pwm_write(uint8_t ch, float value)
 {
     pwm_.write(ch, value);
 }
+
+void Varmint::pwm_write_multi(float *value, uint32_t channels)
+{
+	pwm_.write(value, channels);
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // LEDs
@@ -491,113 +510,3 @@ bool Varmint::memory_write(const void *src, size_t len)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Helper functions (not part of parent class)
-
-//uint32_t Varmint::pwm_init_timers(uint32_t servo_pwm_period_us)
-//{
-//    {
-//        TIM_MasterConfigTypeDef sMasterConfig = {0};
-//        TIM_OC_InitTypeDef sConfigOC = {0};
-//        TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
-//
-//        htim1.Instance = TIM1;
-//        htim1.Init.Prescaler = (SERVO_PWM_CLK_DIV);
-//        htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-//        htim1.Init.Period = servo_pwm_period_us;
-//        htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-//        htim1.Init.RepetitionCounter = 0;
-//        htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-//        if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-//        sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
-//        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-//        if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sConfigOC.OCMode = TIM_OCMODE_PWM1;
-//        sConfigOC.Pulse = (SERVO_PWM_CENTER);
-//        sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-//        sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-//        sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-//        sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-//        sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-//        sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-//        sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-//        sBreakDeadTimeConfig.DeadTime = 0;
-//        sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-//        sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-//        sBreakDeadTimeConfig.BreakFilter = 0;
-//        sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
-//        sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
-//        sBreakDeadTimeConfig.Break2Filter = 0;
-//        sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-//        if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        HAL_TIM_MspPostInit(&htim1);
-//    }
-//#if defined(htim3)
-//    {
-//        TIM_MasterConfigTypeDef sMasterConfig = {0};
-//        TIM_OC_InitTypeDef sConfigOC = {0};
-//        htim3.Instance = TIM3;
-//        htim3.Init.Prescaler = (SERVO_PWM_CLK_DIV);
-//        htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-//        htim3.Init.Period = servo_pwm_period_us;
-//        htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-//        htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-//        if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-//        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-//        if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sConfigOC.OCMode = TIM_OCMODE_PWM1;
-//        sConfigOC.Pulse = (SERVO_PWM_CENTER);
-//        sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-//        sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        HAL_TIM_MspPostInit(&htim3);
-//    }
-//#endif
-//    {
-//        TIM_MasterConfigTypeDef sMasterConfig = {0};
-//        TIM_OC_InitTypeDef sConfigOC = {0};
-//        htim4.Instance = TIM4;
-//        htim4.Init.Prescaler = (SERVO_PWM_CLK_DIV);
-//        htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-//        htim4.Init.Period = servo_pwm_period_us;
-//        htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-//        htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-//        if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-//        sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-//        if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        sConfigOC.OCMode = TIM_OCMODE_PWM1;
-//        sConfigOC.Pulse = (SERVO_PWM_CENTER);
-//        sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-//        sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-//            return DRIVER_HAL_ERROR;
-//        HAL_TIM_MspPostInit(&htim4);
-//    }
-//    return DRIVER_OK;
-//}

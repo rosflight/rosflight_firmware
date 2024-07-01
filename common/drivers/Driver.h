@@ -47,8 +47,7 @@
 class Driver
 {
   public:
-    //    virtual bool startDma (void)=0;						// Called in response to a data ready signal
-    //    virtual void endDma (void)=0;	// Called when DMA read is complete
+
     virtual bool display(void) = 0;
 
     uint16_t rxFifoCount(void)

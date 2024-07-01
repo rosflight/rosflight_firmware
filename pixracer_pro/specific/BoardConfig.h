@@ -94,38 +94,37 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
 
 // Pwm's
-#define PWM_MIN (1000)
-#define PWM_CENTER (1500)
-#define PWM_MAX (2000)
-
-// TIMER, CHAN, PWM_STD|PWM_DSHOT, 50|300|600, ...
-// for PWM_STD, Hz, for DSHOT, bps
-// PWM_STD or PWM_DSHOT
-#define PWM_DSHOT_PERIOD_COUNTS (667)		// 300000 bps 667 counts per bit at 200MHz clock
-#define PWM_MKS_PERIOD_COUNTS   (3000)		// 333Hz at 1MHz clock
-#define PWM_STD_PERIOD_COUNTS   (20000)   	// 50 Hz at 1MHz clock
-
-#define PWM_BLOCKS 3
-#define PWM_BLOCKS_DEFINE \
-{ \
-	{ TIM1, PWM_STD, PWM_STD_PERIOD_COUNTS}, \
-	{ TIM4, PWM_STD, PWM_STD_PERIOD_COUNTS}, \
-	{ TIM8, PWM_STD, PWM_STD_PERIOD_COUNTS} \
-}
+//#define PWM_SERVO_MIN 	  	(1000)
+//#define PWM_SERVO_MAX 	  	(2000)
+//
+//#define DSHOT_ESC_MIN		(48)
+//#define DSHOT_ESC_MAX		(2047)
+//
+//#define PWM_DSHOT_RATE_HZ 	(300000.0) // baud rate
+//#define PWM_MKS_RATE_HZ 	(333.0)
+//#define PWM_STD_RATE_HZ 	(50.0)
 
 #define PWM_CHANNELS (8) // Number of PWM output channels on the board
-#define PWM_CHANNELS_DEFINE \
+#define PWM_TIMER_BLOCKS	3
+
+//typedef enum : uint8_t
+//{
+//	PWM_STANDARD,
+//	PWM_DSHOT
+//} pwm_type;
+
+// Arrays are the mapping of CH1-4 to the 10 PWM Channels Index
+#define PWM_INIT_DEFINE \
 { \
-	{ (&htim1), TIM_CHANNEL_4, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim1), TIM_CHANNEL_3, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim1), TIM_CHANNEL_2, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim1), TIM_CHANNEL_1, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim4), TIM_CHANNEL_2, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim4), TIM_CHANNEL_3, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim8), TIM_CHANNEL_1, PWM_MIN, PWM_CENTER, PWM_MAX}, \
-	{ (&htim8), TIM_CHANNEL_2, PWM_MIN, PWM_CENTER, PWM_MAX} \
+	{ (&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, { 3,   2,  1,   0}}, \
+	{ (&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, { 255, 4,  5, 255}}, \
+	{ (&htim3), PWM_STANDARD, PWM_STD_RATE_HZ, { 6,  7, 255, 255}}  \
 }
 
+// Channel order based on hardware pinout naming
+//	TIMER 1 TIM_CHANNEL_4, TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1
+//	TIMER 4 TIM_CHANNEL_2, TIM_CHANNEL_3
+//	TIMER 3 TIM_CHANNEL_1, TIM_CHANNEL_2
 
 // BMI088 IMU
 
