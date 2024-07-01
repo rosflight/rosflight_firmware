@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : verbose.c
+ * File     : misc.c
  * Date     : Sep 23, 2023
  ******************************************************************************
  *
@@ -40,18 +40,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <usb_device.h>
-
 #include <usbd_cdc_acm_if.h>
-
-#include <Time64.h>
 
 #include <misc.h>
 
-extern Time64 time64;
-
 extern bool verbose;
-
-// extern UART_HandleTypeDef huart1;
 
 extern "C"
 {
@@ -129,9 +122,9 @@ void misc_exit_status(uint32_t status)
 {
     misc_printf("Exit Status: ");
     if (status == DRIVER_OK)
-        misc_printf(" DRIVER_OK");
+        misc_printf(" \033[0;42mDRIVER_OK");
     else
-        misc_printf(" DRIVER_ERROR");
+        misc_printf(" \033[0;41mDRIVER_ERROR");
 
     if (status & DRIVER_ID_MISMATCH)
         misc_printf(" DRIVER_ID_MISMATCH");
@@ -155,5 +148,8 @@ void misc_exit_status(uint32_t status)
         misc_printf(" UBX_FAIL_BAUD_CHANGE");
     if (status & VOLTAGE_SET_FAIL)
         misc_printf(" VOLTAGE_SET_FAIL");
-    misc_printf("\n");
+    misc_printf("\033[0m\n");
+
+    if (status != DRIVER_OK && verbose) while(1); //PTT debug only. Removing this line.
 }
+

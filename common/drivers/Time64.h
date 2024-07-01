@@ -45,7 +45,6 @@
 class Time64
 {
   public:
-    Time64(){};
     uint32_t init(TIM_HandleTypeDef *htim_low, TIM_TypeDef *instance_low, TIM_HandleTypeDef *htim_high,
                   TIM_TypeDef *instance_high)
     {
