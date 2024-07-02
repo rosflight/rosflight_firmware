@@ -72,6 +72,28 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // End MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+
+#define INTERFACE_LIST\
+		Sbus rc_;			/* All */\
+		Ubx gps_;			/* All */\
+		Adc adc_;			/* All */\
+		Telem telem_;		/* All */\
+		Vcp vcp_;			/* All */\
+		Pwm pwm_;			/* All */\
+		Sd sd_; 			/* All */\
+		Dps310 baro_;		/* All */\
+ 		Adis165xx imu0_;  	/* Varmint 10-12X */ \
+		Bmi088 imu1_; 	 	/* Varmint 10-12X */\
+		Iis2mdc mag_;	 	/* Varmint 10-12X */ \
+		DlhrL20G pitot_;	/* Varmint 10-11X */\
+/*		Mcp4017 servoV_; */ /* Varmint 11-12X */ \
+/*		Auav pitot_; */	    /* Varmint 12X */ \
+/*		Auav baro2_; */	    /* Varmint 12X */ \
+/*		Bmi088 imu0_;    */	/* PixRacer Pro */\
+/*		Ms4525 pitot_; */   	/* PixRacer Pro */ \
+/*		Ist8308 mag_;  */	 	/* PixRacer Pro */ \
+		/**/
+
 #define EPOCH_HZ (400)
 #define EPOCH_US (1000000 / EPOCH_HZ)
 
