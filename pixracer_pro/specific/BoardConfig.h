@@ -141,13 +141,13 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 { \
 	{ (&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, { 3,   2,  1,   0}}, \
 	{ (&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, { 255, 4,  5, 255}}, \
-	{ (&htim3), PWM_STANDARD, PWM_STD_RATE_HZ, { 6,  7, 255, 255}}  \
+	{ (&htim8), PWM_STANDARD, PWM_STD_RATE_HZ, { 6,  7, 255, 255}}  \
 }
 
 // Channel order based on hardware pinout naming
 //	TIMER 1 TIM_CHANNEL_4, TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1
 //	TIMER 4 TIM_CHANNEL_2, TIM_CHANNEL_3
-//	TIMER 3 TIM_CHANNEL_1, TIM_CHANNEL_2
+//	TIMER 8 TIM_CHANNEL_1, TIM_CHANNEL_2
 
 // BMI088 IMU
 
