@@ -88,10 +88,11 @@ void Mixer::init_mixing()
 
 void Mixer::init_PWM()
 {
-	if(mixer_to_use_ != nullptr)
-		RF_.board_.pwm_init_multi( mixer_to_use_->default_pwm_rate, NUM_MIXER_OUTPUTS);
-	else
-		RF_.board_.pwm_init_multi( passthrough_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
+  if (mixer_to_use_ != nullptr) {
+    RF_.board_.pwm_init_multi(mixer_to_use_->default_pwm_rate, NUM_MIXER_OUTPUTS);
+  } else {
+    RF_.board_.pwm_init_multi(passthrough_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
+  }
 }
 
 void Mixer::write_motor(uint8_t index, float value)
@@ -167,8 +168,7 @@ void Mixer::mix_output()
   // Perform Motor Output Scaling
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
-	   if (mixer_to_use_->output_type[i] == M)
-		outputs_[i] *= scale_factor;
+    if (mixer_to_use_->output_type[i] == M) { outputs_[i] *= scale_factor; }
   }
 
   // Insert AUX Commands, and assemble combined_output_types array (Does not override mixer values)
@@ -191,39 +191,32 @@ void Mixer::mix_output()
   }
 
   // Write to outputs
-   for (uint8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {
-    float value=outputs_[i];
-    if (combined_output_type_[i] == S) //
-    {
-      // PTT removed write_servo(i, outputs_[i]);
-	  if (value > 1.0) {
-		value = 1.0;
-	  } else if (value < -1.0) {
-		value = -1.0;
-	  }
-	  raw_outputs_[i] = value*0.5 + 0.5;
-    } //
-    else if (combined_output_type_[i] == M) //
-    {
-      //PTT removed write_motor(i, outputs_[i]);
-	  if (RF_.state_manager_.state().armed) {
-		if (value > 1.0) {
-		  value = 1.0;
-		} else if (value < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
-				   && RF_.params_.get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED)) {
-		  value = RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
-		} else if (value < 0.0) {
-		  value = 0.0;
-		}
-	  } else {
-		value = 0.0;
-	  }
-	  raw_outputs_[i] = value;
+  for (uint8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {
+    float value = outputs_[i];
+    if (combined_output_type_[i] == S) {
+      if (value > 1.0) {
+        value = 1.0;
+      } else if (value < -1.0) {
+        value = -1.0;
+      }
+      raw_outputs_[i] = value * 0.5 + 0.5;
+    } else if (combined_output_type_[i] == M) {
+      if (RF_.state_manager_.state().armed) {
+        if (value > 1.0) {
+          value = 1.0;
+        } else if (value < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
+                   && RF_.params_.get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED)) {
+          value = RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
+        } else if (value < 0.0) {
+          value = 0.0;
+        }
+      } else {
+        value = 0.0;
+      }
+      raw_outputs_[i] = value;
     }
   }
-
-   RF_.board_.pwm_write_multi(raw_outputs_, NUM_TOTAL_OUTPUTS);
-
+  RF_.board_.pwm_write_multi(raw_outputs_, NUM_TOTAL_OUTPUTS);
 }
 
 } // namespace rosflight_firmware
