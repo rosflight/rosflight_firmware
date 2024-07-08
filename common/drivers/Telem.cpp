@@ -66,9 +66,9 @@ __attribute__((section("my_buffers")))
 __attribute__((aligned(32))) static uint8_t telem_fifo_tx_buffer1[SERIAL_TX_FIFO_BUFFERS1 * sizeof(SerialTxPacket)];
 __attribute__((section("my_buffers")))
 __attribute__((aligned(32))) static uint8_t telem_fifo_tx_buffer2[SERIAL_TX_FIFO_BUFFERS2 * sizeof(SerialTxPacket)];
-__attribute__((section("my_buffers")))
-__attribute__((aligned(32))) static uint8_t *telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] = {
-    telem_fifo_tx_buffer0, telem_fifo_tx_buffer1, telem_fifo_tx_buffer2};
+__attribute__((section(".data")))
+__attribute__((aligned(32))) static uint8_t *telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] =
+{telem_fifo_tx_buffer0, telem_fifo_tx_buffer1, telem_fifo_tx_buffer2};
 __attribute__((section("my_buffers"))) __attribute__((aligned(32))) static PacketFifo telem_tx_fifos[SERIAL_QOS_FIFOS];
 
 uint32_t Telem::init(
