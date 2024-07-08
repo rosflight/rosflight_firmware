@@ -32,19 +32,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>common</name>
+			<name>links</name>
 			<type>2</type>
-			<location>C:/Projects/Varmint Projects/rosflight_varmint/varmint/common</location>
-		</link>
-		<link>
-			<name>rosflight_firmware</name>
-			<type>2</type>
-			<location>C:/Projects/Varmint Projects/rosflight_varmint/rosflight_firmware</location>
-		</link>
-		<link>
-			<name>specific</name>
-			<type>2</type>
-			<location>C:/Projects/Varmint Projects/rosflight_varmint/varmint/pixracer_pro/specific</location>
+			<location>C:/Projects/VarmintProjects/rosflight_varmint/links</location>
 		</link>
 	</linkedResources>
 </projectDescription>
