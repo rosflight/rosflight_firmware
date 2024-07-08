@@ -65,7 +65,9 @@ typedef enum
     DLHR_RX,
     DLHR_ERROR,
     // MS4525 Pitot
+    MS4525_CMDRXSTART,
     MS4525_CMDRX,
+    MS4525_CMDRXSEND,
     MS4525_ERROR,
     // IST8308 Mag
     IST8308_CMD,

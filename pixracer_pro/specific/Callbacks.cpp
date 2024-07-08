@@ -54,16 +54,17 @@ extern Time64 time64;
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    static uint64_t poll_counter = 0;
-    poll_counter++;
+
     if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
     {
+    static uint64_t poll_counter = 0;
+    poll_counter++;
         varmint.baro_.poll(poll_counter);
 
         // Mag and Pitot are on the same I2C. Avoid i2c collisions, this is not done automatically!
         // Offset Pitot to avoid collision with mag. The first mag command takes around 4 time slots at 10kHz.
         varmint.mag_.poll(poll_counter);
-        varmint.pitot_.poll(poll_counter + 4);
+        varmint.pitot_.poll(poll_counter - 5);
 
         varmint.rc_.poll();              // Restart if dead
         varmint.gps_.poll();             // Restart if dead
