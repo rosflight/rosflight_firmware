@@ -91,10 +91,15 @@ uint32_t Ms4525::init(
 PollingState Ms4525::state(uint64_t poll_counter)
 {
     uint32_t rollover = 10000; // us (100 Hz) 0-99 slots at 10 kHz
-    PollingStateStruct lut[] = // BARO at 50 Hz
+    PollingStateStruct lut[] = // BARO at 400 Hz
         {
             // at 10kHz, each count is 100us. I2C is 90us pre byte
-            {0, MS4525_CMDRX}, // addr + 4 bytes
+                {0,  MS4525_CMDRXSTART}, // addr + 4 bytes
+	            {15, MS4525_CMDRX}, // addr + 4 bytes
+	            {30, MS4525_CMDRX}, // addr + 4 bytes
+	            {45, MS4525_CMDRX}, // addr + 4 bytes
+	            {60, MS4525_CMDRX}, // addr + 4 bytes
+	            {75, MS4525_CMDRXSEND}, // addr + 4 bytes
         };
     return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
                               poll_counter % (rollover / POLLING_PERIOD_US));
@@ -103,9 +108,10 @@ PollingState Ms4525::state(uint64_t poll_counter)
 bool Ms4525::poll(uint64_t poll_counter)
 {
     PollingState poll_state = state(poll_counter);
-    if (poll_state == MS4525_CMDRX)
+    if ((poll_state == MS4525_CMDRXSTART)||(poll_state == MS4525_CMDRX)||(poll_state == MS4525_CMDRXSEND))
     {
-        launchUs_ = time64.Us();
+    	if(poll_state == MS4525_CMDRXSTART) launchUs_ = time64.Us();
+
         if ((dmaRunning_ =
                  (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ms4525_i2c_dma_buf,
                                                        MS4525_I2C_DMA_SIZE)))) // Receive 7 bytes of data over I2C
@@ -118,29 +124,51 @@ bool Ms4525::poll(uint64_t poll_counter)
 
 void Ms4525::endDma(void)
 {
-    if (i2cState_ == MS4525_CMDRX)
+    static float pressure_filtered = 0;
+
+    if ((i2cState_ == MS4525_CMDRXSTART)||(i2cState_ == MS4525_CMDRX)||(i2cState_ == MS4525_CMDRXSEND))
+    {
+        if ((ms4525_i2c_dma_buf[0] & 0xC0) == MS4525_OK)
+        {
+            uint32_t i_pressure = (uint32_t)(ms4525_i2c_dma_buf[0]&0x3F) << 8 | (uint32_t)ms4525_i2c_dma_buf[1];
+
+            static double pmax = 6894.76; // (=-pmin) Pa
+
+         	float pressure = (((double)i_pressure - 1638.3)/6553.2 -1.0)*pmax;         // Pa
+
+         	const float alpha = 0.5;
+         	pressure_filtered = alpha*pressure+(1.0-alpha)*pressure_filtered;
+
+            if (i2cState_ == MS4525_CMDRXSEND)
     {
         PressurePacket p;
+
+                p.pressure = pressure_filtered;
+
+            	uint32_t i_temperature =  ((uint32_t)ms4525_i2c_dma_buf[2] << 3 | (uint32_t)(ms4525_i2c_dma_buf[3]& 0xE0) >> 5);
+            	p.temperature = (double)i_temperature * 200.0 / 2047.0 - 50.0 + 273.15; // K
         p.status = ms4525_i2c_dma_buf[0] & 0xC0;
-        if (p.status == 0x00)
-        {
+
             p.timestamp = time64.Us();
             p.drdy = p.timestamp;
-            p.groupDelay = (p.timestamp - launchUs_);
-            uint32_t i_pressure = (uint32_t)ms4525_i2c_dma_buf[0] << 8 | (uint32_t)ms4525_i2c_dma_buf[1];
-            uint32_t i_temperature =
-                ((uint32_t)ms4525_i2c_dma_buf[2] << 3 | (uint32_t)ms4525_i2c_dma_buf[3] >> 5) & 0x7FF;
+                p.groupDelay = (p.timestamp - launchUs_)/2;
 
-            double pmax = 6894.76; // (=-pmin) Pa
-
-            p.status = (ms4525_i2c_dma_buf[0] >> 6) & 0x0003;
-            p.pressure = ((double)i_pressure / 8192.0 - 1.0) * 1.25 * pmax;         // Pa
-            p.temperature = (double)i_temperature * 200.0 / 2047.0 - 50.0 + 273.15; // K
-
-            if (p.status == MS4525_OK)
                 rxFifo_.write((uint8_t *)&p, sizeof(p));
         }
     }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     i2cState_ = IDLE_STATE;
     dmaRunning_ = false;
 }
@@ -153,8 +181,13 @@ bool Ms4525::display(void)
     {
         misc_header(name, p.drdy, p.timestamp, p.groupDelay);
         misc_printf("%10.3f Pa                          |                                        | %7.1f C |           "
-                    "   | 0x%04X\n",
+                    "   | 0x%04X",
                     p.pressure, p.temperature - 273.15, p.status);
+        if (p.status == MS4525_OK)
+            misc_printf(" - OK\n");
+        else
+            misc_printf(" - NOK\n");
+
         return 1;
     }
     else

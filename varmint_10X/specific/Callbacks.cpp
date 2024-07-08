@@ -54,10 +54,10 @@ extern Time64 time64;
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    static uint64_t poll_counter = 0;
-    poll_counter++;
     if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
     {
+    static uint64_t poll_counter = 0;
+    poll_counter++;
         varmint.baro_.poll(poll_counter);
         varmint.mag_.poll(poll_counter);
         varmint.pitot_.poll(poll_counter);

@@ -46,7 +46,7 @@ __attribute__((aligned(32))) static uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFF
 __attribute__((section("my_buffers")))
 __attribute__((aligned(32))) static uint8_t ist8308_fifo_rx_buffer[IST8308_FIFO_BUFFERS * sizeof(MagPacket)] = {0};
 
-#define IST8308_OK (0x0000)
+//#define IST8308_OK (0x0000)
 
 #define WAI_REG 0x0
 #define DEVICE_ID 0x08
@@ -183,13 +183,13 @@ uint32_t Ist8308::init(
 PollingState Ist8308::state(uint64_t poll_counter)
 {
     uint32_t rollover = 10000; // us (100 Hz) 0-99 slots at 10 kHz
-    PollingStateStruct lut[] = // BARO at 50 Hz
+    PollingStateStruct lut[] = //
         {
             // at 10kHz, each count is 100us. I2C is 90us pre byte
             // Mag
             {0, IST8308_CMD}, // addr + 2 byte, so leave at least 3 counts
-            {80, IST8308_TX}, // addr + 2 bytes
-            {85, IST8308_RX}, // addr + 6 bytes (start at leat 84 counts after cmd
+            {89, IST8308_TX}, // addr + 2 bytes
+            {92, IST8308_RX}, // addr + 6 bytes (start at leat 84 counts after cmd
         };
     return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
                               poll_counter % (rollover / POLLING_PERIOD_US));
@@ -209,7 +209,7 @@ bool Ist8308::poll(uint64_t poll_counter)
         else
             i2cState_ = IST8308_ERROR;
     }
-    else if (poll_state == IST8308_TX) // Write register we want to read
+    else if (poll_state == IST8308_TX) // Write the register we want to read
     {
         drdy_ = time64.Us();
         ist8308_i2c_dma_buf[0] = STAT1_REG;
@@ -251,7 +251,7 @@ void Ist8308::endDma(void)
         iflux = ((int16_t)ist8308_i2c_dma_buf[6] << 8) | (int16_t)ist8308_i2c_dma_buf[5];
         p.flux[2] = -(double)iflux * 1.1515e-7; // Tesla
 
-        if (p.status == IST8308_OK)
+        if (p.status == STAT1_VAL_DRDY )
             rxFifo_.write((uint8_t *)&p, sizeof(p));
     }
     i2cState_ = IDLE_STATE;
@@ -268,7 +268,11 @@ bool Ist8308::display()
         misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0,
                     p.flux[2] * 1e6 - 37.5);
         misc_printf(" |                                       ");
-        misc_printf(" | %7.1f C |              | 0x%04X\n", p.temperature - 273.15, p.status);
+        misc_printf(" |     N/A C |              | 0x%04X", p.status);
+        if (p.status == STAT1_VAL_DRDY)
+            misc_printf(" - OK\n");
+        else
+            misc_printf(" - NOK\n");
         return 1;
     }
     else
