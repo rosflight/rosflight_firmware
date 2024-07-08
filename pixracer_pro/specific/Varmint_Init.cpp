@@ -239,6 +239,8 @@ void Varmint::init_board(void)
     GRN_LO;
     BLU_LO;
 
+    PROBE1_LO;
+
 #if defined(SANDBOX)
     sandbox();
 #endif

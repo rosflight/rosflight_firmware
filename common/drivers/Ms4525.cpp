@@ -136,6 +136,7 @@ void Ms4525::endDma(void)
 
          	float pressure = (((double)i_pressure - 1638.3)/6553.2 -1.0)*pmax;         // Pa
 
+			// Anti-alias filter since we are reporting data at a lower rate.
          	const float alpha = 0.5;
          	pressure_filtered = alpha*pressure+(1.0-alpha)*pressure_filtered;
 

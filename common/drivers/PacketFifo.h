@@ -150,11 +150,11 @@ class PacketFifo
     }
 
   private:
-    volatile uint16_t head_, tail_;
-    uint16_t dataSizeMax_;
-    uint16_t packetCountMax_ = 0;
+    volatile uint32_t head_, tail_;
+    uint32_t dataSizeMax_;
+    uint32_t packetCountMax_ = 0;
 
-    volatile uint16_t bufferSize_;
+    volatile uint32_t bufferSize_;
     Packet packet_[PACKET_FIFO_MAX_BUFFERS];
 };
 

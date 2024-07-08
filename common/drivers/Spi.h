@@ -94,9 +94,6 @@ class Spi
         if (software_nss)
             HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
 
-#if CACHE_MANAGEMENT_FUNCTIONS
-        SCB_InvalidateDCache_by_Addr((uint32_t *)rxBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force read from SRAM
-#endif
         WAIT2US;
         return rxBuffer_;
     }
@@ -116,10 +113,6 @@ class Spi
         txBuffer_[0] = tx_byte;
         //		memset(rxBuffer_,0xFF,SPI_DMA_MAX_BUFFER_SIZE);
 
-#if CACHE_MANAGEMENT_FUNCTIONS
-        SCB_CleanDCache_by_Addr((uint32_t *)txBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force data from cache to SRAM
-#endif
-
         if (software_nss)
             HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
         HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive_DMA(hspi_, txBuffer_, rxBuffer_, size);
@@ -138,10 +131,6 @@ class Spi
         memcpy(txBuffer_, tx_bytes, size);
         //		memset(rxBuffer_,0xFF,SPI_DMA_MAX_BUFFER_SIZE);
 
-#if CACHE_MANAGEMENT_FUNCTIONS
-        SCB_CleanDCache_by_Addr((uint32_t *)txBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force data from cache to SRAM
-#endif
-
         if (software_nss)
             HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
         HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive_DMA(hspi_, txBuffer_, rxBuffer_, size);
@@ -159,11 +148,6 @@ class Spi
     //		memset(txBuffer_,0,SPI_DMA_MAX_BUFFER_SIZE);
     //		txBuffer_[0] = tx_byte;
     //
-    //		#if CACHE_MANAGEMENT_FUNCTIONS
-    //				SCB_CleanDCache_by_Addr((uint32_t *)txBuffer_, SPI_DMA_MAX_BUFFER_SIZE) ; // Force data from cache
-    // to SRAM
-    //      #endif
-    //
     //		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
     //		HAL_StatusTypeDef hal_status = HAL_SPI_Transmit_DMA(hspi_, txBuffer_, size);
     //		if((HAL_OK!=hal_status) && (software_nss)) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
@@ -178,10 +162,6 @@ class Spi
 
         memset(txBuffer_, 0, SPI_DMA_MAX_BUFFER_SIZE);
         memcpy(txBuffer_, tx_bytes, size);
-
-#if CACHE_MANAGEMENT_FUNCTIONS
-        SCB_CleanDCache_by_Addr((uint32_t *)txBuffer_, SPI_DMA_MAX_BUFFER_SIZE); // Force data from cache to SRAM
-#endif
 
         if (software_nss)
             HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);

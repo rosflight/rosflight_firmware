@@ -105,7 +105,7 @@ uint32_t Telem::init(
     huart_->Init.StopBits = UART_STOPBITS_1;
     huart_->Init.Parity = UART_PARITY_NONE;
     huart_->Init.Mode = UART_MODE_TX_RX;
-    huart_->Init.HwFlowCtl = UART_HWCONTROL_RTS_CTS; // UART_HWCONTROL_NONE;
+    huart_->Init.HwFlowCtl = UART_HWCONTROL_NONE; //UART_HWCONTROL_RTS_CTS;
     huart_->Init.OverSampling = UART_OVERSAMPLING_16;
     huart_->Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     huart_->Init.ClockPrescaler = UART_PRESCALER_DIV1;
