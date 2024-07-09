@@ -118,6 +118,8 @@ uint32_t Bmi088::init(
         groupDelay_ = 7000;
     }
 
+    time64.dMs(50); // Some time to ensure power-on completed.
+
     HAL_GPIO_WritePin(spiG_.port_, spiG_.pin_, GPIO_PIN_SET);
     HAL_GPIO_WritePin(spiA_.port_, spiA_.pin_, GPIO_PIN_SET);
     time64.dUs(100);
@@ -210,7 +212,7 @@ uint32_t Bmi088::init(
     // Read/Write Low Power Mode
     readRegisterG(BMI08_REG_GYRO_LPM1);        // (0x91)
     writeRegisterG(BMI08_REG_GYRO_LPM1, 0x00); // (0x11,0x00) Set normal mode
-    time64.dUs(30000);
+    time64.dMs(30);
 
     // Read/Write Gyro Bandwidth
     uint8_t GyroBW;
