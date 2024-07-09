@@ -397,37 +397,30 @@ void CommManager::send_rc_raw(void)
 
 void CommManager::send_diff_pressure(void)
 {
-  if (RF_.sensors_.data().diff_pressure_valid) {
     comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_velocity,
                                   RF_.sensors_.data().diff_pressure,
                                   RF_.sensors_.data().diff_pressure_temp);
   }
-}
 
 void CommManager::send_baro(void)
 {
-  if (RF_.sensors_.data().baro_valid) {
     comm_link_.send_baro(sysid_, RF_.sensors_.data().baro_altitude,
                          RF_.sensors_.data().baro_pressure, RF_.sensors_.data().baro_temperature);
   }
-}
 
 void CommManager::send_sonar(void)
 {
-  if (RF_.sensors_.data().sonar_range_valid) {
     comm_link_.send_sonar(sysid_,
                           0, // TODO set sensor type (sonar/lidar), use enum
                           RF_.sensors_.data().sonar_range, 8.0, 0.25);
   }
-}
 
 void CommManager::send_mag(void)
 {
-  if (RF_.sensors_.data().mag_present) comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
+ 	  	  comm_link_.send_mag(sysid_, RF_.sensors_.data().mag);
 }
 void CommManager::send_battery_status(void)
 {
-  if (RF_.sensors_.data().battery_monitor_present)
     comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
                                    RF_.sensors_.data().battery_current);
 }
@@ -446,24 +439,20 @@ void CommManager::send_gnss(void)
 {
   const GNSSData & gnss_data = RF_.sensors_.data().gnss_data;
 
-  if (RF_.sensors_.data().gnss_present) {
     if (gnss_data.time_of_week != last_sent_gnss_tow_) {
       comm_link_.send_gnss(sysid_, gnss_data);
       last_sent_gnss_tow_ = gnss_data.time_of_week;
     }
   }
-}
 
 void CommManager::send_gnss_full()
 {
   const GNSSFull & gnss_full = RF_.sensors_.data().gnss_full;
 
-  if (RF_.sensors_.data().gnss_present) {
     if (gnss_full.time_of_week != last_sent_gnss_full_tow_) {
       comm_link_.send_gnss_full(sysid_, RF_.sensors_.data().gnss_full);
       last_sent_gnss_full_tow_ = gnss_full.time_of_week;
     }
-  }
 }
 
 void CommManager::send_low_priority(void)

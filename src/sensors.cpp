@@ -47,7 +47,7 @@ namespace rosflight_firmware
 // TODO: These values don't change actual rates, is there a way to just reference actual rates
 //  as defined in hardware board implementation?
 const float Sensors::BARO_MAX_CHANGE_RATE = 200.0f; // approx 200 m/s
-const float Sensors::BARO_SAMPLE_RATE = 60.0f;
+const float Sensors::BARO_SAMPLE_RATE = 50.0f;
 const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f; // approx 15 m/s^2
 const float Sensors::DIFF_SAMPLE_RATE = 100.0f;
 const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f; // 100 m/s
@@ -78,9 +78,6 @@ void Sensors::init()
   float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
   ground_pressure_ = 101325.0f * static_cast<float>(pow((1 - 2.25694e-5 * alt), 5.2553));
 
-  baro_outlier_filt_.init(BARO_MAX_CHANGE_RATE, BARO_SAMPLE_RATE, ground_pressure_);
-  diff_outlier_filt_.init(DIFF_MAX_CHANGE_RATE, DIFF_SAMPLE_RATE, 0.0f);
-  sonar_outlier_filt_.init(SONAR_MAX_CHANGE_RATE, SONAR_SAMPLE_RATE, 0.0f);
   int_start_us_ = rf_.board_.clock_micros();
 
   this->update_battery_monitor_multipliers();
@@ -183,16 +180,10 @@ got_flags Sensors::run()
     data_.baro_present = true;
     if (rf_.board_.baro_has_new_data()) {
       got.baro = true;
-      float raw_pressure;
-      float raw_temp;
-      rf_.board_.baro_read(&raw_pressure, &raw_temp);
-      data_.baro_valid = baro_outlier_filt_.update(raw_pressure, &data_.baro_pressure);
-      if (data_.baro_valid) {
-        data_.baro_temperature = raw_temp;
+      rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
         correct_baro();
       }
     }
-  }
 
   // MAGNETOMETER:
   if (rf_.board_.mag_present()) {
@@ -213,25 +204,17 @@ got_flags Sensors::run()
     data_.diff_pressure_present = true;
     if (rf_.board_.diff_pressure_has_new_data()) {
       got.diff_pressure = true;
-      float raw_pressure;
-      float raw_temp;
-      rf_.board_.diff_pressure_read(&raw_pressure, &raw_temp);
-      data_.diff_pressure_valid = diff_outlier_filt_.update(raw_pressure, &data_.diff_pressure);
-      if (data_.diff_pressure_valid) {
-        data_.diff_pressure_temp = raw_temp;
+      rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp);
         correct_diff_pressure();
       }
     }
-  }
 
   // SONAR:
   if (rf_.board_.sonar_present()) {
     data_.sonar_present = true;
     if (rf_.board_.sonar_has_new_data()) {
       got.sonar = true;
-      float raw_distance;
-      rf_.board_.sonar_read(&raw_distance);
-      data_.sonar_range_valid = sonar_outlier_filt_.update(raw_distance, &data_.sonar_range);
+      rf_.board_.sonar_read(&data_.sonar_range);
     }
   }
 
@@ -590,29 +573,6 @@ void Sensors::correct_diff_pressure()
   if (data_.baro_present) atm = data_.baro_pressure;
   data_.diff_pressure_velocity = turbomath::fsign(data_.diff_pressure) * 24.574f
     / turbomath::inv_sqrt((turbomath::fabs(data_.diff_pressure) * data_.diff_pressure_temp / atm));
-}
-
-void Sensors::OutlierFilter::init(float max_change_rate, float update_rate, float center)
-{
-  max_change_ = max_change_rate / update_rate;
-  window_size_ = 1;
-  center_ = center;
-  init_ = true;
-}
-
-bool Sensors::OutlierFilter::update(float new_val, float * val)
-{
-  float diff = new_val - center_;
-  if (fabsf(diff) < window_size_ * max_change_) {
-    *val = new_val;
-
-    center_ += turbomath::fsign(diff) * fminf(max_change_, fabsf(diff));
-    if (window_size_ > 1) { window_size_--; }
-    return true;
-  } else {
-    window_size_++;
-    return false;
-  }
 }
 
 void Sensors::update_battery_monitor_multipliers()
