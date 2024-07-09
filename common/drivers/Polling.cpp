@@ -55,7 +55,7 @@ uint32_t InitPollTimer(TIM_HandleTypeDef *htim, TIM_TypeDef *instance, uint32_t 
     htim->Instance = instance;
     htim->Init.Prescaler = 199;
     htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim->Init.Period = POLLING_PERIOD_US;
+    htim->Init.Period = POLLING_PERIOD_US-1;
     htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
     if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
         return DRIVER_HAL_ERROR;

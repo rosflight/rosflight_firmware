@@ -111,12 +111,12 @@ uint32_t Pwm::init(void)
         if((block_[bk].rate >= 150000) && (block_[bk].type ==  PWM_DSHOT)) // DSHOT
         {
             htim->Init.Prescaler = 0;
-            htim->Init.Period = (uint64_t)200000000/block_[bk].rate;
+            htim->Init.Period = (uint64_t)200000000/block_[bk].rate-1;
         }
         else if((block_[bk].type ==  PWM_STANDARD) && (block_[bk].rate < 490))
         {
             htim->Init.Prescaler = 199;
-            htim->Init.Period = (uint64_t)1000000/block_[bk].rate;
+            htim->Init.Period = (uint64_t)1000000/block_[bk].rate-1;
         }
         else
         	return DRIVER_HAL_ERROR;

@@ -108,7 +108,7 @@ uint32_t Adis165xx::init(
     htim_->Instance = htim_instance;
     htim_->Init.Prescaler = 199;
     htim_->Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim_->Init.Period = htim_period_us;
+    htim_->Init.Period = htim_period_us-1;
     htim_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
     if (HAL_TIM_PWM_Init(&htim12) != HAL_OK)
