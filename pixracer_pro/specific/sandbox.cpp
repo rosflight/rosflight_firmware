@@ -66,9 +66,27 @@ void verbose_equals(void)
 
 void sandbox(void)
 {
+	// Give us time to read the initialization messages
     time64.dMs(5000);
 
     verbose = true;
+
+//	 Test pwm outputs
+//
+//	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
+//	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
+//	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
+//	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
+//	varmint.pwm_.write(outputs, PWM_CHANNELS);
+//
+//	while(1)
+//	{
+//	  PROBE1_HI;
+//	  varmint.pwm_.write(outputs, PWM_CHANNELS);
+//	  PROBE1_LO;
+//	  time64.dUs(450); ~ 2khs update rate
+//	}
+
     uint32_t n = 0;
     while (1)
     {
