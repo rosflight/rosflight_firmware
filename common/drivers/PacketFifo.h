@@ -41,7 +41,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define PACKET_FIFO_MAX_BUFFERS 64
+#define PACKET_FIFO_MAX_BUFFERS 128
 
 typedef struct
 {
