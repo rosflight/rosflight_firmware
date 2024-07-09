@@ -378,7 +378,7 @@ void Dps310::endDma(void)
     else if (spiState_ == DPS310_RX_T) // Temperature Data
     {
         int32_t traw = ((int32_t)rx[4] << 24 | (int32_t)rx[5] << 16 | (int32_t)rx[6] << 8) >> 8;
-        double Traw = (double)traw / KT;
+        Traw = (double)traw / KT;
         p.temperature = C0_ * 0.5 + C1_ * Traw + 273.15; // K
     }
     else if (spiState_ == DPS310_RX_P) // Pressure Data
