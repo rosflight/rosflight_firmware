@@ -152,7 +152,7 @@ uint32_t Adc::configAdc(ADC_HandleTypeDef *hadc, ADC_TypeDef *adc_instance, AdcC
 
 bool Adc::poll(uint64_t poll_counter)
 {
-    uint16_t poll_offset = (uint16_t)(poll_counter % (POLLING_FREQ_HZ / ADC_HZ));
+    uint32_t poll_offset = (uint32_t)(poll_counter % (POLLING_FREQ_HZ / ADC_HZ));
 
     if (poll_offset == 0) // launch a read
     {
