@@ -246,6 +246,10 @@ void Varmint::init_board(void)
     BLU_LO;
 
 #if defined(SANDBOX)
+    misc_printf("\n\nStarting Sandbox\n");
     sandbox();
+#else
+    misc_printf("\n\nStarting Rosflight\n");
+    verbose = false;
 #endif
 }

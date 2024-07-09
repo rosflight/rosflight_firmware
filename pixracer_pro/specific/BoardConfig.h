@@ -39,6 +39,7 @@
 #define BOARDCONFIG_H_
 
 //#define SANDBOX // set this via CMAKE
+#define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 #include "stm32h7xx_hal.h"
 

@@ -83,8 +83,8 @@ void Varmint::clock_delay(uint32_t ms)
 // serial comms to the Companion computer
 void Varmint::serial_init(uint32_t baud_rate, uint32_t dev)
 {
-    serial_device_ = 0; // dev;// 1 = uart, otherwise = VCP
-    if (dev == 1)
+    serial_device_ = USE_TELEM; // dev; // 1 = telem uart, otherwise = VCP
+    if (serial_device_ == 1)
         telem_.reset_baud(baud_rate);
 }
 
