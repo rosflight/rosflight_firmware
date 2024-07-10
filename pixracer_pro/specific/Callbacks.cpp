@@ -85,13 +85,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 {
     // NOTE! Pixrader Pro Lacks a jumper on the board between these two pins. This hack fixes that.
     if (exti_pin == BMI088_INT4_GYRO_Pin)
-    {
         HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_SET);
-    }
     if (exti_pin == BMI088_INT1_ACCEL_Pin)
-    {
         HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_RESET);
-    }
 
     if (varmint.imu0_.isMy(exti_pin))
         varmint.imu0_.startDma();

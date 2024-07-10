@@ -150,6 +150,6 @@ void misc_exit_status(uint32_t status)
         misc_printf(" VOLTAGE_SET_FAIL");
     misc_printf("\033[0m\n");
 
-    if (status != DRIVER_OK && verbose) while(1); //PTT debug only. Removing this line.
+    if (status != DRIVER_OK && verbose) while(1); //PTT debug only. Need to inform error handler.
 }
 
