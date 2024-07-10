@@ -44,15 +44,6 @@
 
 namespace rosflight_firmware
 {
-// TODO: These values don't change actual rates, is there a way to just reference actual rates
-//  as defined in hardware board implementation?
-const float Sensors::BARO_MAX_CHANGE_RATE = 200.0f; // approx 200 m/s
-const float Sensors::BARO_SAMPLE_RATE = 50.0f;
-const float Sensors::DIFF_MAX_CHANGE_RATE = 225.0f; // approx 15 m/s^2
-const float Sensors::DIFF_SAMPLE_RATE = 100.0f;
-const float Sensors::SONAR_MAX_CHANGE_RATE = 100.0f; // 100 m/s
-const float Sensors::SONAR_SAMPLE_RATE = 50.0f;
-
 const int Sensors::SENSOR_CAL_DELAY_CYCLES = 128;
 const int Sensors::SENSOR_CAL_CYCLES = 127;
 

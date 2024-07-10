@@ -204,17 +204,10 @@ public:
   got_flags got;
 
 private:
-  static const float BARO_MAX_CHANGE_RATE;
-  static const float BARO_SAMPLE_RATE;
-  static const float DIFF_MAX_CHANGE_RATE;
-  static const float DIFF_SAMPLE_RATE;
-  static const float SONAR_MAX_CHANGE_RATE;
-  static const float SONAR_SAMPLE_RATE;
   static const int SENSOR_CAL_DELAY_CYCLES;
   static const int SENSOR_CAL_CYCLES;
   static const float BARO_MAX_CALIBRATION_VARIANCE;
   static const float DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE;
-  static constexpr uint32_t BATTERY_MONITOR_UPDATE_PERIOD_MS = 10;
 
   enum : uint8_t
   {
