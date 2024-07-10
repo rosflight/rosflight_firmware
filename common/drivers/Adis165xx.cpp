@@ -48,12 +48,12 @@
 #define ADIS_SPI_PAUSE_US 100 // 16->20 us between spi transactions
 
 #define ADIS_BUFFBYTES32 34
-//#define ADIS_BUFFBYTES16  22
+#define ADIS_BUFFBYTES16  22
 
 #define SPI_WRITE 0x80
 #define SPI_READ 0x00
 
-#define BURST_READ_32 (0x68 | SPI_READ)
+#define BURST_READ (0x68 | SPI_READ)
 
 extern Time64 time64;
 
@@ -180,7 +180,16 @@ uint32_t Adis165xx::init(
     // [1] 0 falling edge sync (default =0)
     // [0] 1 active high when data is valid (default is 0, low)
     // 0b0000 0010 1000 0101 = 0x0285
+
+
+    if(sampleRateHz_==2000) // use 32-bit data mode
+    {
+    	writeRegister(ADIS16500_MSC_CTRL, 0x0085); // values 0b0000 0000 1000 0101 = 0x0085
+    }
+    else // use 16-bit data mode
+    {
     writeRegister(ADIS16500_MSC_CTRL, 0x0285); // values 0b0000 0010 1000 0101 = 0x0285
+    }
 
 #define ADIS16500_DIAG_STAT 0x02
     uint16_t diag_stat = readRegister(ADIS16500_DIAG_STAT);
@@ -208,13 +217,45 @@ bool Adis165xx::startDma(void) // called to start dma read
 {
     HAL_StatusTypeDef hal_Status = HAL_OK;
     drdy_ = time64.Us();
-    hal_Status = spi_.startDma(BURST_READ_32, ADIS_BUFFBYTES32);
+    if(sampleRateHz_==2000)  hal_Status = spi_.startDma(BURST_READ, ADIS_BUFFBYTES16);
+    else hal_Status = spi_.startDma(BURST_READ, ADIS_BUFFBYTES32);
     return hal_Status == HAL_OK;
 }
 
 void Adis165xx::endDma(void) // called when DMA data is ready
 {
     uint8_t *rx = spi_.endDma();
+    if(sampleRateHz_==2000)
+    {
+		// compute checksum
+		uint16_t sum = 0;
+		for (int n = 2; n < (ADIS_BUFFBYTES16 - 2); n++)
+			sum += (uint16_t)rx[n];
+
+		int16_t data[ADIS_BUFFBYTES16 / 2];
+		for (int i = 0; i < ADIS_BUFFBYTES16 / 2; i++)
+			data[i] = (int16_t)rx[2 * i] << 8 | ((int16_t)rx[2 * i + 1] & 0x00FF);
+		if (sum == data[10])
+		{
+			ImuPacket p;
+			p.timestamp = time64.Us();
+			p.drdy = drdy_;
+			p.groupDelay = groupDelay_;
+			p.status = (uint16_t)data[1];
+			p.gyro[0] = -(double)data[2] * 0.001745329251994;    // rad/s, or use 0.1 deg/s
+			p.gyro[1] = -(double)data[3] * 0.001745329251994;    // rad/s, or use 0.1 deg/s
+			p.gyro[2] = (double)data[4] * 0.001745329251994;    // rad/s, or use 0.1 deg/s
+			p.accel[0] = -(double)data[5] * 0.01225;            // m/s^2
+			p.accel[1] = -(double)data[6] * 0.01225;            // m/s^2
+			p.accel[2] = (double)data[7] * 0.01225;             // m/s^2
+			p.temperature = (double)data[8] * 0.1 + 273.15; // K
+			p.dataTime = (double)((uint16_t)data[9]) / sampleRateHz_;
+			if (p.status == ADIS_OK)
+				rxFifo_.write((uint8_t *)&p, sizeof(p));
+		}
+    }
+    else
+    {
     // compute checksum
     uint16_t sum = 0;
     for (int n = 2; n < (ADIS_BUFFBYTES32 - 2); n++)
@@ -241,6 +282,7 @@ void Adis165xx::endDma(void) // called when DMA data is ready
         p.dataTime = (double)((uint16_t)data[15]) / sampleRateHz_;
         if (p.status == ADIS_OK)
             rxFifo_.write((uint8_t *)&p, sizeof(p));
+		}
     }
 }
 
