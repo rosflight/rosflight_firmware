@@ -149,12 +149,10 @@ public:
     float diff_pressure_velocity = 0;
     float diff_pressure = 0;
     float diff_pressure_temp = 0;
-  //  bool diff_pressure_valid = false;
 
     float baro_altitude = 0;
     float baro_pressure = 0;
     float baro_temperature = 0;
-  //  bool baro_valid = false;
 
     float sonar_range = 0;
     bool sonar_range_valid = false;
