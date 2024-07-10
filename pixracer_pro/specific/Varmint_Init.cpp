@@ -136,6 +136,9 @@ void Varmint::init_board(void)
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // IMU initialization
 
+    HAL_NVIC_DisableIRQ(BMI088_INT4_GYRO_EXTI_IRQn);  // EXTI4_IRQn Gyro DRDY Feedback
+    HAL_NVIC_DisableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
+
     misc_printf("\n\nBMI088 (imu1) Initialization\n");
     init_status = imu0_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI,
                              BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port,
@@ -221,7 +224,7 @@ void Varmint::init_board(void)
     verbose = false;
 
     HAL_NVIC_EnableIRQ(BMI088_INT4_GYRO_EXTI_IRQn);  // EXTI4_IRQn Gyro DRDY Feedback
-    HAL_NVIC_EnableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY#endif
+    HAL_NVIC_EnableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
 
     __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
     __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);
@@ -240,6 +243,9 @@ void Varmint::init_board(void)
     BLU_LO;
 
     PROBE1_LO;
+    PROBE2_LO;
+    PROBE3_LO;
+    PROBE4_HI;
 
 #if defined(SANDBOX)
     sandbox();
