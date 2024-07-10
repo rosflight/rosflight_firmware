@@ -172,9 +172,9 @@ got_flags Sensors::run()
     if (rf_.board_.baro_has_new_data()) {
       got.baro = true;
       rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
-        correct_baro();
-      }
+      correct_baro();
     }
+  }
 
   // MAGNETOMETER:
   if (rf_.board_.mag_present()) {
@@ -196,9 +196,9 @@ got_flags Sensors::run()
     if (rf_.board_.diff_pressure_has_new_data()) {
       got.diff_pressure = true;
       rf_.board_.diff_pressure_read(&data_.diff_pressure, &data_.diff_pressure_temp);
-        correct_diff_pressure();
-      }
+      correct_diff_pressure();
     }
+  }
 
   // SONAR:
   if (rf_.board_.sonar_present()) {
