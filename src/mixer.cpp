@@ -148,7 +148,7 @@ void Mixer::mix_output()
     commands.z = 0.0;
   }
 
-  if (mixer_to_use_ == nullptr) return;
+  if (mixer_to_use_ == nullptr) { return; }
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if (mixer_to_use_->output_type[i] != NONE) {

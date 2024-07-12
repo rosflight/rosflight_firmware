@@ -117,9 +117,11 @@ TEST(TurboMath, atan2)
 TEST(TurboMath, asin)
 {
   for (float i = -1.0; i <= 1.0; i += 0.001) {
-    if (fabs(i) < 0.95) EXPECT_NEAR(turbomath::asin(i), asin(i), 0.0001);
-    else
+    if (fabs(i) < 0.95) {
+      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.0001);
+    } else {
       EXPECT_NEAR(turbomath::asin(i), asin(i), 0.2);
+    }
   }
 }
 

@@ -73,7 +73,7 @@ inline uint16_t checksum_fletcher16(const uint8_t * src, size_t len, bool finali
 
   uint16_t checksum = c1 << 8 | c2;
 
-  if (finalize && checksum == 0) checksum = 0xFFFF;
+  if (finalize && checksum == 0) { checksum = 0xFFFF; }
 
   return checksum;
 }

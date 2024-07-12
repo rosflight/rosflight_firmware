@@ -157,27 +157,34 @@ void StateManager::set_event(StateManager::Event event)
           break;
         case EVENT_REQUEST_ARM:
           if (next_arming_error_msg_ms_ < RF_.board_.clock_millis()) {
-            if (state_.error_codes & StateManager::ERROR_INVALID_MIXER)
+            if (state_.error_codes & StateManager::ERROR_INVALID_MIXER) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: Invalid mixer");
-            if (state_.error_codes & StateManager::ERROR_IMU_NOT_RESPONDING)
+            }
+            if (state_.error_codes & StateManager::ERROR_IMU_NOT_RESPONDING) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: IMU not responding");
-            if (state_.error_codes & StateManager::ERROR_RC_LOST)
+            }
+            if (state_.error_codes & StateManager::ERROR_RC_LOST) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: RC signal lost");
-            if (state_.error_codes & StateManager::ERROR_UNHEALTHY_ESTIMATOR)
+            }
+            if (state_.error_codes & StateManager::ERROR_UNHEALTHY_ESTIMATOR) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: Unhealthy estimator");
-            if (state_.error_codes & StateManager::ERROR_TIME_GOING_BACKWARDS)
+            }
+            if (state_.error_codes & StateManager::ERROR_TIME_GOING_BACKWARDS) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: Time going backwards");
-            if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU)
+            }
+            if (state_.error_codes & StateManager::ERROR_UNCALIBRATED_IMU) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: IMU not calibrated");
-            if (state_.error_codes & StateManager::ERROR_INVALID_FAILSAFE)
+            }
+            if (state_.error_codes & StateManager::ERROR_INVALID_FAILSAFE) {
               RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
                                     "Unable to arm: Invalid failsafe setting");
+            }
 
             next_arming_error_msg_ms_ =
               RF_.board_.clock_millis() + 1000; // throttle messages to 1 Hz
@@ -222,9 +229,11 @@ void StateManager::set_event(StateManager::Event event)
           break;
         case EVENT_REQUEST_DISARM:
           state_.armed = false;
-          if (state_.error) fsm_state_ = FSM_STATE_ERROR;
-          else
+          if (state_.error) {
+            fsm_state_ = FSM_STATE_ERROR;
+          } else {
             fsm_state_ = FSM_STATE_PREFLIGHT;
+          }
           break;
         case EVENT_ERROR:
           state_.error = true;
@@ -260,8 +269,9 @@ void StateManager::set_event(StateManager::Event event)
   }
 
   // If there has been a change, then report it to the user
-  if (start_state != fsm_state_ || state_.error_codes != start_errors)
+  if (start_state != fsm_state_ || state_.error_codes != start_errors) {
     RF_.comm_manager_.update_status();
+  }
 }
 
 void StateManager::write_backup_data(const BackupData::DebugInfo & debug)
@@ -312,9 +322,11 @@ void StateManager::check_backup_memory()
 
 void StateManager::process_errors()
 {
-  if (state_.error_codes) set_event(EVENT_ERROR);
-  else
+  if (state_.error_codes) {
+    set_event(EVENT_ERROR);
+  } else {
     set_event(EVENT_NO_ERROR);
+  }
 }
 
 void StateManager::update_leds()
@@ -325,19 +337,16 @@ void StateManager::update_leds()
       RF_.board_.led1_toggle();
       next_led_blink_ms_ = RF_.board_.clock_millis() + 100;
     }
-  }
-  // blink slowly if in error
-  else if (state_.error) {
+  } else if (state_.error) { // blink slowly if in error
     if (next_led_blink_ms_ < RF_.board_.clock_millis()) {
       RF_.board_.led1_toggle();
       next_led_blink_ms_ = RF_.board_.clock_millis() + 500;
     }
-  }
-  // off if disarmed, on if armed
-  else if (!state_.armed)
+  } else if (!state_.armed) { // off if disarmed, on if armed
     RF_.board_.led1_off();
-  else
+  } else {
     RF_.board_.led1_on();
+  }
 }
 
 } // namespace rosflight_firmware

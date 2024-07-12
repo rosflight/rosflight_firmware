@@ -83,10 +83,8 @@ void CommandManager::init_failsafe()
 {
   float failsafe_thr_param = RF_.params_.get_param_float(PARAM_FAILSAFE_THROTTLE);
   bool fixedwing = RF_.params_.get_param_int(PARAM_FIXED_WING);
-  if (!fixedwing
-      && (failsafe_thr_param < 0.
-          || failsafe_thr_param > 1.0)) // fixed wings always have 0 failsafe throttle
-  {
+  // fixed wings always have 0 failsafe throttle
+  if (!fixedwing && (failsafe_thr_param < 0. || failsafe_thr_param > 1.0)) {
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_FAILSAFE);
     failsafe_thr_param = 0.;
   } else {
@@ -95,9 +93,11 @@ void CommandManager::init_failsafe()
 
   multirotor_failsafe_command_.F.value = failsafe_thr_param;
 
-  if (fixedwing) failsafe_command_ = fixedwing_failsafe_command_;
-  else
+  if (fixedwing) {
+    failsafe_command_ = fixedwing_failsafe_command_;
+  } else {
     failsafe_command_ = multirotor_failsafe_command_;
+  }
 }
 
 void CommandManager::interpret_rc(void)
@@ -175,8 +175,7 @@ bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
   if ((RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE))
       || stick_deviated(channel)) {
     override_this_channel = true;
-  } else // Otherwise only have RC override if the offboard channel is inactive
-  {
+  } else { // Otherwise only have RC override if the offboard channel is inactive
     if (muxes[channel].onboard->active) {
       override_this_channel = false;
     } else {
@@ -195,8 +194,7 @@ bool CommandManager::do_throttle_muxing(void)
   if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE)
       && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE)) {
     override_this_channel = true;
-  } else // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
-  {
+  } else { // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
     if (muxes[MUX_F].onboard->active) {
       // Check if the parameter flag is set to have us always take the smaller throttle
       if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)) {
@@ -219,7 +217,7 @@ bool CommandManager::rc_override_active() { return rc_override_; }
 bool CommandManager::offboard_control_active()
 {
   for (int i = 0; i < 4; i++) {
-    if (muxes[i].onboard->active) return true;
+    if (muxes[i].onboard->active) { return true; }
   }
   return false;
 }

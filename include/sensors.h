@@ -193,9 +193,11 @@ public:
 
   inline bool should_send_imu_data(void)
   {
-    if (imu_data_sent_) return false;
-    else
+    if (imu_data_sent_) {
+      return false;
+    } else {
       imu_data_sent_ = true;
+    }
     return true;
   }
 

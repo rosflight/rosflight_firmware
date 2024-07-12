@@ -49,8 +49,9 @@ void Mavlink::init(uint32_t baud_rate, uint32_t dev)
 void Mavlink::receive(void)
 {
   while (board_.serial_bytes_available()) {
-    if (mavlink_parse_char(MAVLINK_COMM_0, board_.serial_read(), &in_buf_, &status_))
+    if (mavlink_parse_char(MAVLINK_COMM_0, board_.serial_read(), &in_buf_, &status_)) {
       handle_mavlink_message();
+    }
   }
 }
 
@@ -334,7 +335,7 @@ void Mavlink::handle_msg_param_request_list(const mavlink_message_t * const msg)
   mavlink_param_request_list_t list;
   mavlink_msg_param_request_list_decode(msg, &list);
 
-  if (listener_ != nullptr) listener_->param_request_list_callback(list.target_system);
+  if (listener_ != nullptr) { listener_->param_request_list_callback(list.target_system); }
 }
 
 void Mavlink::handle_msg_param_request_read(const mavlink_message_t * const msg)
@@ -342,8 +343,9 @@ void Mavlink::handle_msg_param_request_read(const mavlink_message_t * const msg)
   mavlink_param_request_read_t read;
   mavlink_msg_param_request_read_decode(msg, &read);
 
-  if (listener_ != nullptr)
+  if (listener_ != nullptr) {
     listener_->param_request_read_callback(read.target_system, read.param_id, read.param_index);
+  }
 }
 
 void Mavlink::handle_msg_param_set(const mavlink_message_t * const msg)
@@ -357,12 +359,14 @@ void Mavlink::handle_msg_param_set(const mavlink_message_t * const msg)
 
   switch (param.type) {
     case MAV_PARAM_TYPE_INT32:
-      if (listener_ != nullptr)
+      if (listener_ != nullptr) {
         listener_->param_set_int_callback(set.target_system, set.param_id, param.param_int32);
+      }
       break;
     case MAV_PARAM_TYPE_REAL32:
-      if (listener_ != nullptr)
+      if (listener_ != nullptr) {
         listener_->param_set_float_callback(set.target_system, set.param_id, param.param_float);
+      }
       break;
     default:
       // unsupported parameter type
@@ -419,7 +423,7 @@ void Mavlink::handle_msg_rosflight_cmd(const mavlink_message_t * const msg)
       return;
   }
 
-  if (listener_ != nullptr) listener_->command_callback(command);
+  if (listener_ != nullptr) { listener_->command_callback(command); }
 }
 
 void Mavlink::handle_msg_rosflight_aux_cmd(const mavlink_message_t * const msg)
@@ -451,7 +455,7 @@ void Mavlink::handle_msg_rosflight_aux_cmd(const mavlink_message_t * const msg)
   }
 
   // call callback after all channels have been repacked
-  if (listener_ != nullptr) listener_->aux_command_callback(command);
+  if (listener_ != nullptr) { listener_->aux_command_callback(command); }
 }
 
 void Mavlink::handle_msg_timesync(const mavlink_message_t * const msg)
@@ -459,7 +463,7 @@ void Mavlink::handle_msg_timesync(const mavlink_message_t * const msg)
   mavlink_timesync_t tsync;
   mavlink_msg_timesync_decode(msg, &tsync);
 
-  if (listener_ != nullptr) listener_->timesync_callback(tsync.tc1, tsync.ts1);
+  if (listener_ != nullptr) { listener_->timesync_callback(tsync.tc1, tsync.ts1); }
 }
 
 void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
@@ -493,7 +497,7 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
   control.z.valid = !(ctrl.ignore & IGNORE_VALUE3);
   control.F.valid = !(ctrl.ignore & IGNORE_VALUE4);
 
-  if (listener_ != nullptr) listener_->offboard_control_callback(control);
+  if (listener_ != nullptr) { listener_->offboard_control_callback(control); }
 }
 
 void Mavlink::handle_msg_external_attitude(const mavlink_message_t * const msg)
@@ -507,7 +511,7 @@ void Mavlink::handle_msg_external_attitude(const mavlink_message_t * const msg)
   q_extatt.y = q_msg.qy;
   q_extatt.z = q_msg.qz;
 
-  if (listener_ != nullptr) listener_->external_attitude_callback(q_extatt);
+  if (listener_ != nullptr) { listener_->external_attitude_callback(q_extatt); }
 }
 
 void Mavlink::handle_msg_heartbeat(const mavlink_message_t * const msg)
@@ -515,7 +519,7 @@ void Mavlink::handle_msg_heartbeat(const mavlink_message_t * const msg)
   // none of the information from the heartbeat is used
   (void) msg;
 
-  if (listener_ != nullptr) listener_->heartbeat_callback();
+  if (listener_ != nullptr) { listener_->heartbeat_callback(); }
 }
 
 void Mavlink::handle_mavlink_message()

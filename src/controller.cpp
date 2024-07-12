@@ -187,28 +187,31 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::Sta
   float dt = 1e-6 * dt_us;
 
   // ROLL
-  if (command.x.type == RATE)
+  if (command.x.type == RATE) {
     out.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
-  else if (command.x.type == ANGLE)
+  } else if (command.x.type == ANGLE) {
     out.x =
       roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
-  else
+  } else {
     out.x = command.x.value;
+  }
 
   // PITCH
-  if (command.y.type == RATE)
+  if (command.y.type == RATE) {
     out.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
-  else if (command.y.type == ANGLE)
+  } else if (command.y.type == ANGLE) {
     out.y =
       pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
-  else
+  } else {
     out.y = command.y.value;
+  }
 
   // YAW
-  if (command.z.type == RATE)
+  if (command.z.type == RATE) {
     out.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
-  else
+  } else {
     out.z = command.z.value;
+  }
 
   return out;
 }
@@ -280,8 +283,9 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   // Integrator anti-windup
   //// Include reference to Dr. Beard's notes here
   float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
-  if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f)
+  if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f) {
     integrator_ = (u_sat - p_term + d_term) / ki_;
+  }
 
   // Set output
   return u_sat;

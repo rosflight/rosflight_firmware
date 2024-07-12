@@ -72,14 +72,17 @@ uint8_t Params::compute_checksum(void)
   const char * p;
 
   for (p = reinterpret_cast<const char *>(&params.values);
-       p < reinterpret_cast<const char *>(&params.values) + 4 * PARAMS_COUNT; p++)
+       p < reinterpret_cast<const char *>(&params.values) + 4 * PARAMS_COUNT; p++) {
     chk ^= *p;
+  }
   for (p = reinterpret_cast<const char *>(&params.names);
-       p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT * PARAMS_NAME_LENGTH; p++)
+       p < reinterpret_cast<const char *>(&params.names) + PARAMS_COUNT * PARAMS_NAME_LENGTH; p++) {
     chk ^= *p;
+  }
   for (p = reinterpret_cast<const char *>(&params.types);
-       p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++)
+       p < reinterpret_cast<const char *>(&params.types) + PARAMS_COUNT; p++) {
     chk ^= *p;
+  }
 
   return chk;
 }
@@ -270,14 +273,15 @@ void Params::set_listeners(ParamListenerInterface * const listeners[], size_t nu
 
 bool Params::read(void)
 {
-  if (!RF_.board_.memory_read(&params, sizeof(params_t))) return false;
+  if (!RF_.board_.memory_read(&params, sizeof(params_t))) { return false; }
 
-  if (params.version != GIT_VERSION_HASH) return false;
+  if (params.version != GIT_VERSION_HASH) { return false; }
 
-  if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF)
+  if (params.size != sizeof(params_t) || params.magic_be != 0xBE || params.magic_ef != 0xEF) {
     return false;
+  }
 
-  if (compute_checksum() != params.chk) return false;
+  if (compute_checksum() != params.chk) { return false; }
 
   return true;
 }
@@ -290,7 +294,7 @@ bool Params::write(void)
   params.magic_ef = 0xEF;
   params.chk = compute_checksum();
 
-  if (!RF_.board_.memory_write(&params, sizeof(params_t))) return false;
+  if (!RF_.board_.memory_write(&params, sizeof(params_t))) { return false; }
   return true;
 }
 
@@ -314,10 +318,10 @@ uint16_t Params::lookup_param_id(const char name[PARAMS_NAME_LENGTH])
       }
 
       // stop comparing if end of string is reached
-      if (params.names[id][i] == '\0') break;
+      if (params.names[id][i] == '\0') { break; }
     }
 
-    if (match) return id;
+    if (match) { return id; }
   }
 
   return PARAMS_COUNT;

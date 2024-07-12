@@ -126,7 +126,7 @@ void CommManager::send_param_value(uint16_t param_id)
 
 void CommManager::param_request_list_callback(uint8_t target_system)
 {
-  if (target_system == sysid_) send_params_index_ = 0;
+  if (target_system == sysid_) { send_params_index_ = 0; }
 }
 
 void CommManager::send_parameter_list() { send_params_index_ = 0; }
@@ -138,7 +138,7 @@ void CommManager::param_request_read_callback(uint8_t target_system, const char 
     uint16_t id = (param_index < 0) ? RF_.params_.lookup_param_id(param_name)
                                     : static_cast<uint16_t>(param_index);
 
-    if (id < PARAMS_COUNT) send_param_value(id);
+    if (id < PARAMS_COUNT) { send_param_value(id); }
   }
 }
 
@@ -227,8 +227,10 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 {
   uint64_t now_us = RF_.board_.clock_micros();
 
-  if (tc1 == 0) // check that this is a request, not a response
+  if (tc1 == 0) {
+    // check that this is a request, not a response
     comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us) * 1000, ts1);
+  }
 }
 
 void CommManager::offboard_control_callback(const CommLinkInterface::OffboardControl & control)
@@ -345,14 +347,16 @@ void CommManager::send_heartbeat(void)
 
 void CommManager::send_status(void)
 {
-  if (!initialized_) return;
+  if (!initialized_) { return; }
 
   uint8_t control_mode = 0;
-  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) control_mode = MODE_PASS_THROUGH;
-  else if (RF_.command_manager_.combined_control().x.type == ANGLE)
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
+    control_mode = MODE_PASS_THROUGH;
+  } else if (RF_.command_manager_.combined_control().x.type == ANGLE) {
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-  else
+  } else {
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
+  }
 
   comm_link_.send_status(
     sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
@@ -471,40 +475,37 @@ void CommManager::stream(got_flags got)
 
   // Send out data
 
-  if (got.imu) // Nominally 400Hz
-  {
+  if (got.imu) { // Nominally 400Hz
     send_imu();
     send_attitude();
     static uint64_t ro_count = 0;
-    if (!((ro_count++) % 8)) send_output_raw(); // Raw output at 400Hz/8 = 50Hz
+    if (!((ro_count++) % 8)) { send_output_raw(); } // Raw output at 400Hz/8 = 50Hz
   }
 
   // Pitot sensor
-  if (got.diff_pressure) send_diff_pressure();
+  if (got.diff_pressure) { send_diff_pressure(); }
   // Baro altitude
-  if (got.baro) send_baro();
+  if (got.baro) { send_baro(); }
   // Magnetometer
-  if (got.mag) send_mag();
+  if (got.mag) { send_mag(); }
   // Height above ground sensor (not enabled)
-  if (got.sonar) send_sonar();
+  if (got.sonar) { send_sonar(); }
   // Battery V & I
-  if (got.battery) send_battery_status();
+  if (got.battery) { send_battery_status(); }
   // GPS data (GNSS Packed)
-  if (got.gnss) send_gnss();
+  if (got.gnss) { send_gnss(); }
   // GPS full data (not needed)
-  if (got.gnss_full) send_gnss_full();
-  if (got.rc) send_rc_raw();
+  if (got.gnss_full) { send_gnss_full(); }
+  if (got.rc) { send_rc_raw(); }
 
   {
     static uint64_t next_heartbeat = 0, next_status = 0;
 
-    if ((time_us) / 1000000 >= next_heartbeat) // 1 Hz
-    {
+    if ((time_us) / 1000000 >= next_heartbeat) { // 1 Hz
       send_heartbeat();
       next_heartbeat = time_us / 1000000 + 1;
     }
-    if ((time_us) / 100000 >= next_status) // 10 Hz
-    {
+    if ((time_us) / 100000 >= next_status) { // 10 Hz
       send_status();
       next_status = time_us / 100000 + 1;
     }

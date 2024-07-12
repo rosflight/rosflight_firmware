@@ -127,8 +127,9 @@ got_flags Sensors::run()
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
 
-    if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time))
+    if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time)) {
       got.imu = false;
+    }
 
     // Move data into local copy
     data_.accel.x = accel_[0];
@@ -143,8 +144,8 @@ got_flags Sensors::run()
 
     data_.gyro = data_.fcu_orientation * data_.gyro;
 
-    if (calibrating_acc_flag_) calibrate_accel();
-    if (calibrating_gyro_flag_) calibrate_gyro();
+    if (calibrating_acc_flag_) { calibrate_accel(); }
+    if (calibrating_gyro_flag_) { calibrate_gyro(); }
 
     // Apply bias correction
     correct_imu();
@@ -279,7 +280,9 @@ bool Sensors::update_imu(void)
   if ((new_data = rf_.board_.imu_has_new_data()) > 0) {
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
     last_imu_update_ms_ = rf_.board_.clock_millis();
-    if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time)) return false;
+    if (!rf_.board_.imu_read(accel_, &data_.imu_temperature, gyro_, &data_.imu_time)) {
+      return false;
+    }
 
     // Move data into local copy
     data_.accel.x = accel_[0];
@@ -294,8 +297,8 @@ bool Sensors::update_imu(void)
 
     data_.gyro = data_.fcu_orientation * data_.gyro;
 
-    if (calibrating_acc_flag_) calibrate_accel();
-    if (calibrating_gyro_flag_) calibrate_gyro();
+    if (calibrating_acc_flag_) { calibrate_accel(); }
+    if (calibrating_gyro_flag_) { calibrate_gyro(); }
 
     // Apply bias correction
     correct_imu();
@@ -468,9 +471,7 @@ void Sensors::calibrate_baro()
       baro_calibration_mean_ = 0.0f;
       baro_calibration_var_ = 0.0f;
       baro_calibration_count_ = 0;
-    }
-
-    else if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES) {
+    } else if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES) {
       float measurement = data_.baro_pressure - ground_pressure_;
       float delta = measurement - baro_calibration_mean_;
       baro_calibration_mean_ += delta / (baro_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
@@ -549,7 +550,7 @@ void Sensors::correct_mag(void)
 
 void Sensors::correct_baro(void)
 {
-  if (!baro_calibrated_) calibrate_baro();
+  if (!baro_calibrated_) { calibrate_baro(); }
   data_.baro_pressure -= rf_.params_.get_param_float(PARAM_BARO_BIAS);
   data_.baro_altitude =
     turbomath::alt(data_.baro_pressure) - rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
@@ -557,11 +558,11 @@ void Sensors::correct_baro(void)
 
 void Sensors::correct_diff_pressure()
 {
-  if (!diff_pressure_calibrated_) calibrate_diff_pressure();
+  if (!diff_pressure_calibrated_) { calibrate_diff_pressure(); }
   data_.diff_pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
 
   float atm = 101325.0f;
-  if (data_.baro_present) atm = data_.baro_pressure;
+  if (data_.baro_present) { atm = data_.baro_pressure; }
   data_.diff_pressure_velocity = turbomath::fsign(data_.diff_pressure) * 24.574f
     / turbomath::inv_sqrt((turbomath::fabs(data_.diff_pressure) * data_.diff_pressure_temp / atm));
 }

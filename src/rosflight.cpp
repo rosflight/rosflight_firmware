@@ -130,7 +130,7 @@ void ROSflight::run()
   state_manager_.run();
 
   // get RC, synchronous with rc data acquisition
-  if (got.rc) rc_.run();
+  if (got.rc) { rc_.run(); }
 
   // update commands (internal logic tells whether or not we should do anything or not)
   command_manager_.run();
