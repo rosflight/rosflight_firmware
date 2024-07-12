@@ -335,28 +335,30 @@ float cos(float x) { return sin(M_PI / 2.0 - x); }
 float sin(float x)
 {
   // wrap down to +/x PI
-  while (x > M_PI) x -= 2.0 * M_PI;
+  while (x > M_PI) { x -= 2.0 * M_PI; }
 
-  while (x <= -M_PI) x += 2.0 * M_PI;
+  while (x <= -M_PI) { x += 2.0 * M_PI; }
 
   // sin is symmetric
-  if (x < 0) return -1.0 * sin(-x);
+  if (x < 0) { return -1.0 * sin(-x); }
 
   // wrap onto (0, PI)
-  if (x > M_PI) return -1.0 * sin(x - M_PI);
+  if (x > M_PI) { return -1.0 * sin(x - M_PI); }
 
   // Now, all we have left is the range 0 to PI, use the lookup table
   float t = (x - sin_min_x) / (sin_max_x - sin_min_x) * static_cast<float>(sin_num_entries);
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
-  if (index >= sin_num_entries) return sin_lookup_table[sin_num_entries - 1] / sin_scale_factor;
-  else if (index < sin_num_entries - 1)
+  if (index >= sin_num_entries) {
+    return sin_lookup_table[sin_num_entries - 1] / sin_scale_factor;
+  } else if (index < sin_num_entries - 1) {
     return sin_lookup_table[index] / sin_scale_factor
       + delta_x * (sin_lookup_table[index + 1] - sin_lookup_table[index]) / sin_scale_factor;
-  else
+  } else {
     return sin_lookup_table[index] / sin_scale_factor
       + delta_x * (sin_lookup_table[index] - sin_lookup_table[index - 1]) / sin_scale_factor;
+  }
 }
 
 float atan(float x)
@@ -370,13 +372,15 @@ float atan(float x)
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
-  if (index >= atan_num_entries) return atan_lookup_table[atan_num_entries - 1] / atan_scale_factor;
-  else if (index < atan_num_entries - 1)
+  if (index >= atan_num_entries) {
+    return atan_lookup_table[atan_num_entries - 1] / atan_scale_factor;
+  } else if (index < atan_num_entries - 1) {
     return atan_lookup_table[index] / atan_scale_factor
       + delta_x * (atan_lookup_table[index + 1] - atan_lookup_table[index]) / atan_scale_factor;
-  else
+  } else {
     return atan_lookup_table[index] / atan_scale_factor
       + delta_x * (atan_lookup_table[index] - atan_lookup_table[index - 1]) / atan_scale_factor;
+  }
 }
 
 float atan2(float y, float x)
@@ -400,9 +404,7 @@ float atan2(float y, float x)
     } else {
       return arctan + M_PI;
     }
-  }
-
-  else {
+  } else {
     return arctan;
   }
 }
@@ -415,13 +417,15 @@ float asin(float x)
   int16_t index = static_cast<int16_t>(t);
   float delta_x = t - index;
 
-  if (index >= asin_num_entries) return asin_lookup_table[asin_num_entries - 1] / asin_scale_factor;
-  else if (index < asin_num_entries - 1)
+  if (index >= asin_num_entries) {
+    return asin_lookup_table[asin_num_entries - 1] / asin_scale_factor;
+  } else if (index < asin_num_entries - 1) {
     return asin_lookup_table[index] / asin_scale_factor
       + delta_x * (asin_lookup_table[index + 1] - asin_lookup_table[index]) / asin_scale_factor;
-  else
+  } else {
     return asin_lookup_table[index] / asin_scale_factor
       + delta_x * (asin_lookup_table[index] - asin_lookup_table[index - 1]) / asin_scale_factor;
+  }
 }
 
 float alt(float press)
@@ -432,25 +436,29 @@ float alt(float press)
     int16_t index = static_cast<int16_t>(t);
     float delta_x = t - index;
 
-    if (index >= pressure_num_entries)
+    if (index >= pressure_num_entries) {
       return asin_lookup_table[pressure_num_entries - 1] / pressure_scale_factor;
-    else if (index < pressure_num_entries - 1)
+    } else if (index < pressure_num_entries - 1) {
       return pressure_lookup_table[index] / pressure_scale_factor
         + delta_x * (pressure_lookup_table[index + 1] - pressure_lookup_table[index])
         / pressure_scale_factor;
-    else
+    } else {
       return pressure_lookup_table[index] / pressure_scale_factor
         + delta_x * (pressure_lookup_table[index] - pressure_lookup_table[index - 1])
         / pressure_scale_factor;
-  } else
+    }
+  } else {
     return 0.0;
+  }
 }
 
 float fabs(float x)
 {
-  if (x < 0) return -x;
-  else
+  if (x < 0) {
+    return -x;
+  } else {
     return x;
+  }
 }
 
 float inv_sqrt(float x)

@@ -232,7 +232,7 @@ void Estimator::run()
 bool Estimator::can_use_accel() const
 {
   // if we are not using accel, just bail
-  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)) return false;
+  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)) { return false; }
 
   // current magnitude of LPF'd accelerometer
   const float a_sqrd_norm = accel_LPF_.sqrd_norm();
@@ -322,7 +322,7 @@ void Estimator::integrate_angular_rate(turbomath::Quaternion & quat,
   // only propagate if we've moved
   // TODO[PCL]: Will this ever be true? We should add a margin to this
   const float sqrd_norm_w = omega.sqrd_norm();
-  if (sqrd_norm_w == 0.0f) return;
+  if (sqrd_norm_w == 0.0f) { return; }
 
   // for convenience
   const float &p = omega.x, &q = omega.y, &r = omega.z;

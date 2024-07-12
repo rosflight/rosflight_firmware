@@ -151,13 +151,14 @@ void RC::init_switches()
         break;
     }
 
-    if (switches[chan].mapped)
+    if (switches[chan].mapped) {
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                             "%s switch mapped to RC channel %d", channel_name,
                             switches[chan].channel);
-    else
+    } else {
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "%s switch not mapped",
                             channel_name);
+    }
   }
 }
 
@@ -176,12 +177,13 @@ bool RC::check_rc_lost()
     }
   }
 
-  if (failsafe)
+  if (failsafe) {
     // set the RC Lost error flag
     RF_.state_manager_.set_event(StateManager::EVENT_RC_LOST);
-  else
+  } else {
     // Clear the RC Lost Error
     RF_.state_manager_.set_event(StateManager::EVENT_RC_FOUND);
+  }
 
   return failsafe;
 }
@@ -193,8 +195,7 @@ void RC::look_for_arm_disarm_signal()
   prev_time_ms = now_ms;
   // check for arming switch
   if (!switch_mapped(SWITCH_ARM)) {
-    if (!RF_.state_manager_.state().armed) // we are DISARMED
-    {
+    if (!RF_.state_manager_.state().armed) { // we are DISARMED
       // if left stick is down and to the right
       if ((RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))
           && (RF_.rc_.stick(STICK_Z) > (1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)))) {
@@ -205,8 +206,7 @@ void RC::look_for_arm_disarm_signal()
       if (time_sticks_have_been_in_arming_position_ms > 1000) {
         RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
       }
-    } else // we are ARMED
-    {
+    } else { // we are ARMED
       // if left stick is down and to the left
       if (RF_.rc_.stick(STICK_F) < RF_.params_.get_param_float(PARAM_ARM_THRESHOLD)
           && RF_.rc_.stick(STICK_Z) < -(1.0f - RF_.params_.get_param_float(PARAM_ARM_THRESHOLD))) {
@@ -219,12 +219,11 @@ void RC::look_for_arm_disarm_signal()
         time_sticks_have_been_in_arming_position_ms = 0;
       }
     }
-  } else // ARMING WITH SWITCH
-  {
+  } else { // ARMING WITH SWITCH
     if (RF_.rc_.switch_on(SWITCH_ARM)) {
-      if (!RF_.state_manager_.state().armed)
+      if (!RF_.state_manager_.state().armed) {
         RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_ARM);
-      ;
+      }
     } else {
       RF_.state_manager_.set_event(StateManager::EVENT_REQUEST_DISARM);
     }
@@ -234,13 +233,12 @@ void RC::look_for_arm_disarm_signal()
 bool RC::run()
 {
   // Check for rc lost
-  if (check_rc_lost()) return false;
+  if (check_rc_lost()) { return false; }
 
   // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++) {
     float pwm = RF_.board_.rc_read(sticks[channel].channel);
-    if (sticks[channel].one_sided) // generally only F is one_sided
-    {
+    if (sticks[channel].one_sided) { // generally only F is one_sided
       stick_values[channel] = pwm;
     } else {
       stick_values[channel] = 2.0 * (pwm - 0.5);
@@ -274,9 +272,9 @@ bool RC::new_command()
   if (new_command_) {
     new_command_ = false;
     return true;
-  } else
+  } else {
     return false;
-  ;
+  }
 }
 
 } // namespace rosflight_firmware

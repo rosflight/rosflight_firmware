@@ -109,7 +109,7 @@ bool testBoard::backup_memory_read(void * dest, size_t len)
 
 void testBoard::backup_memory_write(const void * src, size_t len)
 {
-  if (len > BACKUP_MEMORY_SIZE) len = BACKUP_MEMORY_SIZE;
+  if (len > BACKUP_MEMORY_SIZE) { len = BACKUP_MEMORY_SIZE; }
   memcpy(backup_memory_, src, len);
 }
 void testBoard::backup_memory_clear(size_t len) { memset(backup_memory_, 0, len); }
