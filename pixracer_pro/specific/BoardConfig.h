@@ -40,8 +40,8 @@
 
 #include <CommonConfig.h>
 
-//#define SANDBOX // set this via CMAKE
-#define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
+#define SANDBOX // set this via CMAKE
+#define USE_TELEM 1 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
 #define MISC_HUART (&huart2)
@@ -264,8 +264,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADC_CFG_CHANS_DEFINE \
 { \
   {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},         /* ADC_RSSI_V */ \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 1.000, 0.0},         /* ADC_BATTERY_VOLTS */ \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 1.000, 0.0},         /* ADC_BATTERY_CURRENT */ \
+  {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 12.62, 0.0},         /* ADC_BATTERY_VOLTS */ \
+  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 60.5, 0.063},         /* ADC_BATTERY_CURRENT */ \
   {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},         /* ADC_5V0 */ \
   {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */ \
   {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */ \
