@@ -38,18 +38,17 @@
 #include <Varmint.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-    int main(void);
+int main(void);
 #ifdef __cplusplus
 }
 #endif
 
 int main(void)
 {
-    extern rosflight_firmware::Board *board;
-    board->init_board();
+  extern rosflight_firmware::Board * board;
+  board->init_board();
 
-    return 0;
+  return 0;
 }

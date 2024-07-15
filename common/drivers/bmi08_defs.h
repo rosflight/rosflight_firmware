@@ -79,7 +79,7 @@
 #ifdef __cplusplus
 #define NULL 0
 #else
-#define NULL ((void *)0)
+#define NULL ((void *) 0)
 #endif
 #endif
 
@@ -698,12 +698,13 @@
 #define BMI08_SET_LOW_NIBBLE UINT8_C(0x0F)
 
 /**\name Macro to SET and GET BITS of a register */
-#define BMI08_SET_BITS(reg_var, bitname, val)                                                                          \
-    ((reg_var & ~(bitname##_MASK)) | ((val << bitname##_POS) & bitname##_MASK))
+#define BMI08_SET_BITS(reg_var, bitname, val)                                                      \
+  ((reg_var & ~(bitname##_MASK)) | ((val << bitname##_POS) & bitname##_MASK))
 
 #define BMI08_GET_BITS(reg_var, bitname) ((reg_var & (bitname##_MASK)) >> (bitname##_POS))
 
-#define BMI08_SET_BITS_POS_0(reg_var, bitname, val) ((reg_var & ~(bitname##_MASK)) | (val & bitname##_MASK))
+#define BMI08_SET_BITS_POS_0(reg_var, bitname, val)                                                \
+  ((reg_var & ~(bitname##_MASK)) | (val & bitname##_MASK))
 
 #define BMI08_GET_BITS_POS_0(reg_var, bitname) (reg_var & (bitname##_MASK))
 
@@ -725,10 +726,10 @@
  */
 enum bmi08_intf
 {
-    /*! I2C interface */
-    BMI08_I2C_INTF,
-    /*! SPI interface */
-    BMI08_SPI_INTF
+  /*! I2C interface */
+  BMI08_I2C_INTF,
+  /*! SPI interface */
+  BMI08_SPI_INTF
 };
 
 /*!
@@ -736,8 +737,8 @@ enum bmi08_intf
  */
 enum bmi08_variant
 {
-    BMI085_VARIANT = 0,
-    BMI088_VARIANT = 1
+  BMI085_VARIANT = 0,
+  BMI088_VARIANT = 1
 };
 
 /*************************** Data structures *****************************/
@@ -761,7 +762,8 @@ enum bmi08_variant
  * @retval 0 for Success
  * @retval Non-zero for Failure
  */
-typedef BMI08_INTF_RET_TYPE (*bmi08_read_fptr_t)(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
+typedef BMI08_INTF_RET_TYPE (*bmi08_read_fptr_t)(uint8_t reg_addr, uint8_t * reg_data, uint32_t len,
+                                                 void * intf_ptr);
 
 /*!
  * @brief Bus communication function pointer which should be mapped to
@@ -776,8 +778,8 @@ typedef BMI08_INTF_RET_TYPE (*bmi08_read_fptr_t)(uint8_t reg_addr, uint8_t *reg_
  * @retval Non-zero for Failure
  *
  */
-typedef BMI08_INTF_RET_TYPE (*bmi08_write_fptr_t)(uint8_t reg_addr, const uint8_t *reg_data, uint32_t len,
-                                                  void *intf_ptr);
+typedef BMI08_INTF_RET_TYPE (*bmi08_write_fptr_t)(uint8_t reg_addr, const uint8_t * reg_data,
+                                                  uint32_t len, void * intf_ptr);
 
 /*!
  * @brief Delay function pointer which should be mapped to
@@ -788,7 +790,7 @@ typedef BMI08_INTF_RET_TYPE (*bmi08_write_fptr_t)(uint8_t reg_addr, const uint8_
  *                                  for interface related call backs
  *
  */
-typedef void (*bmi08_delay_us_fptr_t)(uint32_t period, void *intf_ptr);
+typedef void (*bmi08_delay_us_fptr_t)(uint32_t period, void * intf_ptr);
 
 /**\name    Structure Definitions */
 
@@ -797,14 +799,14 @@ typedef void (*bmi08_delay_us_fptr_t)(uint32_t period, void *intf_ptr);
  */
 struct bmi08_sensor_data
 {
-    /*! X-axis sensor data */
-    int16_t x;
+  /*! X-axis sensor data */
+  int16_t x;
 
-    /*! Y-axis sensor data */
-    int16_t y;
+  /*! Y-axis sensor data */
+  int16_t y;
 
-    /*! Z-axis sensor data */
-    int16_t z;
+  /*! Z-axis sensor data */
+  int16_t z;
 };
 
 /*!
@@ -812,14 +814,14 @@ struct bmi08_sensor_data
  */
 struct bmi08_sensor_data_f
 {
-    /*! X-axis sensor data */
-    float x;
+  /*! X-axis sensor data */
+  float x;
 
-    /*! Y-axis sensor data */
-    float y;
+  /*! Y-axis sensor data */
+  float y;
 
-    /*! Z-axis sensor data */
-    float z;
+  /*! Z-axis sensor data */
+  float z;
 };
 
 /*!
@@ -827,17 +829,17 @@ struct bmi08_sensor_data_f
  */
 struct bmi08_cfg
 {
-    /*! power mode */
-    uint8_t power;
+  /*! power mode */
+  uint8_t power;
 
-    /*! range */
-    uint8_t range;
+  /*! range */
+  uint8_t range;
 
-    /*! bandwidth */
-    uint8_t bw;
+  /*! bandwidth */
+  uint8_t bw;
 
-    /*! output data rate */
-    uint8_t odr;
+  /*! output data rate */
+  uint8_t odr;
 };
 
 /*!
@@ -845,11 +847,11 @@ struct bmi08_cfg
  */
 struct bmi08_err_reg
 {
-    /*! Indicates fatal error */
-    uint8_t fatal_err;
+  /*! Indicates fatal error */
+  uint8_t fatal_err;
 
-    /*! Indicates error code */
-    uint8_t err_code;
+  /*! Indicates error code */
+  uint8_t err_code;
 };
 
 /*!
@@ -857,8 +859,8 @@ struct bmi08_err_reg
  */
 struct bmi08_data_sync_cfg
 {
-    /*! Mode (0 = off, 1 = 400Hz, 2 = 1kHz, 3 = 2kHz) */
-    uint8_t mode;
+  /*! Mode (0 = off, 1 = 400Hz, 2 = 1kHz, 3 = 2kHz) */
+  uint8_t mode;
 };
 
 /*!
@@ -866,10 +868,10 @@ struct bmi08_data_sync_cfg
  */
 enum bmi08_accel_int_channel
 {
-    /* interrupt Channel 1 for accel sensor */
-    BMI08_INT_CHANNEL_1,
-    /* interrupt Channel 2 for accel sensor */
-    BMI08_INT_CHANNEL_2
+  /* interrupt Channel 1 for accel sensor */
+  BMI08_INT_CHANNEL_1,
+  /* interrupt Channel 2 for accel sensor */
+  BMI08_INT_CHANNEL_2
 };
 
 /*!
@@ -877,10 +879,10 @@ enum bmi08_accel_int_channel
  */
 enum bmi08_gyro_int_channel
 {
-    /* interrupt Channel 3 for gyro sensor */
-    BMI08_INT_CHANNEL_3,
-    /* interrupt Channel 4 for gyro sensor */
-    BMI08_INT_CHANNEL_4
+  /* interrupt Channel 3 for gyro sensor */
+  BMI08_INT_CHANNEL_3,
+  /* interrupt Channel 4 for gyro sensor */
+  BMI08_INT_CHANNEL_4
 };
 
 /*!
@@ -888,15 +890,15 @@ enum bmi08_gyro_int_channel
  */
 enum bmi08_accel_int_types
 {
-    BMI08_ACCEL_INT_DATA_RDY,
-    /* Accel data ready interrupt */
-    BMI08_ACCEL_INT_SYNC_DATA_RDY,
-    /* Accel synchronized data ready interrupt */
-    BMI08_ACCEL_SYNC_INPUT,
-    /* Accel FIFO watermark interrupt */
-    BMI08_ACCEL_INT_FIFO_WM,
-    /* Accel FIFO full interrupt */
-    BMI08_ACCEL_INT_FIFO_FULL
+  BMI08_ACCEL_INT_DATA_RDY,
+  /* Accel data ready interrupt */
+  BMI08_ACCEL_INT_SYNC_DATA_RDY,
+  /* Accel synchronized data ready interrupt */
+  BMI08_ACCEL_SYNC_INPUT,
+  /* Accel FIFO watermark interrupt */
+  BMI08_ACCEL_INT_FIFO_WM,
+  /* Accel FIFO full interrupt */
+  BMI08_ACCEL_INT_FIFO_FULL
 };
 
 /*!
@@ -904,12 +906,12 @@ enum bmi08_accel_int_types
  */
 enum bmi08_gyro_int_types
 {
-    /* Gyro data ready interrupt */
-    BMI08_GYRO_INT_DATA_RDY,
-    /* Gyro FIFO watermark interrupt */
-    BMI08_GYRO_INT_FIFO_WM,
-    /* Gyro FIFO full interrupt */
-    BMI08_GYRO_INT_FIFO_FULL
+  /* Gyro data ready interrupt */
+  BMI08_GYRO_INT_DATA_RDY,
+  /* Gyro FIFO watermark interrupt */
+  BMI08_GYRO_INT_FIFO_WM,
+  /* Gyro FIFO full interrupt */
+  BMI08_GYRO_INT_FIFO_FULL
 };
 
 /*!
@@ -917,26 +919,26 @@ enum bmi08_gyro_int_types
  */
 struct bmi08_int_pin_cfg
 {
-    /*! interrupt pin level configuration
+  /*! interrupt pin level configuration
      * Assignable macros :
      * - BMI08_INT_ACTIVE_LOW
      * - BMI08_INT_ACTIVE_HIGH
      */
-    uint8_t lvl;
+  uint8_t lvl;
 
-    /*! interrupt pin mode configuration
+  /*! interrupt pin mode configuration
      * Assignable macros :
      * - BMI08_INT_MODE_PUSH_PULL
      * - BMI08_INT_MODE_OPEN_DRAIN
      */
-    uint8_t output_mode;
+  uint8_t output_mode;
 
-    /*! Enable interrupt pin
+  /*! Enable interrupt pin
      * Assignable Macros :
      * - BMI08_ENABLE
      * - BMI08_DISABLE
      */
-    uint8_t enable_int_pin;
+  uint8_t enable_int_pin;
 };
 
 /*!
@@ -944,14 +946,14 @@ struct bmi08_int_pin_cfg
  */
 struct bmi08_accel_int_channel_cfg
 {
-    /*! Accel Interrupt channel */
-    enum bmi08_accel_int_channel int_channel;
+  /*! Accel Interrupt channel */
+  enum bmi08_accel_int_channel int_channel;
 
-    /*! Select Accel Interrupt type */
-    enum bmi08_accel_int_types int_type;
+  /*! Select Accel Interrupt type */
+  enum bmi08_accel_int_types int_type;
 
-    /*! Structure to configure accel interrupt pins */
-    struct bmi08_int_pin_cfg int_pin_cfg;
+  /*! Structure to configure accel interrupt pins */
+  struct bmi08_int_pin_cfg int_pin_cfg;
 };
 
 /*!
@@ -959,14 +961,14 @@ struct bmi08_accel_int_channel_cfg
  */
 struct bmi08_gyro_int_channel_cfg
 {
-    /*! Gyro Interrupt channel */
-    enum bmi08_gyro_int_channel int_channel;
+  /*! Gyro Interrupt channel */
+  enum bmi08_gyro_int_channel int_channel;
 
-    /*! Select Gyro Interrupt type */
-    enum bmi08_gyro_int_types int_type;
+  /*! Select Gyro Interrupt type */
+  enum bmi08_gyro_int_types int_type;
 
-    /*! Structure to configure gyro interrupt pins */
-    struct bmi08_int_pin_cfg int_pin_cfg;
+  /*! Structure to configure gyro interrupt pins */
+  struct bmi08_int_pin_cfg int_pin_cfg;
 };
 
 /*!
@@ -974,17 +976,17 @@ struct bmi08_gyro_int_channel_cfg
  */
 struct bmi08_int_cfg
 {
-    /*! Configuration of first accel interrupt channel */
-    struct bmi08_accel_int_channel_cfg accel_int_config_1;
+  /*! Configuration of first accel interrupt channel */
+  struct bmi08_accel_int_channel_cfg accel_int_config_1;
 
-    /*! Configuration of second accel interrupt channel */
-    struct bmi08_accel_int_channel_cfg accel_int_config_2;
+  /*! Configuration of second accel interrupt channel */
+  struct bmi08_accel_int_channel_cfg accel_int_config_2;
 
-    /*! Configuration of first gyro interrupt channel */
-    struct bmi08_gyro_int_channel_cfg gyro_int_config_1;
+  /*! Configuration of first gyro interrupt channel */
+  struct bmi08_gyro_int_channel_cfg gyro_int_config_1;
 
-    /*! Configuration of second gyro interrupt channel */
-    struct bmi08_gyro_int_channel_cfg gyro_int_config_2;
+  /*! Configuration of second gyro interrupt channel */
+  struct bmi08_gyro_int_channel_cfg gyro_int_config_2;
 };
 
 /*!
@@ -992,17 +994,17 @@ struct bmi08_int_cfg
  */
 struct bmi08_accel_fifo_config
 {
-    /*! Configure the fifo mode (0 = Stream mode, 1 = FIFO mode) */
-    uint8_t mode;
+  /*! Configure the fifo mode (0 = Stream mode, 1 = FIFO mode) */
+  uint8_t mode;
 
-    /*! To enable the accel */
-    uint8_t accel_en;
+  /*! To enable the accel */
+  uint8_t accel_en;
 
-    /*! To enable the interrupt_1 */
-    uint8_t int1_en;
+  /*! To enable the interrupt_1 */
+  uint8_t int1_en;
 
-    /*! To enable the interrupt_2 */
-    uint8_t int2_en;
+  /*! To enable the interrupt_2 */
+  uint8_t int2_en;
 };
 
 /*!
@@ -1010,79 +1012,79 @@ struct bmi08_accel_fifo_config
  */
 struct bmi08_gyr_fifo_config
 {
-    /*! Configure the fifo mode (0 = Stream mode, 1 = FIFO mode) */
-    uint8_t mode;
+  /*! Configure the fifo mode (0 = Stream mode, 1 = FIFO mode) */
+  uint8_t mode;
 
-    /*! Selection of axis for data */
-    uint8_t data_select;
+  /*! Selection of axis for data */
+  uint8_t data_select;
 
-    /*! Tag to include/exclude interrupt in FIFO data bytes */
-    uint8_t tag;
+  /*! Tag to include/exclude interrupt in FIFO data bytes */
+  uint8_t tag;
 
-    /*! Frame count of fifo data */
-    uint8_t frame_count;
+  /*! Frame count of fifo data */
+  uint8_t frame_count;
 
-    /*! Water-mark level for FIFO */
-    uint16_t wm_level;
+  /*! Water-mark level for FIFO */
+  uint16_t wm_level;
 };
 
 /*! @name Structure to define FIFO frame configuration */
 struct bmi08_fifo_frame
 {
-    /*! Pointer to FIFO data */
-    uint8_t *data;
+  /*! Pointer to FIFO data */
+  uint8_t * data;
 
-    /*! Number of user defined bytes of FIFO to be read */
-    uint16_t length;
+  /*! Number of user defined bytes of FIFO to be read */
+  uint16_t length;
 
-    /*! Enables type of data to be streamed - accelerometer */
-    uint16_t acc_data_enable;
+  /*! Enables type of data to be streamed - accelerometer */
+  uint16_t acc_data_enable;
 
-    /*! Enables type of data to be streamed - gyroscope */
-    uint16_t gyr_data_enable;
+  /*! Enables type of data to be streamed - gyroscope */
+  uint16_t gyr_data_enable;
 
-    /*! To index accelerometer bytes */
-    uint16_t acc_byte_start_idx;
+  /*! To index accelerometer bytes */
+  uint16_t acc_byte_start_idx;
 
-    /*! To index gyroscope bytes */
-    uint16_t gyr_byte_start_idx;
+  /*! To index gyroscope bytes */
+  uint16_t gyr_byte_start_idx;
 
-    /*! FIFO sensor time */
-    uint32_t sensor_time;
+  /*! FIFO sensor time */
+  uint32_t sensor_time;
 
-    /*! Skipped frame count */
-    uint8_t skipped_frame_count;
+  /*! Skipped frame count */
+  uint8_t skipped_frame_count;
 
-    /*! Type of data interrupt to be mapped */
-    uint8_t data_int_map;
+  /*! Type of data interrupt to be mapped */
+  uint8_t data_int_map;
 
-    /*! FIFO accelerometer configurations */
-    struct bmi08_accel_fifo_config acc_fifo_conf;
+  /*! FIFO accelerometer configurations */
+  struct bmi08_accel_fifo_config acc_fifo_conf;
 
-    /*! FIFO gyroscope configurations */
-    struct bmi08_gyr_fifo_config gyr_fifo_conf;
+  /*! FIFO gyroscope configurations */
+  struct bmi08_gyr_fifo_config gyr_fifo_conf;
 };
 
 /*! @name Structure to store the value of re-mapped axis and its sign */
 struct bmi08_axes_remap
 {
-    /*! Re-mapped x-axis */
-    uint8_t x_axis;
+  /*! Re-mapped x-axis */
+  uint8_t x_axis;
 
-    /*! Re-mapped y-axis */
-    uint8_t y_axis;
+  /*! Re-mapped y-axis */
+  uint8_t y_axis;
 
-    /*! Re-mapped z-axis */
-    uint8_t z_axis;
+  /*! Re-mapped z-axis */
+  uint8_t z_axis;
 
-    /*! Re-mapped x-axis sign */
-    uint8_t x_axis_sign;
+  /*! Re-mapped x-axis sign */
+  uint8_t x_axis_sign;
 
-    /*! Re-mapped y-axis sign */
-    uint8_t y_axis_sign;
+  /*! Re-mapped y-axis sign */
+  uint8_t y_axis_sign;
 
-    /*! Re-mapped z-axis sign */
-    uint8_t z_axis_sign;
+  /*! Re-mapped z-axis sign */
+  uint8_t z_axis_sign;
 };
 
 /*!
@@ -1090,57 +1092,57 @@ struct bmi08_axes_remap
  */
 struct bmi08_dev
 {
-    /*! Accel chip Id */
-    uint8_t accel_chip_id;
+  /*! Accel chip Id */
+  uint8_t accel_chip_id;
 
-    /*! Gyro chip Id */
-    uint8_t gyro_chip_id;
+  /*! Gyro chip Id */
+  uint8_t gyro_chip_id;
 
-    /*! Interface function pointer used to enable the device address for I2C and chip selection for SPI */
-    void *intf_ptr_accel;
+  /*! Interface function pointer used to enable the device address for I2C and chip selection for SPI */
+  void * intf_ptr_accel;
 
-    /*! Interface function pointer used to enable the device address for I2C and chip selection for SPI */
-    void *intf_ptr_gyro;
+  /*! Interface function pointer used to enable the device address for I2C and chip selection for SPI */
+  void * intf_ptr_gyro;
 
-    /*! Interface Selection
+  /*! Interface Selection
      * For SPI, interface = BMI08_SPI_INTF
      * For I2C, interface = BMI08_I2C_INTF
      **/
-    enum bmi08_intf intf;
+  enum bmi08_intf intf;
 
-    /*! Define the BMI08 variant BMI085 or BMI088 */
-    enum bmi08_variant variant;
+  /*! Define the BMI08 variant BMI085 or BMI088 */
+  enum bmi08_variant variant;
 
-    /*! Decide SPI or I2C read mechanism */
-    uint8_t dummy_byte;
+  /*! Decide SPI or I2C read mechanism */
+  uint8_t dummy_byte;
 
-    /*! Structure to configure accel sensor  */
-    struct bmi08_cfg accel_cfg;
+  /*! Structure to configure accel sensor  */
+  struct bmi08_cfg accel_cfg;
 
-    /*! Structure to configure gyro sensor  */
-    struct bmi08_cfg gyro_cfg;
+  /*! Structure to configure gyro sensor  */
+  struct bmi08_cfg gyro_cfg;
 
-    /*! Structure to maintain a copy of the re-mapped axis */
-    struct bmi08_axes_remap remap;
+  /*! Structure to maintain a copy of the re-mapped axis */
+  struct bmi08_axes_remap remap;
 
-    /*! Config stream data buffer address will be assigned */
-    const uint8_t *config_file_ptr;
+  /*! Config stream data buffer address will be assigned */
+  const uint8_t * config_file_ptr;
 
-    /*! Max read/write length
+  /*! Max read/write length
      * To be set by the user */
-    uint8_t read_write_len;
+  uint8_t read_write_len;
 
-    /*! Read function pointer */
-    bmi08_read_fptr_t read;
+  /*! Read function pointer */
+  bmi08_read_fptr_t read;
 
-    /*! Write function pointer */
-    bmi08_write_fptr_t write;
+  /*! Write function pointer */
+  bmi08_write_fptr_t write;
 
-    /*! Delay function pointer */
-    bmi08_delay_us_fptr_t delay_us;
+  /*! Delay function pointer */
+  bmi08_delay_us_fptr_t delay_us;
 
-    /*! Variable to store result of read/write function */
-    BMI08_INTF_RET_TYPE intf_rslt;
+  /*! Variable to store result of read/write function */
+  BMI08_INTF_RET_TYPE intf_rslt;
 };
 
 #endif /* BMI08_DEFS_H_ */

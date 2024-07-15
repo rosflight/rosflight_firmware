@@ -40,68 +40,59 @@
 
 class ByteFifo
 {
-  public:
-    void init(uint16_t buffer_size, uint8_t *buffer)
-    {
-        bufferSize_ = buffer_size;
-        buffer_ = buffer;
-        bufferEnd_ = buffer_ + bufferSize_ - 1;
-        flush();
+public:
+  void init(uint16_t buffer_size, uint8_t * buffer)
+  {
+    bufferSize_ = buffer_size;
+    buffer_ = buffer;
+    bufferEnd_ = buffer_ + bufferSize_ - 1;
+    flush();
+  }
+
+  void flush(void)
+  {
+    head_ = buffer_;
+    tail_ = buffer_;
+  }
+
+  bool write(uint8_t data)
+  {
+    if (bufferSize_ == 0) return false;                                 // buffer does not exist
+    if ((bufferSize_ + tail_ - head_) % bufferSize_ == 1) return false; // buffer full
+    *(head_++) = data;
+
+    if (head_ > bufferEnd_) head_ = buffer_;
+
+    return true;
+  }
+  bool writeBlock(uint8_t * data, uint32_t size)
+  {
+    if (bufferSize_ == 0) return false; // buffer does not exist
+    uint32_t i;
+    for (i = 0; i < size; i++) {
+      if (!write(data[i])) break;
     }
+    return i;
+  }
 
-    void flush(void)
-    {
-        head_ = buffer_;
-        tail_ = buffer_;
-    }
+  bool read(uint8_t * data)
+  {
+    if (head_ == tail_) return false; // buffer is empty
+    *data = *(tail_++);
+    if (tail_ > bufferEnd_) tail_ = buffer_;
+    return true;
+  }
 
-    bool write(uint8_t data)
-    {
-        if (bufferSize_ == 0)
-            return false; // buffer does not exist
-        if ((bufferSize_ + tail_ - head_) % bufferSize_ == 1)
-            return false; // buffer full
-        *(head_++) = data;
+  uint16_t byteCount(void)
+  {
+    if (bufferSize_ == 0) return 0; // buffer does not exist
+    return (bufferSize_ + head_ - tail_) % bufferSize_;
+  }
 
-        if (head_ > bufferEnd_)
-            head_ = buffer_;
-
-        return true;
-    }
-    bool writeBlock(uint8_t *data, uint32_t size)
-    {
-        if (bufferSize_ == 0)
-            return false; // buffer does not exist
-        uint32_t i;
-        for (i = 0; i < size; i++)
-        {
-            if (!write(data[i]))
-                break;
-        }
-        return i;
-    }
-
-    bool read(uint8_t *data)
-    {
-        if (head_ == tail_)
-            return false; // buffer is empty
-        *data = *(tail_++);
-        if (tail_ > bufferEnd_)
-            tail_ = buffer_;
-        return true;
-    }
-
-    uint16_t byteCount(void)
-    {
-        if (bufferSize_ == 0)
-            return 0; // buffer does not exist
-        return (bufferSize_ + head_ - tail_) % bufferSize_;
-    }
-
-  private:
-    volatile uint8_t *head_, *tail_;
-    volatile uint8_t *buffer_, *bufferEnd_;
-    uint32_t bufferSize_ = 0;
+private:
+  volatile uint8_t *head_, *tail_;
+  volatile uint8_t *buffer_, *bufferEnd_;
+  uint32_t bufferSize_ = 0;
 };
 
 #endif /* BYTEFIFO_H_ */

@@ -44,54 +44,54 @@
 // Polling Structure
 typedef enum
 {
-    NULL_STATE = 0,
-    IDLE_STATE,
-    // DPS310 Baro Sensor
-    DPS310_CMD_P,
-    DPS310_DRDY_P,
-    DPS310_RX_P,
-    DPS310_CMD_T,
-    DPS310_DRDY_T,
-    DPS310_RX_T,
-    DPS310_ERROR,
-    // IIS2MDC Mat Sensor
-    IIS2MDC_CMD,
-    IIS2MDC_RX_H,
-    IIS2MDC_RX_T,
-    IIS2MDC_ERROR,
-    // DLHR Pitot
-    DLHR_CMD,
-    DLHR_DRDY,
-    DLHR_RX,
-    DLHR_ERROR,
-    // MS4525 Pitot
-    MS4525_CMDRXSTART,
-    MS4525_CMDRX,
-    MS4525_CMDRXSEND,
-    MS4525_ERROR,
-    // IST8308 Mag
-    IST8308_CMD,
-    IST8308_TX,
-    IST8308_RX,
-    IST8308_ERROR,
-    // AUAV Pitot
-    AUAV_PITOT_CMD,
-    AUAV_PITOT_RX,
-    // AUAV Baro
-    AUAV_BARO_CMD,
-    AUAV_BARO_RX,
-    AUAV_ERROR,
-    // etc.
+  NULL_STATE = 0,
+  IDLE_STATE,
+  // DPS310 Baro Sensor
+  DPS310_CMD_P,
+  DPS310_DRDY_P,
+  DPS310_RX_P,
+  DPS310_CMD_T,
+  DPS310_DRDY_T,
+  DPS310_RX_T,
+  DPS310_ERROR,
+  // IIS2MDC Mat Sensor
+  IIS2MDC_CMD,
+  IIS2MDC_RX_H,
+  IIS2MDC_RX_T,
+  IIS2MDC_ERROR,
+  // DLHR Pitot
+  DLHR_CMD,
+  DLHR_DRDY,
+  DLHR_RX,
+  DLHR_ERROR,
+  // MS4525 Pitot
+  MS4525_CMDRXSTART,
+  MS4525_CMDRX,
+  MS4525_CMDRXSEND,
+  MS4525_ERROR,
+  // IST8308 Mag
+  IST8308_CMD,
+  IST8308_TX,
+  IST8308_RX,
+  IST8308_ERROR,
+  // AUAV Pitot
+  AUAV_PITOT_CMD,
+  AUAV_PITOT_RX,
+  // AUAV Baro
+  AUAV_BARO_CMD,
+  AUAV_BARO_RX,
+  AUAV_ERROR,
+  // etc.
 } PollingState;
 
 typedef struct
 {
-    uint16_t index;
-    PollingState state;
+  uint16_t index;
+  PollingState state;
 } PollingStateStruct;
 
-PollingState PollingStateLookup(PollingStateStruct *ps, uint32_t size, uint32_t poll_index);
+PollingState PollingStateLookup(PollingStateStruct * ps, uint32_t size, uint32_t poll_index);
 
-uint32_t InitPollTimer(TIM_HandleTypeDef *htim, TIM_TypeDef *instance, uint32_t channel);
+uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel);
 
 #endif /* DRIVERS_POLLING_H_ */

@@ -48,61 +48,52 @@
 
 typedef enum
 {
-    AUAV_PITOT = 0,
-    AUAV_BARO
+  AUAV_PITOT = 0,
+  AUAV_BARO
 } auav_press;
 
 class Auav : public Driver
 {
-    /**
+  /**
      * \brief
      *
      *
      */
-  public:
-    uint32_t init(
-        // Driver initializers
-        uint16_t sample_rate_hz, GPIO_TypeDef *drdy_port, // Reset GPIO Port
-        uint16_t drdy_pin,                                // Reset GPIO Pin
-        // SPI initializers
-        SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, // Chip Select GPIO Port
-        uint16_t cs_pin,                                // Chip Select GPIO Pin
-        auav_press type);
+public:
+  uint32_t init(
+    // Driver initializers
+    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
+    uint16_t drdy_pin,                                 // Reset GPIO Pin
+    // SPI initializers
+    SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
+    uint16_t cs_pin,                                  // Chip Select GPIO Pin
+    auav_press type);
 
-    bool poll(uint64_t poll_counter);
-    PollingState state(uint64_t poll_counter);
-    void endDma(void);
-    bool display(void) override;
+  bool poll(uint64_t poll_counter);
+  PollingState state(uint64_t poll_counter);
+  void endDma(void);
+  bool display(void) override;
 
-    bool startTxDma(void);
-    void endTxDma(void);
+  bool startTxDma(void);
+  void endTxDma(void);
 
-    bool isMy(uint16_t exti_pin)
-    {
-        return drdyPin_ == exti_pin;
-    }
-    bool isMy(SPI_HandleTypeDef *hspi)
-    {
-        return hspi == spi_.hspi();
-    }
-    SPI_HandleTypeDef *hspi(void)
-    {
-        return spi_.hspi();
-    }
+  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
+  SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
 
-  private:
-    uint32_t readCfg(uint8_t address, Spi *spi);
+private:
+  uint32_t readCfg(uint8_t address, Spi * spi);
 
-    // SPI Stuff
-    Spi spi_;
-    PollingState spiState_;
-    uint8_t cmdBytes_[AUAV_CMD_BYTES];
+  // SPI Stuff
+  Spi spi_;
+  PollingState spiState_;
+  uint8_t cmdBytes_[AUAV_CMD_BYTES];
 
-    auav_press type_;
-    double LIN_A_, LIN_B_, LIN_C_, LIN_D_, Es_, TC50H_, TC50L_;
-    double osDig_, fss_, off_;
-    uint8_t sensor_status_ready_;
-    char name_[16]; // for display
+  auav_press type_;
+  double LIN_A_, LIN_B_, LIN_C_, LIN_D_, Es_, TC50H_, TC50L_;
+  double osDig_, fss_, off_;
+  uint8_t sensor_status_ready_;
+  char name_[16]; // for display
 };
 
 #endif /* AUAV_H_ */

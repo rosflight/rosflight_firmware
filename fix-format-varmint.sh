@@ -6,10 +6,10 @@ SCRIPTPATH=`dirname $SCRIPT`
 echo $SCRIPTPATH
 # cd $SCRIPTPATH/..
 
- find . -iname "*.h" -o -iname "*.c" -o -iname "*.hpp" -o -iname "*.cpp" \
+ find . -iname "*.h" -o -iname "*.c" -o -iname "*.cpp" \
     | grep -Ev "^*/Drivers|^*/Core|^*/AL94_USB_Composite" \
-    |  xargs clang-format -i --verbose -style=file
+    | xargs clang-format -i --verbose -style=file
 
-#  find . -iname "*.h" -o -iname "*.c" -o -iname "*.hpp" -o -iname "*.cpp" \
+#  find . -iname "*.h" -o -iname "*.c" -o -iname "*.cpp" \
 #     | grep -Ev "^*/Drivers|^*/Core|^*/AL94_USB_Composite" \
-#     |  xargs clang-format --dry-run --Werror
+#     | xargs clang-format --dry-run --Werror

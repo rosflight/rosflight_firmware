@@ -49,35 +49,32 @@
  */
 class Ms4525 : public Driver
 {
-    /**
+  /**
      * \brief
      *
      *
      */
-  public:
-    uint32_t init(
-        // Driver initializers
-        uint16_t sample_rate_hz,
-        // I2C initializers
-        I2C_HandleTypeDef *hi2c, // The SPI handle
-        uint16_t i2c_address     // Chip select Port
-    );
-    bool poll(uint64_t poll_counter);
-    PollingState state(uint64_t poll_counter);
+public:
+  uint32_t init(
+    // Driver initializers
+    uint16_t sample_rate_hz,
+    // I2C initializers
+    I2C_HandleTypeDef * hi2c, // The SPI handle
+    uint16_t i2c_address      // Chip select Port
+  );
+  bool poll(uint64_t poll_counter);
+  PollingState state(uint64_t poll_counter);
 
-    void endDma(void);
-    bool display(void);
-    // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
-    bool isMy(I2C_HandleTypeDef *hi2c)
-    {
-        return hi2c_ == hi2c;
-    }
+  void endDma(void);
+  bool display(void);
+  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
+  bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
-  private:
-    I2C_HandleTypeDef *hi2c_;
-    PollingState i2cState_;
-    uint16_t address_;
-    double dtMs_;
+private:
+  I2C_HandleTypeDef * hi2c_;
+  PollingState i2cState_;
+  uint16_t address_;
+  double dtMs_;
 };
 
 #endif /* DLHRL20G_H_ */

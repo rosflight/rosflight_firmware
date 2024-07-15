@@ -46,31 +46,29 @@
 extern Time64 time64;
 
 #define VCP_TX_FIFO_BUFFERS SERIAL_TX_FIFO_BUFFERS
-__attribute__((section("my_buffers")))
-__attribute__((aligned(32))) static uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)] = {0};
+MY_FAST_BUFFER uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 
 #define VCP_RX_FIFO_BUFFER_BYTES 4096
-__attribute__((section("my_buffers")))
-__attribute__((aligned(32))) static uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES] = {0};
+MY_FAST_BUFFER uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 
 uint32_t Vcp::init(uint16_t sample_rate_hz)
 {
-    // Common initializations
-    sampleRateHz_ = sample_rate_hz;
+  // Common initializations
+  sampleRateHz_ = sample_rate_hz;
 
-    txTimeout_ = 0;
-    txDtimeout_ = 250; // 1000000/sampleRateHz_;
+  txTimeout_ = 0;
+  txDtimeout_ = 250; // 1000000/sampleRateHz_;
 
-    txFifo_.init(VCP_TX_FIFO_BUFFERS, sizeof(SerialTxPacket), vcp_fifo_tx_buffer); // Packet Fifo
-    rxFifo_.init(VCP_RX_FIFO_BUFFER_BYTES, vcp_fifo_rx_buffer);                    // byte Fifo
+  txFifo_.init(VCP_TX_FIFO_BUFFERS, sizeof(SerialTxPacket), vcp_fifo_tx_buffer); // Packet Fifo
+  rxFifo_.init(VCP_RX_FIFO_BUFFER_BYTES, vcp_fifo_rx_buffer);                    // byte Fifo
 
-    txIdle_ = true;
-    retry_ = 0;
+  txIdle_ = true;
+  retry_ = 0;
 
-    // VCP-specific
-    // MX_USB_DEVICE_Init();
+  // VCP-specific
+  // MX_USB_DEVICE_Init();
 
-    return DRIVER_OK;
+  return DRIVER_OK;
 }
 
 // typedef enum
@@ -89,9 +87,9 @@ uint32_t Vcp::init(uint16_t sample_rate_hz)
  * @return
  */
 
-uint16_t Vcp::writePacket(SerialTxPacket *p_new)
+uint16_t Vcp::writePacket(SerialTxPacket * p_new)
 {
-    return txFifo_.write((uint8_t *)p_new, sizeof(SerialTxPacket));
+  return txFifo_.write((uint8_t *) p_new, sizeof(SerialTxPacket));
 }
 
 /**
@@ -101,61 +99,45 @@ uint16_t Vcp::writePacket(SerialTxPacket *p_new)
  */
 void Vcp::poll(void)
 {
-    //	// TX
-    if ((txFifo_.packetCountMax() > 0) && ((time64.Us() > txTimeout_)))
-        txStart();
+  //	// TX
+  if ((txFifo_.packetCountMax() > 0) && ((time64.Us() > txTimeout_))) txStart();
 }
 /**
  * @fn void txCdcCallback(void)
  * @brief This CDC Tx Complete Callback needs to be at the same interrupt level as the polling loop.
  *
  */
-void Vcp::txCdcCallback(void)
-{
-    txStart();
-}
+void Vcp::txCdcCallback(void) { txStart(); }
 
 void Vcp::txStart()
 {
-    txTimeout_ = time64.Us() + txDtimeout_;
+  txTimeout_ = time64.Us() + txDtimeout_;
 
-    static SerialTxPacket p;
-    uint8_t status = !USBD_OK;
+  static SerialTxPacket p;
+  uint8_t status = !USBD_OK;
 
-    if (retry_)
-    {
-        status = VCP_Transmit((uint8_t *)p.payload, p.payloadSize);
-        if (status == USBD_OK)
-        {
-            retry_ = 0;
-            txIdle_ = false;
-        }
-        else
-        {
-            retry_--;
-            txIdle_ = true;
-        }
-        //		return;
+  if (retry_) {
+    status = VCP_Transmit((uint8_t *) p.payload, p.payloadSize);
+    if (status == USBD_OK) {
+      retry_ = 0;
+      txIdle_ = false;
+    } else {
+      retry_--;
+      txIdle_ = true;
     }
-    else if (txFifo_.packetCount())
-    {
-        if (txFifo_.read((uint8_t *)&p, sizeof(SerialTxPacket)))
-        {
-            status = VCP_Transmit((uint8_t *)p.payload, p.payloadSize);
-            if (status == USBD_OK)
-            {
-                retry_ = 0;
-                txIdle_ = false;
-            }
-            else
-            {
-                retry_ = 2;
-                txIdle_ = true;
-            } // try at most two more times
-        }
-        else
-        {
-            retry_ = 0;
-        }
+    //		return;
+  } else if (txFifo_.packetCount()) {
+    if (txFifo_.read((uint8_t *) &p, sizeof(SerialTxPacket))) {
+      status = VCP_Transmit((uint8_t *) p.payload, p.payloadSize);
+      if (status == USBD_OK) {
+        retry_ = 0;
+        txIdle_ = false;
+      } else {
+        retry_ = 2;
+        txIdle_ = true;
+      } // try at most two more times
+    } else {
+      retry_ = 0;
     }
+  }
 }

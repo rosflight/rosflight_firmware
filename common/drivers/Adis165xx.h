@@ -44,46 +44,38 @@
 
 class Adis165xx : public Driver
 {
-  public:
-    uint32_t init(
-        // Driver initializers
-        uint16_t sample_rate_hz, GPIO_TypeDef *drdy_port, // Reset GPIO Port
-        uint16_t drdy_pin,                                // Reset GPIO Pin
-        // SPI initializers
-        SPI_HandleTypeDef *hspi, GPIO_TypeDef *cs_port, // Chip Select GPIO Port
-        uint16_t cs_pin,                                // Chip Select GPIO Pin
-        // ADIS165xx initializers
-        GPIO_TypeDef *reset_port, // Reset GPIO Port
-        uint16_t reset_pin,       // Reset GPIO Pin
-        TIM_HandleTypeDef *htim, TIM_TypeDef *htim_instance, uint32_t htim_channel, uint32_t htim_period_us);
+public:
+  uint32_t init(
+    // Driver initializers
+    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
+    uint16_t drdy_pin,                                 // Reset GPIO Pin
+    // SPI initializers
+    SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
+    uint16_t cs_pin,                                  // Chip Select GPIO Pin
+    // ADIS165xx initializers
+    GPIO_TypeDef * reset_port, // Reset GPIO Port
+    uint16_t reset_pin,        // Reset GPIO Pin
+    TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel,
+    uint32_t htim_period_us);
 
-    void endDma(void);
-    bool startDma(void);
-    bool display(void) override;
-    bool isMy(uint16_t exti_pin)
-    {
-        return drdyPin_ == exti_pin;
-    }
-    bool isMy(SPI_HandleTypeDef *hspi)
-    {
-        return hspi == spi_.hspi();
-    }
-    SPI_HandleTypeDef *hspi(void)
-    {
-        return spi_.hspi();
-    }
+  void endDma(void);
+  bool startDma(void);
+  bool display(void) override;
+  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
+  SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
 
-  private:
-    // SPI Stuff
-    Spi spi_;
-    uint16_t timeoutMs_;
-    // ADIS165xx Stuff
-    GPIO_TypeDef *resetPort_;
-    uint16_t resetPin_;
-    TIM_HandleTypeDef *htim_;
-    uint32_t htimChannel_;
-    void writeRegister(uint8_t address, uint16_t value);
-    uint16_t readRegister(uint8_t address);
+private:
+  // SPI Stuff
+  Spi spi_;
+  uint16_t timeoutMs_;
+  // ADIS165xx Stuff
+  GPIO_TypeDef * resetPort_;
+  uint16_t resetPin_;
+  TIM_HandleTypeDef * htim_;
+  uint32_t htimChannel_;
+  void writeRegister(uint8_t address, uint16_t value);
+  uint16_t readRegister(uint8_t address);
 };
 
 #endif /* ADIS165XX_H_ */

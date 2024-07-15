@@ -49,32 +49,29 @@
  */
 class DlhrL20G : public Driver
 {
-    /**
+  /**
      * \brief
      *
      *
      */
-  public:
-    uint32_t init(
-        // Driver initializers
-        uint16_t sample_rate_hz, GPIO_TypeDef *drdy_port, // Reset GPIO Port
-        uint16_t drdy_pin,                                // Reset GPIO Pin
-        // I2C initializers
-        I2C_HandleTypeDef *hi2c, uint16_t i2c_address);
-    bool poll(uint64_t poll_offset);
-    void endDma(void);
-    bool display(void);
-    // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
-    bool isMy(I2C_HandleTypeDef *hi2c)
-    {
-        return hi2c_ == hi2c;
-    }
+public:
+  uint32_t init(
+    // Driver initializers
+    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
+    uint16_t drdy_pin,                                 // Reset GPIO Pin
+    I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
+  );
+  bool poll(uint64_t poll_offset);
+  void endDma(void);
+  bool display(void);
+  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
+  bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
-  private:
-    I2C_HandleTypeDef *hi2c_;
-    uint16_t address_;
-    uint8_t cmdByte_;
-    double dtMs_;
+private:
+  I2C_HandleTypeDef * hi2c_;
+  uint16_t address_;
+  uint8_t cmdByte_;
+  double dtMs_;
 };
 
 #endif /* DLHRL20G_H_ */

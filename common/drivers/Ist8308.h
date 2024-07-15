@@ -46,29 +46,26 @@
 class Ist8308 : public Driver
 {
 
-  public:
-    uint32_t init(
-        // Driver initializers
-        uint16_t sample_rate_hz,
-        // I2C initializers
-        I2C_HandleTypeDef *hi2c, uint16_t i2c_address);
+public:
+  uint32_t init(
+    // Driver initializers
+    uint16_t sample_rate_hz,
+    // I2C initializers
+    I2C_HandleTypeDef * hi2c, uint16_t i2c_address);
 
-    bool poll(uint64_t poll_counter);
-    PollingState state(uint64_t poll_counter);
-    void endDma(void);
-    bool display(void);
-    // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
-    bool isMy(I2C_HandleTypeDef *hi2c)
-    {
-        return hi2c_ == hi2c;
-    }
+  bool poll(uint64_t poll_counter);
+  PollingState state(uint64_t poll_counter);
+  void endDma(void);
+  bool display(void);
+  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
+  bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
-  private:
-    I2C_HandleTypeDef *hi2c_;
-    PollingState i2cState_;
-    uint16_t address_;
-    uint8_t cmdByte_;
-    double dtMs_;
+private:
+  I2C_HandleTypeDef * hi2c_;
+  PollingState i2cState_;
+  uint16_t address_;
+  uint8_t cmdByte_;
+  double dtMs_;
 };
 
 #endif /* DRIVERS_IST8308_H_ */

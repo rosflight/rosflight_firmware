@@ -38,74 +38,46 @@
 #ifndef BOARDCONFIG_H_
 #define BOARDCONFIG_H_
 
+#include <CommonConfig.h>
+
 //#define SANDBOX // set this via CMAKE
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
-
-#include "stm32h7xx_hal.h"
-
-#include <main.h>
 
 // UART used for printf's
 #define MISC_HUART (&huart2)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
-//
-#define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
+// See CommonConfig.h for more #defines
 #define _USBD_USE_HS false
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
-
-#define _USBD_USE_CDC_ACM true // /dev/ttyACM* device type
-#define _USBD_CDC_ACM_COUNT 1
-#define _USBD_USE_CDC_RNDIS false
-#define _USBD_USE_CDC_ECM false
-#define _USBD_USE_HID_MOUSE false
-#define _USBD_USE_HID_KEYBOARD false
-#define _USBD_USE_HID_CUSTOM false
-#define _USBD_USE_UAC_MIC false
-#define _USBD_USE_UAC_SPKR false
-#define _USBD_USE_UVC false
-#define _USBD_USE_MSC false
-#define _USBD_USE_DFU false
-#define _USBD_USE_PRNTR false
-#define _STM32F1_DEVICE false // F1 devices are a special case
-//
 // End MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-#define INTERFACE_LIST\
-		Sbus rc_;			/* All */\
-		Ubx gps_;			/* All */\
-		Adc adc_;			/* All */\
-		Telem telem_;		/* All */\
-		Vcp vcp_;			/* All */\
-		Pwm pwm_;			/* All */\
-		Sd sd_; 			/* All */\
-		Dps310 baro_;		/* All */\
-/*		Adis165xx imu0_; */ /* Varmint 10-12X */ \
-/*		Bmi088 imu1_; 	 */	/* Varmint 10-12X */\
-/*		Iis2mdc mag_;	 */ /* Varmint 10-12X */ \
-/*		DlhrL20G pitot_; */	/* Varmint 10-11X */\
-/*		Mcp4017 servoV_; */ /* Varmint 11-12X */ \
-/*		Auav pitot_;	 */ /* Varmint 12X */ \
-/*		Auav baro2_;	 */ /* Varmint 12X */ \
-		Bmi088 imu0_; 		/* PixRacer Pro */\
-		Ms4525 pitot_;   	/* PixRacer Pro */ \
-		Ist8308 mag_;	 	/* PixRacer Pro */ \
-		/**/
-
-
-
-#define EPOCH_HZ (400)
-#define EPOCH_US (1000000 / EPOCH_HZ)
-
-#define FIFO_MIN_BUFFERS 2 // Defaults to double buffered with really slow data.
-
-#define I2C_DMA_MAX_BUFFER_SIZE 64
-#define SPI_DMA_MAX_BUFFER_SIZE 64
+// clang-format off
+#define INTERFACE_LIST \
+  Sbus rc_;			/* All */ \
+  Ubx gps_;			/* All */ \
+  Adc adc_;			/* All */ \
+  Telem telem_;		/* All */ \
+  Vcp vcp_;			/* All */ \
+  Pwm pwm_;			/* All */ \
+  Sd sd_; 			/* All */ \
+  Dps310 baro_;		/* All */ \
+/*Adis165xx imu0_; */ /* Varmint 10-12X */ \
+/*Bmi088 imu1_; 	 */	/* Varmint 10-12X */\
+/*Iis2mdc mag_;	 */ /* Varmint 10-12X */ \
+/*DlhrL20G pitot_; */	/* Varmint 10-11X */\
+/*Mcp4017 servoV_; */ /* Varmint 11-12X */ \
+/*Auav pitot_;	 */ /* Varmint 12X */ \
+/*Auav baro2_;	 */ /* Varmint 12X */ \
+  Bmi088 imu0_; 		/* PixRacer Pro */\
+  Ms4525 pitot_;   	/* PixRacer Pro */ \
+  Ist8308 mag_;	 	/* PixRacer Pro */ \
+  /**/
+// clang-format on
 
 // 48-bit us counter.
-
 #define HTIM_LOW (&htim5) // 16-bit counter
 #define HTIM_LOW_INSTANCE (TIM5)
 #define HTIM_HIGH (&htim12) // 32-bit overflow counter
@@ -129,7 +101,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 //#define PWM_STD_RATE_HZ 	(50.0)
 
 #define PWM_CHANNELS (8) // Number of PWM output channels on the board
-#define PWM_TIMER_BLOCKS	3
+#define PWM_TIMER_BLOCKS 3
 
 //typedef enum : uint8_t
 //{
@@ -138,13 +110,14 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 //} pwm_type;
 
 // Arrays are the mapping of CH1-4 to the 10 PWM Channels Index
+// clang-format off
 #define PWM_INIT_DEFINE \
 { \
-	{ (&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, { 3,   2,  1,   0}}, \
-	{ (&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, { 255, 4,  5, 255}}, \
-	{ (&htim8), PWM_STANDARD, PWM_STD_RATE_HZ, { 6,  7, 255, 255}}  \
+  { (&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, { 3,   2,  1,   0}}, \
+  { (&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, { 255, 4,  5, 255}}, \
+  { (&htim8), PWM_STANDARD, PWM_STD_RATE_HZ, { 6,  7, 255, 255}}  \
 }
-
+// clang-format on
 // Channel order based on hardware pinout naming
 //	TIMER 1 TIM_CHANNEL_4, TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1
 //	TIMER 4 TIM_CHANNEL_2, TIM_CHANNEL_3
@@ -242,8 +215,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 #define UBX_PROTOCOL (UBX_M9)
 #define GPS_HAS_PPS (false)
-#define GPS_PPS_PORT 0 // ignored
-#define GPS_PPS_PIN 0  // ignored
+#define GPS_PPS_PORT 0 // ignored on pixracer
+#define GPS_PPS_PIN 0  // ignored on pixracer
 #define GPS_UART (&huart4)
 #define GPS_UART_INSTANCE (UART4)
 #define GPS_UART_DMA (&hdma_uart4_rx)
@@ -263,17 +236,13 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // VCP
 #define VCP_HZ (SERIAL_HZ)
 
-// SDMMC
-#define SD_HSD (&hsd1)
-#define SD_HSD_INSTANCE (SDMMC1)
-
 // Onboard ADC's
 #define ADC_HZ (10) // Maximum is 500 Hz.
 #define ADC_FIFO_BUFFERS (FIFO_MIN_BUFFERS)
 
 #define ADC_ADC_EXTERNAL (&hadc1)
 #define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
-#define ADC_EXT_DMA_RAM "my_dma_buffers"
+#define ADC_EXT_DMA_RAM MY_DMA_BUFFER
 #define ADC_CHANNELS_EXT (4)
 
 #define ADC_RSSI_V (0)          // INP 11
@@ -284,26 +253,25 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADC_ADC_INTERNAL (&hadc3)
 #define ADC_ADC_INSTANCE_INTERNAL (ADC3)
 // NOTE! _if_ ADC3 uses on BDMA and needs to be in SRAM4, can use regular DMA if available
-#define ADC_INT_DMA_RAM "my_bdma_buffers"
+#define ADC_INT_DMA_RAM MY_BDMA_BUFFER
 #define ADC_CHANNELS_INT (3)
 
 #define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
 #define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
 #define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
 
-// NOTE! This lets us put this in the config file.
-#define ADC_CFG_CHANS_DEFINE                                                                                           \
-    {                                                                                                                  \
-        {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},             /* ADC_RSSI_V */                                 \
-            {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 1.000, 0.0},         /* ADC_BATTERY_VOLTS */                          \
-            {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 1.000, 0.0},         /* ADC_BATTERY_CURRENT */                        \
-            {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},         /* ADC_5V0 */                                    \
-            {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */                        \
-            {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */                               \
-        {                                                                                                              \
-            ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.000, 0.0                                                        \
-        } /* ADC_STM_VREFINT */                                                                                        \
-    }
+// clang-format off
+#define ADC_CFG_CHANS_DEFINE \
+{ \
+  {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},         /* ADC_RSSI_V */ \
+  {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 1.000, 0.0},         /* ADC_BATTERY_VOLTS */ \
+  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 1.000, 0.0},         /* ADC_BATTERY_CURRENT */ \
+  {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},         /* ADC_5V0 */ \
+  {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */ \
+  {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */ \
+  {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.0,0.0}        /* ADC_STM_VREFINT */ \
+}
+// clang-format on
 
 #define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
 
@@ -323,160 +291,28 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define BLU_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET)
 #define BLU_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3)
 
-extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc2;
-extern ADC_HandleTypeDef hadc3;
-extern DMA_HandleTypeDef hdma_adc1;
-extern DMA_HandleTypeDef hdma_adc2;
-extern DMA_HandleTypeDef hdma_adc3;
-
-extern CRC_HandleTypeDef hcrc;
-
-extern FDCAN_HandleTypeDef hfdcan1;
-
-extern I2C_HandleTypeDef hi2c1;
-extern I2C_HandleTypeDef hi2c2;
-extern DMA_HandleTypeDef hdma_i2c1_rx;
-extern DMA_HandleTypeDef hdma_i2c1_tx;
-
-// extern RNG_HandleTypeDef hrng;
-
-extern RTC_HandleTypeDef hrtc;
-
-extern SD_HandleTypeDef hsd1;
-
-extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi2;
-extern SPI_HandleTypeDef hspi3;
-extern SPI_HandleTypeDef hspi4;
-extern SPI_HandleTypeDef hspi5;
-extern SPI_HandleTypeDef hspi6;
-
-extern DMA_HandleTypeDef hdma_spi1_rx;
-extern DMA_HandleTypeDef hdma_spi1_tx;
-extern DMA_HandleTypeDef hdma_spi2_rx;
-extern DMA_HandleTypeDef hdma_spi2_tx;
-extern DMA_HandleTypeDef hdma_spi3_rx;
-extern DMA_HandleTypeDef hdma_spi3_tx;
-extern DMA_HandleTypeDef hdma_spi4_rx;
-extern DMA_HandleTypeDef hdma_spi4_tx;
-extern DMA_HandleTypeDef hdma_spi5_rx;
-extern DMA_HandleTypeDef hdma_spi5_tx;
-extern DMA_HandleTypeDef hdma_spi6_rx;
-extern DMA_HandleTypeDef hdma_spi6_tx;
-
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim5;
-extern TIM_HandleTypeDef htim7;
-extern TIM_HandleTypeDef htim8;
-extern TIM_HandleTypeDef htim12;
-extern TIM_HandleTypeDef htim15;
-
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart3;
-extern UART_HandleTypeDef huart4;
-extern UART_HandleTypeDef huart5;
-extern UART_HandleTypeDef huart6;
-extern UART_HandleTypeDef huart7;
-
-extern DMA_HandleTypeDef hdma_usart1_rx;
-extern DMA_HandleTypeDef hdma_usart1_tx;
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern DMA_HandleTypeDef hdma_usart2_tx;
-extern DMA_HandleTypeDef hdma_usart3_rx;
-extern DMA_HandleTypeDef hdma_usart3_tx;
-extern DMA_HandleTypeDef hdma_usart6_rx;
-extern DMA_HandleTypeDef hdma_usart6_tx;
-
-extern DMA_HandleTypeDef hdma_uart4_rx;
-extern DMA_HandleTypeDef hdma_uart4_tx;
-extern DMA_HandleTypeDef hdma_uart5_rx;
-extern DMA_HandleTypeDef hdma_uart5_tx;
-extern DMA_HandleTypeDef hdma_uart7_rx;
-extern DMA_HandleTypeDef hdma_uart7_tx;
-extern DMA_HandleTypeDef hdma_uart8_rx;
-extern DMA_HandleTypeDef hdma_uart8_tx;
-
 // Probes
-
 #if 1
-// PIN PG9
-#define PG9_HI HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_SET)
-#define PG9_LO HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_RESET)
-#define PG9_TOG HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_9)
-
-#define PROBE1_HI PG9_HI
-#define PROBE1_LO PG9_LO
-#define PROBE1_TOG PG9_TOG
-
-#define PROBE2_HI                                                                                                      \
-    {}
-#define PROBE2_LO                                                                                                      \
-    {}
-#define PROBE2_TOG                                                                                                     \
-    {}
-
-#define PROBE3_HI                                                                                                      \
-    {}
-#define PROBE3_LO                                                                                                      \
-    {}
-#define PROBE3_TOG                                                                                                     \
-    {}
-
-#define PROBE4_HI                                                                                                      \
-    {}
-#define PROBE4_LO                                                                                                      \
-    {}
-#define PROBE4_TOG                                                                                                     \
-    {}
-
+// Probe PIN PG9
+#define PROBE1_HI HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_SET)
+#define PROBE1_LO HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_RESET)
+#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_9)
 #else
-
-#define PROBE1_HI                                                                                                      \
-    {}
-#define PROBE1_LO                                                                                                      \
-    {}
-#define PROBE1_TOG                                                                                                     \
-    {}
-
-#define PROBE2_HI                                                                                                      \
-    {}
-#define PROBE2_LO                                                                                                      \
-    {}
-#define PROBE2_TOG                                                                                                     \
-    {}
-
-#define PROBE3_HI                                                                                                      \
-    {}
-#define PROBE3_LO                                                                                                      \
-    {}
-#define PROBE3_TOG                                                                                                     \
-    {}
-
-#define PROBE4_HI                                                                                                      \
-    {}
-#define PROBE4_LO                                                                                                      \
-    {}
-#define PROBE4_TOG                                                                                                     \
-    {}
-
+#define PROBE1_HI
+#define PROBE1_LO
+#define PROBE1_TOG
 #endif
 
-#define DRIVER_OK (0x00000000)
-#define DRIVER_ID_MISMATCH (0x00000002)
-#define DRIVER_SELF_DIAG_ERROR (0x00000004)
-#define DRIVER_HAL_ERROR (0x00000008)
-#define DRIVER_HAL_ERROR2 (0x00000010)
-#define DRIVER_FIFO_INIT_ERROR (0x00000020)
-#define UBX_ACK (0x00000040)
-#define UBX_NAK (0x00000080)
-#define UBX_ACKNAK_FAIL (0x00000100)
-#define UBX_SUCCESS (0x00000200)
-#define UBX_FAIL_BAUD_CHANGE (0x00000400)
-#define VOLTAGE_SET_FAIL (0x00000800)
-#define TIMERS_INVALID (0x00001000)
+#define PROBE2_HI
+#define PROBE2_LO
+#define PROBE2_TOG
+
+#define PROBE3_HI
+#define PROBE3_LO
+#define PROBE3_TOG
+
+#define PROBE4_HI
+#define PROBE4_LO
+#define PROBE4_TOG
 
 #endif /* BOARDCONFIG_H_ */

@@ -40,32 +40,30 @@
 #include <Polling.h>
 #include <stdint.h>
 
-PollingState PollingStateLookup(PollingStateStruct *ps, uint32_t size, uint32_t poll_index)
+PollingState PollingStateLookup(PollingStateStruct * ps, uint32_t size, uint32_t poll_index)
 {
-    for (uint32_t i = 0; i < size; i++)
-        if (poll_index == ps[i].index)
-            return ps[i].state;
-    return NULL_STATE;
+  for (uint32_t i = 0; i < size; i++)
+    if (poll_index == ps[i].index) return ps[i].state;
+  return NULL_STATE;
 }
 
-uint32_t InitPollTimer(TIM_HandleTypeDef *htim, TIM_TypeDef *instance, uint32_t channel)
+uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel)
 {
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-    htim->Instance = instance;
-    htim->Init.Prescaler = 199;
-    htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim->Init.Period = POLLING_PERIOD_US-1;
-    htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
-        return DRIVER_HAL_ERROR;
+  htim->Instance = instance;
+  htim->Init.Prescaler = 199;
+  htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim->Init.Period = POLLING_PERIOD_US - 1;
+  htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim7) != HAL_OK) return DRIVER_HAL_ERROR;
 
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
-        return DRIVER_HAL_ERROR;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+    return DRIVER_HAL_ERROR;
 
-    HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
-    HAL_TIM_Base_Start_IT(htim);
-    return DRIVER_OK;
+  HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
+  HAL_TIM_Base_Start_IT(htim);
+  return DRIVER_OK;
 }

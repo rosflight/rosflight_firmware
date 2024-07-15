@@ -52,74 +52,68 @@ extern bool verbose;
 
 void verbose_dashes(void)
 {
-    for (int i = 0; i < ROWSIZE; i++)
-        misc_printf("-");
-    misc_printf("\n");
+  for (int i = 0; i < ROWSIZE; i++) misc_printf("-");
+  misc_printf("\n");
 }
 
 void verbose_equals(void)
 {
-    for (int i = 0; i < ROWSIZE; i++)
-        misc_printf("=");
-    misc_printf("\n");
+  for (int i = 0; i < ROWSIZE; i++) misc_printf("=");
+  misc_printf("\n");
 }
 
 void sandbox(void)
 {
-	// Give us time to read the initialization messages
-    time64.dMs(5000);
+  // Give us time to read the initialization messages
+  time64.dMs(5000);
 
-    verbose = true;
+  verbose = true;
 
-//	 Test pwm outputs
-//
-//	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
-//	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
-//	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
-//	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
-//	varmint.pwm_.write(outputs, PWM_CHANNELS);
-//
-//	while(1)
-//	{
-//	  PROBE1_HI;
-//	  varmint.pwm_.write(outputs, PWM_CHANNELS);
-//	  PROBE1_LO;
-//	  time64.dUs(450); ~ 2khs update rate
-//	}
+  //	 Test pwm outputs
+  //
+  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
+  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
+  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
+  //	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
+  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //
+  //	while(1)
+  //	{
+  //	  PROBE1_HI;
+  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //	  PROBE1_LO;
+  //	  time64.dUs(450); ~ 2khs update rate
+  //	}
 
-    uint32_t n = 0;
-    while (1)
-    {
-        sandbox_dashboard((n++) % 100 == 0);
-    }
+  uint32_t n = 0;
+  while (1) { sandbox_dashboard((n++) % 100 == 0); }
 }
 
 void sandbox_dashboard(bool clear)
 {
-    verbose = true;
+  verbose = true;
 
-    if (clear)
-        misc_printf("%c[2J", ASCII_ESC);
+  if (clear) misc_printf("%c[2J", ASCII_ESC);
 
-    misc_printf("%c[H", ASCII_ESC); // home
+  misc_printf("%c[H", ASCII_ESC); // home
 
-    verbose_equals();
-    misc_printf("SANDBOX DASHBOARD PIXRACER_PRO\n");
-    verbose_equals();
+  verbose_equals();
+  misc_printf("SANDBOX DASHBOARD PIXRACER_PRO\n");
+  verbose_equals();
 
-    varmint.imu0_.display();
-    verbose_dashes();
-    varmint.mag_.display();
-    verbose_dashes();
-    varmint.baro_.display();
-    verbose_dashes();
-    varmint.pitot_.display();
-    verbose_dashes();
-    varmint.adc_.display();
-    verbose_dashes();
-    varmint.rc_.display();
-    verbose_dashes();
-    varmint.gps_.display();
+  varmint.imu0_.display();
+  verbose_dashes();
+  varmint.mag_.display();
+  verbose_dashes();
+  varmint.baro_.display();
+  verbose_dashes();
+  varmint.pitot_.display();
+  verbose_dashes();
+  varmint.adc_.display();
+  verbose_dashes();
+  varmint.rc_.display();
+  verbose_dashes();
+  varmint.gps_.display();
 
-    verbose_equals();
+  verbose_equals();
 }
