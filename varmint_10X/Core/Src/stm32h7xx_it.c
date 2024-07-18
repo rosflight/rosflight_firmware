@@ -477,13 +477,6 @@ void USART1_IRQHandler(void)
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
   UART_RxIsrCallback(&huart1);
-//
-//  if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
-//  {
-//      __HAL_UART_CLEAR_IDLEFLAG(&huart1);
-//      UART_RxIdleCallback(&huart1);
-//      ((DMA_Stream_TypeDef   *)(&hdma_usart1_rx)->Instance)->CR &= ~DMA_SxCR_EN;
-//  }
   /* USER CODE END USART1_IRQn 1 */
 }
 
@@ -498,14 +491,6 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   UART_RxIsrCallback(&huart2);
-
-//    if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_IDLE))
-//    {
-//        __HAL_UART_CLEAR_IDLEFLAG(&huart2);
-//        UART_RxIdleCallback(&huart2);
-//        ((DMA_Stream_TypeDef   *)(&hdma_usart2_rx)->Instance)->CR &= ~DMA_SxCR_EN;
-//    }
-	//Telem_rxIsrCallback(&huart2);
   /* USER CODE END USART2_IRQn 1 */
 }
 
@@ -521,13 +506,6 @@ void USART3_IRQHandler(void)
   /* USER CODE BEGIN USART3_IRQn 1 */
 
   UART_RxIsrCallback(&huart3);
-//
-//	if (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_IDLE))
-//	{
-//		__HAL_UART_CLEAR_IDLEFLAG(&huart3);
-//		UART_RxIdleCallback(&huart3);
-//		((DMA_Stream_TypeDef   *)(&hdma_usart3_rx)->Instance)->CR &= ~DMA_SxCR_EN;
-//	}
   /* USER CODE END USART3_IRQn 1 */
 }
 
