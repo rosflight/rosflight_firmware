@@ -55,8 +55,7 @@ public:
     // ADIS165xx initializers
     GPIO_TypeDef * reset_port, // Reset GPIO Port
     uint16_t reset_pin,        // Reset GPIO Pin
-    TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel,
-    uint32_t htim_period_us);
+    TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us);
 
   void endDma(void);
   bool startDma(void);

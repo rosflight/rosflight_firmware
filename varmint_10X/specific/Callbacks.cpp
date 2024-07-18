@@ -89,8 +89,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 //}
 
 // SPI Rx complete callback
-void HAL_SPI_TxRxCpltCallback(
-  SPI_HandleTypeDef * hspi) // All spi dma rx interrupts are handled here.
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interrupts are handled here.
 {
   // do not use 'else if' since some of these share SPI
   if (varmint.imu0_.isMy(hspi)) varmint.imu0_.endDma();

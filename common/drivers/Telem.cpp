@@ -63,15 +63,14 @@ DTCM_RAM uint8_t telem_fifo_tx_buffer1[SERIAL_TX_FIFO_BUFFERS1 * sizeof(SerialTx
 DTCM_RAM uint8_t telem_fifo_tx_buffer2[SERIAL_TX_FIFO_BUFFERS2 * sizeof(SerialTxPacket)];
 DTCM_RAM PacketFifo telem_tx_fifos[SERIAL_QOS_FIFOS];
 
-DATA_RAM uint8_t * telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] = {
-  telem_fifo_tx_buffer0, telem_fifo_tx_buffer1, telem_fifo_tx_buffer2};
+DATA_RAM uint8_t * telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] = {telem_fifo_tx_buffer0, telem_fifo_tx_buffer1,
+                                                             telem_fifo_tx_buffer2};
 
 uint32_t Telem::init(
   // Driver initializers
   uint16_t sample_rate_hz,
   // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx,
-  uint32_t baud
+  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud
   //,void (*RxISR) (struct __UART_HandleTypeDef *huart)
 )
 {
@@ -81,8 +80,8 @@ uint32_t Telem::init(
   txFrameEndUs_ = 0 + txFrameSizeUs_;
   usPerByte_ = (uint64_t) 1000000 * 10 / baud; // assume 10 bits/byte.
   txFifo_ = telem_tx_fifos;
-  uint32_t serial_tx_fifo_buffer_size[SERIAL_QOS_FIFOS] = {
-    SERIAL_TX_FIFO_BUFFERS0, SERIAL_TX_FIFO_BUFFERS1, SERIAL_TX_FIFO_BUFFERS2};
+  uint32_t serial_tx_fifo_buffer_size[SERIAL_QOS_FIFOS] = {SERIAL_TX_FIFO_BUFFERS0, SERIAL_TX_FIFO_BUFFERS1,
+                                                           SERIAL_TX_FIFO_BUFFERS2};
 
   for (int n = 0; n < SERIAL_QOS_FIFOS; n++)
     txFifo_[n].init(serial_tx_fifo_buffer_size[n], sizeof(SerialTxPacket),
@@ -109,10 +108,8 @@ uint32_t Telem::init(
   huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
   if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-    return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
   if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
 
   return DRIVER_OK;
@@ -167,11 +164,9 @@ bool Telem::newPacket(SerialTxPacket * p)
   if (txFifo_[0].packetCount() > 0) {
     size = txFifo_[0].read((uint8_t *) p, sizeof(SerialTxPacket));
     if (p->qos == 0x00) { txFrameEndUs_ = time_now_us + txFrameSizeUs_; }
-  } else if ((txFifo_[1].packetCount() > 0)
-             && ((int64_t) usPerByte_ * txFifo_[1].peek()->size < time_remaining_us)) {
+  } else if ((txFifo_[1].packetCount() > 0) && ((int64_t) usPerByte_ * txFifo_[1].peek()->size < time_remaining_us)) {
     size = txFifo_[1].read((uint8_t *) p, sizeof(SerialTxPacket));
-  } else if ((txFifo_[2].packetCount() > 0)
-             && ((int64_t) usPerByte_ * txFifo_[2].peek()->size < time_remaining_us)) {
+  } else if ((txFifo_[2].packetCount() > 0) && ((int64_t) usPerByte_ * txFifo_[2].peek()->size < time_remaining_us)) {
     size = txFifo_[2].read((uint8_t *) p, sizeof(SerialTxPacket));
   }
 

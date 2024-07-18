@@ -191,8 +191,7 @@ uint32_t Auav::readCfg(uint8_t address, Spi * spi)
   spi->rx(tx, lo, 3, 100);
   time64.dUs(20); // don't know if this is needed.
 
-  uint32_t value =
-    (uint32_t) hi[1] << 24 | (uint32_t) hi[2] << 16 | ((uint32_t) lo[1]) << 8 | (uint32_t) lo[2];
+  uint32_t value = (uint32_t) hi[1] << 24 | (uint32_t) hi[2] << 16 | ((uint32_t) lo[1]) << 8 | (uint32_t) lo[2];
 
   return value;
 }
@@ -217,11 +216,9 @@ bool Auav::poll(uint64_t poll_counter)
 {
   PollingState poll_state = state(poll_counter);
 
-  if ((poll_state == AUAV_PITOT_CMD && type_ == AUAV_PITOT)
-      || (poll_state == AUAV_BARO_CMD && type_ == AUAV_BARO)) {
+  if ((poll_state == AUAV_PITOT_CMD && type_ == AUAV_PITOT) || (poll_state == AUAV_BARO_CMD && type_ == AUAV_BARO)) {
     launchUs_ = time64.Us();
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmdBytes_, AUAV_CMD_BYTES))))
-      spiState_ = poll_state;
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmdBytes_, AUAV_CMD_BYTES)))) spiState_ = poll_state;
     else spiState_ = AUAV_ERROR;
   } else if ((poll_state == AUAV_PITOT_RX && type_ == AUAV_PITOT)
              || (poll_state == AUAV_BARO_RX && type_ == AUAV_BARO)) {
@@ -235,8 +232,7 @@ bool Auav::poll(uint64_t poll_counter)
 
 void Auav::endDma(void)
 {
-  if ((spiState_ == AUAV_PITOT_RX && type_ == AUAV_PITOT)
-      || (spiState_ == AUAV_BARO_RX && type_ == AUAV_BARO)) {
+  if ((spiState_ == AUAV_PITOT_RX && type_ == AUAV_PITOT) || (spiState_ == AUAV_BARO_RX && type_ == AUAV_BARO)) {
     uint8_t * inbuf = spi_.endDma();
     // Returns <status> Pressure H,M,L, Temperature H,M L
 

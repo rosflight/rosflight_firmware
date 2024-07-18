@@ -118,8 +118,7 @@ uint32_t Ist8308::init(
   uint8_t reg = WAI_REG;
   if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
   uint8_t device_id = 0;
-  if (HAL_I2C_Master_Receive(hi2c_, address_, &device_id, 1, 1000) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Receive(hi2c_, address_, &device_id, 1, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
 
   misc_printf("IST8308 Device ID = 0x%02X (0x%02X) - ", device_id, DEVICE_ID);
   if (device_id == DEVICE_ID) {
@@ -188,21 +187,18 @@ bool Ist8308::poll(uint64_t poll_counter)
     ist8308_i2c_dma_buf[0] = CNTL2_REG;
     ist8308_i2c_dma_buf[1] = CNTL2_VAL_SINGLE_MODE;
 
-    if ((dmaRunning_ =
-           (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 2))))
+    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 2))))
       i2cState_ = poll_state;
     else i2cState_ = IST8308_ERROR;
   } else if (poll_state == IST8308_TX) // Write the register we want to read
   {
     drdy_ = time64.Us();
     ist8308_i2c_dma_buf[0] = STAT1_REG;
-    if ((dmaRunning_ =
-           (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 1))))
+    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 1))))
       i2cState_ = poll_state;
     else i2cState_ = IST8308_ERROR;
   } else if (poll_state == IST8308_RX) {
-    if ((dmaRunning_ =
-           (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 7))))
+    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 7))))
       i2cState_ = poll_state;
     else i2cState_ = IST8308_ERROR;
   }
@@ -243,8 +239,7 @@ bool Ist8308::display()
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
 
-    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0,
-                p.flux[2] * 1e6 - 37.5);
+    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
     misc_printf(" |                                       ");
     misc_printf(" |     N/A C |              | 0x%04X", p.status);
     if (p.status == STAT1_VAL_DRDY) misc_printf(" - OK\n");

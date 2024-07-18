@@ -81,8 +81,7 @@ uint32_t Sbus::init(
   // Driver initializers
   uint16_t sample_rate_hz,
   // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx,
-  uint32_t baud)
+  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = 0;      // do not use
@@ -104,15 +103,12 @@ uint32_t Sbus::init(
   huart_->Init.OverSampling = UART_OVERSAMPLING_16;
   huart_->Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart_->Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart_->AdvancedInit.AdvFeatureInit =
-    UART_ADVFEATURE_TXINVERT_INIT | UART_ADVFEATURE_RXINVERT_INIT;
+  huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_TXINVERT_INIT | UART_ADVFEATURE_RXINVERT_INIT;
   huart_->AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
   huart_->AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
   if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-    return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
   if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
   // USART initialization end
 
@@ -141,8 +137,7 @@ bool Sbus::poll(void)
 bool Sbus::startDma(void)
 {
   timeout_ = time64.Us() + dtimeout_; // 0.1 second timeout
-  HAL_StatusTypeDef hal_status =
-    HAL_UART_Receive_DMA(huart_, sbus_dma_rxbuf, SBUS_DMA_BUFFER_SIZE); // start next read
+  HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, sbus_dma_rxbuf, SBUS_DMA_BUFFER_SIZE); // start next read
   return HAL_OK == hal_status;
 }
 
@@ -220,8 +215,7 @@ bool Sbus::display(void)
     for (int i = 16; i < 24; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("Frame Lost: %1u, Failsafe Activated: %1u, Status: %1u\n", p.frameLost,
-                p.failsafeActivated, p.status);
+    misc_printf("Frame Lost: %1u, Failsafe Activated: %1u, Status: %1u\n", p.frameLost, p.failsafeActivated, p.status);
     return 1;
   } else {
     misc_printf("%s\n", name);

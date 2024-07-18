@@ -55,8 +55,8 @@ uint32_t Ubx::init(
   // Driver initializers
   uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, bool has_pps,
   // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx,
-  uint32_t baud, UbxProtocol ubx_protocol)
+  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud,
+  UbxProtocol ubx_protocol)
 {
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
@@ -97,10 +97,8 @@ uint32_t Ubx::init(
   //  huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
   //  huart_->AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
   if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_8_8) != HAL_OK)
-    return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_8_8) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_8_8) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_8_8) != HAL_OK) return DRIVER_HAL_ERROR;
   //    if (HAL_UARTEx_DisableFifoMode (huart_) != HAL_OK)
   //        return DRIVER_HAL_ERROR;
   if (HAL_UARTEx_EnableFifoMode(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
@@ -197,8 +195,7 @@ bool Ubx::poll(void)
 bool Ubx::startDma(void)
 {
   timeout_ = time64.Us() + dtimeout_; // 1000000 for one second timeout
-  HAL_StatusTypeDef hal_status =
-    HAL_UART_Receive_DMA(huart_, ubx_dma_rxbuf, UBX_DMA_BUFFER_SIZE); // start next read
+  HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, ubx_dma_rxbuf, UBX_DMA_BUFFER_SIZE); // start next read
   return HAL_OK == hal_status;
 }
 
@@ -282,8 +279,7 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
     p->A += c;
     p->B += p->A;
 
-    if ((p->cl == 0x01) && (p->id == 0x07))
-      drdy_ = time64.Us() - UBX_DMA_BUFFER_SIZE * 10000000 / baud_;
+    if ((p->cl == 0x01) && (p->id == 0x07)) drdy_ = time64.Us() - UBX_DMA_BUFFER_SIZE * 10000000 / baud_;
   } else if (n == 4) // length LSB
   {
     p->length = (uint16_t) c;
@@ -340,28 +336,24 @@ bool Ubx::display(void)
     misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.pvt.iTOW);
     misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
-    misc_printf("%02u:%02u:%09.6f", p.pvt.hour, p.pvt.min,
-                (double) p.pvt.sec + (double) p.pvt.nano * 1e-9);
+    misc_printf("%02u:%02u:%09.6f", p.pvt.hour, p.pvt.min, (double) p.pvt.sec + (double) p.pvt.nano * 1e-9);
     misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
     misc_printf("numSV %02d\n", p.pvt.numSV);
 
     misc_header(name_time, p.drdy, p.timestamp, p.groupDelay);
     misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.time.iTOW);
-    misc_printf("  TOW %14.3f ms | valid 0x%02X\n",
-                (double) p.time.iTOW + (double) p.time.fTOW / 1000, p.time.valid);
+    misc_printf("  TOW %14.3f ms | valid 0x%02X\n", (double) p.time.iTOW + (double) p.time.fTOW / 1000, p.time.valid);
 
     misc_header(name_ecefp, p.drdy, p.timestamp, p.groupDelay);
     misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.ecefp.iTOW);
-    misc_printf("  %10d %10d %10d %10u cm\n", p.ecefp.ecefX, p.ecefp.ecefY, p.ecefp.ecefZ,
-                p.ecefp.pAcc);
+    misc_printf("  %10d %10d %10d %10u cm\n", p.ecefp.ecefX, p.ecefp.ecefY, p.ecefp.ecefZ, p.ecefp.pAcc);
 
     misc_header(name_ecefv, p.drdy, p.timestamp, p.groupDelay);
     misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.ecefv.iTOW);
-    misc_printf("  %10d %10d %10d %10u cm/s\n", p.ecefv.ecefVX, p.ecefv.ecefVY, p.ecefv.ecefVZ,
-                p.ecefv.sAcc);
+    misc_printf("  %10d %10d %10d %10u cm/s\n", p.ecefv.ecefVX, p.ecefv.ecefVY, p.ecefv.ecefVZ, p.ecefv.sAcc);
   } else {
     misc_printf("%s\n", name_pvt);
     misc_printf("%s\n", name_time);
@@ -451,9 +443,8 @@ uint16_t Ubx::cfgPrt(uint32_t baud)
   payload[5] = 0x08; // mode 0000 1000 (No parity, 1 stop bit)
   payload[6] = 0x00; // mode
   payload[7] = 0x00; // mode
-  SET(
-    payload + 8, baud,
-    uint32_t); // baudRate ( 115200 = 0x00 01 C2 00, 230400 = 0x00 03 84 00, 460800 = 0x00 07 08 00
+  SET(payload + 8, baud,
+      uint32_t);      // baudRate ( 115200 = 0x00 01 C2 00, 230400 = 0x00 03 84 00, 460800 = 0x00 07 08 00
   payload[12] = 0x01; // inProtoMask (ubx)
   payload[13] = 0x00; // inProtoMask
   payload[14] = 0x01; // outProtoMask (ubx)
@@ -541,18 +532,18 @@ uint16_t Ubx::cfgMsg(uint8_t cl, uint8_t id, uint8_t decimation_rate)
 //#define SET(buf,data,type) *((type*)(buf))=data
 
 // M9 parameters setting functions
-#define SETVAL(ptr, value, type)                                                                   \
-  {                                                                                                \
-    *((type *) (ptr)) = value;                                                                     \
-    ptr += sizeof(type);                                                                           \
+#define SETVAL(ptr, value, type)                                                                                       \
+  {                                                                                                                    \
+    *((type *) (ptr)) = value;                                                                                         \
+    ptr += sizeof(type);                                                                                               \
   }
 
-#define SETKV(ptr, key, value, type)                                                               \
-  {                                                                                                \
-    *(uint32_t *) (ptr) = key;                                                                     \
-    ptr += 4;                                                                                      \
-    *((type *) (ptr)) = value;                                                                     \
-    ptr += sizeof(type);                                                                           \
+#define SETKV(ptr, key, value, type)                                                                                   \
+  {                                                                                                                    \
+    *(uint32_t *) (ptr) = key;                                                                                         \
+    ptr += 4;                                                                                                          \
+    *((type *) (ptr)) = value;                                                                                         \
+    ptr += sizeof(type);                                                                                               \
   }
 
 uint16_t Ubx::cfgM9(uint32_t baud, uint16_t sampleRateHz)
@@ -573,9 +564,9 @@ uint16_t Ubx::cfgM9(uint32_t baud, uint16_t sampleRateHz)
   // Key value pairs
   SETKV(p, 0x40520001, baud, uint32_t);                // baud rate (8 bytes)
   SETKV(p, 0x30210001, 1000 / sampleRateHz, uint16_t); // output rate in milliseconds (6 bytes)
-  SETKV(p, 0x30210002, 1, uint16_t); // 1 data output per nav measurement (6 bytes)
-  SETKV(p, 0x20110021, 8, uint8_t);  // CFG-NAVSPG-DYNMODEL 8 = 4G Airborne (5 bytes)
-  SETKV(p, 0x20110011, 3, uint8_t);  // CFG-NAVSPG-FIXMODE 3 = Auto 2/3D (5 bytes)
+  SETKV(p, 0x30210002, 1, uint16_t);                   // 1 data output per nav measurement (6 bytes)
+  SETKV(p, 0x20110021, 8, uint8_t);                    // CFG-NAVSPG-DYNMODEL 8 = 4G Airborne (5 bytes)
+  SETKV(p, 0x20110011, 3, uint8_t);                    // CFG-NAVSPG-FIXMODE 3 = Auto 2/3D (5 bytes)
 
   // compute and insert message length length
   length = p - cfg_message - 6;
@@ -621,8 +612,8 @@ uint32_t Ubx::pollBaudM9(void)
           uint32_t key = (uint32_t) ubx.payload[7] << 24 | (uint32_t) ubx.payload[6] << 16
             | (uint32_t) ubx.payload[5] << 8 | (uint32_t) ubx.payload[4];
           if (key == 0x40520001)
-            return (uint32_t) ubx.payload[11] << 24 | (uint32_t) ubx.payload[10] << 16
-              | (uint32_t) ubx.payload[9] << 8 | (uint32_t) ubx.payload[8];
+            return (uint32_t) ubx.payload[11] << 24 | (uint32_t) ubx.payload[10] << 16 | (uint32_t) ubx.payload[9] << 8
+              | (uint32_t) ubx.payload[8];
           ; // baud key
         } else {
           memset(&ubx, 0, sizeof(ubx));

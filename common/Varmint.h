@@ -130,8 +130,7 @@ public:
   // GNSS
   bool gnss_present() override;
   bool gnss_has_new_data() override;
-  bool gnss_read(rosflight_firmware::GNSSData * gnss,
-                 rosflight_firmware::GNSSFull * gnss_full) override;
+  bool gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware::GNSSFull * gnss_full) override;
 
   // RC
   void rc_init(rc_type_t rc_type) override;

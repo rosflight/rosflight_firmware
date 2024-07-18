@@ -72,8 +72,7 @@ uint32_t Adis165xx::init(
   // ADIS165xx initializers
   GPIO_TypeDef * reset_port, // Reset GPIO Port
   uint16_t reset_pin,        // Reset GPIO Pin
-  TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel,
-  uint32_t htim_period_us)
+  TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us)
 {
   uint32_t status = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
@@ -90,8 +89,7 @@ uint32_t Adis165xx::init(
   htimChannel_ = htim_channel;
 
   groupDelay_ = (uint64_t) 1510
-    + (uint64_t) 500000
-      / sampleRateHz_; // us, Approximate, Accel is 1.57ms, Gyro x&y are 1.51ms, and Gyro z is 1.29ms.
+    + (uint64_t) 500000 / sampleRateHz_; // us, Approximate, Accel is 1.57ms, Gyro x&y are 1.51ms, and Gyro z is 1.29ms.
 
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
   HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
@@ -113,14 +111,12 @@ uint32_t Adis165xx::init(
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 250;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) return DRIVER_HAL_ERROR;
 
   HAL_TIM_MspPostInit(htim_);
 
@@ -198,8 +194,7 @@ uint32_t Adis165xx::init(
 
 inline double val(uint8_t * x)
 {
-  return (double) ((int32_t) x[0] << 8 | (int32_t) x[1] << 0 | (int32_t) x[2] << 24
-                   | (int32_t) x[3] << 16)
+  return (double) ((int32_t) x[0] << 8 | (int32_t) x[1] << 0 | (int32_t) x[2] << 24 | (int32_t) x[3] << 16)
     / ((double) (1 << 16));
 }
 
@@ -300,10 +295,8 @@ bool Adis165xx::display(void)
   char name[] = "Adis165xx (imu0)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f %10.3f %10.3f g    ", p.accel[0] / 9.80665, p.accel[1] / 9.80665,
-                p.accel[2] / 9.80665);
-    misc_printf(" | %10.3f %10.3f %10.3f deg/s", p.gyro[0] * 57.2958, p.gyro[1] * 57.2958,
-                p.gyro[2] * 57.2958);
+    misc_printf("%10.3f %10.3f %10.3f g    ", p.accel[0] / 9.80665, p.accel[1] / 9.80665, p.accel[2] / 9.80665);
+    misc_printf(" | %10.3f %10.3f %10.3f deg/s", p.gyro[0] * 57.2958, p.gyro[1] * 57.2958, p.gyro[2] * 57.2958);
     misc_printf(" | %7.1f C", p.temperature - 273.15);
     misc_printf(" | %10.3f s | 0x%04X", p.dataTime, p.status);
     if (p.status == ADIS_OK) misc_printf(" - OK\n");

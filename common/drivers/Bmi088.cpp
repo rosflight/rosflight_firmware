@@ -229,7 +229,7 @@ uint32_t Bmi088::init(
 
   readRegisterA(BMI08_REG_ACCEL_INT2_IO_CONF); //(0xD4)
   writeRegisterA(BMI08_REG_ACCEL_INT2_IO_CONF,
-                 0x13); //(0x54, 0x13) Int2 as input, active high, reserved[0] = 1
+                 0x13);                           //(0x54, 0x13) Int2 as input, active high, reserved[0] = 1
   writeRegisterA(BMI08_REG_ACCEL_INT1_MAP, 0x01); // (0x56,0x01) undocumented.
 
   readRegisterA(BMI08_REG_ACCEL_INT1_IO_CONF);        // (0xD3)
@@ -240,10 +240,10 @@ uint32_t Bmi088::init(
 
   readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP); // (0x18)
   writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP,
-                 0x81); //(0x18,0x80) 0x81 to map drdy to both int3 and int4
+                 0x81);                                   //(0x18,0x80) 0x81 to map drdy to both int3 and int4
   readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF);        // (0x16)
   writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF, 0x05); //(0x16,0x05)
-  writeRegisterG(BMI08_REG_GYRO_INT_CTRL, 0x80); //(0x15,0x80) Enable drdy interrupt on new data
+  writeRegisterG(BMI08_REG_GYRO_INT_CTRL, 0x80);          //(0x15,0x80) Enable drdy interrupt on new data
 
   // why is this sequence here twice??
   readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP);         // (0x18)
@@ -273,9 +273,7 @@ void Bmi088::endDma(void)
     uint8_t * rx = spiA_.endDma();
     scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
 
-    p.dataTime =
-      (double) (39.0625e-6
-                * (double) ((uint32_t) rx[8] | (uint32_t) rx[9] << 8 | (uint32_t) rx[10] << 16));
+    p.dataTime = (double) (39.0625e-6 * (double) ((uint32_t) rx[8] | (uint32_t) rx[9] << 8 | (uint32_t) rx[10] << 16));
     p.temperature = (double) ((int16_t) rx[18] << 3 | (((int16_t) rx[19] >> 6) & 0x0003));
     if (p.temperature > 1023) p.temperature -= 2048.0;
     p.temperature *= 0.125;
@@ -305,8 +303,7 @@ void Bmi088::endDma(void)
   } else if (seqCount_ == 3) {
     uint8_t * rx = spiG_.endDma();
     // _gyro_range = 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-    scale_factor =
-      (double) 1.0 / 8.192 / (double) (0x0001 << (rangeG_ + 1)) * 0.01745329252; // to rad/s
+    scale_factor = (double) 1.0 / 8.192 / (double) (0x0001 << (rangeG_ + 1)) * 0.01745329252; // to rad/s
 
     int16_t data;
     data = (int16_t) rx[2] << 8 | (int16_t) rx[1];
@@ -369,10 +366,8 @@ bool Bmi088::display(void)
   char name[] = "Bmi088 (imu)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f %10.3f %10.3f g    ", p.accel[0] / 9.80665, p.accel[1] / 9.80665,
-                p.accel[2] / 9.80665);
-    misc_printf(" | %10.3f %10.3f %10.3f deg/s", p.gyro[0] * 57.2958, p.gyro[1] * 57.2958,
-                p.gyro[2] * 57.2958);
+    misc_printf("%10.3f %10.3f %10.3f g    ", p.accel[0] / 9.80665, p.accel[1] / 9.80665, p.accel[2] / 9.80665);
+    misc_printf(" | %10.3f %10.3f %10.3f deg/s", p.gyro[0] * 57.2958, p.gyro[1] * 57.2958, p.gyro[2] * 57.2958);
     misc_printf(" | %7.1f C", p.temperature - 273.15);
     misc_printf(" | %10.3f s\n", p.dataTime);
     return 1;

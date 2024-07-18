@@ -698,13 +698,12 @@
 #define BMI08_SET_LOW_NIBBLE UINT8_C(0x0F)
 
 /**\name Macro to SET and GET BITS of a register */
-#define BMI08_SET_BITS(reg_var, bitname, val)                                                      \
+#define BMI08_SET_BITS(reg_var, bitname, val)                                                                          \
   ((reg_var & ~(bitname##_MASK)) | ((val << bitname##_POS) & bitname##_MASK))
 
 #define BMI08_GET_BITS(reg_var, bitname) ((reg_var & (bitname##_MASK)) >> (bitname##_POS))
 
-#define BMI08_SET_BITS_POS_0(reg_var, bitname, val)                                                \
-  ((reg_var & ~(bitname##_MASK)) | (val & bitname##_MASK))
+#define BMI08_SET_BITS_POS_0(reg_var, bitname, val) ((reg_var & ~(bitname##_MASK)) | (val & bitname##_MASK))
 
 #define BMI08_GET_BITS_POS_0(reg_var, bitname) (reg_var & (bitname##_MASK))
 
@@ -762,8 +761,7 @@ enum bmi08_variant
  * @retval 0 for Success
  * @retval Non-zero for Failure
  */
-typedef BMI08_INTF_RET_TYPE (*bmi08_read_fptr_t)(uint8_t reg_addr, uint8_t * reg_data, uint32_t len,
-                                                 void * intf_ptr);
+typedef BMI08_INTF_RET_TYPE (*bmi08_read_fptr_t)(uint8_t reg_addr, uint8_t * reg_data, uint32_t len, void * intf_ptr);
 
 /*!
  * @brief Bus communication function pointer which should be mapped to
@@ -778,8 +776,8 @@ typedef BMI08_INTF_RET_TYPE (*bmi08_read_fptr_t)(uint8_t reg_addr, uint8_t * reg
  * @retval Non-zero for Failure
  *
  */
-typedef BMI08_INTF_RET_TYPE (*bmi08_write_fptr_t)(uint8_t reg_addr, const uint8_t * reg_data,
-                                                  uint32_t len, void * intf_ptr);
+typedef BMI08_INTF_RET_TYPE (*bmi08_write_fptr_t)(uint8_t reg_addr, const uint8_t * reg_data, uint32_t len,
+                                                  void * intf_ptr);
 
 /*!
  * @brief Delay function pointer which should be mapped to

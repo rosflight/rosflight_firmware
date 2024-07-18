@@ -70,16 +70,13 @@ uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
 
   rxFifo_.init(ADC_FIFO_BUFFERS, sizeof(AdcPacket), adc_fifo_rx_buffer);
 
-  if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT))
-    return DRIVER_HAL_ERROR;
-  if (DRIVER_OK
-      != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT))
+  if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT)) return DRIVER_HAL_ERROR;
+  if (DRIVER_OK != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT))
     return DRIVER_HAL_ERROR;
   return DRIVER_OK;
 }
 
-uint32_t Adc::configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig,
-                         AdcChannelCfg * cfg)
+uint32_t Adc::configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg)
 {
   sConfig->Rank = cfg->rank;
   sConfig->Channel = cfg->chan;
@@ -150,10 +147,8 @@ bool Adc::poll(uint64_t poll_counter)
   {
     drdy_ = time64.Us();
 
-    HAL_StatusTypeDef hal_status_int =
-      HAL_ADC_Start_DMA(hadcInt_, (uint32_t *) adc_dma_buf_int, ADC_CHANNELS_INT);
-    HAL_StatusTypeDef hal_status_ext =
-      HAL_ADC_Start_DMA(hadcExt_, (uint32_t *) adc_dma_buf_ext, ADC_CHANNELS_EXT);
+    HAL_StatusTypeDef hal_status_int = HAL_ADC_Start_DMA(hadcInt_, (uint32_t *) adc_dma_buf_int, ADC_CHANNELS_INT);
+    HAL_StatusTypeDef hal_status_ext = HAL_ADC_Start_DMA(hadcExt_, (uint32_t *) adc_dma_buf_ext, ADC_CHANNELS_EXT);
     return (HAL_OK == hal_status_int) && (HAL_OK == hal_status_ext);
   }
   return false;
@@ -180,13 +175,11 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
         * ((double) adc_counts[ADC_STM_TEMPERATURE] - (double) *TEMPSENSOR_CAL1_ADDR)
       + (double) TEMPSENSOR_CAL1_TEMP;
 
-    p.vRef = (double) VREFINT_CAL_VREF / 1000.0 * (double) (*VREFINT_CAL_ADDR)
-      / (double) adc_counts[ADC_STM_VREFINT];
+    p.vRef = (double) VREFINT_CAL_VREF / 1000.0 * (double) (*VREFINT_CAL_ADDR) / (double) adc_counts[ADC_STM_VREFINT];
     p.vBku = 4.0 * (double) adc_counts[ADC_STM_VBAT] * p.vRef / 65535.0;
 
     for (int i = 0; i < ADC_CHANNELS; i++)
-      p.volts[i] =
-        ((double) adc_counts[i] * (p.vRef / 65535.0) - cfg_[i].offset) * cfg_[i].scaleFactor;
+      p.volts[i] = ((double) adc_counts[i] * (p.vRef / 65535.0) - cfg_[i].offset) * cfg_[i].scaleFactor;
 
     p.timestamp = time64.Us();
     p.drdy = drdy_;
@@ -209,8 +202,7 @@ bool Adc::display(void)
 
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
     misc_printf("  Batt : V     %5.2fV, I     %5.2fA, P     %5.2fW\n", p.volts[ADC_BATTERY_VOLTS],
-                p.volts[ADC_BATTERY_CURRENT],
-                p.volts[ADC_BATTERY_VOLTS] * p.volts[ADC_BATTERY_CURRENT]);
+                p.volts[ADC_BATTERY_CURRENT], p.volts[ADC_BATTERY_VOLTS] * p.volts[ADC_BATTERY_CURRENT]);
 
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
     misc_printf("  Other:");

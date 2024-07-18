@@ -164,10 +164,10 @@ void DlhrL20G::endDma(void)
     p.timestamp = time64.Us();
     p.drdy = drdy_;
     p.groupDelay = (p.drdy - launchUs_) / 2;
-    uint32_t i_pressure = (uint32_t) dlhr_i2c_dma_buf[1] << 16 | (uint32_t) dlhr_i2c_dma_buf[2] << 8
-      | (uint32_t) dlhr_i2c_dma_buf[3];
-    uint32_t i_temperature = (uint32_t) dlhr_i2c_dma_buf[4] << 16
-      | (uint32_t) dlhr_i2c_dma_buf[5] << 8 | (uint32_t) dlhr_i2c_dma_buf[6];
+    uint32_t i_pressure =
+      (uint32_t) dlhr_i2c_dma_buf[1] << 16 | (uint32_t) dlhr_i2c_dma_buf[2] << 8 | (uint32_t) dlhr_i2c_dma_buf[3];
+    uint32_t i_temperature =
+      (uint32_t) dlhr_i2c_dma_buf[4] << 16 | (uint32_t) dlhr_i2c_dma_buf[5] << 8 | (uint32_t) dlhr_i2c_dma_buf[6];
 
     double FS = 5000;   // Pa
     double OSdig = 0.1; // Offset percent of full scale.

@@ -226,8 +226,7 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 bool Varmint::gnss_present() { return true; }
 bool Varmint::gnss_has_new_data() { return gps_.rxFifoCount() > 0; }
 
-bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss,
-                        rosflight_firmware::GNSSFull * gnss_full)
+bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware::GNSSFull * gnss_full)
 {
   UbxPacket p;
 
@@ -330,10 +329,7 @@ void Varmint::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
   for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.enable(ch);
 }
 
-void Varmint::pwm_init_multi(const float * rate, uint32_t channels)
-{
-  pwm_.updateConfig(rate, channels);
-}
+void Varmint::pwm_init_multi(const float * rate, uint32_t channels) { pwm_.updateConfig(rate, channels); }
 
 void Varmint::pwm_disable(void)
 {

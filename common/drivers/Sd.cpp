@@ -86,8 +86,7 @@ bool Sd::read(uint8_t * dest, size_t len)
   HAL_SD_CardStateTypeDef sd_state;
 
   uint64_t timeout = time64.Us() + 250000;
-  while ((HAL_SD_CARD_TRANSFER != (sd_state = HAL_SD_GetCardState(hsd_)))
-         && (timeout > time64.Us()))
+  while ((HAL_SD_CARD_TRANSFER != (sd_state = HAL_SD_GetCardState(hsd_))) && (timeout > time64.Us()))
     ;
   if (HAL_SD_CARD_TRANSFER != sd_state) return 0;
 
@@ -108,8 +107,7 @@ bool Sd::write(uint8_t * src, size_t len)
   HAL_SD_CardStateTypeDef sd_state;
 
   uint64_t timeout = time64.Us() + 250000;
-  while ((HAL_SD_CARD_TRANSFER != (sd_state = HAL_SD_GetCardState(hsd_)))
-         && (timeout > time64.Us()))
+  while ((HAL_SD_CARD_TRANSFER != (sd_state = HAL_SD_GetCardState(hsd_))) && (timeout > time64.Us()))
     ;
   if (HAL_SD_CARD_TRANSFER != sd_state) return 0;
 

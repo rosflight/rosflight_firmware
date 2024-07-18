@@ -103,8 +103,8 @@ void misc_printf(const char * format, ...)
 
 void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay)
 {
-  misc_printf("%-16s [%8.2f s %8.2f ms %8.3f ms] ", name, (double) drdy / 1e6,
-              (double) (timestamp - drdy) / 1000., (double) delay / 1000.);
+  misc_printf("%-16s [%8.2f s %8.2f ms %8.3f ms] ", name, (double) drdy / 1e6, (double) (timestamp - drdy) / 1000.,
+              (double) delay / 1000.);
 }
 
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size)

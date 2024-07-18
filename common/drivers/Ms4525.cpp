@@ -104,14 +104,12 @@ PollingState Ms4525::state(uint64_t poll_counter)
 bool Ms4525::poll(uint64_t poll_counter)
 {
   PollingState poll_state = state(poll_counter);
-  if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX)
-      || (poll_state == MS4525_CMDRXSEND)) {
+  if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX) || (poll_state == MS4525_CMDRXSEND)) {
     if (poll_state == MS4525_CMDRXSTART) launchUs_ = time64.Us();
 
     if ((dmaRunning_ = (HAL_OK
-                        == HAL_I2C_Master_Receive_DMA(
-                          hi2c_, address_, ms4525_i2c_dma_buf,
-                          MS4525_I2C_DMA_SIZE)))) // Receive 7 bytes of data over I2C
+                        == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ms4525_i2c_dma_buf,
+                                                      MS4525_I2C_DMA_SIZE)))) // Receive 7 bytes of data over I2C
       i2cState_ = poll_state;
     else i2cState_ = MS4525_ERROR;
   }
@@ -122,11 +120,9 @@ void Ms4525::endDma(void)
 {
   static float pressure_filtered = 0;
 
-  if ((i2cState_ == MS4525_CMDRXSTART) || (i2cState_ == MS4525_CMDRX)
-      || (i2cState_ == MS4525_CMDRXSEND)) {
+  if ((i2cState_ == MS4525_CMDRXSTART) || (i2cState_ == MS4525_CMDRX) || (i2cState_ == MS4525_CMDRXSEND)) {
     if ((ms4525_i2c_dma_buf[0] & 0xC0) == MS4525_OK) {
-      uint32_t i_pressure =
-        (uint32_t) (ms4525_i2c_dma_buf[0] & 0x3F) << 8 | (uint32_t) ms4525_i2c_dma_buf[1];
+      uint32_t i_pressure = (uint32_t) (ms4525_i2c_dma_buf[0] & 0x3F) << 8 | (uint32_t) ms4525_i2c_dma_buf[1];
 
       static double pmax = 6894.76; // (=-pmin) Pa
 

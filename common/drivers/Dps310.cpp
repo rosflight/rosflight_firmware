@@ -233,17 +233,15 @@ uint32_t Dps310::init(
 #define CFG_REG 0x09
   if (three_wire) {
 #if DPS310_CONTINUOUS_MODE
-    writeRegister(
-      CFG_REG,
-      0x91); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
+    writeRegister(CFG_REG,
+                  0x91); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
 #else
     writeRegister(CFG_REG, 0xB1); // Interrupt on both P and T
 #endif
   } else {
 #if DPS310_CONTINUOUS_MODE
-    writeRegister(
-      CFG_REG,
-      0x90); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
+    writeRegister(CFG_REG,
+                  0x90); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
 #else
     writeRegister(CFG_REG, 0xB0); // Interrupt on both P and T
 #endif
@@ -302,8 +300,7 @@ bool Dps310::poll(uint64_t poll_counter)
   // Read P data
   else if (poll_state == DPS310_RX_P) // Start DMA read of Temperature Data 2.41ms after start
   {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_P_CMD, DPS310_READ_P_BUFFBYTES))))
-      spiState_ = poll_state;
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_P_CMD, DPS310_READ_P_BUFFBYTES)))) spiState_ = poll_state;
     else spiState_ = DPS310_ERROR;
   }
   // Start T measurement sequence
@@ -322,8 +319,7 @@ bool Dps310::poll(uint64_t poll_counter)
   // Read T data
   else if (poll_state == DPS310_RX_T) // Start DMA read of Pressure Data
   {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_T_CMD, DPS310_READ_T_BUFFBYTES))))
-      spiState_ = poll_state;
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_T_CMD, DPS310_READ_T_BUFFBYTES)))) spiState_ = poll_state;
     else spiState_ = DPS310_ERROR;
   }
   return dmaRunning_;
@@ -353,8 +349,7 @@ void Dps310::endDma(void)
   {
     int32_t praw = ((int32_t) rx[1] << 24 | (int32_t) rx[2] << 16 | (int32_t) rx[3] << 8) >> 8;
     double Praw = (double) praw / KP;
-    p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_))
-      + Traw * (C01_ + Praw * (C11_ + Praw * C21_)); // Pa
+    p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_)) + Traw * (C01_ + Praw * (C11_ + Praw * C21_)); // Pa
 
     p.timestamp = time64.Us();
     p.groupDelay = p.timestamp - (p.drdy + launchUs_) / 2;

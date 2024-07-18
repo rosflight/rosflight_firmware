@@ -165,9 +165,8 @@ uint32_t Iis2mdc::init(
   memset(tx, 0, sizeof(tx));
   tx[0] = OFFSET_REG | SPI_READ;
   spi_.rx(tx, h, 7, 100);
-  misc_printf(
-    "H Offsets should be zero %8d %8d %8d mGauss\n", ((int16_t) h[1] | (int16_t) h[2] << 8) * 3 / 2,
-    ((int16_t) h[3] | (int16_t) h[4] << 8) * 3 / 2, ((int16_t) h[5] | (int16_t) h[6] << 8) * 3 / 2);
+  misc_printf("H Offsets should be zero %8d %8d %8d mGauss\n", ((int16_t) h[1] | (int16_t) h[2] << 8) * 3 / 2,
+              ((int16_t) h[3] | (int16_t) h[4] << 8) * 3 / 2, ((int16_t) h[5] | (int16_t) h[6] << 8) * 3 / 2);
 
   return status;
 }
@@ -198,15 +197,13 @@ bool Iis2mdc::poll(uint64_t poll_counter)
   }
   // Read Status & Flux
   else if (poll_state == IIS2MDC_RX_H) {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_FLUX_CMD, IIS_FLUX_BYTES))))
-      spiState_ = poll_state;
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_FLUX_CMD, IIS_FLUX_BYTES)))) spiState_ = poll_state;
     else spiState_ = IIS2MDC_ERROR;
   }
   // Read Temperature. Chip does not autoincrement into the temperature register, so we have to do separate reads for
   // flux and temperature
   else if (poll_state == IIS2MDC_RX_T) {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_TEMP_CMD, IIS_TEMP_BYTES))))
-      spiState_ = poll_state;
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_TEMP_CMD, IIS_TEMP_BYTES)))) spiState_ = poll_state;
     else spiState_ = IIS2MDC_ERROR;
   }
   return dmaRunning_;
@@ -257,8 +254,7 @@ bool Iis2mdc::display()
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.drdy, p.timestamp, p.groupDelay);
 
-    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0,
-                p.flux[2] * 1e6 - 37.5);
+    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
     misc_printf(" |                                       ");
     misc_printf(" | %7.1f C |              | 0x%04X", p.temperature - 273.15, p.status);
     if (p.status == IIS2MDC_OK) misc_printf(" - OK\n");

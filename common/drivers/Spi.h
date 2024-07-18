@@ -71,8 +71,8 @@ public:
   // uint16_t size_;
   GPIO_TypeDef * port_;
   uint16_t pin_;
-  uint32_t init(SPI_HandleTypeDef * hspi, uint8_t * tx_buffer, uint8_t * rx_buffer,
-                GPIO_TypeDef * cs_port, uint16_t cs_pin)
+  uint32_t init(SPI_HandleTypeDef * hspi, uint8_t * tx_buffer, uint8_t * rx_buffer, GPIO_TypeDef * cs_port,
+                uint16_t cs_pin)
   {
     hspi_ = hspi;
     txBuffer_ = tx_buffer;
@@ -166,8 +166,7 @@ public:
   {
     bool software_nss = !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
     if (software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
-    HAL_StatusTypeDef hal_status =
-      HAL_SPI_TransmitReceive(hspi_, tx_buffer, rx_buffer, size, timeout_ms);
+    HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive(hspi_, tx_buffer, rx_buffer, size, timeout_ms);
     if (software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
     WAIT2US;
     return hal_status;

@@ -170,9 +170,8 @@ public:
             *buf = 0;
           }
         }
-        HAL_TIM_DMABurst_MultiWriteStart(htim, TIM_DMABASE_CCR1, TIM_DMA_UPDATE,
-                                         (uint32_t *) (dmaBuf_[bk]), TIM_DMABURSTLENGTH_4TRANSFERS,
-                                         NWORDS);
+        HAL_TIM_DMABurst_MultiWriteStart(htim, TIM_DMABASE_CCR1, TIM_DMA_UPDATE, (uint32_t *) (dmaBuf_[bk]),
+                                         TIM_DMABURSTLENGTH_4TRANSFERS, NWORDS);
       }
     }
   }
@@ -196,8 +195,7 @@ public:
           block.rate = rate;
           block.htim->Instance->PSC = 0;
           block.htim->Instance->ARR =
-            (uint32_t) (200000000.0 / rate
-                        + 0.99); // assumes dividers are set for 200MHz clock input
+            (uint32_t) (200000000.0 / rate + 0.99); // assumes dividers are set for 200MHz clock input
         }
       }
     }

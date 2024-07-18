@@ -51,10 +51,7 @@ public:
 
   uint16_t rxFifoCount(void) { return rxFifo_.packetCount(); }
   uint16_t rxFifoRead(uint8_t * data, uint16_t size) { return rxFifo_.read(data, size); }
-  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size)
-  {
-    return rxFifo_.readMostRecent(data, size);
-  }
+  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size) { return rxFifo_.readMostRecent(data, size); }
   bool drdy(void) { return HAL_GPIO_ReadPin(drdyPort_, drdyPin_); }
   bool dmaRunning(void) { return dmaRunning_; }
 

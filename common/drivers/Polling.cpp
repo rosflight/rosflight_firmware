@@ -60,8 +60,7 @@ uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
-    return DRIVER_HAL_ERROR;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
 
   HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
   HAL_TIM_Base_Start_IT(htim);

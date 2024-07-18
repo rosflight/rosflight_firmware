@@ -140,15 +140,14 @@ void Varmint::init_board(void)
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
   init_status =
-    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI,
-               BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port,
-               BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G);
+    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
+               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G);
   misc_exit_status(init_status);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
 
-  misc_printf("\n\nDLHRL20G (pitot) Initialization\n"); // I2C must already be initialized
+  misc_printf("\n\nDLHRL20G (pitot) Initialization\n");                // I2C must already be initialized
   init_status = pitot_.init(PITOT_HZ, PITOT_DRDY_PORT, PITOT_DRDY_PIN, // Driver
                             PITOT_I2C, PITOT_I2C_ADDRESS               // I2C
   );
@@ -173,8 +172,8 @@ void Varmint::init_board(void)
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_HAS_PPS, GPS_UART,
-                          GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD, UBX_PROTOCOL);
+  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_HAS_PPS, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA,
+                          GPS_BAUD, UBX_PROTOCOL);
 
   misc_exit_status(init_status);
 
@@ -189,8 +188,8 @@ void Varmint::init_board(void)
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status = adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL,
-                          ADC_ADC_INSTANCE_INTERNAL);
+  init_status =
+    adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL, ADC_ADC_INSTANCE_INTERNAL);
   misc_exit_status(init_status);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

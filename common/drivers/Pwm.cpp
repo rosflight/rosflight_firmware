@@ -114,8 +114,7 @@ uint32_t Pwm::init(void)
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK)
-      return DRIVER_HAL_ERROR;
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
     //        sConfigOC.Pulse = 1500;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -127,8 +126,7 @@ uint32_t Pwm::init(void)
     for (uint32_t ch = 0; ch < 4; ch++) {
       if (block_[bk].chan[ch] < PWM_CHANNELS) {
         sConfigOC.Pulse = 0; // default to flat line output
-        if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, (uint32_t) ch * 4) != HAL_OK)
-          return DRIVER_HAL_ERROR;
+        if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, (uint32_t) ch * 4) != HAL_OK) return DRIVER_HAL_ERROR;
       }
     }
 
@@ -145,8 +143,7 @@ uint32_t Pwm::init(void)
       sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
       sBreakDeadTimeConfig.Break2Filter = 0;
       sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-      if (HAL_TIMEx_ConfigBreakDeadTime(htim, &sBreakDeadTimeConfig) != HAL_OK)
-        return DRIVER_HAL_ERROR;
+      if (HAL_TIMEx_ConfigBreakDeadTime(htim, &sBreakDeadTimeConfig) != HAL_OK) return DRIVER_HAL_ERROR;
     }
     HAL_TIM_MspPostInit(htim);
   }

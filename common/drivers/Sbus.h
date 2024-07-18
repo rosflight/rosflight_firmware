@@ -56,8 +56,7 @@ public:
     // Driver initializers
     uint16_t sample_rate_hz,
     // UART initializers
-    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx,
-    uint32_t baud);
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud);
 
   bool poll(void);
   void endDma(void);

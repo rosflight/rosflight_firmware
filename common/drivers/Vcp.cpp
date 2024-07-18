@@ -87,10 +87,7 @@ uint32_t Vcp::init(uint16_t sample_rate_hz)
  * @return
  */
 
-uint16_t Vcp::writePacket(SerialTxPacket * p_new)
-{
-  return txFifo_.write((uint8_t *) p_new, sizeof(SerialTxPacket));
-}
+uint16_t Vcp::writePacket(SerialTxPacket * p_new) { return txFifo_.write((uint8_t *) p_new, sizeof(SerialTxPacket)); }
 
 /**
  * @fn void poll(void)

@@ -69,10 +69,8 @@ public:
   void setScaleFactor(uint16_t n, float scale_factor);
 
 private:
-  uint32_t configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig,
-                      AdcChannelCfg * cfg);
-  uint32_t configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, AdcChannelCfg * cfg,
-                     uint16_t cfg_channels);
+  uint32_t configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg);
+  uint32_t configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, AdcChannelCfg * cfg, uint16_t cfg_channels);
   ADC_HandleTypeDef *hadcExt_, *hadcInt_; // The shared SPI handle
   AdcChannelCfg * cfg_;                   // has ADC_SCALE_FACTOR_EXT & INT
 };

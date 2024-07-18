@@ -65,14 +65,13 @@ public:
     bool three_wire);
 
   // 3-wire initializer, with drdy
-  uint32_t init(uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin,
-                SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin)
+  uint32_t init(uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, SPI_HandleTypeDef * hspi,
+                GPIO_TypeDef * cs_port, uint16_t cs_pin)
   {
     return init(sample_rate_hz, drdy_port, drdy_pin, hspi, cs_port, cs_pin, true);
   }
   // 4-wire initializer, no drdy
-  uint32_t init(uint16_t sample_rate_hz, SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port,
-                uint16_t cs_pin)
+  uint32_t init(uint16_t sample_rate_hz, SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin)
   {
     return init(sample_rate_hz, 0, 0, hspi, cs_port, cs_pin, false);
   }

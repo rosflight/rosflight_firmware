@@ -61,8 +61,7 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
                                       //		uint8_t validDate :1;
   uint32_t tAcc;                      // ns, time accuracy estimate
   int32_t nano;                       // ns, Fraction of second -1e9 to 1e9 (UTC)
-  uint8_t
-    fixType; // 0 none, 1 dead reckoning, 2 2D, 3 3D, 4 GNS+dead reckoning combined, 5 time only fix
+  uint8_t fixType; // 0 none, 1 dead reckoning, 2 2D, 3 3D, 4 GNS+dead reckoning combined, 5 time only fix
   uint8_t flags;
   //		uint8_t carrSoln :2;
   //		uint8_t headVehValid :1;
@@ -164,8 +163,8 @@ public:
     // Driver initializers
     uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, bool has_pps,
     // UART initializers
-    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx,
-    uint32_t baud_desired, UbxProtocol ubx_protocol);
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired,
+    UbxProtocol ubx_protocol);
 
   bool poll(void);
   void endDma(void);
