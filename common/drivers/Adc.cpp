@@ -186,7 +186,7 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
 
     for (int i = 0; i < ADC_CHANNELS; i++)
       p.volts[i] =
-        (double) adc_counts[i] * (p.vRef / 65535.0) * cfg_[i].scaleFactor - cfg_[i].offset;
+        ((double) adc_counts[i] * (p.vRef / 65535.0)- cfg_[i].offset) * cfg_[i].scaleFactor;
 
     p.timestamp = time64.Us();
     p.drdy = drdy_;
