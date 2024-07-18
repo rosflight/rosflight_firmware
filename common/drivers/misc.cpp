@@ -80,7 +80,7 @@ int __io_getchar(void)
 
 // NOTE! Only use misc_printf for debugging since it blocks.
 // #define MAX_SPRINTF_CHARS 256
-// MY_DMA_BUFFER char misc_sprintf_buffer[MAX_SPRINTF_CHARS];
+// DMA_RAM char misc_sprintf_buffer[MAX_SPRINTF_CHARS];
 void misc_printf(const char * format, ...)
 {
   if (!verbose) return;

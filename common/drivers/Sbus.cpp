@@ -73,9 +73,9 @@ typedef struct __attribute__((__packed__))
 } SbusPacket;
 
 #define SBUS_DMA_BUFFER_SIZE (sizeof(SbusPacket) * 4)
-MY_DMA_BUFFER uint8_t sbus_dma_rxbuf[SBUS_DMA_BUFFER_SIZE];
+DMA_RAM uint8_t sbus_dma_rxbuf[SBUS_DMA_BUFFER_SIZE];
 
-MY_FAST_BUFFER uint8_t sbus_fifo_rx_buffer[SBUS_FIFO_BUFFERS * sizeof(RcPacket)];
+DTCM_RAM uint8_t sbus_fifo_rx_buffer[SBUS_FIFO_BUFFERS * sizeof(RcPacket)];
 
 uint32_t Sbus::init(
   // Driver initializers

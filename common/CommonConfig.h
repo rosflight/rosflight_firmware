@@ -41,11 +41,10 @@
 
 // Buffers types
 
-#define MY_FAST_BUFFER __attribute__((section("my_buffers"))) __attribute__((aligned(32))) static
-#define MY_BDMA_BUFFER                                                                             \
-  __attribute__((section("my_bdma_buffers"))) __attribute__((aligned(32))) static
-#define MY_DMA_BUFFER __attribute__((section("my_dma_buffers"))) __attribute__((aligned(32))) static
-#define INITIALIZE_DATA_BUFFER __attribute__((section(".data"))) __attribute__((aligned(32))) static
+#define DTCM_RAM __attribute__((section("dtcm_ram"))) __attribute__((aligned(32))) static
+#define DMA_RAM __attribute__((section("dma_ram"))) __attribute__((aligned(32))) static
+#define BDMA_RAM __attribute__((section("bdma_ram"))) __attribute__((aligned(32))) static
+#define DATA_RAM __attribute__((section(".data"))) __attribute__((aligned(32))) static
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3

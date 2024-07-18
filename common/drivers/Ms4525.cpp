@@ -41,8 +41,8 @@ extern Time64 time64;
 
 #define MS4525_OK (0x0000)
 
-MY_DMA_BUFFER uint8_t ms4525_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-MY_FAST_BUFFER uint8_t ms4525_fifo_rx_buffer[MS4525_FIFO_BUFFERS * sizeof(PressurePacket)];
+DMA_RAM uint8_t ms4525_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
+DTCM_RAM uint8_t ms4525_fifo_rx_buffer[MS4525_FIFO_BUFFERS * sizeof(PressurePacket)];
 
 #define MS4525_I2C_DMA_SIZE (4)
 

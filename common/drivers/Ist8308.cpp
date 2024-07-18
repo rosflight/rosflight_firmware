@@ -41,8 +41,8 @@
 #include <Time64.h>
 extern Time64 time64;
 
-MY_DMA_BUFFER uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-MY_FAST_BUFFER uint8_t ist8308_fifo_rx_buffer[IST8308_FIFO_BUFFERS * sizeof(MagPacket)];
+DMA_RAM uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
+DTCM_RAM uint8_t ist8308_fifo_rx_buffer[IST8308_FIFO_BUFFERS * sizeof(MagPacket)];
 
 #define WAI_REG 0x0
 #define DEVICE_ID 0x08

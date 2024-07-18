@@ -47,9 +47,9 @@ extern Time64 time64;
 #define SET(buf, data, type) *((type *) (buf)) = data
 
 #define UBX_DMA_BUFFER_SIZE 16 * 2 // must be multiple of 16
-MY_DMA_BUFFER uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
+DMA_RAM uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
 
-MY_FAST_BUFFER uint8_t ubx_fifo_rx_buffer[UBX_FIFO_BUFFERS * sizeof(UbxPacket)];
+DTCM_RAM uint8_t ubx_fifo_rx_buffer[UBX_FIFO_BUFFERS * sizeof(UbxPacket)];
 
 uint32_t Ubx::init(
   // Driver initializers

@@ -242,7 +242,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 #define ADC_ADC_EXTERNAL (&hadc1)
 #define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
-#define ADC_EXT_DMA_RAM MY_DMA_BUFFER
+#define ADC_EXT_DMA_RAM DMA_RAM
 #define ADC_CHANNELS_EXT (4)
 
 #define ADC_RSSI_V (0)          // INP 11
@@ -253,7 +253,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADC_ADC_INTERNAL (&hadc3)
 #define ADC_ADC_INSTANCE_INTERNAL (ADC3)
 // NOTE! _if_ ADC3 uses on BDMA and needs to be in SRAM4, can use regular DMA if available
-#define ADC_INT_DMA_RAM MY_BDMA_BUFFER
+#define ADC_INT_DMA_RAM BDMA_RAM
 #define ADC_CHANNELS_INT (3)
 
 #define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)

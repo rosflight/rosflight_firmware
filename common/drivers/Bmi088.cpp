@@ -56,10 +56,10 @@
 
 extern Time64 time64;
 
-MY_DMA_BUFFER uint8_t bmi088_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-MY_DMA_BUFFER uint8_t bmi088_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t bmi088_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t bmi088_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-MY_FAST_BUFFER uint8_t bmi088_fifo_rx_buffer[BMI088_FIFO_BUFFERS * sizeof(ImuPacket)];
+DTCM_RAM uint8_t bmi088_fifo_rx_buffer[BMI088_FIFO_BUFFERS * sizeof(ImuPacket)];
 
 uint32_t Bmi088::init(
   // Driver initializers

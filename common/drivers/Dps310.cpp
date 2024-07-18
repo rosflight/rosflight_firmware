@@ -69,10 +69,10 @@
 
 extern Time64 time64;
 
-MY_DMA_BUFFER uint8_t dps310_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-MY_DMA_BUFFER uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t dps310_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-MY_FAST_BUFFER uint8_t dps310_fifo_rx_buffer[DPS310_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t dps310_fifo_rx_buffer[DPS310_FIFO_BUFFERS * sizeof(PressurePacket)];
 
 static int32_t Compliment(int32_t x, int16_t bits)
 {

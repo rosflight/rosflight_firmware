@@ -47,13 +47,13 @@ extern Time64 time64;
 #define ADC_DMA_BUF_SIZE_EXT (ADC_CHANNELS_EXT * sizeof(uint32_t))
 #define ADC_DMA_BUF_SIZE_MAX (16 * sizeof(uint32_t)) // 16 channels is max for the ADC sequencer
 
-MY_FAST_BUFFER uint8_t adc_fifo_rx_buffer[ADC_FIFO_BUFFERS * sizeof(AdcPacket)];
-MY_FAST_BUFFER uint32_t adc_counts[ADC_CHANNELS];
+DTCM_RAM uint8_t adc_fifo_rx_buffer[ADC_FIFO_BUFFERS * sizeof(AdcPacket)];
+DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
 
 ADC_EXT_DMA_RAM uint8_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX];
 ADC_INT_DMA_RAM uint8_t adc_dma_buf_int[ADC_DMA_BUF_SIZE_MAX];
 
-INITIALIZE_DATA_BUFFER AdcChannelCfg adc_cfg[ADC_CHANNELS] = ADC_CFG_CHANS_DEFINE;
+DATA_RAM AdcChannelCfg adc_cfg[ADC_CHANNELS] = ADC_CFG_CHANS_DEFINE;
 
 uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
                    ADC_TypeDef * adc_instance_ext, //
@@ -186,7 +186,7 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
 
     for (int i = 0; i < ADC_CHANNELS; i++)
       p.volts[i] =
-        ((double) adc_counts[i] * (p.vRef / 65535.0)- cfg_[i].offset) * cfg_[i].scaleFactor;
+        ((double) adc_counts[i] * (p.vRef / 65535.0) - cfg_[i].offset) * cfg_[i].scaleFactor;
 
     p.timestamp = time64.Us();
     p.drdy = drdy_;

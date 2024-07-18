@@ -44,10 +44,10 @@ extern Time64 time64;
 
 #define AUAV_READ_BYTES 7
 
-MY_DMA_BUFFER uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-MY_DMA_BUFFER uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-MY_FAST_BUFFER uint8_t auav_pitot_fifo_rx_buffer[AUAV_PITOT_FIFO_BUFFERS * sizeof(PressurePacket)];
-MY_FAST_BUFFER uint8_t auav_baro_fifo_rx_buffer[AUAV_BARO_FIFO_BUFFERS * sizeof(PressurePacket)];
+DMA_RAM uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DTCM_RAM uint8_t auav_pitot_fifo_rx_buffer[AUAV_PITOT_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_baro_fifo_rx_buffer[AUAV_BARO_FIFO_BUFFERS * sizeof(PressurePacket)];
 
 uint32_t Auav::init(
   // Driver initializers

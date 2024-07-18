@@ -46,10 +46,10 @@
 extern Time64 time64;
 
 #define VCP_TX_FIFO_BUFFERS SERIAL_TX_FIFO_BUFFERS
-MY_FAST_BUFFER uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
+DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 
 #define VCP_RX_FIFO_BUFFER_BYTES 4096
-MY_FAST_BUFFER uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
+DTCM_RAM uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 
 uint32_t Vcp::init(uint16_t sample_rate_hz)
 {

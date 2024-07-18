@@ -47,8 +47,8 @@ extern Time64 time64;
 #define SD_MAXBLKS (5L)
 #define SD_BLKSIZE (512L)
 #define SD_BUFF_SIZE (SD_MAXBLKS * SD_BLKSIZE)
-MY_DMA_BUFFER uint8_t sd_rx_buf[SD_BUFF_SIZE];
-MY_DMA_BUFFER uint8_t sd_tx_buf[SD_BUFF_SIZE];
+DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
+DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
 
 uint32_t Sd::init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance)
 {

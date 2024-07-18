@@ -41,8 +41,8 @@ extern Time64 time64;
 
 #define DLHRL20G_OK (0x40)
 
-MY_DMA_BUFFER uint8_t dlhr_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-MY_FAST_BUFFER uint8_t dlhr_fifo_rx_buffer[DLHRL20G_FIFO_BUFFERS * sizeof(PressurePacket)];
+DMA_RAM uint8_t dlhr_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
+DTCM_RAM uint8_t dlhr_fifo_rx_buffer[DLHRL20G_FIFO_BUFFERS * sizeof(PressurePacket)];
 
 #define DLHR_I2C_STATUS_SIZE 1
 #define DLHR_I2C_DMA_SIZE 7

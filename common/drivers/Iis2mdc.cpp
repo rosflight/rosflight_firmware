@@ -60,10 +60,10 @@ extern Time64 time64;
 #define IIS_TEMP_CMD (OUT_TEMP | SPI_READ)
 #define IIS_TEMP_BYTES 3
 
-MY_DMA_BUFFER uint8_t iis2mdc_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-MY_DMA_BUFFER uint8_t iis2mdc_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t iis2mdc_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t iis2mdc_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-MY_FAST_BUFFER uint8_t iis2mdc_fifo_rx_buffer[IIS2MDC_FIFO_BUFFERS * sizeof(MagPacket)];
+DTCM_RAM uint8_t iis2mdc_fifo_rx_buffer[IIS2MDC_FIFO_BUFFERS * sizeof(MagPacket)];
 
 uint32_t Iis2mdc::init(
   // Driver initializers

@@ -46,9 +46,9 @@
 //  600	  600kbit/s	1.25	0.625	1.67	26.72
 // 1200	 1200kbit/s	0.625	0.313	0.83	13.28
 
-INITIALIZE_DATA_BUFFER PwmBlockStructure pwm_init[PWM_TIMER_BLOCKS] = PWM_INIT_DEFINE;
+DATA_RAM PwmBlockStructure pwm_init[PWM_TIMER_BLOCKS] = PWM_INIT_DEFINE;
 
-MY_DMA_BUFFER uint32_t pwm_dma_buf[PWM_TIMER_BLOCKS][PWM_DMA_BUFFER_LEN];
+DMA_RAM uint32_t pwm_dma_buf[PWM_TIMER_BLOCKS][PWM_DMA_BUFFER_LEN];
 
 void Pwm::updateConfig(const float * rate, uint32_t channels)
 {

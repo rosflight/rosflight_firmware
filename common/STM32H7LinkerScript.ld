@@ -173,19 +173,19 @@ SECTIONS
     libgcc.a ( * )
   }
 
-  my_dma_buffers :
+  dma_ram :
   {
     . = ALIGN(32);
      
   } >SRAM3 AT> FLASH2 /* Don't know why, but J-Link needs the AT>FLASH*/
   
-  my_bdma_buffers :
+  bdma_ram :
   {
     . = ALIGN(32);
      
   } >SRAM4 AT> FLASH2 /* Don't know why, but J-Link needs the AT>FLASH*/
 
-  my_buffers :
+  dtcm_ram :
   {
     . = ALIGN(32);
  
