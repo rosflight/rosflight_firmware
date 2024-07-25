@@ -57,8 +57,8 @@
 
 extern Time64 time64;
 
-BDMA_RAM uint8_t adis165xx_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-BDMA_RAM uint8_t adis165xx_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t adis165xx_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t adis165xx_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
 DTCM_RAM uint8_t adis165xx_fifo_rx_buffer[ADIS165XX_FIFO_BUFFERS * sizeof(ImuPacket)];
 
