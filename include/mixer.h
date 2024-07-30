@@ -199,12 +199,12 @@ private:
     {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
   const mixer_t fixedwing_vtail_mixing = {
-    {   S,     S,    S, NONE,    M, NONE, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
-    {  50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
-    {0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
-    {1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
-    {0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
-    {0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
+    {   S, NONE, NONE,     S,    S,    M, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
+    {  50,   50,   50,    50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
+    {0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
+    {1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // X Mix
+    {0.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
+    {0.0f, 0.0f, 0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
   const mixer_t quadplane_mixing = {
     {   S,     S,    S,    M,    M,     M,     M,     M, NONE, NONE},  // Ailerons, Rudder, Elevator, Tractor Motor, Quadrotors
