@@ -132,8 +132,8 @@ void misc_exit_status(uint32_t status)
   if (status & VOLTAGE_SET_FAIL) misc_printf(" VOLTAGE_SET_FAIL");
   misc_printf("\033[0m\n");
 
-  if (status != DRIVER_OK && verbose) {
-    while (1)
-      ;
-  } //PTT Need to inform error handler.
+//  if (status != DRIVER_OK && verbose) {
+//    while (1)
+//      ;
+//  } //PTT Need to inform error handler.
 }
