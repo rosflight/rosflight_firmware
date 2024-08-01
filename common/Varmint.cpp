@@ -242,6 +242,7 @@ bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware:
     gnss_full->t_acc = p.pvt.tAcc;
     gnss_full->nano = p.pvt.nano;
     gnss_full->fix_type = (rosflight_firmware::GNSSFixType) p.pvt.fixType;
+    gnss_full->num_sat = p.pvt.numSV;
     gnss_full->lon = p.pvt.lon;
     gnss_full->lat = p.pvt.lat;
     gnss_full->height = p.pvt.height;
