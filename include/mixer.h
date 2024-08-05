@@ -34,6 +34,8 @@
 
 #include "interface/param_listener.h"
 
+#include <eigen3/Eigen/QR>
+
 #include <cstdbool>
 #include <cstdint>
 
@@ -230,6 +232,8 @@ private:
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
+  mixer_t correct_mixer_;
+
   const mixer_t * mixer_to_use_;
 
   const mixer_t* array_of_mixers_[NUM_MIXERS] = {
@@ -247,7 +251,7 @@ private:
     &passthrough_mixing,
     &fixedwing_vtail_mixing,
     &quadplane_mixing,
-    &custom_mixing
+    &custom_mixing,
   };
 
   // clang-format on
@@ -261,6 +265,8 @@ public:
   void param_change_callback(uint16_t param_id) override;
   void set_new_aux_command(aux_command_t new_aux_command);
   inline const float * get_outputs() const { return raw_outputs_; }
+
+  void calculate_mixer_values();
 };
 
 } // namespace rosflight_firmware
