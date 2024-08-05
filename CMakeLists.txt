@@ -40,6 +40,9 @@ include_directories(
     comms/mavlink/v1.0/rosflight
 )
 
+include_directories(${EIGEN3_INCLUDE_DIRS})
+include_directories(/usr/include/eigen3)
+
 file(GLOB_RECURSE ROSFLIGHT_SOURCES
     "src/*.cpp"
     "lib/turbomath/turbomath.cpp"
