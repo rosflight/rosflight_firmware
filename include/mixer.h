@@ -63,7 +63,7 @@ public:
     TRICOPTER = 9,
     FIXEDWING = 10,
     PASSTHROUGH = 11,
-    VTAIL = 12,
+    INVERTED_VTAIL = 12,
     QUADPLANE = 13,
     CUSTOM = 14,
     NUM_MIXERS,
@@ -200,7 +200,7 @@ private:
     {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
     {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
-  const mixer_t fixedwing_vtail_mixing = {
+  const mixer_t fixedwing_inverted_vtail_mixing = {
     {   S, NONE, NONE,     S,    S,    M, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
     {  50,   50,   50,    50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
     {0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F Mix
@@ -249,18 +249,34 @@ private:
     &tricopter_mixing,
     &fixedwing_mixing,
     &passthrough_mixing,
-    &fixedwing_vtail_mixing,
+    &fixedwing_inverted_vtail_mixing,
     &quadplane_mixing,
     &custom_mixing,
   };
 
   // clang-format on
 
+  // Define parameters for the mixer
+  float R_; // Motor resistance
+  float rho_; // Air density
+  float K_V_; // Motor back-emf constant
+  float K_Q_ = 0.01706; // Motor torque constant
+  float i_0_; // Motor no-load current
+  float D_;   // Propeller diameter
+  float C_T_; // Thrust coefficient
+  float C_Q_; // Torque coefficient
+  int num_motors_; // Number of motors
+  float V_max_; // Maximum battery voltage
+  float l_[NUM_MIXER_OUTPUTS]; // Radial distance from center of mass to motor
+  float psi_[NUM_MIXER_OUTPUTS]; // Angle of motor from body x-axis
+
+
 public:
   Mixer(ROSflight & _rf);
   void init();
   void init_PWM();
   void init_mixing();
+  void update_parameters();
   void mix_output();
   void param_change_callback(uint16_t param_id) override;
   void set_new_aux_command(aux_command_t new_aux_command);
