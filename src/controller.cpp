@@ -38,6 +38,7 @@
 
 #include <cstdbool>
 #include <cstdint>
+#include <iostream>
 
 namespace rosflight_firmware
 {
@@ -49,25 +50,56 @@ void Controller::init()
 {
   prev_time_us_ = 0;
 
-  float max = RF_.params_.get_param_float(PARAM_MAX_COMMAND);
-  float min = -max;
+  // Calculate the max thrust to convert from throttle setting to thrust
+  calculate_max_thrust();
+  
+  // Don't saturate the torque values
+  float max_torque = INFINITY;
+  float min = -max_torque;
+
   float tau = RF_.params_.get_param_float(PARAM_PID_TAU);
 
   roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P),
              RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
-             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max, min, tau);
+             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max_torque, min, tau);
   roll_rate_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_P),
                   RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_I),
-                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D), max, min, tau);
+                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D), max_torque, min, tau);
   pitch_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_P),
               RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_I),
-              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max, min, tau);
+              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max_torque, min, tau);
   pitch_rate_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_P),
                    RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_I),
-                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max, min, tau);
+                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max_torque, min, tau);
   yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P),
                  RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
-                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max, min, tau);
+                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max_torque, min, tau);
+}
+
+void Controller::calculate_max_thrust()
+{
+  float R = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE);
+  float D = RF_.params_.get_param_float(PARAM_PROP_DIAMETER);
+  float rho = RF_.params_.get_param_float(PARAM_AIR_DENSITY);
+  float CQ = RF_.params_.get_param_float(PARAM_PROP_CQ);
+  float CT = RF_.params_.get_param_float(PARAM_PROP_CT);
+  float KV = RF_.params_.get_param_float(PARAM_MOTOR_KV);
+  float i0 = RF_.params_.get_param_float(PARAM_NO_LOAD_CURRENT);
+  float KQ = KV;
+  int num_motors = RF_.params_.get_param_int(PARAM_NUM_MOTORS);
+
+  float V_max = RF_.params_.get_param_float(PARAM_VOLT_MAX);
+  float a = R * rho * pow(D, 5.0) * CQ / (4 * pow(M_PI, 2.0) * KQ);
+  float b = KV;
+  float c = i0 * R - V_max;
+
+  // Using Eq. 4.19 and setting equal to the equation at the beginning of 4.3 in Small Unmanned Aircraft
+  // We only need the positive root. Since a and b positive, sqrt term must be positive
+  float omega = (-b + sqrt(pow(b, 2.0) - 4 * a * c)) / (2 * a); 
+
+  // Calculate the max thrust from Eq in 4.3 of Small Unmanned Aircraft
+  // Note that the equation is for a single motor, so to calculate max thrust, we need to multiply by the number of motors
+  max_thrust_ = rho * pow(D, 4.0) * CT * pow(omega, 2.0) / (4 * pow(M_PI, 2.0)) * num_motors;
 }
 
 void Controller::run()
@@ -91,16 +123,17 @@ void Controller::run()
     && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
 
   // Run the PID loops
-  turbomath::Vector pid_output = run_pid_loops(
+  Controller::Output pid_output = run_pid_loops(
     dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
   output_.y = pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
   output_.z = pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
-  output_.F = RF_.command_manager_.combined_control().F.value;
+  output_.F = pid_output.F;
 }
 
+// TODO: Fix this to output equilibrium torque (not normalized values)
 void Controller::calculate_equilbrium_torque_from_rc()
 {
   // Make sure we are disarmed
@@ -129,10 +162,11 @@ void Controller::calculate_equilbrium_torque_from_rc()
     // dt is zero, so what this really does is applies the P gain with the settings
     // your RC transmitter, which if it flies level is a really good guess for
     // the static offset torques
-    turbomath::Vector pid_output =
+    Controller::Output pid_output =
       run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
+    // TODO: Should we be adding the equilibrium torques to the existing ones?
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE,
                                 pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE,
@@ -168,7 +202,15 @@ void Controller::param_change_callback(uint16_t param_id)
     case PARAM_PID_YAW_RATE_P:
     case PARAM_PID_YAW_RATE_I:
     case PARAM_PID_YAW_RATE_D:
-    case PARAM_MAX_COMMAND:
+    case PARAM_MOTOR_RESISTANCE:
+    case PARAM_PROP_DIAMETER:
+    case PARAM_AIR_DENSITY:
+    case PARAM_PROP_CQ:
+    case PARAM_PROP_CT:
+    case PARAM_MOTOR_KV:
+    case PARAM_NO_LOAD_CURRENT:
+    case PARAM_VOLT_MAX:
+    case PARAM_NUM_MOTORS:
     case PARAM_PID_TAU:
       init();
       break;
@@ -178,11 +220,11 @@ void Controller::param_change_callback(uint16_t param_id)
   }
 }
 
-turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::State & state,
+Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::State & state,
                                             const control_t & command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
-  turbomath::Vector out;
+  Controller::Output out;
 
   float dt = 1e-6 * dt_us;
 
@@ -212,6 +254,11 @@ turbomath::Vector Controller::run_pid_loops(uint32_t dt_us, const Estimator::Sta
   } else {
     out.z = command.z.value;
   }
+
+  // THROTTLE
+  // TODO: This works if the input is a throttle setting, but not if the input is a thrust
+  // TODO: Add something that will saturate input RC command to a MAX_THROTTLE parameter, so you can maintain controllability
+  out.F = command.F.value * max_thrust_;
 
   return out;
 }
@@ -244,7 +291,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
   if (dt > 0.0001f) {
     // calculate D term (use dirty derivative if we don't have access to a measurement of the
     // derivative) The dirty derivative is a sort of low-pass filtered version of the derivative.
-    //// (Include reference to Dr. Beard's notes here)
+    //// TODO: (Include reference to Dr. Beard's notes here)
     differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
       + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
@@ -281,7 +328,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   float u = p_term - d_term + i_term;
 
   // Integrator anti-windup
-  //// Include reference to Dr. Beard's notes here
+  //// TODO: Include reference to Dr. Beard's notes here
   float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
   if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f) {
     integrator_ = (u_sat - p_term + d_term) / ki_;

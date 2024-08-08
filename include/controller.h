@@ -64,6 +64,7 @@ public:
   void init();
   void run();
 
+  void calculate_max_thrust();
   void calculate_equilbrium_torque_from_rc();
   void param_change_callback(uint16_t param_id) override;
 
@@ -92,7 +93,7 @@ private:
 
   ROSflight & RF_;
 
-  turbomath::Vector run_pid_loops(uint32_t dt, const Estimator::State & state,
+  Controller::Output run_pid_loops(uint32_t dt, const Estimator::State & state,
                                   const control_t & command, bool update_integrators);
 
   Output output_;
@@ -102,6 +103,8 @@ private:
   PID pitch_;
   PID pitch_rate_;
   PID yaw_rate_;
+
+  float max_thrust_;
 
   uint64_t prev_time_us_;
 };
