@@ -108,6 +108,39 @@ void Params::set_defaults(void)
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with companion computer | 9600 | 921600
   init_param_int(PARAM_SERIAL_DEVICE, "SERIAL_DEVICE", 0); // Serial Port (for supported devices) | 0 | 3
 
+  init_param_float(PARAM_AIR_DENSITY, "AIR_DENSITY", 1.225f); // Density of the air (kg/m^3) | 0 | 1000.0
+
+  init_param_int(PARAM_NUM_MOTORS, "NUM_MOTORS", 4); // number of vertical-facing motors on the vehicle | 1 | 8
+  init_param_float(PARAM_MOTOR_RESISTANCE, "MOTOR_RESISTANCE", 0.042f); // Electrical resistance of the motor windings (ohms) | 0 | 1000.0
+  init_param_float(PARAM_MOTOR_KV, "MOTOR_KV", 0.01706f); // Back emf constant of the motor in SI units (V/rad/s) | 0 | 1000.0
+  init_param_float(PARAM_NO_LOAD_CURRENT, "NO_LOAD_CURRENT", 1.5); // No-load current of the motor in amps | 0 | 1000.0
+  init_param_float(PARAM_PROP_DIAMETER, "PROP_DIAMETER", 0.381f); // Diameter of the propeller in meters | 0 | 1.0
+  init_param_float(PARAM_PROP_CT, "PROP_CT", 0.075f); // Thrust coefficient of the propeller | 0 | 100.0
+  init_param_float(PARAM_PROP_CQ, "PROP_CQ", 0.0045f); // Torque coefficient of the propeller | 0 | 100.0
+  init_param_float(PARAM_VOLT_MAX, "VOLT_MAX", 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
+
+  init_param_float(PARAM_MOTOR_0_POS, "MOTOR_0_POS", 0.25f); // Radial position of motor 0 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_1_POS, "MOTOR_1_POS", 0.25f); // Radial position of motor 1 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_2_POS, "MOTOR_2_POS", 0.25f); // Radial position of motor 2 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_3_POS, "MOTOR_3_POS", 0.25f); // Radial position of motor 3 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_4_POS, "MOTOR_4_POS", 0.0f); // Radial position of motor 4 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_5_POS, "MOTOR_5_POS", 0.0f); // Radial position of motor 5 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_6_POS, "MOTOR_6_POS", 0.0f); // Radial position of motor 6 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_7_POS, "MOTOR_7_POS", 0.0f); // Radial position of motor 7 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_8_POS, "MOTOR_8_POS", 0.0f); // Radial position of motor 8 from the center of mass (m) | 0.0 | 1000.0
+  init_param_float(PARAM_MOTOR_9_POS, "MOTOR_9_POS", 0.0f); // Radial position of motor 9 from the center of mass (m) | 0.0 | 1000.0
+
+  init_param_float(PARAM_MOTOR_0_PSI, "MOTOR_0_PSI", M_PI_4); // Angular position of motor 0 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_1_PSI, "MOTOR_1_PSI", 3 * M_PI_4); // Angular position of motor 1 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_2_PSI, "MOTOR_2_PSI", 5 * M_PI_4); // Angular position of motor 2 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_3_PSI, "MOTOR_3_PSI", 7 * M_PI_4); // Angular position of motor 3 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_4_PSI, "MOTOR_4_PSI", 0.0f); // Angular position of motor 4 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_5_PSI, "MOTOR_5_PSI", 0.0f); // Angular position of motor 5 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_6_PSI, "MOTOR_6_PSI", 0.0f); // Angular position of motor 6 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_7_PSI, "MOTOR_7_PSI", 0.0f); // Angular position of motor 7 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_8_PSI, "MOTOR_8_PSI", 0.0f); // Angular position of motor 8 from the body from x axis (rad) | 0.0 | 6.28319
+  init_param_float(PARAM_MOTOR_9_PSI, "MOTOR_9_PSI", 0.0f); // Angular position of motor 9 from the body from x axis (rad) | 0.0 | 6.28319
+
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
   /*****************************/
@@ -116,27 +149,25 @@ void Params::set_defaults(void)
   /********************************/
   /*** CONTROLLER CONFIGURATION ***/
   /********************************/
-  init_param_float(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1.0); // saturation point for PID controller output | 0 | 1.0
-
-  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 0.070f); // Roll Rate Proportional Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 1.5f); // Roll Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.000f); // Roll Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_RATE_D, "PID_ROLL_RATE_D", 0.000f); // Roll Rate Derivative Gain | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 0.070f);  // Pitch Rate Proportional Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 1.5f);  // Pitch Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.0000f); // Pitch Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_RATE_D, "PID_PITCH_RATE_D", 0.0000f); // Pitch Rate Derivative Gain | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 0.25f);   // Yaw Rate Proportional Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 5.5f);   // Yaw Rate Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);  // Yaw Rate Integral Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_YAW_RATE_D, "PID_YAW_RATE_D", 0.0f);  // Yaw Rate Derivative Gain | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 0.15f);   // Roll Angle Proportional Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 1.2f);   // Roll Angle Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);   // Roll Angle Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.05f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0.4f);  // Roll Angle Derivative Gain | 0.0 | 1000.0
 
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 0.15f);  // Pitch Angle Proportional Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 1.2f);  // Pitch Angle Proportional Gain | 0.0 | 1000.0
   init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);  // Pitch Angle Integral Gain | 0.0 | 1000.0
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.05f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0.4f); // Pitch Angle Derivative Gain | 0.0 | 1000.0
 
   init_param_float(PARAM_X_EQ_TORQUE, "X_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on x axis | -1.0 | 1.0
   init_param_float(PARAM_Y_EQ_TORQUE, "Y_EQ_TORQUE", 0.0f); // Equilibrium torque added to output of controller on y axis | -1.0 | 1.0
