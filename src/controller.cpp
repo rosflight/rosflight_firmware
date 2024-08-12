@@ -52,6 +52,8 @@ void Controller::init()
 
   // Calculate the max thrust to convert from throttle setting to thrust
   calculate_max_thrust();
+
+  max_throttle_ = RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
   
   // Don't saturate the torque values
   float max_torque = INFINITY;
@@ -211,6 +213,7 @@ void Controller::param_change_callback(uint16_t param_id)
     case PARAM_NO_LOAD_CURRENT:
     case PARAM_VOLT_MAX:
     case PARAM_NUM_MOTORS:
+    case PARAM_RC_MAX_THROTTLE:
     case PARAM_PID_TAU:
       init();
       break;
@@ -257,8 +260,10 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
 
   // THROTTLE
   // TODO: This works if the input is a throttle setting, but not if the input is a thrust
-  // TODO: Add something that will saturate input RC command to a MAX_THROTTLE parameter, so you can maintain controllability
-  out.F = command.F.value * max_thrust_;
+  // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
+  out.F = command.F.value * max_thrust_ * max_throttle_;
+
+  // std::cout << "Throttle: " << out.F << std::endl;
 
   return out;
 }

@@ -253,6 +253,7 @@ void Params::set_defaults(void)
   init_param_float(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVRD_DEV", 0.1); // RC stick deviation from center for override | 0.0 | 1.0
   init_param_int(PARAM_OVERRIDE_LAG_TIME, "OVRD_LAG_TIME", 1000); // RC stick deviation lag time before returning control (ms) | 0 | 100000
   init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "MIN_THROTTLE", true); // Take minimum throttle between RC and computer at all times | 0 | 1
+  init_param_float(PARAM_RC_MAX_THROTTLE, "RC_MAX_THR", 0.7f); // Maximum throttle command sent by full deflection of RC sticks, to maintain controllability during aggressive maneuvers | 0.0 | 1.0
 
   init_param_int(PARAM_RC_ATTITUDE_MODE, "RC_ATT_MODE", 1); // Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | 0 | 1
   init_param_float(PARAM_RC_MAX_ROLL, "RC_MAX_ROLL", 0.786f); // Maximum roll angle command sent by full deflection of RC sticks | 0.0 | 3.14159
