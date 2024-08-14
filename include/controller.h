@@ -60,7 +60,7 @@ public:
   Controller(ROSflight & rf);
 
   inline const Output & output() const { return output_; }
-  inline const float max_thrust() const { return max_thrust_; }
+  inline float max_thrust() const { return max_thrust_; }
 
   void init();
   void run();
