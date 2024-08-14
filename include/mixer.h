@@ -34,7 +34,8 @@
 
 #include "interface/param_listener.h"
 
-#include <eigen3/Eigen/QR>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/SVD>
 
 #include <cstdbool>
 #include <cstdint>
@@ -232,7 +233,7 @@ private:
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
-  mixer_t correct_mixer_;
+  mixer_t custom_mixer_;
 
   const mixer_t * mixer_to_use_;
 
