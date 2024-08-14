@@ -258,19 +258,18 @@ private:
   // clang-format on
 
   // Define parameters for the mixer
-  float R_; // Motor resistance
-  float rho_; // Air density
-  float K_V_; // Motor back-emf constant
-  float K_Q_ = 0.01706; // Motor torque constant
-  float i_0_; // Motor no-load current
-  float D_;   // Propeller diameter
-  float C_T_; // Thrust coefficient
-  float C_Q_; // Torque coefficient
-  int num_motors_; // Number of motors
-  float V_max_; // Maximum battery voltage
-  float l_[NUM_MIXER_OUTPUTS]; // Radial distance from center of mass to motor
+  float R_;                      // Motor resistance
+  float rho_;                    // Air density
+  float K_V_;                    // Motor back-emf constant
+  float K_Q_ = 0.01706;          // Motor torque constant
+  float i_0_;                    // Motor no-load current
+  float D_;                      // Propeller diameter
+  float C_T_;                    // Thrust coefficient
+  float C_Q_;                    // Torque coefficient
+  int num_motors_;               // Number of motors
+  float V_max_;                  // Maximum battery voltage
+  float l_[NUM_MIXER_OUTPUTS];   // Radial distance from center of mass to motor
   float psi_[NUM_MIXER_OUTPUTS]; // Angle of motor from body x-axis
-
 
 public:
   Mixer(ROSflight & _rf);

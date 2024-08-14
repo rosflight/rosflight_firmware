@@ -54,7 +54,7 @@ void Controller::init()
   calculate_max_thrust();
 
   max_throttle_ = RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
-  
+
   // Don't saturate the torque values
   float max_torque = INFINITY;
   float min = -max_torque;
@@ -97,7 +97,7 @@ void Controller::calculate_max_thrust()
 
   // Using Eq. 4.19 and setting equal to the equation at the beginning of 4.3 in Small Unmanned Aircraft
   // We only need the positive root. Since a and b positive, sqrt term must be positive
-  float omega = (-b + sqrt(pow(b, 2.0) - 4 * a * c)) / (2 * a); 
+  float omega = (-b + sqrt(pow(b, 2.0) - 4 * a * c)) / (2 * a);
 
   // Calculate the max thrust from Eq in 4.3 of Small Unmanned Aircraft
   // Note that the equation is for a single motor, so to calculate max thrust, we need to multiply by the number of motors
@@ -222,7 +222,7 @@ void Controller::param_change_callback(uint16_t param_id)
 }
 
 Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::State & state,
-                                            const control_t & command, bool update_integrators)
+                                             const control_t & command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   Controller::Output out;

@@ -95,7 +95,7 @@ private:
   ROSflight & RF_;
 
   Controller::Output run_pid_loops(uint32_t dt, const Estimator::State & state,
-                                  const control_t & command, bool update_integrators);
+                                   const control_t & command, bool update_integrators);
 
   Output output_;
 
