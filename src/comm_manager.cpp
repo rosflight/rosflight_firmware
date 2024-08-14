@@ -254,7 +254,7 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
       new_offboard_command.x.type = PASSTHROUGH;
       new_offboard_command.y.type = PASSTHROUGH;
       new_offboard_command.z.type = PASSTHROUGH;
-      new_offboard_command.F.type = THROTTLE;
+      new_offboard_command.F.type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
       new_offboard_command.x.type = RATE;

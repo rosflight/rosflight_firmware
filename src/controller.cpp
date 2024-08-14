@@ -135,7 +135,6 @@ void Controller::run()
   output_.F = pid_output.F;
 }
 
-// TODO: Fix this to output equilibrium torque (not normalized values)
 void Controller::calculate_equilbrium_torque_from_rc()
 {
   // Make sure we are disarmed
@@ -168,7 +167,6 @@ void Controller::calculate_equilbrium_torque_from_rc()
       run_pid_loops(0, fake_state, RF_.command_manager_.rc_control(), false);
 
     // the output from the controller is going to be the static offsets
-    // TODO: Should we be adding the equilibrium torques to the existing ones?
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE,
                                 pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE,
@@ -259,11 +257,13 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
   }
 
   // THROTTLE
-  // TODO: This works if the input is a throttle setting, but not if the input is a thrust
-  // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
-  out.F = command.F.value * max_thrust_ * max_throttle_;
-
-  // std::cout << "Throttle: " << out.F << std::endl;
+  if (command.F.type == THROTTLE) {
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
+    out.F = command.F.value * max_thrust_ * max_throttle_;
+  } else {
+    // If it is not a throttle setting, then it is passthrough (to the mixer)
+    out.F = command.F.value;
+  }
 
   return out;
 }
