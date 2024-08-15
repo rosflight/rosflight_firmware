@@ -12,7 +12,7 @@ jobs:
     - name: checkout submodules
       run: git submodule update --init --recursive
     - name: install toolchain
-      run: sudo apt -y install gcc-arm-none-eabi
+      run: sudo apt -y install gcc-arm-none-eabi libeigen3-dev
     - name: check toolchain
       run: arm-none-eabi-gcc --version
     - name: build varmint
