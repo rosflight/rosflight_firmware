@@ -29,6 +29,7 @@ if("${GIT_VERSION_HASH}" STREQUAL "")
 endif()
 
 ### source files ###
+find_package(Eigen3 REQUIRED)
 
 include_directories(
     include
