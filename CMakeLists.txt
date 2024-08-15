@@ -29,6 +29,7 @@ if("${GIT_VERSION_HASH}" STREQUAL "")
 endif()
 
 ### source files ###
+find_package(Eigen3 REQUIRED)
 
 include_directories(
     include
@@ -39,9 +40,6 @@ include_directories(
     comms/mavlink/v1.0/common
     comms/mavlink/v1.0/rosflight
 )
-
-include_directories(${EIGEN3_INCLUDE_DIRS})
-include_directories(/usr/include/eigen3)
 
 file(GLOB_RECURSE ROSFLIGHT_SOURCES
     "src/*.cpp"
