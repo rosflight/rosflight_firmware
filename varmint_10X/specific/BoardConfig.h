@@ -71,8 +71,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Iis2mdc mag_;             /* Varmint 10-12X */     \
   DlhrL20G pitot_;          /* Varmint 10-11X */     \
   /*		Mcp4017 servoV_; */ /* Varmint 11-12X */ \
-  /*		Auav pitot_; */     /* Varmint 12X */    \
-  /*		Auav baro2_; */     /* Varmint 12X */    \
+  /*		Eng094x pitot_; */     /* Varmint 12X */    \
+  /*		Eng094x baro2_; */     /* Varmint 12X */    \
   /*		Bmi088 imu0_;    */ /* PixRacer Pro */   \
   /*		Ms4525 pitot_; */   /* PixRacer Pro */   \
   /*		Ist8308 mag_;  */   /* PixRacer Pro */   \
@@ -161,16 +161,16 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define MS4525_HZ (100)
 #define MS4525_FIFO_BUFFERS (FIFO_MIN_BUFFERS + MS4525_HZ / EPOCH_HZ)
 
-// AUAV is both baro (absolute) and differtial (Pitot)
-#define AUAV_SPI (&hspi4)
-#define AUAV_HZ (100)
+// ENG094X is both baro (absolute) and differtial (Pitot)
+#define ENG094X_SPI (&hspi4)
+#define ENG094X_HZ (100)
 // Absolute (Baro)
-#define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
-#define AUAV_BARO_FIFO_BUFFERS (FIFO_MIN_BUFFERS + AUAV_BARO_HZ / EPOCH_HZ)
+#define ENG094X_BARO_HZ (ENG094X_HZ) // real value is lower
+#define ENG094X_BARO_FIFO_BUFFERS (FIFO_MIN_BUFFERS + ENG094X_BARO_HZ / EPOCH_HZ)
 
 // Differential (Pitot)
-#define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
-#define AUAV_PITOT_FIFO_BUFFERS (FIFO_MIN_BUFFERS + AUAV_PITOT_HZ / EPOCH_HZ)
+#define ENG094X_PITOT_HZ (ENG094X_HZ) // real value is lower
+#define ENG094X_PITOT_FIFO_BUFFERS (FIFO_MIN_BUFFERS + ENG094X_PITOT_HZ / EPOCH_HZ)
 
 // Digital Potentiometer used in later versions
 //	#define MCP4017_I2C_ADDRESS 		(0x2F)

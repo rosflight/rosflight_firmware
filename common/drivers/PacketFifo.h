@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <Status.h>
+
 #define PACKET_FIFO_MAX_BUFFERS 128
 
 typedef struct
@@ -49,7 +51,7 @@ typedef struct
   uint8_t * data;
 } Packet;
 
-class PacketFifo
+class PacketFifo : public Status
 {
 public:
   PacketFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
@@ -57,6 +59,7 @@ public:
 
   void init(uint16_t max_packets, uint16_t max_data_size, uint8_t * buffer_head)
   {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "PacketFifo");
     initializationStatus_ = DRIVER_OK;
     if (buffer_head == NULL) // Maybe check for a valid range?
     {

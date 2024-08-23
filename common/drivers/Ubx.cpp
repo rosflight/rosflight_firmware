@@ -58,6 +58,7 @@ uint32_t Ubx::init(
   UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud,
   UbxProtocol ubx_protocol)
 {
+  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Ubx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;

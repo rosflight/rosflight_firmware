@@ -74,6 +74,7 @@ uint32_t Adis165xx::init(
   uint16_t reset_pin,        // Reset GPIO Pin
   TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us)
 {
+  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Adis165xx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;

@@ -54,6 +54,7 @@ uint32_t DlhrL20G::init(
   I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
 )
 {
+  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "DlhrL20G");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;

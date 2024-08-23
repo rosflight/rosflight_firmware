@@ -63,6 +63,7 @@ uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
                    ADC_TypeDef * adc_instance_int // This ADC has the calibration values
 )
 {
+  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Adc");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   hadcExt_ = hadc_ext;

@@ -63,6 +63,7 @@ void Pwm::updateConfig(const float * rate, uint32_t channels)
 
 uint32_t Pwm::init(void)
 {
+  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Pwm");
   initializationStatus_ = DRIVER_OK;
 
   block_ = pwm_init;

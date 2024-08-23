@@ -40,14 +40,21 @@
 
 #include <BoardConfig.h>
 #include <Driver.h>
+#include <Status.h>
 #include <stdint.h>
 
-class Time64
+class Time64 : public Status
 {
 public:
+  Time64() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
+  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
+
   uint32_t init(TIM_HandleTypeDef * htim_low, TIM_TypeDef * instance_low, TIM_HandleTypeDef * htim_high,
                 TIM_TypeDef * instance_high)
   {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Time64");
+    initializationStatus_ = DRIVER_OK;
+
     htimLow_ = htim_low;
     htimHigh_ = htim_high;
 
@@ -66,16 +73,24 @@ public:
       htimLow_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
       if (htimLow_->Instance == TIM8) htimLow_->Init.RepetitionCounter = 0;
       htimLow_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-      if (HAL_TIM_Base_Init(htimLow_) != HAL_OK) return DRIVER_HAL_ERROR;
+      if (HAL_TIM_Base_Init(htimLow_) != HAL_OK) {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
 
       sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-      if (HAL_TIM_ConfigClockSource(htimLow_, &sClockSourceConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-
+      if (HAL_TIM_ConfigClockSource(htimLow_, &sClockSourceConfig) != HAL_OK) {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
       sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
       if (htimLow_->Instance == TIM8) sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
 
       sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-      if (HAL_TIMEx_MasterConfigSynchronization(htimLow_, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+      if (HAL_TIMEx_MasterConfigSynchronization(htimLow_, &sMasterConfig) != HAL_OK) {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
     }
     // high timer (slave)
     {
@@ -91,7 +106,10 @@ public:
       htimHigh_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
       if (htimHigh_->Instance == TIM8) htimHigh_->Init.RepetitionCounter = 0;
       htimHigh_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-      if (HAL_TIM_Base_Init(htimHigh_) != HAL_OK) return DRIVER_HAL_ERROR;
+      if (HAL_TIM_Base_Init(htimHigh_) != HAL_OK) {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
 
       sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
       // All valid combinations have at least one 32-bit timer (TIM2 or 5)
@@ -108,14 +126,22 @@ public:
       else if (htimHigh_->Instance == TIM8 && htimLow_->Instance == TIM2) sSlaveConfig.InputTrigger = TIM_TS_ITR1;
       else if (htimHigh_->Instance == TIM8 && htimLow_->Instance == TIM5) sSlaveConfig.InputTrigger = TIM_TS_ITR3;
       else if (htimHigh_->Instance == TIM12 && htimLow_->Instance == TIM5) sSlaveConfig.InputTrigger = TIM_TS_ITR1;
-      else return TIMERS_INVALID;
+      else {
+        initializationStatus_ |= TIMERS_INVALID;
+        return initializationStatus_;
+      }
 
-      if (HAL_TIM_SlaveConfigSynchro(htimHigh_, &sSlaveConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-
+      if (HAL_TIM_SlaveConfigSynchro(htimHigh_, &sSlaveConfig) != HAL_OK) {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
       sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
       if (htimHigh_->Instance == TIM8) sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
       sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-      if (HAL_TIMEx_MasterConfigSynchronization(htimHigh_, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+      if (HAL_TIMEx_MasterConfigSynchronization(htimHigh_, &sMasterConfig) != HAL_OK) {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
     }
 
     // Note priority is set in HAL_TIM_Base_MspInit().
@@ -124,7 +150,7 @@ public:
     __HAL_TIM_SET_COUNTER(htimLow_, 0);
     HAL_TIM_Base_Start_IT(htimHigh_); // Startup our overflow counter.
     HAL_TIM_Base_Start_IT(htimLow_);  // Startup our us counter.
-    return DRIVER_OK;
+    return initializationStatus_;
   }
 
   //    inline uint32_t UsLow(void)
@@ -159,6 +185,7 @@ private:
   TIM_HandleTypeDef * htimLow_;
   TIM_HandleTypeDef * htimHigh_;
   uint32_t shift_;
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* TIME64_H_ */

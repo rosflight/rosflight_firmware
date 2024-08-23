@@ -45,11 +45,13 @@
 #include <Polling.h>
 #include <stdint.h>
 
-class Driver
+#include <Status.h>
+
+class Driver : public Status
 {
 public:
   Driver() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
+  //  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
 
   virtual bool display(void) = 0;
 
@@ -67,7 +69,8 @@ protected:
   uint64_t drdy_, timeout_, launchUs_;
   uint64_t groupDelay_ = 0;
   bool dmaRunning_ = 0;
-  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
+  //  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
+  //  char name_[STATUS_NAME_MAX_LEN];
 };
 
 #endif /* DRIVER_H_ */

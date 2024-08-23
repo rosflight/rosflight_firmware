@@ -48,7 +48,7 @@
  *
  */
 
-class Vcp
+class Vcp : public Status
 {
 public:
   Vcp() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
@@ -77,6 +77,5 @@ private:
   uint16_t retry_;
 
   ByteFifo rxFifo_;
-  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 #endif /* VCP_H_ */

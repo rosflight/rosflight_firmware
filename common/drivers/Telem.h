@@ -57,7 +57,7 @@ enum DmaItType
  * @brief
  *
  */
-class Telem
+class Telem : public Status
 {
   /**
      * \brief
@@ -104,8 +104,6 @@ private:
 
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
-
-  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* TELEM_H_ */

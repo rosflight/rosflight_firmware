@@ -40,10 +40,10 @@
 
 #include <Adc.h>
 #include <Adis165xx.h>
-#include <Auav.h>
 #include <Bmi088.h>
 #include <DlhrL20G.h>
 #include <Dps310.h>
+#include <Eng094x.h>
 #include <Iis2mdc.h>
 #include <Ist8308.h>
 #include <Mcp4017.h>
@@ -61,6 +61,7 @@
 /*
  *
  */
+
 class Varmint : public rosflight_firmware::Board
 {
   /**
@@ -70,6 +71,7 @@ class Varmint : public rosflight_firmware::Board
      */
 private:
   uint32_t serial_device_;
+  uint32_t sensor_errors_ = 0;
 
 public:
   Varmint(){};

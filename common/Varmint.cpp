@@ -117,9 +117,10 @@ void Varmint::serial_flush(void)
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Varmint::sensors_init() {}
+// Report any initialization errors
+void Varmint::sensors_init() { sensor_errors_ = 0; }
 
-uint16_t Varmint::num_sensor_errors() { return false; }
+uint16_t Varmint::num_sensor_errors() { return sensor_errors_; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // IMU

@@ -40,6 +40,8 @@
 
 #include <BoardConfig.h>
 
+#include <Status.h>
+
 #define PWM_DMA_BUFFER_LEN 96
 
 #define PWM_CHAN_IGNORE (0xFFFFFFFF)
@@ -70,7 +72,7 @@ typedef struct __attribute__((__packed__))
   uint32_t chan[4];
 } PwmBlockStructure;
 
-class Pwm
+class Pwm : public Status
 {
 public:
   Pwm() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }

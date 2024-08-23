@@ -75,6 +75,7 @@ uint32_t Bmi088::init(
   uint8_t range_g  // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
 )
 {
+  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Bmi088");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;

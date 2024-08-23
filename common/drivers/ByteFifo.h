@@ -38,7 +38,11 @@
 #ifndef BYTEFIFO_H_
 #define BYTEFIFO_H_
 
-class ByteFifo
+#include <stdio.h>
+
+#include <Status.h>
+
+class ByteFifo : public Status
 {
 public:
   ByteFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
@@ -46,6 +50,7 @@ public:
 
   void init(uint16_t buffer_size, uint8_t * buffer)
   {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "ByteFifo");
     if (buffer == NULL) {
       bufferSize_ = 0;
       buffer_ = buffer;

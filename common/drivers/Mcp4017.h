@@ -42,10 +42,11 @@
 
 #include <misc.h>
 
+#include <Status.h>
 /*
  *
  */
-class Mcp4017
+class Mcp4017 : public Status
 {
   /**
      * \brief
@@ -60,6 +61,7 @@ public:
                 double v                  // voltage
   )
   {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Mcp4017");
     initializationStatus_ = DRIVER_OK;
 
     hi2c_ = hi2c;

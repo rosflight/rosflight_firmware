@@ -43,7 +43,7 @@
 /*
  *
  */
-class Sd
+class Sd : public Status
 {
   /**
      * \brief

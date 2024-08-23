@@ -45,7 +45,7 @@
 #include <Time64.h>
 
 #include <BoardConfig.h>
-#include <Driver.h>
+#include <Status.h>
 
 extern Time64 time64;
 
@@ -54,7 +54,7 @@ extern Time64 time64;
  */
 #define WAIT2US time64.dUs(2)
 
-class Spi
+class Spi : public Status
 {
   /**
      * \brief
@@ -75,6 +75,7 @@ public:
   uint32_t init(SPI_HandleTypeDef * hspi, uint8_t * tx_buffer, uint8_t * rx_buffer, GPIO_TypeDef * cs_port,
                 uint16_t cs_pin)
   {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Spi");
     initializationStatus_ = DRIVER_OK;
     hspi_ = hspi;
     txBuffer_ = tx_buffer;
