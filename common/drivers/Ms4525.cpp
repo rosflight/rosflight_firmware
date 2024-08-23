@@ -54,7 +54,7 @@ uint32_t Ms4525::init(
   uint16_t i2c_address      // Chip select Port
 )
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
   hi2c_ = hi2c;
@@ -68,20 +68,19 @@ uint32_t Ms4525::init(
 
   // Read the status register
   uint8_t sensor_status[2];
-
-  HAL_StatusTypeDef i2cstatus = HAL_I2C_Master_Receive(hi2c_, address_, sensor_status, 2,
-                                                       1000); // Receive 1 bytes of data over I2C
+  // Receive 1 bytes of data over I2C
+  HAL_StatusTypeDef i2cstatus = HAL_I2C_Master_Receive(hi2c_, address_, sensor_status, 2, 1000);
 
   misc_printf("MS4525 Status = 0x%02X - ", (sensor_status[0] >> 6) & 0x0003);
   if (i2cstatus == HAL_OK) misc_printf("OK\n");
   else {
     misc_printf("ERROR\n");
-    status |= DRIVER_SELF_DIAG_ERROR;
+    initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
   }
 
   misc_printf("\n");
 
-  return status;
+  return initializationStatus_;
 }
 
 PollingState Ms4525::state(uint64_t poll_counter)

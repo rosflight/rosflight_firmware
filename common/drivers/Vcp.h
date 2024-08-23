@@ -51,6 +51,9 @@
 class Vcp
 {
 public:
+  Vcp() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
+  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+
   uint32_t init(uint16_t sample_rate_hz);
 
   void poll(void);
@@ -74,5 +77,6 @@ private:
   uint16_t retry_;
 
   ByteFifo rxFifo_;
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 #endif /* VCP_H_ */

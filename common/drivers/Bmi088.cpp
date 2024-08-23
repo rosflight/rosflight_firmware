@@ -75,7 +75,7 @@ uint32_t Bmi088::init(
   uint8_t range_g  // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
 )
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
   drdyPin_ = drdy_pin;
@@ -134,7 +134,7 @@ uint32_t Bmi088::init(
 
   else {
     misc_printf("FAIL\n");
-    status |= DRIVER_ID_MISMATCH;
+    initializationStatus_ |= DRIVER_ID_MISMATCH;
   }
 
   // Check Gyro ID  (0x80)
@@ -143,7 +143,7 @@ uint32_t Bmi088::init(
   if (gyro_id == 0x0F) misc_printf("OK\n");
   else {
     misc_printf("FAIL\n");
-    status |= DRIVER_ID_MISMATCH;
+    initializationStatus_ |= DRIVER_ID_MISMATCH;
   }
 
   // Accel Soft Reset (0x7E, 0xB6)
@@ -252,7 +252,7 @@ uint32_t Bmi088::init(
   writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF, 0x05); //(0x16,0x05)
   writeRegisterG(BMI08_REG_GYRO_INT_CTRL, 0x80);          //(0x15,0x80)
 
-  return status;
+  return initializationStatus_;
 }
 
 bool Bmi088::startDma(void)

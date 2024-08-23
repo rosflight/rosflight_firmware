@@ -58,7 +58,7 @@ uint32_t Auav::init(
   uint16_t cs_pin,                                  // Chip Select GPIO Pin
   auav_press type)
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
   drdyPin_ = drdy_pin;
@@ -141,7 +141,7 @@ uint32_t Auav::init(
   if (sensor_status == sensor_status_ready) misc_printf("OK\n");
   else {
     misc_printf("ERROR\n");
-    status |= DRIVER_SELF_DIAG_ERROR;
+    initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
   }
 
   // These i32 Reads return 2 register values merged as int32
@@ -168,7 +168,7 @@ uint32_t Auav::init(
 
   misc_printf("\n");
 
-  return status;
+  return initializationStatus_;
 }
 
 uint32_t Auav::readCfg(uint8_t address, Spi * spi)

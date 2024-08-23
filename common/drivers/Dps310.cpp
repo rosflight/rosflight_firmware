@@ -106,7 +106,7 @@ uint32_t Dps310::init(
   // Mode
   bool three_wire)
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
 
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
@@ -146,7 +146,7 @@ uint32_t Dps310::init(
   misc_printf("DPS310: PRODUCT ID = 0x%02X  (0x10) -", product_id);
   if (product_id == 0x10) misc_printf(" OK\n");
   else {
-    status |= DRIVER_ID_MISMATCH;
+    initializationStatus_ |= DRIVER_ID_MISMATCH;
     misc_printf(" Not OK\n");
   }
 
@@ -165,7 +165,7 @@ uint32_t Dps310::init(
   if ((coef_rdy & 0x80) == 0x80) misc_printf("- READY\n");
   else {
     misc_printf("- NOT READYn\n");
-    status |= DRIVER_SELF_DIAG_ERROR;
+    initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
   }
 
   misc_printf("DPS310: Reading Coefficients\n");
@@ -258,7 +258,7 @@ uint32_t Dps310::init(
 #if DPS310_CONTINUOUS_MODE
   writeRegister(MEAS_CFG, 0x07); // Start background measurement
 #endif
-  return status;
+  return initializationStatus_;
 }
 
 void Dps310::writeRegister(uint8_t address, uint8_t value)

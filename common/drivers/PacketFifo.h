@@ -52,17 +52,29 @@ typedef struct
 class PacketFifo
 {
 public:
+  PacketFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
+  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+
   void init(uint16_t max_packets, uint16_t max_data_size, uint8_t * buffer_head)
   {
-    if (max_packets > PACKET_FIFO_MAX_BUFFERS) packetCountMax_ = PACKET_FIFO_MAX_BUFFERS;
-    else packetCountMax_ = max_packets;
-    dataSizeMax_ = max_data_size;
-    reset();
-
-    for (uint16_t i = 0; i < packetCountMax_; i++) {
-      packet_[i].size = dataSizeMax_;
-      packet_[i].data = buffer_head + i * dataSizeMax_;
+    initializationStatus_= DRIVER_OK;
+    if(buffer_head==NULL) // Maybe check for a valid range?
+    {
+      packetCountMax_=0;
+      dataSizeMax_ = 0;
+      initializationStatus_= DRIVER_NOT_INITIALIZED;
     }
+    else
+    {
+      if (max_packets > PACKET_FIFO_MAX_BUFFERS) packetCountMax_ = PACKET_FIFO_MAX_BUFFERS;
+      else packetCountMax_ = max_packets;
+      dataSizeMax_ = max_data_size;
+      for (uint16_t i = 0; i < packetCountMax_; i++) {
+        packet_[i].size = dataSizeMax_;
+        packet_[i].data = buffer_head + i * dataSizeMax_;
+      }
+    }
+    reset();
   }
 
   void reset(void)
@@ -137,6 +149,7 @@ private:
 
   volatile uint32_t bufferSize_;
   Packet packet_[PACKET_FIFO_MAX_BUFFERS];
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* PACKETFIFO_H_ */

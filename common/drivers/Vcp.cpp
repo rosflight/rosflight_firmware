@@ -38,10 +38,11 @@
 #include <BoardConfig.h>
 #include <Packets.h>
 #include <Vcp.h>
+
 #include <usb_device.h>
 
 #include <Time64.h>
-#include <usbd_cdc_acm_if.h>
+#include <usbd_cdc_if.h>
 
 extern Time64 time64;
 
@@ -53,6 +54,7 @@ DTCM_RAM uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 
 uint32_t Vcp::init(uint16_t sample_rate_hz)
 {
+  initializationStatus_ = DRIVER_OK;
   // Common initializations
   sampleRateHz_ = sample_rate_hz;
 
@@ -68,7 +70,7 @@ uint32_t Vcp::init(uint16_t sample_rate_hz)
   // VCP-specific
   // MX_USB_DEVICE_Init();
 
-  return DRIVER_OK;
+  return initializationStatus_;
 }
 
 // typedef enum

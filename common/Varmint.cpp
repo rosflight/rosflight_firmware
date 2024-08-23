@@ -146,7 +146,7 @@ void Varmint::imu_not_responding_error(){};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // MAG
-bool Varmint::mag_present() { return true; }
+bool Varmint::mag_present() { return mag_.initGood(); }
 bool Varmint::mag_has_new_data() { return mag_.rxFifoCount() > 0; }
 bool Varmint::mag_read(float mag[3])
 {
@@ -162,7 +162,7 @@ bool Varmint::mag_read(float mag[3])
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Baro
-bool Varmint::baro_present() { return true; }
+bool Varmint::baro_present() { return baro_.initGood(); }
 bool Varmint::baro_has_new_data() { return baro_.rxFifoCount() > 0; }
 bool Varmint::baro_read(float * pressure, float * temperature)
 {
@@ -177,7 +177,7 @@ bool Varmint::baro_read(float * pressure, float * temperature)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Pitot
-bool Varmint::diff_pressure_present() { return true; }
+bool Varmint::diff_pressure_present() { return pitot_.initGood(); }
 bool Varmint::diff_pressure_has_new_data() { return pitot_.rxFifoCount() > 0; }
 bool Varmint::diff_pressure_read(float * diff_pressure, float * temperature)
 {
@@ -198,7 +198,7 @@ bool Varmint::sonar_read(float * range) { return false; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Battery
-bool Varmint::battery_present() { return true; }
+bool Varmint::battery_present() { return adc_.initGood(); } // Should probably check if there are actual battery values???
 bool Varmint::battery_has_new_data() { return adc_.rxFifoCount() > 0; }
 bool Varmint::battery_read(float * voltage, float * current)
 {
@@ -223,7 +223,7 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // GNSS
-bool Varmint::gnss_present() { return true; }
+bool Varmint::gnss_present() { return gps_.initGood(); }
 bool Varmint::gnss_has_new_data() { return gps_.rxFifoCount() > 0; }
 
 bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware::GNSSFull * gnss_full)

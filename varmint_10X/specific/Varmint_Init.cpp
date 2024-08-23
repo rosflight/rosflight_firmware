@@ -42,7 +42,7 @@
 #include <misc.h>
 
 #include <usb_device.h>
-#include <usbd_cdc_acm_if.h>
+#include <usbd_cdc_if.h>
 
 #include <ctime>
 #include <main.h>

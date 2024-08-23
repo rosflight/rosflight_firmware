@@ -66,6 +66,7 @@ private:
   SPI_HandleTypeDef * hspi_;
   uint8_t * txBuffer_;
   uint8_t * rxBuffer_;
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 
 public:
   // uint16_t size_;
@@ -74,13 +75,16 @@ public:
   uint32_t init(SPI_HandleTypeDef * hspi, uint8_t * tx_buffer, uint8_t * rx_buffer, GPIO_TypeDef * cs_port,
                 uint16_t cs_pin)
   {
+    initializationStatus_ = DRIVER_OK;
     hspi_ = hspi;
     txBuffer_ = tx_buffer;
     rxBuffer_ = rx_buffer;
     port_ = cs_port;
     pin_ = cs_pin;
-    return DRIVER_OK;
+    return initializationStatus_;
   }
+
+  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
 
   SPI_HandleTypeDef * hspi(void) { return hspi_; }
 

@@ -40,7 +40,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <usb_device.h>
-#include <usbd_cdc_acm_if.h>
+#include <usbd_cdc_if.h>
 
 #include <misc.h>
 
@@ -83,6 +83,7 @@ int __io_getchar(void)
 // DMA_RAM char misc_sprintf_buffer[MAX_SPRINTF_CHARS];
 void misc_printf(const char * format, ...)
 {
+
   if (!verbose) return;
 
   va_list argp;
@@ -132,8 +133,4 @@ void misc_exit_status(uint32_t status)
   if (status & VOLTAGE_SET_FAIL) misc_printf(" VOLTAGE_SET_FAIL");
   misc_printf("\033[0m\n");
 
-//  if (status != DRIVER_OK && verbose) {
-//    while (1)
-//      ;
-//  } //PTT Need to inform error handler.
 }

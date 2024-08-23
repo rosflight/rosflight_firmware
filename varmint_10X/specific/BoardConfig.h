@@ -51,6 +51,8 @@
 // See CommonConfig.h for more #defines
 #define _USBD_USE_HS false
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
+//#define _USBD_CDC_ACM_COUNT 1
+//#define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
 // End MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
 /////////////////////////////////////////////////////////////////////////////////////////////
 

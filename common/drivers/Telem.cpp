@@ -74,6 +74,7 @@ uint32_t Telem::init(
   //,void (*RxISR) (struct __UART_HandleTypeDef *huart)
 )
 {
+  initializationStatus_= DRIVER_OK;
   // Common initializations
   sampleRateHz_ = sample_rate_hz;
   txFrameSizeUs_ = (uint64_t) 1000000 / sampleRateHz_ * 95 / 100; // one period - 5% for margin.
@@ -107,12 +108,27 @@ uint32_t Telem::init(
   huart_->Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
-  if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-
-  return DRIVER_OK;
+  if (HAL_UART_Init(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+  if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+  return initializationStatus_;
 }
 
 uint32_t Telem::reset_baud(uint32_t baud)

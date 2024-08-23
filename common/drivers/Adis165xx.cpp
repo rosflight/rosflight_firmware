@@ -74,7 +74,7 @@ uint32_t Adis165xx::init(
   uint16_t reset_pin,        // Reset GPIO Pin
   TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us)
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
   drdyPin_ = drdy_pin;
@@ -107,16 +107,29 @@ uint32_t Adis165xx::init(
   htim_->Init.Period = htim_period_us - 1;
   htim_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_PWM_Init(&htim12) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIM_PWM_Init(&htim12) != HAL_OK)
+  {
+    initializationStatus_ = DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK)
+  {
+    initializationStatus_ = DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 250;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    initializationStatus_ = DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
 
   HAL_TIM_MspPostInit(htim_);
 
@@ -139,8 +152,8 @@ uint32_t Adis165xx::init(
     misc_printf("OK\n");
   } else {
     misc_printf("ERROR\n");
-    status |= DRIVER_ID_MISMATCH;
-    return status;
+    initializationStatus_ |= DRIVER_ID_MISMATCH;
+    return initializationStatus_;
   }
 
 #define ADIS16500_FILT_CTRL 0x5C // shift so we can or the data into the first 16 bit packet
@@ -186,10 +199,10 @@ uint32_t Adis165xx::init(
     misc_printf("OK\n");
   } else {
     misc_printf("ERROR\n");
-    status |= DRIVER_SELF_DIAG_ERROR;
+    initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
   }
 
-  return status;
+  return initializationStatus_;
 }
 
 inline double val(uint8_t * x)

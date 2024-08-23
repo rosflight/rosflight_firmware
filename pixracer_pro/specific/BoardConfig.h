@@ -47,11 +47,11 @@
 #define MISC_HUART (&huart2)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
+// USB MiddleWare
 // See CommonConfig.h for more #defines
 #define _USBD_USE_HS false
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
-// End MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
+//
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // clang-format off

@@ -58,6 +58,7 @@ uint32_t Ubx::init(
   UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud,
   UbxProtocol ubx_protocol)
 {
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
   drdyPin_ = drdy_pin;
@@ -96,13 +97,28 @@ uint32_t Ubx::init(
   huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
   //  huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
   //  huart_->AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
-  if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_8_8) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_8_8) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_UART_Init(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_8_8) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_8_8) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   //    if (HAL_UARTEx_DisableFifoMode (huart_) != HAL_OK)
   //        return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_EnableFifoMode(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-
+  if (HAL_UARTEx_EnableFifoMode(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   //     baud_initial_ = 100000000/huart_->Instance->BRR;
 
   uint32_t bauds[] = {9600, 230400, 57600}; // { 9600, 19200, 38400, 57600, 115200, 230400};
@@ -115,8 +131,11 @@ uint32_t Ubx::init(
     for (i = 0; i < sizeof(bauds) / sizeof(uint32_t); i++) {
       // Set STM Baud
       huart_->Init.BaudRate = bauds[i];
-      if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-
+      if (HAL_UART_Init(huart_) != HAL_OK)
+      {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return initializationStatus_;
+      }
       // Set UBLOX Baud
       if (ubxProtocol_ == UBX_M8) cfgPrt(baud_);
       else cfgM9(baud_, sampleRateHz_);
@@ -125,8 +144,11 @@ uint32_t Ubx::init(
 
     // Set STM Baud
     huart_->Init.BaudRate = baud_;
-    if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-
+    if (HAL_UART_Init(huart_) != HAL_OK)
+    {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      return initializationStatus_;
+    }
     HAL_Delay(100); // Give the UBLOX some time to get there
 
     // Check if we have acquired the baud rate
@@ -137,12 +159,21 @@ uint32_t Ubx::init(
     misc_printf("%6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
   }
 
-  if (ubx_baud != baud_) return UBX_FAIL_BAUD_CHANGE;
+  if (ubx_baud != baud_)
+  {
+    initializationStatus_ |= UBX_FAIL_BAUD_CHANGE;
+    return initializationStatus_;
+  }
+
 
   misc_printf("Baud Rate Set to   = %6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
 
   huart_->Init.BaudRate = baud_;
-  if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_UART_Init(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
 
   rxFifo_.init(UBX_FIFO_BUFFERS, sizeof(UbxPacket), ubx_fifo_rx_buffer);
 
@@ -175,7 +206,7 @@ uint32_t Ubx::init(
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);
 
-  return DRIVER_OK;
+  return initializationStatus_;
 }
 
 bool Ubx::poll(void)
@@ -338,7 +369,8 @@ bool Ubx::display(void)
     misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
     misc_printf("%02u:%02u:%09.6f", p.pvt.hour, p.pvt.min, (double) p.pvt.sec + (double) p.pvt.nano * 1e-9);
     misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
-    misc_printf("numSV %02d\n", p.pvt.numSV);
+    misc_printf("numSV %02d | ", p.pvt.numSV);
+    misc_printf("Fix %02d\n", p.pvt.fixType);
 
     misc_header(name_time, p.drdy, p.timestamp, p.groupDelay);
     misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);

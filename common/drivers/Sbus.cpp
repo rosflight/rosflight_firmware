@@ -83,6 +83,7 @@ uint32_t Sbus::init(
   // UART initializers
   UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = 0;      // do not use
   drdyPin_ = 0;       // do not use
@@ -106,10 +107,26 @@ uint32_t Sbus::init(
   huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_TXINVERT_INIT | UART_ADVFEATURE_RXINVERT_INIT;
   huart_->AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
   huart_->AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
-  if (HAL_UART_Init(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_UART_Init(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return DRIVER_HAL_ERROR;
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return DRIVER_HAL_ERROR;
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return DRIVER_HAL_ERROR;
+  }
+  if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return DRIVER_HAL_ERROR;
+  }
   // USART initialization end
 
   rxFifo_.init(SBUS_FIFO_BUFFERS, sizeof(RcPacket), sbus_fifo_rx_buffer);
@@ -117,7 +134,7 @@ uint32_t Sbus::init(
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);
 
-  return DRIVER_OK;
+  return initializationStatus_;
 }
 
 bool Sbus::poll(void)

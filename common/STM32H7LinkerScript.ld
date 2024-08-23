@@ -177,19 +177,19 @@ SECTIONS
   {
     . = ALIGN(32);
      
-  } >SRAM3 AT> FLASH2 /* Don't know why, but J-Link needs the AT>FLASH*/
+  } >SRAM3 /* AT > FLASH Don't know why, but J-Link needs the AT>FLASH*/
   
   bdma_ram :
   {
     . = ALIGN(32);
      
-  } >SRAM4 AT> FLASH2 /* Don't know why, but J-Link needs the AT>FLASH*/
+  } >SRAM4 /* AT > FLASH Don't know why, but J-Link needs the AT>FLASH*/
 
   dtcm_ram :
   {
     . = ALIGN(32);
  
-  } >DTCMRAM AT> FLASH2 /* Don't know why, but J-Link needs the AT>FLASH*/
+  } >DTCMRAM /* AT > FLASH  Don't know why, but J-Link needs the AT>FLASH*/
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }

@@ -63,6 +63,8 @@ void Pwm::updateConfig(const float * rate, uint32_t channels)
 
 uint32_t Pwm::init(void)
 {
+  initializationStatus_ = DRIVER_OK;
+
   block_ = pwm_init;
   dmaBuf_ = pwm_dma_buf;
 
@@ -95,7 +97,11 @@ uint32_t Pwm::init(void)
     else if (htim == &htim3) htim->Instance = TIM3;
     else if (htim == &htim4) htim->Instance = TIM4;
     else if (htim == &htim8) htim->Instance = TIM8;
-    else return DRIVER_HAL_ERROR;
+    else
+    {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      return DRIVER_HAL_ERROR;
+    }
 
     if ((block_[bk].rate >= 150000) && (block_[bk].type == PWM_DSHOT)) // DSHOT
     {
@@ -104,17 +110,29 @@ uint32_t Pwm::init(void)
     } else if ((block_[bk].type == PWM_STANDARD) && (block_[bk].rate < 490)) {
       htim->Init.Prescaler = 199;
       htim->Init.Period = (uint64_t) 1000000 / block_[bk].rate - 1;
-    } else return DRIVER_HAL_ERROR;
+    } else
+    {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      return DRIVER_HAL_ERROR;
+    }
 
     htim->Init.CounterMode = TIM_COUNTERMODE_UP;
     htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim->Init.RepetitionCounter = 0;
     htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    if (HAL_TIM_PWM_Init(htim) != HAL_OK) return DRIVER_HAL_ERROR;
+    if (HAL_TIM_PWM_Init(htim) != HAL_OK)
+    {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      return DRIVER_HAL_ERROR;
+    }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
     sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK)
+    {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      return DRIVER_HAL_ERROR;
+    }
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
     //        sConfigOC.Pulse = 1500;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -126,7 +144,11 @@ uint32_t Pwm::init(void)
     for (uint32_t ch = 0; ch < 4; ch++) {
       if (block_[bk].chan[ch] < PWM_CHANNELS) {
         sConfigOC.Pulse = 0; // default to flat line output
-        if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, (uint32_t) ch * 4) != HAL_OK) return DRIVER_HAL_ERROR;
+        if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, (uint32_t) ch * 4) != HAL_OK)
+        {
+          initializationStatus_ |= DRIVER_HAL_ERROR;
+          return DRIVER_HAL_ERROR;
+        }
       }
     }
 
@@ -143,10 +165,14 @@ uint32_t Pwm::init(void)
       sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
       sBreakDeadTimeConfig.Break2Filter = 0;
       sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-      if (HAL_TIMEx_ConfigBreakDeadTime(htim, &sBreakDeadTimeConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+      if (HAL_TIMEx_ConfigBreakDeadTime(htim, &sBreakDeadTimeConfig) != HAL_OK)
+      {
+        initializationStatus_ |= DRIVER_HAL_ERROR;
+        return DRIVER_HAL_ERROR;
+      }
     }
     HAL_TIM_MspPostInit(htim);
   }
 
-  return DRIVER_OK;
+  return initializationStatus_;
 }

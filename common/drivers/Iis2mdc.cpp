@@ -74,7 +74,7 @@ uint32_t Iis2mdc::init(
   uint16_t cs_pin                                   // Chip Select GPIO Pin
 )
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
   drdyPin_ = drdy_pin;
@@ -98,7 +98,7 @@ uint32_t Iis2mdc::init(
   if (id == 0x40) misc_printf(" Matches\n");
   else {
     misc_printf(" Does not match\n");
-    status |= DRIVER_ID_MISMATCH;
+    initializationStatus_ |= DRIVER_ID_MISMATCH;
   }
 
   // Reboot the sensor
@@ -158,7 +158,7 @@ uint32_t Iis2mdc::init(
   // Read Status Register (0x67)
   uint8_t sensor_status = readRegister(STATUS_REG);
   misc_printf("IIS2MDC: Mag status register = 0x%02X (0x00)\n", sensor_status);
-  if (sensor_status != 0x00) status |= DRIVER_SELF_DIAG_ERROR;
+  if (sensor_status != 0x00) initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
 
   // Read Offset Registers (6 bytes starting 0x45)
   uint8_t tx[7], h[7];
@@ -168,7 +168,7 @@ uint32_t Iis2mdc::init(
   misc_printf("H Offsets should be zero %8d %8d %8d mGauss\n", ((int16_t) h[1] | (int16_t) h[2] << 8) * 3 / 2,
               ((int16_t) h[3] | (int16_t) h[4] << 8) * 3 / 2, ((int16_t) h[5] | (int16_t) h[6] << 8) * 3 / 2);
 
-  return status;
+  return initializationStatus_;
 }
 
 PollingState Iis2mdc::state(uint64_t poll_counter)

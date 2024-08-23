@@ -102,7 +102,7 @@ uint32_t Ist8308::init(
   // I2C initializers
   I2C_HandleTypeDef * hi2c, uint16_t i2c_address)
 {
-  uint32_t status = DRIVER_OK;
+  initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
   hi2c_ = hi2c;
@@ -116,34 +116,59 @@ uint32_t Ist8308::init(
 
   // Check if we are the right chip
   uint8_t reg = WAI_REG;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   uint8_t device_id = 0;
-  if (HAL_I2C_Master_Receive(hi2c_, address_, &device_id, 1, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
-
+  if (HAL_I2C_Master_Receive(hi2c_, address_, &device_id, 1, 1000) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   misc_printf("IST8308 Device ID = 0x%02X (0x%02X) - ", device_id, DEVICE_ID);
   if (device_id == DEVICE_ID) {
     misc_printf("OK\n");
   } else {
     misc_printf("ERROR\n");
-    return DRIVER_ID_MISMATCH;
+    {
+      initializationStatus_ |= DRIVER_ID_MISMATCH;
+      return initializationStatus_;
+    }
   }
 
   uint8_t cmd[2];
   // Reset
   cmd[0] = CNTL3_REG;
   cmd[1] = CNTL3_VAL_SRST;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   HAL_Delay(20);
 
   // Write CNTL3_REG (to check status?)
   reg = CNTL3_REG;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   uint8_t cntl3 = 0;
-  if (HAL_I2C_Master_Receive(hi2c_, address_, &cntl3, 1, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
-
+  if (HAL_I2C_Master_Receive(hi2c_, address_, &cntl3, 1, 1000) != HAL_OK)
+  {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   misc_printf("IST8308 Device CNTL3 = 0x%02X, bit 1 = 0x%02X\n", cntl3, cntl3 & 0x01);
 
-  if ((cntl3 & 0x01) != 0) return DRIVER_SELF_DIAG_ERROR;
+  if ((cntl3 & 0x01) != 0)
+  {
+    initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
+    return initializationStatus_;
+  }
 
   // Configure
   //	cmd[0] = CNTL3_REG; cmd[1] = CNTL3_VAL_DRDY_EN;
@@ -161,7 +186,7 @@ uint32_t Ist8308::init(
   cmd[1] = CNTL2_VAL_SINGLE_MODE;
   if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
 
-  return status;
+  return initializationStatus_;
 }
 
 PollingState Ist8308::state(uint64_t poll_counter)

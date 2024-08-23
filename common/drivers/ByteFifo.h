@@ -41,11 +41,23 @@
 class ByteFifo
 {
 public:
+  ByteFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
+  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+
   void init(uint16_t buffer_size, uint8_t * buffer)
   {
-    bufferSize_ = buffer_size;
-    buffer_ = buffer;
-    bufferEnd_ = buffer_ + bufferSize_ - 1;
+    if (buffer==NULL)
+    {
+      bufferSize_ = 0;
+      buffer_ = buffer;
+      bufferEnd_ = buffer_;
+    }
+    else
+    {
+      bufferSize_ = buffer_size;
+      buffer_ = buffer;
+      bufferEnd_ = buffer_ + bufferSize_ - 1;
+    }
     flush();
   }
 
@@ -93,6 +105,8 @@ private:
   volatile uint8_t *head_, *tail_;
   volatile uint8_t *buffer_, *bufferEnd_;
   uint32_t bufferSize_ = 0;
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
+
 };
 
 #endif /* BYTEFIFO_H_ */

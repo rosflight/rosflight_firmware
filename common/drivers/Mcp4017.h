@@ -53,18 +53,22 @@ class Mcp4017
      *
      */
 public:
+  Mcp4017() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
+
   uint32_t init(I2C_HandleTypeDef * hi2c, // The SPI handle
                 uint16_t i2c_address,     // Chip select Port
                 double v                  // voltage
   )
   {
+    initializationStatus_ = DRIVER_OK;
+
     hi2c_ = hi2c;
     address_ = i2c_address << 1;
 
-    uint32_t status = set(v);
-    if (status == DRIVER_OK) misc_printf("Servo voltage set to %.1fV, %u counts\n", v_, pot_);
+    uint32_t initializationStatus_ = set(v);
+    if (initializationStatus_ == DRIVER_OK) misc_printf("Servo voltage set to %.1fV, %u counts\n", v_, pot_);
     else misc_printf("Servo voltage fail at %.1fV, %u counts\n", v_, pot_);
-    return status;
+    return initializationStatus_;
   }
 
   uint32_t set(double v)
@@ -92,6 +96,7 @@ private:
   uint8_t pot_;
   I2C_HandleTypeDef * hi2c_; // The SPI handle
   uint16_t address_;         // Chip select Port
+  uint32_t initializationStatus_ = 0;
 };
 
 #endif /* DRIVERS_MCP4017_H_ */

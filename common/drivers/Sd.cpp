@@ -52,6 +52,7 @@ DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
 
 uint32_t Sd::init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance)
 {
+  initializationStatus_ = DRIVER_OK;
   hsd_ = hsd;
   hsd_->Instance = hsd_instance;
   hsd_->Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
@@ -62,18 +63,21 @@ uint32_t Sd::init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance)
   HAL_StatusTypeDef hal_status = HAL_SD_Init(hsd_);
   if (hal_status != HAL_OK) {
     misc_printf("SD Card Initialization failure 0x%02X\n", hal_status);
-    return DRIVER_HAL_ERROR;
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
   }
   HAL_SD_CardInfoTypeDef sd_info;
   hal_status = HAL_SD_GetCardInfo(hsd_, &sd_info);
   if (hal_status != HAL_OK) {
     misc_printf("SD Card Info Read failure 0x%02X\n", hal_status);
-    return DRIVER_HAL_ERROR;
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+
   } else {
     misc_printf("SD Card Capacity= %.0f GB\n",
                 (double) sd_info.BlockNbr * (double) sd_info.BlockSize / 1024. / 1024. / 1024.);
   }
-  return DRIVER_OK;
+  return initializationStatus_;
 }
 
 bool Sd::read(uint8_t * dest, size_t len)

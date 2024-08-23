@@ -55,18 +55,6 @@
 
 #define _USBD_USE_CDC_ACM true // /dev/ttyACM* device type
 #define _USBD_CDC_ACM_COUNT 1
-#define _USBD_USE_CDC_RNDIS false
-#define _USBD_USE_CDC_ECM false
-#define _USBD_USE_HID_MOUSE false
-#define _USBD_USE_HID_KEYBOARD false
-#define _USBD_USE_HID_CUSTOM false
-#define _USBD_USE_UAC_MIC false
-#define _USBD_USE_UAC_SPKR false
-#define _USBD_USE_UVC false
-#define _USBD_USE_MSC false
-#define _USBD_USE_DFU false
-#define _USBD_USE_PRNTR false
-#define _STM32F1_DEVICE false // F1 devices are a special case
 //
 // End MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +72,7 @@
 #define SD_HSD_INSTANCE (SDMMC1)
 
 #define DRIVER_OK (0x00000000)
+#define DRIVER_NOT_INITIALIZED (0x00000001)
 #define DRIVER_ID_MISMATCH (0x00000002)
 #define DRIVER_SELF_DIAG_ERROR (0x00000004)
 #define DRIVER_HAL_ERROR (0x00000008)
