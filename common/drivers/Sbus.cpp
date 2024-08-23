@@ -107,23 +107,19 @@ uint32_t Sbus::init(
   huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_TXINVERT_INIT | UART_ADVFEATURE_RXINVERT_INIT;
   huart_->AdvancedInit.TxPinLevelInvert = UART_ADVFEATURE_TXINV_ENABLE;
   huart_->AdvancedInit.RxPinLevelInvert = UART_ADVFEATURE_RXINV_ENABLE;
-  if (HAL_UART_Init(huart_) != HAL_OK)
-  {
+  if (HAL_UART_Init(huart_) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return DRIVER_HAL_ERROR;
   }
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return DRIVER_HAL_ERROR;
   }
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return DRIVER_HAL_ERROR;
   }
-  if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK)
-  {
+  if (HAL_UARTEx_DisableFifoMode(huart_) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return DRIVER_HAL_ERROR;
   }

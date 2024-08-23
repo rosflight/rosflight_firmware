@@ -107,16 +107,14 @@ uint32_t Adis165xx::init(
   htim_->Init.Period = htim_period_us - 1;
   htim_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_PWM_Init(&htim12) != HAL_OK)
-  {
+  if (HAL_TIM_PWM_Init(&htim12) != HAL_OK) {
     initializationStatus_ = DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK)
-  {
+  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK) {
     initializationStatus_ = DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
@@ -125,8 +123,7 @@ uint32_t Adis165xx::init(
   sConfigOC.Pulse = 250;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
+  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
     initializationStatus_ = DRIVER_HAL_ERROR;
     return initializationStatus_;
   }

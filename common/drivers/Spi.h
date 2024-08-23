@@ -84,7 +84,7 @@ public:
     return initializationStatus_;
   }
 
-  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
 
   SPI_HandleTypeDef * hspi(void) { return hspi_; }
 

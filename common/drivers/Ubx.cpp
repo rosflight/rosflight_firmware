@@ -97,25 +97,21 @@ uint32_t Ubx::init(
   huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
   //  huart_->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
   //  huart_->AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
-  if (HAL_UART_Init(huart_) != HAL_OK)
-  {
+  if (HAL_UART_Init(huart_) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
-  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_8_8) != HAL_OK)
-  {
+  if (HAL_UARTEx_SetTxFifoThreshold(huart_, UART_TXFIFO_THRESHOLD_8_8) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
-  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_8_8) != HAL_OK)
-  {
+  if (HAL_UARTEx_SetRxFifoThreshold(huart_, UART_RXFIFO_THRESHOLD_8_8) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
   //    if (HAL_UARTEx_DisableFifoMode (huart_) != HAL_OK)
   //        return DRIVER_HAL_ERROR;
-  if (HAL_UARTEx_EnableFifoMode(huart_) != HAL_OK)
-  {
+  if (HAL_UARTEx_EnableFifoMode(huart_) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
@@ -131,8 +127,7 @@ uint32_t Ubx::init(
     for (i = 0; i < sizeof(bauds) / sizeof(uint32_t); i++) {
       // Set STM Baud
       huart_->Init.BaudRate = bauds[i];
-      if (HAL_UART_Init(huart_) != HAL_OK)
-      {
+      if (HAL_UART_Init(huart_) != HAL_OK) {
         initializationStatus_ |= DRIVER_HAL_ERROR;
         return initializationStatus_;
       }
@@ -144,8 +139,7 @@ uint32_t Ubx::init(
 
     // Set STM Baud
     huart_->Init.BaudRate = baud_;
-    if (HAL_UART_Init(huart_) != HAL_OK)
-    {
+    if (HAL_UART_Init(huart_) != HAL_OK) {
       initializationStatus_ |= DRIVER_HAL_ERROR;
       return initializationStatus_;
     }
@@ -159,18 +153,15 @@ uint32_t Ubx::init(
     misc_printf("%6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
   }
 
-  if (ubx_baud != baud_)
-  {
+  if (ubx_baud != baud_) {
     initializationStatus_ |= UBX_FAIL_BAUD_CHANGE;
     return initializationStatus_;
   }
 
-
   misc_printf("Baud Rate Set to   = %6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
 
   huart_->Init.BaudRate = baud_;
-  if (HAL_UART_Init(huart_) != HAL_OK)
-  {
+  if (HAL_UART_Init(huart_) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }

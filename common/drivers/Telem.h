@@ -66,8 +66,8 @@ class Telem
      */
 
 public:
-  Telem() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
-  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+  Telem() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
+  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
   uint32_t init(
     // Driver initializers
     uint16_t sample_rate_hz,
@@ -105,7 +105,7 @@ private:
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
 
-  uint32_t initializationStatus_=DRIVER_NOT_INITIALIZED;
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* TELEM_H_ */

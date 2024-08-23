@@ -198,7 +198,10 @@ bool Varmint::sonar_read(float * range) { return false; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Battery
-bool Varmint::battery_present() { return adc_.initGood(); } // Should probably check if there are actual battery values???
+bool Varmint::battery_present()
+{
+  return adc_.initGood();
+} // Should probably check if there are actual battery values???
 bool Varmint::battery_has_new_data() { return adc_.rxFifoCount() > 0; }
 bool Varmint::battery_read(float * voltage, float * current)
 {

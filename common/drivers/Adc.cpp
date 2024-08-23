@@ -73,15 +73,12 @@ uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
 
   rxFifo_.init(ADC_FIFO_BUFFERS, sizeof(AdcPacket), adc_fifo_rx_buffer);
 
-  if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT))
-  {
-    initializationStatus_ =  DRIVER_HAL_ERROR;
+  if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT)) {
+    initializationStatus_ = DRIVER_HAL_ERROR;
+  } else if (DRIVER_OK != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT)) {
+    initializationStatus_ = DRIVER_HAL_ERROR;
   }
-  else if (DRIVER_OK != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT))
-  {
-    initializationStatus_ =  DRIVER_HAL_ERROR;
-  }
-   return initializationStatus_;
+  return initializationStatus_;
 }
 
 uint32_t Adc::configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg)

@@ -53,7 +53,7 @@ class Mcp4017
      *
      */
 public:
-  Mcp4017() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
+  Mcp4017() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
 
   uint32_t init(I2C_HandleTypeDef * hi2c, // The SPI handle
                 uint16_t i2c_address,     // Chip select Port

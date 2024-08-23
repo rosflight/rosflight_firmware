@@ -132,5 +132,4 @@ void misc_exit_status(uint32_t status)
   if (status & UBX_FAIL_BAUD_CHANGE) misc_printf(" UBX_FAIL_BAUD_CHANGE");
   if (status & VOLTAGE_SET_FAIL) misc_printf(" VOLTAGE_SET_FAIL");
   misc_printf("\033[0m\n");
-
 }

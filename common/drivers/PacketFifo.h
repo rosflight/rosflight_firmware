@@ -52,20 +52,18 @@ typedef struct
 class PacketFifo
 {
 public:
-  PacketFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
-  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+  PacketFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
+  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
 
   void init(uint16_t max_packets, uint16_t max_data_size, uint8_t * buffer_head)
   {
-    initializationStatus_= DRIVER_OK;
-    if(buffer_head==NULL) // Maybe check for a valid range?
+    initializationStatus_ = DRIVER_OK;
+    if (buffer_head == NULL) // Maybe check for a valid range?
     {
-      packetCountMax_=0;
+      packetCountMax_ = 0;
       dataSizeMax_ = 0;
-      initializationStatus_= DRIVER_NOT_INITIALIZED;
-    }
-    else
-    {
+      initializationStatus_ = DRIVER_NOT_INITIALIZED;
+    } else {
       if (max_packets > PACKET_FIFO_MAX_BUFFERS) packetCountMax_ = PACKET_FIFO_MAX_BUFFERS;
       else packetCountMax_ = max_packets;
       dataSizeMax_ = max_data_size;

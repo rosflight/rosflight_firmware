@@ -48,8 +48,8 @@
 class Driver
 {
 public:
-  Driver() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
-  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+  Driver() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
+  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
 
   virtual bool display(void) = 0;
 

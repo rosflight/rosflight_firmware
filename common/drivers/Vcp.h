@@ -51,8 +51,8 @@
 class Vcp
 {
 public:
-  Vcp() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
-  bool initGood(void) { return initializationStatus_== DRIVER_OK;}
+  Vcp() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
+  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
 
   uint32_t init(uint16_t sample_rate_hz);
 
