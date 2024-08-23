@@ -36,12 +36,7 @@ include_directories(
     Drivers/CMSIS/Include
     ../common
     ../common/drivers
-    ../common/AL94_USB_Composite
-    ../common/AL94_USB_Composite/App
-    ../common/AL94_USB_Composite/Class/CDC_ACM/Inc
-    ../common/AL94_USB_Composite/Class/COMPOSITE/Inc
-    ../common/AL94_USB_Composite/Core/Inc
-    ../common/AL94_USB_Composite/Target
+	../common/USB_AL94
     specific
 )
 
@@ -51,7 +46,7 @@ file(GLOB_RECURSE VARMINT_SOURCES
     "Drivers/*.c"
     "../common/*.cpp"
     "../common/drivers/*.cpp"
-    "../common/AL94_USB_Composite/*.c"
+    "../common/USB_AL94/*.c"
     "specific/*.cpp"
 )
 
