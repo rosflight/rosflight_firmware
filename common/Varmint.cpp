@@ -118,7 +118,15 @@ void Varmint::serial_flush(void)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Report any initialization errors
-void Varmint::sensors_init() { sensor_errors_ = 0; }
+void Varmint::sensors_init()
+{
+  sensor_errors_ = 0;
+
+  for(uint32_t i=0;i<varmint.status_len();i++ )
+  {
+    if(varmint.status(i)->status() != DRIVER_OK)sensor_errors_++;
+  }
+}
 
 uint16_t Varmint::num_sensor_errors() { return sensor_errors_; }
 

@@ -54,12 +54,9 @@ typedef struct
 class PacketFifo : public Status
 {
 public:
-  PacketFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
-
   void init(uint16_t max_packets, uint16_t max_data_size, uint8_t * buffer_head)
   {
-    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "PacketFifo");
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "PacketFifo");
     initializationStatus_ = DRIVER_OK;
     if (buffer_head == NULL) // Maybe check for a valid range?
     {
@@ -150,7 +147,6 @@ private:
 
   volatile uint32_t bufferSize_;
   Packet packet_[PACKET_FIFO_MAX_BUFFERS];
-  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* PACKETFIFO_H_ */

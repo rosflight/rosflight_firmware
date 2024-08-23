@@ -74,7 +74,7 @@ uint32_t Iis2mdc::init(
   uint16_t cs_pin                                   // Chip Select GPIO Pin
 )
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Iis2mdc");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Iis2mdc");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;

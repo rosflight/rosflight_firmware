@@ -38,12 +38,16 @@
 #ifndef STATUS_H_
 #define STATUS_H_
 
-#define STATUS_NAME_MAX_LEN 32
+#define STATUS_LIST_MAX_LEN 16
+#define STATUS_NAME_MAX_LEN 16
 
 class Status
 {
 public:
+  Status() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
   bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
+  uint32_t status() { return initializationStatus_;}
+  char *name() { return name_;}
 
 protected:
   uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;

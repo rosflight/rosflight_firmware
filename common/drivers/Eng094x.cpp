@@ -58,7 +58,7 @@ uint32_t Eng094x::init(
   uint16_t cs_pin,                                  // Chip Select GPIO Pin
   eng094x_press type)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Eng094x");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Eng094x");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;

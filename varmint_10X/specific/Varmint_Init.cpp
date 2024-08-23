@@ -245,7 +245,7 @@ void Varmint::init_board(void)
   GRN_LO;
   BLU_LO;
 
-#if defined(SANDBOX)
+#if SANDBOX
   misc_printf("\n\nStarting Sandbox\n");
   sandbox();
 #else

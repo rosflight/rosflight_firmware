@@ -54,7 +54,7 @@ uint32_t Ms4525::init(
   uint16_t i2c_address      // Chip select Port
 )
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Ms4525");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ms4525");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 

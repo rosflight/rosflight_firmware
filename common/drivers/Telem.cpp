@@ -74,7 +74,7 @@ uint32_t Telem::init(
   //,void (*RxISR) (struct __UART_HandleTypeDef *huart)
 )
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Telem");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Telem");
   initializationStatus_ = DRIVER_OK;
   // Common initializations
   sampleRateHz_ = sample_rate_hz;

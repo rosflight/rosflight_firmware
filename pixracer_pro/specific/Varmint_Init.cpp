@@ -247,7 +247,11 @@ void Varmint::init_board(void)
   PROBE3_LO;
   PROBE4_HI;
 
-#if defined(SANDBOX)
+#if SANDBOX
+  misc_printf("\n\nStarting Sandbox\n");
   sandbox();
+#else
+  misc_printf("\n\nStarting Rosflight\n");
+  verbose = false;
 #endif
 }

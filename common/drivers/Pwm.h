@@ -75,9 +75,6 @@ typedef struct __attribute__((__packed__))
 class Pwm : public Status
 {
 public:
-  Pwm() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
-
   uint32_t init(void);
   void updateConfig(const float * rate, uint32_t channels);
 
@@ -212,7 +209,6 @@ private:
   uint32_t chan_[PWM_CHANNELS];
   uint32_t (*dmaBuf_)[PWM_DMA_BUFFER_LEN];
   uint32_t blockIndex_[PWM_CHANNELS];
-  uint32_t initializationStatus_ = 0;
 };
 
 #endif /* PWM_H_ */

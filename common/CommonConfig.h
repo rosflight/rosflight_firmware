@@ -47,16 +47,12 @@
 #define DATA_RAM __attribute__((section(".data"))) __attribute__((aligned(32))) static
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
+// USB MiddleWare
 //
 #define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
-//#define _USBD_USE_HS false
-//extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
-
-#define _USBD_USE_CDC_ACM true // /dev/ttyACM* device type
+#define _USBD_USE_CDC_ACM true
 #define _USBD_CDC_ACM_COUNT 1
 //
-// End MiddleWare name : AL94.I-CUBE-USBD-COMPOSITE.1.0.3
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 #define EPOCH_HZ (400)

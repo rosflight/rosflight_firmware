@@ -66,8 +66,6 @@ class Telem : public Status
      */
 
 public:
-  Telem() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
   uint32_t init(
     // Driver initializers
     uint16_t sample_rate_hz,

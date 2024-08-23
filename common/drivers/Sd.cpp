@@ -52,7 +52,7 @@ DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
 
 uint32_t Sd::init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Sd");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Sd");
   initializationStatus_ = DRIVER_OK;
   hsd_ = hsd;
   hsd_->Instance = hsd_instance;

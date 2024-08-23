@@ -106,7 +106,7 @@ uint32_t Dps310::init(
   // Mode
   bool three_wire)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Dps310");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Dps310");
   initializationStatus_ = DRIVER_OK;
 
   sampleRateHz_ = sample_rate_hz;

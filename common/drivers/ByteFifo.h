@@ -45,12 +45,11 @@
 class ByteFifo : public Status
 {
 public:
-  ByteFifo() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
   bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
 
   void init(uint16_t buffer_size, uint8_t * buffer)
   {
-    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "ByteFifo");
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "ByteFifo");
     if (buffer == NULL) {
       bufferSize_ = 0;
       buffer_ = buffer;
@@ -107,7 +106,6 @@ private:
   volatile uint8_t *head_, *tail_;
   volatile uint8_t *buffer_, *bufferEnd_;
   uint32_t bufferSize_ = 0;
-  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* BYTEFIFO_H_ */

@@ -102,7 +102,7 @@ uint32_t Ist8308::init(
   // I2C initializers
   I2C_HandleTypeDef * hi2c, uint16_t i2c_address)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Ist8308");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ist8308");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 

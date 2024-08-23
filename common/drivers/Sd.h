@@ -51,15 +51,13 @@ class Sd : public Status
      *
      */
 public:
-  Sd() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
   uint32_t init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance);
   bool read(uint8_t * dest, size_t len);
   bool write(uint8_t * src, size_t len);
 
 private:
   SD_HandleTypeDef * hsd_;
-  uint32_t initializationStatus_ = 0;
+
 };
 
 #endif /* SD_H_ */

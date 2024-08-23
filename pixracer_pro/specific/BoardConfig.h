@@ -40,7 +40,7 @@
 
 #include <CommonConfig.h>
 
-//#define SANDBOX // set this via CMAKE
+#define SANDBOX false // set this via CMAKE
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's

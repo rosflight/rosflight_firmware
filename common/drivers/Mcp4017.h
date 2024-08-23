@@ -54,14 +54,12 @@ class Mcp4017 : public Status
      *
      */
 public:
-  Mcp4017() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-
   uint32_t init(I2C_HandleTypeDef * hi2c, // The SPI handle
                 uint16_t i2c_address,     // Chip select Port
                 double v                  // voltage
   )
   {
-    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Mcp4017");
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Mcp4017");
     initializationStatus_ = DRIVER_OK;
 
     hi2c_ = hi2c;
@@ -98,7 +96,6 @@ private:
   uint8_t pot_;
   I2C_HandleTypeDef * hi2c_; // The SPI handle
   uint16_t address_;         // Chip select Port
-  uint32_t initializationStatus_ = 0;
 };
 
 #endif /* DRIVERS_MCP4017_H_ */

@@ -83,7 +83,7 @@ uint32_t Sbus::init(
   // UART initializers
   UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Sbus");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Sbus");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = 0;      // do not use

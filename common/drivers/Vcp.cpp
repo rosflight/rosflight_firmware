@@ -54,7 +54,7 @@ DTCM_RAM uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 
 uint32_t Vcp::init(uint16_t sample_rate_hz)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Vcp");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Vcp");
   initializationStatus_ = DRIVER_OK;
   // Common initializations
   sampleRateHz_ = sample_rate_hz;

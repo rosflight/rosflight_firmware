@@ -46,13 +46,10 @@
 class Time64 : public Status
 {
 public:
-  Time64() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
-
   uint32_t init(TIM_HandleTypeDef * htim_low, TIM_TypeDef * instance_low, TIM_HandleTypeDef * htim_high,
                 TIM_TypeDef * instance_high)
   {
-    snprintf(name_, STATUS_NAME_MAX_LEN, "-%s", "Time64");
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Time64");
     initializationStatus_ = DRIVER_OK;
 
     htimLow_ = htim_low;
@@ -75,13 +72,13 @@ public:
       htimLow_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
       if (HAL_TIM_Base_Init(htimLow_) != HAL_OK) {
         initializationStatus_ |= DRIVER_HAL_ERROR;
-        return DRIVER_HAL_ERROR;
+        return initializationStatus_;
       }
 
       sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
       if (HAL_TIM_ConfigClockSource(htimLow_, &sClockSourceConfig) != HAL_OK) {
         initializationStatus_ |= DRIVER_HAL_ERROR;
-        return DRIVER_HAL_ERROR;
+        return initializationStatus_;
       }
       sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
       if (htimLow_->Instance == TIM8) sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
@@ -89,7 +86,7 @@ public:
       sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
       if (HAL_TIMEx_MasterConfigSynchronization(htimLow_, &sMasterConfig) != HAL_OK) {
         initializationStatus_ |= DRIVER_HAL_ERROR;
-        return DRIVER_HAL_ERROR;
+        return initializationStatus_;
       }
     }
     // high timer (slave)
@@ -108,7 +105,7 @@ public:
       htimHigh_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
       if (HAL_TIM_Base_Init(htimHigh_) != HAL_OK) {
         initializationStatus_ |= DRIVER_HAL_ERROR;
-        return DRIVER_HAL_ERROR;
+        return initializationStatus_;
       }
 
       sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
@@ -140,7 +137,7 @@ public:
       sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
       if (HAL_TIMEx_MasterConfigSynchronization(htimHigh_, &sMasterConfig) != HAL_OK) {
         initializationStatus_ |= DRIVER_HAL_ERROR;
-        return DRIVER_HAL_ERROR;
+        return initializationStatus_;
       }
     }
 
@@ -185,7 +182,6 @@ private:
   TIM_HandleTypeDef * htimLow_;
   TIM_HandleTypeDef * htimHigh_;
   uint32_t shift_;
-  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
 };
 
 #endif /* TIME64_H_ */
