@@ -180,8 +180,9 @@ public:
   void send_param_value(uint16_t param_id);
   void update_status();
   void log(CommLinkInterface::LogSeverity severity, const char * fmt, ...);
+  void log_message(CommLinkInterface::LogSeverity severity, char * text);
 
-  void send_parameter_list();
+//  void send_parameter_list();
   void send_named_value_float(const char * const name, float value);
 
   void send_backup_data(const StateManager::BackupData & backup_data);

@@ -129,7 +129,10 @@ void CommManager::param_request_list_callback(uint8_t target_system)
   if (target_system == sysid_) { send_params_index_ = 0; }
 }
 
-void CommManager::send_parameter_list() { send_params_index_ = 0; }
+//void CommManager::send_parameter_list()
+//{
+//  send_params_index_ = 0;
+//}
 
 void CommManager::param_request_read_callback(uint8_t target_system, const char * const param_name,
                                               int16_t param_index)
@@ -329,10 +332,15 @@ void CommManager::log(CommLinkInterface::LogSeverity severity, const char * fmt,
   // Convert the format string to a raw char array
   va_list args;
   va_start(args, fmt);
-  char text[LOG_MSG_SIZE];
-  vsnprintf(text, LOG_MSG_SIZE, fmt, args);
+  char message[LOG_MSG_SIZE];
+  vsnprintf(message, LOG_MSG_SIZE, fmt, args);
   va_end(args);
 
+  log_message(severity, message);
+}
+
+void CommManager::log_message(CommLinkInterface::LogSeverity severity, char * text)
+{
   if (initialized_ && connected_) {
     comm_link_.send_log_message(sysid_, severity, text);
   } else {
@@ -526,6 +534,23 @@ void CommManager::send_named_value_float(const char * const name, float value)
 
 void CommManager::send_next_param(void)
 {
+  //PTT Hack
+  //TODO figure out a better place to do this
+  if (send_params_index_==0)
+  {
+
+    //   Board initialization status
+      for(uint16_t i=0; i<RF_.board_.sensors_init_message_count(); i++)
+      {
+        char message[LOG_MSG_SIZE]; // No point in makeing a message larger than this.
+        if(RF_.board_.sensors_init_message(message,LOG_MSG_SIZE,i) !=0)
+        {
+          CommLinkInterface::LogSeverity severity =  CommLinkInterface::LogSeverity::LOG_INFO;
+          if(!RF_.board_.sensors_init_message_good(i)) { severity = CommLinkInterface::LogSeverity::LOG_ERROR; }
+          log_message(severity, message);
+        }
+      }
+  }
   if (send_params_index_ < PARAMS_COUNT) {
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;

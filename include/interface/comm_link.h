@@ -32,7 +32,6 @@
 #ifndef ROSFLIGHT_FIRMWARE_COMM_LINK_H
 #define ROSFLIGHT_FIRMWARE_COMM_LINK_H
 
-#include "board.h"
 #include "param.h"
 #include "sensors.h"
 #include "state_manager.h"
