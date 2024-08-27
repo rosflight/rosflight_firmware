@@ -117,22 +117,35 @@ void Varmint::serial_flush(void)
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Report any initialization errors
 void Varmint::sensors_init()
 {
   sensor_errors_ = 0;
-
-  for(uint32_t i=0;i<varmint.status_len();i++ )
-  {
-    if(varmint.status(i)->status() != DRIVER_OK)sensor_errors_++;
+  for (uint32_t i = 0; i < varmint.status_len(); i++) {
+    if (varmint.status(i)->status() != DRIVER_OK) sensor_errors_++;
   }
 }
+uint16_t Varmint::sensors_errors_count() { return sensor_errors_; }
 
-uint16_t Varmint::num_sensor_errors() { return sensor_errors_; }
+uint16_t Varmint::sensors_init_message_count() { return varmint.status_len(); }
+
+bool Varmint::sensors_init_message_good(uint16_t i) { return varmint.status(i)->initGood(); }
+
+uint16_t Varmint::sensors_init_message(char * message, uint16_t size, uint16_t i)
+  {
+  if (i > varmint.status_len()) return 0;
+
+  uint32_t status = varmint.status(i)->status();
+  if (status == DRIVER_OK) {
+    snprintf(message, size, "%s: INIT OK", varmint.status(i)->name());
+  } else { //PTT TODO: we can add better messages later
+    snprintf(message, size, "%s: INIT ERROR 0x%08lX", varmint.status(i)->name(), status);
+  }
+  return 1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // IMU
-
+bool Varmint::imu_present() { return imu0_.initGood(); }
 bool Varmint::imu_has_new_data() { return imu0_.rxFifoCount() > 0; }
 bool Varmint::imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time_us)
 {
