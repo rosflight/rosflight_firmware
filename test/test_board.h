@@ -69,7 +69,10 @@ public:
 
   // sensors
   void sensors_init() override;
-  uint16_t num_sensor_errors() override;
+  uint16_t sensors_errors_count() override;
+  uint16_t sensors_init_message_count() override;
+  uint16_t sensors_init_message(char * message, uint16_t size, uint16_t i) override;
+  bool sensors_init_message_good(uint16_t i) override;
 
   bool imu_has_new_data() override;
   bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time) override;
