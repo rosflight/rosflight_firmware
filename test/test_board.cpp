@@ -79,6 +79,8 @@ uint16_t testBoard::sensors_init_message_count() {return 0;}
 uint16_t testBoard::sensors_init_message(char * message, uint16_t size, uint16_t i) {return 0;}
 bool testBoard::sensors_init_message_good(uint16_t i) {return false;}
 
+bool testBoard::imu_present() {return false;}
+
 bool testBoard::imu_has_new_data()
 {
   if (new_imu_) {

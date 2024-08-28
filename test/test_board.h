@@ -74,6 +74,7 @@ public:
   uint16_t sensors_init_message(char * message, uint16_t size, uint16_t i) override;
   bool sensors_init_message_good(uint16_t i) override;
 
+  bool imu_present() override;
   bool imu_has_new_data() override;
   bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time) override;
   void imu_not_responding_error() override;
