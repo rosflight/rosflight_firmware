@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : Eng094x.cpp
+ * File     : Auav.cpp
  * Date     : Mar 5, 2023
  ******************************************************************************
  *
@@ -34,7 +34,7 @@
  *
  ******************************************************************************
  **/
-#include <Eng094x.h>
+#include <Auav.h>
 #include <Packets.h>
 #include <Polling.h>
 #include <Time64.h>
@@ -42,23 +42,23 @@
 
 extern Time64 time64;
 
-#define ENG094X_READ_BYTES 7
+#define AUAV_READ_BYTES 7
 
-DMA_RAM uint8_t eng094x_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DMA_RAM uint8_t eng094x_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t eng094x_pitot_fifo_rx_buffer[ENG094X_PITOT_FIFO_BUFFERS * sizeof(PressurePacket)];
-DTCM_RAM uint8_t eng094x_baro_fifo_rx_buffer[ENG094X_BARO_FIFO_BUFFERS * sizeof(PressurePacket)];
+DMA_RAM uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
+DTCM_RAM uint8_t auav_pitot_fifo_rx_buffer[AUAV_PITOT_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_baro_fifo_rx_buffer[AUAV_BARO_FIFO_BUFFERS * sizeof(PressurePacket)];
 
-uint32_t Eng094x::init(
+uint32_t Auav::init(
   // Driver initializers
   uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
   uint16_t drdy_pin,                                 // Reset GPIO Pin
   // SPI initializers
   SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
   uint16_t cs_pin,                                  // Chip Select GPIO Pin
-  eng094x_press type)
+  auav_press type)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Eng094x");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Auav");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
   drdyPort_ = drdy_port;
@@ -66,7 +66,7 @@ uint32_t Eng094x::init(
   launchUs_ = 0;
   type_ = type;
 
-  spi_.init(hspi, eng094x_dma_txbuf, eng094x_dma_rxbuf, cs_port, cs_pin);
+  spi_.init(hspi, auav_dma_txbuf, auav_dma_rxbuf, cs_port, cs_pin);
 
   // Read calibration constants
   int32_t i32A = 0, i32B = 0, i32C = 0, i32D = 0, i32TC50HLE = 0;
@@ -89,11 +89,11 @@ uint32_t Eng094x::init(
   // Start Measurement
   // Send 0xAD 0x00 0x00
 
-  if (type_ == ENG094X_PITOT) {
-    rxFifo_.init(ENG094X_PITOT_FIFO_BUFFERS, sizeof(PressurePacket), eng094x_pitot_fifo_rx_buffer);
-    char name[] = "Eng094x (pitot)";
+  if (type_ == AUAV_PITOT) {
+    rxFifo_.init(AUAV_PITOT_FIFO_BUFFERS, sizeof(PressurePacket), auav_pitot_fifo_rx_buffer);
+    char name[] = "Auav (pitot)";
     strcpy(name_, name);
-    memset(cmdBytes_, 0, ENG094X_CMD_BYTES);
+    memset(cmdBytes_, 0, AUAV_CMD_BYTES);
     cmdBytes_[0] = 0xAD; // ~100 Hz
 
     // Vent (zero) pressure is at 0.1 *2^24 nominal output for Gauge Sensor
@@ -113,8 +113,8 @@ uint32_t Eng094x::init(
     sensor_status_ready_ = 0x50;
   } else // baro
   {
-    rxFifo_.init(ENG094X_BARO_FIFO_BUFFERS, sizeof(PressurePacket), eng094x_baro_fifo_rx_buffer);
-    char name[] = "Eng094x (baro)";
+    rxFifo_.init(AUAV_BARO_FIFO_BUFFERS, sizeof(PressurePacket), auav_baro_fifo_rx_buffer);
+    char name[] = "Auav (baro)";
     strcpy(name_, name);
 
     cmdBytes_[0] = 0xAC; // ~100 Hz
@@ -138,7 +138,7 @@ uint32_t Eng094x::init(
   // Read Status
   uint8_t tx = 0xF0, sensor_status = 0;
   spi_.rx(&tx, &sensor_status, 1, 100);
-  misc_printf("ENG094X Status = 0x%02X (0x%02X) - ", sensor_status, sensor_status_ready);
+  misc_printf("AUAV Status = 0x%02X (0x%02X) - ", sensor_status, sensor_status_ready);
   if (sensor_status == sensor_status_ready) misc_printf("OK\n");
   else {
     misc_printf("ERROR\n");
@@ -172,7 +172,7 @@ uint32_t Eng094x::init(
   return initializationStatus_;
 }
 
-uint32_t Eng094x::readCfg(uint8_t address, Spi * spi)
+uint32_t Auav::readCfg(uint8_t address, Spi * spi)
 {
   // First word
   uint8_t tx[3] = {0}, hi[3] = {0}, lo[3] = {0};
@@ -197,45 +197,45 @@ uint32_t Eng094x::readCfg(uint8_t address, Spi * spi)
   return value;
 }
 
-PollingState Eng094x::state(uint64_t poll_counter)
+PollingState Auav::state(uint64_t poll_counter)
 {
   uint32_t rollover = 10000; // us (100 Hz) 0-99 slots at 10 kHz
   PollingStateStruct lut[] = //
     {
       // Pitot
-      {1, ENG094X_PITOT_CMD},
-      {74, ENG094X_PITOT_RX}, // 7.2ms
+      {1, AUAV_PITOT_CMD},
+      {74, AUAV_PITOT_RX}, // 7.2ms
                               // Baro
-      {0, ENG094X_BARO_CMD},
-      {73, ENG094X_BARO_RX}, // 9.4ms
+      {0, AUAV_BARO_CMD},
+      {73, AUAV_BARO_RX}, // 9.4ms
     };
   return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
                             poll_counter % (rollover / POLLING_PERIOD_US));
 }
 
-bool Eng094x::poll(uint64_t poll_counter)
+bool Auav::poll(uint64_t poll_counter)
 {
   PollingState poll_state = state(poll_counter);
 
-  if ((poll_state == ENG094X_PITOT_CMD && type_ == ENG094X_PITOT)
-      || (poll_state == ENG094X_BARO_CMD && type_ == ENG094X_BARO)) {
+  if ((poll_state == AUAV_PITOT_CMD && type_ == AUAV_PITOT)
+      || (poll_state == AUAV_BARO_CMD && type_ == AUAV_BARO)) {
     launchUs_ = time64.Us();
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmdBytes_, ENG094X_CMD_BYTES)))) spiState_ = poll_state;
-    else spiState_ = ENG094X_ERROR;
-  } else if ((poll_state == ENG094X_PITOT_RX && type_ == ENG094X_PITOT)
-             || (poll_state == ENG094X_BARO_RX && type_ == ENG094X_BARO)) {
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmdBytes_, AUAV_CMD_BYTES)))) spiState_ = poll_state;
+    else spiState_ = AUAV_ERROR;
+  } else if ((poll_state == AUAV_PITOT_RX && type_ == AUAV_PITOT)
+             || (poll_state == AUAV_BARO_RX && type_ == AUAV_BARO)) {
     drdy_ = time64.Us();
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(0xF0, ENG094X_READ_BYTES)))) spiState_ = poll_state;
-    else spiState_ = ENG094X_ERROR;
+    if ((dmaRunning_ = (HAL_OK == spi_.startDma(0xF0, AUAV_READ_BYTES)))) spiState_ = poll_state;
+    else spiState_ = AUAV_ERROR;
   }
 
   return dmaRunning_;
 }
 
-void Eng094x::endDma(void)
+void Auav::endDma(void)
 {
-  if ((spiState_ == ENG094X_PITOT_RX && type_ == ENG094X_PITOT)
-      || (spiState_ == ENG094X_BARO_RX && type_ == ENG094X_BARO)) {
+  if ((spiState_ == AUAV_PITOT_RX && type_ == AUAV_PITOT)
+      || (spiState_ == AUAV_BARO_RX && type_ == AUAV_BARO)) {
     uint8_t * inbuf = spi_.endDma();
     // Returns <status> Pressure H,M,L, Temperature H,M L
 
@@ -313,7 +313,7 @@ void Eng094x::endDma(void)
   dmaRunning_ = false;
 }
 
-bool Eng094x::display(void)
+bool Auav::display(void)
 {
   PressurePacket p;
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {

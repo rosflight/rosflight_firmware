@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : Eng094x.h
+ * File     : Auav.h
  * Date     : Mar 25, 2023
  ******************************************************************************
  *
@@ -35,24 +35,24 @@
  ******************************************************************************
  **/
 
-// Part number is ENG094X-L10G-M25125-RR-N
+// Part number is AUAV-L10G-M25125-RR-N
 
-#ifndef ENG094X_H_
-#define ENG094X_H_
+#ifndef AUAV_H_
+#define AUAV_H_
 
 #include <BoardConfig.h>
 #include <Driver.h>
 #include <Spi.h>
 
-#define ENG094X_CMD_BYTES 3
+#define AUAV_CMD_BYTES 3
 
 typedef enum
 {
-  ENG094X_PITOT = 0,
-  ENG094X_BARO
-} eng094x_press;
+  AUAV_PITOT = 0,
+  AUAV_BARO
+} auav_press;
 
-class Eng094x : public Driver
+class Auav : public Driver
 {
   /**
      * \brief
@@ -67,7 +67,7 @@ public:
     // SPI initializers
     SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
     uint16_t cs_pin,                                  // Chip Select GPIO Pin
-    eng094x_press type);
+    auav_press type);
 
   bool poll(uint64_t poll_counter);
   PollingState state(uint64_t poll_counter);
@@ -87,13 +87,13 @@ private:
   // SPI Stuff
   Spi spi_;
   PollingState spiState_;
-  uint8_t cmdBytes_[ENG094X_CMD_BYTES];
+  uint8_t cmdBytes_[AUAV_CMD_BYTES];
 
-  eng094x_press type_;
+  auav_press type_;
   double LIN_A_, LIN_B_, LIN_C_, LIN_D_, Es_, TC50H_, TC50L_;
   double osDig_, fss_, off_;
   uint8_t sensor_status_ready_;
   char name_[16]; // for display
 };
 
-#endif /* ENG094X_H_ */
+#endif /* AUAV_H_ */

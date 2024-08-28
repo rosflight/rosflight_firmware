@@ -43,7 +43,7 @@
 #include <Bmi088.h>
 #include <DlhrL20G.h>
 #include <Dps310.h>
-#include <Eng094x.h>
+#include <Auav.h>
 #include <Iis2mdc.h>
 #include <Ist8308.h>
 #include <Mcp4017.h>
@@ -73,15 +73,15 @@ private:
   uint32_t serial_device_;
   uint32_t sensor_errors_ = 0;
   uint32_t status_len_ = 0;
-  Status *status_list_[STATUS_LIST_MAX_LEN];
+  Status * status_list_[STATUS_LIST_MAX_LEN];
 
 public:
   Varmint(){};
 
   INTERFACE_LIST
 
-  Status* status(uint32_t n) { return status_list_[n];}
-  uint32_t status_len(void) { return status_len_;}
+  Status * status(uint32_t n) { return status_list_[n]; }
+  uint32_t status_len(void) { return status_len_; }
 
   ////////////////////////////////////////////////////////////////////////////////
   // Required ROSflight Board HAL functions:
