@@ -129,11 +129,6 @@ void CommManager::param_request_list_callback(uint8_t target_system)
   if (target_system == sysid_) { send_params_index_ = 0; }
 }
 
-//void CommManager::send_parameter_list()
-//{
-//  send_params_index_ = 0;
-//}
-
 void CommManager::param_request_read_callback(uint8_t target_system, const char * const param_name,
                                               int16_t param_index)
 {
