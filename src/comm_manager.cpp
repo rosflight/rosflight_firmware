@@ -529,23 +529,6 @@ void CommManager::send_named_value_float(const char * const name, float value)
 
 void CommManager::send_next_param(void)
 {
-  //PTT Hack
-  //TODO figure out a better place to do this
-  if (send_params_index_==0)
-  {
-
-    //   Board initialization status
-      for(uint16_t i=0; i<RF_.board_.sensors_init_message_count(); i++)
-      {
-        char message[LOG_MSG_SIZE]; // No point in makeing a message larger than this.
-        if(RF_.board_.sensors_init_message(message,LOG_MSG_SIZE,i) !=0)
-        {
-          CommLinkInterface::LogSeverity severity =  CommLinkInterface::LogSeverity::LOG_INFO;
-          if(!RF_.board_.sensors_init_message_good(i)) { severity = CommLinkInterface::LogSeverity::LOG_ERROR; }
-          log_message(severity, message);
-        }
-      }
-  }
   if (send_params_index_ < PARAMS_COUNT) {
     send_param_value(static_cast<uint16_t>(send_params_index_));
     send_params_index_++;
