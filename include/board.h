@@ -54,6 +54,13 @@ public:
   virtual void init_board() = 0;
   virtual void board_reset(bool bootloader) = 0;
 
+  virtual void sensors_init(void) = 0;
+  virtual uint16_t sensors_errors_count() = 0;
+
+  virtual uint16_t sensors_init_message_count() =  0;
+  virtual bool sensors_init_message_good(uint16_t i) = 0;
+  virtual uint16_t sensors_init_message(char *message, uint16_t size, uint16_t i) = 0;
+
   // clock
   virtual uint32_t clock_millis() = 0;
   virtual uint64_t clock_micros() = 0;
@@ -67,11 +74,8 @@ public:
   virtual uint8_t serial_read() = 0;
   virtual void serial_flush() = 0;
 
-  // sensors
-  virtual void sensors_init() = 0;
-  virtual uint16_t num_sensor_errors() = 0;
-
   // IMU
+  virtual bool imu_present() = 0;
   virtual bool imu_has_new_data() = 0;
   virtual bool imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time) = 0;
   virtual void imu_not_responding_error() = 0;

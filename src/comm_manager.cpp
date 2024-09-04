@@ -129,8 +129,6 @@ void CommManager::param_request_list_callback(uint8_t target_system)
   if (target_system == sysid_) { send_params_index_ = 0; }
 }
 
-void CommManager::send_parameter_list() { send_params_index_ = 0; }
-
 void CommManager::param_request_read_callback(uint8_t target_system, const char * const param_name,
                                               int16_t param_index)
 {
@@ -329,10 +327,15 @@ void CommManager::log(CommLinkInterface::LogSeverity severity, const char * fmt,
   // Convert the format string to a raw char array
   va_list args;
   va_start(args, fmt);
-  char text[LOG_MSG_SIZE];
-  vsnprintf(text, LOG_MSG_SIZE, fmt, args);
+  char message[LOG_MSG_SIZE];
+  vsnprintf(message, LOG_MSG_SIZE, fmt, args);
   va_end(args);
 
+  log_message(severity, message);
+}
+
+void CommManager::log_message(CommLinkInterface::LogSeverity severity, char * text)
+{
   if (initialized_ && connected_) {
     comm_link_.send_log_message(sysid_, severity, text);
   } else {
@@ -361,7 +364,7 @@ void CommManager::send_status(void)
   comm_link_.send_status(
     sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
     RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
-    RF_.state_manager_.state().error_codes, control_mode, RF_.board_.num_sensor_errors(),
+    RF_.state_manager_.state().error_codes, control_mode, RF_.board_.sensors_errors_count(),
     RF_.get_loop_time_us());
 }
 
