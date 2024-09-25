@@ -561,10 +561,9 @@ void Sensors::correct_diff_pressure()
   if (!diff_pressure_calibrated_) { calibrate_diff_pressure(); }
   data_.diff_pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
 
-  float atm = 101325.0f;
-  if (data_.baro_present) { atm = data_.baro_pressure; }
-  data_.diff_pressure_velocity = turbomath::fsign(data_.diff_pressure) * 24.574f
-    / turbomath::inv_sqrt((turbomath::fabs(data_.diff_pressure) * data_.diff_pressure_temp / atm));
+  // compute indicated air speed
+  data_.diff_pressure_ias = turbomath::fsign(data_.diff_pressure)
+    * sqrt((fabs(data_.diff_pressure)/(0.5*1.225)));
 }
 
 void Sensors::update_battery_monitor_multipliers()

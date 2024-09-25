@@ -146,7 +146,7 @@ public:
     float imu_temperature = 0;
     uint64_t imu_time = 0;
 
-    float diff_pressure_velocity = 0;
+    float diff_pressure_ias = 0;
     float diff_pressure = 0;
     float diff_pressure_temp = 0;
 

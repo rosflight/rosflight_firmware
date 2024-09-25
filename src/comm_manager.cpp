@@ -404,7 +404,7 @@ void CommManager::send_rc_raw(void)
 
 void CommManager::send_diff_pressure(void)
 {
-  comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_velocity,
+  comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_ias,
                                 RF_.sensors_.data().diff_pressure,
                                 RF_.sensors_.data().diff_pressure_temp);
 }
