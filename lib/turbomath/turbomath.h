@@ -35,23 +35,17 @@
 #define TURBOMATH_TURBOMATH_H
 
 #include <cstdint>
+#include <math.h>
 
 namespace turbomath
 {
-// float-based wrappers
-float cos(float x);
-float sin(float x);
-float asin(float x);
-float atan2(float y, float x);
-float atan(float x);
+
 float fsign(float y);
 
-// turbo-speed approximation of (1.0 - pow(pressure/101325.0, 0.1902631)) * 39097.63
 // Used for calculating altitude in m from atmospheric pressure in Pa
 float alt(float x);
 
 float inv_sqrt(float x);
-float fabs(float x);
 
 union float_converter_t
 {
