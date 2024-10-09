@@ -65,8 +65,7 @@ public:
     FIXEDWING = 10,
     PASSTHROUGH = 11,
     INVERTED_VTAIL = 12,
-    QUADPLANE = 13,
-    CUSTOM = 14,
+    CUSTOM = 13,
     NUM_MIXERS,
     INVALID_MIXER = 255
   };
@@ -209,14 +208,6 @@ private:
     {0.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Y Mix
     {0.0f, 0.0f, 0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Z Mix
 
-  const mixer_t quadplane_mixing = {
-    {   S,     S,    S,    M,    M,     M,     M,     M, NONE, NONE},  // Ailerons, Rudder, Elevator, Tractor Motor, Quadrotors
-    {  50,    50,   50,   50,  490,   490,   490,   490,   50,   50},  // Rate (Hz)
-    {0.0f,  0.0f, 0.0f, 1.0f, 1.0f,  1.0f,  1.0f,  1.0f, 0.0f, 0.0f},  // F Mix
-    {1.0f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f,  1.0f, 0.0f, 0.0f},  // X Mix
-    {0.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f},  // Y Mix
-    {0.0f,  0.0f, 1.0f, 0.0f, 1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f}}; // Z Mix
-
   const mixer_t passthrough_mixing = {
     {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},
     {  50,   50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz or kHz)
@@ -251,7 +242,6 @@ private:
     &fixedwing_mixing,
     &passthrough_mixing,
     &fixedwing_inverted_vtail_mixing,
-    &quadplane_mixing,
     &custom_mixing,
   };
 
