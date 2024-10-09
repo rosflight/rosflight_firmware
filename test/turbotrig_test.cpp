@@ -92,9 +92,9 @@ turbomath::Quaternion random_quaternions[25] = {
 
 TEST(TurboMath, fastAlt)
 {
-  // out of bounds
-  EXPECT_EQ(turbomath::alt(69681), 0.0);
-  EXPECT_EQ(turbomath::alt(10700), 0.0);
+  // no out of bounds check it makes no sense to return zero altitude.
+  // EXPECT_EQ(turbomath::alt(69681), 0.0);
+  // EXPECT_EQ(turbomath::alt(10700), 0.0);
 
   // all valid int values
   float trueResult = 0.0;
