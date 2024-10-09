@@ -255,9 +255,7 @@ float fsign(float y) { return (0.0f < y) - (y < 0.0f); }
 // ISA standard atmosphere up to 11kft:
 float alt(float press)
 {
-#define ISA_PRESSURE (101325.0) // Pa
-#define ISA_EXPONENT (0.190326730028458)
-#define ISA_SCALE_FACTOR (44318.1386038261) //m
+
   return (1.0-pow(press/ISA_PRESSURE,ISA_EXPONENT))*ISA_SCALE_FACTOR;
 }
 

@@ -39,6 +39,9 @@
 
 namespace turbomath
 {
+#define ISA_PRESSURE (101325.0) // Pa
+#define ISA_EXPONENT (0.190326730028458)
+#define ISA_SCALE_FACTOR (44318.1386038261) //m
 
 float fsign(float y);
 
