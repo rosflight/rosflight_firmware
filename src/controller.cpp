@@ -257,11 +257,13 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
   }
 
   // THROTTLE
-  if (command.F.type == THROTTLE) {
-    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
+  if (command.F.type == THROTTLE && !RF_.params_.get_param_int(PARAM_FIXED_WING)) {
+    // Converts the input throttle command to thrust command, and scales the saturation limit by
+    // RC_MAX_THROTTLE to maintain controllability.
     out.F = command.F.value * max_thrust_ * max_throttle_;
   } else {
-    // If it is not a throttle setting, then it is passthrough (to the mixer)
+    // If it is not a throttle setting, or if the vehicle type is FIXED_WING, then pass directly 
+    // to the mixer.
     out.F = command.F.value;
   }
 
