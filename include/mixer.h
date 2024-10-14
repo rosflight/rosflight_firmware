@@ -273,6 +273,8 @@ public:
   inline const float * get_outputs() const { return raw_outputs_; }
 
   void calculate_mixer_values();
+  void mix_multirotor();
+  void mix_fixedwing();
 };
 
 } // namespace rosflight_firmware

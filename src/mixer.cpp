@@ -262,24 +262,19 @@ void Mixer::set_new_aux_command(aux_command_t new_aux_command)
   }
 }
 
-void Mixer::mix_output()
+void Mixer::mix_multirotor()
 {
   Controller::Output commands = RF_.controller_.output();
-  float max_output = 1.0f;
 
-  // Reverse fixed-wing channels just before mixing if we need to
-  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
-    commands.x *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
-  } else if (commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
+  if (commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
                * RF_.controller_.max_thrust()) {
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
     // arming/disarming
     commands.z = 0.0;
   }
 
-  if (mixer_to_use_ == nullptr) { return; }
+  // Mix the inputs
+  float max_output = 1.0;
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if (mixer_to_use_->output_type[i] != NONE) {
@@ -292,7 +287,8 @@ void Mixer::mix_output()
       if (omega_squared < 0.0) { omega_squared = 0.0; }
 
       // Ch. 4, setting equation for torque produced by a propeller equal to Eq. 4.19
-      // Note that we assume constant airspeed and propeller speed, leading to a constant advance ratio, torque, and thrust constants.
+      // Note that we assume constant airspeed and propeller speed, leading to constant advance ratio,
+      // torque, and thrust constants.
       double V_in = rho_ * pow(D_, 5.0) / (4.0 * pow(M_PI, 2.0)) * omega_squared * C_Q_ * R_ / K_Q_
         + R_ * i_0_ + K_V_ * sqrt(omega_squared);
 
@@ -304,15 +300,51 @@ void Mixer::mix_output()
     }
   }
 
-  // saturate outputs to maintain controllability even during aggressive maneuvers
-  // TODO: Fix how this saturates to maintain controlability.
+  // There is no relative scaling on the above equations. In other words, if the input F command is too
+  // high, then it will "drown out" all other desired outputs. Therefore, we saturate motor outputs to 
+  // maintain controllability even during aggressive maneuvers.
   float scale_factor = 1.0;
-  // if (max_output > 1.0) { scale_factor = 1.0 / max_output; }
+  if (max_output > 1.0) { scale_factor = 1.0 / max_output; }
 
   // Perform Motor Output Scaling
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
     if (mixer_to_use_->output_type[i] == M) { outputs_[i] *= scale_factor; }
+  }
+
+}
+
+void Mixer::mix_fixedwing()
+{
+  Controller::Output commands = RF_.controller_.output();
+
+  // Reverse fixed-wing channels just before mixing if we need to
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
+    commands.x *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+  }
+
+  // Mix the outputs
+  for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
+    if (mixer_to_use_->output_type[i] != NONE) {
+      // Matrix multiply to mix outputs
+      outputs_[i] = (commands.F * mixer_to_use_->F[i] + commands.x * mixer_to_use_->x[i]
+                     + commands.y * mixer_to_use_->y[i] + commands.z * mixer_to_use_->z[i]);
+
+    }
+  }
+}
+
+void Mixer::mix_output()
+{
+  if (mixer_to_use_ == nullptr) { return; }
+
+  // Mix according to airframe type
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
+    mix_fixedwing();
+  } else {
+    mix_multirotor();
   }
 
   // Insert AUX Commands, and assemble combined_output_types array (Does not override mixer values)
