@@ -106,7 +106,6 @@ private:
   PID yaw_rate_;
 
   float max_thrust_;
-  float max_throttle_;
 
   uint64_t prev_time_us_;
 };

@@ -38,7 +38,6 @@
 
 #include <cstdbool>
 #include <cstdint>
-#include <iostream>
 
 namespace rosflight_firmware
 {
@@ -53,29 +52,27 @@ void Controller::init()
   // Calculate the max thrust to convert from throttle setting to thrust
   calculate_max_thrust();
 
-  max_throttle_ = RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
-
   // Don't saturate the torque values
   float max_torque = INFINITY;
-  float min = -max_torque;
+  float min_torque = -max_torque;
 
   float tau = RF_.params_.get_param_float(PARAM_PID_TAU);
 
   roll_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_P),
              RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_I),
-             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max_torque, min, tau);
+             RF_.params_.get_param_float(PARAM_PID_ROLL_ANGLE_D), max_torque, min_torque, tau);
   roll_rate_.init(RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_P),
                   RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_I),
-                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D), max_torque, min, tau);
+                  RF_.params_.get_param_float(PARAM_PID_ROLL_RATE_D), max_torque, min_torque, tau);
   pitch_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_P),
               RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_I),
-              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max_torque, min, tau);
+              RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max_torque, min_torque, tau);
   pitch_rate_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_P),
                    RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_I),
-                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max_torque, min, tau);
+                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max_torque, min_torque, tau);
   yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P),
                  RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
-                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max_torque, min, tau);
+                 RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max_torque, min_torque, tau);
 }
 
 void Controller::calculate_max_thrust()
@@ -260,7 +257,8 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
   if (command.F.type == THROTTLE && !RF_.params_.get_param_int(PARAM_FIXED_WING)) {
     // Converts the input throttle command to thrust command, and scales the saturation limit by
     // RC_MAX_THROTTLE to maintain controllability.
-    out.F = command.F.value * max_thrust_ * max_throttle_;
+    float max_throttle = RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+    out.F = command.F.value * max_thrust_ * max_throttle;
   } else {
     // If it is not a throttle setting, or if the vehicle type is FIXED_WING, then pass directly 
     // to the mixer.
@@ -298,7 +296,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
   if (dt > 0.0001f) {
     // calculate D term (use dirty derivative if we don't have access to a measurement of the
     // derivative) The dirty derivative is a sort of low-pass filtered version of the derivative.
-    //// TODO: (Include reference to Dr. Beard's notes here)
+    // See Eq. 10.4 of Introduction to Feedback Control by Beard, McLain, Peterson, Killpack
     differentiator_ = (2.0f * tau_ - dt) / (2.0f * tau_ + dt) * differentiator_
       + 2.0f / (2.0f * tau_ + dt) * (x - prev_x_);
     xdot = differentiator_;
