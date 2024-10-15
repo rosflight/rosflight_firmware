@@ -113,7 +113,7 @@ void CommandManager::interpret_rc(void)
     rc_command_.x.type = PASSTHROUGH;
     rc_command_.y.type = PASSTHROUGH;
     rc_command_.z.type = PASSTHROUGH;
-    rc_command_.F.type = THROTTLE;
+    rc_command_.F.type = PASSTHROUGH;
   } else {
     // roll and pitch
     control_type_t roll_pitch_type;

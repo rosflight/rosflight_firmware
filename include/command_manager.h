@@ -47,7 +47,7 @@ typedef enum
 {
   RATE,        // Channel is is in rate mode (mrad/s)
   ANGLE,       // Channel command is in angle mode (mrad)
-  THROTTLE,    // Channel is direcly controlling throttle max/1000
+  THROTTLE,    // Channel is controlling throttle setting, which will be converted to force
   PASSTHROUGH, // Channel directly passes PWM input to the mixer
 } control_type_t;
 
@@ -108,7 +108,7 @@ private:
                                            {true, PASSTHROUGH, 0.0},
                                            {true, PASSTHROUGH, 0.0},
                                            {true, PASSTHROUGH, 0.0},
-                                           {true, THROTTLE, 0.0}};
+                                           {true, PASSTHROUGH, 0.0}};
   // clang-format on
 
   typedef enum

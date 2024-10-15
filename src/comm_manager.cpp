@@ -252,7 +252,7 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
       new_offboard_command.x.type = PASSTHROUGH;
       new_offboard_command.y.type = PASSTHROUGH;
       new_offboard_command.z.type = PASSTHROUGH;
-      new_offboard_command.F.type = THROTTLE;
+      new_offboard_command.F.type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
       new_offboard_command.x.type = RATE;
@@ -353,7 +353,8 @@ void CommManager::send_status(void)
   if (!initialized_) { return; }
 
   uint8_t control_mode = 0;
-  if (RF_.params_.get_param_int(PARAM_FIXED_WING) || RF_.command_manager_.combined_control().x.type == PASSTHROUGH) {
+  if (RF_.params_.get_param_int(PARAM_FIXED_WING)
+      || RF_.command_manager_.combined_control().x.type == PASSTHROUGH) {
     control_mode = MODE_PASS_THROUGH;
   } else if (RF_.command_manager_.combined_control().x.type == ANGLE) {
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
