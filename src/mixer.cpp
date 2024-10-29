@@ -34,6 +34,7 @@
 #include "rosflight.h"
 
 #include <cstdint>
+#include <iostream>
 
 namespace rosflight_firmware
 {
@@ -58,26 +59,6 @@ void Mixer::param_change_callback(uint16_t param_id)
     case PARAM_PROP_CQ:
     case PARAM_NUM_MOTORS:
     case PARAM_VOLT_MAX:
-    case PARAM_MOTOR_0_POS:
-    case PARAM_MOTOR_1_POS:
-    case PARAM_MOTOR_2_POS:
-    case PARAM_MOTOR_3_POS:
-    case PARAM_MOTOR_4_POS:
-    case PARAM_MOTOR_5_POS:
-    case PARAM_MOTOR_6_POS:
-    case PARAM_MOTOR_7_POS:
-    case PARAM_MOTOR_8_POS:
-    case PARAM_MOTOR_9_POS:
-    case PARAM_MOTOR_0_PSI:
-    case PARAM_MOTOR_1_PSI:
-    case PARAM_MOTOR_2_PSI:
-    case PARAM_MOTOR_3_PSI:
-    case PARAM_MOTOR_4_PSI:
-    case PARAM_MOTOR_5_PSI:
-    case PARAM_MOTOR_6_PSI:
-    case PARAM_MOTOR_7_PSI:
-    case PARAM_MOTOR_8_PSI:
-    case PARAM_MOTOR_9_PSI:
       init_mixing();
       break;
     case PARAM_MOTOR_PWM_SEND_RATE:
@@ -92,9 +73,6 @@ void Mixer::param_change_callback(uint16_t param_id)
 
 void Mixer::init_mixing()
 {
-  // Update parameters
-  update_parameters();
-
   // clear the invalid mixer error
   RF_.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
 
@@ -123,6 +101,8 @@ void Mixer::init_mixing()
                mixer_to_use_ != &fixedwing_inverted_vtail_mixing) {
       // Don't invert the fixedwing mixers
 
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
+                            "Inverting selected mixing matrix...");
       // TODO: Test to see if selecting passthrough mixing will break the inversion
       // TODO: Is there any reason to use passthrough mixing?
       // Otherwise, invert the selected "canned" matrix
@@ -154,28 +134,6 @@ void Mixer::update_parameters()
   C_Q_ = RF_.params_.get_param_float(PARAM_PROP_CQ);
   num_motors_ = RF_.params_.get_param_int(PARAM_NUM_MOTORS);
   V_max_ = RF_.params_.get_param_float(PARAM_VOLT_MAX);
-
-  l_[0] = RF_.params_.get_param_float(PARAM_MOTOR_0_POS);
-  l_[1] = RF_.params_.get_param_float(PARAM_MOTOR_1_POS);
-  l_[2] = RF_.params_.get_param_float(PARAM_MOTOR_2_POS);
-  l_[3] = RF_.params_.get_param_float(PARAM_MOTOR_3_POS);
-  l_[4] = RF_.params_.get_param_float(PARAM_MOTOR_4_POS);
-  l_[5] = RF_.params_.get_param_float(PARAM_MOTOR_5_POS);
-  l_[6] = RF_.params_.get_param_float(PARAM_MOTOR_6_POS);
-  l_[7] = RF_.params_.get_param_float(PARAM_MOTOR_7_POS);
-  l_[8] = RF_.params_.get_param_float(PARAM_MOTOR_8_POS);
-  l_[9] = RF_.params_.get_param_float(PARAM_MOTOR_9_POS);
-
-  psi_[0] = RF_.params_.get_param_float(PARAM_MOTOR_0_PSI);
-  psi_[1] = RF_.params_.get_param_float(PARAM_MOTOR_1_PSI);
-  psi_[2] = RF_.params_.get_param_float(PARAM_MOTOR_2_PSI);
-  psi_[3] = RF_.params_.get_param_float(PARAM_MOTOR_3_PSI);
-  psi_[4] = RF_.params_.get_param_float(PARAM_MOTOR_4_PSI);
-  psi_[5] = RF_.params_.get_param_float(PARAM_MOTOR_5_PSI);
-  psi_[6] = RF_.params_.get_param_float(PARAM_MOTOR_6_PSI);
-  psi_[7] = RF_.params_.get_param_float(PARAM_MOTOR_7_PSI);
-  psi_[8] = RF_.params_.get_param_float(PARAM_MOTOR_8_PSI);
-  psi_[9] = RF_.params_.get_param_float(PARAM_MOTOR_9_PSI);
 }
 
 Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
