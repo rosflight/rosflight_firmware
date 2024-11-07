@@ -208,9 +208,9 @@ private:
     { 1.0000f, -1.0000f,  1.0000f, -1.0000f,  1.0000f, -1.0000f,  1.0000f, -1.0000f, 0, 0}}; // Q_z Mix
 
   const mixer_t fixedwing_mixing = {
-    {   S,    S,    S, NONE,    M, NONE, NONE, NONE, NONE, NONE},  // output type
+    {   S,    S,    S,    M, NONE, NONE, NONE, NONE, NONE, NONE},  // output type
     { 50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
-    {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
+    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix 
@@ -218,14 +218,14 @@ private:
     {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix 
 
   const mixer_t fixedwing_inverted_vtail_mixing = {
-    {   S, NONE, NONE,     S,    S,    M, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
-    {  50,   50,   50,    50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
-    {0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F_y Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},   // F_z Mix
-    {1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix 
-    {0.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_y Mix 
-    {0.0f, 0.0f, 0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix 
+    {   S,     S,    S,    M, NONE, NONE, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
+    {  50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
+    {0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
+    {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
+    {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
+    {1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix 
+    {0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_y Mix 
+    {0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix 
 
   const mixer_t custom_mixing = {
     {NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE},  // output type

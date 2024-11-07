@@ -90,14 +90,11 @@ void Mixer::init_mixing()
     if (mixer_to_use_ == &custom_mixing) {
       // If specified, compute the custom mixing matrix per the motor and propeller parameters
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                            "Calculating custom mixer values...");
+                            "Loading saved custom mixer values...");
+
       load_primary_mixer_values();
-      
-      // TODO: Add these as parameters in the firmware, otherwise we can't control S vs M for custom mixers
-      // Add the header values (PWM rate and output type) to mixer
-      add_header_to_mixer(&primary_mixer_);
       mixer_to_use_ = &primary_mixer_;
-    } else if (mixer_to_use_ != &fixedwing_mixing ||
+    } else if (mixer_to_use_ != &fixedwing_mixing &&
                mixer_to_use_ != &fixedwing_inverted_vtail_mixing) {
       // Don't invert the fixedwing mixers
 
@@ -106,7 +103,6 @@ void Mixer::init_mixing()
 
       // Otherwise, invert the selected "canned" matrix
       primary_mixer_ = invert_mixer(mixer_to_use_);
-
       mixer_to_use_ = &primary_mixer_;
     }
 
@@ -118,6 +114,7 @@ void Mixer::init_mixing()
     for (auto i : mixer_to_use_->default_pwm_rate) {
       std::cout << i << " ";
     }
+    std::cout << std::endl;
     for (auto i : mixer_to_use_->Fx) {
       std::cout << i << " ";
     }
@@ -204,47 +201,45 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   mixer_t inverted_mixer;
 
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
+    inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
     inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
-
-    if (i < RF_.params_.get_param_int(PARAM_NUM_MOTORS)) {
-      inverted_mixer.output_type[i] = M;
-      inverted_mixer.Fx[i] = mixer_matrix_pinv(i, 0);
-      inverted_mixer.Fy[i] = mixer_matrix_pinv(i, 1);
-      inverted_mixer.Fz[i] = mixer_matrix_pinv(i, 2);
-      inverted_mixer.Qx[i] = mixer_matrix_pinv(i, 3);
-      inverted_mixer.Qy[i] = mixer_matrix_pinv(i, 4);
-      inverted_mixer.Qz[i] = mixer_matrix_pinv(i, 5);
-    } else {
-      // Set the rest of the ouput types to NONE
-      inverted_mixer.output_type[i] = NONE;
-      inverted_mixer.Fx[i] = 0.0;
-      inverted_mixer.Fy[i] = 0.0;
-      inverted_mixer.Fz[i] = 0.0;
-      inverted_mixer.Qx[i] = 0.0;
-      inverted_mixer.Qy[i] = 0.0;
-      inverted_mixer.Qz[i] = 0.0;
-    }
+    inverted_mixer.Fx[i] = mixer_matrix_pinv(i, 0);
+    inverted_mixer.Fy[i] = mixer_matrix_pinv(i, 1);
+    inverted_mixer.Fz[i] = mixer_matrix_pinv(i, 2);
+    inverted_mixer.Qx[i] = mixer_matrix_pinv(i, 3);
+    inverted_mixer.Qy[i] = mixer_matrix_pinv(i, 4);
+    inverted_mixer.Qz[i] = mixer_matrix_pinv(i, 5);
   }
 
   return inverted_mixer;
 }
 
-void Mixer::add_header_to_mixer(mixer_t* mixer)
-{
-  // Fill in the default PWM rates to use in the header of the mixer
-  for (int i = 0; i < NUM_MIXER_OUTPUTS; i++){
-    if (i < RF_.params_.get_param_int(PARAM_NUM_MOTORS) || 
-        (RF_.params_.get_param_int(PARAM_NUM_MOTORS) > 4 && i < 8)) {
-      // This makes sure the PWM groups are correct for the hardware
-      mixer->default_pwm_rate[i] = 490;
-    } else {
-      mixer->default_pwm_rate[i] = 50;
-    }
-  }
-}
-
 void Mixer::load_primary_mixer_values()
 {
+  // Load the mixer header values
+  // TODO: Is there a better way to do this?
+  primary_mixer_.output_type[0] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_0);
+  primary_mixer_.output_type[1] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_1);
+  primary_mixer_.output_type[2] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_2);
+  primary_mixer_.output_type[3] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_3);
+  primary_mixer_.output_type[4] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_4);
+  primary_mixer_.output_type[5] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_5);
+  primary_mixer_.output_type[6] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_6);
+  primary_mixer_.output_type[7] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7);
+  primary_mixer_.output_type[8] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8);
+  primary_mixer_.output_type[9] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9);
+
+  primary_mixer_.default_pwm_rate[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_0);
+  primary_mixer_.default_pwm_rate[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_1);
+  primary_mixer_.default_pwm_rate[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_2);
+  primary_mixer_.default_pwm_rate[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_3);
+  primary_mixer_.default_pwm_rate[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_4);
+  primary_mixer_.default_pwm_rate[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_5);
+  primary_mixer_.default_pwm_rate[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_6);
+  primary_mixer_.default_pwm_rate[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_7);
+  primary_mixer_.default_pwm_rate[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_8);
+  primary_mixer_.default_pwm_rate[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_9);
+
   // Load the mixer values from the firmware parameters
   primary_mixer_.Fx[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_1);
   primary_mixer_.Fy[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_1);

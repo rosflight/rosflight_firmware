@@ -119,6 +119,28 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PROP_CQ, "PROP_CQ", 0.0045f); // Torque coefficient of the propeller | 0 | 100.0
   init_param_float(PARAM_VOLT_MAX, "VOLT_MAX", 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
 
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_0, "PRIM_MIXER_OUT_0", 0); // Output type of mixer output 0. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_1, "PRIM_MIXER_OUT_1", 0); // Output type of mixer output 1. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_2, "PRIM_MIXER_OUT_2", 0); // Output type of mixer output 2. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_3, "PRIM_MIXER_OUT_3", 0); // Output type of mixer output 3. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_4, "PRIM_MIXER_OUT_4", 0); // Output type of mixer output 4. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_5, "PRIM_MIXER_OUT_5", 0); // Output type of mixer output 5. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_6, "PRIM_MIXER_OUT_6", 0); // Output type of mixer output 6. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7, "PRIM_MIXER_OUT_7", 0); // Output type of mixer output 7. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8, "PRIM_MIXER_OUT_8", 0); // Output type of mixer output 8. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9, "PRIM_MIXER_OUT_9", 0); // Output type of mixer output 9. | 0 | 1 | 2 | 3
+
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_0, "PRIM_MIXER_PWM_0", 0); // PWM frequenct output for mixer output 0
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_1, "PRIM_MIXER_PWM_1", 0); // PWM frequenct output for mixer output 1
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_2, "PRIM_MIXER_PWM_2", 0); // PWM frequenct output for mixer output 2
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_3, "PRIM_MIXER_PWM_3", 0); // PWM frequenct output for mixer output 3
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_4, "PRIM_MIXER_PWM_4", 0); // PWM frequenct output for mixer output 4
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_5, "PRIM_MIXER_PWM_5", 0); // PWM frequenct output for mixer output 5
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_6, "PRIM_MIXER_PWM_6", 0); // PWM frequenct output for mixer output 6
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_7, "PRIM_MIXER_PWM_7", 0); // PWM frequenct output for mixer output 7
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_8, "PRIM_MIXER_PWM_8", 0); // PWM frequenct output for mixer output 8
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_9, "PRIM_MIXER_PWM_9", 0); // PWM frequenct output for mixer output 9
+
   init_param_float(PARAM_PRIMARY_MIXER_1_1, "PRI_MIXER_1_1", 0.0f); // Value of the custom mixer at element [1,1]
   init_param_float(PARAM_PRIMARY_MIXER_2_1, "PRI_MIXER_2_1", 0.0f); // Value of the custom mixer at element [2,1]
   init_param_float(PARAM_PRIMARY_MIXER_3_1, "PRI_MIXER_3_1", 0.0f); // Value of the custom mixer at element [3,1]
