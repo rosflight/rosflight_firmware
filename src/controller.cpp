@@ -119,17 +119,20 @@ void Controller::run()
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
   bool update_integrators = (RF_.state_manager_.state().armed)
-    && (RF_.command_manager_.combined_control().F.value > 0.1f) && dt_us < 10000;
+    && (RF_.command_manager_.combined_control().Fz.value > 0.1f) && dt_us < 10000;
 
   // Run the PID loops
   Controller::Output pid_output = run_pid_loops(
     dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
-  output_.x = pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
-  output_.y = pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
-  output_.z = pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
-  output_.F = pid_output.F;
+  // TODO: Do the controllers need to input/output Fx and Fy?
+  output_.Qx = pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
+  output_.Qy = pid_output.Qy + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
+  output_.Qz = pid_output.Qz + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
+  output_.Fz = pid_output.Fz;
+  output_.Fx = RF_.command_manager_.combined_control().Fx.value;
+  output_.Fy = RF_.command_manager_.combined_control().Fy.value;
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()
@@ -165,11 +168,11 @@ void Controller::calculate_equilbrium_torque_from_rc()
 
     // the output from the controller is going to be the static offsets
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE,
-                                pid_output.x + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
+                                pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE,
-                                pid_output.y + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
+                                pid_output.Qy + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE,
-                                pid_output.z + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
+                                pid_output.Qz + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
 
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
                           "Equilibrium torques found and applied.");
@@ -227,42 +230,40 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
   float dt = 1e-6 * dt_us;
 
   // ROLL
-  if (command.x.type == RATE) {
-    out.x = roll_rate_.run(dt, state.angular_velocity.x, command.x.value, update_integrators);
-  } else if (command.x.type == ANGLE) {
-    out.x =
-      roll_.run(dt, state.roll, command.x.value, update_integrators, state.angular_velocity.x);
+  if (command.Qx.type == RATE) {
+    out.Qx = roll_rate_.run(dt, state.angular_velocity.x, command.Qx.value, update_integrators);
+  } else if (command.Qx.type == ANGLE) {
+    out.Qx =
+      roll_.run(dt, state.roll, command.Qx.value, update_integrators, state.angular_velocity.x);
   } else {
-    out.x = command.x.value;
+    out.Qx = command.Qx.value;
   }
 
   // PITCH
-  if (command.y.type == RATE) {
-    out.y = pitch_rate_.run(dt, state.angular_velocity.y, command.y.value, update_integrators);
-  } else if (command.y.type == ANGLE) {
-    out.y =
-      pitch_.run(dt, state.pitch, command.y.value, update_integrators, state.angular_velocity.y);
+  if (command.Qy.type == RATE) {
+    out.Qy = pitch_rate_.run(dt, state.angular_velocity.y, command.Qy.value, update_integrators);
+  } else if (command.Qy.type == ANGLE) {
+    out.Qy =
+      pitch_.run(dt, state.pitch, command.Qy.value, update_integrators, state.angular_velocity.y);
   } else {
-    out.y = command.y.value;
+    out.Qy = command.Qy.value;
   }
 
   // YAW
-  if (command.z.type == RATE) {
-    out.z = yaw_rate_.run(dt, state.angular_velocity.z, command.z.value, update_integrators);
+  if (command.Qz.type == RATE) {
+    out.Qz = yaw_rate_.run(dt, state.angular_velocity.z, command.Qz.value, update_integrators);
   } else {
-    out.z = command.z.value;
+    out.Qz = command.Qz.value;
   }
 
   // THROTTLE
-  if (command.F.type == THROTTLE && !RF_.params_.get_param_int(PARAM_FIXED_WING)) {
-    // Converts the input throttle command to thrust command, and scales the saturation limit by
-    // RC_MAX_THROTTLE to maintain controllability.
-    float max_throttle = RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
-    out.F = command.F.value * max_thrust_ * max_throttle;
+  if (command.Fz.type == THROTTLE) {
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
+    // during aggressive maneuvers.
+    out.Fz = command.Fz.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
   } else {
-    // If it is not a throttle setting, or if the vehicle type is FIXED_WING, then pass directly 
-    // to the mixer.
-    out.F = command.F.value;
+    // If it is not a throttle setting then pass directly to the mixer.
+    out.Fz = command.Fz.value;
   }
 
   return out;
@@ -333,7 +334,6 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator,
   float u = p_term - d_term + i_term;
 
   // Integrator anti-windup
-  //// TODO: Include reference to Dr. Beard's notes here
   float u_sat = (u > max_) ? max_ : (u < min_) ? min_ : u;
   if (u != u_sat && fabs(i_term) > fabs(u - p_term + d_term) && ki_ > 0.0f) {
     integrator_ = (u_sat - p_term + d_term) / ki_;

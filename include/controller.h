@@ -51,10 +51,12 @@ class Controller : public ParamListenerInterface
 public:
   struct Output
   {
-    float F;
-    float x;
-    float y;
-    float z;
+    float Fx;
+    float Fy;
+    float Fz;
+    float Qx;
+    float Qy;
+    float Qz;
   };
 
   Controller(ROSflight & rf);

@@ -103,15 +103,45 @@ void Mixer::init_mixing()
 
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                             "Inverting selected mixing matrix...");
-      // TODO: Test to see if selecting passthrough mixing will break the inversion
-      // TODO: Is there any reason to use passthrough mixing?
+
       // Otherwise, invert the selected "canned" matrix
       primary_mixer_ = invert_mixer(mixer_to_use_);
-      
-      // Add the header values (PWM rate and output type) to mixer
-      add_header_to_mixer(&primary_mixer_);
+
       mixer_to_use_ = &primary_mixer_;
     }
+
+    std::cout << "Mixer: " << std::endl;
+    for (auto i : mixer_to_use_->output_type) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : mixer_to_use_->default_pwm_rate) {
+      std::cout << i << " ";
+    }
+    for (auto i : mixer_to_use_->Fx) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : mixer_to_use_->Fy) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : mixer_to_use_->Fz) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : mixer_to_use_->Qx) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : mixer_to_use_->Qy) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : mixer_to_use_->Qz) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
   }
 
   init_PWM();
@@ -157,12 +187,14 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
     Eigen::FullPivHouseholderQRPreconditioner | Eigen::ComputeFullU | Eigen::ComputeFullV);
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> Sig;
   Sig.setZero();
-  Sig(0, 0) = 1.0 / svd.singularValues()[0];
-  Sig(1, 1) = 1.0 / svd.singularValues()[1];
-  Sig(2, 2) = 1.0 / svd.singularValues()[2];
-  Sig(3, 3) = 1.0 / svd.singularValues()[3];
-  Sig(4, 4) = 1.0 / svd.singularValues()[4];
-  Sig(5, 5) = 1.0 / svd.singularValues()[5];
+
+  // Avoid dividing by zero in the Sigma matrix
+  if (svd.singularValues()[0] != 0.0) { Sig(0, 0) = 1.0 / svd.singularValues()[0]; }
+  if (svd.singularValues()[1] != 0.0) { Sig(1, 1) = 1.0 / svd.singularValues()[1]; }
+  if (svd.singularValues()[2] != 0.0) { Sig(2, 2) = 1.0 / svd.singularValues()[2]; }
+  if (svd.singularValues()[3] != 0.0) { Sig(3, 3) = 1.0 / svd.singularValues()[3]; }
+  if (svd.singularValues()[4] != 0.0) { Sig(4, 4) = 1.0 / svd.singularValues()[4]; }
+  if (svd.singularValues()[5] != 0.0) { Sig(5, 5) = 1.0 / svd.singularValues()[5]; }
 
   // Pseudoinverse of the mixing matrix
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> mixer_matrix_pinv =
@@ -172,6 +204,8 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   mixer_t inverted_mixer;
 
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
+    inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
+
     if (i < RF_.params_.get_param_int(PARAM_NUM_MOTORS)) {
       inverted_mixer.output_type[i] = M;
       inverted_mixer.Fx[i] = mixer_matrix_pinv(i, 0);
@@ -288,7 +322,7 @@ void Mixer::init_PWM()
   if (mixer_to_use_ != nullptr) {
     RF_.board_.pwm_init_multi(mixer_to_use_->default_pwm_rate, NUM_MIXER_OUTPUTS);
   } else {
-    RF_.board_.pwm_init_multi(passthrough_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
+    RF_.board_.pwm_init_multi(esc_calibration_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
   }
 }
 
@@ -329,15 +363,22 @@ void Mixer::set_new_aux_command(aux_command_t new_aux_command)
   }
 }
 
-void Mixer::mix_multirotor()
+float Mixer::mix_multirotor_without_motor_parameters()
 {
   Controller::Output commands = RF_.controller_.output();
 
-  if (commands.F < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
-               * RF_.controller_.max_thrust()) {
+//  std::cout << "Commands: ";
+//  std::cout << commands.Fx << " ";
+//  std::cout << commands.Fy << " Fz: ";
+//  std::cout << commands.Fz << " ";
+//  std::cout << commands.Qx << " ";
+//  std::cout << commands.Qy << " ";
+//  std::cout << commands.Qz << " " << std::endl;
+
+  if (commands.Fz < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
     // arming/disarming
-    commands.z = 0.0;
+    commands.Qz = 0.0;
   }
 
   // Mix the inputs
@@ -346,10 +387,44 @@ void Mixer::mix_multirotor()
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if (mixer_to_use_->output_type[i] != NONE) {
       // Matrix multiply to mix outputs
-      // TODO: Update the commands vector to include fx and fy 
-      float omega_squared =
-        (commands.F * mixer_to_use_->Fz[i] + commands.x * mixer_to_use_->Qx[i]
-         + commands.y * mixer_to_use_->Qy[i] + commands.z * mixer_to_use_->Qz[i]);
+      outputs_[i] = commands.Fx * mixer_to_use_->Fx[i] +
+                    commands.Fy * mixer_to_use_->Fy[i] +
+                    commands.Fz * mixer_to_use_->Fz[i] + 
+                    commands.Qx * mixer_to_use_->Qx[i] + 
+                    commands.Qy * mixer_to_use_->Qy[i] + 
+                    commands.Qz * mixer_to_use_->Qz[i];
+
+      // Save off the largest control output if it is greater than 1.0 for future scaling
+      if (outputs_[i] > max_output) { max_output = outputs_[i]; }
+    }
+  }
+
+  return max_output;
+}
+
+float Mixer::mix_multirotor_with_motor_parameters()
+{
+  Controller::Output commands = RF_.controller_.output();
+
+  if (commands.Fz < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
+               * RF_.controller_.max_thrust()) {
+    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
+    // arming/disarming
+    commands.Qz = 0.0;
+  }
+
+  // Mix the inputs
+  float max_output = 1.0;
+
+  for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
+    if (mixer_to_use_->output_type[i] != NONE) {
+      // Matrix multiply to mix outputs
+      float omega_squared = commands.Fx * mixer_to_use_->Fx[i] +
+                            commands.Fy * mixer_to_use_->Fy[i] +
+                            commands.Fz * mixer_to_use_->Fz[i] +
+                            commands.Qx * mixer_to_use_->Qx[i] +
+                            commands.Qy * mixer_to_use_->Qy[i] +
+                            commands.Qz * mixer_to_use_->Qz[i];
 
       // Ensure that omega_squared is non-negative
       if (omega_squared < 0.0) { omega_squared = 0.0; }
@@ -368,6 +443,25 @@ void Mixer::mix_multirotor()
     }
   }
 
+  return max_output;
+}
+
+void Mixer::mix_multirotor()
+{
+  // Mix the outputs based on if a custom mixer (i.e. with motor parameters) is selected.
+  float max_output;
+  if (mixer_to_use_ == &custom_mixing) {
+    max_output = mix_multirotor_with_motor_parameters();
+  } else {
+    max_output = mix_multirotor_without_motor_parameters();
+  }
+
+//  std::cout << "Outputs (pre scale): ";
+//  for (auto i : outputs_) {
+//    std::cout << i << " ";
+//  }
+//  std::cout << std::endl;
+
   // There is no relative scaling on the above equations. In other words, if the input F command is too
   // high, then it will "drown out" all other desired outputs. Therefore, we saturate motor outputs to 
   // maintain controllability even during aggressive maneuvers.
@@ -380,6 +474,12 @@ void Mixer::mix_multirotor()
     if (mixer_to_use_->output_type[i] == M) { outputs_[i] *= scale_factor; }
   }
 
+ // std::cout << "Outputs (post scale): ";
+ // for (auto i : outputs_) {
+ //   std::cout << i << " ";
+ // }
+ // std::cout << std::endl;
+
 }
 
 void Mixer::mix_fixedwing()
@@ -388,18 +488,19 @@ void Mixer::mix_fixedwing()
 
   // Reverse fixed-wing channels just before mixing if we need to
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
-    commands.x *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    commands.y *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    commands.z *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+    commands.Qx *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+    commands.Qy *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+    commands.Qz *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
   }
 
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if (mixer_to_use_->output_type[i] != NONE) {
       // Matrix multiply to mix outputs
-      outputs_[i] = (commands.F * mixer_to_use_->Fz[i] + commands.x * mixer_to_use_->Qx[i]
-                     + commands.y * mixer_to_use_->Qy[i] + commands.z * mixer_to_use_->Qz[i]);
-
+      outputs_[i] = commands.Fx * mixer_to_use_->Fx[i] +
+                    commands.Qx * mixer_to_use_->Qx[i] +
+                    commands.Qy * mixer_to_use_->Qy[i] +
+                    commands.Qz * mixer_to_use_->Qz[i];
     }
   }
 }
