@@ -43,6 +43,11 @@ Mixer::Mixer(ROSflight & _rf)
 {
   mixer_to_use_ = nullptr;
   use_motor_parameters_ = false;
+
+  for (int8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {
+    aux_command_.channel[i].type = NONE;
+    aux_command_.channel[i].value = 0.0f;
+  }
 }
 
 void Mixer::init() { init_mixing(); }
@@ -522,11 +527,9 @@ float Mixer::mix_multirotor_with_motor_parameters()
   // Mix the inputs
   float max_output = 1.0;
 
-  // TODO: Skip this if not armed. Otherwise this may spin up because of the R*io.
-
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if (mixer_to_use_->output_type[i] != NONE) {
-      // Matrix multiply to mix outputs
+    if (mixer_to_use_->output_type[i] == M) {
+      // Matrix multiply to mix outputs for Motor type
       float omega_squared = commands.Fx * mixer_to_use_->Fx[i] +
                             commands.Fy * mixer_to_use_->Fy[i] +
                             commands.Fz * mixer_to_use_->Fz[i] +
@@ -551,9 +554,18 @@ float Mixer::mix_multirotor_with_motor_parameters()
       // Convert desired V_in setting to a throttle setting
       outputs_[i] = V_in / V_max_;
 
-      // Save off the largest control output if it is greater than 1.0 for future scaling
-      if (outputs_[i] > max_output) { max_output = outputs_[i]; }
+    } else if (mixer_to_use_->output_type[i] == S) {
+      // Matrix multiply to mix outputs for Servo type
+      outputs_[i] = commands.Fx * mixer_to_use_->Fx[i] +
+                    commands.Fy * mixer_to_use_->Fy[i] +
+                    commands.Fz * mixer_to_use_->Fz[i] +
+                    commands.Qx * mixer_to_use_->Qx[i] +
+                    commands.Qy * mixer_to_use_->Qy[i] +
+                    commands.Qz * mixer_to_use_->Qz[i];
     }
+
+    // Save off the largest control output if it is greater than 1.0 for future scaling
+    if (outputs_[i] > max_output) { max_output = outputs_[i]; }
   }
 
   return max_output;
@@ -586,13 +598,6 @@ void Mixer::mix_multirotor()
     // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
     if (mixer_to_use_->output_type[i] == M) { outputs_[i] *= scale_factor; }
   }
-
- std::cout << "Outputs (post scale): ";
- for (auto i : outputs_) {
-   std::cout << i << " ";
- }
- std::cout << std::endl;
-
 }
 
 void Mixer::mix_fixedwing()
@@ -648,6 +653,13 @@ void Mixer::mix_output()
     combined_output_type_[i] = aux_command_.channel[i].type;
   }
 
+  // std::cout << "Outputs (post scale): ";
+  // for (auto i : outputs_) {
+  //   std::cout << i << " ";
+  // }
+  // std::cout << std::endl;
+
+
   // Write to outputs
   for (uint8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {
     float value = outputs_[i];
@@ -673,7 +685,6 @@ void Mixer::mix_output()
       }
       raw_outputs_[i] = value;
     }
-    // TODO: Why are the outputs not zero for the non-motor channels?
   }
   RF_.board_.pwm_write_multi(raw_outputs_, NUM_TOTAL_OUTPUTS);
 }
