@@ -126,7 +126,7 @@ void Controller::run()
     dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
-  // TODO: Do the controllers need to input/output Fx and Fy?
+  // Note that the controller does not alter Fx and Fy
   output_.Qx = pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
   output_.Qy = pid_output.Qy + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
   output_.Qz = pid_output.Qz + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
@@ -137,6 +137,7 @@ void Controller::run()
 
 void Controller::calculate_equilbrium_torque_from_rc()
 {
+  // TODO: Verify that this is working!
   // Make sure we are disarmed
   if (!(RF_.state_manager_.state().armed)) {
     // Tell the user that we are doing a equilibrium torque calibration
@@ -260,7 +261,13 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
   if (command.Fz.type == THROTTLE) {
     // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
     // during aggressive maneuvers.
-    out.Fz = command.Fz.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+    // Also note the negative sign. Since the mixer assumes the inputs are in the NED
+    // frame, a throttle command corresponds to a thrust command in the negative direction.
+    out.Fz = -command.Fz.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+
+    if (RF_.mixer_.use_motor_parameters()) {
+      out.Fz *= max_thrust_;
+    }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
     out.Fz = command.Fz.value;
