@@ -33,6 +33,7 @@
 #define ROSFLIGHT_FIRMWARE_MIXER_H
 
 #include "interface/param_listener.h"
+#include "controller.h"
 
 #include <Eigen/Dense>
 #include <Eigen/SVD>
@@ -112,8 +113,8 @@ private:
   void add_header_to_mixer(mixer_t* mixer);
   void load_primary_mixer_values();
   mixer_t invert_mixer(const mixer_t* mixer_to_invert);
-  float mix_multirotor_with_motor_parameters();
-  float mix_multirotor_without_motor_parameters();
+  float mix_multirotor_with_motor_parameters(Controller::Output commands);
+  float mix_multirotor_without_motor_parameters(Controller::Output commands);
 
   // clang-format off
 
@@ -208,9 +209,9 @@ private:
     { 1.0000f, -1.0000f,  1.0000f, -1.0000f,  1.0000f, -1.0000f,  1.0000f, -1.0000f, 0, 0}}; // Q_z Mix
 
   const mixer_t fixedwing_mixing = {
-    {   S,    S,    S,    M, NONE, NONE, NONE, NONE, NONE, NONE},  // output type
+    {   S,    S,    S, NONE,    M, NONE, NONE, NONE, NONE, NONE},  // output type
     { 50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
-    {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
+    {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix 
@@ -218,9 +219,9 @@ private:
     {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix 
 
   const mixer_t fixedwing_inverted_vtail_mixing = {
-    {   S,     S,    S,    M, NONE, NONE, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
+    {   S,     S,    S, NONE,    M, NONE, NONE, NONE, NONE, NONE},  // Ailerons, LRuddervator, RRuddervator, Motor
     {  50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
-    {0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
+    {0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
     {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
     {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
     {1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix 

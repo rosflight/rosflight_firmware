@@ -466,24 +466,8 @@ void Mixer::set_new_aux_command(aux_command_t new_aux_command)
   }
 }
 
-float Mixer::mix_multirotor_without_motor_parameters()
+float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands)
 {
-  Controller::Output commands = RF_.controller_.output();
-
-//  std::cout << "Commands: ";
-//  std::cout << commands.Fx << " ";
-//  std::cout << commands.Fy << " Fz: ";
-//  std::cout << commands.Fz << " ";
-//  std::cout << commands.Qx << " ";
-//  std::cout << commands.Qy << " ";
-//  std::cout << commands.Qz << " " << std::endl;
-
-  if (commands.Fz < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
-    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
-    // arming/disarming
-    commands.Qz = 0.0;
-  }
-
   // Mix the inputs
   float max_output = 1.0;
 
@@ -505,25 +489,8 @@ float Mixer::mix_multirotor_without_motor_parameters()
   return max_output;
 }
 
-float Mixer::mix_multirotor_with_motor_parameters()
+float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
 {
-  Controller::Output commands = RF_.controller_.output();
-
-  // std::cout << "Commands: ";
-  // std::cout << commands.Fx << " ";
-  // std::cout << commands.Fy << " Fz: ";
-  // std::cout << commands.Fz << " ";
-  // std::cout << commands.Qx << " ";
-  // std::cout << commands.Qy << " ";
-  // std::cout << commands.Qz << " " << std::endl;
-
-  if (abs(commands.Fz) < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
-               * RF_.controller_.max_thrust()) {
-    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
-    // arming/disarming
-    commands.Qz = 0.0;
-  }
-
   // Mix the inputs
   float max_output = 1.0;
 
@@ -573,12 +540,34 @@ float Mixer::mix_multirotor_with_motor_parameters()
 
 void Mixer::mix_multirotor()
 {
+  Controller::Output commands = RF_.controller_.output();
+
+  // Test the throttle command based on the axis corresponding to the RC F channel
+  float throttle_command = 0.0;
+  switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
+    case X_AXIS:
+      throttle_command = commands.Fx;
+      break;
+    case Y_AXIS:
+      throttle_command = commands.Fy;
+      break;
+    default:
+      throttle_command = commands.Fz;
+      break;
+  }
+  
+  if (throttle_command < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
+    // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
+    // arming/disarming
+    commands.Qz = 0.0;
+  }
+
   // Mix the outputs based on if a custom mixer (i.e. with motor parameters) is selected.
   float max_output;
   if (use_motor_parameters_) {
-    max_output = mix_multirotor_with_motor_parameters();
+    max_output = mix_multirotor_with_motor_parameters(commands);
   } else {
-    max_output = mix_multirotor_without_motor_parameters();
+    max_output = mix_multirotor_without_motor_parameters(commands);
   }
 
 //  std::cout << "Outputs (pre scale): ";
@@ -603,6 +592,11 @@ void Mixer::mix_multirotor()
 void Mixer::mix_fixedwing()
 {
   Controller::Output commands = RF_.controller_.output();
+  
+  std::cout << "Command output/Mixer input: ";
+  std::cout << commands.Fx << " " << commands.Fy << " ";
+  std::cout << commands.Fz << " " << commands.Qx << " ";
+  std::cout << commands.Qy << " " << commands.Qz << " ";
 
   // Reverse fixed-wing channels just before mixing if we need to
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
@@ -653,11 +647,11 @@ void Mixer::mix_output()
     combined_output_type_[i] = aux_command_.channel[i].type;
   }
 
-  // std::cout << "Outputs (post scale): ";
-  // for (auto i : outputs_) {
-  //   std::cout << i << " ";
-  // }
-  // std::cout << std::endl;
+  std::cout << "Outputs (post scale): ";
+  for (auto i : outputs_) {
+    std::cout << i << " ";
+  }
+  std::cout << std::endl;
 
 
   // Write to outputs

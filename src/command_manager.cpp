@@ -91,8 +91,18 @@ void CommandManager::init_failsafe()
     RF_.state_manager_.clear_error(StateManager::ERROR_INVALID_FAILSAFE);
   }
 
-  // TODO: Add parameter to choose which F the RC throttle corresponds to
-  multirotor_failsafe_command_.Fz.value = failsafe_thr_param;
+  // Make sure the failsafe is set to the axis associated with the RC F command
+  switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
+    case X_AXIS:
+      multirotor_failsafe_command_.Fx.value = failsafe_thr_param;
+      break;
+    case Y_AXIS:
+      multirotor_failsafe_command_.Fy.value = failsafe_thr_param;
+      break;
+    default:
+      multirotor_failsafe_command_.Fz.value = failsafe_thr_param;
+      break;
+  }
 
   if (fixedwing) {
     failsafe_command_ = fixedwing_failsafe_command_;
@@ -108,15 +118,33 @@ void CommandManager::interpret_rc(void)
   rc_command_.Qx.value = RF_.rc_.stick(RC::STICK_X);
   rc_command_.Qy.value = RF_.rc_.stick(RC::STICK_Y);
   rc_command_.Qz.value = RF_.rc_.stick(RC::STICK_Z);
-  rc_command_.Fx.value = 0.0;
-  rc_command_.Fy.value = 0.0;
-  rc_command_.Fz.value = RF_.rc_.stick(RC::STICK_F);
+
+  // Load the RC command based on the axis associated with the RC F command
+  switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
+    case X_AXIS:   // RC F = X axis
+      rc_command_.Fx.value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.Fy.value = 0.0;
+      rc_command_.Fz.value = 0.0;
+      break;
+    case Y_AXIS:   // RC F = Y axis
+      rc_command_.Fx.value = 0.0;
+      rc_command_.Fy.value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.Fz.value = 0.0;
+      break;
+    default:   // RC F = Z axis
+      rc_command_.Fx.value = 0.0;
+      rc_command_.Fy.value = 0.0;
+      rc_command_.Fz.value = RF_.rc_.stick(RC::STICK_F);
+      break;
+  }
 
   // determine control mode for each channel and scale command values accordingly
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
     rc_command_.Qx.type = PASSTHROUGH;
     rc_command_.Qy.type = PASSTHROUGH;
     rc_command_.Qz.type = PASSTHROUGH;
+    rc_command_.Fx.type = PASSTHROUGH;
+    rc_command_.Fy.type = PASSTHROUGH;
     rc_command_.Fz.type = PASSTHROUGH;
   } else {
     // roll and pitch
@@ -149,6 +177,8 @@ void CommandManager::interpret_rc(void)
     rc_command_.Qz.value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
 
     // throttle
+    rc_command_.Fx.type = THROTTLE;
+    rc_command_.Fy.type = THROTTLE;
     rc_command_.Fz.type = THROTTLE;
   }
 }
@@ -194,15 +224,29 @@ bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
 bool CommandManager::do_throttle_muxing(void)
 {
   bool override_this_channel = false;
+  MuxChannel selected_channel;
+  // Determine which channel to check based on which axis the RC channel corresponds to
+  switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
+    case X_AXIS: 
+      selected_channel = MUX_FX;
+      break;
+    case Y_AXIS: 
+      selected_channel = MUX_FY;
+      break;
+    default:
+      selected_channel = MUX_FZ;
+      break;
+  }
+
   // Check if the override switch exists and is triggered
   if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE)
       && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE)) {
     override_this_channel = true;
   } else { // Otherwise check if the offboard throttle channel is active, if it isn't, have RC override
-    if (muxes[MUX_FZ].onboard->active) {
+    if (muxes[selected_channel].onboard->active) {
       // Check if the parameter flag is set to have us always take the smaller throttle
       if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)) {
-        override_this_channel = (muxes[MUX_FZ].rc->value < muxes[MUX_FZ].onboard->value);
+        override_this_channel = (muxes[selected_channel].rc->value < muxes[selected_channel].onboard->value);
       } else {
         override_this_channel = false;
       }
@@ -212,7 +256,7 @@ bool CommandManager::do_throttle_muxing(void)
   }
 
   // Set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[MUX_FZ].combined = override_this_channel ? *muxes[MUX_FZ].rc : *muxes[MUX_FZ].onboard;
+  *muxes[selected_channel].combined = override_this_channel ? *muxes[selected_channel].rc : *muxes[selected_channel].onboard;
   return override_this_channel;
 }
 

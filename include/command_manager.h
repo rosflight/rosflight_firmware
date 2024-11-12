@@ -58,6 +58,13 @@ typedef struct
   float value;         // The value of the channel
 } control_channel_t;
 
+typedef enum
+{
+  X_AXIS,
+  Y_AXIS,
+  Z_AXIS,
+} rc_f_axis_t;
+
 typedef struct
 {
   uint32_t stamp_ms;

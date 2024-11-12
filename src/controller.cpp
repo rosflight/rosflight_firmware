@@ -118,6 +118,7 @@ void Controller::run()
 
   // Check if integrators should be updated
   //! @todo better way to figure out if throttle is high
+  // TODO: fix this... Needs to be checked based on the throttle channel (not necessarily Fz)
   bool update_integrators = (RF_.state_manager_.state().armed)
     && (RF_.command_manager_.combined_control().Fz.value > 0.1f) && dt_us < 10000;
 
@@ -126,13 +127,13 @@ void Controller::run()
     dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
-  // Note that the controller does not alter Fx and Fy
   output_.Qx = pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
   output_.Qy = pid_output.Qy + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
   output_.Qz = pid_output.Qz + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
+
+  output_.Fx = pid_output.Fx;
+  output_.Fy = pid_output.Fy;
   output_.Fz = pid_output.Fz;
-  output_.Fx = RF_.command_manager_.combined_control().Fx.value;
-  output_.Fy = RF_.command_manager_.combined_control().Fy.value;
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()
@@ -257,12 +258,41 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
     out.Qz = command.Qz.value;
   }
 
-  // THROTTLE
+  // Fx
+  if (command.Fx.type == THROTTLE) {
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
+    // during aggressive maneuvers.
+    out.Fx = command.Fx.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+
+    if (RF_.mixer_.use_motor_parameters()) {
+      out.Fx *= max_thrust_;
+    }
+  } else {
+    // If it is not a throttle setting then pass directly to the mixer.
+    out.Fx = command.Fx.value;
+  }
+
+  // Fy
+  if (command.Fy.type == THROTTLE) {
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
+    // during aggressive maneuvers.
+    out.Fy = command.Fy.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+
+    if (RF_.mixer_.use_motor_parameters()) {
+      out.Fy *= max_thrust_;
+    }
+  } else {
+    // If it is not a throttle setting then pass directly to the mixer.
+    out.Fy = command.Fy.value;
+  }
+
+  // Fz
   if (command.Fz.type == THROTTLE) {
     // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
     // during aggressive maneuvers.
     // Also note the negative sign. Since the mixer assumes the inputs are in the NED
     // frame, a throttle command corresponds to a thrust command in the negative direction.
+    // Note that this also assumes that a high throttle means fly "up" (negative down)
     out.Fz = -command.Fz.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
     if (RF_.mixer_.use_motor_parameters()) {
