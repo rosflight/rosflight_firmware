@@ -264,7 +264,7 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
     // during aggressive maneuvers.
     out.Fx = command.Fx.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
-    if (RF_.mixer_.use_motor_parameters()) {
+    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
       out.Fx *= max_thrust_;
     }
   } else {
@@ -278,7 +278,7 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
     // during aggressive maneuvers.
     out.Fy = command.Fy.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
-    if (RF_.mixer_.use_motor_parameters()) {
+    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
       out.Fy *= max_thrust_;
     }
   } else {
@@ -295,7 +295,7 @@ Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::St
     // Note that this also assumes that a high throttle means fly "up" (negative down)
     out.Fz = -command.Fz.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
-    if (RF_.mixer_.use_motor_parameters()) {
+    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
       out.Fz *= max_thrust_;
     }
   } else {

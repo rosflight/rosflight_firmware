@@ -260,7 +260,11 @@ bool CommandManager::do_throttle_muxing(void)
   return override_this_channel;
 }
 
-bool CommandManager::rc_override_active() { return rc_override_; }
+bool CommandManager::rc_override_active() { return rc_throttle_override_ || rc_attitude_override_; }
+
+bool CommandManager::rc_throttle_override_active() { return rc_throttle_override_; }
+
+bool CommandManager::rc_attitude_override_active() { return rc_attitude_override_; }
 
 bool CommandManager::offboard_control_active()
 {
@@ -290,7 +294,7 @@ void CommandManager::override_combined_command_with_rc()
 
 bool CommandManager::run()
 {
-  bool last_rc_override = rc_override_;
+  bool last_rc_override = rc_override_active();
 
   // Check for and apply failsafe command
   if (RF_.state_manager_.state().failsafe) {
@@ -313,13 +317,13 @@ bool CommandManager::run()
     }
 
     // Perform muxing
-    rc_override_ = do_roll_pitch_yaw_muxing(MUX_QX);
-    rc_override_ |= do_roll_pitch_yaw_muxing(MUX_QY);
-    rc_override_ |= do_roll_pitch_yaw_muxing(MUX_QZ);
-    rc_override_ |= do_throttle_muxing();
+    rc_attitude_override_ = do_roll_pitch_yaw_muxing(MUX_QX);
+    rc_attitude_override_ |= do_roll_pitch_yaw_muxing(MUX_QY);
+    rc_attitude_override_ |= do_roll_pitch_yaw_muxing(MUX_QZ);
+    rc_throttle_override_ = do_throttle_muxing();
 
     // Light to indicate override
-    if (rc_override_) {
+    if (rc_override_active()) {
       RF_.board_.led0_on();
     } else {
       RF_.board_.led0_off();
@@ -327,7 +331,7 @@ bool CommandManager::run()
   }
 
   // There was a change in rc_override state
-  if (last_rc_override != rc_override_) { RF_.comm_manager_.update_status(); }
+  if (last_rc_override != rc_override_active()) { RF_.comm_manager_.update_status(); }
   return true;
 }
 

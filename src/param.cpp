@@ -118,28 +118,29 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PROP_CT, "PROP_CT", 0.075f); // Thrust coefficient of the propeller | 0 | 100.0
   init_param_float(PARAM_PROP_CQ, "PROP_CQ", 0.0045f); // Torque coefficient of the propeller | 0 | 100.0
   init_param_float(PARAM_VOLT_MAX, "VOLT_MAX", 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
+  init_param_int(PARAM_USE_MOTOR_PARAMETERS, "USE_MOTOR_PARAM", false);   // Flag to use motor parameters in the mixer | 0 | 1
 
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_0, "PRIM_MIXER_OUT_0", 0); // Output type of mixer output 0. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_1, "PRIM_MIXER_OUT_1", 0); // Output type of mixer output 1. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_2, "PRIM_MIXER_OUT_2", 0); // Output type of mixer output 2. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_3, "PRIM_MIXER_OUT_3", 0); // Output type of mixer output 3. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_4, "PRIM_MIXER_OUT_4", 0); // Output type of mixer output 4. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_5, "PRIM_MIXER_OUT_5", 0); // Output type of mixer output 5. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_6, "PRIM_MIXER_OUT_6", 0); // Output type of mixer output 6. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7, "PRIM_MIXER_OUT_7", 0); // Output type of mixer output 7. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8, "PRIM_MIXER_OUT_8", 0); // Output type of mixer output 8. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9, "PRIM_MIXER_OUT_9", 0); // Output type of mixer output 9. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_0, "PRI_MIXER_OUT_0", 0); // Output type of mixer output 0. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_1, "PRI_MIXER_OUT_1", 0); // Output type of mixer output 1. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_2, "PRI_MIXER_OUT_2", 0); // Output type of mixer output 2. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_3, "PRI_MIXER_OUT_3", 0); // Output type of mixer output 3. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_4, "PRI_MIXER_OUT_4", 0); // Output type of mixer output 4. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_5, "PRI_MIXER_OUT_5", 0); // Output type of mixer output 5. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_6, "PRI_MIXER_OUT_6", 0); // Output type of mixer output 6. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7, "PRI_MIXER_OUT_7", 0); // Output type of mixer output 7. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8, "PRI_MIXER_OUT_8", 0); // Output type of mixer output 8. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9, "PRI_MIXER_OUT_9", 0); // Output type of mixer output 9. | 0 | 1 | 2 | 3
 
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_0, "PRIM_MIXER_PWM_0", 0); // PWM frequenct output for mixer output 0
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_1, "PRIM_MIXER_PWM_1", 0); // PWM frequenct output for mixer output 1
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_2, "PRIM_MIXER_PWM_2", 0); // PWM frequenct output for mixer output 2
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_3, "PRIM_MIXER_PWM_3", 0); // PWM frequenct output for mixer output 3
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_4, "PRIM_MIXER_PWM_4", 0); // PWM frequenct output for mixer output 4
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_5, "PRIM_MIXER_PWM_5", 0); // PWM frequenct output for mixer output 5
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_6, "PRIM_MIXER_PWM_6", 0); // PWM frequenct output for mixer output 6
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_7, "PRIM_MIXER_PWM_7", 0); // PWM frequenct output for mixer output 7
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_8, "PRIM_MIXER_PWM_8", 0); // PWM frequenct output for mixer output 8
-  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_9, "PRIM_MIXER_PWM_9", 0); // PWM frequenct output for mixer output 9
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_0, "PRI_MIXER_PWM_0", 0); // PWM frequenct output for mixer output 0
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_1, "PRI_MIXER_PWM_1", 0); // PWM frequenct output for mixer output 1
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_2, "PRI_MIXER_PWM_2", 0); // PWM frequenct output for mixer output 2
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_3, "PRI_MIXER_PWM_3", 0); // PWM frequenct output for mixer output 3
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_4, "PRI_MIXER_PWM_4", 0); // PWM frequenct output for mixer output 4
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_5, "PRI_MIXER_PWM_5", 0); // PWM frequenct output for mixer output 5
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_6, "PRI_MIXER_PWM_6", 0); // PWM frequenct output for mixer output 6
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_7, "PRI_MIXER_PWM_7", 0); // PWM frequenct output for mixer output 7
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_8, "PRI_MIXER_PWM_8", 0); // PWM frequenct output for mixer output 8
+  init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_9, "PRI_MIXER_PWM_9", 0); // PWM frequenct output for mixer output 9
 
   init_param_float(PARAM_PRIMARY_MIXER_0_0, "PRI_MIXER_0_0", 0.0f); // Value of the custom mixer at element [0,0]
   init_param_float(PARAM_PRIMARY_MIXER_1_0, "PRI_MIXER_1_0", 0.0f); // Value of the custom mixer at element [1,0]
@@ -210,6 +211,76 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_9, "PRI_MIXER_3_9", 0.0f); // Value of the custom mixer at element [3,9]
   init_param_float(PARAM_PRIMARY_MIXER_4_9, "PRI_MIXER_4_9", 0.0f); // Value of the custom mixer at element [4,9]
   init_param_float(PARAM_PRIMARY_MIXER_5_9, "PRI_MIXER_5_9", 0.0f); // Value of the custom mixer at element [5,9]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_0, "SEC_MIXER_0_0", 0.0f); // Value of the custom mixer at element [0,0]
+  init_param_float(PARAM_SECONDARY_MIXER_1_0, "SEC_MIXER_1_0", 0.0f); // Value of the custom mixer at element [1,0]
+  init_param_float(PARAM_SECONDARY_MIXER_2_0, "SEC_MIXER_2_0", 0.0f); // Value of the custom mixer at element [2,0]
+  init_param_float(PARAM_SECONDARY_MIXER_3_0, "SEC_MIXER_3_0", 0.0f); // Value of the custom mixer at element [3,0]
+  init_param_float(PARAM_SECONDARY_MIXER_4_0, "SEC_MIXER_4_0", 0.0f); // Value of the custom mixer at element [4,0]
+  init_param_float(PARAM_SECONDARY_MIXER_5_0, "SEC_MIXER_5_0", 0.0f); // Value of the custom mixer at element [5,0]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_1, "SEC_MIXER_0_1", 0.0f); // Value of the custom mixer at element [0,1]
+  init_param_float(PARAM_SECONDARY_MIXER_1_1, "SEC_MIXER_1_1", 0.0f); // Value of the custom mixer at element [1,1]
+  init_param_float(PARAM_SECONDARY_MIXER_2_1, "SEC_MIXER_2_1", 0.0f); // Value of the custom mixer at element [2,1]
+  init_param_float(PARAM_SECONDARY_MIXER_3_1, "SEC_MIXER_3_1", 0.0f); // Value of the custom mixer at element [3,1]
+  init_param_float(PARAM_SECONDARY_MIXER_4_1, "SEC_MIXER_4_1", 0.0f); // Value of the custom mixer at element [4,1]
+  init_param_float(PARAM_SECONDARY_MIXER_5_1, "SEC_MIXER_5_1", 0.0f); // Value of the custom mixer at element [5,1]
+                                                                
+  init_param_float(PARAM_SECONDARY_MIXER_0_2, "SEC_MIXER_0_2", 0.0f); // Value of the custom mixer at element [0,2]
+  init_param_float(PARAM_SECONDARY_MIXER_1_2, "SEC_MIXER_1_2", 0.0f); // Value of the custom mixer at element [1,2]
+  init_param_float(PARAM_SECONDARY_MIXER_2_2, "SEC_MIXER_2_2", 0.0f); // Value of the custom mixer at element [2,2]
+  init_param_float(PARAM_SECONDARY_MIXER_3_2, "SEC_MIXER_3_2", 0.0f); // Value of the custom mixer at element [3,2]
+  init_param_float(PARAM_SECONDARY_MIXER_4_2, "SEC_MIXER_4_2", 0.0f); // Value of the custom mixer at element [4,2]
+  init_param_float(PARAM_SECONDARY_MIXER_5_2, "SEC_MIXER_5_2", 0.0f); // Value of the custom mixer at element [5,2]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_3, "SEC_MIXER_0_3", 0.0f); // Value of the custom mixer at element [0,3]
+  init_param_float(PARAM_SECONDARY_MIXER_1_3, "SEC_MIXER_1_3", 0.0f); // Value of the custom mixer at element [1,3]
+  init_param_float(PARAM_SECONDARY_MIXER_2_3, "SEC_MIXER_2_3", 0.0f); // Value of the custom mixer at element [2,3]
+  init_param_float(PARAM_SECONDARY_MIXER_3_3, "SEC_MIXER_3_3", 0.0f); // Value of the custom mixer at element [3,3]
+  init_param_float(PARAM_SECONDARY_MIXER_4_3, "SEC_MIXER_4_3", 0.0f); // Value of the custom mixer at element [4,3]
+  init_param_float(PARAM_SECONDARY_MIXER_5_3, "SEC_MIXER_5_3", 0.0f); // Value of the custom mixer at element [5,3]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_4, "SEC_MIXER_0_4", 0.0f); // Value of the custom mixer at element [0,4]
+  init_param_float(PARAM_SECONDARY_MIXER_1_4, "SEC_MIXER_1_4", 0.0f); // Value of the custom mixer at element [1,4]
+  init_param_float(PARAM_SECONDARY_MIXER_2_4, "SEC_MIXER_2_4", 0.0f); // Value of the custom mixer at element [2,4]
+  init_param_float(PARAM_SECONDARY_MIXER_3_4, "SEC_MIXER_3_4", 0.0f); // Value of the custom mixer at element [3,4]
+  init_param_float(PARAM_SECONDARY_MIXER_4_4, "SEC_MIXER_4_4", 0.0f); // Value of the custom mixer at element [4,4]
+  init_param_float(PARAM_SECONDARY_MIXER_5_4, "SEC_MIXER_5_4", 0.0f); // Value of the custom mixer at element [5,4]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_5, "SEC_MIXER_0_5", 0.0f); // Value of the custom mixer at element [0,5]
+  init_param_float(PARAM_SECONDARY_MIXER_1_5, "SEC_MIXER_1_5", 0.0f); // Value of the custom mixer at element [1,5]
+  init_param_float(PARAM_SECONDARY_MIXER_2_5, "SEC_MIXER_2_5", 0.0f); // Value of the custom mixer at element [2,5]
+  init_param_float(PARAM_SECONDARY_MIXER_3_5, "SEC_MIXER_3_5", 0.0f); // Value of the custom mixer at element [3,5]
+  init_param_float(PARAM_SECONDARY_MIXER_4_5, "SEC_MIXER_4_5", 0.0f); // Value of the custom mixer at element [4,5]
+  init_param_float(PARAM_SECONDARY_MIXER_5_5, "SEC_MIXER_5_5", 0.0f); // Value of the custom mixer at element [5,5]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_6, "SEC_MIXER_0_6", 0.0f); // Value of the custom mixer at element [0,6]
+  init_param_float(PARAM_SECONDARY_MIXER_1_6, "SEC_MIXER_1_6", 0.0f); // Value of the custom mixer at element [1,6]
+  init_param_float(PARAM_SECONDARY_MIXER_2_6, "SEC_MIXER_2_6", 0.0f); // Value of the custom mixer at element [2,6]
+  init_param_float(PARAM_SECONDARY_MIXER_3_6, "SEC_MIXER_3_6", 0.0f); // Value of the custom mixer at element [3,6]
+  init_param_float(PARAM_SECONDARY_MIXER_4_6, "SEC_MIXER_4_6", 0.0f); // Value of the custom mixer at element [4,6]
+  init_param_float(PARAM_SECONDARY_MIXER_5_6, "SEC_MIXER_5_6", 0.0f); // Value of the custom mixer at element [5,6]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_7, "SEC_MIXER_0_7", 0.0f); // Value of the custom mixer at element [0,7]
+  init_param_float(PARAM_SECONDARY_MIXER_1_7, "SEC_MIXER_1_7", 0.0f); // Value of the custom mixer at element [1,7]
+  init_param_float(PARAM_SECONDARY_MIXER_2_7, "SEC_MIXER_2_7", 0.0f); // Value of the custom mixer at element [2,7]
+  init_param_float(PARAM_SECONDARY_MIXER_3_7, "SEC_MIXER_3_7", 0.0f); // Value of the custom mixer at element [3,7]
+  init_param_float(PARAM_SECONDARY_MIXER_4_7, "SEC_MIXER_4_7", 0.0f); // Value of the custom mixer at element [4,7]
+  init_param_float(PARAM_SECONDARY_MIXER_5_7, "SEC_MIXER_5_7", 0.0f); // Value of the custom mixer at element [5,7]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_8, "SEC_MIXER_0_8", 0.0f); // Value of the custom mixer at element [0,8]
+  init_param_float(PARAM_SECONDARY_MIXER_1_8, "SEC_MIXER_1_8", 0.0f); // Value of the custom mixer at element [1,8]
+  init_param_float(PARAM_SECONDARY_MIXER_2_8, "SEC_MIXER_2_8", 0.0f); // Value of the custom mixer at element [2,8]
+  init_param_float(PARAM_SECONDARY_MIXER_3_8, "SEC_MIXER_3_8", 0.0f); // Value of the custom mixer at element [3,8]
+  init_param_float(PARAM_SECONDARY_MIXER_4_8, "SEC_MIXER_4_8", 0.0f); // Value of the custom mixer at element [4,8]
+  init_param_float(PARAM_SECONDARY_MIXER_5_8, "SEC_MIXER_5_8", 0.0f); // Value of the custom mixer at element [5,8]
+
+  init_param_float(PARAM_SECONDARY_MIXER_0_9, "SEC_MIXER_0_9", 0.0f); // Value of the custom mixer at element [0,9]
+  init_param_float(PARAM_SECONDARY_MIXER_1_9, "SEC_MIXER_1_9", 0.0f); // Value of the custom mixer at element [1,9]
+  init_param_float(PARAM_SECONDARY_MIXER_2_9, "SEC_MIXER_2_9", 0.0f); // Value of the custom mixer at element [2,9]
+  init_param_float(PARAM_SECONDARY_MIXER_3_9, "SEC_MIXER_3_9", 0.0f); // Value of the custom mixer at element [3,9]
+  init_param_float(PARAM_SECONDARY_MIXER_4_9, "SEC_MIXER_4_9", 0.0f); // Value of the custom mixer at element [4,9]
+  init_param_float(PARAM_SECONDARY_MIXER_5_9, "SEC_MIXER_5_9", 0.0f); // Value of the custom mixer at element [5,9]
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
@@ -336,7 +407,8 @@ void Params::set_defaults(void)
   /***************************/
   /*** FRAME CONFIGURATION ***/
   /***************************/
-  init_param_int(PARAM_MIXER, "MIXER", Mixer::INVALID_MIXER); // Which mixer to choose - See Mixer documentation | 0 | 10
+  init_param_int(PARAM_PRIMARY_MIXER, "PRIMARY_MIXER", Mixer::INVALID_MIXER); // Which mixer to choose for primary mixer - See Mixer documentation | 0 | 11
+  init_param_int(PARAM_SECONDARY_MIXER, "SECONDARY_MIXER", Mixer::INVALID_MIXER); // Which mixer to choose for secondary mixer - See Mixer documentation | 0 | 11
 
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false); // switches on pass-through commands for fixed-wing operation | 0 | 1
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0); // reverses elevator servo output | 0 | 1

@@ -89,6 +89,19 @@ public:
     float Qz[NUM_MIXER_OUTPUTS];
   } mixer_t;
 
+  typedef struct 
+  {
+    mixer_t* primary_mixer_ptr;
+    output_type_t (*output_type)[NUM_MIXER_OUTPUTS];
+    float (*default_pwm_rate)[NUM_MIXER_OUTPUTS];
+    float (*Fx)[NUM_MIXER_OUTPUTS];
+    float (*Fy)[NUM_MIXER_OUTPUTS];
+    float (*Fz)[NUM_MIXER_OUTPUTS];
+    float (*Qx)[NUM_MIXER_OUTPUTS];
+    float (*Qy)[NUM_MIXER_OUTPUTS];
+    float (*Qz)[NUM_MIXER_OUTPUTS];
+  } mixer_selection_t;
+
   typedef struct
   {
     output_type_t type;
@@ -112,6 +125,7 @@ private:
   void write_servo(uint8_t index, float value);
   void add_header_to_mixer(mixer_t* mixer);
   void load_primary_mixer_values();
+  void load_secondary_mixer_values();
   mixer_t invert_mixer(const mixer_t* mixer_to_invert);
   float mix_multirotor_with_motor_parameters(Controller::Output commands);
   float mix_multirotor_without_motor_parameters(Controller::Output commands);
@@ -239,9 +253,9 @@ private:
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix
 
   mixer_t primary_mixer_;
+  mixer_t secondary_mixer_;
 
-  const mixer_t * mixer_to_use_;
-  bool use_motor_parameters_;
+  mixer_selection_t mixer_to_use_;
 
   const mixer_t* array_of_mixers_[NUM_MIXERS] = {
     &esc_calibration_mixing,
@@ -284,7 +298,6 @@ public:
   void param_change_callback(uint16_t param_id) override;
   void set_new_aux_command(aux_command_t new_aux_command);
   inline const float * get_outputs() const { return raw_outputs_; }
-  inline const bool use_motor_parameters() const { return use_motor_parameters_; }
 
   void calculate_mixer_values();
   void mix_multirotor();

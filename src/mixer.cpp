@@ -34,6 +34,8 @@
 #include "rosflight.h"
 
 #include <cstdint>
+// We don't have a method to print the mixer currently being used for the user's benefit.
+// Keeping iostream is a temporary patch that is very useful when using the mixer.
 #include <iostream>
 
 namespace rosflight_firmware
@@ -41,8 +43,7 @@ namespace rosflight_firmware
 Mixer::Mixer(ROSflight & _rf)
     : RF_(_rf)
 {
-  mixer_to_use_ = nullptr;
-  use_motor_parameters_ = false;
+  mixer_to_use_.primary_mixer_ptr = nullptr;
 
   for (int8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {
     aux_command_.channel[i].type = NONE;
@@ -146,7 +147,78 @@ void Mixer::param_change_callback(uint16_t param_id)
     case PARAM_PRIMARY_MIXER_3_9:
     case PARAM_PRIMARY_MIXER_4_9:
     case PARAM_PRIMARY_MIXER_5_9:
-    case PARAM_MIXER:
+    case PARAM_PRIMARY_MIXER:
+
+    case PARAM_SECONDARY_MIXER_0_0:
+    case PARAM_SECONDARY_MIXER_1_0:
+    case PARAM_SECONDARY_MIXER_2_0:
+    case PARAM_SECONDARY_MIXER_3_0:
+    case PARAM_SECONDARY_MIXER_4_0:
+    case PARAM_SECONDARY_MIXER_5_0:
+
+    case PARAM_SECONDARY_MIXER_0_1:
+    case PARAM_SECONDARY_MIXER_1_1:
+    case PARAM_SECONDARY_MIXER_2_1:
+    case PARAM_SECONDARY_MIXER_3_1:
+    case PARAM_SECONDARY_MIXER_4_1:
+    case PARAM_SECONDARY_MIXER_5_1:
+
+    case PARAM_SECONDARY_MIXER_0_2:
+    case PARAM_SECONDARY_MIXER_1_2:
+    case PARAM_SECONDARY_MIXER_2_2:
+    case PARAM_SECONDARY_MIXER_3_2:
+    case PARAM_SECONDARY_MIXER_4_2:
+    case PARAM_SECONDARY_MIXER_5_2:
+
+    case PARAM_SECONDARY_MIXER_0_3:
+    case PARAM_SECONDARY_MIXER_1_3:
+    case PARAM_SECONDARY_MIXER_2_3:
+    case PARAM_SECONDARY_MIXER_3_3:
+    case PARAM_SECONDARY_MIXER_4_3:
+    case PARAM_SECONDARY_MIXER_5_3:
+
+    case PARAM_SECONDARY_MIXER_0_4:
+    case PARAM_SECONDARY_MIXER_1_4:
+    case PARAM_SECONDARY_MIXER_2_4:
+    case PARAM_SECONDARY_MIXER_3_4:
+    case PARAM_SECONDARY_MIXER_4_4:
+    case PARAM_SECONDARY_MIXER_5_4:
+
+    case PARAM_SECONDARY_MIXER_0_5:
+    case PARAM_SECONDARY_MIXER_1_5:
+    case PARAM_SECONDARY_MIXER_2_5:
+    case PARAM_SECONDARY_MIXER_3_5:
+    case PARAM_SECONDARY_MIXER_4_5:
+    case PARAM_SECONDARY_MIXER_5_5:
+
+    case PARAM_SECONDARY_MIXER_0_6:
+    case PARAM_SECONDARY_MIXER_1_6:
+    case PARAM_SECONDARY_MIXER_2_6:
+    case PARAM_SECONDARY_MIXER_3_6:
+    case PARAM_SECONDARY_MIXER_4_6:
+    case PARAM_SECONDARY_MIXER_5_6:
+
+    case PARAM_SECONDARY_MIXER_0_7:
+    case PARAM_SECONDARY_MIXER_1_7:
+    case PARAM_SECONDARY_MIXER_2_7:
+    case PARAM_SECONDARY_MIXER_3_7:
+    case PARAM_SECONDARY_MIXER_4_7:
+    case PARAM_SECONDARY_MIXER_5_7:
+
+    case PARAM_SECONDARY_MIXER_0_8:
+    case PARAM_SECONDARY_MIXER_1_8:
+    case PARAM_SECONDARY_MIXER_2_8:
+    case PARAM_SECONDARY_MIXER_3_8:
+    case PARAM_SECONDARY_MIXER_4_8:
+    case PARAM_SECONDARY_MIXER_5_8:
+
+    case PARAM_SECONDARY_MIXER_0_9:
+    case PARAM_SECONDARY_MIXER_1_9:
+    case PARAM_SECONDARY_MIXER_2_9:
+    case PARAM_SECONDARY_MIXER_3_9:
+    case PARAM_SECONDARY_MIXER_4_9:
+    case PARAM_SECONDARY_MIXER_5_9:
+    case PARAM_SECONDARY_MIXER:
       init_mixing();
       break;
     case PARAM_MOTOR_RESISTANCE:
@@ -175,75 +247,139 @@ void Mixer::init_mixing()
   // clear the invalid mixer error
   RF_.state_manager_.clear_error(StateManager::ERROR_INVALID_MIXER);
 
-  uint8_t mixer_choice = RF_.params_.get_param_int(PARAM_MIXER);
+  // Set up the primary mixer, used by the RC safety pilot
+  uint8_t mixer_choice = RF_.params_.get_param_int(PARAM_PRIMARY_MIXER);
 
   if (mixer_choice >= NUM_MIXERS) {
-    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Invalid Mixer Choice");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR, "Invalid mixer choice for primary mixer");
 
     // set the invalid mixer flag
     RF_.state_manager_.set_error(StateManager::ERROR_INVALID_MIXER);
-    mixer_to_use_ = nullptr;
+    mixer_to_use_.primary_mixer_ptr = nullptr;
   } else {
-    mixer_to_use_ = array_of_mixers_[mixer_choice];
-
-    if (mixer_to_use_ == &custom_mixing) {
-      // If specified, compute the custom mixing matrix per the motor and propeller parameters
+    if (array_of_mixers_[mixer_choice] == &custom_mixing) {
+      // Load the custom mixer for the primary mixer based off the saved parameters.
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                            "Loading saved custom mixer values...");
+                            "Loading saved custom mixer values for the primary mixer...");
 
       load_primary_mixer_values();
-      mixer_to_use_ = &primary_mixer_;
-
-      // Set flag since we are using custom mixer
-      use_motor_parameters_ = true;
 
       // Update the motor parameters that will be used
       update_parameters();
-    } else if (mixer_to_use_ != &fixedwing_mixing &&
-               mixer_to_use_ != &fixedwing_inverted_vtail_mixing) {
+    } else if (array_of_mixers_[mixer_choice] != &fixedwing_mixing &&
+                array_of_mixers_[mixer_choice] != &fixedwing_inverted_vtail_mixing) {
       // Don't invert the fixedwing mixers
 
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                             "Inverting selected mixing matrix...");
 
       // Otherwise, invert the selected "canned" matrix
-      primary_mixer_ = invert_mixer(mixer_to_use_);
-      mixer_to_use_ = &primary_mixer_;
-
-      // Unset flag since we are not using custom mixer
-      use_motor_parameters_ = false;
+      primary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
+    } else {
+      primary_mixer_ = *array_of_mixers_[mixer_choice];
     }
 
-    std::cout << "Mixer: " << std::endl;
-    for (auto i : mixer_to_use_->output_type) {
+    // Save a pointer to the primary mixer for checks later
+    mixer_to_use_.primary_mixer_ptr = &primary_mixer_;
+
+    // Load the primary mixer header to the mixer_to_use_ header. Note that both the primary and 
+    // secondary mixers will use the header for the primary mixer
+    mixer_to_use_.output_type = &primary_mixer_.output_type;
+    mixer_to_use_.default_pwm_rate = &primary_mixer_.default_pwm_rate;
+  }
+
+  // Compute or load the secondary mixer, used by the offboard control
+  mixer_choice = RF_.params_.get_param_int(PARAM_SECONDARY_MIXER);
+
+  if (mixer_choice >= NUM_MIXERS) {
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
+        "Invalid mixer selected for secondary mixer, secondary mixer defaulting to primary");
+    
+    secondary_mixer_ = primary_mixer_;
+  } else if (array_of_mixers_[mixer_choice] == &custom_mixing) {
+    // Load the custom mixer for the secondary mixer based off the saved parameters.
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
+                          "Loading saved custom mixer values for the secondary mixer...");
+
+    load_secondary_mixer_values();
+  } else if (array_of_mixers_[mixer_choice] != &fixedwing_mixing &&
+              array_of_mixers_[mixer_choice] != &fixedwing_inverted_vtail_mixing) {
+    // Don't invert the fixedwing mixers
+
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
+                          "Inverting selected mixing matrix...");
+
+    // Otherwise, invert the selected "canned" matrix
+    secondary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
+  } else {
+    secondary_mixer_ = *array_of_mixers_[mixer_choice];
+  }
+
+  if (mixer_to_use_.primary_mixer_ptr != nullptr) {
+    std::cout << "Primary Mixer: " << std::endl;
+    for (auto i : primary_mixer_.output_type) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->default_pwm_rate) {
+    for (auto i : primary_mixer_.default_pwm_rate) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->Fx) {
+    for (auto i : primary_mixer_.Fx) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->Fy) {
+    for (auto i : primary_mixer_.Fy) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->Fz) {
+    for (auto i : primary_mixer_.Fz) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->Qx) {
+    for (auto i : primary_mixer_.Qx) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->Qy) {
+    for (auto i : primary_mixer_.Qy) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
-    for (auto i : mixer_to_use_->Qz) {
+    for (auto i : primary_mixer_.Qz) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Secondary Mixer: " << std::endl;
+    for (auto i : secondary_mixer_.output_type) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.default_pwm_rate) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.Fx) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.Fy) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.Fz) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.Qx) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.Qy) {
+      std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    for (auto i : secondary_mixer_.Qz) {
       std::cout << i << " ";
     }
     std::cout << std::endl;
@@ -336,7 +472,7 @@ void Mixer::load_primary_mixer_values()
   primary_mixer_.output_type[7] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7);
   primary_mixer_.output_type[8] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8);
   primary_mixer_.output_type[9] = (output_type_t) RF_.params_.get_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9);
-
+                
   primary_mixer_.default_pwm_rate[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_0);
   primary_mixer_.default_pwm_rate[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_1);
   primary_mixer_.default_pwm_rate[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_2);
@@ -347,7 +483,7 @@ void Mixer::load_primary_mixer_values()
   primary_mixer_.default_pwm_rate[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_7);
   primary_mixer_.default_pwm_rate[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_8);
   primary_mixer_.default_pwm_rate[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_9);
-
+                
   // Load the mixer values from the firmware parameters
   primary_mixer_.Fx[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_0);
   primary_mixer_.Fy[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_0);
@@ -355,63 +491,63 @@ void Mixer::load_primary_mixer_values()
   primary_mixer_.Qx[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_0);
   primary_mixer_.Qy[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_0);
   primary_mixer_.Qz[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_0);
-
+                
   primary_mixer_.Fx[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_1);
   primary_mixer_.Fy[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_1);
   primary_mixer_.Fz[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_1);
   primary_mixer_.Qx[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_1);
   primary_mixer_.Qy[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_1);
   primary_mixer_.Qz[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_1);
-
+                
   primary_mixer_.Fx[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_2);
   primary_mixer_.Fy[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_2);
   primary_mixer_.Fz[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_2);
   primary_mixer_.Qx[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_2);
   primary_mixer_.Qy[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_2);
   primary_mixer_.Qz[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_2);
-
+                
   primary_mixer_.Fx[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_3);
   primary_mixer_.Fy[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_3);
   primary_mixer_.Fz[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_3);
   primary_mixer_.Qx[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_3);
   primary_mixer_.Qy[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_3);
   primary_mixer_.Qz[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_3);
-
+                
   primary_mixer_.Fx[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_4);
   primary_mixer_.Fy[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_4);
   primary_mixer_.Fz[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_4);
   primary_mixer_.Qx[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_4);
   primary_mixer_.Qy[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_4);
   primary_mixer_.Qz[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_4);
-
+                
   primary_mixer_.Fx[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_5);
   primary_mixer_.Fy[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_5);
   primary_mixer_.Fz[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_5);
   primary_mixer_.Qx[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_5);
   primary_mixer_.Qy[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_5);
   primary_mixer_.Qz[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_5);
-
+                
   primary_mixer_.Fx[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_6);
   primary_mixer_.Fy[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_6);
   primary_mixer_.Fz[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_6);
   primary_mixer_.Qx[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_6);
   primary_mixer_.Qy[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_6);
   primary_mixer_.Qz[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_6);
-
+                
   primary_mixer_.Fx[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_7);
   primary_mixer_.Fy[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_7);
   primary_mixer_.Fz[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_7);
   primary_mixer_.Qx[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_7);
   primary_mixer_.Qy[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_7);
   primary_mixer_.Qz[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_7);
-
+                
   primary_mixer_.Fx[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_8);
   primary_mixer_.Fy[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_8);
   primary_mixer_.Fz[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_8);
   primary_mixer_.Qx[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_8);
   primary_mixer_.Qy[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_8);
   primary_mixer_.Qz[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_8);
-
+                
   primary_mixer_.Fx[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_9);
   primary_mixer_.Fy[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_9);
   primary_mixer_.Fz[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_9);
@@ -420,10 +556,88 @@ void Mixer::load_primary_mixer_values()
   primary_mixer_.Qz[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_9);
 }
 
+void Mixer::load_secondary_mixer_values()
+{
+  // Load the mixer header values
+  // TODO: Is there a better way to do this?
+
+  // Load the mixer values from the firmware parameters
+  // The header values will be the same as the primary mixer
+  secondary_mixer_.Fx[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_0);
+  secondary_mixer_.Fy[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_0);
+  secondary_mixer_.Fz[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_0);
+  secondary_mixer_.Qx[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_0);
+  secondary_mixer_.Qy[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_0);
+  secondary_mixer_.Qz[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_0);
+                
+  secondary_mixer_.Fx[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_1);
+  secondary_mixer_.Fy[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_1);
+  secondary_mixer_.Fz[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_1);
+  secondary_mixer_.Qx[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_1);
+  secondary_mixer_.Qy[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_1);
+  secondary_mixer_.Qz[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_1);
+                
+  secondary_mixer_.Fx[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_2);
+  secondary_mixer_.Fy[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_2);
+  secondary_mixer_.Fz[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_2);
+  secondary_mixer_.Qx[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_2);
+  secondary_mixer_.Qy[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_2);
+  secondary_mixer_.Qz[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_2);
+                
+  secondary_mixer_.Fx[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_3);
+  secondary_mixer_.Fy[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_3);
+  secondary_mixer_.Fz[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_3);
+  secondary_mixer_.Qx[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_3);
+  secondary_mixer_.Qy[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_3);
+  secondary_mixer_.Qz[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_3);
+                
+  secondary_mixer_.Fx[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_4);
+  secondary_mixer_.Fy[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_4);
+  secondary_mixer_.Fz[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_4);
+  secondary_mixer_.Qx[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_4);
+  secondary_mixer_.Qy[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_4);
+  secondary_mixer_.Qz[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_4);
+                
+  secondary_mixer_.Fx[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_5);
+  secondary_mixer_.Fy[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_5);
+  secondary_mixer_.Fz[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_5);
+  secondary_mixer_.Qx[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_5);
+  secondary_mixer_.Qy[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_5);
+  secondary_mixer_.Qz[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_5);
+                
+  secondary_mixer_.Fx[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_6);
+  secondary_mixer_.Fy[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_6);
+  secondary_mixer_.Fz[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_6);
+  secondary_mixer_.Qx[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_6);
+  secondary_mixer_.Qy[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_6);
+  secondary_mixer_.Qz[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_6);
+                
+  secondary_mixer_.Fx[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_7);
+  secondary_mixer_.Fy[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_7);
+  secondary_mixer_.Fz[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_7);
+  secondary_mixer_.Qx[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_7);
+  secondary_mixer_.Qy[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_7);
+  secondary_mixer_.Qz[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_7);
+                
+  secondary_mixer_.Fx[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_8);
+  secondary_mixer_.Fy[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_8);
+  secondary_mixer_.Fz[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_8);
+  secondary_mixer_.Qx[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_8);
+  secondary_mixer_.Qy[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_8);
+  secondary_mixer_.Qz[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_8);
+                
+  secondary_mixer_.Fx[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_9);
+  secondary_mixer_.Fy[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_9);
+  secondary_mixer_.Fz[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_9);
+  secondary_mixer_.Qx[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_9);
+  secondary_mixer_.Qy[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_9);
+  secondary_mixer_.Qz[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_9);
+}
+
 void Mixer::init_PWM()
 {
-  if (mixer_to_use_ != nullptr) {
-    RF_.board_.pwm_init_multi(mixer_to_use_->default_pwm_rate, NUM_MIXER_OUTPUTS);
+  if (mixer_to_use_.primary_mixer_ptr != nullptr) {
+    RF_.board_.pwm_init_multi(primary_mixer_.default_pwm_rate, NUM_MIXER_OUTPUTS);
   } else {
     RF_.board_.pwm_init_multi(esc_calibration_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
   }
@@ -472,17 +686,19 @@ float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands
   float max_output = 1.0;
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if (mixer_to_use_->output_type[i] != NONE) {
+    if ((*mixer_to_use_.output_type)[i] != NONE) {
       // Matrix multiply to mix outputs
-      outputs_[i] = commands.Fx * mixer_to_use_->Fx[i] +
-                    commands.Fy * mixer_to_use_->Fy[i] +
-                    commands.Fz * mixer_to_use_->Fz[i] + 
-                    commands.Qx * mixer_to_use_->Qx[i] + 
-                    commands.Qy * mixer_to_use_->Qy[i] + 
-                    commands.Qz * mixer_to_use_->Qz[i];
+      outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
+                    commands.Fy * (*mixer_to_use_.Fy)[i] +
+                    commands.Fz * (*mixer_to_use_.Fz)[i] + 
+                    commands.Qx * (*mixer_to_use_.Qx)[i] + 
+                    commands.Qy * (*mixer_to_use_.Qy)[i] + 
+                    commands.Qz * (*mixer_to_use_.Qz)[i];
 
-      // Save off the largest control output if it is greater than 1.0 for future scaling
-      if (outputs_[i] > max_output) { max_output = outputs_[i]; }
+      // Save off the largest control output (for motors) if it is greater than 1.0 for future scaling
+      if ((*mixer_to_use_.output_type)[i] == M) {
+        if (abs(outputs_[i]) > max_output) { max_output = abs(outputs_[i]); }
+      }
     }
   }
 
@@ -495,14 +711,14 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
   float max_output = 1.0;
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if (mixer_to_use_->output_type[i] == M) {
+    if ((*mixer_to_use_.output_type)[i] == M) {
       // Matrix multiply to mix outputs for Motor type
-      float omega_squared = commands.Fx * mixer_to_use_->Fx[i] +
-                            commands.Fy * mixer_to_use_->Fy[i] +
-                            commands.Fz * mixer_to_use_->Fz[i] +
-                            commands.Qx * mixer_to_use_->Qx[i] +
-                            commands.Qy * mixer_to_use_->Qy[i] +
-                            commands.Qz * mixer_to_use_->Qz[i];
+      float omega_squared = commands.Fx * (*mixer_to_use_.Fx)[i] +
+                            commands.Fy * (*mixer_to_use_.Fy)[i] +
+                            commands.Fz * (*mixer_to_use_.Fz)[i] +
+                            commands.Qx * (*mixer_to_use_.Qx)[i] +
+                            commands.Qy * (*mixer_to_use_.Qy)[i] +
+                            commands.Qz * (*mixer_to_use_.Qz)[i];
       
       // Ensure that omega_squared is non-negative
       if (omega_squared < 0.0) { omega_squared = 0.0; }
@@ -512,27 +728,21 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
       float V_in = rho_ * pow(D_, 5.0) / (4.0 * pow(M_PI, 2.0)) * omega_squared * C_Q_ * R_ / K_Q_
         + R_ * i_0_ + K_V_ * sqrt(omega_squared);
 
-      // std::cout << "Vin: " << V_in << " " << std::endl;
-      // std::cout << "p " << rho_ << " D^5 " << pow(D_, 5.0) << " C_Q " << C_Q_ << " R " << R_ << " ";
-      // std::cout << "io " << i_0_ << " k_v " << K_V_ << " omsqrt " << sqrt(omega_squared) << std::endl;
-      // std::cout << "Vin_0 " << rho_ * pow(D_, 5.0) / (4.0 * pow(M_PI, 2.0)) * omega_squared * C_Q_ * R_ / K_Q_ << " ";
-      // std::cout << "Vin_1 " << R_ * i_0_ + K_V_ * sqrt(omega_squared) << std::endl;
-
       // Convert desired V_in setting to a throttle setting
       outputs_[i] = V_in / V_max_;
 
-    } else if (mixer_to_use_->output_type[i] == S) {
-      // Matrix multiply to mix outputs for Servo type
-      outputs_[i] = commands.Fx * mixer_to_use_->Fx[i] +
-                    commands.Fy * mixer_to_use_->Fy[i] +
-                    commands.Fz * mixer_to_use_->Fz[i] +
-                    commands.Qx * mixer_to_use_->Qx[i] +
-                    commands.Qy * mixer_to_use_->Qy[i] +
-                    commands.Qz * mixer_to_use_->Qz[i];
-    }
+      // Save off the largest control output (for motors) if it is greater than 1.0 for future scaling
+      if (abs(outputs_[i]) > max_output) { max_output = abs(outputs_[i]); }
 
-    // Save off the largest control output if it is greater than 1.0 for future scaling
-    if (outputs_[i] > max_output) { max_output = outputs_[i]; }
+    } else if ((*mixer_to_use_.output_type)[i] == S) {
+      // Matrix multiply to mix outputs for Servo type
+      outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
+                    commands.Fy * (*mixer_to_use_.Fy)[i] +
+                    commands.Fz * (*mixer_to_use_.Fz)[i] +
+                    commands.Qx * (*mixer_to_use_.Qx)[i] +
+                    commands.Qy * (*mixer_to_use_.Qy)[i] +
+                    commands.Qz * (*mixer_to_use_.Qz)[i];
+    }
   }
 
   return max_output;
@@ -556,7 +766,7 @@ void Mixer::mix_multirotor()
       break;
   }
   
-  if (throttle_command < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
+  if (abs(throttle_command) < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
     // arming/disarming
     commands.Qz = 0.0;
@@ -564,17 +774,18 @@ void Mixer::mix_multirotor()
 
   // Mix the outputs based on if a custom mixer (i.e. with motor parameters) is selected.
   float max_output;
-  if (use_motor_parameters_) {
+  if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
     max_output = mix_multirotor_with_motor_parameters(commands);
   } else {
     max_output = mix_multirotor_without_motor_parameters(commands);
   }
-
-//  std::cout << "Outputs (pre scale): ";
-//  for (auto i : outputs_) {
-//    std::cout << i << " ";
-//  }
-//  std::cout << std::endl;
+  
+  // Check to see if the max_output is large. If it is, something is likely wrong with the mixer configuration, so
+  // warn the user. Note that 2 is an arbitrary value, but seems like a good upper limit since the max output should usually
+  // be between 0 and 1.
+  if (max_output > 2.0) {
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING, "Output from mixer is %f! Check mixer", max_output);
+  }
 
   // There is no relative scaling on the above equations. In other words, if the input F command is too
   // high, then it will "drown out" all other desired outputs. Therefore, we saturate motor outputs to 
@@ -585,7 +796,7 @@ void Mixer::mix_multirotor()
   // Perform Motor Output Scaling
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     // scale all motor outputs by scale factor (this is usually 1.0, unless we saturated)
-    if (mixer_to_use_->output_type[i] == M) { outputs_[i] *= scale_factor; }
+    if ((*mixer_to_use_.output_type)[i] == M) { outputs_[i] *= scale_factor; }
   }
 }
 
@@ -593,11 +804,6 @@ void Mixer::mix_fixedwing()
 {
   Controller::Output commands = RF_.controller_.output();
   
-  std::cout << "Command output/Mixer input: ";
-  std::cout << commands.Fx << " " << commands.Fy << " ";
-  std::cout << commands.Fz << " " << commands.Qx << " ";
-  std::cout << commands.Qy << " " << commands.Qz << " ";
-
   // Reverse fixed-wing channels just before mixing if we need to
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
     commands.Qx *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
@@ -607,19 +813,41 @@ void Mixer::mix_fixedwing()
 
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if (mixer_to_use_->output_type[i] != NONE) {
+    if ((*mixer_to_use_.output_type)[i] != NONE) {
       // Matrix multiply to mix outputs
-      outputs_[i] = commands.Fx * mixer_to_use_->Fx[i] +
-                    commands.Qx * mixer_to_use_->Qx[i] +
-                    commands.Qy * mixer_to_use_->Qy[i] +
-                    commands.Qz * mixer_to_use_->Qz[i];
+      outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
+                    commands.Qx * (*mixer_to_use_.Qx)[i] +
+                    commands.Qy * (*mixer_to_use_.Qy)[i] +
+                    commands.Qz * (*mixer_to_use_.Qz)[i];
     }
   }
 }
 
 void Mixer::mix_output()
 {
-  if (mixer_to_use_ == nullptr) { return; }
+  if (mixer_to_use_.primary_mixer_ptr == nullptr) { return; }
+
+  // Check if under RC control. If RC throttle or attitude override is active,
+  // adjust the mixer_to_use_ accordingly.
+  if (RF_.command_manager_.rc_throttle_override_active()) {
+    mixer_to_use_.Fx = &primary_mixer_.Fx;
+    mixer_to_use_.Fy = &primary_mixer_.Fy;
+    mixer_to_use_.Fz = &primary_mixer_.Fz;
+  } else {
+    mixer_to_use_.Fx = &secondary_mixer_.Fx;
+    mixer_to_use_.Fy = &secondary_mixer_.Fy;
+    mixer_to_use_.Fz = &secondary_mixer_.Fz;
+  }
+
+  if (RF_.command_manager_.rc_attitude_override_active()) {
+    mixer_to_use_.Qx = &primary_mixer_.Qx;
+    mixer_to_use_.Qy = &primary_mixer_.Qy;
+    mixer_to_use_.Qz = &primary_mixer_.Qz;
+  } else {
+    mixer_to_use_.Qx = &secondary_mixer_.Qx;
+    mixer_to_use_.Qy = &secondary_mixer_.Qy;
+    mixer_to_use_.Qz = &secondary_mixer_.Qz;
+  }
 
   // Mix according to airframe type
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
@@ -633,11 +861,11 @@ void Mixer::mix_output()
   // For the first NUM_MIXER_OUTPUTS channels, only write aux_command to channels the mixer is not
   // using
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if (mixer_to_use_->output_type[i] == NONE) {
+    if ((*mixer_to_use_.output_type)[i] == NONE) {
       outputs_[i] = aux_command_.channel[i].value;
       combined_output_type_[i] = aux_command_.channel[i].type;
     } else {
-      combined_output_type_[i] = mixer_to_use_->output_type[i];
+      combined_output_type_[i] = (*mixer_to_use_.output_type)[i];
     }
   }
 
@@ -646,13 +874,6 @@ void Mixer::mix_output()
     outputs_[i] = aux_command_.channel[i].value;
     combined_output_type_[i] = aux_command_.channel[i].type;
   }
-
-  std::cout << "Outputs (post scale): ";
-  for (auto i : outputs_) {
-    std::cout << i << " ";
-  }
-  std::cout << std::endl;
-
 
   // Write to outputs
   for (uint8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {

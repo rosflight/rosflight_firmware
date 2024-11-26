@@ -161,7 +161,8 @@ private:
   ROSflight & RF_;
 
   bool new_command_;
-  bool rc_override_;
+  bool rc_throttle_override_;
+  bool rc_attitude_override_;
 
   control_t & failsafe_command_;
 
@@ -180,6 +181,8 @@ public:
   void init();
   bool run();
   bool rc_override_active();
+  bool rc_throttle_override_active();
+  bool rc_attitude_override_active();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
