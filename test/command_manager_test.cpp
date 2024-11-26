@@ -55,6 +55,7 @@ public:
     for (int i = 0; i < 8; i++) { rc_values[i] = 1500; }
     rc_values[2] = 1000;
 
+    // TODO: Fix this unit test. There is no passthrough mixer
     rf.params_.set_param_int(PARAM_MIXER, Mixer::PASSTHROUGH);
     rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0);
     max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);

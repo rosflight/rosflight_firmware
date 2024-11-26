@@ -25,7 +25,7 @@ public:
     rf.init();
     rf.state_manager_.clear_error(
       rf.state_manager_.state().error_codes); // Clear All Errors to Start
-    rf.params_.set_param_int(PARAM_MIXER, 10);
+    rf.params_.set_param_int(PARAM_PRIMARY_MIXER, 10);
     rf.params_.set_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, false); // default to turning this off
     rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0f);
 
