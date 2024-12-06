@@ -70,6 +70,7 @@ public:
   void calculate_max_thrust();
   void calculate_equilbrium_torque_from_rc();
   void param_change_callback(uint16_t param_id) override;
+  bool is_throttle_high(float threshold);
 
 private:
   class PID

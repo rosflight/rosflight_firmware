@@ -101,6 +101,12 @@ void Controller::calculate_max_thrust()
   max_thrust_ = rho * pow(D, 4.0) * CT * pow(omega, 2.0) / (4 * pow(M_PI, 2.0)) * num_motors;
 }
 
+bool Controller::is_throttle_high(float threshold) {
+  return  RF_.command_manager_.combined_control().Fx.value > threshold ||
+          RF_.command_manager_.combined_control().Fy.value > threshold ||
+          RF_.command_manager_.combined_control().Fz.value > threshold;
+}
+
 void Controller::run()
 {
   // Time calculation
@@ -117,10 +123,8 @@ void Controller::run()
   prev_time_us_ = RF_.estimator_.state().timestamp_us;
 
   // Check if integrators should be updated
-  //! @todo better way to figure out if throttle is high
-  // TODO: fix this... Needs to be checked based on the throttle channel (not necessarily Fz)
   bool update_integrators = (RF_.state_manager_.state().armed)
-    && (RF_.command_manager_.combined_control().Fz.value > 0.1f) && dt_us < 10000;
+    && is_throttle_high(0.1f) && dt_us < 10000;
 
   // Run the PID loops
   Controller::Output pid_output = run_pid_loops(

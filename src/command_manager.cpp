@@ -114,7 +114,6 @@ void CommandManager::init_failsafe()
 void CommandManager::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  // TODO: Adjust this to choose the channel that the RC thottle corresponds to
   rc_command_.Qx.value = RF_.rc_.stick(RC::STICK_X);
   rc_command_.Qy.value = RF_.rc_.stick(RC::STICK_Y);
   rc_command_.Qz.value = RF_.rc_.stick(RC::STICK_Z);
@@ -307,7 +306,6 @@ bool CommandManager::run()
     if (RF_.board_.clock_millis()
         > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT)) {
       // If it has been longer than 100 ms, then disable the offboard control
-      // TODO: Check to make sure the FX and FY commands can be set to true
       offboard_command_.Fx.active = false;
       offboard_command_.Fy.active = false;
       offboard_command_.Fz.active = false;

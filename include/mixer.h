@@ -278,7 +278,7 @@ private:
   float R_;                      // Motor resistance
   float rho_;                    // Air density
   float K_V_;                    // Motor back-emf constant
-  float K_Q_ = 0.01706;          // Motor torque constant
+  float K_Q_;                    // Motor torque constant
   float i_0_;                    // Motor no-load current
   float D_;                      // Propeller diameter
   float C_T_;                    // Thrust coefficient

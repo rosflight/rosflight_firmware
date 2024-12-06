@@ -805,17 +805,17 @@ void Mixer::mix_fixedwing()
   Controller::Output commands = RF_.controller_.output();
   
   // Reverse fixed-wing channels just before mixing if we need to
-  if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
-    commands.Qx *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-    commands.Qy *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-    commands.Qz *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
-  }
+  commands.Qx *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+  commands.Qy *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+  commands.Qz *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
 
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if ((*mixer_to_use_.output_type)[i] != NONE) {
       // Matrix multiply to mix outputs
       outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
+                    commands.Fy * (*mixer_to_use_.Fy)[i] +
+                    commands.Fz * (*mixer_to_use_.Fz)[i] +
                     commands.Qx * (*mixer_to_use_.Qx)[i] +
                     commands.Qy * (*mixer_to_use_.Qy)[i] +
                     commands.Qz * (*mixer_to_use_.Qz)[i];
