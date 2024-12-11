@@ -19,18 +19,18 @@ params = []
 i = 0
 for line in lines:
     # search for init_param lines
-    match = re.search("^\s*init_param", line)
+    match = re.search(r"^\s*init_param", line)
     if match != None:
-        name_with_quotes = re.search("\".*\"", line).group(0)
-        name = re.search("\w{1,16}", name_with_quotes).group(0)
+        name_with_quotes = re.search(r"\".*\"", line).group(0)
+        name = re.search(r"\w{1,16}", name_with_quotes).group(0)
         if name != 'DEFAULT':
             params.append(dict())
-            params[i]['type'] = re.split("\(", re.split("_", line)[2])[0]
+            params[i]['type'] = re.split(r"\(", re.split(r"_", line)[2])[0]
             params[i]['name'] = name
             # Find default value
-            params[i]['default'] =  re.split("\)", re.split(",", line)[2])[0]
+            params[i]['default'] =  re.split(r"\)", re.split(r",", line)[2])[0]
             # isolate the comment portion of the line and split it on the "|" characters
-            comment = re.split("\|", re.split("//", line)[1])
+            comment = re.split(r"\|", re.split(r"//", line)[1])
             # Isolate the Description
             params[i]["description"] = comment[0].strip()
             params[i]["min"] = comment[1].strip()
