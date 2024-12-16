@@ -34,9 +34,6 @@
 #include "rosflight.h"
 
 #include <cstdint>
-// We don't have a method to print the mixer currently being used for the user's benefit.
-// Keeping iostream is a temporary patch that is very useful when using the mixer.
-#include <iostream>
 
 namespace rosflight_firmware
 {
@@ -260,7 +257,7 @@ void Mixer::init_mixing()
     if (array_of_mixers_[mixer_choice] == &custom_mixing) {
       // Load the custom mixer for the primary mixer based off the saved parameters.
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                            "Loading saved custom mixer values for the primary mixer...");
+                            "Loading saved custom values to primary mixer...");
 
       load_primary_mixer_values();
 
@@ -293,13 +290,15 @@ void Mixer::init_mixing()
 
   if (mixer_choice >= NUM_MIXERS) {
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-        "Invalid mixer selected for secondary mixer, secondary mixer defaulting to primary");
+        "Invalid mixer selected for secondary mixer!");
+    RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
+        "Secondary mixer defaulting to primary!");
     
     secondary_mixer_ = primary_mixer_;
   } else if (array_of_mixers_[mixer_choice] == &custom_mixing) {
     // Load the custom mixer for the secondary mixer based off the saved parameters.
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                          "Loading saved custom mixer values for the secondary mixer...");
+                          "Loading saved custom values to secondary mixer");
 
     load_secondary_mixer_values();
   } else if (array_of_mixers_[mixer_choice] != &fixedwing_mixing &&
@@ -313,76 +312,6 @@ void Mixer::init_mixing()
     secondary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
   } else {
     secondary_mixer_ = *array_of_mixers_[mixer_choice];
-  }
-
-  if (mixer_to_use_.primary_mixer_ptr != nullptr) {
-    std::cout << "Primary Mixer: " << std::endl;
-    for (auto i : primary_mixer_.output_type) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.default_pwm_rate) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.Fx) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.Fy) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.Fz) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.Qx) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.Qy) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : primary_mixer_.Qz) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Secondary Mixer: " << std::endl;
-    for (auto i : secondary_mixer_.output_type) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.default_pwm_rate) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.Fx) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.Fy) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.Fz) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.Qx) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.Qy) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
-    for (auto i : secondary_mixer_.Qz) {
-      std::cout << i << " ";
-    }
-    std::cout << std::endl;
   }
 
   init_PWM();
@@ -641,35 +570,6 @@ void Mixer::init_PWM()
   } else {
     RF_.board_.pwm_init_multi(esc_calibration_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
   }
-}
-
-void Mixer::write_motor(uint8_t index, float value)
-{
-  if (RF_.state_manager_.state().armed) {
-    if (value > 1.0) {
-      value = 1.0;
-    } else if (value < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)
-               && RF_.params_.get_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED)) {
-      value = RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE);
-    } else if (value < 0.0) {
-      value = 0.0;
-    }
-  } else {
-    value = 0.0;
-  }
-  raw_outputs_[index] = value;
-  RF_.board_.pwm_write(index, raw_outputs_[index]);
-}
-
-void Mixer::write_servo(uint8_t index, float value)
-{
-  if (value > 1.0) {
-    value = 1.0;
-  } else if (value < -1.0) {
-    value = -1.0;
-  }
-  raw_outputs_[index] = value;
-  RF_.board_.pwm_write(index, raw_outputs_[index] * 0.5 + 0.5);
 }
 
 void Mixer::set_new_aux_command(aux_command_t new_aux_command)

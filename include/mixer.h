@@ -121,8 +121,6 @@ private:
   aux_command_t aux_command_;
   output_type_t combined_output_type_[NUM_TOTAL_OUTPUTS];
 
-  void write_motor(uint8_t index, float value);
-  void write_servo(uint8_t index, float value);
   void add_header_to_mixer(mixer_t* mixer);
   void load_primary_mixer_values();
   void load_secondary_mixer_values();
