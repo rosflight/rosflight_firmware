@@ -99,7 +99,12 @@ void CommandManager::init_failsafe()
     case Y_AXIS:
       multirotor_failsafe_command_.Fy.value = failsafe_thr_param;
       break;
+    case Z_AXIS:
+      multirotor_failsafe_command_.Fz.value = failsafe_thr_param;
+      break;
     default:
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+          "Invalid RC F axis. Defaulting to z-axis.");
       multirotor_failsafe_command_.Fz.value = failsafe_thr_param;
       break;
   }
@@ -130,7 +135,14 @@ void CommandManager::interpret_rc(void)
       rc_command_.Fy.value = RF_.rc_.stick(RC::STICK_F);
       rc_command_.Fz.value = 0.0;
       break;
-    default:   // RC F = Z axis
+    case Z_AXIS:
+      rc_command_.Fx.value = 0.0;
+      rc_command_.Fy.value = 0.0;
+      rc_command_.Fz.value = RF_.rc_.stick(RC::STICK_F);
+      break;
+    default:
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+          "Invalid RC F axis. Defaulting to z-axis.");
       rc_command_.Fx.value = 0.0;
       rc_command_.Fy.value = 0.0;
       rc_command_.Fz.value = RF_.rc_.stick(RC::STICK_F);
@@ -232,7 +244,12 @@ bool CommandManager::do_throttle_muxing(void)
     case Y_AXIS: 
       selected_channel = MUX_FY;
       break;
+    case Z_AXIS:
+      selected_channel = MUX_FZ;
+      break;
     default:
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+          "Invalid RC F axis. Defaulting to z-axis.");
       selected_channel = MUX_FZ;
       break;
   }

@@ -661,7 +661,12 @@ void Mixer::mix_multirotor()
     case Y_AXIS:
       throttle_command = commands.Fy;
       break;
+    case Z_AXIS:
+      throttle_command = commands.Fz;
+      break;
     default:
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+          "Invalid RC F axis. Defaulting to z-axis.");
       throttle_command = commands.Fz;
       break;
   }
