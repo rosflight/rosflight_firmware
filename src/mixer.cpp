@@ -394,170 +394,32 @@ void Mixer::load_primary_mixer_values()
   primary_mixer_.default_pwm_rate[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_9);
 
   // Load the mixer values from the firmware parameters
-  // for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
-  //   // This assumes the parameters are stored in order in the param enum
-  //   int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
-  //   primary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
-  //   primary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
-  //   primary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
-  //   primary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
-  //   primary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
-  //   primary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
-  // }
-  primary_mixer_.Fx[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_0);
-  primary_mixer_.Fy[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_0);
-  primary_mixer_.Fz[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_0);
-  primary_mixer_.Qx[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_0);
-  primary_mixer_.Qy[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_0);
-  primary_mixer_.Qz[0] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_0);
-                
-  primary_mixer_.Fx[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_1);
-  primary_mixer_.Fy[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_1);
-  primary_mixer_.Fz[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_1);
-  primary_mixer_.Qx[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_1);
-  primary_mixer_.Qy[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_1);
-  primary_mixer_.Qz[1] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_1);
-                
-  primary_mixer_.Fx[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_2);
-  primary_mixer_.Fy[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_2);
-  primary_mixer_.Fz[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_2);
-  primary_mixer_.Qx[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_2);
-  primary_mixer_.Qy[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_2);
-  primary_mixer_.Qz[2] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_2);
-                
-  primary_mixer_.Fx[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_3);
-  primary_mixer_.Fy[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_3);
-  primary_mixer_.Fz[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_3);
-  primary_mixer_.Qx[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_3);
-  primary_mixer_.Qy[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_3);
-  primary_mixer_.Qz[3] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_3);
-                
-  primary_mixer_.Fx[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_4);
-  primary_mixer_.Fy[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_4);
-  primary_mixer_.Fz[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_4);
-  primary_mixer_.Qx[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_4);
-  primary_mixer_.Qy[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_4);
-  primary_mixer_.Qz[4] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_4);
-                
-  primary_mixer_.Fx[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_5);
-  primary_mixer_.Fy[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_5);
-  primary_mixer_.Fz[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_5);
-  primary_mixer_.Qx[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_5);
-  primary_mixer_.Qy[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_5);
-  primary_mixer_.Qz[5] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_5);
-                
-  primary_mixer_.Fx[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_6);
-  primary_mixer_.Fy[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_6);
-  primary_mixer_.Fz[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_6);
-  primary_mixer_.Qx[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_6);
-  primary_mixer_.Qy[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_6);
-  primary_mixer_.Qz[6] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_6);
-                
-  primary_mixer_.Fx[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_7);
-  primary_mixer_.Fy[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_7);
-  primary_mixer_.Fz[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_7);
-  primary_mixer_.Qx[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_7);
-  primary_mixer_.Qy[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_7);
-  primary_mixer_.Qz[7] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_7);
-                
-  primary_mixer_.Fx[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_8);
-  primary_mixer_.Fy[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_8);
-  primary_mixer_.Fz[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_8);
-  primary_mixer_.Qx[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_8);
-  primary_mixer_.Qy[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_8);
-  primary_mixer_.Qz[8] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_8);
-                
-  primary_mixer_.Fx[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_0_9);
-  primary_mixer_.Fy[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_1_9);
-  primary_mixer_.Fz[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_2_9);
-  primary_mixer_.Qx[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_3_9);
-  primary_mixer_.Qy[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_4_9);
-  primary_mixer_.Qz[9] = RF_.params_.get_param_float(PARAM_PRIMARY_MIXER_5_9);
+  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
+    // This assumes the parameters are stored in order in the param enum
+    int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
+    primary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
+    primary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
+    primary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
+    primary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
+    primary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
+    primary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
+  }
 }
 
 void Mixer::load_secondary_mixer_values()
 {
   // Load the mixer values from the firmware parameters
   // The header values will be the same as the primary mixer
-  // for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
-  //   // This assumes the parameters are stored in order in the param enum
-  //   int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
-  //   secondary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
-  //   secondary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
-  //   secondary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
-  //   secondary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
-  //   secondary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
-  //   secondary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
-  // }
-  secondary_mixer_.Fx[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_0);
-  secondary_mixer_.Fy[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_0);
-  secondary_mixer_.Fz[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_0);
-  secondary_mixer_.Qx[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_0);
-  secondary_mixer_.Qy[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_0);
-  secondary_mixer_.Qz[0] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_0);
-                
-  secondary_mixer_.Fx[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_1);
-  secondary_mixer_.Fy[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_1);
-  secondary_mixer_.Fz[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_1);
-  secondary_mixer_.Qx[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_1);
-  secondary_mixer_.Qy[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_1);
-  secondary_mixer_.Qz[1] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_1);
-                
-  secondary_mixer_.Fx[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_2);
-  secondary_mixer_.Fy[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_2);
-  secondary_mixer_.Fz[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_2);
-  secondary_mixer_.Qx[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_2);
-  secondary_mixer_.Qy[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_2);
-  secondary_mixer_.Qz[2] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_2);
-                
-  secondary_mixer_.Fx[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_3);
-  secondary_mixer_.Fy[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_3);
-  secondary_mixer_.Fz[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_3);
-  secondary_mixer_.Qx[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_3);
-  secondary_mixer_.Qy[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_3);
-  secondary_mixer_.Qz[3] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_3);
-                
-  secondary_mixer_.Fx[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_4);
-  secondary_mixer_.Fy[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_4);
-  secondary_mixer_.Fz[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_4);
-  secondary_mixer_.Qx[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_4);
-  secondary_mixer_.Qy[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_4);
-  secondary_mixer_.Qz[4] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_4);
-                
-  secondary_mixer_.Fx[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_5);
-  secondary_mixer_.Fy[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_5);
-  secondary_mixer_.Fz[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_5);
-  secondary_mixer_.Qx[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_5);
-  secondary_mixer_.Qy[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_5);
-  secondary_mixer_.Qz[5] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_5);
-                
-  secondary_mixer_.Fx[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_6);
-  secondary_mixer_.Fy[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_6);
-  secondary_mixer_.Fz[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_6);
-  secondary_mixer_.Qx[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_6);
-  secondary_mixer_.Qy[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_6);
-  secondary_mixer_.Qz[6] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_6);
-                
-  secondary_mixer_.Fx[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_7);
-  secondary_mixer_.Fy[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_7);
-  secondary_mixer_.Fz[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_7);
-  secondary_mixer_.Qx[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_7);
-  secondary_mixer_.Qy[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_7);
-  secondary_mixer_.Qz[7] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_7);
-                
-  secondary_mixer_.Fx[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_8);
-  secondary_mixer_.Fy[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_8);
-  secondary_mixer_.Fz[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_8);
-  secondary_mixer_.Qx[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_8);
-  secondary_mixer_.Qy[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_8);
-  secondary_mixer_.Qz[8] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_8);
-                
-  secondary_mixer_.Fx[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_0_9);
-  secondary_mixer_.Fy[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_1_9);
-  secondary_mixer_.Fz[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_2_9);
-  secondary_mixer_.Qx[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_3_9);
-  secondary_mixer_.Qy[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_4_9);
-  secondary_mixer_.Qz[9] = RF_.params_.get_param_float(PARAM_SECONDARY_MIXER_5_9);
+  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
+    // This assumes the parameters are stored in order in the param enum
+    int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
+    secondary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
+    secondary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
+    secondary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
+    secondary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
+    secondary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
+    secondary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
+  }
 }
 
 void Mixer::init_PWM()
