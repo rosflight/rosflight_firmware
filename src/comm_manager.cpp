@@ -293,7 +293,7 @@ void CommManager::aux_command_callback(const CommLinkInterface::AuxCommand & com
     switch (command.cmd_array[i].type) {
       case CommLinkInterface::AuxCommand::Type::DISABLED:
         // Channel is either not used or is controlled by the mixer
-        new_aux_command.channel[i].type = Mixer::NONE;
+        new_aux_command.channel[i].type = Mixer::AUX;
         new_aux_command.channel[i].value = 0;
         break;
       case CommLinkInterface::AuxCommand::Type::SERVO:

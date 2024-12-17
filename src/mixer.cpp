@@ -43,7 +43,7 @@ Mixer::Mixer(ROSflight & _rf)
   mixer_to_use_.primary_mixer_ptr = nullptr;
 
   for (int8_t i = 0; i < NUM_TOTAL_OUTPUTS; i++) {
-    aux_command_.channel[i].type = NONE;
+    aux_command_.channel[i].type = AUX;
     aux_command_.channel[i].value = 0.0f;
   }
 }
@@ -584,7 +584,7 @@ float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands
   float max_output = 1.0;
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if ((*mixer_to_use_.output_type)[i] != NONE) {
+    if ((*mixer_to_use_.output_type)[i] != AUX) {
       // Matrix multiply to mix outputs
       outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
                     commands.Fy * (*mixer_to_use_.Fy)[i] +
@@ -711,7 +711,7 @@ void Mixer::mix_fixedwing()
 
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if ((*mixer_to_use_.output_type)[i] != NONE) {
+    if ((*mixer_to_use_.output_type)[i] != AUX) {
       // Matrix multiply to mix outputs
       outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
                     commands.Fy * (*mixer_to_use_.Fy)[i] +
@@ -761,7 +761,7 @@ void Mixer::mix_output()
   // For the first NUM_MIXER_OUTPUTS channels, only write aux_command to channels the mixer is not
   // using
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    if ((*mixer_to_use_.output_type)[i] == NONE) {
+    if ((*mixer_to_use_.output_type)[i] == AUX) {
       outputs_[i] = aux_command_.channel[i].value;
       combined_output_type_[i] = aux_command_.channel[i].type;
     } else {
