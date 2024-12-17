@@ -79,7 +79,7 @@ void Controller::calculate_max_thrust()
 {
   float R = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE);
   float D = RF_.params_.get_param_float(PARAM_PROP_DIAMETER);
-  float rho = RF_.params_.get_param_float(PARAM_AIR_DENSITY);
+  float rho = RF_.sensors_.rho();
   float CQ = RF_.params_.get_param_float(PARAM_PROP_CQ);
   float CT = RF_.params_.get_param_float(PARAM_PROP_CT);
   float KV = RF_.params_.get_param_float(PARAM_MOTOR_KV);
@@ -210,8 +210,6 @@ void Controller::param_change_callback(uint16_t param_id)
     case PARAM_PID_YAW_RATE_D:
     case PARAM_MOTOR_RESISTANCE:
     case PARAM_PROP_DIAMETER:
-    case PARAM_AIR_DENSITY:
-    case PARAM_PROP_CQ:
     case PARAM_PROP_CT:
     case PARAM_MOTOR_KV:
     case PARAM_NO_LOAD_CURRENT:

@@ -108,8 +108,6 @@ void Params::set_defaults(void)
   init_param_int(PARAM_BAUD_RATE, "BAUD_RATE", 921600); // Baud rate of MAVlink communication with companion computer | 9600 | 921600
   init_param_int(PARAM_SERIAL_DEVICE, "SERIAL_DEVICE", 0); // Serial Port (for supported devices) | 0 | 3
 
-  init_param_float(PARAM_AIR_DENSITY, "AIR_DENSITY", 1.225f); // Density of the air (kg/m^3) | 0 | 1000.0
-
   init_param_int(PARAM_NUM_MOTORS, "NUM_MOTORS", 4); // Number of vertical-facing motors on the vehicle | 1 | 8
   init_param_float(PARAM_MOTOR_RESISTANCE, "MOTOR_RESISTANCE", 0.042f); // Electrical resistance of the motor windings (ohms) | 0 | 1000.0
   init_param_float(PARAM_MOTOR_KV, "MOTOR_KV", 0.01706f); // Back emf constant of the motor in SI units (V/rad/s) | 0 | 1000.0

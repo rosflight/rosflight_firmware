@@ -219,7 +219,6 @@ void Mixer::param_change_callback(uint16_t param_id)
       init_mixing();
       break;
     case PARAM_MOTOR_RESISTANCE:
-    case PARAM_AIR_DENSITY:
     case PARAM_MOTOR_KV:
     case PARAM_NO_LOAD_CURRENT:
     case PARAM_PROP_DIAMETER:
@@ -325,7 +324,6 @@ void Mixer::init_mixing()
 void Mixer::update_parameters()
 {
   R_ = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE);
-  rho_ = RF_.params_.get_param_float(PARAM_AIR_DENSITY);
   K_V_ = RF_.params_.get_param_float(PARAM_MOTOR_KV);
   K_Q_ = K_V_;
   i_0_ = RF_.params_.get_param_float(PARAM_NO_LOAD_CURRENT);
@@ -610,6 +608,8 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
   // Mix the inputs
   float max_output = 1.0;
 
+  float rho = RF_.sensors_.rho();
+
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if ((*mixer_to_use_.output_type)[i] == M) {
       // Matrix multiply to mix outputs for Motor type
@@ -625,7 +625,7 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
 
       // Ch. 4, setting equation for torque produced by a propeller equal to Eq. 4.19
       // Note that we assume constant advance ratio, leading to constant torque and thrust constants.
-      float V_in = rho_ * pow(D_, 5.0) / (4.0 * pow(M_PI, 2.0)) * omega_squared * C_Q_ * R_ / K_Q_
+      float V_in = rho * pow(D_, 5.0) / (4.0 * pow(M_PI, 2.0)) * omega_squared * C_Q_ * R_ / K_Q_
         + R_ * i_0_ + K_V_ * sqrt(omega_squared);
 
       // Convert desired V_in setting to a throttle setting

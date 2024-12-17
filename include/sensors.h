@@ -177,6 +177,7 @@ public:
   Sensors(ROSflight & rosflight);
 
   inline const Data & data() const { return data_; }
+  inline float rho() { return rho_; }
   void get_filtered_IMU(turbomath::Vector & accel, turbomath::Vector & gyro, uint64_t & stamp_us);
 
   // function declarations
@@ -226,6 +227,8 @@ private:
 
   float accel_[3] = {0, 0, 0};
   float gyro_[3] = {0, 0, 0};
+
+  float rho_ = 1.225;
 
   bool calibrating_acc_flag_ = false;
   bool calibrating_gyro_flag_ = false;

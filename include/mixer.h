@@ -274,7 +274,6 @@ private:
 
   // Define parameters for the mixer
   float R_;                      // Motor resistance
-  float rho_;                    // Air density
   float K_V_;                    // Motor back-emf constant
   float K_Q_;                    // Motor torque constant
   float i_0_;                    // Motor no-load current
