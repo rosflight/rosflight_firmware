@@ -146,7 +146,7 @@ public:
     float imu_temperature = 0;
     uint64_t imu_time = 0;
 
-    float diff_pressure_velocity = 0;
+    float diff_pressure_ias = 0;
     float diff_pressure = 0;
     float diff_pressure_temp = 0;
 
@@ -271,7 +271,6 @@ private:
 
   // Baro Calibration
   bool baro_calibrated_ = false;
-  float ground_pressure_ = 0.0f;
   uint16_t baro_calibration_count_ = 0;
   uint32_t last_baro_cal_iter_ms_ = 0;
   float baro_calibration_mean_ = 0.0f;

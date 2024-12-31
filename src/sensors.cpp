@@ -66,9 +66,6 @@ void Sensors::init()
 
   next_sensor_to_update_ = BAROMETER;
 
-  float alt = rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
-  ground_pressure_ = 101325.0f * static_cast<float>(pow((1 - 2.25694e-5 * alt), 5.2553));
-
   int_start_us_ = rf_.board_.clock_micros();
 
   this->update_battery_monitor_multipliers();
@@ -464,17 +461,19 @@ void Sensors::calibrate_baro()
       // else reset cal variables and start over
       if (baro_calibration_var_ < BARO_MAX_CALIBRATION_VARIANCE) {
         rf_.params_.set_param_float(PARAM_BARO_BIAS, baro_calibration_mean_);
+        // set ground altitude to be pressure altitude at PARAM_BARO_BIAS
+        rf_.params_.set_param_float(PARAM_GROUND_LEVEL,turbomath::alt(rf_.params_.get_param_float(PARAM_BARO_BIAS)));
         baro_calibrated_ = true;
-        rf_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "Baro Cal successful!");
+        rf_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO, "Baro ground pressure cal successful!");
       } else {
         rf_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
-                              "Too much movement for barometer cal");
+                              "Too much movement for barometer ground pressure cal");
       }
       baro_calibration_mean_ = 0.0f;
       baro_calibration_var_ = 0.0f;
       baro_calibration_count_ = 0;
     } else if (baro_calibration_count_ > SENSOR_CAL_DELAY_CYCLES) {
-      float measurement = data_.baro_pressure - ground_pressure_;
+      float measurement = data_.baro_pressure;
       float delta = measurement - baro_calibration_mean_;
       baro_calibration_mean_ += delta / (baro_calibration_count_ - SENSOR_CAL_DELAY_CYCLES);
       float delta2 = measurement - baro_calibration_mean_;
@@ -553,9 +552,7 @@ void Sensors::correct_mag(void)
 void Sensors::correct_baro(void)
 {
   if (!baro_calibrated_) { calibrate_baro(); }
-  data_.baro_pressure -= rf_.params_.get_param_float(PARAM_BARO_BIAS);
-  data_.baro_altitude =
-    turbomath::alt(data_.baro_pressure) - rf_.params_.get_param_float(PARAM_GROUND_LEVEL);
+  data_.baro_altitude = turbomath::alt(data_.baro_pressure);
 }
 
 void Sensors::correct_diff_pressure()
@@ -563,10 +560,9 @@ void Sensors::correct_diff_pressure()
   if (!diff_pressure_calibrated_) { calibrate_diff_pressure(); }
   data_.diff_pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
 
-  float atm = 101325.0f;
-  if (data_.baro_present) { atm = data_.baro_pressure; }
-  data_.diff_pressure_velocity = turbomath::fsign(data_.diff_pressure) * 24.574f
-    / turbomath::inv_sqrt((turbomath::fabs(data_.diff_pressure) * data_.diff_pressure_temp / atm));
+  // compute indicated air speed
+  data_.diff_pressure_ias = turbomath::fsign(data_.diff_pressure)
+    * sqrt((fabs(data_.diff_pressure)/(0.5*1.225)));
 }
 
 void Sensors::update_battery_monitor_multipliers()
