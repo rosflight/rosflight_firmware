@@ -28,15 +28,6 @@ if("${GIT_VERSION_HASH}" STREQUAL "")
   set(GIT_VERSION_HASH "0")
 endif()
 
-### Install Eigen dependency ###
-include(FetchContent)
-FetchContent_Declare(
-  Eigen3
-  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-  GIT_TAG origin/3.4
-)
-FetchContent_MakeAvaliable(Eigen3)
-
 ### source files ###
 include_directories(
     include
@@ -45,7 +36,6 @@ include_directories(
     comms/mavlink
     comms/mavlink/v1.0
     comms/mavlink/v1.0/common
-    ${eigen3_SOURCE_DIR}
 )
 
 file(GLOB_RECURSE ROSFLIGHT_SOURCES
