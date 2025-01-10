@@ -239,16 +239,6 @@ private:
     {0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_y Mix 
     {0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix 
 
-  const mixer_t custom_mixing = {
-    {AUX, AUX, AUX, AUX, AUX, AUX, AUX, AUX, AUX, AUX},  // output type
-    {  50,   50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz or kHz)
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_y Mix
-    {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}; // Q_z Mix
-
   mixer_t primary_mixer_;
   mixer_t secondary_mixer_;
 
@@ -267,7 +257,6 @@ private:
     &X8_mixing,
     &fixedwing_mixing,
     &fixedwing_inverted_vtail_mixing,
-    &custom_mixing,
   };
 
   // clang-format on
