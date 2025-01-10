@@ -249,7 +249,7 @@ void Mixer::init_mixing()
       primary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
     } else {
       // Don't invert the fixedwing mixers
-      primary_mixer_ = array_of_mixers_[mixer_choice];
+      primary_mixer_ = *array_of_mixers_[mixer_choice];
     }
 
     // Load the primary mixer header to the mixer_to_use_ header. Note that both the primary and 
@@ -293,7 +293,7 @@ void Mixer::init_mixing()
     secondary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
   } else {
     // Don't invert the fixedwing mixers
-    secondary_mixer_ = array_of_mixers_[mixer_choice];
+    secondary_mixer_ = *array_of_mixers_[mixer_choice];
   }
 
   init_PWM();
@@ -317,19 +317,19 @@ void Mixer::update_parameters()
   V_max_ = RF_.params_.get_param_float(PARAM_VOLT_MAX);
 }
 
-Mixer::mixer_t Mixer::invert_mixer(const mixer_t mixer_to_invert)
+Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
 {
   Eigen::Matrix<float, 6, NUM_MIXER_OUTPUTS> mixer_matrix;
   mixer_matrix.setZero();
 
   // Convert the mixer_t to an Eigen matrix
   for (int i=0; i<NUM_MIXER_OUTPUTS; i++) {
-    mixer_matrix(0, i) = mixer_to_invert.Fx[i];
-    mixer_matrix(1, i) = mixer_to_invert.Fy[i];
-    mixer_matrix(2, i) = mixer_to_invert.Fz[i];
-    mixer_matrix(3, i) = mixer_to_invert.Qx[i];
-    mixer_matrix(4, i) = mixer_to_invert.Qy[i];
-    mixer_matrix(5, i) = mixer_to_invert.Qz[i];
+    mixer_matrix(0, i) = mixer_to_invert->Fx[i];
+    mixer_matrix(1, i) = mixer_to_invert->Fy[i];
+    mixer_matrix(2, i) = mixer_to_invert->Fz[i];
+    mixer_matrix(3, i) = mixer_to_invert->Qx[i];
+    mixer_matrix(4, i) = mixer_to_invert->Qy[i];
+    mixer_matrix(5, i) = mixer_to_invert->Qz[i];
   }
 
   // Calculate the pseudoinverse of the mixing matrix using the SVD
@@ -355,8 +355,8 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t mixer_to_invert)
   mixer_t inverted_mixer;
 
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
-    inverted_mixer.output_type[i] = mixer_to_invert.output_type[i];
-    inverted_mixer.default_pwm_rate[i] = mixer_to_invert.default_pwm_rate[i];
+    inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
+    inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
     inverted_mixer.Fx[i] = mixer_matrix_pinv(i, 0);
     inverted_mixer.Fy[i] = mixer_matrix_pinv(i, 1);
     inverted_mixer.Fz[i] = mixer_matrix_pinv(i, 2);

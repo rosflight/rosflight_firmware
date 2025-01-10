@@ -122,7 +122,7 @@ private:
 
   void load_primary_mixer_values();
   void load_secondary_mixer_values();
-  mixer_t invert_mixer(const mixer_t mixer_to_invert);
+  mixer_t invert_mixer(const mixer_t* mixer_to_invert);
   float mix_multirotor_with_motor_parameters(Controller::Output commands);
   float mix_multirotor_without_motor_parameters(Controller::Output commands);
   void select_primary_or_secondary_mixer();
@@ -255,19 +255,19 @@ private:
   mixer_selection_t mixer_to_use_;
   bool primary_mixer_is_selected_ = false;
 
-  const mixer_t array_of_mixers_[NUM_MIXERS] = {
-    esc_calibration_mixing,
-    quadcopter_plus_mixing,
-    quadcopter_x_mixing,
-    hex_plus_mixing,
-    hex_x_mixing,
-    octocopter_plus_mixing,
-    octocopter_x_mixing,
-    Y6_mixing,
-    X8_mixing,
-    fixedwing_mixing,
-    fixedwing_inverted_vtail_mixing,
-    custom_mixing,
+  const mixer_t* array_of_mixers_[NUM_MIXERS] = {
+    &esc_calibration_mixing,
+    &quadcopter_plus_mixing,
+    &quadcopter_x_mixing,
+    &hex_plus_mixing,
+    &hex_x_mixing,
+    &octocopter_plus_mixing,
+    &octocopter_x_mixing,
+    &Y6_mixing,
+    &X8_mixing,
+    &fixedwing_mixing,
+    &fixedwing_inverted_vtail_mixing,
+    &custom_mixing,
   };
 
   // clang-format on
