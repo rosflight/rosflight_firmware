@@ -272,7 +272,16 @@ bool CommandManager::do_throttle_muxing(void)
   }
 
   // Set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes[selected_channel].combined = override_this_channel ? *muxes[selected_channel].rc : *muxes[selected_channel].onboard;
+  // Either RC overrides all force inputs, or none
+  if (override_this_channel) {
+    *muxes[MUX_FX].combined = *muxes[MUX_FX].rc;
+    *muxes[MUX_FY].combined = *muxes[MUX_FY].rc;
+    *muxes[MUX_FZ].combined = *muxes[MUX_FZ].rc;
+  } else {
+    *muxes[MUX_FX].combined = *muxes[MUX_FX].onboard;
+    *muxes[MUX_FY].combined = *muxes[MUX_FY].onboard;
+    *muxes[MUX_FZ].combined = *muxes[MUX_FZ].onboard;
+  }
   return override_this_channel;
 }
 

@@ -36,8 +36,8 @@ public:
                                 {true, ANGLE, OFFBOARD_QX},
                                 {true, ANGLE, OFFBOARD_QY},
                                 {true, RATE, OFFBOARD_QZ},
-                                {true, THROTTLE, OFFBOARD_FX}
-                                {true, THROTTLE, OFFBOARD_FY}
+                                {true, THROTTLE, OFFBOARD_FX},
+                                {true, THROTTLE, OFFBOARD_FY},
                                 {true, THROTTLE, OFFBOARD_FZ}};
 
   CommandManagerTest()
@@ -55,8 +55,7 @@ public:
     for (int i = 0; i < 8; i++) { rc_values[i] = 1500; }
     rc_values[2] = 1000;
 
-    // TODO: Fix this unit test. There is no passthrough mixer
-    rf.params_.set_param_int(PARAM_MIXER, Mixer::PASSTHROUGH);
+    rf.params_.set_param_int(PARAM_PRIMARY_MIXER, Mixer::ESC_CALIBRATION);
     rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0);
     max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
     max_pitch = rf.params_.get_param_float(PARAM_RC_MAX_PITCH);
@@ -350,8 +349,8 @@ TEST_F(CommandManagerTest, OffboardCommandMuxMinThrottle)
   EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
   EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
   EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
-  EXPECT_CLOSE(output.Fx.value, OFFBOARD_FX);
-  EXPECT_CLOSE(output.Fy.value, OFFBOARD_FY);
+  EXPECT_CLOSE(output.Fx.value, 0.0);
+  EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
