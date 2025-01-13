@@ -35,8 +35,8 @@
 #include "interface/param_listener.h"
 #include "controller.h"
 
-#include <Eigen/Dense>
-#include <Eigen/SVD>
+#include <eigen/Eigen/Dense>
+#include <eigen/Eigen/SVD>
 
 #include <cstdbool>
 #include <cstdint>
