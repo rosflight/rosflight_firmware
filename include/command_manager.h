@@ -47,7 +47,7 @@ typedef enum
 {
   RATE,        // Channel is is in rate mode (mrad/s)
   ANGLE,       // Channel command is in angle mode (mrad)
-  THROTTLE,    // Channel is direcly controlling throttle max/1000
+  THROTTLE,    // Channel is controlling throttle setting, which will be converted to force
   PASSTHROUGH, // Channel directly passes PWM input to the mixer
 } control_type_t;
 
@@ -58,13 +58,22 @@ typedef struct
   float value;         // The value of the channel
 } control_channel_t;
 
+typedef enum
+{
+  X_AXIS,
+  Y_AXIS,
+  Z_AXIS,
+} rc_f_axis_t;
+
 typedef struct
 {
   uint32_t stamp_ms;
-  control_channel_t x;
-  control_channel_t y;
-  control_channel_t z;
-  control_channel_t F;
+  control_channel_t Qx;
+  control_channel_t Qy;
+  control_channel_t Qz;
+  control_channel_t Fx;
+  control_channel_t Fy;
+  control_channel_t Fz;
 } control_t;
 
 class CommandManager : public ParamListenerInterface
@@ -77,38 +86,50 @@ private:
     control_channel_t * combined;
   } mux_t;
 
-  mux_t muxes[4] = {{&rc_command_.x, &offboard_command_.x, &combined_command_.x},
-                    {&rc_command_.y, &offboard_command_.y, &combined_command_.y},
-                    {&rc_command_.z, &offboard_command_.z, &combined_command_.z},
-                    {&rc_command_.F, &offboard_command_.F, &combined_command_.F}};
+  mux_t muxes[6] = {{&rc_command_.Qx, &offboard_command_.Qx, &combined_command_.Qx},
+                    {&rc_command_.Qy, &offboard_command_.Qy, &combined_command_.Qy},
+                    {&rc_command_.Qz, &offboard_command_.Qz, &combined_command_.Qz},
+                    {&rc_command_.Fx, &offboard_command_.Fx, &combined_command_.Fx},
+                    {&rc_command_.Fy, &offboard_command_.Fy, &combined_command_.Fy},
+                    {&rc_command_.Fz, &offboard_command_.Fz, &combined_command_.Fz}};
 
   // clang-format off
   control_t rc_command_ = {0,
                            {false, ANGLE, 0.0},
                            {false, ANGLE, 0.0},
                            {false, RATE, 0.0},
+                           {false, THROTTLE, 0.0},
+                           {false, THROTTLE, 0.0},
                            {false, THROTTLE, 0.0}};
   control_t offboard_command_ = {0,
                                  {false, ANGLE, 0.0},
                                  {false, ANGLE, 0.0},
                                  {false, RATE, 0.0},
+                                 {false, THROTTLE, 0.0},
+                                 {false, THROTTLE, 0.0},
                                  {false, THROTTLE, 0.0}};
   control_t combined_command_ = {0,
                                  {false, ANGLE, 0.0},
                                  {false, ANGLE, 0.0},
                                  {false, RATE, 0.0},
+                                 {false, THROTTLE, 0.0},
+                                 {false, THROTTLE, 0.0},
                                  {false, THROTTLE, 0.0}};
 
   control_t multirotor_failsafe_command_ = {0,
                                             {true, ANGLE, 0.0},
                                             {true, ANGLE, 0.0},
                                             {true, RATE, 0.0},
+                                            {true, THROTTLE, 0.0},
+                                            {true, THROTTLE, 0.0},
                                             {true, THROTTLE, 0.0}};
   control_t fixedwing_failsafe_command_ = {0,
                                            {true, PASSTHROUGH, 0.0},
                                            {true, PASSTHROUGH, 0.0},
                                            {true, PASSTHROUGH, 0.0},
-                                           {true, THROTTLE, 0.0}};
+                                           {true, PASSTHROUGH, 0.0},
+                                           {true, PASSTHROUGH, 0.0},
+                                           {true, PASSTHROUGH, 0.0}};
   // clang-format on
 
   typedef enum
@@ -119,10 +140,12 @@ private:
 
   enum MuxChannel
   {
-    MUX_X,
-    MUX_Y,
-    MUX_Z,
-    MUX_F,
+    MUX_QX,
+    MUX_QY,
+    MUX_QZ,
+    MUX_FX,
+    MUX_FY,
+    MUX_FZ,
   };
 
   typedef struct
@@ -138,7 +161,8 @@ private:
   ROSflight & RF_;
 
   bool new_command_;
-  bool rc_override_;
+  bool rc_throttle_override_;
+  bool rc_attitude_override_;
 
   control_t & failsafe_command_;
 
@@ -157,6 +181,8 @@ public:
   void init();
   bool run();
   bool rc_override_active();
+  bool rc_throttle_override_active();
+  bool rc_attitude_override_active();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);

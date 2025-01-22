@@ -29,7 +29,6 @@ if("${GIT_VERSION_HASH}" STREQUAL "")
 endif()
 
 ### source files ###
-
 include_directories(
     include
     include/interface
@@ -37,7 +36,6 @@ include_directories(
     comms/mavlink
     comms/mavlink/v1.0
     comms/mavlink/v1.0/common
-    comms/mavlink/v1.0/rosflight
 )
 
 file(GLOB_RECURSE ROSFLIGHT_SOURCES

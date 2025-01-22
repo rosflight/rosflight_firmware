@@ -171,6 +171,8 @@ got_flags Sensors::run()
       got.baro = true;
       rf_.board_.baro_read(&data_.baro_pressure, &data_.baro_temperature);
       correct_baro();
+
+      rho_ = 1.225 * pow(data_.baro_pressure / 101325.0, 0.809736894596450);
     }
   }
 

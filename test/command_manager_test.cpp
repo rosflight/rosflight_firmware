@@ -9,10 +9,12 @@
 #define CHN_LOW 1100
 #define CHN_HIGH 1900
 
-#define OFFBOARD_X -1.0
-#define OFFBOARD_Y 0.5
-#define OFFBOARD_Z -0.7
-#define OFFBOARD_F 0.9
+#define OFFBOARD_QX -1.0
+#define OFFBOARD_QY 0.5
+#define OFFBOARD_QZ -0.7
+#define OFFBOARD_FX 0.9
+#define OFFBOARD_FY 0.9
+#define OFFBOARD_FZ 0.9
 
 #define RC_X_PWM 1800
 #define RC_X ((RC_X_PWM - 1500) / 500.0 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL))
@@ -31,10 +33,12 @@ public:
   float max_roll, max_pitch, max_yawrate;
 
   control_t offboard_command = {20000,
-                                {true, ANGLE, OFFBOARD_X},
-                                {true, ANGLE, OFFBOARD_Y},
-                                {true, RATE, OFFBOARD_Z},
-                                {true, THROTTLE, OFFBOARD_F}};
+                                {true, ANGLE, OFFBOARD_QX},
+                                {true, ANGLE, OFFBOARD_QY},
+                                {true, RATE, OFFBOARD_QZ},
+                                {true, THROTTLE, OFFBOARD_FX},
+                                {true, THROTTLE, OFFBOARD_FY},
+                                {true, THROTTLE, OFFBOARD_FZ}};
 
   CommandManagerTest()
       : mavlink(board)
@@ -51,7 +55,7 @@ public:
     for (int i = 0; i < 8; i++) { rc_values[i] = 1500; }
     rc_values[2] = 1000;
 
-    rf.params_.set_param_int(PARAM_MIXER, Mixer::PASSTHROUGH);
+    rf.params_.set_param_int(PARAM_PRIMARY_MIXER, Mixer::ESC_CALIBRATION);
     rf.params_.set_param_float(PARAM_FAILSAFE_THROTTLE, 0.0);
     max_roll = rf.params_.get_param_float(PARAM_RC_MAX_ROLL);
     max_pitch = rf.params_.get_param_float(PARAM_RC_MAX_PITCH);
@@ -85,14 +89,14 @@ TEST_F(CommandManagerTest, Default)
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 0.0);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, 0.0);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, 0.0);
-  EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_EQ(output.Qx.type, ANGLE);
+  EXPECT_CLOSE(output.Qx.value, 0.0);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_CLOSE(output.Qy.value, 0.0);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_CLOSE(output.Qz.value, 0.0);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, RCCommands)
@@ -104,14 +108,14 @@ TEST_F(CommandManagerTest, RCCommands)
   stepFirmware(50000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 1.0 * max_roll);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, -1.0 * max_pitch);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, -0.5 * max_yawrate);
-  EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_CLOSE(output.F.value, 0.5);
+  EXPECT_EQ(output.Qx.type, ANGLE);
+  EXPECT_CLOSE(output.Qx.value, 1.0 * max_roll);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_CLOSE(output.Qy.value, -1.0 * max_pitch);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_CLOSE(output.Qz.value, -0.5 * max_yawrate);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
+  EXPECT_CLOSE(output.Fz.value, 0.5);
 }
 
 TEST_F(CommandManagerTest, ArmWithSticksByDefault)
@@ -207,14 +211,14 @@ TEST_F(CommandManagerTest, DefaultRCOutputd)
 
   // Check the output
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 0.0);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, 0.0);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, 0.0);
-  EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_EQ(output.Qx.type, ANGLE);
+  EXPECT_CLOSE(output.Qx.value, 0.0);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_CLOSE(output.Qy.value, 0.0);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_CLOSE(output.Qz.value, 0.0);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, RCOutput)
@@ -228,14 +232,14 @@ TEST_F(CommandManagerTest, RCOutput)
   // Check the output
   EXPECT_EQ(rf.state_manager_.state().armed, false);
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, max_roll * -0.5);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, max_pitch * 0.5);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, max_yawrate);
-  EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_CLOSE(output.F.value, 0.5);
+  EXPECT_EQ(output.Qx.type, ANGLE);
+  EXPECT_CLOSE(output.Qx.value, max_roll * -0.5);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_CLOSE(output.Qy.value, max_pitch * 0.5);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_CLOSE(output.Qz.value, max_yawrate);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
+  EXPECT_CLOSE(output.Fz.value, 0.5);
 }
 
 TEST_F(CommandManagerTest, LoseRCDisarmed)
@@ -244,14 +248,14 @@ TEST_F(CommandManagerTest, LoseRCDisarmed)
   stepFirmware(50000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 0.0 * max_roll);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, 0.0 * max_pitch);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, 0.0 * max_yawrate);
-  EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_EQ(output.Qx.type, ANGLE);
+  EXPECT_CLOSE(output.Qx.value, 0.0 * max_roll);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_CLOSE(output.Qy.value, 0.0 * max_pitch);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_CLOSE(output.Qz.value, 0.0 * max_yawrate);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 
   // We should also be disarmed and in error
   EXPECT_EQ(rf.state_manager_.state().armed, false);
@@ -281,14 +285,14 @@ TEST_F(CommandManagerTest, LoseRCArmed)
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, ANGLE);
-  EXPECT_CLOSE(output.x.value, 0.0 * max_roll);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_CLOSE(output.y.value, 0.0 * max_pitch);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_CLOSE(output.z.value, 0.0 * max_yawrate);
-  EXPECT_EQ(output.F.type, THROTTLE);
-  EXPECT_CLOSE(output.F.value, rf.params_.get_param_float(PARAM_FAILSAFE_THROTTLE));
+  EXPECT_EQ(output.Qx.type, ANGLE);
+  EXPECT_CLOSE(output.Qx.value, 0.0 * max_roll);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_CLOSE(output.Qy.value, 0.0 * max_pitch);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_CLOSE(output.Qz.value, 0.0 * max_yawrate);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
+  EXPECT_CLOSE(output.Fz.value, rf.params_.get_param_float(PARAM_FAILSAFE_THROTTLE));
 
   // We should also be disarmed and in error
   EXPECT_EQ(rf.state_manager_.state().armed, true);
@@ -323,10 +327,12 @@ TEST_F(CommandManagerTest, OffboardCommandMuxNoMinThrottle)
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_CLOSE(output.F.value, OFFBOARD_F);
+  EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
+  EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
+  EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fx.value, OFFBOARD_FX);
+  EXPECT_CLOSE(output.Fy.value, OFFBOARD_FY);
+  EXPECT_CLOSE(output.Fz.value, OFFBOARD_FZ);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxMinThrottle)
@@ -340,10 +346,12 @@ TEST_F(CommandManagerTest, OffboardCommandMuxMinThrottle)
   stepFirmware(20000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
+  EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
+  EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fx.value, 0.0);
+  EXPECT_CLOSE(output.Fy.value, 0.0);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxRollDeviation)
@@ -355,10 +363,10 @@ TEST_F(CommandManagerTest, OffboardCommandMuxRollDeviation)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
-  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.Qx.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
+  EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
+  EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxPitchDeviation)
@@ -370,10 +378,10 @@ TEST_F(CommandManagerTest, OffboardCommandMuxPitchDeviation)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_CLOSE(output.y.value, 0.5 * rf.params_.get_param_float(PARAM_RC_MAX_PITCH));
-  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
+  EXPECT_CLOSE(output.Qy.value, 0.5 * rf.params_.get_param_float(PARAM_RC_MAX_PITCH));
+  EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxYawrateDeviation)
@@ -385,10 +393,10 @@ TEST_F(CommandManagerTest, OffboardCommandMuxYawrateDeviation)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
-  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_CLOSE(output.z.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE));
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
+  EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
+  EXPECT_CLOSE(output.Qz.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE));
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxLag)
@@ -400,24 +408,24 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
   stepFirmware(40000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
+  EXPECT_CLOSE(output.Qx.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
 
   rc_values[0] = 1500; // return stick to center
 
   stepFirmware(500000);
   setOffboard(offboard_command);
   output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, 0.0); // lag
+  EXPECT_CLOSE(output.Qx.value, 0.0); // lag
 
   stepFirmware(600000);
   setOffboard(offboard_command);
   output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, 0.0); // lag
+  EXPECT_CLOSE(output.Qx.value, 0.0); // lag
 
   setOffboard(offboard_command);
   stepFirmware(20000);
   output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, OFFBOARD_X);
+  EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
 }
 
 TEST_F(CommandManagerTest, StaleOffboardCommand)
@@ -430,33 +438,33 @@ TEST_F(CommandManagerTest, StaleOffboardCommand)
   stepFirmware(timeout_us + 40000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, 0.0);
+  EXPECT_CLOSE(output.Qx.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, PartialMux)
 {
-  offboard_command.x.active = false;
+  offboard_command.Qx.active = false;
   stepFirmware(1000000);
   setOffboard(offboard_command);
   stepFirmware(30000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_CLOSE(output.x.value, 0.0);
-  EXPECT_CLOSE(output.y.value, OFFBOARD_Y);
-  EXPECT_CLOSE(output.z.value, OFFBOARD_Z);
-  EXPECT_CLOSE(output.F.value, 0.0);
+  EXPECT_CLOSE(output.Qx.value, 0.0);
+  EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
+  EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fz.value, 0.0);
 }
 
 TEST_F(CommandManagerTest, MixedTypes)
 {
-  offboard_command.x.type = RATE;
+  offboard_command.Qx.type = RATE;
   stepFirmware(1000000);
   setOffboard(offboard_command);
   stepFirmware(30000);
 
   control_t output = rf.command_manager_.combined_control();
-  EXPECT_EQ(output.x.type, RATE);
-  EXPECT_EQ(output.y.type, ANGLE);
-  EXPECT_EQ(output.z.type, RATE);
-  EXPECT_EQ(output.F.type, THROTTLE);
+  EXPECT_EQ(output.Qx.type, RATE);
+  EXPECT_EQ(output.Qy.type, ANGLE);
+  EXPECT_EQ(output.Qz.type, RATE);
+  EXPECT_EQ(output.Fz.type, THROTTLE);
 }
