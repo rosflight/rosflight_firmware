@@ -247,6 +247,18 @@ void Mixer::init_mixing()
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                             "Inverting selected mixing matrix...");
       primary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
+      
+      // If using a canned mixer but the USE_MOTOR_PARAM is set to 1 (true), raise a warning.
+      // Motor parameters (thus motor speed/voltage calculations) should not be used with the canned
+      // mixers, since the output will be vanishingly small. Check online documentation for more 
+      // information.
+      if (!(RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS) == 0)) {
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+                              ("USE_MOTOR_PARAM=1, but PRIMARY_MIXER=" + std::to_string(static_cast<unsigned int>(mixer_choice)) + ", which").c_str());
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+                              "may cause issues (check docs). Is this correct?");
+      }
+
     } else {
       // Don't invert the fixedwing mixers
       primary_mixer_ = *array_of_mixers_[mixer_choice];
