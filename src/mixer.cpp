@@ -241,7 +241,7 @@ void Mixer::init_mixing()
 
       // Update the motor parameters that will be used
       update_parameters();
-    } else if (mixer_choice != FIXEDWING ||
+    } else if (mixer_choice != FIXEDWING &&
                mixer_choice != INVERTED_VTAIL) {
       // Invert the selected "canned" matrix
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
@@ -262,6 +262,21 @@ void Mixer::init_mixing()
     } else {
       // Don't invert the fixedwing mixers
       primary_mixer_ = *array_of_mixers_[mixer_choice];
+
+      // For the fixedwing canned mixers, the RC_F_AXIS parameter should be set to 0 (X-AXIS).
+      // Otherwise, the aircraft will arm and appear to be ok, but will zero out any RC throttle
+      // commands. Raise a warning if this condition is detected
+      int rc_f_axis = RF_.params_.get_param_int(PARAM_RC_F_AXIS);
+      if (!(rc_f_axis == 0)) {
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+                              ("PRIMARY_MIXER=" + std::to_string(static_cast<unsigned int>(mixer_choice))
+                              + " but RC_F_AXIS="
+                              + std::to_string(static_cast<unsigned int>(rc_f_axis))
+                              + ", which"
+                              ).c_str());
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
+                              "will cause issues (check docs). Is this correct?");
+      }
     }
 
     // Load the primary mixer header to the mixer_to_use_ header. Note that both the primary and 
