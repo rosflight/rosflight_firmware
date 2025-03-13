@@ -260,7 +260,7 @@ void Mavlink::send_sonar(uint8_t system_id,
   send_message(msg);
 }
 
-void Mavlink::send_status(uint8_t system_id, bool armed, bool failsafe, bool rc_override,
+void Mavlink::send_status(uint8_t system_id, bool armed, bool failsafe, uint8_t rc_override,
                           bool offboard, uint8_t error_code, uint8_t control_mode,
                           int16_t num_errors, int16_t loop_time_us)
 {

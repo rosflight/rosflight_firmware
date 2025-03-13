@@ -161,16 +161,15 @@ private:
   ROSflight & RF_;
 
   bool new_command_;
-  bool rc_throttle_override_;
-  bool rc_attitude_override_;
+  uint8_t rc_override_;
 
   control_t & failsafe_command_;
 
   void param_change_callback(uint16_t param_id) override;
   void init_failsafe();
 
-  bool do_roll_pitch_yaw_muxing(MuxChannel channel);
-  bool do_throttle_muxing(void);
+  uint8_t do_roll_pitch_yaw_muxing(MuxChannel channel);
+  uint8_t do_throttle_muxing(void);
   void do_min_throttle_muxing();
 
   void interpret_rc(void);
@@ -180,9 +179,7 @@ public:
   CommandManager(ROSflight & _rf);
   void init();
   bool run();
-  bool rc_override_active();
-  bool rc_throttle_override_active();
-  bool rc_attitude_override_active();
+  uint8_t rc_override_active();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
