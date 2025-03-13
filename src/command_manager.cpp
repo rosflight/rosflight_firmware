@@ -167,7 +167,7 @@ bool CommandManager::stick_deviated(MuxChannel channel)
   }
 }
 
-bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
+uint8_t CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
 {
   bool override_this_channel = false;
   // Check if the override switch exists and is triggered, or if the sticks have deviated enough to
@@ -184,10 +184,11 @@ bool CommandManager::do_roll_pitch_yaw_muxing(MuxChannel channel)
   }
   // set the combined channel output depending on whether RC is overriding for this channel or not
   *muxes[channel].combined = override_this_channel ? *muxes[channel].rc : *muxes[channel].onboard;
-  return override_this_channel;
+  if (override_this_channel) return 1U;
+  else return 0;
 }
 
-bool CommandManager::do_throttle_muxing(void)
+uint8_t CommandManager::do_throttle_muxing(void)
 {
   bool override_this_channel = false;
   // Check if the override switch exists and is triggered
@@ -209,10 +210,11 @@ bool CommandManager::do_throttle_muxing(void)
 
   // Set the combined channel output depending on whether RC is overriding for this channel or not
   *muxes[MUX_F].combined = override_this_channel ? *muxes[MUX_F].rc : *muxes[MUX_F].onboard;
-  return override_this_channel;
+  if (override_this_channel) return 1U;
+  else return 0;
 }
 
-bool CommandManager::rc_override_active() { return rc_override_; }
+uint8_t CommandManager::rc_override_active() { return rc_override_; }
 
 bool CommandManager::offboard_control_active()
 {
@@ -265,7 +267,7 @@ bool CommandManager::run()
     rc_override_ = do_roll_pitch_yaw_muxing(MUX_X);
     rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Y);
     rc_override_ |= do_roll_pitch_yaw_muxing(MUX_Z);
-    rc_override_ |= do_throttle_muxing();
+    rc_override_ += 2U*do_throttle_muxing();
 
     // Light to indicate override
     if (rc_override_) {
