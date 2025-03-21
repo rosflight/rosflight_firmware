@@ -700,7 +700,6 @@ void Mixer::mix_output()
       raw_outputs_[i] = value;
     }
   }
-  RF_.board_.pwm_write_multi(raw_outputs_, NUM_TOTAL_OUTPUTS);
 }
 
 } // namespace rosflight_firmware

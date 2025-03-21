@@ -284,7 +284,8 @@ public:
   void param_change_callback(uint16_t param_id) override;
   void set_new_aux_command(aux_command_t new_aux_command);
   inline const float * get_outputs() const { return raw_outputs_; }
-
+  float * raw_outputs() { return raw_outputs_; } // board pwm write does not expect a cont value.
+ 
   void calculate_mixer_values();
   void mix_multirotor();
   void mix_fixedwing();

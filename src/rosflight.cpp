@@ -106,14 +106,15 @@ void ROSflight::run()
   /*********************/
   /***  Control Loop ***/
   /*********************/
-  uint64_t start = board_.clock_micros();
-
+ 
   got_flags got = sensors_.run(); // IMU, GNSS, Baro, Mag, Pitot, SONAR, Battery
 
   if (got.imu) {
+    uint64_t start = board_.clock_micros();
     estimator_.run();
     controller_.run();
     mixer_.mix_output();
+    board_.pwm_write_multi(mixer_.raw_outputs(), Mixer::NUM_TOTAL_OUTPUTS);
     loop_time_us = board_.clock_micros() - start;
   }
 
