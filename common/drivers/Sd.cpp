@@ -35,38 +35,42 @@
  ******************************************************************************
  **/
 
-#include <Driver.h>
-#include <Sd.h>
+#include "Sd.h"
+#include "Time64.h"
+#include "misc.h"
 
-#include <Time64.h>
-#include <misc.h>
 #include <string.h>
 
 extern Time64 time64;
 
-#define SD_MAXBLKS (5L)
+#define SD_MAXBLKS (8L)
 #define SD_BLKSIZE (512L)
 #define SD_BUFF_SIZE (SD_MAXBLKS * SD_BLKSIZE)
-DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
-DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
+SD_DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
+SD_DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
 
 uint32_t Sd::init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Sd");
   initializationStatus_ = DRIVER_OK;
+  txComplete_ = false;
+  rxComplete_ = false;
+
   hsd_ = hsd;
+  HAL_SD_DeInit(hsd_);
   hsd_->Instance = hsd_instance;
-  hsd_->Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
+  hsd_->Init.ClockEdge = SDMMC_CLOCK_EDGE_FALLING; // PTT Check this. SDMMC_CLOCK_EDGE_RISING;
   hsd_->Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
   hsd_->Init.BusWide = SDMMC_BUS_WIDE_4B;
   hsd_->Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd_->Init.ClockDiv = 10;
+  hsd_->Init.ClockDiv = 2;
   HAL_StatusTypeDef hal_status = HAL_SD_Init(hsd_);
   if (hal_status != HAL_OK) {
     misc_printf("SD Card Initialization failure 0x%02X\n", hal_status);
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
+
   HAL_SD_CardInfoTypeDef sd_info;
   hal_status = HAL_SD_GetCardInfo(hsd_, &sd_info);
   if (hal_status != HAL_OK) {
@@ -75,51 +79,73 @@ uint32_t Sd::init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance)
     return initializationStatus_;
 
   } else {
-    misc_printf("SD Card Capacity= %.0f GB\n",
-                (double) sd_info.BlockNbr * (double) sd_info.BlockSize / 1024. / 1024. / 1024.);
+    HAL_SD_CardStateTypeDef sd_state = HAL_SD_GetCardState(hsd_);
+    misc_printf("SD Card Capacity= %.0f GB, State = %lu\n",
+                (double) sd_info.BlockNbr * (double) sd_info.BlockSize / 1024. / 1024. / 1024., sd_state);
   }
+
   return initializationStatus_;
 }
 
+#define SD_CRC_BYTES sizeof(uint32_t)
+
 bool Sd::read(uint8_t * dest, size_t len)
 {
-  uint16_t Nblocks = (len + SD_BLKSIZE - 1) / SD_BLKSIZE;
-  //	printf("Nblocks = %u\n",Nblocks);
-  //	if(Nblocks > sd_info.BlockNbr) Nblocks = sd_info.BlockNbr;
-  if (Nblocks > SD_MAXBLKS) return 0; // too large and don't want to be here forever, throw an error
+  uint16_t Nblocks = (len + SD_CRC_BYTES + SD_BLKSIZE - 1) / SD_BLKSIZE;
+  //  if(Nblocks > sd_info.BlockNbr) Nblocks = sd_info.BlockNbr;
+  if (Nblocks > SD_MAXBLKS) { return 0; } // too large and don't want to be here forever, throw an error
+
   HAL_StatusTypeDef hal_status;
-  HAL_SD_CardStateTypeDef sd_state;
 
-  uint64_t timeout = time64.Us() + 250000;
-  while ((HAL_SD_CARD_TRANSFER != (sd_state = HAL_SD_GetCardState(hsd_))) && (timeout > time64.Us()))
-    ;
-  if (HAL_SD_CARD_TRANSFER != sd_state) return 0;
+  rxComplete_ = false;
+  hal_status = HAL_SD_ReadBlocks_DMA(hsd_, sd_rx_buf, 0, Nblocks);
+  if (hal_status != HAL_OK) return false;
 
-  hal_status = HAL_SD_ReadBlocks(hsd_, sd_rx_buf, 0, Nblocks, 250);
-  HAL_SD_GetCardState(hsd_);
-  if (hal_status != HAL_OK) return 0;
-  memcpy(dest, sd_rx_buf, len);
+  uint64_t timeout = time64.Us() + 1000000; // Allow up to 1 second
 
-  return 1;
+  while (!rxComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
+
+  if (rxComplete_) {
+    // CRC must be set-up for byte sized data, i.e., hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES
+    // I'm not bothering to code for the case of data in any other format
+    if (hcrc.InputDataFormat != CRC_INPUTDATA_FORMAT_BYTES) { return false; }
+    uint32_t crc = HAL_CRC_Calculate(&hcrc, (uint32_t *) sd_rx_buf,
+                                     len); // len Assumes hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES
+    uint8_t * crc2 = (uint8_t *) (&crc);
+    uint8_t * crc1 = (uint8_t *) (&(sd_rx_buf[len]));
+    if ((crc1[0] != crc2[0]) || (crc1[1] != crc2[1]) || (crc1[2] != crc2[2]) || (crc1[3] != crc2[3])) { return false; }
+    memcpy(dest, sd_rx_buf, len);
+  }
+
+  return rxComplete_;
 }
+
 bool Sd::write(uint8_t * src, size_t len)
 {
-  uint16_t Nblocks = (len + 511) / 512;
-  //	printf("Nblocks = %u\n",Nblocks);
-  //	if(Nblocks > sd_info.BlockNbr) Nblocks = sd_info.BlockNbr;
+  uint16_t Nblocks = (len + SD_CRC_BYTES + SD_BLKSIZE - 1) / SD_BLKSIZE;
+  //  if(Nblocks > sd_info.BlockNbr) Nblocks = sd_info.BlockNbr;
   if (Nblocks > SD_MAXBLKS) return 0; // too large and don't want to be here forever, throw an error
+
   HAL_StatusTypeDef hal_status;
-  HAL_SD_CardStateTypeDef sd_state;
 
-  uint64_t timeout = time64.Us() + 250000;
-  while ((HAL_SD_CARD_TRANSFER != (sd_state = HAL_SD_GetCardState(hsd_))) && (timeout > time64.Us()))
-    ;
-  if (HAL_SD_CARD_TRANSFER != sd_state) return 0;
-
+  txComplete_ = false;
   memcpy(sd_tx_buf, src, len);
-  hal_status = HAL_SD_WriteBlocks(hsd_, sd_tx_buf, 0, Nblocks, 250);
-  HAL_SD_GetCardState(hsd_);
-  if (hal_status != HAL_OK) return 0;
+  // CRC must be set-up for byte sized data hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES
+  // I'm not bothering to code for the case of data in any other format
+  if (hcrc.InputDataFormat != CRC_INPUTDATA_FORMAT_BYTES) { return false; }
+  uint32_t crc = HAL_CRC_Calculate(&hcrc, (uint32_t *) sd_tx_buf, len);
+  uint8_t * crc2 = (uint8_t *) (&crc);
+  sd_tx_buf[len] = crc2[0];
+  sd_tx_buf[len + 1] = crc2[1];
+  sd_tx_buf[len + 2] = crc2[2];
+  sd_tx_buf[len + 3] = crc2[3];
 
-  return 1;
+  hal_status = HAL_SD_WriteBlocks_DMA(hsd_, sd_tx_buf, 0, Nblocks);
+  if (hal_status != HAL_OK) return false;
+
+  uint64_t timeout = time64.Us() + 1000000; // Allow up to 1 second
+
+  while (!txComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
+
+  return txComplete_;
 }

@@ -45,6 +45,7 @@
 #define DMA_RAM __attribute__((section("dma_ram"))) __attribute__((aligned(32))) static
 #define BDMA_RAM __attribute__((section("bdma_ram"))) __attribute__((aligned(32))) static
 #define DATA_RAM __attribute__((section(".data"))) __attribute__((aligned(32))) static
+#define SD_DMA_RAM __attribute__((section("sddma_ram"))) __attribute__((aligned(32))) static
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // USB MiddleWare

@@ -151,3 +151,15 @@ void CDC_TransmitCplt_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
 {
   if (chan == 0) varmint.vcp_.txCdcCallback();
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// SD card
+void HAL_SD_TxCpltCallback(SD_HandleTypeDef * hsd)
+{
+  if (varmint.sd_.isMy(hsd)) { varmint.sd_.endTxDma(hsd); }
+}
+
+void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
+{
+  if (varmint.sd_.isMy(hsd)) { varmint.sd_.endRxDma(hsd); }
+}

@@ -38,8 +38,8 @@
 #ifndef SD_H_
 #define SD_H_
 
-#include <BoardConfig.h>
-
+#include "BoardConfig.h"
+#include "Driver.h"
 /*
  *
  */
@@ -54,10 +54,15 @@ public:
   uint32_t init(SD_HandleTypeDef * hsd, SD_TypeDef * hsd_instance);
   bool read(uint8_t * dest, size_t len);
   bool write(uint8_t * src, size_t len);
+  bool isMy(SD_HandleTypeDef * hsd) { return hsd == hsd_; }
+  void endTxDma(SD_HandleTypeDef * hsd) { txComplete_ = true; }
+  void endRxDma(SD_HandleTypeDef * hsd) { rxComplete_ = true; }
+  uint8_t waitForReady(void);
 
 private:
   SD_HandleTypeDef * hsd_;
-
+  volatile bool txComplete_ = false;
+  volatile bool rxComplete_ = false;
 };
 
 #endif /* SD_H_ */
