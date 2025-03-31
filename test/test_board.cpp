@@ -140,7 +140,7 @@ bool testBoard::sonar_read(float * range) { return false; }
 
 bool testBoard::gnss_present() { return false; }
 bool testBoard::gnss_has_new_data() { return false; }
-bool testBoard::gnss_read(GNSSData * gnss, GNSSFull * gnss_full) { return false; }
+bool testBoard::gnss_read(GNSSData * gnss) { return false; }
 
 bool testBoard::battery_present() { return false; }
 bool testBoard::battery_has_new_data() { return false; }

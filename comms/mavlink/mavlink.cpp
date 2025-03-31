@@ -146,45 +146,9 @@ void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_gnss_pack(
-    system_id, compid_, &msg, data.time_of_week, data.fix_type, data.time, data.nanos, data.lat,
-    data.lon, data.height, data.vel_n, data.vel_e, data.vel_d, data.h_acc, data.v_acc, data.ecef.x,
-    data.ecef.y, data.ecef.z, data.ecef.p_acc, data.ecef.vx, data.ecef.vy, data.ecef.vz,
-    data.ecef.s_acc, data.rosflight_timestamp);
-  send_message(msg);
-}
-
-void Mavlink::send_gnss_full(uint8_t system_id, const GNSSFull & full)
-{
-  mavlink_message_t msg;
-  mavlink_rosflight_gnss_full_t data = {};
-  data.time_of_week = full.time_of_week;
-  data.year = full.year;
-  data.month = full.month;
-  data.day = full.day;
-  data.hour = full.hour;
-  data.min = full.min;
-  data.sec = full.sec;
-  data.valid = full.valid;
-  data.t_acc = full.t_acc;
-  data.nano = full.nano;
-  data.fix_type = full.fix_type;
-  data.num_sat = full.num_sat;
-  data.lon = full.lon;
-  data.lat = full.lat;
-  data.height = full.height;
-  data.height_msl = full.height_msl;
-  data.h_acc = full.h_acc;
-  data.v_acc = full.v_acc;
-  data.vel_n = full.vel_n;
-  data.vel_e = full.vel_e;
-  data.vel_d = full.vel_d;
-  data.g_speed = full.g_speed;
-  data.head_mot = full.head_mot;
-  data.s_acc = full.s_acc;
-  data.head_acc = full.head_acc;
-  data.p_dop = full.p_dop;
-  data.rosflight_timestamp = full.rosflight_timestamp;
-  mavlink_msg_rosflight_gnss_full_encode(system_id, compid_, &msg, &data);
+    system_id, compid_, &msg, data.seconds, data.nanos, data.fix_type, data.year, data.month,
+    data.day, data.hour, data.min, data.sec, data.num_sat, data.lat, data.lon, data.height,
+    data.vel_n, data.vel_e, data.vel_d, data.h_acc, data.v_acc, data.s_acc);
   send_message(msg);
 }
 

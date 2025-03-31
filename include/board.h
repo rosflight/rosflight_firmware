@@ -103,7 +103,7 @@ public:
   // GPS
   virtual bool gnss_present() = 0;
   virtual bool gnss_has_new_data() = 0;
-  virtual bool gnss_read(GNSSData * gnss, GNSSFull * gnss_full) = 0;
+  virtual bool gnss_read(GNSSData * gnss) = 0;
 
   // Battery
   virtual bool battery_present() = 0;

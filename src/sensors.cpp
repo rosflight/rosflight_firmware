@@ -159,9 +159,8 @@ got_flags Sensors::run()
     data_.gnss_present = true;
     if (rf_.board_.gnss_has_new_data()) {
       got.gnss = true;
-      rf_.board_.gnss_read(&this->data_.gnss_data, &this->data_.gnss_full);
+      rf_.board_.gnss_read(&this->data_.gnss_data);
     }
-    got.gnss_full = got.gnss; // bot come with the pvt GPS data
   }
 
   // BAROMETER:

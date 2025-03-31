@@ -97,7 +97,7 @@ public:
 
   bool gnss_present() override;
   bool gnss_has_new_data() override;
-  bool gnss_read(GNSSData * gnss, GNSSFull * gnss_full) override;
+  bool gnss_read(GNSSData * gnss) override;
 
   bool battery_present() override;
   bool battery_has_new_data() override;
