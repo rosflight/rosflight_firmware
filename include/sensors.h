@@ -82,12 +82,12 @@ struct GNSSData
   double lon;
   double lat;
   float height;
-  float vel_n;  // mm/s
-  float vel_e;  // mm/s
-  float vel_d;  // mm/s
-  float h_acc; // mm
-  float v_acc; // mm
-  float s_acc; // mm/s
+  float vel_n;  // m/s
+  float vel_e;  // m/s
+  float vel_d;  // m/s
+  float h_acc;  // m
+  float v_acc;  // m
+  float s_acc;  // m/s
 
   GNSSData() { memset(this, 0, sizeof(GNSSData)); }
 };
