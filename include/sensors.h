@@ -79,15 +79,15 @@ struct GNSSData
   uint8_t min;
   uint8_t sec;
   uint8_t num_sat;
-  int32_t lon;
-  int32_t lat;
-  int32_t height;
-  int32_t vel_n;  // mm/s
-  int32_t vel_e;  // mm/s
-  int32_t vel_d;  // mm/s
-  uint32_t h_acc; // mm
-  uint32_t v_acc; // mm
-  uint32_t s_acc; // mm/s
+  double lon;
+  double lat;
+  float height;
+  float vel_n;  // mm/s
+  float vel_e;  // mm/s
+  float vel_d;  // mm/s
+  float h_acc; // mm
+  float v_acc; // mm
+  float s_acc; // mm/s
 
   GNSSData() { memset(this, 0, sizeof(GNSSData)); }
 };
