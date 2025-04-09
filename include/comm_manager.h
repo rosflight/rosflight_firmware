@@ -150,7 +150,6 @@ private:
   void send_attitude(void);
   void send_imu(void);
   void send_output_raw(void);
-  void send_rc_raw(void);
   void send_diff_pressure(void);
   void send_baro(void);
   void send_sonar(void);
@@ -158,10 +157,8 @@ private:
   void send_battery_status(void);
   void send_gnss(void);
   void send_gnss_full(void);
-  void send_low_priority(void);
-
-  // Debugging Utils
-  void send_named_value_int(const char * const name, int32_t value);
+  void send_1hz_heartbeat(void);
+  void send_buffered_log_messages(void);
 
   void send_next_param(void);
 
@@ -181,8 +178,7 @@ public:
   void log(CommLinkInterface::LogSeverity severity, const char * fmt, ...);
   void log_message(CommLinkInterface::LogSeverity severity, char * text);
 
-  void send_named_value_float(const char * const name, float value);
-
+  void send_rc_raw(void);
   void send_backup_data(const StateManager::BackupData & backup_data);
 };
 

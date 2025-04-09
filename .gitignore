@@ -39,3 +39,6 @@ scripts/parameter-descriptions.md
 .project*
 .settings/
 config_*/
+test_build
+varmint_build
+pixracer_pro_build

@@ -114,7 +114,7 @@ void ROSflight::run()
     estimator_.run();
     controller_.run();
     mixer_.mix_output();
-    board_.pwm_write_multi(mixer_.raw_outputs(), Mixer::NUM_TOTAL_OUTPUTS);
+    board_.pwm_write(mixer_.raw_outputs(), Mixer::NUM_TOTAL_OUTPUTS);
     loop_time_us = board_.clock_micros() - start;
   }
 
@@ -130,8 +130,11 @@ void ROSflight::run()
   // update the state machine, an internal timer runs this at a fixed rate
   state_manager_.run();
 
-  // get RC, synchronous with rc data acquisition
-  if (got.rc) { rc_.run(); }
+  // Process latest received RC input data
+  if (rc_.receive()) {
+    comm_manager_.send_rc_raw();
+    rc_.run();
+  }
 
   // update commands (internal logic tells whether or not we should do anything or not)
   command_manager_.run();

@@ -223,11 +223,14 @@ void CommManager::command_callback(CommLinkInterface::Command command)
 
 void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 {
-  uint64_t now_us = RF_.board_.clock_micros();
-
   if (tc1 == 0) {
     // check that this is a request, not a response
-    comm_link_.send_timesync(sysid_, static_cast<int64_t>(now_us) * 1000, ts1);
+    tc1 = RF_.board_.clock_micros()*1000L; //static_cast<int64_t>(now_us) * 1000
+    if (tc1<0)
+    {
+      asm("NOP");
+    }
+    comm_link_.send_timesync(sysid_, tc1, ts1);
   }
 }
 
@@ -391,7 +394,7 @@ void CommManager::send_imu(void)
   turbomath::Vector acc, gyro;
   uint64_t stamp_us;
   RF_.sensors_.get_filtered_IMU(acc, gyro, stamp_us);
-  comm_link_.send_imu(sysid_, stamp_us, acc, gyro, RF_.sensors_.data().imu_temperature);
+  comm_link_.send_imu(sysid_, stamp_us, acc, gyro, RF_.sensors_.get_imu()->temperature);
 }
 
 void CommManager::send_output_raw(void)
@@ -401,43 +404,44 @@ void CommManager::send_output_raw(void)
 
 void CommManager::send_rc_raw(void)
 {
-  // TODO better mechanism for retreiving RC (through RC module, not PWM-specific)
-  uint16_t channels[8] = {static_cast<uint16_t>(RF_.board_.rc_read(0) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(1) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(2) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(3) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(4) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(5) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(6) * 1000 + 1000),
-                          static_cast<uint16_t>(RF_.board_.rc_read(7) * 1000 + 1000)};
+  rosflight_firmware::RcStruct * rc_struct =RF_.rc_.get_rc();
+
+  size_t n = (sizeof(rc_struct->chan)<8) ? sizeof(rc_struct->chan):8;
+  uint16_t channels[8];
+  for(size_t i=0;i<n;i++) channels[i] = rc_struct->chan[i]*1000.0 + 1000;
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 
 void CommManager::send_diff_pressure(void)
 {
-  comm_link_.send_diff_pressure(sysid_, RF_.sensors_.data().diff_pressure_ias,
-                                RF_.sensors_.data().diff_pressure,
-                                RF_.sensors_.data().diff_pressure_temp);
+  comm_link_.send_diff_pressure(sysid_, RF_.sensors_.get_diff_pressure()->speed,
+                                RF_.sensors_.get_diff_pressure()->pressure,
+                                RF_.sensors_.get_diff_pressure()->temperature);
 }
 
 void CommManager::send_baro(void)
 {
-  comm_link_.send_baro(sysid_, RF_.sensors_.data().baro_altitude, RF_.sensors_.data().baro_pressure,
-                       RF_.sensors_.data().baro_temperature);
+  comm_link_.send_baro(sysid_, RF_.sensors_.get_baro()->altitude, RF_.sensors_.get_baro()->pressure,
+      RF_.sensors_.get_baro()->temperature);
 }
 
 void CommManager::send_sonar(void)
 {
   comm_link_.send_sonar(sysid_,
                         0, // TODO set sensor type (sonar/lidar), use enum
-                        RF_.sensors_.data().sonar_range, 8.0, 0.25);
+                        RF_.sensors_.get_sonar()->range, 8.0, 0.25);
 }
 
-void CommManager::send_mag(void) { comm_link_.send_mag(sysid_, RF_.sensors_.data().mag); }
+void CommManager::send_mag(void)
+{
+  turbomath::Vector flux ( RF_.sensors_.get_mag()->flux[0], RF_.sensors_.get_mag()->flux[1], RF_.sensors_.get_mag()->flux[2]);
+  comm_link_.send_mag(sysid_, flux );
+
+}
 void CommManager::send_battery_status(void)
 {
-  comm_link_.send_battery_status(sysid_, RF_.sensors_.data().battery_voltage,
-                                 RF_.sensors_.data().battery_current);
+  comm_link_.send_battery_status(sysid_, RF_.sensors_.get_battery()->voltage,
+                                 RF_.sensors_.get_battery()->current);
 }
 
 void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
@@ -452,7 +456,7 @@ void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
 
 void CommManager::send_gnss(void)
 {
-  const GNSSData & gnss_data = RF_.sensors_.data().gnss_data;
+  const GNSSData & gnss_data = *RF_.sensors_.get_gnss();
 
   if (gnss_data.time_of_week != last_sent_gnss_tow_) {
     comm_link_.send_gnss(sysid_, gnss_data);
@@ -462,22 +466,34 @@ void CommManager::send_gnss(void)
 
 void CommManager::send_gnss_full()
 {
-  const GNSSFull & gnss_full = RF_.sensors_.data().gnss_full;
+  const GNSSFull & gnss_full = *RF_.sensors_.get_gnss();
 
   if (gnss_full.time_of_week != last_sent_gnss_full_tow_) {
-    comm_link_.send_gnss_full(sysid_, RF_.sensors_.data().gnss_full);
+    comm_link_.send_gnss_full(sysid_, gnss_full);
     last_sent_gnss_full_tow_ = gnss_full.time_of_week;
   }
 }
 
-void CommManager::send_low_priority(void)
+void CommManager::send_1hz_heartbeat(void)
 {
-  send_next_param();
+  uint64_t time_us = RF_.board_.clock_micros();
+  static uint64_t next_heartbeat = 0, next_status = 0;
 
-  // send buffered log messages
+  if ((time_us) / 1000000 >= next_heartbeat) { // 1 Hz
+    send_heartbeat();
+    next_heartbeat = time_us / 1000000 + 1;
+  }
+  if ((time_us) / 100000 >= next_status) { // 10 Hz
+    send_status();
+    next_status = time_us / 100000 + 1;
+  }
+}
+
+void CommManager::send_buffered_log_messages(void)
+{
   if (connected_ && !log_buffer_.empty()) {
     const LogMessageBuffer::LogMessage & msg = log_buffer_.oldest();
-    comm_link_.send_log_message(sysid_, msg.severity, msg.msg);
+    comm_link_.send_log_message(RF_.board_.clock_micros(), msg.severity, msg.msg);
     log_buffer_.pop();
   }
 }
@@ -485,8 +501,6 @@ void CommManager::send_low_priority(void)
 // function definitions
 void CommManager::stream(got_flags got)
 {
-  uint64_t time_us = RF_.board_.clock_micros();
-
   // Send out data
 
   if (got.imu) { // Nominally 400Hz
@@ -502,40 +516,21 @@ void CommManager::stream(got_flags got)
   if (got.baro) { send_baro(); }
   // Magnetometer
   if (got.mag) { send_mag(); }
-  // Height above ground sensor (not enabled)
+  // Height above ground sensor
   if (got.sonar) { send_sonar(); }
   // Battery V & I
   if (got.battery) { send_battery_status(); }
   // GPS data (GNSS Packed)
   if (got.gnss) { send_gnss(); }
   // GPS full data (not needed)
-  if (got.gnss_full) { send_gnss_full(); }
-  if (got.rc) { send_rc_raw(); }
+  //if (got.gnss_full) { send_gnss_full(); }
 
-  {
-    static uint64_t next_heartbeat = 0, next_status = 0;
+  send_1hz_heartbeat();
 
-    if ((time_us) / 1000000 >= next_heartbeat) { // 1 Hz
-      send_heartbeat();
-      next_heartbeat = time_us / 1000000 + 1;
-    }
-    if ((time_us) / 100000 >= next_status) { // 10 Hz
-      send_status();
-      next_status = time_us / 100000 + 1;
-    }
-  }
+  send_next_param();
 
-  send_low_priority(); // parameter values and logging messages
-}
+  send_buffered_log_messages();
 
-void CommManager::send_named_value_int(const char * const name, int32_t value)
-{
-  comm_link_.send_named_value_int(sysid_, RF_.board_.clock_millis(), name, value);
-}
-
-void CommManager::send_named_value_float(const char * const name, float value)
-{
-  comm_link_.send_named_value_float(sysid_, RF_.board_.clock_millis(), name, value);
 }
 
 void CommManager::send_next_param(void)
@@ -568,42 +563,5 @@ void CommManager::Stream::set_rate(uint32_t rate_hz)
 {
   period_us_ = (rate_hz == 0) ? 0 : 1000000 / rate_hz;
 }
-
-// void Mavlink::mavlink_send_named_command_struct(const char *const name, control_t command_struct)
-//{
-//  uint8_t control_mode;
-//  if (command_struct.x.type == RATE && command_struct.y.type == RATE)
-//  {
-//    control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-//  }
-//  else if (command_struct.x.type == ANGLE && command_struct.y.type == ANGLE)
-//  {
-//    if (command_struct.x.type == ALTITUDE)
-//    {
-//      control_mode = MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
-//    }
-//    else
-//    {
-//      control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-//    }
-//  }
-//  else
-//  {
-//    control_mode = MODE_PASS_THROUGH;
-//  }
-//  uint8_t ignore = !(command_struct.x.active) ||
-//                   !(command_struct.y.active) << 1 ||
-//                   !(command_struct.z.active) << 2 ||
-//                   !(command_struct.F.active) << 3;
-//  mavlink_message_t msg;
-//  mavlink_msg_named_command_struct_pack(sysid, compid, &msg, name,
-//                                        control_mode,
-//                                        ignore,
-//                                        command_struct.x.value,
-//                                        command_struct.y.value,
-//                                        command_struct.z.value,
-//                                        command_struct.F.value);
-//  send_message(msg);
-//}
 
 } // namespace rosflight_firmware
