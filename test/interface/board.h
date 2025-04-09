@@ -56,9 +56,9 @@ public:
   virtual void sensors_init(void) = 0;
   virtual uint16_t sensors_errors_count() = 0;
 
-  virtual uint16_t sensors_init_message_count() = 0;
+  virtual uint16_t sensors_init_message_count() =  0;
   virtual bool sensors_init_message_good(uint16_t i) = 0;
-  virtual uint16_t sensors_init_message(char * message, uint16_t size, uint16_t i) = 0;
+  virtual uint16_t sensors_init_message(char *message, uint16_t size, uint16_t i) = 0;
 
   // clock
   virtual uint32_t clock_millis() = 0;

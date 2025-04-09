@@ -38,12 +38,20 @@
 #ifndef INCLUDE_INTERFACE_ROSFLIGHT_STRUCTS_H_
 #define INCLUDE_INTERFACE_ROSFLIGHT_STRUCTS_H_
 
+#include <cstdint>
+
 namespace rosflight_firmware
 {
 
-typedef struct //__attribute__((__packed__))
+typedef struct __attribute__((__packed__))
 {
   uint64_t timestamp; // us, time of data read complete
+  uint16_t status;    // device dependent
+} PacketHeader;
+
+typedef struct //__attribute__((__packed__))
+{
+  PacketHeader header;
   float voltage;
   float current;
   float temperature; // STM32 temperature, not batter temperature
@@ -51,17 +59,17 @@ typedef struct //__attribute__((__packed__))
 
 typedef struct //__attribute__((__packed__))
 {
-  uint64_t timestamp; // us, time of data read complete
-  float accel[3];     // rad/s
-  float gyro[3];      // rad/s
-  float temperature;  // K
+  PacketHeader header;
+  float accel[3];    // rad/s
+  float gyro[3];     // rad/s
+  float temperature; // K
 } ImuStruct;
 
 typedef struct //__attribute__((__packed__))
 {
-  uint64_t timestamp; // us, time of data read complete
-  float pressure;     // Pa
-  float temperature;  // K
+  PacketHeader header;
+  float pressure;    // Pa
+  float temperature; // K
   union
   {
     float altitude;
@@ -78,7 +86,7 @@ enum class SensorRangeType // c.f., ROSFLIGHT_RANGE_TYPE
 
 typedef struct //__attribute__((__packed__))
 {
-  uint64_t timestamp;   // us, time of data read complete
+  PacketHeader header;
   float range;          // m
   float min_range;      // m
   float max_range;      // m
@@ -87,9 +95,9 @@ typedef struct //__attribute__((__packed__))
 
 typedef struct //__attribute__((packed))
 {
-  uint64_t timestamp; // us, time of data read complete
-  float flux[3];      // T, magnetic flux density
-  float temperature;  // K
+  PacketHeader header; //
+  float flux[3];       // T, magnetic flux density
+  float temperature;   // K
 } MagStruct;
 
 enum class GNSSFixType // quality from GGA
@@ -107,9 +115,9 @@ enum class GNSSFixType // quality from GGA
 
 typedef struct //__attribute__((__packed__))
 {
-  uint64_t timestamp; // us, time of data read complete
-  uint64_t pps;       // most recent pps timestamp
-  uint64_t time;      // Unix time, in seconds (redundant)
+  PacketHeader header; //
+  uint64_t pps;        // most recent pps timestamp
+  uint64_t time;       // Unix time, in seconds (redundant)
   // GPS Time
   uint32_t time_of_week; //     / PVT
   uint16_t year;         // RMC / PVT
@@ -152,6 +160,10 @@ typedef struct //__attribute__((__packed__))
   } ecef;
 } GnssStruct;
 
+typedef GnssStruct GNSSData;
+typedef GnssStruct GNSSFull;
+
+
 typedef struct
 {
   bool imu;
@@ -168,7 +180,7 @@ typedef struct
 #define RC_STRUCT_CHANNELS 24
 typedef struct //__attribute__((packed))
 {
-  uint64_t timestamp; // us, time of data read complete
+  PacketHeader header;
   uint8_t nChan;
   float chan[RC_STRUCT_CHANNELS];
   bool frameLost;
@@ -177,8 +189,8 @@ typedef struct //__attribute__((packed))
 
 typedef struct //__attribute__((__packed__))
 {
-  uint64_t timestamp; // us, time of data read complete
-  float q[4];         // quaternions
+  PacketHeader header;
+  float q[4]; // quaternions
   float rate[3];
 } AttitudeStruct;
 
