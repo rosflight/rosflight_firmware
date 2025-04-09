@@ -35,9 +35,9 @@
  ******************************************************************************
  **/
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Pwm.h>
+#include "Pwm.h"
+#include "BoardConfig.h"
+#include "Driver.h"
 
 // Notes on DSHOT
 // DSHOT  Bitrate	T1H      T0H    Bit(µs)	Frame (µs)

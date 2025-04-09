@@ -35,11 +35,18 @@
  ******************************************************************************
  **/
 
-#include <Ist8308.h>
-#include <misc.h>
+#include "Ist8308.h"
+#include "Time64.h"
+#include "misc.h"
 
-#include <Time64.h>
 extern Time64 time64;
+
+#define ROLLOVER 10000
+#define IST8308_CMD 0
+#define IST8308_TX 89
+#define IST8308_RX 92
+#define IST8308_STATE_ERROR 0xFFFF
+#define IST8308_IDLE_STATE 0xFFFF
 
 DMA_RAM uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t ist8308_fifo_rx_buffer[IST8308_FIFO_BUFFERS * sizeof(MagPacket)];
@@ -110,6 +117,9 @@ uint32_t Ist8308::init(
   address_ = i2c_address << 1;
   launchUs_ = 0;
   // groupDelay_ = 0; //Computed later based on launchUs_ and drdy_ timestamps.
+
+  i2cState_ = IST8308_IDLE_STATE;
+  dmaRunning_ = false;
 
   rxFifo_.init(IST8308_FIFO_BUFFERS, sizeof(MagPacket), ist8308_fifo_rx_buffer);
 
@@ -184,24 +194,9 @@ uint32_t Ist8308::init(
   return initializationStatus_;
 }
 
-PollingState Ist8308::state(uint64_t poll_counter)
-{
-  uint32_t rollover = 10000; // us (100 Hz) 0-99 slots at 10 kHz
-  PollingStateStruct lut[] = //
-    {
-      // at 10kHz, each count is 100us. I2C is 90us pre byte
-      // Mag
-      {0, IST8308_CMD}, // addr + 2 byte, so leave at least 3 counts
-      {89, IST8308_TX}, // addr + 2 bytes
-      {92, IST8308_RX}, // addr + 6 bytes (start at leat 84 counts after cmd
-    };
-  return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
-                            poll_counter % (rollover / POLLING_PERIOD_US));
-}
-
 bool Ist8308::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = state(poll_counter);
+  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
   if (poll_state == IST8308_CMD) {
     launchUs_ = time64.Us();
     ist8308_i2c_dma_buf[0] = CNTL2_REG;
@@ -209,18 +204,18 @@ bool Ist8308::poll(uint64_t poll_counter)
 
     if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 2))))
       i2cState_ = poll_state;
-    else i2cState_ = IST8308_ERROR;
+    else i2cState_ = IST8308_STATE_ERROR;
   } else if (poll_state == IST8308_TX) // Write the register we want to read
   {
     drdy_ = time64.Us();
     ist8308_i2c_dma_buf[0] = STAT1_REG;
     if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 1))))
       i2cState_ = poll_state;
-    else i2cState_ = IST8308_ERROR;
+    else i2cState_ = IST8308_STATE_ERROR;
   } else if (poll_state == IST8308_RX) {
     if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 7))))
       i2cState_ = poll_state;
-    else i2cState_ = IST8308_ERROR;
+    else i2cState_ = IST8308_STATE_ERROR;
   }
   return dmaRunning_;
 }
@@ -232,10 +227,10 @@ void Ist8308::endDma(void)
   //  else
   if (i2cState_ == IST8308_RX) {
     MagPacket p;
-    p.timestamp = time64.Us();
+    p.header.timestamp = time64.Us();
     p.drdy = drdy_;
-    p.groupDelay = p.timestamp - (launchUs_ + drdy_) / 2;
-    p.status = ist8308_i2c_dma_buf[0];
+    p.groupDelay = p.header.timestamp - (launchUs_ + drdy_) / 2;
+    p.header.status = ist8308_i2c_dma_buf[0];
     p.temperature = 0;
 
     int16_t iflux = ((int16_t) ist8308_i2c_dma_buf[2] << 8) | (int16_t) ist8308_i2c_dma_buf[1];
@@ -247,9 +242,9 @@ void Ist8308::endDma(void)
     iflux = ((int16_t) ist8308_i2c_dma_buf[6] << 8) | (int16_t) ist8308_i2c_dma_buf[5];
     p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
 
-    if (p.status == STAT1_VAL_DRDY) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    if (p.header.status == STAT1_VAL_DRDY) rxFifo_.write((uint8_t *) &p, sizeof(p));
   }
-  i2cState_ = IDLE_STATE;
+  i2cState_ = IST8308_STATE_ERROR;
   dmaRunning_ = false;
 }
 bool Ist8308::display()
@@ -257,12 +252,12 @@ bool Ist8308::display()
   MagPacket p;
   char name[] = "Ist8308 (mag)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
 
     misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
     misc_printf(" |                                       ");
-    misc_printf(" |     N/A C |              | 0x%04X", p.status);
-    if (p.status == STAT1_VAL_DRDY) misc_printf(" - OK\n");
+    misc_printf(" |     N/A C |              | 0x%04X", p.header.status);
+    if (p.header.status == STAT1_VAL_DRDY) misc_printf(" - OK\n");
     else misc_printf(" - NOK\n");
     return 1;
   } else {

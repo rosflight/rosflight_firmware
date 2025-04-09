@@ -35,13 +35,14 @@
  ******************************************************************************
  **/
 
-#include <Iis2mdc.h>
-#include <Packets.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Iis2mdc.h"
+#include "Packets.h"
+#include "Time64.h"
+#include "misc.h"
+
 extern Time64 time64;
 
-#define IIS2MDC_OK (0x0F)
+//#define IIS2MDC_OK (0x0F)
 
 #define WHO_AM_I 0x4F
 #define CFG_REG_A 0x60
@@ -65,6 +66,13 @@ DMA_RAM uint8_t iis2mdc_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
 DTCM_RAM uint8_t iis2mdc_fifo_rx_buffer[IIS2MDC_FIFO_BUFFERS * sizeof(MagPacket)];
 
+#define ROLLOVER 10000
+#define IIS2MDC_CMD 0
+#define IIS2MDC_RX_H 97
+#define IIS2MDC_RX_T (IIS2MDC_RX_H + 1)
+#define IIS2MDC_IDLE_STATE 0xFFFF
+#define IIS2MDC_STATE_ERROR 0xFFFF
+
 uint32_t Iis2mdc::init(
   // Driver initializers
   uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
@@ -85,6 +93,9 @@ uint32_t Iis2mdc::init(
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
 
   rxFifo_.init(IIS2MDC_FIFO_BUFFERS, sizeof(MagPacket), iis2mdc_fifo_rx_buffer);
+
+  spiState_ = IIS2MDC_IDLE_STATE;
+  dmaRunning_ = false;
 
   //	uint8_t odr_mode=3;
   //	if( sampleRateHz_ <= 10) 		{sampleRateHz_ =  10; odr_mode = 0; }
@@ -113,7 +124,7 @@ uint32_t Iis2mdc::init(
   writeRegister(CFG_REG_A, 0x20); // soft reset
   time64.dUs(10);                 // Wait at least 5 us
   writeRegister(CFG_REG_A, 0x40); // reboot
-  time64.dMs(21);                 // wait at least 20 ms for reboot
+  time64.dMs(25);                 // wait at least 20 ms for reboot
 
   // Register A (0x60)
   // 7:  = 1 COMP_TEMP_EN Temp comp enable
@@ -172,42 +183,30 @@ uint32_t Iis2mdc::init(
   return initializationStatus_;
 }
 
-PollingState Iis2mdc::state(uint64_t poll_counter)
-{
-  uint32_t rollover = 10000; // us (50 Hz) 0-99 slots at 10 kHz
-  PollingStateStruct lut[] = // Mag 100Hz, Baro 50 Hz
-    {
-      {0, IIS2MDC_CMD},
-      {95, IIS2MDC_RX_H}, // 9.495ms
-      {96, IIS2MDC_RX_T},
-    };
-  return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
-                            poll_counter % (rollover / POLLING_PERIOD_US));
-}
-
 bool Iis2mdc::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = state(poll_counter);
+  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+
   // Start measurement sequence
   if (poll_state == IIS2MDC_CMD) // Command Pressure Read
   {
     launchUs_ = time64.Us();
     uint8_t cmd[2] = {CFG_REG_A | SPI_WRITE, 0x81}; // CFG_REG_A
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = IIS2MDC_ERROR;
+    else spiState_ = IIS2MDC_STATE_ERROR;
   }
   // Read Status & Flux
   else if (poll_state == IIS2MDC_RX_H) {
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_FLUX_CMD, IIS_FLUX_BYTES)))) spiState_ = poll_state;
-    else spiState_ = IIS2MDC_ERROR;
+    else spiState_ = IIS2MDC_STATE_ERROR;
   }
   // Read Temperature. Chip does not autoincrement into the temperature register, so we have to do separate reads for
   // flux and temperature
   else if (poll_state == IIS2MDC_RX_T) {
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_TEMP_CMD, IIS_TEMP_BYTES)))) spiState_ = poll_state;
-    else spiState_ = IIS2MDC_ERROR;
+    else spiState_ = IIS2MDC_STATE_ERROR;
   }
-  return dmaRunning_;
+  return false;
 }
 
 void Iis2mdc::endDma(void)
@@ -215,36 +214,35 @@ void Iis2mdc::endDma(void)
   uint8_t * rx = spi_.endDma();
   static MagPacket p;
   static int16_t previous_data[3] = {0};
-
   if (spiState_ == IIS2MDC_RX_H) // Flux Data and DRDY
   {
     memset(&p, 0, sizeof(p)); // clear p
     p.drdy = time64.Us();
-    p.status = rx[1];
+    p.header.status = rx[1];
 
-    int16_t data;
-    data = (int16_t) rx[3] << 8 | (int16_t) rx[2];
-    p.flux[0] = -(double) (data + previous_data[0]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB, 1mG = 1e-7 T.
+    int16_t data = (rx[3] << 8) | rx[2];
+    p.flux[0] = -(data + previous_data[0]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB, 1mG = 1e-7 T.
     previous_data[0] = data;
 
-    data = (int16_t) rx[5] << 8 | (int16_t) rx[4];
-    p.flux[1] = (double) (data + previous_data[1]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
+    data = (rx[5] << 8) | rx[4];
+    p.flux[1] = (data + previous_data[1]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
     previous_data[1] = data;
 
-    data = (int16_t) rx[7] << 8 | (int16_t) rx[6];
-    p.flux[2] = (double) (data + previous_data[2]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
+    data = (rx[7] << 8) | rx[6];
+    p.flux[2] = (data + previous_data[2]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
     previous_data[2] = data;
+
   } else if (spiState_ == IIS2MDC_RX_T) {
-    uint16_t data = (int16_t) rx[2] << 8 | (int16_t) rx[1];
+    int16_t data = (rx[2] << 8) | rx[1];
     p.temperature = (double) data / 8.0 + 25.0 + 273.15; // K
 
-    p.timestamp = time64.Us();
+    p.header.timestamp = time64.Us();
     // 5 ms is added to group delay because of the set/reset averaging used in the flux measurement above.
-    p.groupDelay = p.timestamp - (p.drdy + launchUs_) / 2 + 5000;
-    if (p.status == IIS2MDC_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    p.groupDelay = p.header.timestamp - (p.drdy + launchUs_) / 2 + 5000;
+    if (p.header.status == IIS2MDC_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
   }
 
-  spiState_ = IDLE_STATE;
+  spiState_ = IIS2MDC_IDLE_STATE;
   dmaRunning_ = false;
 }
 
@@ -253,13 +251,19 @@ bool Iis2mdc::display()
   MagPacket p;
   char name[] = "Iis2mdc (mag)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
 
-    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
-    misc_printf(" |                                       ");
-    misc_printf(" | %7.1f C |              | 0x%04X", p.temperature - 273.15, p.status);
-    if (p.status == IIS2MDC_OK) misc_printf(" - OK\n");
-    else misc_printf(" - NOK\n");
+    float total_flux = sqrt(p.flux[0] * p.flux[0] + p.flux[1] * p.flux[1] + p.flux[2] * p.flux[2]);
+
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+
+    misc_f32(NAN, NAN, p.flux[0] * 1e6, "hx", "%6.2f", "uT");
+    misc_f32(NAN, NAN, p.flux[1] * 1e6, "hy", "%6.2f", "uT");
+    misc_f32(NAN, NAN, p.flux[2] * 1e6, "hz", "%6.2f", "uT");
+
+    misc_f32(20, 70, total_flux * 1e6, "|h|", "%6.2f", "uT");
+    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_x16(IIS2MDC_OK, p.header.status, "Status");
+    misc_printf("\n");
     return 1;
   } else {
     misc_printf("%s\n", name);

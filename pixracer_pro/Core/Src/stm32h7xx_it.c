@@ -22,8 +22,8 @@
 #include "stm32h7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <Callbacks.h>
-#include <BoardConfig.h>
+#include "Callbacks.h"
+#include "BoardConfig.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -439,7 +439,6 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
-
   UART_RxIsrCallback(&huart1);
   /* USER CODE END USART1_IRQn 1 */
 }
@@ -454,9 +453,7 @@ void USART2_IRQHandler(void)
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
-
   UART_RxIsrCallback(&huart2);
-
   /* USER CODE END USART2_IRQn 1 */
 }
 
@@ -526,9 +523,7 @@ void UART4_IRQHandler(void)
   /* USER CODE END UART4_IRQn 0 */
   HAL_UART_IRQHandler(&huart4);
   /* USER CODE BEGIN UART4_IRQn 1 */
-
   UART_RxIsrCallback(&huart4);
-
   /* USER CODE END UART4_IRQn 1 */
 }
 
@@ -654,9 +649,7 @@ void USART6_IRQHandler(void)
   /* USER CODE END USART6_IRQn 0 */
   HAL_UART_IRQHandler(&huart6);
   /* USER CODE BEGIN USART6_IRQn 1 */
-
   UART_RxIsrCallback(&huart6);
-
   /* USER CODE END USART6_IRQn 1 */
 }
 
@@ -670,9 +663,7 @@ void UART7_IRQHandler(void)
   /* USER CODE END UART7_IRQn 0 */
   HAL_UART_IRQHandler(&huart7);
   /* USER CODE BEGIN UART7_IRQn 1 */
-
   UART_RxIsrCallback(&huart7);
-
   /* USER CODE END UART7_IRQn 1 */
 }
 
@@ -686,9 +677,7 @@ void UART8_IRQHandler(void)
   /* USER CODE END UART8_IRQn 0 */
   HAL_UART_IRQHandler(&huart8);
   /* USER CODE BEGIN UART8_IRQn 1 */
-
   UART_RxIsrCallback(&huart8);
-
   /* USER CODE END UART8_IRQn 1 */
 }
 

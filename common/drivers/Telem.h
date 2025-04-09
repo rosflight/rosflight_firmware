@@ -38,11 +38,11 @@
 #ifndef TELEM_H_
 #define TELEM_H_
 
-#include <BoardConfig.h>
-#include <ByteFifo.h>
-#include <Driver.h>
-#include <Packets.h>
-#include <Time64.h>
+#include "BoardConfig.h"
+#include "ByteFifo.h"
+#include "Driver.h"
+#include "Packets.h"
+#include "Time64.h"
 
 extern Time64 time64;
 enum DmaItType

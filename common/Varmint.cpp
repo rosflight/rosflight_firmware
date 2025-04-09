@@ -34,9 +34,9 @@
  *
  ******************************************************************************
  **/
-#include <Varmint.h>
+#include "Varmint.h"
 
-#include <Time64.h>
+#include "Time64.h"
 
 #include <ctime>
 
@@ -66,8 +66,8 @@ void Varmint::board_reset(bool bootloader)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // us clock
-uint32_t Varmint::clock_millis() { return time64.Us() / 1000; }
-uint64_t Varmint::clock_micros() { return time64.Us(); }
+uint32_t Varmint::clock_millis() { return (time64.Us() & 0x0000FFFFFFFFFFFF) / 1000; }
+uint64_t Varmint::clock_micros() { return (time64.Us() & 0x0000FFFFFFFFFFFF); }
 void Varmint::clock_delay(uint32_t ms) { time64.dMs(ms); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ void Varmint::serial_init(uint32_t baud_rate, uint32_t dev)
 void Varmint::serial_write(const uint8_t * src, size_t len, uint8_t qos)
 {
   SerialTxPacket p;
-  p.timestamp = time64.Us();
+  p.header.timestamp = time64.Us();
   p.payloadSize = len;
   p.qos = qos;
 
@@ -131,7 +131,7 @@ uint16_t Varmint::sensors_init_message_count() { return varmint.status_len(); }
 bool Varmint::sensors_init_message_good(uint16_t i) { return varmint.status(i)->initGood(); }
 
 uint16_t Varmint::sensors_init_message(char * message, uint16_t size, uint16_t i)
-  {
+{
   if (i > varmint.status_len()) return 0;
 
   uint32_t status = varmint.status(i)->status();
@@ -145,38 +145,34 @@ uint16_t Varmint::sensors_init_message(char * message, uint16_t size, uint16_t i
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // IMU
-bool Varmint::imu_present() { return imu0_.initGood(); }
-bool Varmint::imu_has_new_data() { return imu0_.rxFifoCount() > 0; }
-bool Varmint::imu_read(float accel[3], float * temperature, float gyro[3], uint64_t * time_us)
+bool Varmint::imu_read(rosflight_firmware::ImuStruct * imu)
 {
   ImuPacket p;
   if (imu0_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-    accel[0] = p.accel[0];
-    accel[1] = p.accel[1];
-    accel[2] = p.accel[2];
-    gyro[0] = p.gyro[0];
-    gyro[1] = p.gyro[1];
-    gyro[2] = p.gyro[2];
-    *temperature = p.temperature;
-    *time_us = p.drdy;
+    imu->header = p.header;
+    imu->accel[0] = p.accel[0];
+    imu->accel[1] = p.accel[1];
+    imu->accel[2] = p.accel[2];
+    imu->gyro[0] = p.gyro[0];
+    imu->gyro[1] = p.gyro[1];
+    imu->gyro[2] = p.gyro[2];
+    imu->temperature = p.temperature;
     return true;
   }
   return false;
 }
-void Varmint::imu_not_responding_error(){};
-// Do nothing for now
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // MAG
-bool Varmint::mag_present() { return mag_.initGood(); }
-bool Varmint::mag_has_new_data() { return mag_.rxFifoCount() > 0; }
-bool Varmint::mag_read(float mag[3])
+bool Varmint::mag_read(rosflight_firmware::MagStruct * mag)
 {
   MagPacket p;
   if (mag_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-    mag[0] = p.flux[0];
-    mag[1] = p.flux[1];
-    mag[2] = p.flux[2];
+    mag->header = p.header;
+    mag->flux[0] = p.flux[0];
+    mag->flux[1] = p.flux[1];
+    mag->flux[2] = p.flux[2];
+    mag->temperature = p.temperature;
     return true;
   }
   return false;
@@ -184,14 +180,13 @@ bool Varmint::mag_read(float mag[3])
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Baro
-bool Varmint::baro_present() { return baro_.initGood(); }
-bool Varmint::baro_has_new_data() { return baro_.rxFifoCount() > 0; }
-bool Varmint::baro_read(float * pressure, float * temperature)
+bool Varmint::baro_read(rosflight_firmware::PressureStruct * baro)
 {
   PressurePacket p;
   if (baro_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-    *pressure = p.pressure;
-    *temperature = p.temperature;
+    baro->header = p.header;
+    baro->pressure = p.pressure;
+    baro->temperature = p.temperature;
     return true;
   }
   return false;
@@ -199,14 +194,13 @@ bool Varmint::baro_read(float * pressure, float * temperature)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Pitot
-bool Varmint::diff_pressure_present() { return pitot_.initGood(); }
-bool Varmint::diff_pressure_has_new_data() { return pitot_.rxFifoCount() > 0; }
-bool Varmint::diff_pressure_read(float * diff_pressure, float * temperature)
+bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure)
 {
   PressurePacket p;
   if (pitot_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-    *diff_pressure = p.pressure;
-    *temperature = p.temperature;
+    diff_pressure->header = p.header;
+    diff_pressure->pressure = p.pressure;
+    diff_pressure->temperature = p.temperature;
     return true;
   }
   return false;
@@ -214,23 +208,22 @@ bool Varmint::diff_pressure_read(float * diff_pressure, float * temperature)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Sonar
-bool Varmint::sonar_present() { return false; }
-bool Varmint::sonar_has_new_data() { return false; }
-bool Varmint::sonar_read(float * range) { return false; }
+bool Varmint::sonar_read(rosflight_firmware::RangeStruct * sonar)
+{
+  (void) sonar; // unused
+  return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Battery
-bool Varmint::battery_present()
-{
-  return adc_.initGood();
-} // Should probably check if there are actual battery values???
-bool Varmint::battery_has_new_data() { return adc_.rxFifoCount() > 0; }
-bool Varmint::battery_read(float * voltage, float * current)
+bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
 {
   AdcPacket p;
   if (adc_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-    *current = p.volts[ADC_BATTERY_CURRENT];
-    *voltage = p.volts[ADC_BATTERY_VOLTS];
+    batt->header = p.header;
+    batt->current = p.volts[ADC_BATTERY_CURRENT];
+    batt->voltage = p.volts[ADC_BATTERY_VOLTS];
+    batt->temperature = p.temperature;
     return true;
   }
   return false;
@@ -248,47 +241,13 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // GNSS
-bool Varmint::gnss_present() { return gps_.initGood(); }
-bool Varmint::gnss_has_new_data() { return gps_.rxFifoCount() > 0; }
-
-bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware::GNSSFull * gnss_full)
+bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 {
   UbxPacket p;
 
   if (gps_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-    gnss_full->time_of_week = p.pvt.iTOW;
-    gnss_full->year = p.pvt.year;
-    gnss_full->month = p.pvt.month;
-    gnss_full->day = p.pvt.day;
-    gnss_full->hour = p.pvt.hour;
-    gnss_full->min = p.pvt.min;
-    gnss_full->sec = p.pvt.sec;
-    gnss_full->valid = p.pvt.valid;
-    gnss_full->t_acc = p.pvt.tAcc;
-    gnss_full->nano = p.pvt.nano;
-    gnss_full->fix_type = (rosflight_firmware::GNSSFixType) p.pvt.fixType;
-    gnss_full->num_sat = p.pvt.numSV;
-    gnss_full->lon = p.pvt.lon;
-    gnss_full->lat = p.pvt.lat;
-    gnss_full->height = p.pvt.height;
-    gnss_full->height_msl = p.pvt.hMSL;
-    gnss_full->h_acc = p.pvt.hAcc;
-    gnss_full->v_acc = p.pvt.vAcc;
-    gnss_full->vel_n = p.pvt.velN;
-    gnss_full->vel_e = p.pvt.velE;
-    gnss_full->vel_d = p.pvt.velD;
-    gnss_full->g_speed = p.pvt.gSpeed;
-    gnss_full->head_mot = p.pvt.headMot;
-    gnss_full->s_acc = p.pvt.sAcc;
-    gnss_full->head_acc = p.pvt.headAcc;
-    gnss_full->p_dop = p.pvt.pDOP;
-    gnss_full->rosflight_timestamp = p.drdy;
-
-    gnss->time_of_week = p.time.iTOW;
-    gnss->nanos = p.time.fTOW;
-
-    gnss->fix_type = (rosflight_firmware::GNSSFixType) p.pvt.fixType;
-
+    gnss->header = p.header;
+    gnss->pps = p.pps;
     struct tm tm;
     tm.tm_sec = p.pvt.sec;
     tm.tm_min = p.pvt.min;
@@ -297,25 +256,50 @@ bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware:
     tm.tm_mon = p.pvt.month - 1;
     tm.tm_year = p.pvt.year - 1900;
     gnss->time = mktime(&tm);
-    gnss->lat = p.pvt.lat;
+    gnss->t_acc = p.pvt.tAcc;
+    gnss->time_of_week = p.pvt.iTOW;
+    gnss->year = p.pvt.year;
+    gnss->month = p.pvt.month;
+    gnss->day = p.pvt.day;
+    gnss->hour = p.pvt.hour;
+    gnss->min = p.pvt.min;
+    gnss->sec = p.pvt.sec;
+    gnss->nano = p.pvt.nano;
     gnss->lon = p.pvt.lon;
-    gnss->height = p.pvt.height;
+    gnss->lat = p.pvt.lat;
+    gnss->height_ellipsoid = p.pvt.height;
+    gnss->height_msl = p.pvt.hMSL;
+    gnss->h_acc = p.pvt.hAcc;
+    gnss->v_acc = p.pvt.vAcc;
     gnss->vel_n = p.pvt.velN;
     gnss->vel_e = p.pvt.velE;
     gnss->vel_d = p.pvt.velD;
-    gnss->h_acc = p.pvt.hAcc;
-    gnss->v_acc = p.pvt.vAcc;
+    gnss->mag_var = p.pvt.magDec;
+    gnss->ground_speed = p.pvt.gSpeed;
+    gnss->course = p.pvt.headMot;
+    gnss->course_accy = p.pvt.headAcc;
+    gnss->vel_n = p.pvt.velN;
+    gnss->vel_e = p.pvt.velE;
+    gnss->vel_d = p.pvt.velD;
+    gnss->speed_accy = p.pvt.sAcc;
+    gnss->mag_var = p.pvt.magDec;
+    gnss->valid = ((p.pvt.flags & 0x01) != 0);
+    gnss->num_sat = p.pvt.numSV;
+    gnss->dop = p.pvt.pDOP;
+    gnss->fix_type = p.pvt.fixType;
 
+    // These are not available from standard NMEA messages
+    // from ublox Class 0x01, ID 0x20
     gnss->ecef.x = p.ecefp.ecefX;
     gnss->ecef.y = p.ecefp.ecefY;
     gnss->ecef.z = p.ecefp.ecefZ;
     gnss->ecef.p_acc = p.ecefp.pAcc;
-
+    // from ublox Class 0x01, ID 0x11
     gnss->ecef.vx = p.ecefv.ecefVX;
     gnss->ecef.vy = p.ecefv.ecefVY;
     gnss->ecef.vz = p.ecefv.ecefVZ;
     gnss->ecef.s_acc = p.ecefv.sAcc;
-    gnss->rosflight_timestamp = p.drdy;
+
     return true;
   }
 
@@ -324,53 +308,35 @@ bool Varmint::gnss_read(rosflight_firmware::GNSSData * gnss, rosflight_firmware:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // RC
-void Varmint::rc_init(rc_type_t rc_type){};
-bool Varmint::rc_lost() { return rc_.lol(); }
-
-bool Varmint::rc_has_new_data() { return rc_.rxFifoCount() > 0; }
-
-float Varmint::rc_read(uint8_t chan)
+void Varmint::rc_init(rc_type_t rc_type) { (void) rc_type; };
+bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
 {
-  static RcPacket p;
-  static bool ever_read = false;
+  RcPacket p;
 
-  if (rc_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) { ever_read = true; }
-
-  if ((chan < RC_PACKET_CHANNELS) & ever_read) return p.chan[chan];
-  return -1; // out of range or no data in p
+  if (rc_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+    rc_struct->header = p.header;
+    uint16_t len = RC_STRUCT_CHANNELS < RC_PACKET_CHANNELS ? RC_STRUCT_CHANNELS : RC_PACKET_CHANNELS;
+    for (uint16_t i = 0; i < len; i++) { rc_struct->chan[i] = p.chan[i]; }
+    rc_struct->frameLost = p.frameLost;
+    rc_struct->failsafeActivated = p.failsafeActivated;
+    return true;
+  }
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // PWM
 
-// legacy, all channels are pwm and set to the same 'refresh_rate'
-void Varmint::pwm_init(uint32_t refresh_rate, uint16_t idle_pwm)
-{
-  for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.disable(ch);
-  for (int ch = 0; ch < PWM_CHANNELS; ch++) {
-    pwm_.setRate(ch, refresh_rate);
-    if (idle_pwm == 0) pwm_.writeUs(ch, 0); // OFF
-    else pwm_.write(ch, 0.0);               // Channel minimum value
-  }
-  for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.enable(ch);
-}
-
-void Varmint::pwm_init_multi(const float * rate, uint32_t channels) { pwm_.updateConfig(rate, channels); }
-
+void Varmint::pwm_init(const float * rate, uint32_t channels) { pwm_.updateConfig(rate, channels); }
 void Varmint::pwm_disable(void)
 {
   for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.disable(ch);
 }
-void Varmint::pwm_write(uint8_t ch, float value) { pwm_.write(ch, value); }
-
-void Varmint::pwm_write_multi(float * value, uint32_t channels) { pwm_.write(value, channels); }
+void Varmint::pwm_write(float * value, uint32_t channels) { pwm_.write(value, channels); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // LEDs
-void Varmint::led0_on() // Red LED
-{
-  RED_HI;
-}
+void Varmint::led0_on() { RED_HI; }
 void Varmint::led0_off() { RED_LO; }
 void Varmint::led0_toggle() { RED_TOG; }
 

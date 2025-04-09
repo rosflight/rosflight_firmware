@@ -40,19 +40,17 @@
 #ifndef AUAV_H_
 #define AUAV_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Spi.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Packets.h"
+#include "Spi.h"
+
+#define AUAV_PITOT 0
+#define AUAV_BARO 1
 
 #define AUAV_CMD_BYTES 3
 
-typedef enum
-{
-  AUAV_PITOT = 0,
-  AUAV_BARO
-} auav_press;
-
-class Auav : public Driver
+class Auav : public Status
 {
   /**
      * \brief
@@ -60,40 +58,59 @@ class Auav : public Driver
      *
      */
 public:
-  uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-    uint16_t drdy_pin,                                 // Reset GPIO Pin
-    // SPI initializers
-    SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-    uint16_t cs_pin,                                  // Chip Select GPIO Pin
-    auav_press type);
-
+  uint32_t init(uint16_t sample_rate_hz,                                 // Sample rate
+                GPIO_TypeDef * pitot_drdy_port, uint16_t pitot_drdy_pin, // Pitot DRDY
+                GPIO_TypeDef * pitot_cs_port, uint16_t pitot_cs_pin,     // Pitot CS
+                GPIO_TypeDef * baro_drdy_port, uint16_t baro_drdy_pin,   // Baro DRDY
+                GPIO_TypeDef * baro_cs_port, uint16_t baro_cs_pin,       // Baro CS
+                SPI_HandleTypeDef * hspi);
   bool poll(uint64_t poll_counter);
-  PollingState state(uint64_t poll_counter);
   void endDma(void);
-  bool display(void) override;
+  bool display(void);
 
   bool startTxDma(void);
   void endTxDma(void);
 
-  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
-  bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
-  SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
+  bool isMy(uint16_t exti_pin) { return (drdyPin_[0] == exti_pin) || (drdyPin_[1] == exti_pin); }
+  bool isMy(SPI_HandleTypeDef * hspi) { return (hspi == spi_[0].hspi()); }
+  SPI_HandleTypeDef * hspi(void) { return spi_[0].hspi(); }
+
+  void drdyIsr(uint64_t timestamp, uint16_t exti_pin);
+
+  //  virtual bool display(void) = 0;
+  //
+  //  uint16_t rxFifoCount(void) { return rxFifo_.packetCount(); }
+  //  uint16_t rxFifoRead(uint8_t * data, uint16_t size) { return rxFifo_.read(data, size); }
+  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size, uint8_t id)
+  {
+    return rxFifo_[id].readMostRecent(data, size);
+  }
+  //  bool drdy(void) { return HAL_GPIO_ReadPin(drdyPort_, drdyPin_); }
+  //  bool dmaRunning(void) { return dmaRunning_; }
+  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
+  uint8_t sensorOk(uint8_t id) { return sensor_status_ready_[id]; }
 
 private:
-  uint32_t readCfg(uint8_t address, Spi * spi);
-
+  void makePacket(PressurePacket * p, uint8_t * inbuff, uint8_t device);
+  int32_t readCfg(uint8_t address, Spi * spi);
   // SPI Stuff
-  Spi spi_;
-  PollingState spiState_;
-  uint8_t cmdBytes_[AUAV_CMD_BYTES];
+  Spi spi_[2];
+  uint8_t spiState_;
+  uint8_t cmdBytes_[2][AUAV_CMD_BYTES];
+  uint8_t addr_[2];
 
-  auav_press type_;
-  double LIN_A_, LIN_B_, LIN_C_, LIN_D_, Es_, TC50H_, TC50L_;
-  double osDig_, fss_, off_;
-  uint8_t sensor_status_ready_;
-  char name_[16]; // for display
+  double LIN_A_[2], LIN_B_[2], LIN_C_[2], LIN_D_[2], Es_[2], TC50H_[2], TC50L_[2];
+  double osDig_[2], fss_[2], off_[2];
+  uint8_t sensor_status_ready_[2];
+  char name_[2][16]; // for display
+
+  PacketFifo rxFifo_[2];
+  GPIO_TypeDef * drdyPort_[2];
+  uint16_t drdyPin_[2];
+  uint16_t sampleRateHz_;
+  uint64_t drdy_[2], timeout_[2], launchUs_[2];
+  uint64_t groupDelay_[2];
+  bool dmaRunning_;
 };
 
 #endif /* AUAV_H_ */

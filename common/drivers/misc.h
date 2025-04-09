@@ -46,7 +46,41 @@
 extern "C" {
 #endif
 
+//	Foreground Colors
+enum class MiscColor
+{
+  NONE = 0,
+  BLACK_FG = 30,
+  RED_FG = 31,
+  GREEN_FG = 32,
+  YELLOW_FG = 33,
+  BLUE_FG = 34,
+  MAGENTA_FG = 35,
+  CYAN_FG = 36,
+  WHITE_FG = 37,
+  //	Background Colors
+  BLACK_BG = 40,
+  RED_BG = 41,
+  GREEN_BG = 42,
+  YELLOW_BG = 43,
+  BLUE_BG = 44,
+  MAGENTA_BG = 45,
+  CYAN_BG = 46,
+  WHITE_BG = 47,
+};
+
+#define ASCII_ESC 27
+
+void misc_printfc(MiscColor color_code, const char * format, ...);
+void misc_clear();
+void misc_home();
+void misc_f32(float lo, float hi, float x, const char * pre, const char * number_format, const char * post);
+void misc_x16(uint16_t match, uint16_t x, const char * pre);
+void misc_i32(int32_t lo, int32_t hi, int32_t x, const char * pre, const char * number_format, const char * post);
+void misc_u32(uint32_t lo, uint32_t hi, uint32_t x, const char * pre, const char * number_format, const char * post);
+
 void misc_printf(const char * format, ...);
+size_t misc_getline(uint8_t * line, size_t len);
 void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay);
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size);
 void misc_exit_status(uint32_t status);

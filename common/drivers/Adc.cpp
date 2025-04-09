@@ -35,13 +35,13 @@
  ******************************************************************************
  **/
 
-#include <BoardConfig.h>
+#include "BoardConfig.h"
 
-#include <Adc.h>
+#include "Adc.h"
 
-#include <Packets.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Packets.h"
+#include "Time64.h"
+#include "misc.h"
 
 extern Time64 time64;
 
@@ -52,8 +52,8 @@ extern Time64 time64;
 DTCM_RAM uint8_t adc_fifo_rx_buffer[ADC_FIFO_BUFFERS * sizeof(AdcPacket)];
 DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
 
-ADC_EXT_DMA_RAM uint8_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX];
-ADC_INT_DMA_RAM uint8_t adc_dma_buf_int[ADC_DMA_BUF_SIZE_MAX];
+ADC_EXT_DMA_RAM uint32_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX / 4];
+ADC_INT_DMA_RAM uint32_t adc_dma_buf_int[ADC_DMA_BUF_SIZE_MAX / 4];
 
 DATA_RAM AdcChannelCfg adc_cfg[ADC_CHANNELS] = ADC_CFG_CHANS_DEFINE;
 
@@ -76,8 +76,9 @@ uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
 
   if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT)) {
     initializationStatus_ = DRIVER_HAL_ERROR;
-  } else if (DRIVER_OK != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT)) {
-    initializationStatus_ = DRIVER_HAL_ERROR;
+  }
+  if (DRIVER_OK != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT)) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
   }
   return initializationStatus_;
 }
@@ -93,13 +94,13 @@ uint32_t Adc::configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sCon
 uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, AdcChannelCfg * cfg,
                         uint16_t cfg_channels)
 {
-  uint32_t clock_prescaler = ADC_CLOCK_ASYNC_DIV64;
+  // uint32_t clock_prescaler ADC_CLOCK_ASYNC_DIV256; // This is reset below
   uint32_t sampling_cycles = ADC_SAMPLETIME_810CYCLES_5;
-  uint32_t conversion_cycles = 8;
+  uint32_t conversion_cycles = 8; // not adjustable
   // ADC is being fed with 64 MHz which is divided by 2 to make the ADC clock.
   // The sample time in us = 1/(64MHz/2)*clock_prescalar*(sampling_cycles+conversion_cycles)*ADC_MAX*oversample_ratio
 
-  clock_prescaler = (64000000 / 2) / sampleRateHz_ / ((1621 + 2 * conversion_cycles) / 2)
+  uint32_t clock_prescaler = (64000000 / 2) / sampleRateHz_ / ((1621 + 2 * conversion_cycles) / 2)
     / ((ADC_CHANNELS_EXT > ADC_CHANNELS_INT) ? ADC_CHANNELS_EXT : ADC_CHANNELS_INT);
   if (clock_prescaler > 256) clock_prescaler = ADC_CLOCK_ASYNC_DIV256;      // ~39.3 ms
   else if (clock_prescaler > 128) clock_prescaler = ADC_CLOCK_ASYNC_DIV128; // ~19.6 ms
@@ -122,8 +123,8 @@ uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, Ad
   hadc->Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(hadc) != HAL_OK) return DRIVER_HAL_ERROR;
 
-  /** Configure the ADC multi-mode needed for ADC 1 or 2*/
-  if ((hadc->Instance == ADC1) || (hadc->Instance == ADC2)) {
+  /** Configure the ADC multi-mode. Only set on ADC1*/
+  if (hadc->Instance == ADC1) {
     ADC_MultiModeTypeDef multimode = {0};
     multimode.Mode = ADC_MODE_INDEPENDENT;
     if (HAL_ADCEx_MultiModeConfigChannel(hadc, &multimode) != HAL_OK) return DRIVER_HAL_ERROR;
@@ -152,11 +153,11 @@ bool Adc::poll(uint64_t poll_counter)
   if (poll_offset == 0) // launch a read
   {
     drdy_ = time64.Us();
-
-    HAL_StatusTypeDef hal_status_int = HAL_ADC_Start_DMA(hadcInt_, (uint32_t *) adc_dma_buf_int, ADC_CHANNELS_INT);
     HAL_StatusTypeDef hal_status_ext = HAL_ADC_Start_DMA(hadcExt_, (uint32_t *) adc_dma_buf_ext, ADC_CHANNELS_EXT);
-    return (HAL_OK == hal_status_int) && (HAL_OK == hal_status_ext);
+    HAL_StatusTypeDef hal_status_int = HAL_ADC_Start_DMA(hadcInt_, (uint32_t *) adc_dma_buf_int, ADC_CHANNELS_INT);
+    return ((HAL_OK == hal_status_int) && (HAL_OK == hal_status_ext));
   }
+
   return false;
 }
 
@@ -167,14 +168,12 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
   if (hadc == hadcExt_) {
     memcpy(adc_counts, adc_dma_buf_ext, ADC_CHANNELS_EXT * sizeof(uint32_t));
     ext_read = 1;
-  }
-  if (hadc == hadcInt_) {
+  } else if (hadc == hadcInt_) {
     memcpy(&(adc_counts[ADC_CHANNELS_EXT]), adc_dma_buf_int, ADC_CHANNELS_INT * sizeof(uint32_t));
     int_read = 1;
   }
 
   if (ext_read && int_read) {
-
     AdcPacket p;
     p.temperature = (double) (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP)
         / (double) (*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR)
@@ -184,10 +183,17 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
     p.vRef = (double) VREFINT_CAL_VREF / 1000.0 * (double) (*VREFINT_CAL_ADDR) / (double) adc_counts[ADC_STM_VREFINT];
     p.vBku = 4.0 * (double) adc_counts[ADC_STM_VBAT] * p.vRef / 65535.0;
 
-    for (int i = 0; i < ADC_CHANNELS; i++)
-      p.volts[i] = ((double) adc_counts[i] * (p.vRef / 65535.0) - cfg_[i].offset) * cfg_[i].scaleFactor;
+#ifdef ADC_3V3
+    double vcc = (double) (adc_counts[ADC_3V3] & 0xFFFF) / 65535.0 * p.vRef * cfg_[ADC_3V3].scaleFactor;
+#else
+    double vcc = p.vRef;
+#endif
+    for (int i = 0; i < ADC_CHANNELS; i++) {
+      //    	p.volts[i] = ((double)(adc_counts[i]&0xFFFF)/65535.0 - cfg_[i].offset) * p.vRef * cfg_[i].scaleFactor;
+      p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * p.vRef - vcc * cfg_[i].offset) * cfg_[i].scaleFactor;
+    }
 
-    p.timestamp = time64.Us();
+    p.header.timestamp = time64.Us();
     p.drdy = drdy_;
     p.groupDelay = groupDelay_;
     rxFifo_.write((uint8_t *) &p, sizeof(p));
@@ -199,41 +205,99 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
 bool Adc::display(void)
 {
   AdcPacket p;
-  char name[] = "Adc (adc) ";
+  char name[] = "Adc (adc)";
+
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("  STM  : Vbat  %5.2fV, Vref  %5.2fV                                             | "
-                "%7.1fC |\n",
-                p.vBku, p.vRef, p.temperature);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_printf("\n");
 
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("  Batt : V     %5.2fV, I     %5.2fA, P     %5.2fW\n", p.volts[ADC_BATTERY_VOLTS],
-                p.volts[ADC_BATTERY_CURRENT], p.volts[ADC_BATTERY_VOLTS] * p.volts[ADC_BATTERY_CURRENT]);
+    misc_printf("  %-8s : ", "STM");
+    misc_f32(3.0, 3.6, p.vBku, "Vbku", "%5.1f", "V");               //
+    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.vRef, "Vref", "%5.1f", "V"); //
+    misc_f32(18.0, 50.0, p.temperature, "Temp", "%5.1f", "C");      //
+    misc_printf("\n");
 
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("  Other:");
-#ifdef ADC_CC_3V3
-    misc_printf(" 3V3   %5.2fV,", p.volts[ADC_CC_3V3]);
+    misc_printf("  %-8s : ", "Pwr");
+    misc_f32(22.2 / 1.02, 22.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "Batt", "%5.1f", "V"); //
+    misc_f32(0.1, 1.0, p.volts[ADC_BATTERY_CURRENT], "Batt", "%5.1f", "A");               //
+    misc_printf("\n");
+
+    misc_printf("  %-8s : ", "PS_FC");
+
+#ifdef ADC_3V3
+    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.volts[ADC_3V3], "3V3_FC", "%5.1f", "V"); //
 #endif
+#ifdef ADC_3V3_CURRENT
+    misc_f32(0.0, 1.0, p.volts[ADC_3V3_CURRENT], "3V3_FC", "%5.1f", "A"); //
+#endif
+
 #ifdef ADC_5V0
-    misc_printf(" 5V0   %5.2fV,", p.volts[ADC_5V0]);
+    misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_5V0], "5V0_FC", "%5.1f", "V"); //
 #endif
+#ifdef ADC_5V0_CURRENT
+    misc_f32(0.0, 1.0, p.volts[ADC_5V0_CURRENT], "5V0_FC", "%5.1f", "A"); //
+#endif
+
 #ifdef ADC_12V
-    misc_printf(" 12V   %5.2fV", p.volts[ADC_12V]);
+    misc_f32(12 / 1.02, 12 * 1.02, p.volts[ADC_12V], "12V_FC", "%5.1f", "V"); //
 #endif
+#ifdef ADC_12V_CURRENT
+    misc_f32(0.0, 1.0, p.volts[ADC_12V_CURRENT], "12V_FC", "%5.1f", "A"); //
+#endif
+
 #ifdef ADC_SERVO_VOLTS
-    misc_printf(" Servo %5.2fV", p.volts[ADC_SERVO_VOLTS]);
+    misc_f32(8.2 / 1.02, 8.2 * 1.02, p.volts[ADC_SERVO_VOLTS], "Servo", "%5.1f", "V"); //
 #endif
-#ifdef ADC_RSSI_V
-    misc_printf(" RSSI  %5.2fV", p.volts[ADC_RSSI_V]);
+#ifdef ADC_SERVO_CURRENT
+    misc_f32(0.0, 2.0, p.volts[ADC_SERVO_CURRENT], "Servo", "%5.1f", "A"); //
 #endif
+    misc_printf("\n");
+
+    misc_printf("  %-8s : ", "PS_CC");
+#ifdef ADC_CC_3V3
+    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.volts[ADC_CC_3V3], "3V3_CC", "%5.1f", "V"); //
+#endif
+#ifdef ADC_CC_3V3_CURRENT
+    misc_f32(0.0, 2.0, p.volts[ADC_CC_3V3_CURRENT], "3V3_CC", "%5.1f", "A"); //
+#endif
+
+#ifdef ADC_CC_5V0
+    misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_CC_5V0], "5V0_CC", "%5.1f", "V"); //
+#endif
+#ifdef ADC_CC_5V0_CURRENT
+    misc_f32(0.0, 2.0, p.volts[ADC_CC_5V0_CURRENT], " ", "%5.1f", "A"); //
+#endif
+
+    misc_printf("\n");
+
+    misc_printf("  %-8s : ", "ADC");
+
+#ifdef ADC_J107_ADC_1
+    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J107_ADC_1], "J107-1", "%5.1f", "V"); //
+#endif
+#ifdef ADC_J107_ADC_2
+    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J107_ADC_2], "J107-2", "%5.1f", "V"); //
+#endif
+#ifdef ADC_J109_ADC_3
+    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J109_ADC_3], "J109-3", "%5.1f", "V"); //
+#endif
+#ifdef ADC_J109_ADC4
+    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J109_ADC4], "J109-4", "%5.1f", "V"); //
+#endif
+#ifdef ADC_RSSI_V                                                        // Pixracer Pro
+    misc_f32(0, 3.33 * 1.02, p.volts[ADC_RSSI_V], "RSSI", "%5.1f", "V"); //
+#endif
+
     misc_printf("\n");
 
     return 1;
   } else {
     misc_printf("%s\n", name);
-    misc_printf("%s\n", name);
-    misc_printf("%s\n", name);
+    misc_printf("  STM\n");
+    misc_printf("  Pwr\n");
+    misc_printf("  PS_FC\n");
+    misc_printf("  PS_CC\n");
+    misc_printf("  ADC\n");
   }
   return 0;
 }

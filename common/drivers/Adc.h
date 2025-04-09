@@ -38,8 +38,8 @@
 #ifndef ADC_H_
 #define ADC_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
+#include "BoardConfig.h"
+#include "Driver.h"
 
 typedef struct __attribute__((__packed__))
 {

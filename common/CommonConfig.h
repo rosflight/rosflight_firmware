@@ -35,9 +35,10 @@
  ******************************************************************************
  **/
 
-#include "stm32h7xx_hal.h"
+#ifndef COMMONCONFIG_H
+#define COMMONCONFIG_H
 
-#include <main.h>
+#include "main.h"
 
 // Buffers types
 
@@ -50,9 +51,22 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 // USB MiddleWare
 //
-#define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
+// #define _USBD_USE_HS true // board dependent
 #define _USBD_USE_CDC_ACM true
-#define _USBD_CDC_ACM_COUNT 1
+// #define _USBD_CDC_ACM_COUNT 1 // board specific
+
+#define _USBD_USE_CDC_RNDIS false
+#define _USBD_USE_CDC_ECM false
+#define _USBD_USE_HID_MOUSE false
+#define _USBD_USE_HID_KEYBOARD false
+#define _USBD_USE_HID_CUSTOM false
+#define _USBD_USE_UAC_MIC false
+#define _USBD_USE_UAC_SPKR false
+#define _USBD_USE_UVC false
+#define _USBD_USE_MSC false
+#define _USBD_USE_DFU false
+#define _USBD_USE_PRNTR false
+#define _STM32F1_DEVICE false
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -159,3 +173,5 @@ extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_uart7_tx;
 extern DMA_HandleTypeDef hdma_uart8_rx;
 extern DMA_HandleTypeDef hdma_uart8_tx;
+
+#endif

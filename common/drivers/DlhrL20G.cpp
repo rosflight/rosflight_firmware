@@ -34,12 +34,13 @@
  *
  ******************************************************************************
  **/
-#include <DlhrL20G.h>
-#include <Time64.h>
-#include <misc.h>
+#include "DlhrL20G.h"
+#include "Time64.h"
+#include "misc.h"
+
 extern Time64 time64;
 
-#define DLHRL20G_OK (0x40)
+//#define DLHRL20G_OK (0x40)
 
 DMA_RAM uint8_t dlhr_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t dlhr_fifo_rx_buffer[DLHRL20G_FIFO_BUFFERS * sizeof(PressurePacket)];
@@ -69,10 +70,10 @@ uint32_t DlhrL20G::init(
 
   dtMs_ = 1000. / (double) sampleRateHz_;
 
-  if (dtMs_ <= 8.0) cmdByte_ = 0xAA;
-  else if (dtMs_ <= 15.7) cmdByte_ = 0xAC;
-  else if (dtMs_ <= 31.1) cmdByte_ = 0xAD;
-  else if (dtMs_ <= 61.9) cmdByte_ = 0xAE;
+  if (dtMs_ <= 8.0) cmdByte_ = 0xAA;       // ~2.7 ms //
+  else if (dtMs_ <= 15.7) cmdByte_ = 0xAC; // ~5.2ms
+  else if (dtMs_ <= 31.1) cmdByte_ = 0xAD; // ~10.2ms
+  else if (dtMs_ <= 61.9) cmdByte_ = 0xAE; // ~20.3ms
   else cmdByte_ = 0xAF;
 
   // Read the status register
@@ -89,8 +90,6 @@ uint32_t DlhrL20G::init(
     misc_printf("ERROR\n");
     initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
   }
-
-  misc_printf("\n");
 
   //	{
   //		uint16_t dT = 30;
@@ -139,7 +138,6 @@ bool DlhrL20G::poll(uint64_t poll_counter)
   bool status = false;
   static bool previous_drdy = 0;
   bool current_drdy = HAL_GPIO_ReadPin(drdyPort_, drdyPin_);
-
   if (poll_offset == 0) // polled sensor measurement start
   {
     dlhr_i2c_dma_buf[0] = cmdByte_;
@@ -160,9 +158,9 @@ bool DlhrL20G::poll(uint64_t poll_counter)
 void DlhrL20G::endDma(void)
 {
   PressurePacket p;
-  p.status = dlhr_i2c_dma_buf[0];
-  if (p.status == 0x0040) {
-    p.timestamp = time64.Us();
+  p.header.status = dlhr_i2c_dma_buf[0];
+  if (p.header.status == 0x0040) {
+    p.header.timestamp = time64.Us();
     p.drdy = drdy_;
     p.groupDelay = (p.drdy - launchUs_) / 2;
     uint32_t i_pressure =
@@ -176,7 +174,7 @@ void DlhrL20G::endDma(void)
     p.pressure = 1.25 * FS * ((double) i_pressure / 16777216.0 - OSdig);         // Pa
     p.temperature = 125.0 * (double) i_temperature / 16777216.0 - 40.0 + 273.15; // K
 
-    if (p.status == DLHRL20G_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    if (p.header.status == DLHRL20G_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
   }
 }
 
@@ -185,13 +183,11 @@ bool DlhrL20G::display(void)
   PressurePacket p;
   char name[] = "DlhrL20G (pitot)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f Pa                          |                                        | "
-                "%7.1f C |           "
-                "   | 0x%04X",
-                p.pressure, p.temperature - 273.15, p.status);
-    if (p.status == DLHRL20G_OK) misc_printf(" - OK\n");
-    else misc_printf(" - NOK\n");
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_f32(-2.5, 2.5, p.pressure, "Press", "%6.2f", "Pa");
+    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_x16(DLHRL20G_OK, p.header.status, "Status");
+    misc_printf("\n");
     return 1;
   } else {
     misc_printf("%s\n", name);

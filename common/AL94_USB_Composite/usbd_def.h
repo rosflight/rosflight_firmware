@@ -1,21 +1,21 @@
 /**
- ******************************************************************************
- * @file    usbd_def.h
- * @author  MCD Application Team
- * @brief   General defines for the usb device library
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                      www.st.com/SLA0044
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file    usbd_def.h
+  * @author  MCD Application Team
+  * @brief   General defines for the usb device library
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                      www.st.com/SLA0044
+  *
+  ******************************************************************************
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBD_DEF_H
@@ -27,6 +27,19 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_conf.h"
+
+/** @addtogroup STM32_USBD_DEVICE_LIBRARY
+  * @{
+  */
+
+/** @defgroup USB_DEF
+  * @brief general defines for the usb device library file
+  * @{
+  */
+
+/** @defgroup USB_DEF_Exported_Defines
+  * @{
+  */
 
 #ifndef NULL
 #define NULL 0U
@@ -145,6 +158,14 @@ extern "C" {
 #define USBD_EP_TYPE_ISOC 0x01U
 #define USBD_EP_TYPE_BULK 0x02U
 #define USBD_EP_TYPE_INTR 0x03U
+
+/**
+  * @}
+  */
+
+/** @defgroup USBD_DEF_Exported_TypesDefinitions
+  * @{
+  */
 
 typedef struct usb_setup_req
 {
@@ -308,12 +329,12 @@ typedef struct _USBD_HandleTypeDef
 } USBD_HandleTypeDef;
 
 /**
-     * @}
-     */
+  * @}
+  */
 
 /** @defgroup USBD_DEF_Exported_Macros
-     * @{
-     */
+  * @{
+  */
 __STATIC_INLINE uint16_t SWAPBYTE(uint8_t * addr)
 {
   uint16_t _SwapVal, _Byte1, _Byte2;
@@ -354,7 +375,7 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t * addr)
 #endif /* __GNUC__ */
 
 /* In HS mode and when the DMA is used, all variables and data structures dealing
- with the DMA during the transaction process should be 4-bytes aligned */
+   with the DMA during the transaction process should be 4-bytes aligned */
 
 #if defined(__GNUC__) && !defined(__CC_ARM) /* GNU Compiler */
 #ifndef __ALIGN_END
@@ -376,10 +397,37 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t * addr)
 #endif /* __ALIGN_BEGIN */
 #endif /* __GNUC__ */
 
+/**
+  * @}
+  */
+
+/** @defgroup USBD_DEF_Exported_Variables
+  * @{
+  */
+
+/**
+  * @}
+  */
+
+/** @defgroup USBD_DEF_Exported_FunctionsPrototype
+  * @{
+  */
+
+/**
+  * @}
+  */
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __USBD_DEF_H */
 
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

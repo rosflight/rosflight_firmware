@@ -1,6 +1,7 @@
 /**
  ******************************************************************************
  * File     : VarmintService.cpp
+ *
  * Date     : Sep 27, 2023
  ******************************************************************************
  *
@@ -34,23 +35,21 @@
  *
  ******************************************************************************
  **/
-
+#include "Varmint.h"
 #include "stm32h743xx.h"
-
-#include <Varmint.h>
 extern Varmint varmint;
 
-#include <Time64.h>
+#include "Time64.h"
 extern Time64 time64;
 
-#include <Callbacks.h>
+#include "Callbacks.h"
 
-#include <BoardConfig.h>
+#include "BoardConfig.h"
 
-#include <Polling.h>
+#include "Polling.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// High Rate Periodic Timer Interrupt Routine for Polling
+// High Rate (10kHz) Periodic Timer Interrupt Routine for Polling
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
@@ -129,7 +128,7 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart)
     __HAL_UART_CLEAR_IDLEFLAG(huart);
     if (huart->hdmarx != 0) ((DMA_Stream_TypeDef *) (huart->hdmarx)->Instance)->CR &= ~DMA_SxCR_EN;
   } else {
-    if (varmint.telem_.isMy(huart)) varmint.telem_.rxIsrCallback(huart);
+    if (varmint.telem_.isMy(huart)) { varmint.telem_.rxIsrCallback(huart); }
   }
 }
 

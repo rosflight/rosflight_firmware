@@ -35,15 +35,14 @@
  ******************************************************************************
  **/
 
-#include <Telem.h>
-
-#include <Time64.h>
-#include <misc.h>
+#include "Telem.h"
+#include "Time64.h"
+#include "misc.h"
 
 #include <signal.h>
 
-#include <Callbacks.h>
-#include <Packets.h>
+#include "Callbacks.h"
+#include "Packets.h"
 
 extern Time64 time64;
 
@@ -161,11 +160,13 @@ void Telem::rxIsrCallback(UART_HandleTypeDef * huart)
 
 uint16_t Telem::writePacket(SerialTxPacket * p)
 {
-  p->timestamp = time64.Us();
+  p->header.timestamp = time64.Us();
   p->packetSize = sizeof(SerialTxPacket) + p->payloadSize - SERIAL_MAX_PAYLOAD_SIZE;
   if (p->qos < 0x02) return txFifo_[0].write((uint8_t *) p, p->packetSize);
   else if (p->qos < 0xFF) return txFifo_[1].write((uint8_t *) p, p->packetSize);
-  else return txFifo_[2].write((uint8_t *) p, p->packetSize);
+  else {
+    return txFifo_[2].write((uint8_t *) p, p->packetSize);
+  }
 }
 
 bool Telem::newPacket(SerialTxPacket * p)
@@ -196,10 +197,10 @@ bool Telem::txStart(void) // Transmit complete callback.
   SerialTxPacket p = {0};
 
   if (newPacket(&p)) {
-
     memcpy(telem_dma_txbuf, p.payload, p.payloadSize);
 
     if (HAL_UART_Transmit_DMA(huart_, telem_dma_txbuf, p.payloadSize) != HAL_OK) txIdle_ = true;
+
   } else {
     txIdle_ = true;
   }

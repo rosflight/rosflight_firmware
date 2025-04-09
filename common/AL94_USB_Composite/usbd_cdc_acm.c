@@ -1,56 +1,62 @@
 /**
- ******************************************************************************
- * @file    usbd_cdc.c
- * @author  MCD Application Team
- * @brief   This file provides the high layer firmware functions to manage the
- *          following functionalities of the USB CDC Class:
- *           - Initialization and Configuration of high and low layer
- *           - Enumeration as CDC Device (and enumeration for each implemented memory interface)
- *           - OUT/IN data transfer
- *           - Command IN transfer (class requests management)
- *           - Error management
- *
- *  @verbatim
- *
- *          ===================================================================
- *                                CDC Class Driver Description
- *          ===================================================================
- *           This driver manages the "Universal Serial Bus Class Definitions for Communications Devices
- *           Revision 1.2 November 16, 2007" and the sub-protocol specification of "Universal Serial Bus
- *           Communications Class Subclass Specification for PSTN Devices Revision 1.2 February 9, 2007"
- *           This driver implements the following aspects of the specification:
- *             - Device descriptor management
- *             - Configuration descriptor management
- *             - Enumeration as CDC device with 2 data endpoints (IN and OUT) and 1 command endpoint (IN)
- *             - Requests management (as described in section 6.2 in specification)
- *             - Abstract Control Model compliant
- *             - Union Functional collection (using 1 IN endpoint for control)
- *             - Data interface class
- *
- *           These aspects may be enriched or modified for a specific user application.
- *
- *            This driver doesn't implement the following aspects of the specification
- *            (but it is possible to manage these features with some modifications on this driver):
- *             - Any class-specific aspect relative to communication classes should be managed by user application.
- *             - All communication classes other than PSTN are not managed
- *
- *  @endverbatim
- *
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                      www.st.com/SLA0044
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file    usbd_cdc.c
+  * @author  MCD Application Team
+  * @brief   This file provides the high layer firmware functions to manage the
+  *          following functionalities of the USB CDC Class:
+  *           - Initialization and Configuration of high and low layer
+  *           - Enumeration as CDC Device (and enumeration for each implemented memory interface)
+  *           - OUT/IN data transfer
+  *           - Command IN transfer (class requests management)
+  *           - Error management
+  *
+  *  @verbatim
+  *
+  *          ===================================================================
+  *                                CDC Class Driver Description
+  *          ===================================================================
+  *           This driver manages the "Universal Serial Bus Class Definitions for Communications Devices
+  *           Revision 1.2 November 16, 2007" and the sub-protocol specification of "Universal Serial Bus
+  *           Communications Class Subclass Specification for PSTN Devices Revision 1.2 February 9, 2007"
+  *           This driver implements the following aspects of the specification:
+  *             - Device descriptor management
+  *             - Configuration descriptor management
+  *             - Enumeration as CDC device with 2 data endpoints (IN and OUT) and 1 command endpoint (IN)
+  *             - Requests management (as described in section 6.2 in specification)
+  *             - Abstract Control Model compliant
+  *             - Union Functional collection (using 1 IN endpoint for control)
+  *             - Data interface class
+  *
+  *           These aspects may be enriched or modified for a specific user application.
+  *
+  *            This driver doesn't implement the following aspects of the specification
+  *            (but it is possible to manage these features with some modifications on this driver):
+  *             - Any class-specific aspect relative to communication classes should be managed by user application.
+  *             - All communication classes other than PSTN are not managed
+  *
+  *  @endverbatim
+  *
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                      www.st.com/SLA0044
+  *
+  ******************************************************************************
+  */
 
-#include "usbd_cdc.h"
+/* BSPDependencies
+- "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
+- "stm32xxxxx_{eval}{discovery}_io.c"
+EndBSPDependencies */
+
+/* Includes ------------------------------------------------------------------*/
+#include "usbd_cdc_acm.h"
 #include "usbd_ctlreq.h"
 
 #define _CDC_IN_EP 0x81U  /* EP1 for data IN */
@@ -71,9 +77,40 @@ uint8_t CDC_COM_ITF_NBR[NUMBER_OF_CDC];
 
 uint8_t CDC_STR_DESC_IDX[NUMBER_OF_CDC];
 
+/** @addtogroup STM32_USB_DEVICE_LIBRARY
+  * @{
+  */
+
+/** @defgroup USBD_CDC
+  * @brief usbd core module
+  * @{
+  */
+
+/** @defgroup USBD_CDC_Private_TypesDefinitions
+  * @{
+  */
+/**
+  * @}
+  */
+
+/** @defgroup USBD_CDC_Private_Defines
+  * @{
+  */
+/**
+  * @}
+  */
+
+/** @defgroup USBD_CDC_Private_Macros
+  * @{
+  */
+
+/**
+  * @}
+  */
+
 /** @defgroup USBD_CDC_Private_FunctionPrototypes
- * @{
- */
+  * @{
+  */
 
 static uint8_t USBD_CDC_Init(USBD_HandleTypeDef * pdev, uint8_t cfgidx);
 static uint8_t USBD_CDC_DeInit(USBD_HandleTypeDef * pdev, uint8_t cfgidx);
@@ -96,12 +133,12 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_
 };
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_CDC_Private_Variables
- * @{
- */
+  * @{
+  */
 
 /* CDC interface class callbacks structure */
 USBD_ClassTypeDef USBD_CDC_ACM = {
@@ -1553,20 +1590,20 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_CfgFSDesc[USB_CDC_CONFIG_DESC_SIZ] __ALIGN
 };
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_CDC_Private_Functions
- * @{
- */
+  * @{
+  */
 
 /**
- * @brief  USBD_CDC_Init
- *         Initialize the CDC interface
- * @param  pdev: device instance
- * @param  cfgidx: Configuration index
- * @retval status
- */
+  * @brief  USBD_CDC_Init
+  *         Initialize the CDC interface
+  * @param  pdev: device instance
+  * @param  cfgidx: Configuration index
+  * @retval status
+  */
 static uint8_t USBD_CDC_Init(USBD_HandleTypeDef * pdev, uint8_t cfgidx)
 {
   UNUSED(cfgidx);
@@ -1626,12 +1663,12 @@ static uint8_t USBD_CDC_Init(USBD_HandleTypeDef * pdev, uint8_t cfgidx)
 }
 
 /**
- * @brief  USBD_CDC_Init
- *         DeInitialize the CDC layer
- * @param  pdev: device instance
- * @param  cfgidx: Configuration index
- * @retval status
- */
+  * @brief  USBD_CDC_Init
+  *         DeInitialize the CDC layer
+  * @param  pdev: device instance
+  * @param  cfgidx: Configuration index
+  * @retval status
+  */
 static uint8_t USBD_CDC_DeInit(USBD_HandleTypeDef * pdev, uint8_t cfgidx)
 {
   UNUSED(cfgidx);
@@ -1656,12 +1693,12 @@ static uint8_t USBD_CDC_DeInit(USBD_HandleTypeDef * pdev, uint8_t cfgidx)
 }
 
 /**
- * @brief  USBD_CDC_Setup
- *         Handle the CDC specific requests
- * @param  pdev: instance
- * @param  req: usb requests
- * @retval status
- */
+  * @brief  USBD_CDC_Setup
+  *         Handle the CDC specific requests
+  * @param  pdev: instance
+  * @param  req: usb requests
+  * @retval status
+  */
 static uint8_t USBD_CDC_Setup(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1749,12 +1786,12 @@ static uint8_t USBD_CDC_Setup(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * 
 }
 
 /**
- * @brief  USBD_CDC_DataIn
- *         Data sent on non-control IN endpoint
- * @param  pdev: device instance
- * @param  epnum: endpoint number
- * @retval status
- */
+  * @brief  USBD_CDC_DataIn
+  *         Data sent on non-control IN endpoint
+  * @param  pdev: device instance
+  * @param  epnum: endpoint number
+  * @retval status
+  */
 static uint8_t USBD_CDC_DataIn(USBD_HandleTypeDef * pdev, uint8_t epnum)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1790,13 +1827,12 @@ static uint8_t USBD_CDC_DataIn(USBD_HandleTypeDef * pdev, uint8_t epnum)
 }
 
 /**
- * @brief  USBD_CDC_DataOut
- *         Data received on non-control Out endpoint
- * @param  pdev: device instance
- * @param  epnum: endpoint number
- * @retval status
- */
-
+  * @brief  USBD_CDC_DataOut
+  *         Data received on non-control Out endpoint
+  * @param  pdev: device instance
+  * @param  epnum: endpoint number
+  * @retval status
+  */
 static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef * pdev, uint8_t epnum)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1815,7 +1851,7 @@ static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef * pdev, uint8_t epnum)
   hcdc->RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
 
   /* USB data will be immediately processed, this allow next USB traffic being
-     NAKed till the end of the application Xfer */
+  NAKed till the end of the application Xfer */
 
   ((USBD_CDC_ACM_ItfTypeDef *) pdev->pUserData_CDC_ACM)->Receive(ep_to_ch, hcdc->RxBuffer, &hcdc->RxLength);
 
@@ -1823,11 +1859,11 @@ static uint8_t USBD_CDC_DataOut(USBD_HandleTypeDef * pdev, uint8_t epnum)
 }
 
 /**
- * @brief  USBD_CDC_EP0_RxReady
- *         Handle EP0 Rx Ready event
- * @param  pdev: device instance
- * @retval status
- */
+  * @brief  USBD_CDC_EP0_RxReady
+  *         Handle EP0 Rx Ready event
+  * @param  pdev: device instance
+  * @retval status
+  */
 static uint8_t USBD_CDC_EP0_RxReady(USBD_HandleTypeDef * pdev)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1848,12 +1884,12 @@ static uint8_t USBD_CDC_EP0_RxReady(USBD_HandleTypeDef * pdev)
 }
 
 /**
- * @brief  USBD_CDC_GetFSCfgDesc
- *         Return configuration descriptor
- * @param  speed : current device speed
- * @param  length : pointer data length
- * @retval pointer to descriptor buffer
- */
+  * @brief  USBD_CDC_GetFSCfgDesc
+  *         Return configuration descriptor
+  * @param  speed : current device speed
+  * @param  length : pointer data length
+  * @retval pointer to descriptor buffer
+  */
 static uint8_t * USBD_CDC_GetFSCfgDesc(uint16_t * length)
 {
   *length = (uint16_t) sizeof(USBD_CDC_CfgFSDesc);
@@ -1862,12 +1898,12 @@ static uint8_t * USBD_CDC_GetFSCfgDesc(uint16_t * length)
 }
 
 /**
- * @brief  USBD_CDC_GetHSCfgDesc
- *         Return configuration descriptor
- * @param  speed : current device speed
- * @param  length : pointer data length
- * @retval pointer to descriptor buffer
- */
+  * @brief  USBD_CDC_GetHSCfgDesc
+  *         Return configuration descriptor
+  * @param  speed : current device speed
+  * @param  length : pointer data length
+  * @retval pointer to descriptor buffer
+  */
 static uint8_t * USBD_CDC_GetHSCfgDesc(uint16_t * length)
 {
   *length = (uint16_t) sizeof(USBD_CDC_CfgHSDesc);
@@ -1876,12 +1912,12 @@ static uint8_t * USBD_CDC_GetHSCfgDesc(uint16_t * length)
 }
 
 /**
- * @brief  USBD_CDC_GetOtherSpeedCfgDesc
- *         Return configuration descriptor
- * @param  speed : current device speed
- * @param  length : pointer data length
- * @retval pointer to descriptor buffer
- */
+  * @brief  USBD_CDC_GetOtherSpeedCfgDesc
+  *         Return configuration descriptor
+  * @param  speed : current device speed
+  * @param  length : pointer data length
+  * @retval pointer to descriptor buffer
+  */
 static uint8_t * USBD_CDC_GetOtherSpeedCfgDesc(uint16_t * length)
 {
   *length = (uint16_t) sizeof(USBD_CDC_CfgFSDesc);
@@ -1890,11 +1926,11 @@ static uint8_t * USBD_CDC_GetOtherSpeedCfgDesc(uint16_t * length)
 }
 
 /**
- * @brief  USBD_CDC_GetDeviceQualifierDescriptor
- *         return Device Qualifier descriptor
- * @param  length : pointer data length
- * @retval pointer to descriptor buffer
- */
+  * @brief  USBD_CDC_GetDeviceQualifierDescriptor
+  *         return Device Qualifier descriptor
+  * @param  length : pointer data length
+  * @retval pointer to descriptor buffer
+  */
 uint8_t * USBD_CDC_GetDeviceQualifierDescriptor(uint16_t * length)
 {
   *length = (uint16_t) sizeof(USBD_CDC_DeviceQualifierDesc);
@@ -1903,11 +1939,11 @@ uint8_t * USBD_CDC_GetDeviceQualifierDescriptor(uint16_t * length)
 }
 
 /**
- * @brief  USBD_CDC_RegisterInterface
- * @param  pdev: device instance
- * @param  fops: CD  Interface callback
- * @retval status
- */
+  * @brief  USBD_CDC_RegisterInterface
+  * @param  pdev: device instance
+  * @param  fops: CD  Interface callback
+  * @retval status
+  */
 uint8_t USBD_CDC_ACM_RegisterInterface(USBD_HandleTypeDef * pdev, USBD_CDC_ACM_ItfTypeDef * fops)
 {
   if (fops == NULL) { return (uint8_t) USBD_FAIL; }
@@ -1918,11 +1954,11 @@ uint8_t USBD_CDC_ACM_RegisterInterface(USBD_HandleTypeDef * pdev, USBD_CDC_ACM_I
 }
 
 /**
- * @brief  USBD_CDC_SetTxBuffer
- * @param  pdev: device instance
- * @param  pbuff: Tx Buffer
- * @retval status
- */
+  * @brief  USBD_CDC_SetTxBuffer
+  * @param  pdev: device instance
+  * @param  pbuff: Tx Buffer
+  * @retval status
+  */
 uint8_t USBD_CDC_SetTxBuffer(uint8_t ch, USBD_HandleTypeDef * pdev, uint8_t * pbuff, uint32_t length)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1936,11 +1972,11 @@ uint8_t USBD_CDC_SetTxBuffer(uint8_t ch, USBD_HandleTypeDef * pdev, uint8_t * pb
 }
 
 /**
- * @brief  USBD_CDC_SetRxBuffer
- * @param  pdev: device instance
- * @param  pbuff: Rx Buffer
- * @retval status
- */
+  * @brief  USBD_CDC_SetRxBuffer
+  * @param  pdev: device instance
+  * @param  pbuff: Rx Buffer
+  * @retval status
+  */
 uint8_t USBD_CDC_SetRxBuffer(uint8_t ch, USBD_HandleTypeDef * pdev, uint8_t * pbuff)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1953,11 +1989,11 @@ uint8_t USBD_CDC_SetRxBuffer(uint8_t ch, USBD_HandleTypeDef * pdev, uint8_t * pb
 }
 
 /**
- * @brief  USBD_CDC_TransmitPacket
- *         Transmit packet on IN endpoint
- * @param  pdev: device instance
- * @retval status
- */
+  * @brief  USBD_CDC_TransmitPacket
+  *         Transmit packet on IN endpoint
+  * @param  pdev: device instance
+  * @retval status
+  */
 uint8_t USBD_CDC_TransmitPacket(uint8_t ch, USBD_HandleTypeDef * pdev)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -1982,11 +2018,11 @@ uint8_t USBD_CDC_TransmitPacket(uint8_t ch, USBD_HandleTypeDef * pdev)
 }
 
 /**
- * @brief  USBD_CDC_ACM_ReceivePacket
- *         prepare OUT Endpoint for reception
- * @param  pdev: device instance
- * @retval status
- */
+  * @brief  USBD_CDC_ACM_ReceivePacket
+  *         prepare OUT Endpoint for reception
+  * @param  pdev: device instance
+  * @retval status
+  */
 uint8_t USBD_CDC_ReceivePacket(uint8_t ch, USBD_HandleTypeDef * pdev)
 {
   USBD_CDC_ACM_HandleTypeDef * hcdc = NULL;
@@ -2038,15 +2074,15 @@ void USBD_Update_CDC_ACM_DESC(uint8_t * desc, uint8_t cmd_itf, uint8_t com_itf, 
   }
 }
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

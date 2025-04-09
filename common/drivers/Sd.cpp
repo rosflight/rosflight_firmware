@@ -43,7 +43,7 @@
 
 extern Time64 time64;
 
-#define SD_MAXBLKS (8L)
+#define SD_MAXBLKS (16L)
 #define SD_BLKSIZE (512L)
 #define SD_BUFF_SIZE (SD_MAXBLKS * SD_BLKSIZE)
 SD_DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
@@ -122,6 +122,7 @@ bool Sd::read(uint8_t * dest, size_t len)
 
 bool Sd::write(uint8_t * src, size_t len)
 {
+
   uint16_t Nblocks = (len + SD_CRC_BYTES + SD_BLKSIZE - 1) / SD_BLKSIZE;
   //  if(Nblocks > sd_info.BlockNbr) Nblocks = sd_info.BlockNbr;
   if (Nblocks > SD_MAXBLKS) return 0; // too large and don't want to be here forever, throw an error
@@ -143,7 +144,7 @@ bool Sd::write(uint8_t * src, size_t len)
   hal_status = HAL_SD_WriteBlocks_DMA(hsd_, sd_tx_buf, 0, Nblocks);
   if (hal_status != HAL_OK) return false;
 
-  uint64_t timeout = time64.Us() + 1000000; // Allow up to 1 second
+  uint64_t timeout = time64.Us() + 100000; // Allow up to 100ms
 
   while (!txComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
 

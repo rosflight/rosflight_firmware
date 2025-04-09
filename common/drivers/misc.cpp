@@ -35,14 +35,16 @@
  ******************************************************************************
  **/
 
-#include <BoardConfig.h>
+#include "BoardConfig.h"
+#include "usb_device.h"
+//#include "usbd_cdc_if.h"
+#include "usbd_cdc_acm_if.h" // PTT
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <usb_device.h>
-#include <usbd_cdc_if.h>
 
-#include <misc.h>
+#include "misc.h"
 
 extern bool verbose;
 
@@ -50,11 +52,9 @@ extern "C" {
 int __io_putchar(int ch)
 {
 #ifdef __HAVE_SWO__
-  // remove '\r'
-  if (ch != '\r') {
-    ITM_SendChar(ch); // for SWO
+  if (ch != '\r') { // don't send '\r'
+    ITM_SendChar(ch);
   }
-  return 1;
 #else
   HAL_UART_Transmit(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFFFFFF);
 #endif
@@ -64,8 +64,11 @@ int __io_putchar(int ch)
 int __io_getchar(void)
 {
   uint8_t ch = 0;
-  HAL_UART_Receive(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFF);
+#ifdef __HAVE_SWO__
   // ch = ITM_ReceiveChar(); // for SWO, not supported on STM32CubeIDE.
+#else
+  HAL_UART_Receive(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFF);
+#endif
   return (int) ch;
 }
 }
@@ -79,8 +82,9 @@ int __io_getchar(void)
 // } USBD_StatusTypeDef;
 
 // NOTE! Only use misc_printf for debugging since it blocks.
-// #define MAX_SPRINTF_CHARS 256
-// DMA_RAM char misc_sprintf_buffer[MAX_SPRINTF_CHARS];
+#define MAX_SPRINTF_CHARS 256
+char misc_sprintf_buffer[MAX_SPRINTF_CHARS];
+
 void misc_printf(const char * format, ...)
 {
 
@@ -88,7 +92,9 @@ void misc_printf(const char * format, ...)
 
   va_list argp;
   va_start(argp, format);
-  vprintf(format, argp);
+  //  vprintf(format, argp);
+  size_t len = vsnprintf(misc_sprintf_buffer, MAX_SPRINTF_CHARS, format, argp);
+  HAL_UART_Transmit(MISC_HUART, (uint8_t *) misc_sprintf_buffer, len, 0xFFFFFFFF);
   va_end(argp);
 
   //	uint8_t vcp_status=USBD_OK;
@@ -100,6 +106,163 @@ void misc_printf(const char * format, ...)
   //	{
   //	}
   //	va_end(argp);
+}
+
+void misc_clear()
+{
+  //  misc_printf("\033[H"); //  home
+  misc_printf("\033[2J"); // clear
+  misc_printf("\033[0m"); // clear colors
+}
+
+void misc_home() { misc_printf("\033[H"); }
+
+void misc_printfc(MiscColor color_code, const char * format, ...)
+{
+  if (!verbose) return;
+
+  misc_printf("\033[0;%02um", (uint8_t) color_code);
+
+  va_list argp;
+  va_start(argp, format);
+  vprintf(format, argp);
+  va_end(argp);
+
+  misc_printf("\033[0m");
+}
+
+void misc_num(uint8_t fail, const char * pre, char * num_char, size_t num_len, const char * post)
+{
+  const size_t bufferlen = 16;
+  char buffer[bufferlen];
+
+  size_t len = 0;
+  if (fail == 0) len = snprintf(buffer, bufferlen, "\033[0;41m%-7s", pre);      // Red
+  else if (fail == 1) len = snprintf(buffer, bufferlen, "\033[0;42m%-7s", pre); // Green
+  else len = snprintf(buffer, bufferlen, "\033[0m%-7s", pre);                   // Nothing
+
+  HAL_UART_Transmit(MISC_HUART, (uint8_t *) buffer, len, 0xFFFFFFFF);
+
+  HAL_UART_Transmit(MISC_HUART, (uint8_t *) num_char, num_len, 0xFFFFFFFF);
+
+  len = snprintf(buffer, bufferlen, " %-4s\033[0m|", post);
+  HAL_UART_Transmit(MISC_HUART, (uint8_t *) buffer, len, 0xFFFFFFFF);
+}
+
+// Alternate format
+//
+//void misc_num(uint8_t fail, const char * pre, char * num_char, size_t num_len, const char * post)
+//{
+//  const size_t bufferlen = 16;
+//  char buffer[bufferlen];
+//
+//  size_t len = 0;
+//  len = snprintf(buffer, bufferlen, "%-7s", pre);
+//  HAL_UART_Transmit(MISC_HUART, (uint8_t *) buffer, len, 0xFFFFFFFF);
+//  HAL_UART_Transmit(MISC_HUART, (uint8_t *) num_char, num_len, 0xFFFFFFFF);
+//  len = snprintf(buffer, bufferlen, " %-4s|", post);
+//
+//  if (fail == 0)      len = snprintf(buffer, bufferlen, "\033[0;41m%-4s\033[0m", "FAIL\n");      // Red
+//  else if (fail == 1) len = snprintf(buffer, bufferlen, "\033[0;42m%-7s\033[0m", "PASS\n"); // Green
+//  else                len = snprintf(buffer, bufferlen, "\n", pre);                   // Nothing
+//  HAL_UART_Transmit(MISC_HUART, (uint8_t *) buffer, len, 0xFFFFFFFF);
+//
+//  //HAL_UART_Transmit(MISC_HUART, (uint8_t *) num_char, num_len, 0xFFFFFFFF);
+//
+////  len = snprintf(buffer, bufferlen, " %-4s\033[0m|", post);
+////  HAL_UART_Transmit(MISC_HUART, (uint8_t *) buffer, len, 0xFFFFFFFF);
+//}
+
+void misc_f32(float lo, float hi, float x, const char * pre, const char * number_format, const char * post)
+{
+  const size_t bufferlen = 16;
+  char buffer[bufferlen];
+
+  if (!verbose) return;
+
+  uint8_t fail = 1;
+  if (x < lo || x > hi) {
+    fail = 0;
+  } else if (isnan(lo) || isnan(hi)) {
+    fail = 2;
+  }
+  size_t len = snprintf(buffer, bufferlen, number_format, x);
+  misc_num(fail, pre, buffer, len, post);
+}
+
+void misc_i32(int32_t lo, int32_t hi, int32_t x, const char * pre, const char * number_format, const char * post)
+{
+  const size_t bufferlen = 16;
+  char buffer[bufferlen];
+
+  if (!verbose) return;
+
+  uint8_t fail = 1;
+  if (x < lo || x > hi) fail = 0;
+  else if (isnan(lo) || isnan(hi)) fail = 2;
+
+  size_t len = snprintf(buffer, bufferlen, number_format, x);
+  misc_num(fail, pre, buffer, len, post);
+}
+
+void misc_u32(uint32_t lo, uint32_t hi, uint32_t x, const char * pre, const char * number_format, const char * post)
+{
+  const size_t bufferlen = 16;
+  char buffer[bufferlen];
+
+  if (!verbose) return;
+
+  uint8_t fail = 1;
+  if (x < lo || x > hi) fail = 0;
+  else if (isnan(lo) || isnan(hi)) fail = 2;
+
+  size_t len = snprintf(buffer, bufferlen, number_format, x);
+  misc_num(fail, pre, buffer, len, post);
+}
+
+void misc_x16(uint16_t match, uint16_t x, const char * pre)
+{
+  const size_t bufferlen = 16;
+  char buffer[bufferlen];
+  const char number_format[] = "0x%04X";
+
+  if (!verbose) return;
+  uint8_t fail = 0;
+  if (isnan(match)) fail = 2;
+  else if (match == x) fail = 1;
+
+  size_t len = snprintf(buffer, bufferlen, number_format, x);
+  misc_num(fail, pre, buffer, len, " ");
+}
+
+size_t misc_getchar() // with echo
+{
+  uint8_t ch = 0;
+  HAL_UART_Receive(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFF);
+  HAL_UART_Transmit(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFF);
+  return ch;
+}
+
+size_t misc_getline(uint8_t * line, size_t len)
+{
+  if (line == 0) {
+    for (;;) {
+      uint8_t ch = 0;
+      HAL_UART_Receive(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFF);
+      HAL_UART_Transmit(MISC_HUART, (uint8_t *) (&ch), 1, 0xFFFF);
+      if (ch == '\n') return 0; // 0x0A
+    }
+  }
+
+  uint16_t i;
+  for (i = 0; i < len; i++) {
+    HAL_UART_Receive(MISC_HUART, line + i, 1, 0xFFFF);
+    if (line[i] == '\n') {
+      line[i] = 0;  // drop \n and zero terminate
+      return i + 1; // do not return '\n' 0x0A forLF, '\r' 0x0D for CR
+    }
+  }
+  return len;
 }
 
 void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay)

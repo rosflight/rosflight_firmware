@@ -38,9 +38,8 @@
 #ifndef PWM_H_
 #define PWM_H_
 
-#include <BoardConfig.h>
-
-#include <Status.h>
+#include "BoardConfig.h"
+#include "Status.h"
 
 #define PWM_DMA_BUFFER_LEN 96
 

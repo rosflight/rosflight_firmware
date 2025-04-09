@@ -38,9 +38,11 @@
 #ifndef ADIS165XX_H_
 #define ADIS165XX_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Spi.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Spi.h"
+
+#define ADIS_OK (0x0000)
 
 class Adis165xx : public Driver
 {

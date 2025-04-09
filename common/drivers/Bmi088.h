@@ -38,8 +38,8 @@
 #ifndef BMI088_H_
 #define BMI088_H_
 
-#include <Driver.h>
-#include <Spi.h>
+#include "Driver.h"
+#include "Spi.h"
 
 /*
  *

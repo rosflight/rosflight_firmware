@@ -35,18 +35,20 @@
  ******************************************************************************
  **/
 
-#include <BoardConfig.h>
-#include <Packets.h>
-#include <Vcp.h>
+#include "Vcp.h"
+#include "BoardConfig.h"
+#include "Packets.h"
 
-#include <usb_device.h>
+#include "usb_device.h"
 
-#include <Time64.h>
-#include <usbd_cdc_if.h>
+#include "Time64.h"
+//#include "usbd_cdc_if.h" // PTT
+#include "usbd_cdc_acm_if.h"
 
 extern Time64 time64;
 
-#define VCP_TX_FIFO_BUFFERS SERIAL_TX_FIFO_BUFFERS
+//#define VCP_TX_FIFO_BUFFERS SERIAL_TX_FIFO_BUFFERS
+#define VCP_TX_FIFO_BUFFERS 256
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 
 #define VCP_RX_FIFO_BUFFER_BYTES 4096

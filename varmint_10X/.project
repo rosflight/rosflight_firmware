@@ -34,7 +34,7 @@
 		<link>
 			<name>links</name>
 			<type>2</type>
-			<location>C:/Projects/VarmintProjects/rosflight_varmint/links</location>
+			<location>C:/Projects/VarmintProjects/git/main/links</location>
 		</link>
 	</linkedResources>
 </projectDescription>

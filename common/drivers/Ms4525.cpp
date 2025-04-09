@@ -34,9 +34,10 @@
  *
  ******************************************************************************
  **/
-#include <Ms4525.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Ms4525.h"
+#include "Time64.h"
+#include "misc.h"
+
 extern Time64 time64;
 
 #define MS4525_OK (0x0000)
@@ -45,6 +46,16 @@ DMA_RAM uint8_t ms4525_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t ms4525_fifo_rx_buffer[MS4525_FIFO_BUFFERS * sizeof(PressurePacket)];
 
 #define MS4525_I2C_DMA_SIZE (4)
+
+#define ROLLOVER 10000
+#define MS4525_CMDRXSTART 0
+#define MS4525_CMDRX1 15
+#define MS4525_CMDRX2 30
+#define MS4525_CMDRX3 45
+#define MS4525_CMDRX4 60
+#define MS4525_CMDRXSEND 75
+#define MS4525_IDLE_STATE 0xFFFE
+#define MS4525_STATE_ERROR 0xFFFF
 
 uint32_t Ms4525::init(
   // Driver initializers
@@ -84,43 +95,28 @@ uint32_t Ms4525::init(
   return initializationStatus_;
 }
 
-PollingState Ms4525::state(uint64_t poll_counter)
-{
-  uint32_t rollover = 10000; // us (100 Hz) 0-99 slots at 10 kHz
-  PollingStateStruct lut[] = // BARO at 400 Hz
-    {
-      // at 10kHz, each count is 100us. I2C is 90us pre byte
-      {0, MS4525_CMDRXSTART}, // addr + 4 bytes
-      {15, MS4525_CMDRX},     // addr + 4 bytes
-      {30, MS4525_CMDRX},     // addr + 4 bytes
-      {45, MS4525_CMDRX},     // addr + 4 bytes
-      {60, MS4525_CMDRX},     // addr + 4 bytes
-      {75, MS4525_CMDRXSEND}, // addr + 4 bytes
-    };
-  return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
-                            poll_counter % (rollover / POLLING_PERIOD_US));
-}
-
 bool Ms4525::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = state(poll_counter);
-  if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX) || (poll_state == MS4525_CMDRXSEND)) {
+  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX1) || (poll_state == MS4525_CMDRX2)
+      || (poll_state == MS4525_CMDRX3) || (poll_state == MS4525_CMDRX4) || (poll_state == MS4525_CMDRXSEND)) {
     if (poll_state == MS4525_CMDRXSTART) launchUs_ = time64.Us();
 
     if ((dmaRunning_ = (HAL_OK
                         == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ms4525_i2c_dma_buf,
                                                       MS4525_I2C_DMA_SIZE)))) // Receive 7 bytes of data over I2C
       i2cState_ = poll_state;
-    else i2cState_ = MS4525_ERROR;
+    else i2cState_ = MS4525_STATE_ERROR;
   }
-  return dmaRunning_;
+  return false;
 }
 
 void Ms4525::endDma(void)
 {
   static float pressure_filtered = 0;
 
-  if ((i2cState_ == MS4525_CMDRXSTART) || (i2cState_ == MS4525_CMDRX) || (i2cState_ == MS4525_CMDRXSEND)) {
+  if ((i2cState_ == MS4525_CMDRXSTART) || (i2cState_ == MS4525_CMDRX1) || (i2cState_ == MS4525_CMDRX2)
+      || (i2cState_ == MS4525_CMDRX3) || (i2cState_ == MS4525_CMDRX4) || (i2cState_ == MS4525_CMDRXSEND)) {
     if ((ms4525_i2c_dma_buf[0] & 0xC0) == MS4525_OK) {
       uint32_t i_pressure = (uint32_t) (ms4525_i2c_dma_buf[0] & 0x3F) << 8 | (uint32_t) ms4525_i2c_dma_buf[1];
 
@@ -140,18 +136,18 @@ void Ms4525::endDma(void)
         uint32_t i_temperature =
           ((uint32_t) ms4525_i2c_dma_buf[2] << 3 | (uint32_t) (ms4525_i2c_dma_buf[3] & 0xE0) >> 5);
         p.temperature = (double) i_temperature * 200.0 / 2047.0 - 50.0 + 273.15; // K
-        p.status = ms4525_i2c_dma_buf[0] & 0xC0;
+        p.header.status = ms4525_i2c_dma_buf[0] & 0xC0;
 
-        p.timestamp = time64.Us();
-        p.drdy = p.timestamp;
-        p.groupDelay = (p.timestamp - launchUs_) / 2;
+        p.header.timestamp = time64.Us();
+        p.drdy = p.header.timestamp;
+        p.groupDelay = (p.header.timestamp - launchUs_) / 2;
 
         rxFifo_.write((uint8_t *) &p, sizeof(p));
       }
     }
   }
 
-  i2cState_ = IDLE_STATE;
+  i2cState_ = MS4525_IDLE_STATE;
   dmaRunning_ = false;
 }
 
@@ -160,12 +156,12 @@ bool Ms4525::display(void)
   PressurePacket p;
   char name[] = "MS4525 (pitot)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
     misc_printf("%10.3f Pa                          |                                        | "
                 "%7.1f C |           "
                 "   | 0x%04X",
-                p.pressure, p.temperature - 273.15, p.status);
-    if (p.status == MS4525_OK) misc_printf(" - OK\n");
+                p.pressure, p.temperature - 273.15, p.header.status);
+    if (p.header.status == MS4525_OK) misc_printf(" - OK\n");
     else misc_printf(" - NOK\n");
 
     return 1;

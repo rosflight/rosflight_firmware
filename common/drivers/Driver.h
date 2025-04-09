@@ -40,12 +40,12 @@
 
 #include "stm32h7xx_hal.h"
 
-#include <BoardConfig.h>
-#include <PacketFifo.h>
-#include <Polling.h>
-#include <stdint.h>
+#include "BoardConfig.h"
+#include "PacketFifo.h"
+#include "Polling.h"
+#include "Status.h"
 
-#include <Status.h>
+#include <stdint.h>
 
 class Driver : public Status
 {
@@ -69,8 +69,6 @@ protected:
   uint64_t drdy_, timeout_, launchUs_;
   uint64_t groupDelay_ = 0;
   bool dmaRunning_ = 0;
-  //  uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;
-  //  char name_[STATUS_NAME_MAX_LEN];
 };
 
 #endif /* DRIVER_H_ */

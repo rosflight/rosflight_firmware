@@ -35,12 +35,12 @@
  ******************************************************************************
  **/
 
-#include <Dps310.h>
-#include <Packets.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Dps310.h"
+#include "Packets.h"
+#include "Time64.h"
+#include "misc.h"
 
-#define DPS310_OK (0xE0D0)
+//#define DPS310_OK (0xE0D0)
 
 #define DPS310_CONTINUOUS_MODE false
 
@@ -74,27 +74,39 @@ DMA_RAM uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
 DTCM_RAM uint8_t dps310_fifo_rx_buffer[DPS310_FIFO_BUFFERS * sizeof(PressurePacket)];
 
+#define ROLLOVER 20000
+#define DPS310_CMD_P 0
+#define DPS310_DRDY_P 145
+#define DPS310_RX_P 146
+#define DPS310_CMD_T 147
+#define DPS310_DRDY_T 177
+#define DPS310_RX_T 178
+#define DPS310_IDLE_STATE 0xFFFF
+#define DPS310_STATE_ERROR 0xFFFE
+
 static int32_t Compliment(int32_t x, int16_t bits)
 {
   if (x & ((int32_t) 1 << (bits - 1))) { x -= (int32_t) 1 << bits; }
   return x;
 }
 
-PollingState Dps310::state(uint64_t poll_counter)
-{
-  uint32_t rollover = 20000; // us (50 Hz) 0-199 slots at 10 kHz
-  PollingStateStruct lut[] = // BARO at 50 Hz
-    {
-      {0, DPS310_CMD_P},    // at 10kHz, each count is 100us.
-      {145, DPS310_DRDY_P}, //
-      {146, DPS310_RX_P},   //
-      {147, DPS310_CMD_T},  //
-      {177, DPS310_DRDY_T}, //
-      {178, DPS310_RX_T},
-    };
-  return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
-                            poll_counter % (rollover / POLLING_PERIOD_US));
-}
+//PTT note if there is an issue when setting 3-wire mode, need to add
+//int16_t DpsClass::correctTemp(void)
+//{
+//	writeByte(0x0E, 0xA5);
+//	writeByte(0x0F, 0x96);
+//	writeByte(0x62, 0x02);
+//	writeByte(0x0E, 0x00);
+//	writeByte(0x0F, 0x00);
+//
+//	//perform a first temperature measurement (again)
+//	//the most recent temperature will be saved internally
+//	//and used for compensation when calculating pressure
+//	float trash;
+//	measureTempOnce(trash);
+//
+//	return DPS__SUCCEEDED;
+//}
 
 uint32_t Dps310::init(
   // Driver initializers
@@ -114,7 +126,7 @@ uint32_t Dps310::init(
   drdyPin_ = drdy_pin;
 
   spi_.init(hspi, dps310_dma_txbuf, dps310_dma_rxbuf, cs_port, cs_pin);
-  spiState_ = IDLE_STATE;
+  spiState_ = DPS310_IDLE_STATE;
   dmaRunning_ = false;
 
   timeoutMs_ = 100;
@@ -259,6 +271,20 @@ uint32_t Dps310::init(
 #if DPS310_CONTINUOUS_MODE
   writeRegister(MEAS_CFG, 0x07); // Start background measurement
 #endif
+
+  //PTT need to add
+  //	writeByte(0x0E, 0xA5);
+  //	writeByte(0x0F, 0x96);
+  //	writeByte(0x62, 0x02);
+  //	writeByte(0x0E, 0x00);
+  //	writeByte(0x0F, 0x00);
+  //
+  //	//perform a first temperature measurement (again)
+  //	//the most recent temperature will be saved internally
+  //	//and used for compensation when calculating pressure
+  //	float trash;
+  //	measureTempOnce(trash);
+
   return initializationStatus_;
 }
 
@@ -282,7 +308,7 @@ uint8_t Dps310::readRegister(uint8_t address)
 
 bool Dps310::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = state(poll_counter);
+  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
 
   // Start P measurement sequence
   if (poll_state == DPS310_CMD_P) // Command Pressure Read
@@ -290,40 +316,40 @@ bool Dps310::poll(uint64_t poll_counter)
     uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x01};
     launchUs_ = time64.Us();
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = DPS310_CMD_P;
-    else spiState_ = DPS310_ERROR;
+    else spiState_ = DPS310_STATE_ERROR;
   }
   // Get P DRDY
   else if (poll_state == DPS310_DRDY_P) {
     uint8_t cmd[2] = {MEAS_CFG | SPI_READ, 0};
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = DPS310_ERROR;
+    else spiState_ = DPS310_STATE_ERROR;
   }
   // Read P data
   else if (poll_state == DPS310_RX_P) // Start DMA read of Temperature Data 2.41ms after start
   {
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_P_CMD, DPS310_READ_P_BUFFBYTES)))) spiState_ = poll_state;
-    else spiState_ = DPS310_ERROR;
+    else spiState_ = DPS310_STATE_ERROR;
   }
   // Start T measurement sequence
   else if (poll_state == DPS310_CMD_T) // Command Temperature Daq
   {
     uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x02}; // Temperature
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = DPS310_ERROR;
+    else spiState_ = DPS310_STATE_ERROR;
   }
   // Get T DRDY
   else if (poll_state == DPS310_DRDY_T) {
     uint8_t cmd[2] = {MEAS_CFG | SPI_READ, 0};
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = DPS310_ERROR;
+    else spiState_ = DPS310_STATE_ERROR;
   }
   // Read T data
   else if (poll_state == DPS310_RX_T) // Start DMA read of Pressure Data
   {
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_T_CMD, DPS310_READ_T_BUFFBYTES)))) spiState_ = poll_state;
-    else spiState_ = DPS310_ERROR;
+    else spiState_ = DPS310_STATE_ERROR;
   }
-  return dmaRunning_;
+  return false;
 }
 
 void Dps310::endDma(void)
@@ -335,12 +361,12 @@ void Dps310::endDma(void)
   if (spiState_ == DPS310_DRDY_P) // Pressure DRDY
   {
     if (rx[1] & 0x10) {
-      p.status |= (uint16_t) rx[1];
+      p.header.status |= (uint16_t) rx[1];
       p.drdy = time64.Us();
     }
   } else if (spiState_ == DPS310_DRDY_T) // Temperature DRDY
   {
-    if (rx[1] & 0x20) p.status = (uint16_t) rx[1] << 8;
+    if (rx[1] & 0x20) p.header.status = (uint16_t) rx[1] << 8;
   } else if (spiState_ == DPS310_RX_T) // Temperature Data
   {
     int32_t traw = ((int32_t) rx[4] << 24 | (int32_t) rx[5] << 16 | (int32_t) rx[6] << 8) >> 8;
@@ -352,31 +378,29 @@ void Dps310::endDma(void)
     double Praw = (double) praw / KP;
     p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_)) + Traw * (C01_ + Praw * (C11_ + Praw * C21_)); // Pa
 
-    p.timestamp = time64.Us();
-    p.groupDelay = p.timestamp - (p.drdy + launchUs_) / 2;
-    if (p.status == DPS310_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
-    p.status = 0;
+    p.header.timestamp = time64.Us();
+    p.groupDelay = p.header.timestamp - (p.drdy + launchUs_) / 2;
+    if (p.header.status == DPS310_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    p.header.status = 0;
   }
 
-  spiState_ = IDLE_STATE;
+  spiState_ = DPS310_IDLE_STATE;
   dmaRunning_ = false;
 }
 
 bool Dps310::display(void)
 {
   PressurePacket p;
-  char name[] = "Dps310 (baro)";
+
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f kPa                         |                                        | "
-                "%7.1f C |           "
-                "   | 0x%04X",
-                p.pressure / 1000., p.temperature - 273.15, p.status);
-    if (p.status == DPS310_OK) misc_printf(" - OK\n");
-    else misc_printf(" - NOK\n");
+    misc_header(name_, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_f32(98, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
+    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_x16(DPS310_OK, p.header.status, "Status");
+    misc_printf("\n");
     return 1;
   } else {
-    misc_printf("%s\n", name);
+    misc_printf("%s\n", name_);
   }
   return 0;
 }

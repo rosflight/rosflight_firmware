@@ -35,12 +35,12 @@
  ******************************************************************************
  **/
 
-#include <sandbox.h>
+#include "sandbox.h"
 
-#include <BoardConfig.h>
-#include <misc.h>
+#include "BoardConfig.h"
+#include "misc.h"
 
-#include <Varmint.h>
+#include "Varmint.h"
 extern Varmint varmint;
 
 extern Time64 time64;
@@ -60,33 +60,6 @@ void verbose_equals(void)
 {
   for (int i = 0; i < ROWSIZE; i++) misc_printf("=");
   misc_printf("\n");
-}
-
-void sandbox(void)
-{
-  // Give us time to read the initialization messages
-  time64.dMs(5000);
-
-  verbose = true;
-
-  //	 Test pwm outputs
-  //
-  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
-  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
-  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
-  //	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
-  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
-  //
-  //	while(1)
-  //	{
-  //	  PROBE1_HI;
-  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
-  //	  PROBE1_LO;
-  //	  time64.dUs(450); ~ 2khs update rate
-  //	}
-
-  uint32_t n = 0;
-  while (1) { sandbox_dashboard((n++) % 100 == 0); }
 }
 
 void sandbox_dashboard(bool clear)
@@ -116,4 +89,31 @@ void sandbox_dashboard(bool clear)
   varmint.gps_.display();
 
   verbose_equals();
+}
+
+void sandbox(void)
+{
+  // Give us time to read the initialization messages
+  time64.dMs(5000);
+
+  verbose = true;
+
+  //	 Test pwm outputs
+  //
+  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
+  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
+  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
+  //	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
+  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //
+  //	while(1)
+  //	{
+  //	  PROBE1_HI;
+  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //	  PROBE1_LO;
+  //	  time64.dUs(450); ~ 2khs update rate
+  //	}
+
+  uint32_t n = 0;
+  while (1) { sandbox_dashboard((n++) % 100 == 0); }
 }

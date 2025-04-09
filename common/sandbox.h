@@ -39,6 +39,5 @@
 #define SANDBOX_H_
 
 void sandbox(void);
-void sandbox_dashboard(bool clear);
 
 #endif /* SANDBOX_H_ */

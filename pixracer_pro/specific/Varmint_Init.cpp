@@ -34,24 +34,26 @@
  *
  ******************************************************************************
  **/
-#include <Varmint.h>
+#include "Varmint.h"
 
-#include <BoardConfig.h>
-#include <Spi.h>
-#include <Time64.h>
-#include <misc.h>
+#include "BoardConfig.h"
+#include "Spi.h"
+#include "Time64.h"
+#include "misc.h"
 
-#include <usb_device.h>
-#include <usbd_cdc_if.h>
+#include "usb_device.h"
+#include "usbd_cdc_acm_if.h"
 
+#include "main.h"
 #include <ctime>
-#include <main.h>
 
-#include <Callbacks.h>
-#include <Polling.h>
-#include <sandbox.h>
+#include "Callbacks.h"
+#include "Polling.h"
+#include "sandbox.h"
 
-bool verbose = true;
+#include "Mpu.h"
+
+bool verbose = BOARD_STATUS_PRINT;
 
 Time64 time64;
 
@@ -71,7 +73,9 @@ void Varmint::init_board(void)
 {
   uint32_t init_status;
 
-  MPU_Config();
+  //MPU_Config();
+  MpuConfig();
+
   SCB_EnableICache();
   SCB_EnableDCache();
   HAL_Init();
@@ -102,8 +106,8 @@ void Varmint::init_board(void)
   //	MX_UART8_Init(); // Telem "FRSKY" connector
   //	MX_USART1_UART_Init(); // Serial 5&6 connector, not used
   MX_USART2_UART_Init(); // Telem/Serial 1
-                         //	MX_USART3_UART_Init(); // Serial 2 connector, not used
-                         //	MX_USART6_UART_Init();
+  //	MX_USART3_UART_Init(); // Serial 2 connector, not used
+  //	MX_USART6_UART_Init(); // RC UART, initialized elsewhere
 
   //	MX_ADC3_Init(); // initialized elsewhere
   //	MX_ADC1_Init(); // initialized elsewhere
@@ -111,9 +115,9 @@ void Varmint::init_board(void)
   MX_FDCAN1_Init(); // not used yet
   MX_FDCAN2_Init(); // not used yet
 
-  //	MX_CRC_Init(); // not used
-  //	MX_RNG_Init(); // not used
-  //	MX_RTC_Init(); // not used
+  MX_CRC_Init(); // Used for SD Card data checksum
+  MX_RNG_Init(); // not used
+  MX_RTC_Init(); // not used
 
 #if _USBD_USE_HS // USB HS (480MB/s
   MX_USB_OTG_HS_PCD_Init();
@@ -122,16 +126,21 @@ void Varmint::init_board(void)
 #endif
   MX_USB_DEVICE_Init();
 
+  status_len_ = 0;
+
   //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
-  misc_printf("\nStarted Timestamp Timer\n");
+  //misc_printf("\nStarted Timestamp Timer\n");
   init_status = time64.init(HTIM_LOW, HTIM_LOW_INSTANCE, HTIM_HIGH, HTIM_HIGH_INSTANCE);
 
-#define ASCII_ESC 27
-  misc_printf("%c[H", ASCII_ESC);  // home
-  misc_printf("%c[2J", ASCII_ESC); // clear screen
+  // misc_printf uses the timer, so can't be used before it's initialized.
 
-  misc_printf("\nStarted Timestamp Timer\n");
+#define ASCII_ESC 27
+  misc_printf("\n\n%c[H", ASCII_ESC); // home
+  misc_printf("%c[2J", ASCII_ESC);    // clear screen
+
+  misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &time64;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
@@ -144,6 +153,7 @@ void Varmint::init_board(void)
     imu0_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
                BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &imu0_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
@@ -151,12 +161,12 @@ void Varmint::init_board(void)
   misc_printf("\n\nMS4525 (Pitot) Initialization\n"); // I2C must already be initialized
   init_status = pitot_.init(PITOT_HZ, PITOT_I2C, PITOT_I2C_ADDRESS);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &pitot_;
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
-  init_status = baro_.init(DPS310_HZ, DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin // SPI
-  );
-
+  init_status = baro_.init(DPS310_HZ, DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &baro_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
@@ -164,6 +174,7 @@ void Varmint::init_board(void)
   misc_printf("\n\nIST3808 (mag) Initialization\n");
   init_status = mag_.init(IST3808_HZ, IST3808_I2C, IST3808_I2C_ADDRESS);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &mag_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GPS initialization
@@ -171,8 +182,8 @@ void Varmint::init_board(void)
   misc_printf("\n\nUbx (gps) Initialization\n");
   init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_HAS_PPS, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA,
                           GPS_BAUD, UBX_PROTOCOL);
-
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &gps_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RC/S.Bus initialization
@@ -180,6 +191,7 @@ void Varmint::init_board(void)
   misc_printf("\n\nS.Bus (rc) Initialization\n");
   init_status = rc_.init(RC_HZ, RC_UART, RC_UART_INSTANCE, RC_UART_DMA, RC_BAUD);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &rc_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ADC initialization
@@ -188,6 +200,7 @@ void Varmint::init_board(void)
   init_status =
     adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL, ADC_ADC_INSTANCE_INTERNAL);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &adc_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // COM initialization
@@ -195,10 +208,12 @@ void Varmint::init_board(void)
   misc_printf("\n\nVcp (vcp) Initialization\n");
   init_status = vcp_.init(VCP_HZ);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &vcp_;
 
   misc_printf("\n\nTelem (telem) Initialization\n");
   init_status = telem_.init(TELEM_HZ, TELEM_UART, TELEM_UART_INSTANCE, TELEM_UART_DMA, TELEM_BAUD);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &telem_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // PWM initialization
@@ -207,6 +222,7 @@ void Varmint::init_board(void)
   init_status = pwm_.init();
 
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &pwm_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Servo Power Supply initialization
@@ -216,12 +232,27 @@ void Varmint::init_board(void)
   misc_printf("\n\nSDMMC Initialization\n");
   init_status = sd_.init(SD_HSD, SD_HSD_INSTANCE);
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &sd_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Review Status List
+
+  misc_printf("\n\nStatus List:\n");
+  for (uint32_t i = 0; i < status_len_; i++) {
+    //status_list_[i]->print();
+    if (status_list_[i]->initGood()) {
+      misc_printf("\033[0;42m");
+    } else {
+      misc_printf("\033[0;41m");
+    }
+    misc_printf("%-16s Status: 0x%08X", status_list_[i]->name(), status_list_[i]->status());
+    misc_printf("\033[0m\n");
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt initializations
 
   misc_printf("\n\nSet-up EXTI IRQ's\n");
-  verbose = false;
 
   HAL_NVIC_EnableIRQ(BMI088_INT4_GYRO_EXTI_IRQn);  // EXTI4_IRQn Gyro DRDY Feedback
   HAL_NVIC_EnableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
@@ -241,11 +272,6 @@ void Varmint::init_board(void)
   RED_LO;
   GRN_LO;
   BLU_LO;
-
-  PROBE1_LO;
-  PROBE2_LO;
-  PROBE3_LO;
-  PROBE4_HI;
 
 #if SANDBOX
   misc_printf("\n\nStarting Sandbox\n");

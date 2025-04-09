@@ -35,12 +35,12 @@
  ******************************************************************************
  **/
 
-#include <Bmi088.h>
-#include <Bmi088_config.h>
-#include <Packets.h>
-#include <Time64.h>
-#include <bmi08_defs.h>
-#include <misc.h>
+#include "Bmi088.h"
+#include "Bmi088_config.h"
+#include "Packets.h"
+#include "Time64.h"
+#include "bmi08_defs.h"
+#include "misc.h"
 
 #define SPI_READ (uint8_t) 0x80
 #define SPI_WRITE (uint8_t) 0x00
@@ -256,19 +256,24 @@ uint32_t Bmi088::init(
   return initializationStatus_;
 }
 
-bool Bmi088::startDma(void)
+bool Bmi088::startDma(void) // DRDY ISR routine
 {
   drdy_ = time64.Us();
+
   HAL_StatusTypeDef hal_status = spiA_.startDma(BMI_ACCEL_CMD, BMI_ACCEL_BYTES);
-  if (hal_status == HAL_OK) seqCount_ = 1;
+  if (hal_status == HAL_OK) {
+    seqCount_ = 1;
+  } else {
+    seqCount_ = 0;
+  }
   return hal_status == HAL_OK;
 }
 
-void Bmi088::endDma(void)
+void Bmi088::endDma(void) // DMA complete routine
 {
   static ImuPacket p;
-
   double scale_factor;
+
   if (seqCount_ == 1) {
     memset(&p, 0, sizeof(p));
     uint8_t * rx = spiA_.endDma();
@@ -288,9 +293,13 @@ void Bmi088::endDma(void)
 
     // Launch the Accel read for az
     HAL_StatusTypeDef hal_status = spiA_.startDma(BMI_ACCEL_SYNC_CMD, BMI_ACCEL_SYNC_BYTES);
-    if (hal_status == HAL_OK) seqCount_ = 2;
-    else seqCount_ = 0;
-  } else if (seqCount_ == 2) {
+    if (hal_status == HAL_OK) {
+      seqCount_ = 2;
+    } else {
+      seqCount_ = 0;
+    }
+
+  } else if (seqCount_ == 2) { // We never get here...
     uint8_t * rx = spiA_.endDma();
     scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
 
@@ -298,9 +307,13 @@ void Bmi088::endDma(void)
     p.accel[2] = az * scale_factor;
 
     seqCount_ = 3;
+
     HAL_StatusTypeDef hal_status = spiG_.startDma(BMI_GYRO_CMD, BMI_GYRO_BYTES);
-    if (hal_status == HAL_OK) seqCount_ = 3;
-    else seqCount_ = 0;
+    if (hal_status == HAL_OK) {
+      seqCount_ = 3;
+    } else {
+      seqCount_ = 0;
+    }
   } else if (seqCount_ == 3) {
     uint8_t * rx = spiG_.endDma();
     // _gyro_range = 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
@@ -317,11 +330,12 @@ void Bmi088::endDma(void)
     p.drdy = drdy_;
     p.groupDelay = groupDelay_;
 
-    p.timestamp = time64.Us();
+    p.header.timestamp = time64.Us();
 
     rxFifo_.write((uint8_t *) &p, sizeof(p));
 
     seqCount_ = 0;
+
   } else {
     seqCount_ = 0;
   }
@@ -366,11 +380,18 @@ bool Bmi088::display(void)
   ImuPacket p;
   char name[] = "Bmi088 (imu)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f %10.3f %10.3f g    ", p.accel[0] / 9.80665, p.accel[1] / 9.80665, p.accel[2] / 9.80665);
-    misc_printf(" | %10.3f %10.3f %10.3f deg/s", p.gyro[0] * 57.2958, p.gyro[1] * 57.2958, p.gyro[2] * 57.2958);
-    misc_printf(" | %7.1f C", p.temperature - 273.15);
-    misc_printf(" | %10.3f s\n", p.dataTime);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_f32(-0.1, 0.1, p.accel[0] / 9.80665, "ax", "%6.2f", "g");
+    misc_f32(-0.1, 0.1, p.accel[1] / 9.80665, "ay", "%6.2f", "g");
+    misc_f32(-1.2, -0.8, p.accel[2] / 9.80665, "az", "%6.2f", "g");
+
+    misc_f32(-0.5, 0.5, p.gyro[0] * 57.2958, "p", "%6.2f", "dps");
+    misc_f32(-0.5, 0.5, p.gyro[1] * 57.2958, "q", "%6.2f", "dps");
+    misc_f32(-0.5, 0.5, p.gyro[2] * 57.2958, "r", "%6.2f", "dps");
+    misc_f32(18, 40, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_printf("Count %7.3f s  |", p.dataTime);
+
+    misc_printf("\n");
     return 1;
   } else {
     misc_printf("%s\n", name);

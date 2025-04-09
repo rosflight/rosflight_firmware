@@ -1,22 +1,23 @@
 /**
- ******************************************************************************
- * @file    usbd_cdc.h
- * @author  MCD Application Team
- * @brief   header file for the usbd_cdc.c file.
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                      www.st.com/SLA0044
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file    usbd_cdc.h
+  * @author  MCD Application Team
+  * @brief   header file for the usbd_cdc.c file.
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                      www.st.com/SLA0044
+  *
+  ******************************************************************************
+  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USB_CDC_H
 #define __USB_CDC_H
 
@@ -24,8 +25,22 @@
 extern "C" {
 #endif
 
+/* Includes ------------------------------------------------------------------*/
+#include "BoardConfig.h" // NOTE! replaced "AL94.I-CUBE-USBD-COMPOSITE_conf.h"
 #include "usbd_ioreq.h"
-#include <BoardConfig.h>
+
+/** @addtogroup STM32_USB_DEVICE_LIBRARY
+  * @{
+  */
+
+/** @defgroup usbd_cdc
+  * @brief This file is the Header file for usbd_cdc.c
+  * @{
+  */
+
+/** @defgroup usbd_cdc_Exported_Defines
+  * @{
+  */
 
 #define CDC_ACM_STR_DESC "STM32 CDC ACM%d"
 
@@ -64,10 +79,17 @@ extern "C" {
 #define CDC_SET_CONTROL_LINE_STATE 0x22U
 #define CDC_SEND_BREAK 0x23U
 
-/** @defgroup USBD_CORE_Exported_TypesDefinitions
-     * @{
-     */
+/**
+  * @}
+  */
 
+/** @defgroup USBD_CORE_Exported_TypesDefinitions
+  * @{
+  */
+
+/**
+  * @}
+  */
 typedef struct
 {
   uint32_t bitrate;
@@ -99,9 +121,17 @@ typedef struct
   __IO uint32_t RxState;
 } USBD_CDC_ACM_HandleTypeDef;
 
+/** @defgroup USBD_CORE_Exported_Macros
+  * @{
+  */
+
+/**
+  * @}
+  */
+
 /** @defgroup USBD_CORE_Exported_Variables
-     * @{
-     */
+  * @{
+  */
 
 extern USBD_ClassTypeDef USBD_CDC_ACM;
 
@@ -115,12 +145,12 @@ extern uint8_t CDC_COM_ITF_NBR[NUMBER_OF_CDC]; /* Communication Interface Number
 extern uint8_t CDC_STR_DESC_IDX[NUMBER_OF_CDC];
 
 /**
-     * @}
-     */
+  * @}
+  */
 
 /** @defgroup USB_CORE_Exported_Functions
-     * @{
-     */
+  * @{
+  */
 uint8_t USBD_CDC_ACM_RegisterInterface(USBD_HandleTypeDef * pdev, USBD_CDC_ACM_ItfTypeDef * fops);
 
 uint8_t USBD_CDC_SetTxBuffer(uint8_t ch, USBD_HandleTypeDef * pdev, uint8_t * pbuff, uint32_t length);
@@ -132,8 +162,8 @@ uint8_t USBD_CDC_TransmitPacket(uint8_t ch, USBD_HandleTypeDef * pdev);
 void USBD_Update_CDC_ACM_DESC(uint8_t * desc, uint8_t cmd_itf, uint8_t com_itf, uint8_t in_ep, uint8_t cmd_ep,
                               uint8_t out_ep, uint8_t str_idx);
 /**
- * @}
- */
+  * @}
+  */
 
 #ifdef __cplusplus
 }
@@ -141,11 +171,11 @@ void USBD_Update_CDC_ACM_DESC(uint8_t * desc, uint8_t cmd_itf, uint8_t com_itf, 
 
 #endif /* __USB_CDC_H */
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

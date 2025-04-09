@@ -41,7 +41,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <Status.h>
+#include "Status.h"
 
 #define PACKET_FIFO_MAX_BUFFERS 128
 
@@ -145,7 +145,6 @@ private:
   uint32_t dataSizeMax_;
   uint32_t packetCountMax_ = 0;
 
-  volatile uint32_t bufferSize_;
   Packet packet_[PACKET_FIFO_MAX_BUFFERS];
 };
 

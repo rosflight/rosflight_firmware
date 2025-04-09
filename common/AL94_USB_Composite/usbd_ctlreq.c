@@ -1,70 +1,70 @@
 /**
- ******************************************************************************
- * @file    usbd_req.c
- * @author  MCD Application Team
- * @brief   This file provides the standard USB requests following chapter 9.
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                      www.st.com/SLA0044
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file    usbd_req.c
+  * @author  MCD Application Team
+  * @brief   This file provides the standard USB requests following chapter 9.
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2015 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                      www.st.com/SLA0044
+  *
+  ******************************************************************************
+  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
 
 /** @addtogroup STM32_USBD_STATE_DEVICE_LIBRARY
- * @{
- */
+  * @{
+  */
 
 /** @defgroup USBD_REQ
- * @brief USB standard requests module
- * @{
- */
+  * @brief USB standard requests module
+  * @{
+  */
 
 /** @defgroup USBD_REQ_Private_TypesDefinitions
- * @{
- */
+  * @{
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_REQ_Private_Defines
- * @{
- */
+  * @{
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_REQ_Private_Macros
- * @{
- */
+  * @{
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_REQ_Private_Variables
- * @{
- */
+  * @{
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_REQ_Private_FunctionPrototypes
- * @{
- */
+  * @{
+  */
 static void USBD_GetDescriptor(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req);
 static void USBD_SetAddress(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req);
 static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req);
@@ -75,20 +75,20 @@ static void USBD_ClrFeature(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * re
 static uint8_t USBD_GetLen(uint8_t * buf);
 
 /**
- * @}
- */
+  * @}
+  */
 
 /** @defgroup USBD_REQ_Private_Functions
- * @{
- */
+  * @{
+  */
 
 /**
- * @brief  USBD_StdDevReq
- *         Handle standard usb device requests
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_StdDevReq
+  *         Handle standard usb device requests
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 USBD_StatusTypeDef USBD_StdDevReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   USBD_StatusTypeDef ret = USBD_OK;
@@ -144,12 +144,12 @@ USBD_StatusTypeDef USBD_StdDevReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 }
 
 /**
- * @brief  USBD_StdItfReq
- *         Handle standard usb interface requests
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_StdItfReq
+  *         Handle standard usb interface requests
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 USBD_StatusTypeDef USBD_StdItfReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   USBD_StatusTypeDef ret = USBD_OK;
@@ -187,12 +187,12 @@ USBD_StatusTypeDef USBD_StdItfReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypede
 }
 
 /**
- * @brief  USBD_StdEPReq
- *         Handle standard usb endpoint requests
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_StdEPReq
+  *         Handle standard usb endpoint requests
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 USBD_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   USBD_EndpointTypeDef * pep;
@@ -322,12 +322,12 @@ USBD_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef
 }
 
 /**
- * @brief  USBD_GetDescriptor
- *         Handle Get Descriptor requests
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_GetDescriptor
+  *         Handle Get Descriptor requests
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static void USBD_GetDescriptor(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   uint16_t len = 0U;
@@ -482,12 +482,12 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef *
 }
 
 /**
- * @brief  USBD_SetAddress
- *         Set device address
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_SetAddress
+  *         Set device address
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static void USBD_SetAddress(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   uint8_t dev_addr;
@@ -514,12 +514,12 @@ static void USBD_SetAddress(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * re
 }
 
 /**
- * @brief  USBD_SetConfig
- *         Handle Set device configuration request
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_SetConfig
+  *         Handle Set device configuration request
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   USBD_StatusTypeDef ret = USBD_OK;
@@ -588,12 +588,12 @@ static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef * pdev, USBD_SetupRe
 }
 
 /**
- * @brief  USBD_GetConfig
- *         Handle Get device configuration request
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_GetConfig
+  *         Handle Get device configuration request
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static void USBD_GetConfig(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   if (req->wLength != 1U) {
@@ -618,12 +618,12 @@ static void USBD_GetConfig(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req
 }
 
 /**
- * @brief  USBD_GetStatus
- *         Handle Get Status request
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_GetStatus
+  *         Handle Get Status request
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static void USBD_GetStatus(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   switch (pdev->dev_state) {
@@ -653,12 +653,12 @@ static void USBD_GetStatus(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req
 }
 
 /**
- * @brief  USBD_SetFeature
- *         Handle Set device feature request
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_SetFeature
+  *         Handle Set device feature request
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static void USBD_SetFeature(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   if (req->wValue == USB_FEATURE_REMOTE_WAKEUP) {
@@ -668,12 +668,12 @@ static void USBD_SetFeature(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * re
 }
 
 /**
- * @brief  USBD_ClrFeature
- *         Handle clear device feature request
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval status
- */
+  * @brief  USBD_ClrFeature
+  *         Handle clear device feature request
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval status
+  */
 static void USBD_ClrFeature(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   switch (pdev->dev_state) {
@@ -693,12 +693,12 @@ static void USBD_ClrFeature(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * re
 }
 
 /**
- * @brief  USBD_ParseSetupRequest
- *         Copy buffer into setup structure
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval None
- */
+  * @brief  USBD_ParseSetupRequest
+  *         Copy buffer into setup structure
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval None
+  */
 void USBD_ParseSetupRequest(USBD_SetupReqTypedef * req, uint8_t * pdata)
 {
   uint8_t * pbuff = pdata;
@@ -721,12 +721,12 @@ void USBD_ParseSetupRequest(USBD_SetupReqTypedef * req, uint8_t * pdata)
 }
 
 /**
- * @brief  USBD_CtlError
- *         Handle USB low level Error
- * @param  pdev: device instance
- * @param  req: usb request
- * @retval None
- */
+  * @brief  USBD_CtlError
+  *         Handle USB low level Error
+  * @param  pdev: device instance
+  * @param  req: usb request
+  * @retval None
+  */
 void USBD_CtlError(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 {
   UNUSED(req);
@@ -736,13 +736,13 @@ void USBD_CtlError(USBD_HandleTypeDef * pdev, USBD_SetupReqTypedef * req)
 }
 
 /**
- * @brief  USBD_GetString
- *         Convert Ascii string into unicode one
- * @param  desc : descriptor buffer
- * @param  unicode : Formatted string buffer (unicode)
- * @param  len : descriptor length
- * @retval None
- */
+  * @brief  USBD_GetString
+  *         Convert Ascii string into unicode one
+  * @param  desc : descriptor buffer
+  * @param  unicode : Formatted string buffer (unicode)
+  * @param  len : descriptor length
+  * @retval None
+  */
 void USBD_GetString(uint8_t * desc, uint8_t * unicode, uint16_t * len)
 {
   uint8_t idx = 0U;
@@ -769,11 +769,11 @@ void USBD_GetString(uint8_t * desc, uint8_t * unicode, uint16_t * len)
 }
 
 /**
- * @brief  USBD_GetLen
- *         return the string length
- * @param  buf : pointer to the ascii string buffer
- * @retval string length
- */
+  * @brief  USBD_GetLen
+  *         return the string length
+   * @param  buf : pointer to the ascii string buffer
+  * @retval string length
+  */
 static uint8_t USBD_GetLen(uint8_t * buf)
 {
   uint8_t len = 0U;
@@ -787,15 +787,15 @@ static uint8_t USBD_GetLen(uint8_t * buf)
   return len;
 }
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

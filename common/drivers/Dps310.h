@@ -38,10 +38,12 @@
 #ifndef DPS310_H_
 #define DPS310_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Spi.h>
-#include <Time64.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Spi.h"
+#include "Time64.h"
+
+#define DPS310_OK (0xE0D0)
 
 /*
  *
@@ -76,9 +78,7 @@ public:
     return init(sample_rate_hz, 0, 0, hspi, cs_port, cs_pin, false);
   }
 
-  // bool poll(uint16_t poll_offset);
-  bool poll(uint64_t poll_count);
-  PollingState state(uint64_t poll_counter);
+  bool poll(uint64_t poll_counter);
 
   void endDma(void);
 

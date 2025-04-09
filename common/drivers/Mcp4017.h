@@ -40,9 +40,9 @@
 
 #define MCP4017_I2C_ADDRESS (0x2F)
 
-#include <misc.h>
+#include "Status.h"
+#include "misc.h"
 
-#include <Status.h>
 /*
  *
  */

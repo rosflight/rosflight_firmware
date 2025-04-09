@@ -34,11 +34,11 @@
  *
  ******************************************************************************
  **/
-#include <Auav.h>
-#include <Packets.h>
-#include <Polling.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Auav.h"
+#include "Packets.h"
+#include "Polling.h"
+#include "Time64.h"
+#include "misc.h"
 
 extern Time64 time64;
 
@@ -46,34 +46,40 @@ extern Time64 time64;
 
 DMA_RAM uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t auav_pitot_fifo_rx_buffer[AUAV_PITOT_FIFO_BUFFERS * sizeof(PressurePacket)];
-DTCM_RAM uint8_t auav_baro_fifo_rx_buffer[AUAV_BARO_FIFO_BUFFERS * sizeof(PressurePacket)];
 
-uint32_t Auav::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-  uint16_t drdy_pin,                                 // Reset GPIO Pin
-  // SPI initializers
-  SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-  uint16_t cs_pin,                                  // Chip Select GPIO Pin
-  auav_press type)
+DTCM_RAM uint8_t auav_pitot_fifo_rx_buffer[AUAV_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_baro_fifo_rx_buffer[AUAV_FIFO_BUFFERS * sizeof(PressurePacket)];
+
+#define ROLLOVER 10000
+
+#define STATUS_BARO_START 1
+#define STATUS_PITOT_START 2
+#define STATUS_PITOT_READ_STATUS 3
+#define STATUS_PITOT_READ 4
+#define STATUS_BARO_READ 5
+#define STATUS_WAITING 0xFF
+#define STATUS_IDLE 0
+
+uint32_t Auav::init(uint16_t sample_rate_hz,                                 // Sample rate
+                    GPIO_TypeDef * pitot_drdy_port, uint16_t pitot_drdy_pin, // Pitot DRDY
+                    GPIO_TypeDef * pitot_cs_port, uint16_t pitot_cs_pin,     // Pitot CS
+                    GPIO_TypeDef * baro_drdy_port, uint16_t baro_drdy_pin,   // Baro DRDY
+                    GPIO_TypeDef * baro_cs_port, uint16_t baro_cs_pin,       // Baro CS
+                    SPI_HandleTypeDef * hspi)
 {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Auav");
+  //snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Auav");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
-  drdyPin_ = drdy_pin;
-  launchUs_ = 0;
-  type_ = type;
 
-  spi_.init(hspi, auav_dma_txbuf, auav_dma_rxbuf, cs_port, cs_pin);
+  drdyPort_[AUAV_PITOT] = pitot_drdy_port;
+  drdyPin_[AUAV_PITOT] = pitot_drdy_pin;
+  drdyPort_[AUAV_BARO] = baro_drdy_port;
+  drdyPin_[AUAV_BARO] = baro_drdy_pin;
 
-  // Read calibration constants
-  int32_t i32A = 0, i32B = 0, i32C = 0, i32D = 0, i32TC50HLE = 0;
-  int8_t i8TC50H = 0, i8TC50L = 0, i8Es = 0;
-  int8_t addr = 0, sensor_status_ready = 0;
+  // These do not run at the same time, so can share the dma buffers.
 
-  memset(name_, '\0', sizeof(name_));
+  spiState_ = STATUS_IDLE;
+  dmaRunning_ = false;
 
   // Vent (zero) pressure is at 0.1 *2^24 nominal output for Gauge Sensor
 
@@ -89,18 +95,22 @@ uint32_t Auav::init(
   // Start Measurement
   // Send 0xAD 0x00 0x00
 
-  if (type_ == AUAV_PITOT) {
-    rxFifo_.init(AUAV_PITOT_FIFO_BUFFERS, sizeof(PressurePacket), auav_pitot_fifo_rx_buffer);
+  // Pitot //////////////////////
+  {
+    spi_[AUAV_PITOT].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, pitot_cs_port, pitot_cs_pin);
+
+    rxFifo_[AUAV_PITOT].init(AUAV_FIFO_BUFFERS, sizeof(PressurePacket), auav_pitot_fifo_rx_buffer);
     char name[] = "Auav (pitot)";
-    strcpy(name_, name);
-    memset(cmdBytes_, 0, AUAV_CMD_BYTES);
-    cmdBytes_[0] = 0xAD; // ~100 Hz
+    memset(name_[AUAV_PITOT], '\0', sizeof(name_[AUAV_PITOT]));
+    strcpy(name_[AUAV_PITOT], name);
+    memset(cmdBytes_[AUAV_PITOT], 0, AUAV_CMD_BYTES);
+    cmdBytes_[AUAV_PITOT][0] = 0xAD; // ~100 Hz
 
     // Vent (zero) pressure is at 0.1 *2^24 nominal output for Gauge Sensor
-    osDig_ = 0.1;  // *2^24;
-    fss_ = 2488.4; // Pa
-    off_ = 0.0;    // Pa
-    addr = 43;
+    osDig_[AUAV_PITOT] = 0.1;  // *2^24;
+    fss_[AUAV_PITOT] = 2488.4; // Pa
+    off_[AUAV_PITOT] = 0.0;    // Pa
+    addr_[AUAV_PITOT] = 43;
     // Status register:
     // 7 0
     // 6 Powered?
@@ -110,20 +120,24 @@ uint32_t Auav::init(
     // 1 Connection Check Fault?
     // 0 Math Saturation (out of range)
     // 0x50 is Powered & Idle/Sleep == Ready.
-    sensor_status_ready_ = 0x50;
-  } else // baro
+    sensor_status_ready_[AUAV_PITOT] = 0x50;
+  }
+  // Baro //////////////////////
   {
-    rxFifo_.init(AUAV_BARO_FIFO_BUFFERS, sizeof(PressurePacket), auav_baro_fifo_rx_buffer);
-    char name[] = "Auav (baro)";
-    strcpy(name_, name);
+    spi_[AUAV_BARO].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, baro_cs_port, baro_cs_pin);
 
-    cmdBytes_[0] = 0xAC; // ~100 Hz
+    rxFifo_[AUAV_BARO].init(AUAV_FIFO_BUFFERS, sizeof(PressurePacket), auav_baro_fifo_rx_buffer);
+    char name[] = "Auav (baro) ";
+    memset(name_[AUAV_BARO], '\0', sizeof(name_[AUAV_BARO]));
+    strcpy(name_[AUAV_BARO], name);
+    memset(cmdBytes_[AUAV_BARO], 0, AUAV_CMD_BYTES);
+    cmdBytes_[AUAV_BARO][0] = 0xAC; // ~100 Hz
 
     // Vent (zero) pressure is at 0.1 *2^24 nominal output for Gauge Sensor
-    osDig_ = 0.1;    // *2^24;
-    fss_ = 100000.0; // Pa
-    off_ = 25000.0;  // Pa
-    addr = 47;
+    osDig_[AUAV_BARO] = 0.1;    // *2^24;
+    fss_[AUAV_BARO] = 100000.0; // Pa
+    off_[AUAV_BARO] = 25000.0;  // Pa
+    addr_[AUAV_BARO] = 47;
     // Status register:
     // 7 always 0
     // 6 Powered?
@@ -133,46 +147,85 @@ uint32_t Auav::init(
     // 1 Sensor Configuration, always 0
     // 0 ALU error (out of range)
     // 0x40 is Powered & Normal Operation == Ready
-    sensor_status_ready_ = 0x40;
-  }
-  // Read Status
-  uint8_t tx = 0xF0, sensor_status = 0;
-  spi_.rx(&tx, &sensor_status, 1, 100);
-  misc_printf("AUAV Status = 0x%02X (0x%02X) - ", sensor_status, sensor_status_ready);
-  if (sensor_status == sensor_status_ready) misc_printf("OK\n");
-  else {
-    misc_printf("ERROR\n");
-    initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
+    sensor_status_ready_[AUAV_BARO] = 0x40;
   }
 
-  // These i32 Reads return 2 register values merged as int32
-  // i32 then normalized to +/- 1.0
-  // Note that Diff data block is shifted 4 down from ABS locations
-  i32A = readCfg(addr, &spi_);
-  i32B = readCfg(addr + 2, &spi_);
-  i32C = readCfg(addr + 4, &spi_);
-  i32D = readCfg(addr + 6, &spi_);
-  i32TC50HLE = readCfg(addr + 8, &spi_);
+  // Force AUAV into SPI Mode
+  HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_SET);   // set high (should be there already)
+  HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_SET); // set high (should be there already)
+  time64.dUs(100);
 
-  LIN_A_ = ((double) (i32A)) / ((double) (0x7FFFFFFF));
-  LIN_B_ = (double) (i32B) / (double) (0x7FFFFFFF);
-  LIN_C_ = (double) (i32C) / (double) (0x7FFFFFFF);
-  LIN_D_ = (double) (i32D) / (double) (0x7FFFFFFF);
+  //	// "Provide a 5-10 us low pulse
+  //	HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_RESET); // low for 20 microseconds
+  //	time64.dUs(20); // 5 to 20 us in data sheet.
+  //	HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_SET); // set high (should be there already)
+  //	// "Delay 5 us
+  //	time64.dUs(5);
+  //	// "Provide a 5-10 us low pulse
+  //	HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_RESET); // low for 20 microseconds
+  //	time64.dUs(20); // 5 to 20 us in data sheet.
+  //	HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_SET); // set high (should be there already)
+  //	// "Delay 5 us
+  //	time64.dUs(25); // > 5
 
-  i8TC50H = (i32TC50HLE >> 24) & 0xFF;
-  i8TC50L = (i32TC50HLE >> 16) & 0xFF;
-  i8Es = (i32TC50HLE) &0xFF;
+  // Force SPI Mode.
+  for (int i = 0; i < 2; i++) {
+    uint8_t tx[3] = {0xF0, 0, 0};
+    uint8_t junk[3] = {0, 0, 0};
+    spi_[i].rx(tx, junk, 3, 100);
+  }
 
-  Es_ = (double) (i8Es) / (double) (0x7F);       // norm to +/- 1.0
-  TC50H_ = (double) (i8TC50H) / (double) (0x7F); // norm to +/- 1.0
-  TC50L_ = (double) (i8TC50L) / (double) (0x7F); // norm to +/- 1.0
+  for (int i = 0; i < 2; i++) {
+    launchUs_[i] = 0;
+    groupDelay_[i] = 0;
 
+    // Read Status
+    uint8_t tx = 0xF0;
+    uint8_t sensor_status = 0x00;
+    HAL_StatusTypeDef hal_status = spi_[i].rx(&tx, &sensor_status, 1, 200);
+    misc_printf("HAL Status = 0x%04X : ", hal_status);
+    misc_printf("%s Status = 0x%02X (0x%02X) - ", name_[i], sensor_status, sensor_status_ready_[i]);
+
+    if (sensor_status == sensor_status_ready_[i]) {
+      misc_printf("OK\n");
+    } else {
+      misc_printf("ERROR\n");
+      initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
+    }
+  }
+  for (int i = 0; i < 2; i++) {
+    // Calibration constants
+    int32_t i32A = 0, i32B = 0, i32C = 0, i32D = 0, i32TC50HLE = 0;
+    int8_t i8TC50H = 0, i8TC50L = 0, i8Es = 0;
+
+    // These i32 Reads return 2 register values merged as int32
+    // i32 then normalized to +/- 1.0
+    // Note that Diff data block is shifted 4 down from ABS locations
+    i32A = readCfg(addr_[i], &spi_[i]);
+    i32B = readCfg(addr_[i] + 2, &spi_[i]);
+    i32C = readCfg(addr_[i] + 4, &spi_[i]);
+    i32D = readCfg(addr_[i] + 6, &spi_[i]);
+    i32TC50HLE = readCfg(addr_[i] + 8, &spi_[i]);
+
+    LIN_A_[i] = (double) (i32A) / (double) (0x7FFFFFFF);
+    LIN_B_[i] = (double) (i32B) / (double) (0x7FFFFFFF);
+    LIN_C_[i] = (double) (i32C) / (double) (0x7FFFFFFF);
+    LIN_D_[i] = (double) (i32D) / (double) (0x7FFFFFFF);
+
+    i8TC50H = (i32TC50HLE >> 24) & 0xFF;
+    i8TC50L = (i32TC50HLE >> 16) & 0xFF;
+    i8Es = (i32TC50HLE) &0xFF;
+
+    Es_[i] = (double) (i8Es) / (double) (0x7F);       // norm to +/- 1.0
+    TC50H_[i] = (double) (i8TC50H) / (double) (0x7F); // norm to +/- 1.0
+    TC50L_[i] = (double) (i8TC50L) / (double) (0x7F); // norm to +/- 1.0
+  }
   misc_printf("\n");
 
   return initializationStatus_;
 }
 
-uint32_t Auav::readCfg(uint8_t address, Spi * spi)
+int32_t Auav::readCfg(uint8_t address, Spi * spi)
 {
   // First word
   uint8_t tx[3] = {0}, hi[3] = {0}, lo[3] = {0};
@@ -192,139 +245,177 @@ uint32_t Auav::readCfg(uint8_t address, Spi * spi)
   spi->rx(tx, lo, 3, 100);
   time64.dUs(20); // don't know if this is needed.
 
-  uint32_t value = (uint32_t) hi[1] << 24 | (uint32_t) hi[2] << 16 | ((uint32_t) lo[1]) << 8 | (uint32_t) lo[2];
+  int32_t value = (hi[1] << 24) | (hi[2] << 16) | (lo[1] << 8) | lo[2];
 
   return value;
 }
 
-PollingState Auav::state(uint64_t poll_counter)
-{
-  uint32_t rollover = 10000; // us (100 Hz) 0-99 slots at 10 kHz
-  PollingStateStruct lut[] = //
-    {
-      // Pitot
-      {1, AUAV_PITOT_CMD},
-      {74, AUAV_PITOT_RX}, // 7.2ms
-                              // Baro
-      {0, AUAV_BARO_CMD},
-      {73, AUAV_BARO_RX}, // 9.4ms
-    };
-  return PollingStateLookup(lut, sizeof(lut) / sizeof(PollingStateStruct),
-                            poll_counter % (rollover / POLLING_PERIOD_US));
-}
-
 bool Auav::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = state(poll_counter);
+  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
 
-  if ((poll_state == AUAV_PITOT_CMD && type_ == AUAV_PITOT)
-      || (poll_state == AUAV_BARO_CMD && type_ == AUAV_BARO)) {
-    launchUs_ = time64.Us();
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmdBytes_, AUAV_CMD_BYTES)))) spiState_ = poll_state;
-    else spiState_ = AUAV_ERROR;
-  } else if ((poll_state == AUAV_PITOT_RX && type_ == AUAV_PITOT)
-             || (poll_state == AUAV_BARO_RX && type_ == AUAV_BARO)) {
-    drdy_ = time64.Us();
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(0xF0, AUAV_READ_BYTES)))) spiState_ = poll_state;
-    else spiState_ = AUAV_ERROR;
+  if (poll_state == 0) // Start Baro Read
+  {
+    spiState_ = STATUS_IDLE;
+    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_BARO].startDma(cmdBytes_[AUAV_BARO], AUAV_CMD_BYTES)))) {
+      spiState_ = STATUS_BARO_START;
+      launchUs_[AUAV_BARO] = time64.Us();
+    }
   }
-
-  return dmaRunning_;
+  return false;
 }
 
 void Auav::endDma(void)
 {
-  if ((spiState_ == AUAV_PITOT_RX && type_ == AUAV_PITOT)
-      || (spiState_ == AUAV_BARO_RX && type_ == AUAV_BARO)) {
-    uint8_t * inbuf = spi_.endDma();
-    // Returns <status> Pressure H,M,L, Temperature H,M L
+  if (spiState_ == STATUS_BARO_START) { // Done starting Baro, Start Pitot
+    spi_[AUAV_BARO].endDma();           // close chip select, data ignored
+    spiState_ = STATUS_IDLE;
+    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_PITOT].startDma(cmdBytes_[AUAV_PITOT], AUAV_CMD_BYTES)))) {
+      spiState_ = STATUS_PITOT_START;
+      launchUs_[AUAV_PITOT] = time64.Us();
+    }
 
-    // ----- Magic Numbers: constants to be used:  -------------
-    // Temp output at 25C:
-    // July 2023: (int32_t)((25.0 - -45.0)/(110 - -45.0)) * 0xFFFFFF;
-    const int32_t TrefCounts = 7576807;
-    // 1% FSO in counts , normalized to % twice
-    const double TC50Scale = 100.0 * 100.0 * 167772.2;
-
-    double Pnorm, AP3, BP2, CP, Corr, PCorr;
-    double TC50, TCorr, Pnormt, Pnfso, Pcorrt;
-    int32_t iCorr, iPraw, iTraw;
-    int32_t /*iTCorr,*/ Tdiff;
-
-    // Adjust output for linearization.
-    iPraw = (inbuf[1] << 16) + (inbuf[2] << 8) + inbuf[3] - 0x800000;
-    iTraw = (inbuf[4] << 16) + (inbuf[5] << 8) + inbuf[6];
-    Pnorm = (double) iPraw;
-    Pnorm /= (double) 0x7FFFFF; // norm to +-1.0
-
-    AP3 = LIN_A_ * Pnorm * Pnorm * Pnorm;
-    BP2 = LIN_B_ * Pnorm * Pnorm;
-    CP = LIN_C_ * Pnorm;
-    Corr = AP3 + BP2 + CP + LIN_D_;
-
-    PCorr = Pnorm + Corr;                          // norm -1 to +1
-    iCorr = (int32_t) (PCorr * (double) 0x7FFFFF); // *= 0.5
-
-    iCorr += 0x800000; // + 0.5 FSO: norm 0 - 16M
-
-    /* iCorr is now in same u24 form as sensor pressure output.
-         * The linearity improvements at this stage,
-         * without residual TCO/TCS corrections, may be
-         * "good enough" for many applications.  */
-
-    // TC50 correction: residual TCO/TCS correction:
-    Pnfso = (PCorr + 1.0) / 2.0; // PCorr is +-1.0; Norm to 0 - 1.0
-
-    // Use TC50H above Tref, TC50L below Tref:
-    Tdiff = iTraw - TrefCounts; // 24-bit Temp counts
-
-    if (Tdiff > 0) TC50 = TC50H_;
-    else TC50 = TC50L_;
-
-    Pnormt = abs(0.5 - Pnfso);
-
-    // The heavy work -- correction = f( P, T ):
-    // First, the correction constant TC50 is scaled by distance from offset
-    // (zero) pressure (Pnormt, norm to 0.4) and the coefficient Es (norm to +-1.0).
-    // This factor is then scaled by the delta from reference temperature to obtain
-    // pressure-denominated correction value.
-    TCorr = (1.0 - (Es_ * 2.5 * Pnormt)) * TC50 * Tdiff / TC50Scale;
-    Pcorrt = Pnfso - TCorr; // Corrected pressure, norm 0 - 1.0
-
-    //	iCorr = (int32_t) (Pcorrt * (double)0xFFFFFF);   // convert back to u24
-    //	Return 24-bit values to buffer, in sensor pressure output format.
-    //	Application can then will use transfer function to units.
-    //	inbuf[1] = (iCorr & 0xFF0000) >> 16;
-    //  inbuf[2] = (iCorr & 0xFF00) >> 8;
-    //  inbuf[3] = (iCorr & 0xFF);
-
+  } else if (spiState_ == STATUS_PITOT_START) { // Done starting Pitot, Wait for Pitot Read
+    spi_[AUAV_PITOT].endDma();                  // close chip select, data ignored
+    spiState_ = STATUS_WAITING;
+  } else if (spiState_ == STATUS_PITOT_READ_STATUS) { // Done reading Pitot
+    spi_[AUAV_PITOT].endDma();                        // close chip select, data ignored
+    spiState_ = STATUS_IDLE;
+    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_PITOT].startDma(0xF0, AUAV_READ_BYTES)))) { spiState_ = STATUS_PITOT_READ; }
+  } else if (spiState_ == STATUS_PITOT_READ) {   // Done reading Pitot
+    uint8_t * inbuf = spi_[AUAV_PITOT].endDma(); // close chip select, data ignored
     PressurePacket p;
-
-    p.drdy = drdy_;
-    p.groupDelay = (p.drdy - launchUs_) / 2;
-    p.status = (uint16_t) inbuf[0];
-
-    p.temperature = (double) iTraw * 155.0 / 16777216.0 - 45.0 + 273.15;
-    p.pressure = off_ + 1.25 * (Pcorrt - osDig_) * fss_;
-    p.timestamp = time64.Us();
-
-    rxFifo_.write((uint8_t *) &p, sizeof(p));
+    makePacket(&p, inbuf, AUAV_PITOT);
+    spiState_ = STATUS_IDLE;
+    //if(p.header.status==sensor_status_ready_[AUAV_PITOT]) // PTT uncomment if needed
+    {
+      rxFifo_[AUAV_PITOT].write((uint8_t *) &p, sizeof(p));
+    }
+  } else if (spiState_ == STATUS_BARO_READ) {   // Done starting Baro
+    uint8_t * inbuf = spi_[AUAV_BARO].endDma(); // close chip select, data ignored
+    PressurePacket p;
+    makePacket(&p, inbuf, AUAV_BARO);
+    spiState_ = STATUS_IDLE;
+    // if(p.header.status==sensor_status_ready_[AUAV_BARO]) // PTT uncomment this when we fix the sensor.
+    {
+      rxFifo_[AUAV_BARO].write((uint8_t *) &p, sizeof(p));
+    }
+  } else {
+    spiState_ = STATUS_IDLE;
   }
   dmaRunning_ = false;
+}
+
+void Auav::drdyIsr(uint64_t timestamp, uint16_t exti_pin)
+{
+  if (exti_pin == drdyPin_[AUAV_PITOT]) // Start Pitot Read
+  {
+    drdy_[AUAV_PITOT] = time64.Us();
+    spiState_ = STATUS_IDLE;
+    time64.dUs(20);
+    if ((dmaRunning_ =
+           (HAL_OK
+            == spi_[AUAV_PITOT].startDma(0xF0, 1)))) // Read Status, why do I need to do this to make the read work?
+
+    {
+      spiState_ = STATUS_PITOT_READ_STATUS;
+    }
+
+  } else if (exti_pin == drdyPin_[AUAV_BARO]) { // Start Baro Read
+    drdy_[AUAV_BARO] = time64.Us();
+    spiState_ = STATUS_IDLE;
+    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_BARO].startDma(0xF0, AUAV_READ_BYTES)))) { spiState_ = STATUS_BARO_READ; }
+  }
+  // else not us.
+}
+
+void Auav::makePacket(PressurePacket * p, uint8_t * inbuf, uint8_t device)
+{
+
+  int32_t iPraw = ((inbuf[1] << 16) | (inbuf[2] << 8) | inbuf[3]) - 0x800000;
+  int32_t iTemp = ((inbuf[4] << 16) | (inbuf[5] << 8) | inbuf[6]);
+
+  double Pnorm = (double) iPraw;
+  Pnorm /= (double) 0x7FFFFF; // norm to +-1.0
+
+  //  double AP3 = LIN_A_[device] * Pnorm * Pnorm * Pnorm;
+  //  double BP2 = LIN_B_[device] * Pnorm * Pnorm;
+  //  double CP  = LIN_C_[device] * Pnorm;
+  //  double Corr = AP3 + BP2 + CP + LIN_D_[device];
+  //  double PCorr = Pnorm + Corr; // norm -1 to +1
+
+  // PTT Somewhat more efficient way to Compute Corr
+  double Pcorr = Pnorm + ((LIN_A_[device] * Pnorm + LIN_B_[device]) * Pnorm + LIN_C_[device]) * Pnorm + LIN_D_[device];
+
+#if 0 // Basic uncorrected values
+  int32_t iPcorr = (int32_t) (Pcorr * (double) 0x7FFFFF); // *= 0.5
+  //iPcorr += 0x800000; // + 0.5 FSO: norm 0 - 16M
+  uint32_t Pdig = iPcorr + 0x800000; // *= 0.5
+#else // additional temperature adjustment
+  // ----- Magic Numbers: constants to be used:  -------------
+  // Temp output at 25C:
+  // July 2023: (int32_t)((25.0 - -45.0)/(110 - -45.0)) * 0xFFFFFF;
+  const int32_t TrefCounts = 7576807;
+  const double TC50Scale = 100.0 * 100.0 * 167772.2; // 1% FSO in counts , normalized to % twice
+
+  // TC50 correction: residual TCO/TCS correction:
+  double Pnfso = (Pcorr + 1.0) / 2.0; // PCorr is +-1.0; Norm to 0 - 1.0
+
+  // Use TC50H above Tref, TC50L below Tref:
+  int32_t Tdiff = iTemp - TrefCounts; // 24-bit Temp counts
+
+  double TC50 = 0;
+  if (Tdiff > 0) TC50 = TC50H_[device];
+  else TC50 = TC50L_[device];
+
+  double Pdiff = abs(Pnfso - 0.5);
+
+  // The heavy work -- correction = f( P, T ):
+  // First, the correction constant TC50 is scaled by distance from offset
+  // (zero) pressure (Pnormt, norm to 0.4) and the coefficient Es (norm to +-1.0).
+  // This factor is then scaled by the delta from reference temperature to obtain
+  // pressure-denominated correction value.
+  double Tcorr = (1.0 - (Es_[device] * 2.5 * Pdiff)) * Tdiff * TC50 / TC50Scale;
+  double PCorrt = Pnfso - Tcorr; // Corrected pressure, norm 0 - 1.0
+                                 //  uint32_t Pcomp = (uint32_t)(PCorrt*(double)0xFFFFFF);
+  uint32_t Pdig = (uint32_t) (PCorrt * (double) 0xFFFFFF);
+#endif
+
+  p->drdy = drdy_[device];
+  p->groupDelay = (drdy_[device] - launchUs_[device]) / 2;
+  p->header.status = (uint16_t) inbuf[0];
+
+  p->temperature = (double) iTemp * 155.0 / 16777216.0 - 45.0 + 273.15;
+  p->pressure = off_[device] + 1.25 * ((double) Pdig / 16777216.0 - osDig_[device]) * fss_[device];
+  p->header.timestamp = time64.Us();
 }
 
 bool Auav::display(void)
 {
   PressurePacket p;
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f kPa                         |                                        | "
-                "%7.1f C |           "
-                "   | 0x%04X\n",
-                p.pressure / 1000., p.temperature - 273.15, p.status);
-    return 1;
+
+  if (rxFifoReadMostRecent((uint8_t *) &p, sizeof(p), AUAV_BARO)) {
+    misc_header(name_[AUAV_BARO], p.drdy, p.header.timestamp, p.groupDelay);
+
+    misc_f32(99, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
+    misc_f32(19, 40, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_x16(sensorOk(AUAV_BARO), p.header.status, "Status");
+    misc_printf("\n");
+    //return 1;
   } else {
-    misc_printf("%s\n", name_);
+    misc_printf("%s\n", name_[AUAV_BARO]);
   }
+
+  if (rxFifoReadMostRecent((uint8_t *) &p, sizeof(p), AUAV_PITOT)) {
+    misc_header(name_[AUAV_PITOT], p.drdy, p.header.timestamp, p.groupDelay);
+    misc_f32(2.5, 2.5, p.pressure, "Press", "%6.2f", "Pa");
+    misc_f32(19, 40, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_x16(sensorOk(AUAV_PITOT), p.header.status, "Status");
+    misc_printf("\n");
+    //return 1;
+  } else {
+    misc_printf("%s\n", name_[AUAV_PITOT]);
+  }
+
   return 0;
 }

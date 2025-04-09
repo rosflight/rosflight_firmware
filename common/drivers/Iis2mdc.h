@@ -38,9 +38,11 @@
 #ifndef IIS2MDC_H_
 #define IIS2MDC_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Spi.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Spi.h"
+
+#define IIS2MDC_OK (0x0F)
 
 /*
  *
@@ -63,7 +65,6 @@ public:
   );
   // bool poll(void);
   bool poll(uint64_t poll_counter);
-  PollingState state(uint64_t poll_counter);
   void endDma(void);
 
   bool display(void) override;

@@ -38,8 +38,8 @@
 #ifndef SBUS_H_
 #define SBUS_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
+#include "BoardConfig.h"
+#include "Driver.h"
 
 /*
  *

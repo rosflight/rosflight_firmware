@@ -35,10 +35,10 @@
  ******************************************************************************
  **/
 
-#include <Packets.h>
-#include <Sbus.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Sbus.h"
+#include "Packets.h"
+#include "Time64.h"
+#include "misc.h"
 
 extern Time64 time64;
 
@@ -201,10 +201,10 @@ void Sbus::endDma(void)
     p.failsafeActivated = sbus->dig_chan3;
     for (int n = 0; n < RC_PACKET_CHANNELS; n++) p.chan[n] = (p.chan[n] - 172) / 1639.0;
 
-    p.timestamp = time64.Us(); // usTime();
+    p.header.timestamp = time64.Us(); // usTime();
     p.drdy = drdy_;
     p.groupDelay = 9000; // Use one packet time latency for now.
-    p.status = !(p.frameLost | p.failsafeActivated);
+    p.header.status = !(p.frameLost | p.failsafeActivated);
 
     lol_ = p.frameLost | p.failsafeActivated;
 
@@ -219,17 +219,18 @@ bool Sbus::display(void)
   RcPacket p;
   char name[] = "Sbus (rc)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
     for (int i = 0; i < 8; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
     for (int i = 8; i < 16; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
     for (int i = 16; i < 24; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("Frame Lost: %1u, Failsafe Activated: %1u, Status: %1u\n", p.frameLost, p.failsafeActivated, p.status);
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_printf("Frame Lost: %1u, Failsafe Activated: %1u, Status: %1u\n", p.frameLost, p.failsafeActivated,
+                p.header.status);
     return 1;
   } else {
     misc_printf("%s\n", name);

@@ -42,10 +42,9 @@
 
 #include <string.h> // for memset
 
-#include <Time64.h>
-
-#include <BoardConfig.h>
-#include <Status.h>
+#include "BoardConfig.h"
+#include "Status.h"
+#include "Time64.h"
 
 extern Time64 time64;
 
@@ -66,6 +65,7 @@ private:
   SPI_HandleTypeDef * hspi_;
   uint8_t * txBuffer_;
   uint8_t * rxBuffer_;
+
 public:
   // uint16_t size_;
   GPIO_TypeDef * port_;

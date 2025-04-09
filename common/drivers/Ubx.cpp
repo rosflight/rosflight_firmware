@@ -35,12 +35,12 @@
  ******************************************************************************
  **/
 
-#include <Ubx.h>
+#include "Ubx.h"
 
-#include <Time64.h>
+#include "Time64.h"
 
-#include <Packets.h>
-#include <misc.h>
+#include "Packets.h"
+#include "misc.h"
 
 extern Time64 time64;
 
@@ -118,7 +118,7 @@ uint32_t Ubx::init(
   }
   //     baud_initial_ = 100000000/huart_->Instance->BRR;
 
-  uint32_t bauds[] = {9600, 230400, 57600}; // { 9600, 19200, 38400, 57600, 115200, 230400};
+  uint32_t bauds[] = {9600, 230400, 57600, 460800}; // { 9600, 19200, 38400, 57600, 115200, 230400};
   unsigned int i, retry;
   HAL_Delay(1000);
 
@@ -247,10 +247,10 @@ void Ubx::endDma(void)
       }
 
       if (gotPvt_ && gotTime_ && gotEcefP_ && gotEcefV_) {
-        ubx_.timestamp = time64.Us(); // usTime();
+        ubx_.header.timestamp = time64.Us(); // usTime();
 
         ubx_.drdy = drdy_;
-        if (!hasPps_) ubx_.pps = ubx_.drdy - 25000; // fake number if we don't have PPS hooked up
+        if (!hasPps_) ubx_.pps = 0; //ubx_.drdy - 25000; // fake number if we don't have PPS hooked up
 
         if (ubx_.pps > ubx_.drdy) ubx_.pps -= 1000000 / sampleRateHz_;
         ubx_.groupDelay = ubx_.drdy - ubx_.pps;
@@ -336,14 +336,7 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
   return false;
 }
 
-void Ubx::pps(uint64_t pps_timestamp)
-{
-  //    gotPvt_ = false;
-  //    gotTime_ = false;
-  //    gotEcefP_ = false;
-  //    gotEcefV_ = false;
-  ubx_.pps = pps_timestamp;
-}
+void Ubx::pps(uint64_t pps_timestamp) { ubx_.pps = pps_timestamp; }
 
 bool Ubx::display(void)
 {
@@ -355,8 +348,8 @@ bool Ubx::display(void)
   char name_ecefv[] = "Ubx (ecefv)";
 
   if (rxFifo_.read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_pvt, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
+    misc_header(name_pvt, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.pvt.iTOW);
     misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
     misc_printf("%02u:%02u:%09.6f", p.pvt.hour, p.pvt.min, (double) p.pvt.sec + (double) p.pvt.nano * 1e-9);
@@ -364,18 +357,18 @@ bool Ubx::display(void)
     misc_printf("numSV %02d | ", p.pvt.numSV);
     misc_printf("Fix %02d\n", p.pvt.fixType);
 
-    misc_header(name_time, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
+    misc_header(name_time, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.time.iTOW);
     misc_printf("  TOW %14.3f ms | valid 0x%02X\n", (double) p.time.iTOW + (double) p.time.fTOW / 1000, p.time.valid);
 
-    misc_header(name_ecefp, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
+    misc_header(name_ecefp, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.ecefp.iTOW);
     misc_printf("  %10d %10d %10d %10u cm\n", p.ecefp.ecefX, p.ecefp.ecefY, p.ecefp.ecefZ, p.ecefp.pAcc);
 
-    misc_header(name_ecefv, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.timestamp - p.pps) / 1000.);
+    misc_header(name_ecefv, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
     misc_printf(" iTOW %10u | ", p.ecefv.iTOW);
     misc_printf("  %10d %10d %10d %10u cm/s\n", p.ecefv.ecefVX, p.ecefv.ecefVY, p.ecefv.ecefVZ, p.ecefv.sAcc);
   } else {

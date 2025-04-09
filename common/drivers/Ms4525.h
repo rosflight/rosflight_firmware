@@ -38,10 +38,10 @@
 #ifndef MS4525_H_
 #define MS4525_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Packets.h>
-#include <Time64.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Packets.h"
+#include "Time64.h"
 
 #define MS4525_I2C_ADDRESS (0x28)
 /*
@@ -63,7 +63,6 @@ public:
     uint16_t i2c_address      // Chip select Port
   );
   bool poll(uint64_t poll_counter);
-  PollingState state(uint64_t poll_counter);
 
   void endDma(void);
   bool display(void);

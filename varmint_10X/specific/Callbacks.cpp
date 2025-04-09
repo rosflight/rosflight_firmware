@@ -35,19 +35,18 @@
  *
  ******************************************************************************
  **/
+#include "Varmint.h"
 #include "stm32h753xx.h"
-
-#include <Varmint.h>
 extern Varmint varmint;
 
-#include <Time64.h>
+#include "Time64.h"
 extern Time64 time64;
 
-#include <Callbacks.h>
+#include "Callbacks.h"
 
-#include <BoardConfig.h>
+#include "BoardConfig.h"
 
-#include <Polling.h>
+#include "Polling.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // High Rate (10kHz) Periodic Timer Interrupt Routine for Polling
@@ -56,12 +55,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
   if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
   {
+
     static uint64_t poll_counter = 0;
     poll_counter++;
     varmint.baro_.poll(poll_counter);
     varmint.mag_.poll(poll_counter);
     varmint.pitot_.poll(poll_counter);
-
     varmint.rc_.poll();              // Restart if dead
     varmint.gps_.poll();             // Restart if dead
     varmint.telem_.poll();           // Check for new data packet to tx
@@ -77,13 +76,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 {
-  if (varmint.imu0_.isMy(exti_pin)) varmint.imu0_.startDma();
-  if (varmint.imu1_.isMy(exti_pin)) varmint.imu1_.startDma();
-  if (varmint.gps_.isMy(exti_pin)) varmint.gps_.pps(time64.Us());
+  if (varmint.imu0_.isMy(exti_pin)) { varmint.imu0_.startDma(); }
+  if (varmint.imu1_.isMy(exti_pin)) { varmint.imu1_.startDma(); }
+  if (varmint.gps_.isMy(exti_pin)) { varmint.gps_.pps(time64.Us()); }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // SPI Tx complete callback
+//
 // void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)  // All spi dma tx interrupts are handled here.
 //{
 //}
@@ -92,10 +92,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interrupts are handled here.
 {
   // do not use 'else if' since some of these share SPI
-  if (varmint.imu0_.isMy(hspi)) varmint.imu0_.endDma();
-  if (varmint.imu1_.isMy(hspi)) varmint.imu1_.endDma();
-  if (varmint.mag_.isMy(hspi)) varmint.mag_.endDma();
-  if (varmint.baro_.isMy(hspi)) varmint.baro_.endDma();
+  if (varmint.imu0_.isMy(hspi)) { varmint.imu0_.endDma(); }
+  if (varmint.imu1_.isMy(hspi)) { varmint.imu1_.endDma(); }
+  if (varmint.mag_.isMy(hspi)) { varmint.mag_.endDma(); }
+  if (varmint.baro_.isMy(hspi)) { varmint.baro_.endDma(); }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart)
     __HAL_UART_CLEAR_IDLEFLAG(huart);
     if (huart->hdmarx != 0) ((DMA_Stream_TypeDef *) (huart->hdmarx)->Instance)->CR &= ~DMA_SxCR_EN;
   } else {
-    if (varmint.telem_.isMy(huart)) varmint.telem_.rxIsrCallback(huart);
+    if (varmint.telem_.isMy(huart)) { varmint.telem_.rxIsrCallback(huart); }
   }
 }
 

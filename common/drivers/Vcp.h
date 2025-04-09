@@ -38,9 +38,10 @@
 #ifndef VCP_H_
 #define VCP_H_
 
-#include <BoardConfig.h>
-#include <ByteFifo.h>
-#include <Packets.h>
+#include "BoardConfig.h"
+#include "ByteFifo.h"
+#include "PacketFifo.h"
+#include "Packets.h"
 
 /**
  * @class Vcp

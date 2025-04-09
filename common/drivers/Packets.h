@@ -38,13 +38,15 @@
 #ifndef DRIVERPACKETS_H_
 #define DRIVERPACKETS_H_
 
-#include <Ubx.h>
+//#include "Ubx.h"
 #include <stdint.h>
+
+#include "interface/rosflight_structs.h"
 
 #define SERIAL_MAX_PAYLOAD_SIZE (256 + 8) // for MAVLINK1, really 255+8, added 1 byte to make it an even multiple of 8
 typedef struct __attribute__((__packed__))
 {
-  uint64_t timestamp; // us, time of data read complete
+  rosflight_firmware::PacketHeader header;
   uint16_t qos;
   uint16_t packetSize;
   uint16_t payloadSize;
@@ -54,7 +56,7 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((__packed__))
 {
-  uint64_t timestamp;  // us, time of data read complete
+  rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
   double temperature;
@@ -65,10 +67,9 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((__packed__))
 {
-  uint64_t timestamp;  // us, time of data read complete
+  rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
-  uint16_t status;     // sensor specific
                        //
   double gyro[3];      // rad/s
   double accel[3];     // rad/s
@@ -78,10 +79,9 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((__packed__))
 {
-  uint64_t timestamp;  // us, time of data read complete
+  rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
-  uint16_t status;     // sensor specific
                        //
   double pressure;     // Pa
   double temperature;  // K
@@ -89,10 +89,9 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((packed))
 {
-  uint64_t timestamp;  // us, time of data read complete
+  rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
-  uint16_t status;     // sensor specific
                        //
   double flux[3];      // T, magnetic flux density
   double temperature;  // K
@@ -101,10 +100,9 @@ typedef struct __attribute__((packed))
 #define RC_PACKET_CHANNELS 24 // 16 analog + 8 digital
 typedef struct __attribute__((__packed__))
 {
-  uint64_t timestamp;  // us, time of data read complete
+  rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
-  uint16_t status;     // sensor specific
                        //
   uint8_t nChan;
   float chan[RC_PACKET_CHANNELS];

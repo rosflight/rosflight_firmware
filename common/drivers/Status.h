@@ -44,10 +44,10 @@
 class Status
 {
 public:
-  Status() { initializationStatus_ = DRIVER_NOT_INITIALIZED;}
+  Status() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
   bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
-  uint32_t status() { return initializationStatus_;}
-  char *name() { return name_;}
+  uint32_t status() { return initializationStatus_; }
+  char * name() { return name_; }
 
 protected:
   uint32_t initializationStatus_ = DRIVER_NOT_INITIALIZED;

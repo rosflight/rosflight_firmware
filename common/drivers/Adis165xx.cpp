@@ -35,12 +35,12 @@
  ******************************************************************************
  **/
 
-#include <Adis165xx.h>
-#include <Packets.h>
-#include <Time64.h>
-#include <misc.h>
+#include "Adis165xx.h"
+#include "Packets.h"
+#include "Time64.h"
+#include "misc.h"
 
-#define ADIS_OK (0x0000)
+//#define ADIS_OK (0x0000)
 
 #define SPI_WRITE 0x80
 #define SPI_READ 0x00
@@ -134,7 +134,7 @@ uint32_t Adis165xx::init(
   HAL_TIM_PWM_Start(htim_, htimChannel_); //(2kHz) clock source for ADIS165xx
   time64.dUs(100);
 
-  // Reset
+  // Reset//
   HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_RESET);
   time64.dUs(100); // was 16
   HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
@@ -182,10 +182,10 @@ uint32_t Adis165xx::init(
   // [0] 1 active high when data is valid (default is 0, low)
   // 0b0000 0010 1000 0101 = 0x0285
 
-  if (sampleRateHz_ == 2000) // use 32-bit data mode
+  if (sampleRateHz_ == 2000) // use 16-bit data mode
   {
     writeRegister(ADIS16500_MSC_CTRL, 0x0085); // values 0b0000 0000 1000 0101 = 0x0085
-  } else                                       // use 16-bit data mode
+  } else                                       // use 32-bit data mode
   {
     writeRegister(ADIS16500_MSC_CTRL, 0x0285); // values 0b0000 0010 1000 0101 = 0x0285
   }
@@ -231,10 +231,10 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
     if (sum == data[10]) {
       ImuPacket p;
-      p.timestamp = time64.Us();
+      p.header.timestamp = time64.Us();
       p.drdy = drdy_;
       p.groupDelay = groupDelay_;
-      p.status = (uint16_t) data[1];
+      p.header.status = (uint16_t) data[1];
       p.gyro[0] = -(double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
       p.gyro[1] = -(double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
       p.gyro[2] = (double) data[4] * 0.001745329251994;  // rad/s, or use 0.1 deg/s
@@ -243,7 +243,7 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       p.accel[2] = (double) data[7] * 0.01225;           // m/s^2
       p.temperature = (double) data[8] * 0.1 + 273.15;   // K
       p.dataTime = (double) ((uint16_t) data[9]) / sampleRateHz_;
-      if (p.status == ADIS_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+      if (p.header.status == ADIS_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
     }
   } else {
     // compute checksum
@@ -256,10 +256,10 @@ void Adis165xx::endDma(void) // called when DMA data is ready
 
     if (sum == data[16]) {
       ImuPacket p;
-      p.timestamp = time64.Us();
+      p.header.timestamp = time64.Us();
       p.drdy = drdy_;
       p.groupDelay = groupDelay_;
-      p.status = (uint16_t) data[1];
+      p.header.status = (uint16_t) data[1];
       p.gyro[0] = -val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
       p.gyro[1] = -val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
       p.gyro[2] = val(rx + 12) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
@@ -268,7 +268,7 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       p.accel[2] = val(rx + 24) * 0.01225;              // m/s^2
       p.temperature = (double) data[14] * 0.1 + 273.15; // K
       p.dataTime = (double) ((uint16_t) data[15]) / sampleRateHz_;
-      if (p.status == ADIS_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+      if (p.header.status == ADIS_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
     }
   }
 }
@@ -303,15 +303,21 @@ uint16_t Adis165xx::readRegister(uint8_t address)
 bool Adis165xx::display(void)
 {
   ImuPacket p;
-  char name[] = "Adis165xx (imu0)";
+  char name[] = "Adis165xx (imu)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.timestamp, p.groupDelay);
-    misc_printf("%10.3f %10.3f %10.3f g    ", p.accel[0] / 9.80665, p.accel[1] / 9.80665, p.accel[2] / 9.80665);
-    misc_printf(" | %10.3f %10.3f %10.3f deg/s", p.gyro[0] * 57.2958, p.gyro[1] * 57.2958, p.gyro[2] * 57.2958);
-    misc_printf(" | %7.1f C", p.temperature - 273.15);
-    misc_printf(" | %10.3f s | 0x%04X", p.dataTime, p.status);
-    if (p.status == ADIS_OK) misc_printf(" - OK\n");
-    else misc_printf(" - NOK\n");
+    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_f32(-0.1, 0.1, p.accel[0] / 9.80665, "ax", "%6.2f", "g");
+    misc_f32(-0.1, 0.1, p.accel[1] / 9.80665, "ay", "%6.2f", "g");
+    misc_f32(-1.1, -0.9, p.accel[2] / 9.80665, "az", "%6.2f", "g");
+
+    misc_f32(-1, 1, (float) p.gyro[0] * 57.2958, "p", "%6.2f", "dps");
+    misc_f32(-1, 1, (float) p.gyro[1] * 57.2958, "q", "%6.2f", "dps");
+    misc_f32(-1, 1, (float) p.gyro[2] * 57.2958, "r", "%6.2f", "dps");
+    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_printf("Count %7.3f s  |", p.dataTime);
+    misc_x16(ADIS_OK, p.header.status, "Status");
+
+    misc_printf("\n");
     return 1;
   } else {
     misc_printf("%s\n", name);

@@ -38,8 +38,9 @@
 #ifndef UBX_H_
 #define UBX_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Packets.h"
 
 typedef enum
 {
@@ -134,12 +135,11 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
-  uint64_t timestamp;
+  rosflight_firmware::PacketHeader header;
   uint64_t drdy;
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
   uint64_t pps;
   UbxPvt pvt;
-  //	UbxNav 		nav;
   UbxTime time;
   UbxEcefPos ecefp;
   UbxEcefVel ecefv;

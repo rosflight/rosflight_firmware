@@ -38,10 +38,12 @@
 #ifndef DLHRL20G_H_
 #define DLHRL20G_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Packets.h>
-#include <Time64.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Packets.h"
+#include "Time64.h"
+
+#define DLHRL20G_OK (0x40)
 
 #define DLHRL20G_I2C_ADDRESS (0x29)
 /*

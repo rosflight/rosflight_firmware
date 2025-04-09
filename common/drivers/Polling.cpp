@@ -36,16 +36,9 @@
  *
  ******************************************************************************
  **/
-#include <BoardConfig.h>
-#include <Polling.h>
-#include <stdint.h>
-
-PollingState PollingStateLookup(PollingStateStruct * ps, uint32_t size, uint32_t poll_index)
-{
-  for (uint32_t i = 0; i < size; i++)
-    if (poll_index == ps[i].index) return ps[i].state;
-  return NULL_STATE;
-}
+#include "Polling.h"
+#include "BoardConfig.h"
+#include "stdint.h"
 
 uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel)
 {

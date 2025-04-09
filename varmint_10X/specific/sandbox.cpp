@@ -35,12 +35,12 @@
  ******************************************************************************
  **/
 
-#include <sandbox.h>
+#include "sandbox.h"
 
-#include <BoardConfig.h>
-#include <misc.h>
+#include "BoardConfig.h"
+#include "misc.h"
 
-#include <Varmint.h>
+#include "Varmint.h"
 extern Varmint varmint;
 
 extern Time64 time64;
@@ -62,34 +62,6 @@ void verbose_equals(void)
   misc_printf("\n");
 }
 
-void sandbox(void)
-{
-  time64.dMs(5000);
-
-  //	 Test pwm outputs
-  //
-  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,6e5,6e5,6e5,6e5,490,490};
-  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50,50,50,50,50};
-  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
-  //	float outputs[PWM_CHANNELS] = { 0.0, 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8, 1.0};
-  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
-  //
-  //	while(1)
-  //	{
-  //	  PROBE1_HI;
-  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
-  //	  PROBE1_LO;
-  //	  time64.dUs(450); ~ 2khs update rate
-  //	}
-
-  verbose = true;
-  uint32_t n = 0;
-  while (1) {
-    sandbox_dashboard((n++) % 100 == 0);
-    // time64.dMs(200);
-  }
-}
-
 void sandbox_dashboard(bool clear)
 {
   verbose = true;
@@ -99,7 +71,7 @@ void sandbox_dashboard(bool clear)
   misc_printf("%c[H", ASCII_ESC); // home
 
   verbose_equals();
-  misc_printf("SANDBOX DASHBOARD VARMINT_11X\n");
+  misc_printf("SANDBOX DASHBOARD VARMINT_10X\n");
   verbose_equals();
 
   varmint.imu0_.display();
@@ -119,4 +91,60 @@ void sandbox_dashboard(bool clear)
   varmint.gps_.display();
 
   verbose_equals();
+}
+
+void sandbox(void)
+{
+
+  //  time64.dMs(5000);
+  //  SD Card read/write (and CRC & RNG)
+  //  #define RNGLEN (512)
+  //  static uint32_t random_numbers[512];
+  //  for(int i=0;i<RNGLEN;i++) HAL_RNG_GenerateRandomNumber(&hrng, &(random_numbers[i]));
+  //
+  //  uint16_t len = RNGLEN*sizeof(uint32_t)-3; // subtract 1 to make it odd.
+  //  uint8_t *test1 = (uint8_t *)random_numbers;
+  //
+  //  // Write the test1 data to SD
+  //  bool ok1 = varmint.sd_.write(test1,len);
+  //  if(ok1) misc_printf("OK1 \n"); else misc_printf("NOT OK1 \n");
+  //
+  //  // result array
+  //  static uint8_t test2[RNGLEN*sizeof(uint32_t)];
+  //
+  //  // Read the data back
+  //
+  //  bool ok2 = varmint.sd_.read(test2,len);
+  //  if(ok2) misc_printf("OK2 \n");  else misc_printf("NOT OK2 \n");
+  //
+  //  for(int i=1; i<len; i++)
+  //  {
+  //    if (test1[i]!=test2[i]) misc_printf("[%u] %02X -> %02X\n ",i,test1[i],test2[i]);
+  //  }
+  //
+  //  time64.dMs(5000);
+  //	 Test pwm outputs
+  //
+  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,6e5,6e5,6e5,6e5,490,490};
+  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50,50,50,50,50};
+  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
+  //	float outputs[PWM_CHANNELS] = { 0.0, 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8, 1.0};
+  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //
+  //	while(1)
+  //	{
+  //	  PROBE1_HI;
+  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //	  PROBE1_LO;
+  //	  time64.dUs(450); ~ 2khs update rate
+  //	}
+
+  time64.dMs(5000);
+
+  verbose = true;
+  uint32_t n = 0;
+  while (1) {
+    sandbox_dashboard((n++) % 100 == 0);
+    // time64.dMs(200);
+  }
 }

@@ -46,8 +46,8 @@ MEMORY
   FLASH (rx)     : ORIGIN = 0x08000000, LENGTH = 1024K /* Program Flash */
   FLASH2 (rw)    : ORIGIN = 0x08100000, LENGTH = 1024K /* Parameter Flash */
   DTCMRAM (rw)   : ORIGIN = 0x20000000, LENGTH = 128K
-  RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = 504K /* Domain 1 AXI SRAM */
-  SDDMARAM (rw)  : ORIGIN = 0x2407E000, LENGTH =   8K /* Domain 1 AXI SRAM for SDMMC DMA RAM*/
+  RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = 496K /* Domain 1 AXI SRAM */
+  SDDMARAM (rw)  : ORIGIN = 0x2407C000, LENGTH =  16K /* Domain 1 AXI SRAM for SDMMC DMA RAM*/
   SRAM1 (xrw)    : ORIGIN = 0x30000000, LENGTH = 128K /* Domain 2 SRAM1 - Not used */
   SRAM2 (xrw)    : ORIGIN = 0x30020000, LENGTH = 128K /* Domain 2 SRAM2 - Not used */
   SRAM3 (rw)     : ORIGIN = 0x30040000, LENGTH =  32K /* Domain 2 SRAM3 - Use for "my_dma_buffers" */
@@ -193,7 +193,7 @@ SECTIONS
      dtcm_ramstart = .;        /* create a global symbol at data start */
     . = ALIGN(32);
   } >DTCMRAM  AT > FLASH  /* Don't know why, but J-Link needs the AT>FLASH*/
- 
+  
   sddma_ram :
   {
      sddma_ramstart = .;        /* create a global symbol at data start */

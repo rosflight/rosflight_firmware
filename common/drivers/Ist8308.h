@@ -38,10 +38,10 @@
 #ifndef DRIVERS_IST8308_H_
 #define DRIVERS_IST8308_H_
 
-#include <BoardConfig.h>
-#include <Driver.h>
-#include <Packets.h>
-#include <Time64.h>
+#include "BoardConfig.h"
+#include "Driver.h"
+#include "Packets.h"
+#include "Time64.h"
 
 class Ist8308 : public Driver
 {
@@ -54,7 +54,6 @@ public:
     I2C_HandleTypeDef * hi2c, uint16_t i2c_address);
 
   bool poll(uint64_t poll_counter);
-  PollingState state(uint64_t poll_counter);
   void endDma(void);
   bool display(void);
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
