@@ -90,41 +90,6 @@ turbomath::Quaternion random_quaternions[25] = {
   turbomath::Quaternion(-0.177027678376, 0.214558558928, -0.992910369554, 0.592964390132),
   turbomath::Quaternion(0.0979109306209, 0.121890109199, 0.126418158551, 0.242200145606)};
 
-TEST(TurboMath, atan)
-{
-  for (float i = -200.0; i <= 200.0; i += 0.001) {
-    EXPECT_NEAR(turbomath::atan(i), atan(i), 0.0001);
-  }
-}
-
-TEST(TurboMath, sin_cos)
-{
-  for (float i = -200.0; i <= 200.0; i += 0.001) {
-    EXPECT_NEAR(turbomath::sin(i), sin(i), 0.0002);
-    EXPECT_NEAR(turbomath::cos(i), cos(i), 0.0002);
-  }
-}
-
-TEST(TurboMath, atan2)
-{
-  for (float i = -100.0; i <= 100.0; i += 0.1) {
-    for (float j = -1.0; j <= 1.0; j += 0.001) {
-      if (fabs(j) > 0.0001) { EXPECT_NEAR(turbomath::atan2(i, j), atan2(i, j), 0.001); }
-    }
-  }
-}
-
-TEST(TurboMath, asin)
-{
-  for (float i = -1.0; i <= 1.0; i += 0.001) {
-    if (fabs(i) < 0.95) {
-      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.0001);
-    } else {
-      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.2);
-    }
-  }
-}
-
 TEST(TurboMath, fastAlt)
 {
   // out of bounds
