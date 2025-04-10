@@ -66,8 +66,8 @@ void Varmint::board_reset(bool bootloader)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // us clock
-uint32_t Varmint::clock_millis() { return (time64.Us() & 0x0000FFFFFFFFFFFF) / 1000; }
-uint64_t Varmint::clock_micros() { return (time64.Us() & 0x0000FFFFFFFFFFFF); }
+uint32_t Varmint::clock_millis() { return (time64.Us() ) / 1000; }
+uint64_t Varmint::clock_micros() { return (time64.Us() ); }
 void Varmint::clock_delay(uint32_t ms) { time64.dMs(ms); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

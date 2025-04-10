@@ -1,8 +1,6 @@
 # test:
-# cd to board directory
-# mkdir build && cd build
-# cmake ..
-# make
+# cd pixracer_pro && mkdir build && cd build && cmake .. && make -j
+# cd varmint_10X && mkdir build && cd build && cmake .. && make -j
 
 ### project settings ###
 
