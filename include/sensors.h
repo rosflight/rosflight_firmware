@@ -33,13 +33,15 @@
 #ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
 #define ROSFLIGHT_FIRMWARE_SENSORS_H
 
-#include "interface/param_listener.h"
+#include "param_listener.h"
 
 #include <turbomath/turbomath.h>
 
 #include <cstdbool>
 #include <cstdint>
 #include <cstring>
+
+#include "rosflight_structs.h"
 
 namespace rosflight_firmware
 {
@@ -56,82 +58,83 @@ typedef struct
   bool rc;
 } got_flags;
 
-enum GNSSFixType
-{
-  GNSS_FIX_TYPE_NO_FIX = 0,
-  GNSS_FIX_TYPE_DEAD_RECKONING_ONLY = 1,
-  GNSS_FIX_TYPE_2D_FIX = 2,
-  GNSS_FIX_TYPE_3D_FIX = 3,
-  GNSS_FIX_TYPE_GNSS_PLUS_DEAD_RECKONING = 4,
-  GNSS_FIX_TYPE_TIME_FIX_ONLY = 5,
-};
 
-struct GNSSData
-{
-  struct ECEF
-  {
-    int32_t x;      // cm
-    int32_t y;      // cm
-    int32_t z;      // cm
-    uint32_t p_acc; // cm
-    int32_t vx;     // cm/s
-    int32_t vy;     // cm/s
-    int32_t vz;     // cm/s
-    uint32_t s_acc; // cm/s
-  };
-
-  GNSSFixType fix_type;
-  uint32_t time_of_week;
-  uint64_t time;  // Unix time, in seconds
-  uint64_t nanos; // Fractional time
-  int32_t lat;    // deg*10^-7
-  int32_t lon;    // deg*10^-7
-  int32_t height; // mm
-  int32_t vel_n;  // mm/s
-  int32_t vel_e;  // mm/s
-  int32_t vel_d;  // mm/s
-  uint32_t h_acc; // mm
-  uint32_t v_acc; // mm
-
-  ECEF ecef;
-
-  uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
-
-  GNSSData() { memset(this, 0, sizeof(GNSSData)); }
-};
-
-struct GNSSFull
-{
-  uint64_t time_of_week;
-  uint16_t year;
-  uint8_t month;
-  uint8_t day;
-  uint8_t hour;
-  uint8_t min;
-  uint8_t sec;
-  uint8_t valid;
-  uint32_t t_acc;
-  int32_t nano;
-  uint8_t fix_type;
-  uint8_t num_sat;
-  int32_t lon;
-  int32_t lat;
-  int32_t height;
-  int32_t height_msl;
-  uint32_t h_acc;
-  uint32_t v_acc;
-  int32_t vel_n;
-  int32_t vel_e;
-  int32_t vel_d;
-  int32_t g_speed;
-  int32_t head_mot;
-  uint32_t s_acc;
-  uint32_t head_acc;
-  uint16_t p_dop;
-  uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
-
-  GNSSFull() { memset(this, 0, sizeof(GNSSFull)); }
-};
+//enum GNSSFixType
+//{
+//  GNSS_FIX_TYPE_NO_FIX = 0,
+//  GNSS_FIX_TYPE_DEAD_RECKONING_ONLY = 1,
+//  GNSS_FIX_TYPE_2D_FIX = 2,
+//  GNSS_FIX_TYPE_3D_FIX = 3,
+//  GNSS_FIX_TYPE_GNSS_PLUS_DEAD_RECKONING = 4,
+//  GNSS_FIX_TYPE_TIME_FIX_ONLY = 5,
+//};
+//
+//struct GNSSData
+//{
+//  struct ECEF
+//  {
+//    int32_t x;      // cm
+//    int32_t y;      // cm
+//    int32_t z;      // cm
+//    uint32_t p_acc; // cm
+//    int32_t vx;     // cm/s
+//    int32_t vy;     // cm/s
+//    int32_t vz;     // cm/s
+//    uint32_t s_acc; // cm/s
+//  };
+//
+//  GNSSFixType fix_type;
+//  uint32_t time_of_week;
+//  uint64_t time;  // Unix time, in seconds
+//  uint64_t nanos; // Fractional time
+//  int32_t lat;    // deg*10^-7
+//  int32_t lon;    // deg*10^-7
+//  int32_t height; // mm
+//  int32_t vel_n;  // mm/s
+//  int32_t vel_e;  // mm/s
+//  int32_t vel_d;  // mm/s
+//  uint32_t h_acc; // mm
+//  uint32_t v_acc; // mm
+//
+//  ECEF ecef;
+//
+//  uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
+//
+//  GNSSData() { memset(this, 0, sizeof(GNSSData)); }
+//};
+//
+//struct GNSSFull
+//{
+//  uint64_t time_of_week;
+//  uint16_t year;
+//  uint8_t month;
+//  uint8_t day;
+//  uint8_t hour;
+//  uint8_t min;
+//  uint8_t sec;
+//  uint8_t valid;
+//  uint32_t t_acc;
+//  int32_t nano;
+//  uint8_t fix_type;
+//  uint8_t num_sat;
+//  int32_t lon;
+//  int32_t lat;
+//  int32_t height;
+//  int32_t height_msl;
+//  uint32_t h_acc;
+//  uint32_t v_acc;
+//  int32_t vel_n;
+//  int32_t vel_e;
+//  int32_t vel_d;
+//  int32_t g_speed;
+//  int32_t head_mot;
+//  uint32_t s_acc;
+//  uint32_t head_acc;
+//  uint16_t p_dop;
+//  uint64_t rosflight_timestamp; // microseconds, time stamp of last byte in the message
+//
+//  GNSSFull() { memset(this, 0, sizeof(GNSSFull)); }
+//};
 
 class ROSflight;
 

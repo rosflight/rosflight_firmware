@@ -32,7 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_MIXER_H
 #define ROSFLIGHT_FIRMWARE_MIXER_H
 
-#include "interface/param_listener.h"
+#include "param_listener.h"
 #include "controller.h"
 
 #include <eigen/Eigen/Dense>
