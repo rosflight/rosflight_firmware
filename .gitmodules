@@ -9,4 +9,4 @@
 	url = https://gitlab.com/libeigen/eigen.git
 [submodule "include/interface"]
 	path = include/interface
-	url = git@github.com:rosflight/rosflight_interface.git
+	url = https://github.com/rosflight/rosflight_interface.git
