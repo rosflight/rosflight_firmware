@@ -158,9 +158,6 @@ private:
   void send_gnss(void);
   void send_low_priority(void);
 
-  // Debugging Utils
-  void send_named_value_int(const char * const name, int32_t value);
-
   void send_next_param(void);
 
   // the time of week stamp for the last sent GNSS message, to prevent re-sending
@@ -177,8 +174,6 @@ public:
   void update_status();
   void log(CommLinkInterface::LogSeverity severity, const char * fmt, ...);
   void log_message(CommLinkInterface::LogSeverity severity, char * text);
-
-  void send_named_value_float(const char * const name, float value);
 
   void send_backup_data(const StateManager::BackupData & backup_data);
 };

@@ -516,16 +516,6 @@ void CommManager::stream(got_flags got)
   send_low_priority(); // parameter values and logging messages
 }
 
-void CommManager::send_named_value_int(const char * const name, int32_t value)
-{
-  comm_link_.send_named_value_int(sysid_, RF_.board_.clock_millis(), name, value);
-}
-
-void CommManager::send_named_value_float(const char * const name, float value)
-{
-  comm_link_.send_named_value_float(sysid_, RF_.board_.clock_millis(), name, value);
-}
-
 void CommManager::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT) {
