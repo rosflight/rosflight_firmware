@@ -99,21 +99,21 @@ bool Sd::read(uint8_t * dest, size_t len)
 
   rxComplete_ = false;
   hal_status = HAL_SD_ReadBlocks_DMA(hsd_, sd_rx_buf, 0, Nblocks);
-  if (hal_status != HAL_OK) return false;
+  if (hal_status != HAL_OK) { return false; }
 
   uint64_t timeout = time64.Us() + 1000000; // Allow up to 1 second
-
   while (!rxComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
 
   if (rxComplete_) {
     // CRC must be set-up for byte sized data, i.e., hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES
     // I'm not bothering to code for the case of data in any other format
     if (hcrc.InputDataFormat != CRC_INPUTDATA_FORMAT_BYTES) { return false; }
-    uint32_t crc = HAL_CRC_Calculate(&hcrc, (uint32_t *) sd_rx_buf,
+    uint32_t crc_computed = HAL_CRC_Calculate(&hcrc, (uint32_t *) sd_rx_buf,
                                      len); // len Assumes hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES
-    uint8_t * crc2 = (uint8_t *) (&crc);
-    uint8_t * crc1 = (uint8_t *) (&(sd_rx_buf[len]));
-    if ((crc1[0] != crc2[0]) || (crc1[1] != crc2[1]) || (crc1[2] != crc2[2]) || (crc1[3] != crc2[3])) { return false; }
+    uint32_t crc_read = 0;
+    memcpy((uint8_t*)(&crc_read), sd_rx_buf + len, SD_CRC_BYTES);
+
+    if (crc_computed != crc_read) {return false;}
     memcpy(dest, sd_rx_buf, len);
   }
 
@@ -129,24 +129,18 @@ bool Sd::write(uint8_t * src, size_t len)
 
   HAL_StatusTypeDef hal_status;
 
-  txComplete_ = false;
   memcpy(sd_tx_buf, src, len);
   // CRC must be set-up for byte sized data hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES
   // I'm not bothering to code for the case of data in any other format
   if (hcrc.InputDataFormat != CRC_INPUTDATA_FORMAT_BYTES) { return false; }
-  uint32_t crc = HAL_CRC_Calculate(&hcrc, (uint32_t *) sd_tx_buf, len);
-  uint8_t * crc2 = (uint8_t *) (&crc);
-  sd_tx_buf[len] = crc2[0];
-  sd_tx_buf[len + 1] = crc2[1];
-  sd_tx_buf[len + 2] = crc2[2];
-  sd_tx_buf[len + 3] = crc2[3];
+  uint32_t crc_computed = HAL_CRC_Calculate(&hcrc, (uint32_t *) sd_tx_buf, len);
+  memcpy(sd_tx_buf+len, (uint8_t*)(&crc_computed), SD_CRC_BYTES);
 
+  txComplete_ = false;
   hal_status = HAL_SD_WriteBlocks_DMA(hsd_, sd_tx_buf, 0, Nblocks);
-  if (hal_status != HAL_OK) return false;
-
-  uint64_t timeout = time64.Us() + 100000; // Allow up to 100ms
-
-  while (!txComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
+  if (hal_status != HAL_OK) { return false; }
+  uint64_t timeout = time64.Us() + 1000000; // Allow up to 1s
+  while ( !txComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
 
   return txComplete_;
 }

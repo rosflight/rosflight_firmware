@@ -74,8 +74,8 @@ void MpuConfig(void)
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER2;
-  MPU_InitStruct.BaseAddress = 0x2407E000;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_8KB;
+  MPU_InitStruct.BaseAddress = 0x2407C000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_16KB;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */
