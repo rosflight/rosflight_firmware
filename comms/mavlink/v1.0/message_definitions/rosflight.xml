@@ -1,0 +1,301 @@
+<?xml version="1.0"?>
+<mavlink>
+    <include>common.xml</include>
+    <enums>
+        <!-- ROSflight specific MAV_CMD_* commands -->
+        <enum name="ROSFLIGHT_CMD">
+            <entry value="0" name="ROSFLIGHT_CMD_RC_CALIBRATION"/>
+            <entry value="1" name="ROSFLIGHT_CMD_ACCEL_CALIBRATION"/>
+            <entry value="2" name="ROSFLIGHT_CMD_GYRO_CALIBRATION"/>
+            <entry value="3" name="ROSFLIGHT_CMD_BARO_CALIBRATION"/>
+            <entry value="4" name="ROSFLIGHT_CMD_AIRSPEED_CALIBRATION"/>
+            <entry value="5" name="ROSFLIGHT_CMD_READ_PARAMS"/>
+            <entry value="6" name="ROSFLIGHT_CMD_WRITE_PARAMS"/>
+            <entry value="7" name="ROSFLIGHT_CMD_SET_PARAM_DEFAULTS"/>
+            <entry value="8" name="ROSFLIGHT_CMD_REBOOT"/>
+            <entry value="9" name="ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER"/>
+            <entry value="10" name="ROSFLIGHT_CMD_SEND_VERSION"/>
+            <entry value="11" name="ROSFLIGHT_CMD_RESET_ORIGIN"/>
+            <entry value="12" name="ROSFLIGHT_CMD_SEND_ALL_CONFIG_INFOS"/>
+        </enum>
+        <enum name="ROSFLIGHT_AUX_CMD_TYPE">
+          <entry value="0" name="DISABLED"/>
+          <entry value="1" name="SERVO"/>
+          <entry value="2" name="MOTOR"/>
+        </enum>
+        <enum name="ROSFLIGHT_CMD_RESPONSE">
+            <entry value="0" name="ROSFLIGHT_CMD_FAILED"/>
+            <entry value="1" name="ROSFLIGHT_CMD_SUCCESS"/>
+        </enum>
+        <enum name="OFFBOARD_CONTROL_MODE">
+            <entry value="0" name="MODE_PASS_THROUGH">
+                <description>Pass commanded values directly to actuators</description>
+            </entry>
+            <entry value="1" name="MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE">
+                <description>Command roll rate, pitch rate, yaw rate, and throttle</description>
+            </entry>
+            <entry value="2" name="MODE_ROLL_PITCH_YAWRATE_THROTTLE">
+                <description>Command roll angle, pitch angle, yaw rate, and throttle</description>
+            </entry>
+            <entry value="3" name="MODE_ROLL_PITCH_YAWRATE_ALTITUDE">
+                <description>Command roll angle, pitch angle, yaw rate, and altitude above ground</description>
+            </entry>
+            <entry value="4" name="MODE_XVEL_YVEL_YAWRATE_ALTITUDE">
+                <description>Command body-fixed, x and y velocity, and yaw rate, and altitude above ground</description>
+            </entry>
+            <entry value="5" name="MODE_XPOS_YPOS_YAW_ALTITUDE">
+                <description>Command inertial x, y position (m) wrt origin, yaw angle wrt north, and altitude above ground</description>
+            </entry>
+        </enum>
+        <enum name="OFFBOARD_CONTROL_IGNORE">
+            <entry value="0x00" name="IGNORE_NONE">
+                <description>Convenience value for specifying no fields should be ignored</description>
+            </entry>
+            <entry value="0x01" name="IGNORE_VALUE1">
+                <description>Field value1 should be ignored</description>
+            </entry>
+            <entry value="0x02" name="IGNORE_VALUE2">
+                <description>Field value2 should be ignored</description>
+            </entry>
+            <entry value="0x04" name="IGNORE_VALUE3">
+                <description>Field value3 should be ignored</description>
+            </entry>
+            <entry value="0x08" name="IGNORE_VALUE4">
+                <description>Field value4 should be ignored</description>
+            </entry>
+        </enum>
+        <enum name="ROSFLIGHT_ERROR_CODE">
+            <entry value="0x00" name="ROSFLIGHT_ERROR_NONE"/>
+            <entry value="0x01" name="ROSFLIGHT_ERROR_INVALID_MIXER"/>
+            <entry value="0x02" name="ROSFLIGHT_ERROR_IMU_NOT_RESPONDING"/>
+            <entry value="0x04" name="ROSFLIGHT_ERROR_RC_LOST"/>
+            <entry value="0x08" name="ROSFLIGHT_ERROR_UNHEALTHY_ESTIMATOR"/>
+            <entry value="0x10" name="ROSFLIGHT_ERROR_TIME_GOING_BACKWARDS"/>
+            <entry value="0x20" name="ROSFLIGHT_ERROR_UNCALIBRATED_IMU"/>
+            <entry value="0x40" name="ROSFLIGHT_ERROR_BUFFER_OVERRUN"/>
+        </enum>
+        <enum name="ROSFLIGHT_RANGE_TYPE">
+            <entry value="0" name="ROSFLIGHT_RANGE_SONAR"/>
+            <entry value="1" name="ROSFLIGHT_RANGE_LIDAR"/>
+        </enum>
+	<enum name="GNSS_FIX_TYPE">
+		<entry value="0" name="GNSS_FIX_NO_FIX"/>
+		<entry value="1" name="GNSS_FIX_FIX"/>
+		<entry value="2" name="GNSS_FIX_RTK_FLOAT"/>
+		<entry value="3" name="GNSS_FIX_RTK_FIXED"/>
+	</enum>
+	<enum name="UBLOX_FIX_TYPE">
+		<entry value="0" name="NO_FIX"/>
+		<entry value="1" name="DEAD_RECKONING_ONLY"/>
+		<entry value="2" name="FIX_2D"/>
+		<entry value="3" name="FIX_3D"/>
+		<entry value="4" name="GNSS_AND_DEAD_RECKONING"/>
+		<entry value="5" name="TIME_ONLY"/>
+	</enum>
+    </enums>
+    <messages>
+        <message id="180" name="OFFBOARD_CONTROL">
+            <field type="uint8_t" name="mode" enum="OFFBOARD_CONTROL_MODE">Offboard control mode, see OFFBOARD_CONTROL_MODE</field>
+            <field type="uint8_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
+            <field type="float" name="x">x control channel interpreted according to mode</field>
+            <field type="float" name="y">y control channel, interpreted according to mode</field>
+            <field type="float" name="z">z control channel, interpreted according to mode</field>
+            <field type="float" name="F">F control channel, interpreted according to mode</field>
+        </message>
+        <message id="181" name="SMALL_IMU">
+            <field type="uint64_t" name="time_boot_us">Measurement timestamp as microseconds since boot</field>
+            <field type="float" name="xacc">Acceleration along X axis</field>
+            <field type="float" name="yacc">Acceleration along Y axis</field>
+            <field type="float" name="zacc">Acceleration along Z axis</field>
+            <field type="float" name="xgyro">Angular speed around X axis</field>
+            <field type="float" name="ygyro">Angular speed around Y axis</field>
+            <field type="float" name="zgyro">Angular speed around Z axis</field>
+            <field type="float" name="temperature">Internal temperature measurement</field>
+        </message>
+        <message id="182" name="SMALL_MAG">
+            <field type="float" name="xmag">Magnetic field along X axis</field>
+            <field type="float" name="ymag">Magnetic field along Y axis</field>
+            <field type="float" name="zmag">Magnetic field along Z axis</field>
+        </message>
+        <message id="183" name="SMALL_BARO">
+		<!-- TODO -->
+            <field type="float" name="altitude">Calculated Altitude (m)</field>
+            <field type="float" name="pressure">Measured Differential Pressure (Pa)</field>
+            <field type="float" name="temperature">Measured Temperature (K)</field>
+        </message>
+        <message id="184" name="DIFF_PRESSURE">
+            <field type="float" name="velocity">Measured Velocity</field>
+            <field type="float" name="diff_pressure">Measured Differential Pressure (Pa)</field>
+            <field type="float" name="temperature">Measured Temperature (K)</field>
+        </message>
+        <message id="185" name="CAMERA_STAMPED_SMALL_IMU">
+            <field type="uint64_t" name="time_boot_us">Measurement timestamp as microseconds since boot</field>
+            <field type="float" name="xacc">Acceleration along X axis</field>
+            <field type="float" name="yacc">Acceleration along Y axis</field>
+            <field type="float" name="zacc">Acceleration along Z axis</field>
+            <field type="float" name="xgyro">Angular speed around X axis</field>
+            <field type="float" name="ygyro">Angular speed around Y axis</field>
+            <field type="float" name="zgyro">Angular speed around Z axis</field>
+            <field type="float" name="temperature">Internal temperature measurement</field>
+            <field type="uint8_t" name="image">True if there is an image associated with this measurement</field>
+        </message>
+        <message id="186" name="NAMED_COMMAND_STRUCT">
+            <field type="char[10]" name="name">Name of the command struct</field>
+            <field type="uint8_t" name="type" enum="OFFBOARD_CONTROL_MODE">Type of command struct</field>
+            <field type="uint8_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Type of command struct</field>
+            <field type="float" name="x">x value in the command struct</field>
+            <field type="float" name="y">y value in the command struct</field>
+            <field type="float" name="z">z value in the command struct</field>
+            <field type="float" name="F">F value in the command struct</field>
+        </message>
+        <message id="187" name="SMALL_RANGE">
+            <field type="uint8_t" name="type" enum="ROSFLIGHT_RANGE_TYPE">Sensor type</field>
+            <field type="float" name="range">Range Measurement (m)</field>
+            <field type="float" name="max_range">Max Range (m)</field>
+            <field type="float" name="min_range">Min Range (m)</field>
+        </message>
+        <message id="188" name="ROSFLIGHT_CMD">
+            <field type="uint8_t" name="command" enum="ROSFLIGHT_CMD"/>
+        </message>
+        <message id="189" name="ROSFLIGHT_CMD_ACK">
+            <field type="uint8_t" name="command" enum="ROSFLIGHT_CMD"/>
+            <field type="uint8_t" name="success" enum="ROSFLIGHT_CMD_RESPONSE"/>
+        </message>
+        <message id="190" name="ROSFLIGHT_OUTPUT_RAW">
+            <field type="uint64_t" name="stamp"/>
+            <field type="float[14]" name="values"/>
+        </message>
+        <message id="191" name="ROSFLIGHT_STATUS">
+            <field type="uint8_t" name="armed"/>
+            <field type="uint8_t" name="failsafe"/>
+            <field type="uint8_t" name="rc_override"/>
+            <field type="uint8_t" name="offboard"/>
+            <field type="uint8_t" name="error_code" enum="ROSFLIGHT_ERROR_CODE"/>
+            <field type="uint8_t" name="control_mode" enum="OFFBOARD_CONTROL_MODE"/>
+            <field type="int16_t" name="num_errors"/>
+            <field type="int16_t" name="loop_time_us"/>
+        </message>
+        <message id="192" name="ROSFLIGHT_VERSION">
+            <field type="char[50]" name="version"/>
+        </message>
+        <message id="193" name="ROSFLIGHT_AUX_CMD">
+            <field type="uint8_t[14]" name="type_array" enum="ROSFLIGHT_AUX_CMD_TYPE"/>
+            <field type="float[14]" name="aux_cmd_array"/>
+        </message>      
+        <message id="194" name="ROSFLIGHT_INS">
+            <field type="float" name="pos_north"/>
+            <field type="float" name="pos_east"/>
+            <field type="float" name="pos_down"/>
+            <field type="float" name="qw"/>
+            <field type="float" name="qx"/>
+            <field type="float" name="qy"/>
+            <field type="float" name="qz"/>
+            <field type="float" name="u"/>
+            <field type="float" name="v"/>
+            <field type="float" name="w"/> 
+            <field type="float" name="p"/>
+            <field type="float" name="q"/>
+            <field type="float" name="r"/>            
+        </message>
+        <message id="195" name="EXTERNAL_ATTITUDE">
+            <!-- A measurement of attitude from an external source -->
+            <field type="float" name="qw">Quaternion scalar value</field>
+            <field type="float" name="qx">Quaternion x value</field>
+            <field type="float" name="qy">Quaternion y value</field>
+            <field type="float" name="qz">Quaternion z value</field>
+        </message>        
+	<message id="196" name="ROSFLIGHT_HARD_ERROR">
+	    <field type="uint32_t" name="error_code"/>
+	    <field type="uint32_t" name="pc"/>
+	    <field type="uint32_t" name="reset_count"/>
+	    <field type="uint32_t" name="doRearm"/>
+	</message>
+	<message id="197" name="ROSFLIGHT_GNSS">
+		<!-- time_of_week is only for determining which packets where calculated at the same time.
+		     Use the time and nanos field to get GPS time. -->
+		<field type="uint32_t" name="time_of_week"/>
+		<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE"/>
+		<field type="uint64_t" name="time"/> <!--unix time, in seconds -->
+		<field type="uint64_t" name="nanos"/>
+		<field type="int32_t" name="lat"/> <!-- deg*10^-7 -->
+		<field type="int32_t" name="lon"/> <!-- deg*10^-7 -->
+		<field type="int32_t" name="height"/> <!-- mm -->
+		<field type="int32_t" name="vel_n"/> <!-- mm/s -->
+		<field type="int32_t" name="vel_e"/> <!-- mm/s -->
+		<field type="int32_t" name="vel_d"/> <!-- mm/s -->
+		<field type="uint32_t" name="h_acc"/> <!-- mm -->
+		<field type="uint32_t" name="v_acc"/> <!-- mm -->
+		<field type="int32_t" name="ecef_x"/> <!-- cm -->
+		<field type="int32_t" name="ecef_y"/> <!-- cm -->
+		<field type="int32_t" name="ecef_z"/> <!-- cm -->
+		<field type="uint32_t" name="p_acc"/> <!-- cm -->
+		<field type="int32_t" name="ecef_v_x"/> <!-- cm/s -->
+		<field type="int32_t" name="ecef_v_y"/> <!-- cm/s -->
+		<field type="int32_t" name="ecef_v_z"/> <!-- cm/s -->
+		<field type="uint32_t" name="s_acc"/> <!-- cm/s -->
+		<field type="uint64_t" name="rosflight_timestamp"/> <!-- microseconds -->
+	</message>
+	<message id="198" name="ROSFLIGHT_GNSS_FULL">
+		<!-- time_of_week is only for determining which packets where calculated at the same time.
+		     Use the various time and date fields to get GPS time. -->
+		<field type="uint32_t" name="time_of_week"/>
+		<field type="uint16_t" name="year"/>
+		<field type="uint8_t" name="month"/>
+		<field type="uint8_t" name="day"/>
+		<field type="uint8_t" name="hour"/>
+		<field type="uint8_t" name="min"/>
+		<field type="uint8_t" name="sec"/>
+		<field type="uint8_t" name="valid"/>
+		<field type="uint32_t" name="t_acc"/> <!-- ns -->
+		<field type="int32_t" name="nano"/> <!-- ns -->
+		<field type="uint8_t" name="fix_type" enum="UBLOX_FIX_TYPE"/>
+		<field type="uint8_t" name="num_sat"/>
+		<field type="int32_t" name="lon"/> <!-- deg *10^-7 -->
+		<field type="int32_t" name="lat"/> <!-- deg *10^-7 -->
+		<field type="int32_t" name="height"/> <!-- mm above elipsoid -->
+		<field type="int32_t" name="height_msl"/> <!-- mm above mean sea level -->
+		<field type="uint32_t" name="h_acc"/> <!-- mm -->
+		<field type="uint32_t" name="v_acc"/> <!-- mm -->
+		<field type="int32_t" name="vel_n"/> <!-- mm/s -->
+		<field type="int32_t" name="vel_e"/> <!-- mm/s -->
+		<field type="int32_t" name="vel_d"/> <!-- mm/s -->
+		<field type="int32_t" name="g_speed"/> <!-- mm/s -->
+		<field type="int32_t" name="head_mot"/> <!--deg *10^-5 -->
+		<field type="uint32_t" name="s_acc"/> <!--mm/s-->
+		<field type="uint32_t" name="head_acc"/> <!-- deg * 10^-5 -->
+		<field type="uint16_t" name="p_dop"/> <!-- *.01 -->
+		<field type="uint64_t" name="rosflight_timestamp"/> <!-- microseconds -->
+	</message>
+	<message id="199" name="ROSFLIGHT_BATTERY_STATUS">
+		<field type="float" name="battery_voltage"/> <!-- V -->
+		<field type="float" name="battery_current"/> <!-- A -->
+	</message>
+	<!-- request the current configuration for a device. The firmware returns a ROSFLIGHT_CONFIG message -->
+	<message id="200" name="ROSFLIGHT_CONFIG_REQUEST">
+		<field type="uint8_t" name="device"/>
+	</message>
+	<!-- Used for both setting a value from rosflight_io, and sending the current value from the firmware -->
+	<message id="201" name="ROSFLIGHT_CONFIG">
+		<field type="uint8_t" name="device"/>
+		<field type="uint8_t" name="config"/>
+	</message>
+	<message id="202" name="ROSFLIGHT_DEVICE_INFO">
+		<field type="uint8_t" name="device"/>
+		<field type="uint8_t" name="max_config"/>
+		<!-- By convention, the minimum value and the default are 0 -->
+		<field type="uint8_t[20]" name="name"/>
+		<field type="uint8_t" name="num_devices"/>
+	</message>
+	<message id="203" name="ROSFLIGHT_CONFIG_INFO">
+		<field type="uint8_t" name="device"/>
+		<field type="uint8_t" name="config"/>
+		<field type="uint8_t[20]" name="name"/>
+	</message>
+	<message id="204" name="ROSFLIGHT_CONFIG_STATUS">
+		<field type="uint8_t" name="device"/>
+		<field type="uint8_t" name="success"/> <!-- boolean -->
+		<field type="uint8_t" name="reboot_required"/> <!-- boolean -->
+		<field type="uint8_t[50]" name="error_message"/>
+	</message>
+    </messages>
+</mavlink>
