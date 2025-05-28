@@ -50,7 +50,7 @@
 
 #define AUAV_CMD_BYTES 3
 
-class Auav : public Status
+class Auav : public Driver
 {
   /**
      * \brief
@@ -84,6 +84,11 @@ public:
   uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size, uint8_t id)
   {
     return rxFifo_[id].readMostRecent(data, size);
+  }
+
+  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size)
+  {
+    return rxFifo_[AUAV_PITOT].readMostRecent(data, size);
   }
   //  bool drdy(void) { return HAL_GPIO_ReadPin(drdyPort_, drdyPin_); }
   //  bool dmaRunning(void) { return dmaRunning_; }
