@@ -47,3 +47,5 @@ STM32H753VIHX_FLASH.ld
 build/
 */Debug/
 cmake_install.cmake
+varmint_11x/
+varmint_12x/
