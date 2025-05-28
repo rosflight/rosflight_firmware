@@ -21,7 +21,7 @@
 *****************************************************************************
 ** @attention
 **
-** Copyright (c) 2023 STMicroelectronics.
+** Copyright (c) 2025 STMicroelectronics.
 ** All rights reserved.
 **
 ** This software is licensed under terms that can be found in the LICENSE file
@@ -43,15 +43,12 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)     : ORIGIN = 0x08000000, LENGTH = 1024K /* Program Flash */
-  FLASH2 (rw)    : ORIGIN = 0x08100000, LENGTH = 1024K /* Parameter Flash */
-  DTCMRAM (rw)   : ORIGIN = 0x20000000, LENGTH = 128K
-  RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = 512K /* Domain 1 AXI SRAM */
-  SRAM1 (xrw)    : ORIGIN = 0x30000000, LENGTH = 128K /* Domain 2 SRAM1 - Not used */
-  SRAM2 (xrw)    : ORIGIN = 0x30020000, LENGTH = 128K /* Domain 2 SRAM2 - Not used */
-  SRAM3 (rw)     : ORIGIN = 0x30040000, LENGTH =  32K /* Domain 2 SRAM3 - Use for "my_dma_buffers" */
-  SRAM4 (rw)     : ORIGIN = 0x38000000, LENGTH =  64K /*  Domain 3 SRAM4 - Use for "my_bdma_buffers" */
-  ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH =  64K /* Allocated for "my_buffers" */
+  FLASH (rx)     : ORIGIN = 0x08000000, LENGTH = 2048K
+  DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 128K
+  RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = 512K
+  RAM_D2 (xrw)   : ORIGIN = 0x30000000, LENGTH = 288K
+  RAM_D3 (xrw)   : ORIGIN = 0x38000000, LENGTH = 64K
+  ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH = 64K
 }
 
 /* Define output sections */
@@ -91,21 +88,25 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .ARM.extab (READONLY)  : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
-  .ARM (READONLY) : {
+  .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  {
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+  } >FLASH
+  .ARM (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
+  {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
   } >FLASH
 
-  .preinit_array (READONLY)   :
+  .preinit_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
   } >FLASH
 
-  .init_array (READONLY) :
+  .init_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT(.init_array.*)))
@@ -113,7 +114,7 @@ SECTIONS
     PROVIDE_HIDDEN (__init_array_end = .);
   } >FLASH
 
-  .fini_array (READONLY):
+  .fini_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT(.fini_array.*)))
@@ -173,25 +174,6 @@ SECTIONS
     libgcc.a ( * )
   }
 
-  my_dma_buffers :
-  {
-    . = ALIGN(32);
-     
-  } >SRAM3
-  
-  my_bdma_buffers :
-  {
-    . = ALIGN(32);
-     
-  } >SRAM4
-
-  my_buffers :
-  {
-    . = ALIGN(32);
-   
-  } >DTCMRAM
-
-  
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
 

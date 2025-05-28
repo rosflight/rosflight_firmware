@@ -32,9 +32,29 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>links</name>
+			<name>common</name>
 			<type>2</type>
-			<location>C:/Projects/VarmintProjects/git/main/links</location>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/common</locationURI>
+		</link>
+		<link>
+			<name>comms</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/comms</locationURI>
+		</link>
+		<link>
+			<name>include</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/include</locationURI>
+		</link>
+		<link>
+			<name>lib</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/lib</locationURI>
+		</link>
+		<link>
+			<name>src</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

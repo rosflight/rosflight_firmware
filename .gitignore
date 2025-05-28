@@ -33,12 +33,17 @@ scripts/parameter-descriptions.md
 *.cxxflags
 
 # STM32Cube
-.cproject*
-.mxproject*
-*.launch
-.project*
-.settings/
+#.cproject*
+#.mxproject*
+#*.launch
+#.project*
+#.settings/
 config_*/
 test_build
 varmint_build
 pixracer_pro_build
+STM32H743IIKX_FLASH.ld
+STM32H753VIHX_FLASH.ld
+build/
+*/Debug/
+cmake_install.cmake
