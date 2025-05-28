@@ -34,7 +34,7 @@
 
 #include "rosflight_structs.h"
 
-#include "interface/param_listener.h"
+#include "param_listener.h"
 
 #include <cstdbool>
 #include <cstdint>

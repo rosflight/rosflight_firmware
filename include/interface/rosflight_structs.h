@@ -73,7 +73,7 @@ typedef struct //__attribute__((__packed__))
   union
   {
     float altitude;
-    float speed;
+    float ias; //speed;
   };
 } PressureStruct;
 

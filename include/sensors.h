@@ -33,7 +33,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_SENSORS_H
 #define ROSFLIGHT_FIRMWARE_SENSORS_H
 
-#include "interface/param_listener.h"
+#include "param_listener.h"
 
 #include "turbomath/turbomath.h"
 

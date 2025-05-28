@@ -473,7 +473,7 @@ void Sensors::correct_diff_pressure()
 {
   if (!diff_pressure_calibrated_) { calibrate_diff_pressure(); }
   diff_pressure_.pressure -= rf_.params_.get_param_float(PARAM_DIFF_PRESS_BIAS);
-  diff_pressure_.speed = turbomath::fsign(diff_pressure_.pressure)
+  diff_pressure_.ias = turbomath::fsign(diff_pressure_.pressure)
     * sqrt((fabs(diff_pressure_.pressure) / (0.5 * 1.225)));
 }
 

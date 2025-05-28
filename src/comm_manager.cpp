@@ -225,11 +225,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 {
   if (tc1 == 0) {
     // check that this is a request, not a response
-    tc1 = RF_.board_.clock_micros()*1000L; //static_cast<int64_t>(now_us) * 1000
-    if (tc1<0)
-    {
-      asm("NOP");
-    }
+    tc1 = RF_.board_.clock_micros()*1000L;
     comm_link_.send_timesync(sysid_, tc1, ts1);
   }
 }
@@ -414,7 +410,7 @@ void CommManager::send_rc_raw(void)
 
 void CommManager::send_diff_pressure(void)
 {
-  comm_link_.send_diff_pressure(sysid_, RF_.sensors_.get_diff_pressure()->speed,
+  comm_link_.send_diff_pressure(sysid_, RF_.sensors_.get_diff_pressure()->ias,
                                 RF_.sensors_.get_diff_pressure()->pressure,
                                 RF_.sensors_.get_diff_pressure()->temperature);
 }
