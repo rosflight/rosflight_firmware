@@ -50,7 +50,6 @@ include_directories(
     lib
     comms/mavlink
     comms/mavlink/v1.0
-    comms/mavlink/v1.0/common
 )
 
 file(GLOB_RECURSE ROSFLIGHT_SOURCES
