@@ -1,0 +1,489 @@
+<?xml version="1.0"?>
+<?note
+# get the mavlink/mavlink repository
+git clone https://github.com/rosflight/mavlink.git
+
+# Go to your rosflight_firmware/comms/mavlink folder
+# Put the rosflight.xml file there if not already there
+
+# Create the .c/h files from that directory
+# in windows:
+set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
+# e.g., 
+set PYTHONPATH=%PYTHONPATH%;C:\Projects\mavlink && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
+
+# in linux:
+PYTHONPATH=$PYTHONPATH:/path/to/mavlink/repo python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
+
+# If you are in the mavlink repo environment with rosflight.xml in the standard location:
+python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generated/include/mavlink/v1.0/generated message_definitions/v1.0/rosflight.xml
+# copy/paste generated into your rosflight_firmware/comms/mavlink folder?>
+<mavlink>
+    <enums>
+         <!-- ROSflight specific MAV_CMD_* commands -->
+       <enum name="ROSFLIGHT_CMD">
+            <entry value="0" name="ROSFLIGHT_CMD_RC_CALIBRATION"/>
+            <entry value="1" name="ROSFLIGHT_CMD_ACCEL_CALIBRATION"/>
+            <entry value="2" name="ROSFLIGHT_CMD_GYRO_CALIBRATION"/>
+            <entry value="3" name="ROSFLIGHT_CMD_BARO_CALIBRATION"/>
+            <entry value="4" name="ROSFLIGHT_CMD_AIRSPEED_CALIBRATION"/>
+            <entry value="5" name="ROSFLIGHT_CMD_READ_PARAMS"/>
+            <entry value="6" name="ROSFLIGHT_CMD_WRITE_PARAMS"/>
+            <entry value="7" name="ROSFLIGHT_CMD_SET_PARAM_DEFAULTS"/>
+            <entry value="8" name="ROSFLIGHT_CMD_REBOOT"/>
+            <entry value="9" name="ROSFLIGHT_CMD_REBOOT_TO_BOOTLOADER"/>
+            <entry value="10" name="ROSFLIGHT_CMD_SEND_VERSION"/>
+            <entry value="11" name="ROSFLIGHT_CMD_RESET_ORIGIN"/>
+            <entry value="12" name="ROSFLIGHT_CMD_SEND_ALL_CONFIG_INFOS"/>
+        </enum>
+         <enum name="ROSFLIGHT_AUX_CMD_TYPE">
+          <entry value="0" name="DISABLED"/>
+          <entry value="1" name="SERVO"/>
+          <entry value="2" name="MOTOR"/>
+        </enum>
+        <enum name="ROSFLIGHT_CMD_RESPONSE">
+            <entry value="0" name="ROSFLIGHT_CMD_FAILED"/>
+            <entry value="1" name="ROSFLIGHT_CMD_SUCCESS"/>
+        </enum>
+        <enum name="OFFBOARD_CONTROL_MODE">
+            <entry value="0" name="MODE_PASS_THROUGH">
+                <description>Pass commanded values directly to actuators</description>
+            </entry>
+            <entry value="1" name="MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE">
+                <description>Command roll rate, pitch rate, yaw rate, and throttle</description>
+            </entry>
+            <entry value="2" name="MODE_ROLL_PITCH_YAWRATE_THROTTLE">
+                <description>Command roll angle, pitch angle, yaw rate, and throttle</description>
+            </entry>
+            <entry value="3" name="MODE_ROLL_PITCH_YAWRATE_ALTITUDE">
+                <description>Command roll angle, pitch angle, yaw rate, and altitude above ground</description>
+            </entry>
+            <entry value="4" name="MODE_XVEL_YVEL_YAWRATE_ALTITUDE">
+                <description>Command body-fixed, x and y velocity, and yaw rate, and altitude above ground</description>
+            </entry>
+            <entry value="5" name="MODE_XPOS_YPOS_YAW_ALTITUDE">
+                <description>Command inertial x, y position (m) wrt origin, yaw angle wrt north, and altitude above ground</description>
+            </entry>
+        </enum>
+       <enum name="OFFBOARD_CONTROL_IGNORE">
+            <entry value="0x00" name="IGNORE_NONE">
+                <description>Convenience value for specifying no fields should be ignored</description>
+            </entry>
+            <entry value="0x01" name="IGNORE_VALUE1">
+                <description>Field value1 should be ignored</description>
+            </entry>
+            <entry value="0x02" name="IGNORE_VALUE2">
+                <description>Field value2 should be ignored</description>
+            </entry>
+            <entry value="0x04" name="IGNORE_VALUE3">
+                <description>Field value3 should be ignored</description>
+            </entry>
+            <entry value="0x08" name="IGNORE_VALUE4">
+                <description>Field value4 should be ignored</description>
+            </entry>
+           <entry value="0x16" name="IGNORE_VALUE5">
+               <description>Field value5 should be ignored</description>
+           </entry>
+           <entry value="0x32" name="IGNORE_VALUE6">
+               <description>Field value6 should be ignored</description>
+           </entry>
+        </enum>
+        <enum name="ROSFLIGHT_ERROR_CODE">
+            <entry value="0x00" name="ROSFLIGHT_ERROR_NONE"/>
+            <entry value="0x01" name="ROSFLIGHT_ERROR_INVALID_MIXER"/>
+            <entry value="0x02" name="ROSFLIGHT_ERROR_IMU_NOT_RESPONDING"/>
+            <entry value="0x04" name="ROSFLIGHT_ERROR_RC_LOST"/>
+            <entry value="0x08" name="ROSFLIGHT_ERROR_UNHEALTHY_ESTIMATOR"/>
+            <entry value="0x10" name="ROSFLIGHT_ERROR_TIME_GOING_BACKWARDS"/>
+            <entry value="0x20" name="ROSFLIGHT_ERROR_UNCALIBRATED_IMU"/>
+            <entry value="0x40" name="ROSFLIGHT_ERROR_BUFFER_OVERRUN"/>
+        </enum>
+       <enum name="ROSFLIGHT_RANGE_TYPE">
+            <entry value="0" name="ROSFLIGHT_RANGE_SONAR"/>
+            <entry value="1" name="ROSFLIGHT_RANGE_LIDAR"/>
+        </enum>
+		<enum name="GNSS_FIX_TYPE">
+			<entry value="0" name="GNSS_FIX_NO_FIX"/>
+			<entry value="1" name="GNSS_FIX_DEAD_RECKONING_ONLY"/>
+			<entry value="2" name="GNSS_FIX_2D_FIX"/>
+			<entry value="3" name="GNSS_FIX_3D_FIX"/>
+			<entry value="4" name="GNSS_FIX_GNSS_PLUS_DEAD_RECKONING"/>
+			<entry value="5" name="GNSS_FIX_TIME_FIX_ONLY"/>
+		</enum>
+		<enum name="UBLOX_FIX_TYPE">
+			<entry value="0" name="NO_FIX"/>
+			<entry value="1" name="DEAD_RECKONING_ONLY"/>
+			<entry value="2" name="FIX_2D"/>
+			<entry value="3" name="FIX_3D"/>
+			<entry value="4" name="GNSS_AND_DEAD_RECKONING"/>
+			<entry value="5" name="TIME_ONLY"/>
+		</enum>
+		<enum name="MAV_TYPE">
+				<description>Generic micro air vehicle.</description>
+		   <entry value="0" name="MAV_TYPE_GENERIC">
+		   </entry>
+		   <entry value="1" name="MAV_TYPE_FIXED_WING">
+				<description>Fixed wing aircraft.</description>
+		   </entry>
+		   <entry value="2" name="MAV_TYPE_QUADROTOR">
+				<description>Quadrotor</description>
+		   </entry>
+		</enum>
+		<enum name="MAV_PARAM_TYPE">
+		   <description>Specifies the datatype of a MAVLink parameter.</description>
+		   <entry value="1" name="MAV_PARAM_TYPE_UINT8">
+				<description>8-bit unsigned integer</description>
+		   </entry>
+		   <entry value="2" name="MAV_PARAM_TYPE_INT8">
+				<description>8-bit signed integer</description>
+		   </entry>
+		   <entry value="3" name="MAV_PARAM_TYPE_UINT16">
+				<description>16-bit unsigned integer</description>
+		   </entry>
+		   <entry value="4" name="MAV_PARAM_TYPE_INT16">
+				<description>16-bit signed integer</description>
+		   </entry>
+		   <entry value="5" name="MAV_PARAM_TYPE_UINT32">
+				<description>32-bit unsigned integer</description>
+		   </entry>
+		   <entry value="6" name="MAV_PARAM_TYPE_INT32">
+				<description>32-bit signed integer</description>
+		   </entry>
+		   <entry value="7" name="MAV_PARAM_TYPE_UINT64">
+				<description>64-bit unsigned integer</description>
+		   </entry>
+		   <entry value="8" name="MAV_PARAM_TYPE_INT64">
+				<description>64-bit signed integer</description>
+		   </entry>
+		   <entry value="9" name="MAV_PARAM_TYPE_REAL32">
+				<description>32-bit floating-point</description>
+		   </entry>
+		   <entry value="10" name="MAV_PARAM_TYPE_REAL64">
+				<description>64-bit floating-point</description>
+		   </entry>
+		</enum>		  
+		<enum name="MAV_SEVERITY">
+		   <description>Indicates the severity level, generally used for status messages to indicate their relative urgency. Based on RFC-5424 using expanded definitions at: http://www.kiwisyslog.com/kb/info:-syslog-message-levels/.</description>
+		   <entry value="0" name="MAV_SEVERITY_EMERGENCY">
+			  <description>System is unusable. This is a "panic" condition.</description>
+		   </entry>
+		   <entry value="1" name="MAV_SEVERITY_ALERT">
+			  <description>Action should be taken immediately. Indicates error in non-critical systems.</description>
+		   </entry>
+		   <entry value="2" name="MAV_SEVERITY_CRITICAL">
+			  <description>Action must be taken immediately. Indicates failure in a primary system.</description>
+		   </entry>
+		   <entry value="3" name="MAV_SEVERITY_ERROR">
+			  <description>Indicates an error in secondary/redundant systems.</description>
+		   </entry>
+		   <entry value="4" name="MAV_SEVERITY_WARNING">
+			  <description>Indicates about a possible future error if this is not resolved within a given timeframe. Example would be a low battery warning.</description>
+		   </entry>
+		   <entry value="5" name="MAV_SEVERITY_NOTICE">
+			  <description>An unusual event has occured, though not an error condition. This should be investigated for the root cause.</description>
+		   </entry>
+		   <entry value="6" name="MAV_SEVERITY_INFO">
+			  <description>Normal operational messages. Useful for logging. No action is required for these messages.</description>
+		   </entry>
+		   <entry value="7" name="MAV_SEVERITY_DEBUG">
+			  <description>Useful non-operational messages that can assist in debugging. These should not occur during normal operation.</description>
+		   </entry>
+		</enum>	
+		<enum name="MAV_VTOL_STATE">
+		  <description>Enumeration of VTOL states</description>
+		  <entry value="0" name="MAV_VTOL_STATE_UNDEFINED">
+			  <description>MAV is not configured as VTOL</description>
+		  </entry>
+		  <entry value="1" name="MAV_VTOL_STATE_TRANSITION_TO_FW">
+			  <description>VTOL is in transition from multicopter to fixed-wing</description>
+		  </entry>
+		  <entry value="2" name="MAV_VTOL_STATE_TRANSITION_TO_MC">
+			  <description>VTOL is in transition from fixed-wing to multicopter</description>
+		  </entry>
+		  <entry value="3" name="MAV_VTOL_STATE_MC">
+			  <description>VTOL is in multicopter state</description>
+		  </entry>
+		  <entry value="4" name="MAV_VTOL_STATE_FW">
+			  <description>VTOL is in fixed-wing state</description>
+		  </entry>
+		</enum>	
+    </enums>
+    <messages>
+        <message id="180" name="OFFBOARD_CONTROL">
+			<description>Offboard Control (6-DOF)</description>
+			<field type="uint8_t" name="mode" enum="OFFBOARD_CONTROL_MODE">Offboard control mode, see OFFBOARD_CONTROL_MODE</field>
+			<field type="uint8_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
+			<field type="float" name="Qx">Qx control channel interpreted according to mode</field>
+			<field type="float" name="Qy">Qy control channel, interpreted according to mode</field>
+			<field type="float" name="Qz">Qz control channel, interpreted according to mode</field>
+			<field type="float" name="Fx">Fx control channel interpreted according to mode</field>
+			<field type="float" name="Fy">Fy control channel, interpreted according to mode</field>
+			<field type="float" name="Fz">Fz control channel, interpreted according to mode</field>
+        </message>
+        <message id="181" name="SMALL_IMU">
+			<description>IMU data</description>
+			<field type="uint64_t" name="time_boot_us">Measurement timestamp as microseconds since boot</field>
+			<field type="float" name="xacc">Acceleration along X axis</field>
+			<field type="float" name="yacc">Acceleration along Y axis</field>
+			<field type="float" name="zacc">Acceleration along Z axis</field>
+			<field type="float" name="xgyro">Angular speed around X axis</field>
+			<field type="float" name="ygyro">Angular speed around Y axis</field>
+			<field type="float" name="zgyro">Angular speed around Z axis</field>
+			<field type="float" name="temperature">Internal temperature measurement</field>
+        </message>
+        <message id="182" name="SMALL_MAG">
+			<description>Mag data</description>
+			<field type="float" name="xmag">Magnetic field along X axis</field>
+			<field type="float" name="ymag">Magnetic field along Y axis</field>
+			<field type="float" name="zmag">Magnetic field along Z axis</field>
+        </message>
+        <message id="183" name="SMALL_BARO">
+			<description>Baro data</description>
+			<field type="float" name="altitude">Calculated Altitude (m)</field>
+			<field type="float" name="pressure">Measured Differential Pressure (Pa)</field>
+			<field type="float" name="temperature">Measured Temperature (K)</field>
+        </message>
+        <message id="184" name="DIFF_PRESSURE">
+			<description>Pitot data</description>
+			<field type="float" name="velocity">Measured Velocity</field>
+			<field type="float" name="diff_pressure">Measured Differential Pressure (Pa)</field>
+			<field type="float" name="temperature">Measured Temperature (K)</field>
+        </message>
+         <message id="187" name="SMALL_RANGE">
+			<description>Range sensor data</description>
+			<field type="uint8_t" name="type" enum="ROSFLIGHT_RANGE_TYPE">Sensor type</field>
+			<field type="float" name="range">Range Measurement (m)</field>
+			<field type="float" name="max_range">Max Range (m)</field>
+			<field type="float" name="min_range">Min Range (m)</field>
+        </message>
+        <message id="188" name="ROSFLIGHT_CMD">
+			<description>Rosflight command</description>
+			<field type="uint8_t" name="command" enum="ROSFLIGHT_CMD"/>
+        </message>
+        <message id="189" name="ROSFLIGHT_CMD_ACK">
+			<description>Rosflight command Ack</description>
+			<field type="uint8_t" name="command" enum="ROSFLIGHT_CMD"/>
+			<field type="uint8_t" name="success" enum="ROSFLIGHT_CMD_RESPONSE"/>
+        </message>
+        <message id="190" name="ROSFLIGHT_OUTPUT_RAW">
+			<description>Servo commands output to the board</description>
+			<field type="uint64_t" name="stamp"/>
+			<field type="float[14]" name="values"/>
+        </message>
+        <message id="191" name="ROSFLIGHT_STATUS">
+			<description>Flight Status</description>
+			<field type="uint8_t" name="armed"/>
+			<field type="uint8_t" name="failsafe"/>
+			<field type="uint8_t" name="rc_override"/>
+			<field type="uint8_t" name="offboard"/>
+			<field type="uint8_t" name="error_code" enum="ROSFLIGHT_ERROR_CODE"/>
+			<field type="uint8_t" name="control_mode" enum="OFFBOARD_CONTROL_MODE"/>
+			<field type="int16_t" name="num_errors"/>
+			<field type="int16_t" name="loop_time_us"/>
+        </message>
+        <message id="192" name="ROSFLIGHT_VERSION"> 
+			<description>Rosflight version</description>
+			<field type="char[50]" name="version"/>
+        </message>
+        <message id="193" name="ROSFLIGHT_AUX_CMD">
+			<description>Rosflight Aux Command</description>
+			<field type="uint8_t[14]" name="type_array" enum="ROSFLIGHT_AUX_CMD_TYPE"/>
+			<field type="float[14]" name="aux_cmd_array"/>
+        </message>      
+        <message id="195" name="EXTERNAL_ATTITUDE">
+            <!-- A measurement of attitude from an external source -->
+            <description>Update attitude estimate from companion computer</description>
+            <field type="float" name="qw">Quaternion scalar value</field>
+            <field type="float" name="qx">Quaternion x value</field>
+            <field type="float" name="qy">Quaternion y value</field>
+            <field type="float" name="qz">Quaternion z value</field>
+        </message>        
+		<message id="196" name="ROSFLIGHT_HARD_ERROR">
+			<description>Rosflight fimware error</description>
+			<field type="uint32_t" name="error_code"/>
+			<field type="uint32_t" name="pc"/>
+			<field type="uint32_t" name="reset_count"/>
+			<field type="uint32_t" name="doRearm"/>
+		</message>
+		<!--
+		<message id="197" name="ROSFLIGHT_GNSS">
+			<description>Rosflight GNSS message</description>
+			<field type="int64_t" name="seconds">Unix time, in seconds</field>
+			<field type="int32_t" name="nanos">Fractional Unix time</field>
+			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE">GNSS fix type</field>
+			<field type="uint8_t" name="num_sat">Number of satellites seen</field>
+			<field type="double" name="lat">In deg DDS format</field>
+			<field type="double" name="lon">In deg DDs format</field>
+			<field type="float" name="height">meters</field>
+			<field type="float" name="vel_n">meters per second</field>
+			<field type="float" name="vel_e">meters per second</field>
+			<field type="float" name="vel_d">meters per second</field>
+			<field type="float" name="h_acc">meters</field>
+			<field type="float" name="v_acc">meters</field>
+			<field type="float" name="s_acc">meters</field>
+			<field type="uint64_t" name="rosflight_timestamp">microseconds, estimated firmware timestamp for the time of validity of the gnss data</field>
+		</message>
+		-->
+		<message id="197" name="ROSFLIGHT_GNSS">
+			<description>Rosflight ECEF GPS Message</description>
+			<!-- time_of_week is only for determining which packets where calculated at the same time.
+				 Use the time and nanos field to get GPS time. -->
+			<field type="uint32_t" name="time_of_week"/>
+			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE"/>
+			<field type="uint64_t" name="time"/> <!--unix time, in seconds -->
+			<field type="uint64_t" name="nanos"/>
+			<field type="int32_t" name="lat"/> <!-- deg*10^-7 -->
+			<field type="int32_t" name="lon"/> <!-- deg*10^-7 -->
+			<field type="int32_t" name="height"/> <!-- mm -->
+			<field type="int32_t" name="vel_n"/> <!-- mm/s -->
+			<field type="int32_t" name="vel_e"/> <!-- mm/s -->
+			<field type="int32_t" name="vel_d"/> <!-- mm/s -->
+			<field type="uint32_t" name="h_acc"/> <!-- mm -->
+			<field type="uint32_t" name="v_acc"/> <!-- mm -->
+			<field type="int32_t" name="ecef_x"/> <!-- cm -->
+			<field type="int32_t" name="ecef_y"/> <!-- cm -->
+			<field type="int32_t" name="ecef_z"/> <!-- cm -->
+			<field type="uint32_t" name="p_acc"/> <!-- cm -->
+			<field type="int32_t" name="ecef_v_x"/> <!-- cm/s -->
+			<field type="int32_t" name="ecef_v_y"/> <!-- cm/s -->
+			<field type="int32_t" name="ecef_v_z"/> <!-- cm/s -->
+			<field type="uint32_t" name="s_acc"/> <!-- cm/s -->
+			<field type="uint64_t" name="rosflight_timestamp"/> <!-- microseconds -->
+		</message>
+		<message id="198" name="ROSFLIGHT_GNSS_FULL">
+			<description>Rosflight Full GPS Message</description>
+			<!-- time_of_week is only for determining which packets where calculated at the same time.
+				 Use the various time and date fields to get GPS time. -->
+			<field type="uint32_t" name="time_of_week"/>
+			<field type="uint16_t" name="year"/>
+			<field type="uint8_t" name="month"/>
+			<field type="uint8_t" name="day"/>
+			<field type="uint8_t" name="hour"/>
+			<field type="uint8_t" name="min"/>
+			<field type="uint8_t" name="sec"/>
+			<field type="uint8_t" name="valid"/>
+			<field type="uint32_t" name="t_acc"/> <!-- ns -->
+			<field type="int32_t" name="nano"/> <!-- ns -->
+			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE"/>
+			<field type="uint8_t" name="num_sat"/>
+			<field type="int32_t" name="lon"/> <!-- deg *10^-7 -->
+			<field type="int32_t" name="lat"/> <!-- deg *10^-7 -->
+			<field type="int32_t" name="height"/> <!-- mm above elipsoid -->
+			<field type="int32_t" name="height_msl"/> <!-- mm above mean sea level -->
+			<field type="uint32_t" name="h_acc"/> <!-- mm -->
+			<field type="uint32_t" name="v_acc"/> <!-- mm -->
+			<field type="int32_t" name="vel_n"/> <!-- mm/s -->
+			<field type="int32_t" name="vel_e"/> <!-- mm/s -->
+			<field type="int32_t" name="vel_d"/> <!-- mm/s -->
+			<field type="int32_t" name="g_speed"/> <!-- mm/s -->
+			<field type="int32_t" name="head_mot"/> <!--deg *10^-5 -->
+			<field type="uint32_t" name="s_acc"/> <!--mm/s-->
+			<field type="uint32_t" name="head_acc"/> <!-- deg * 10^-5 -->
+			<field type="uint16_t" name="p_dop"/> <!-- *.01 -->
+			<field type="uint64_t" name="rosflight_timestamp"/> <!-- microseconds -->
+		</message>
+		<message id="199" name="ROSFLIGHT_BATTERY_STATUS">
+			<description>Battery data</description>
+			<field type="float" name="battery_voltage"/> <!-- V -->
+			<field type="float" name="battery_current"/> <!-- A -->
+		</message>
+	<!-- From Common -->	
+	 <message id="0" name="HEARTBEAT">
+		<description>The heartbeat message shows that a system is present and responding. The type of the MAV and Autopilot hardware allow the receiving system to treat further messages from this system appropriate (e.g. by laying out the user interface based on the autopilot).</description>
+		<field type="uint8_t" name="type">Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)</field>
+		<field type="uint8_t" name="autopilot">Autopilot type / class. defined in MAV_AUTOPILOT ENUM</field>
+		<field type="uint8_t" name="base_mode">System mode bitfield, see MAV_MODE_FLAG ENUM in mavlink/include/mavlink_types.h</field>
+		<field type="uint32_t" name="custom_mode">A bitfield for use for autopilot-specific flags.</field>
+		<field type="uint8_t" name="system_status">System status flag, see MAV_STATE ENUM</field>
+		<field type="uint8_t_mavlink_version" name="mavlink_version">MAVLink version, not writable by user, gets added by protocol because of magic data type: uint8_t_mavlink_version</field>
+	</message>
+	<message id="20" name="PARAM_REQUEST_READ">
+		<description>Request to read the onboard parameter with the param_id string id. Onboard parameters are stored as key[const char*] -> value[float]. This allows to send a parameter to any other component (such as the GCS) without the need of previous knowledge of possible parameter names. Thus the same GCS can store different parameters for different autopilots. See also http://qgroundcontrol.org/parameter_interface for a full documentation of QGroundControl and IMU code.</description>
+		<field type="uint8_t" name="target_system">System ID</field>
+		<field type="uint8_t" name="target_component">Component ID</field>
+		<field type="char[16]" name="param_id">Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string</field>
+		<field type="int16_t" name="param_index">Parameter index. Send -1 to use the param ID field as identifier (else the param id will be ignored)</field>
+	</message>
+	<message id="21" name="PARAM_REQUEST_LIST">
+		<description>Request all parameters of this component. After his request, all parameters are emitted.</description>
+		<field type="uint8_t" name="target_system">System ID</field>
+		<field type="uint8_t" name="target_component">Component ID</field>
+	</message>
+	<message id="22" name="PARAM_VALUE">
+		<description>Emit the value of a onboard parameter. The inclusion of param_count and param_index in the message allows the recipient to keep track of received parameters and allows him to re-request missing parameters after a loss or timeout.</description>
+		<field type="char[16]" name="param_id">Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string</field>
+		<field type="float" name="param_value">Onboard parameter value</field>
+		<field type="uint8_t" name="param_type" enum="MAV_PARAM_TYPE">Onboard parameter type: see the MAV_PARAM_TYPE enum for supported data types.</field>
+		<field type="uint16_t" name="param_count">Total number of onboard parameters</field>
+		<field type="uint16_t" name="param_index">Index of this onboard parameter</field>
+	</message>
+	<message id="23" name="PARAM_SET">
+		<description>Set a parameter value TEMPORARILY to RAM. It will be reset to default on system reboot. Send the ACTION MAV_ACTION_STORAGE_WRITE to PERMANENTLY write the RAM contents to EEPROM. IMPORTANT: The receiving component should acknowledge the new parameter value by sending a param_value message to all communication partners. This will also ensure that multiple GCS all have an up-to-date list of all parameters. If the sending GCS did not receive a PARAM_VALUE message within its timeout time, it should re-send the PARAM_SET message.</description>
+		<field type="uint8_t" name="target_system">System ID</field>
+		<field type="uint8_t" name="target_component">Component ID</field>
+		<field type="char[16]" name="param_id">Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string</field>
+		<field type="float" name="param_value">Onboard parameter value</field>
+		<field type="uint8_t" name="param_type" enum="MAV_PARAM_TYPE">Onboard parameter type: see the MAV_PARAM_TYPE enum for supported data types.</field>
+	</message>
+	
+	<message id="31" name="ATTITUDE_QUATERNION">
+		<description>The attitude in the aeronautical frame (right-handed, Z-down, X-front, Y-right), expressed as quaternion. Quaternion order is w, x, y, z and a zero rotation would be expressed as (1 0 0 0).</description>
+		<field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+		<field type="float" name="q1">Quaternion component 1, w (1 in null-rotation)</field>
+		<field type="float" name="q2">Quaternion component 2, x (0 in null-rotation)</field>
+		<field type="float" name="q3">Quaternion component 3, y (0 in null-rotation)</field>
+		<field type="float" name="q4">Quaternion component 4, z (0 in null-rotation)</field>
+		<field type="float" name="rollspeed">Roll angular speed (rad/s)</field>
+		<field type="float" name="pitchspeed">Pitch angular speed (rad/s)</field>
+		<field type="float" name="yawspeed">Yaw angular speed (rad/s)</field>
+	</message>
+	<message id="65" name="RC_CHANNELS">
+		<description>The PPM values of the RC channels received. The standard PPM modulation is as follows: 1000 microseconds: 0%, 2000 microseconds: 100%. Individual receivers/transmitters might violate this specification.</description>
+		<field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+		<field type="uint8_t" name="chancount">Total number of RC channels being received. This can be larger than 18, indicating that more channels are available but not given in this message. This value should be 0 when no RC channels are available.</field>
+		<field type="uint16_t" name="chan1_raw">RC channel 1 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan2_raw">RC channel 2 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan3_raw">RC channel 3 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan4_raw">RC channel 4 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan5_raw">RC channel 5 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan6_raw">RC channel 6 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan7_raw">RC channel 7 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan8_raw">RC channel 8 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan9_raw">RC channel 9 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan10_raw">RC channel 10 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan11_raw">RC channel 11 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan12_raw">RC channel 12 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan13_raw">RC channel 13 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan14_raw">RC channel 14 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan15_raw">RC channel 15 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan16_raw">RC channel 16 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan17_raw">RC channel 17 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint16_t" name="chan18_raw">RC channel 18 value, in microseconds. A value of UINT16_MAX implies the channel is unused.</field>
+		<field type="uint8_t" name="rssi">Receive signal strength indicator, 0: 0%, 100: 100%, 255: invalid/unknown.</field>
+	</message>
+	<message id="111" name="TIMESYNC">
+		<description>Time synchronization message.</description>
+		<field type="int64_t" name="tc1">Time sync timestamp 1</field>
+		<field type="int64_t" name="ts1">Time sync timestamp 2</field>
+	</message>
+	<!--
+	<message id="251" name="NAMED_VALUE_FLOAT">
+		<description>Send a key-value pair as float. The use of this message is discouraged for normal packets, but a quite efficient way for testing new messages and getting experimental debug output.</description>
+		<field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+		<field type="char[10]" name="name">Name of the debug variable</field>
+		<field type="float" name="value">Floating point value</field>
+		</message>
+		<message id="252" name="NAMED_VALUE_INT">
+		<description>Send a key-value pair as integer. The use of this message is discouraged for normal packets, but a quite efficient way for testing new messages and getting experimental debug output.</description>
+		<field type="uint32_t" name="time_boot_ms">Timestamp (milliseconds since system boot)</field>
+		<field type="char[10]" name="name">Name of the debug variable</field>
+		<field type="int32_t" name="value">Signed integer value</field>
+	</message> 
+	-->
+	<message id="253" name="STATUSTEXT">
+		<description>Status text message. These messages are printed in yellow in the COMM console of QGroundControl. WARNING: They consume quite some bandwidth, so use only for important status and error messages. If implemented wisely, these messages are buffered on the MCU and sent only at a limited rate (e.g. 10 Hz).</description>
+		<field type="uint8_t" name="severity" enum="MAV_SEVERITY">Severity of status. Relies on the definitions within RFC-5424. See enum MAV_SEVERITY.</field>
+		<field type="char[50]" name="text">Status text message, without null termination character</field>
+	</message>
+    </messages>
+</mavlink>

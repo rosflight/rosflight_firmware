@@ -1,0 +1,18 @@
+# get the mavlink/mavlink repository
+git clone https://github.com/rosflight/mavlink.git
+
+# Go to your rosflight_firmware/comms/mavlink folder
+# Put the rosflight.xml file there if not already there
+
+# Create the .c/h files from that directory
+# in windows:
+set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
+# e.g., 
+set PYTHONPATH=%PYTHONPATH%;C:\Projects\mavlink && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
+
+# in linux:
+PYTHONPATH=$PYTHONPATH:/path/to/mavlink/repo python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
+
+# If you are in the mavlink repo environment with rosflight.xml in the standard location:
+python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generated/include/mavlink/v1.0/generated message_definitions/v1.0/rosflight.xml
+# copy/paste generated into your rosflight_firmware/comms/mavlink folder?>
