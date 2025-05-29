@@ -96,7 +96,8 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
             <entry value="0x08" name="ROSFLIGHT_ERROR_UNHEALTHY_ESTIMATOR"/>
             <entry value="0x10" name="ROSFLIGHT_ERROR_TIME_GOING_BACKWARDS"/>
             <entry value="0x20" name="ROSFLIGHT_ERROR_UNCALIBRATED_IMU"/>
-            <entry value="0x40" name="ROSFLIGHT_ERROR_BUFFER_OVERRUN"/>
+            <entry value="0x40" name="ROSFLIGHT_ERROR_INVALID_FAILSAFE"/>
+            <entry value="0x80" name="ROSFLIGHT_ERROR_BUFFER_OVERRUN"/>
         </enum>
        <enum name="ROSFLIGHT_RANGE_TYPE">
             <entry value="0" name="ROSFLIGHT_RANGE_SONAR"/>
@@ -207,7 +208,103 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
 			  <description>VTOL is in fixed-wing state</description>
 		  </entry>
 		</enum>	
+		<enum name="MAV_COMPONENT">
+	        <entry value="0" name="MAV_COMP_ID_ALL">
+	             <description/>
+	        </entry>
+	        <entry value="220" name="MAV_COMP_ID_GPS">
+	             <description/>
+	        </entry>
+	        <entry value="190" name="MAV_COMP_ID_MISSIONPLANNER">
+	             <description/>
+	        </entry>
+	        <entry value="195" name="MAV_COMP_ID_PATHPLANNER">
+	             <description/>
+	        </entry>
+	        <entry value="180" name="MAV_COMP_ID_MAPPER">
+	             <description/>
+	        </entry>
+	        <entry value="100" name="MAV_COMP_ID_CAMERA">
+	             <description/>
+	        </entry>
+	        <entry value="200" name="MAV_COMP_ID_IMU">
+	             <description/>
+	        </entry>
+	        <entry value="201" name="MAV_COMP_ID_IMU_2">
+	             <description/>
+	        </entry>
+	        <entry value="202" name="MAV_COMP_ID_IMU_3">
+	             <description/>
+	        </entry>
+	        <entry value="240" name="MAV_COMP_ID_UDP_BRIDGE">
+	             <description/>
+	        </entry>
+	        <entry value="241" name="MAV_COMP_ID_UART_BRIDGE">
+	             <description/>
+	        </entry>
+	        <entry value="250" name="MAV_COMP_ID_SYSTEM_CONTROL">
+	             <description/>
+	        </entry>
+	        <entry value="140" name="MAV_COMP_ID_SERVO1">
+	             <description/>
+	        </entry>
+	        <entry value="141" name="MAV_COMP_ID_SERVO2">
+	             <description/>
+	        </entry>
+	        <entry value="142" name="MAV_COMP_ID_SERVO3">
+	             <description/>
+	        </entry>
+	        <entry value="143" name="MAV_COMP_ID_SERVO4">
+	             <description/>
+	        </entry>
+	        <entry value="144" name="MAV_COMP_ID_SERVO5">
+	             <description/>
+	        </entry>
+	        <entry value="145" name="MAV_COMP_ID_SERVO6">
+	             <description/>
+	        </entry>
+	        <entry value="146" name="MAV_COMP_ID_SERVO7">
+	             <description/>
+	        </entry>
+	        <entry value="147" name="MAV_COMP_ID_SERVO8">
+	             <description/>
+	        </entry>
+	        <entry value="148" name="MAV_COMP_ID_SERVO9">
+	             <description/>
+	        </entry>
+	        <entry value="149" name="MAV_COMP_ID_SERVO10">
+	             <description/>
+	        </entry>
+	        <entry value="150" name="MAV_COMP_ID_SERVO11">
+	             <description/>
+	        </entry>
+	        <entry value="151" name="MAV_COMP_ID_SERVO12">
+	             <description/>
+	        </entry>
+	        <entry value="152" name="MAV_COMP_ID_SERVO13">
+	             <description/>
+	        </entry>
+	        <entry value="153" name="MAV_COMP_ID_SERVO14">
+	             <description/>
+	        </entry>
+	        <entry value="154" name="MAV_COMP_ID_GIMBAL">
+	             <description/>
+	        </entry>
+	        <entry value="155" name="MAV_COMP_ID_LOG">
+	             <description/>
+	        </entry>
+	        <entry value="156" name="MAV_COMP_ID_ADSB">
+	             <description/>
+	        </entry>
+	        <entry value="157" name="MAV_COMP_ID_OSD">
+	             <description>On Screen Display (OSD) devices for video links</description>
+	        </entry>
+	        <entry value="158" name="MAV_COMP_ID_PERIPHERAL">
+	             <description>Generic autopilot peripheral component ID. Meant for devices that do not implement the parameter sub-protocol</description>
+	        </entry>
+      </enum>	
     </enums>
+    
     <messages>
         <message id="180" name="OFFBOARD_CONTROL">
 			<description>Offboard Control (6-DOF)</description>

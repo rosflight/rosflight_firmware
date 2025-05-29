@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_ROSFLIGHT.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_ROSFLIGHT_XML_HASH -5544324496021157498
+#define MAVLINK_ROSFLIGHT_XML_HASH 5306014299006910312
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,8 +121,9 @@ typedef enum ROSFLIGHT_ERROR_CODE
    ROSFLIGHT_ERROR_UNHEALTHY_ESTIMATOR=8, /*  | */
    ROSFLIGHT_ERROR_TIME_GOING_BACKWARDS=16, /*  | */
    ROSFLIGHT_ERROR_UNCALIBRATED_IMU=32, /*  | */
-   ROSFLIGHT_ERROR_BUFFER_OVERRUN=64, /*  | */
-   ROSFLIGHT_ERROR_CODE_ENUM_END=65, /*  | */
+   ROSFLIGHT_ERROR_INVALID_FAILSAFE=64, /*  | */
+   ROSFLIGHT_ERROR_BUFFER_OVERRUN=128, /*  | */
+   ROSFLIGHT_ERROR_CODE_ENUM_END=129, /*  | */
 } ROSFLIGHT_ERROR_CODE;
 #endif
 
@@ -227,6 +228,46 @@ typedef enum MAV_VTOL_STATE
    MAV_VTOL_STATE_FW=4, /* VTOL is in fixed-wing state | */
    MAV_VTOL_STATE_ENUM_END=5, /*  | */
 } MAV_VTOL_STATE;
+#endif
+
+/** @brief  */
+#ifndef HAVE_ENUM_MAV_COMPONENT
+#define HAVE_ENUM_MAV_COMPONENT
+typedef enum MAV_COMPONENT
+{
+   MAV_COMP_ID_ALL=0, /*  | */
+   MAV_COMP_ID_CAMERA=100, /*  | */
+   MAV_COMP_ID_SERVO1=140, /*  | */
+   MAV_COMP_ID_SERVO2=141, /*  | */
+   MAV_COMP_ID_SERVO3=142, /*  | */
+   MAV_COMP_ID_SERVO4=143, /*  | */
+   MAV_COMP_ID_SERVO5=144, /*  | */
+   MAV_COMP_ID_SERVO6=145, /*  | */
+   MAV_COMP_ID_SERVO7=146, /*  | */
+   MAV_COMP_ID_SERVO8=147, /*  | */
+   MAV_COMP_ID_SERVO9=148, /*  | */
+   MAV_COMP_ID_SERVO10=149, /*  | */
+   MAV_COMP_ID_SERVO11=150, /*  | */
+   MAV_COMP_ID_SERVO12=151, /*  | */
+   MAV_COMP_ID_SERVO13=152, /*  | */
+   MAV_COMP_ID_SERVO14=153, /*  | */
+   MAV_COMP_ID_GIMBAL=154, /*  | */
+   MAV_COMP_ID_LOG=155, /*  | */
+   MAV_COMP_ID_ADSB=156, /*  | */
+   MAV_COMP_ID_OSD=157, /* On Screen Display (OSD) devices for video links | */
+   MAV_COMP_ID_PERIPHERAL=158, /* Generic autopilot peripheral component ID. Meant for devices that do not implement the parameter sub-protocol | */
+   MAV_COMP_ID_MAPPER=180, /*  | */
+   MAV_COMP_ID_MISSIONPLANNER=190, /*  | */
+   MAV_COMP_ID_PATHPLANNER=195, /*  | */
+   MAV_COMP_ID_IMU=200, /*  | */
+   MAV_COMP_ID_IMU_2=201, /*  | */
+   MAV_COMP_ID_IMU_3=202, /*  | */
+   MAV_COMP_ID_GPS=220, /*  | */
+   MAV_COMP_ID_UDP_BRIDGE=240, /*  | */
+   MAV_COMP_ID_UART_BRIDGE=241, /*  | */
+   MAV_COMP_ID_SYSTEM_CONTROL=250, /*  | */
+   MAV_COMPONENT_ENUM_END=251, /*  | */
+} MAV_COMPONENT;
 #endif
 
 // MAVLINK VERSION
