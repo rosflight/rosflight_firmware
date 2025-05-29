@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_ROSFLIGHT.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_ROSFLIGHT_XML_HASH 5306014299006910312
+#define MAVLINK_ROSFLIGHT_XML_HASH -9168130151729935904
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,8 +121,8 @@ typedef enum ROSFLIGHT_ERROR_CODE
    ROSFLIGHT_ERROR_UNHEALTHY_ESTIMATOR=8, /*  | */
    ROSFLIGHT_ERROR_TIME_GOING_BACKWARDS=16, /*  | */
    ROSFLIGHT_ERROR_UNCALIBRATED_IMU=32, /*  | */
-   ROSFLIGHT_ERROR_INVALID_FAILSAFE=64, /*  | */
-   ROSFLIGHT_ERROR_BUFFER_OVERRUN=128, /*  | */
+   ROSFLIGHT_ERROR_BUFFER_OVERRUN=64, /*  | */
+   ROSFLIGHT_ERROR_INVALID_FAILSAFE=128, /*  | */
    ROSFLIGHT_ERROR_CODE_ENUM_END=129, /*  | */
 } ROSFLIGHT_ERROR_CODE;
 #endif
