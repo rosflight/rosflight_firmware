@@ -136,6 +136,7 @@ typedef struct __attribute__((__packed__))
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
   rosflight_firmware::PacketHeader header;
+  int64_t unix_seconds; // computed from pvt time values
   uint64_t drdy;
   uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
   uint64_t pps;

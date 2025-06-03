@@ -142,16 +142,35 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, const turbomath
                              gyro.x, gyro.y, gyro.z, temperature);
   send_message(msg, 0);
 }
+
+#ifdef MAVLINK_MESSAGE_INFO_ROSFLIGHT2_GNSS
+void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight2_gnss_pack(
+    system_id, compid_, &msg,
+    data.unix_seconds, // Unix time in seconds
+    data.nano, // nanoseconds
+    data.fix_type,
+    data.num_sat,
+    data.lat, data.lon, data.height_ellipsoid,
+    data.vel_n, data.vel_e, data.vel_d,
+    data.h_acc, data.v_acc, data.speed_accy,
+    data.header.timestamp);
+  send_message(msg);
+}
+#else
 void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_gnss_pack(
-    system_id, compid_, &msg, data.time_of_week, data.fix_type, data.time, data.nano, data.lat,
+    system_id, compid_, &msg, data.time_of_week, data.fix_type, data.unix_seconds, data.nano, data.lat,
     data.lon, data.height_ellipsoid, data.vel_n, data.vel_e, data.vel_d, data.h_acc, data.v_acc, data.ecef.x,
     data.ecef.y, data.ecef.z, data.ecef.p_acc, data.ecef.vx, data.ecef.vy, data.ecef.vz,
     data.ecef.s_acc, data.header.timestamp);
   send_message(msg);
 }
+#endif
 
 void Mavlink::send_gnss_full(uint8_t system_id, const GNSSFull & full)
 {

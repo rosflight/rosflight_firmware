@@ -117,7 +117,7 @@ typedef struct //__attribute__((__packed__))
 {
   PacketHeader header; //
   uint64_t pps;        // most recent pps timestamp
-  uint64_t time;       // Unix time, in seconds (redundant)
+  int64_t unix_seconds;       // Unix time, in seconds (redundant)
   // GPS Time
   uint32_t time_of_week; //     / PVT
   uint16_t year;         // RMC / PVT
@@ -126,7 +126,7 @@ typedef struct //__attribute__((__packed__))
   uint8_t hour;          // GGA RMC UTC Time / PVT
   uint8_t min;           // GGA RMC UTC Time / PVT
   uint8_t sec;           // GGA RMC UTC Time / PVT
-  uint32_t nano;         // GGA RMC UTC Time (ms) / PVT nano
+  int32_t nano;         // GGA RMC UTC Time (ms) / PVT nano
   uint32_t t_acc;
   int32_t lon;              // GGA RMC / PVT
   int32_t lat;              // GGA RMC / PVT

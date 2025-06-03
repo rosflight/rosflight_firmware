@@ -248,14 +248,15 @@ bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
   if (gps_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
     gnss->header = p.header;
     gnss->pps = p.pps;
-    struct tm tm;
-    tm.tm_sec = p.pvt.sec;
-    tm.tm_min = p.pvt.min;
-    tm.tm_hour = p.pvt.hour;
-    tm.tm_mday = p.pvt.day;
-    tm.tm_mon = p.pvt.month - 1;
-    tm.tm_year = p.pvt.year - 1900;
-    gnss->time = mktime(&tm);
+//    struct tm tm;
+//    tm.tm_sec = p.pvt.sec;
+//    tm.tm_min = p.pvt.min;
+//    tm.tm_hour = p.pvt.hour;
+//    tm.tm_mday = p.pvt.day;
+//    tm.tm_mon = p.pvt.month - 1;
+//    tm.tm_year = p.pvt.year - 1900;
+    //gnss->time = mktime(&tm);
+    gnss->unix_seconds = p.unix_seconds; // Unix time
     gnss->t_acc = p.pvt.tAcc;
     gnss->time_of_week = p.pvt.iTOW;
     gnss->year = p.pvt.year;

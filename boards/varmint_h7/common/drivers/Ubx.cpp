@@ -41,7 +41,7 @@
 
 #include "Packets.h"
 #include "misc.h"
-
+#include <ctime>
 extern Time64 time64;
 
 #define SET(buf, data, type) *((type *) (buf)) = data
@@ -235,6 +235,19 @@ void Ubx::endDma(void)
       if ((p.cl == 0x01) && (p.id == 0x07)) {
         gotPvt_ = time64.Us();
         memcpy((uint8_t *) &(ubx_.pvt), p.payload, sizeof(ubx_.pvt));
+        struct tm tm;
+        tm.tm_sec  = ubx_.pvt.sec;
+        tm.tm_min  = ubx_.pvt.min;
+        tm.tm_hour = ubx_.pvt.hour;
+        tm.tm_mday = ubx_.pvt.day;
+        tm.tm_mon  = ubx_.pvt.month - 1;
+        tm.tm_year = ubx_.pvt.year - 1900;
+        ubx_.unix_seconds = mktime(&tm);
+        if (ubx_.pvt.nano<0)
+        {
+          ubx_.unix_seconds -= 1;
+          ubx_.pvt.nano += 1000000000;
+        }
       } else if ((p.cl == 0x01) && (p.id == 0x20)) {
         gotTime_ = time64.Us();
         memcpy((uint8_t *) (&ubx_.time), p.payload, sizeof(ubx_.time));

@@ -7,7 +7,8 @@ git clone https://github.com/rosflight/mavlink.git
 # Create the .c/h files from that directory
 # in windows:
 set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
-# e.g., 
+# e.g.,
+rmdir /s v1.0 
 set PYTHONPATH=%PYTHONPATH%;C:\Projects\mavlink && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
 
 # in linux:

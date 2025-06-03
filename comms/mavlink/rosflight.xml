@@ -8,11 +8,16 @@ git clone https://github.com/rosflight/mavlink.git
 
 # Create the .c/h files from that directory
 # in windows:
+rmdir /s v1.0 
+Y
 set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
 # e.g., 
+rmdir /s v1.0 
+Y
 set PYTHONPATH=%PYTHONPATH%;C:\Projects\mavlink && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
 
 # in linux:
+sudo rm -r ./v1.0
 PYTHONPATH=$PYTHONPATH:/path/to/mavlink/repo python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
 
 # If you are in the mavlink repo environment with rosflight.xml in the standard location:
@@ -316,8 +321,8 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
 			<field type="uint32_t" name="doRearm"/>
 		</message>
 		<!--
-		<message id="197" name="ROSFLIGHT_GNSS">
-			<description>Rosflight GNSS message</description>
+		<message id="197" name="ROSFLIGHT2_GNSS">
+			<description>Rosflight2 GNSS message</description>
 			<field type="int64_t" name="seconds">Unix time, in seconds</field>
 			<field type="int32_t" name="nanos">Fractional Unix time</field>
 			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE">GNSS fix type</field>
