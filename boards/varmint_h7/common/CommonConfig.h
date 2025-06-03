@@ -96,6 +96,8 @@
 #define UBX_FAIL_BAUD_CHANGE (0x00000400)
 #define VOLTAGE_SET_FAIL (0x00000800)
 #define TIMERS_INVALID (0x00001000)
+#define AUAV_PITOT_ERROR (0x00002000)
+#define AUAV_BARO_ERROR (0x00002000)
 
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;

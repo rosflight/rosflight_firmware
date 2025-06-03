@@ -111,7 +111,7 @@ private:
 
   Board & board_;
 
-  uint32_t compid_ = 250;
+  uint32_t compid_ = MAV_COMP_ID_ROSFLIGHT_FIRMWARE;
   mavlink_message_t in_buf_;
   mavlink_status_t status_;
   bool initialized_ = false;

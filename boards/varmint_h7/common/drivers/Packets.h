@@ -44,7 +44,7 @@
 #include "interface/rosflight_structs.h"
 
 #define SERIAL_MAX_PAYLOAD_SIZE (256 + 8) // for MAVLINK1, really 255+8, added 1 byte to make it an even multiple of 8
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
   uint16_t qos;
@@ -54,7 +54,7 @@ typedef struct __attribute__((__packed__))
   uint8_t payload[SERIAL_MAX_PAYLOAD_SIZE];
 } SerialTxPacket;
 
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
@@ -65,7 +65,7 @@ typedef struct __attribute__((__packed__))
   double volts[ADC_CHANNELS];
 } AdcPacket;
 
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
@@ -77,7 +77,7 @@ typedef struct __attribute__((__packed__))
   double dataTime;     // s
 } ImuPacket;
 
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
@@ -87,7 +87,7 @@ typedef struct __attribute__((__packed__))
   double temperature;  // K
 } PressurePacket;
 
-typedef struct __attribute__((packed))
+typedef struct //__attribute__((packed))
 {
   rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)
@@ -98,7 +98,7 @@ typedef struct __attribute__((packed))
 } MagPacket;
 
 #define RC_PACKET_CHANNELS 24 // 16 analog + 8 digital
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
   uint64_t drdy;       // us, time of drdy signal (group delay is often known relative to this time)

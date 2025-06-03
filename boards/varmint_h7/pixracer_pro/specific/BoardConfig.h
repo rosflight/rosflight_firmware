@@ -147,10 +147,12 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define BMI088_RANGE_A (3)   // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
 #define BMI088_RANGE_G (2)   // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
 #define BMI088_FIFO_BUFFERS (FIFO_MIN_BUFFERS + BMI088_HZ / EPOCH_HZ)
+#define BMI088_ROTATION (const double[]){ -1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // ADIS IMU
 #define ADIS165XX_HZ (EPOCH_HZ)
 #define ADIS165XX_FIFO_BUFFERS (FIFO_MIN_BUFFERS + ADIS165XX_HZ / EPOCH_HZ)
+#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // DLHR Pitot is on i2c1
 #define DLHRL20G_HZ (100)
@@ -194,6 +196,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // HZ no faster than 100Hz. 10, 20, 50, 100 are the only options for continuous mode
 #define IIS2MDC_HZ (100)
 #define IIS2MDC_FIFO_BUFFERS (FIFO_MIN_BUFFERS + IIS2MDC_HZ / EPOCH_HZ)
+#define IIS2MDC_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
 
 // Mag IST8308 (pixracer Pro)
 // HZ no faster than 100Hz
@@ -201,6 +204,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define IST8308_FIFO_BUFFERS (FIFO_MIN_BUFFERS + IST3808_HZ / EPOCH_HZ)
 #define IST3808_I2C (&hi2c1)
 #define IST3808_I2C_ADDRESS (0X0C)
+#define IST3808_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
 
 // SBus is on UART3 for Varmints, UART6 for PixRacer Pro
 #define SBUS_HZ (112) // 1000/9ms = 111.1Hz, 112 is rounds up

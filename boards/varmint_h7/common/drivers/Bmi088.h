@@ -63,7 +63,8 @@ public:
     uint16_t cs_pin_g,                                  // Chip Select GPIO Pin
     // Sensor Specific
     uint8_t range_a, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-    uint8_t range_g  // // 0,1,2,3 --> 3,6,12,24g
+    uint8_t range_g,  // // 0,1,2,3 --> 3,6,12,24g
+    const double *rotation
   );
 
   void endDma(void);

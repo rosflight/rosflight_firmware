@@ -60,6 +60,13 @@ public:
   uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size) { return rxFifo_.readMostRecent(data, size); }
   bool drdy(void) { return HAL_GPIO_ReadPin(drdyPort_, drdyPin_); }
   bool dmaRunning(void) { return dmaRunning_; }
+  void rotate(double *x) {
+    double y[3];
+    y[0] = x[0]*rotation_[0] + x[1]*rotation_[1] + x[2]*rotation_[2];
+    y[1] = x[0]*rotation_[3] + x[1]*rotation_[4] + x[2]*rotation_[5];
+    y[2] = x[0]*rotation_[6] + x[1]*rotation_[7] + x[2]*rotation_[8];
+    memcpy(x,y,sizeof(double)*3);
+  }
 
 protected:
   PacketFifo rxFifo_;
@@ -69,6 +76,7 @@ protected:
   uint64_t drdy_, timeout_, launchUs_;
   uint64_t groupDelay_ = 0;
   bool dmaRunning_ = 0;
+  double rotation_[9];
 };
 
 #endif /* DRIVER_H_ */

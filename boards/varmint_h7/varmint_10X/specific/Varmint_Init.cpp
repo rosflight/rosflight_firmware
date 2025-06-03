@@ -140,7 +140,8 @@ void Varmint::init_board(void)
                            ADIS165XX_SPI, ADIS165XX_CSn_GPIO_Port, ADIS165XX_CSn_Pin,  // SPI
                            ADIS165XX_RESET_GPIO_Port, ADIS165XX_RESET_Pin,             // Reset Pin
                            ADIS165XX_HTIM, ADIS165XX_TIM_INSTANCE, ADIS165XX_TIM_CHANNEL,
-                           ADIS165XX_TIM_PERIOD_US // ADIS external clock
+                           ADIS165XX_TIM_PERIOD_US, // ADIS external clock
+                           ADIS165XX_ROTATION // rotation into board coordinate system.
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
@@ -148,7 +149,8 @@ void Varmint::init_board(void)
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
   init_status =
     imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
-               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G);
+               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G,
+               BMI088_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu1_;
 
@@ -173,7 +175,8 @@ void Varmint::init_board(void)
 
   misc_printf("\n\nIIS2MDC (mag) Initialization\n");
   init_status = mag_.init(IIS2MDC_HZ, IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // Driver
-                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin   // SPI
+                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,   // SPI
+                          IIS2MDC_ROTATION
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;

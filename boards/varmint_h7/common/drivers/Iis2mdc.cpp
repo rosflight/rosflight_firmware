@@ -79,9 +79,11 @@ uint32_t Iis2mdc::init(
   uint16_t drdy_pin,                                 // Reset GPIO Pin
   // SPI initializers
   SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-  uint16_t cs_pin                                   // Chip Select GPIO Pin
+  uint16_t cs_pin,                                  // Chip Select GPIO Pin
+  const double *rotation
 )
 {
+  memcpy(rotation_,rotation, sizeof(double)*9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Iis2mdc");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
@@ -221,14 +223,14 @@ void Iis2mdc::endDma(void)
     p.header.status = rx[1];
 
     int16_t data = (rx[3] << 8) | rx[2];
-    p.flux[0] = -(data + previous_data[0]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB, 1mG = 1e-7 T.
+    p.flux[0] = (data + previous_data[0]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB, 1mG = 1e-7 T.
     previous_data[0] = data;
 
     data = (rx[5] << 8) | rx[4];
     p.flux[1] = (data + previous_data[1]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
     previous_data[1] = data;
 
-    data = (rx[7] << 8) | rx[6];
+    data = -((rx[7] << 8) | rx[6]);
     p.flux[2] = (data + previous_data[2]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
     previous_data[2] = data;
 
@@ -239,7 +241,11 @@ void Iis2mdc::endDma(void)
     p.header.timestamp = time64.Us();
     // 5 ms is added to group delay because of the set/reset averaging used in the flux measurement above.
     p.groupDelay = p.header.timestamp - (p.drdy + launchUs_) / 2 + 5000;
-    if (p.header.status == IIS2MDC_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    if (p.header.status == IIS2MDC_OK)
+    {
+      rotate(p.flux);
+      rxFifo_.write((uint8_t *) &p, sizeof(p));
+    }
   }
 
   spiState_ = IIS2MDC_IDLE_STATE;

@@ -72,9 +72,11 @@ uint32_t Bmi088::init(
   uint16_t cs_pin_g,                                  // Chip Select GPIO Pin
   // Sensor Specific
   uint8_t range_a, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2, 4, 8, 16g for BMI085
-  uint8_t range_g  // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+  uint8_t range_g,  // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+  const double *rotation
 )
 {
+  memcpy(rotation_,rotation, sizeof(double)*9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Bmi088");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
@@ -287,9 +289,9 @@ void Bmi088::endDma(void) // DMA complete routine
 
     int16_t data;
     data = (int16_t) rx[15] << 8 | (int16_t) rx[14];
-    p.accel[0] = -scale_factor * (double) data;
+    p.accel[0] = scale_factor * (double) data;
     data = (int16_t) rx[17] << 8 | (int16_t) rx[16];
-    p.accel[1] = -scale_factor * (double) data;
+    p.accel[1] = scale_factor * (double) data;
 
     // Launch the Accel read for az
     HAL_StatusTypeDef hal_status = spiA_.startDma(BMI_ACCEL_SYNC_CMD, BMI_ACCEL_SYNC_BYTES);
@@ -321,9 +323,9 @@ void Bmi088::endDma(void) // DMA complete routine
 
     int16_t data;
     data = (int16_t) rx[2] << 8 | (int16_t) rx[1];
-    p.gyro[0] = -scale_factor * (double) data;
+    p.gyro[0] = scale_factor * (double) data;
     data = (int16_t) rx[4] << 8 | (int16_t) rx[3];
-    p.gyro[1] = -scale_factor * (double) data;
+    p.gyro[1] = scale_factor * (double) data;
     data = (int16_t) rx[6] << 8 | (int16_t) rx[5];
     p.gyro[2] = scale_factor * (double) data;
 
@@ -332,6 +334,8 @@ void Bmi088::endDma(void) // DMA complete routine
 
     p.header.timestamp = time64.Us();
 
+    rotate(p.gyro);
+    rotate(p.accel);
     rxFifo_.write((uint8_t *) &p, sizeof(p));
 
     seqCount_ = 0;
@@ -381,14 +385,16 @@ bool Bmi088::display(void)
   char name[] = "Bmi088 (imu)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_f32(-0.1, 0.1, p.accel[0] / 9.80665, "ax", "%6.2f", "g");
-    misc_f32(-0.1, 0.1, p.accel[1] / 9.80665, "ay", "%6.2f", "g");
-    misc_f32(-1.2, -0.8, p.accel[2] / 9.80665, "az", "%6.2f", "g");
+    misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
+    misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
+    misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");
+    double a = sqrt(p.accel[0]*p.accel[0]+p.accel[1]*p.accel[1]+p.accel[2]*p.accel[2]);
+    misc_f32(0.8, 1.2, a / 9.80665, "|a|", "%6.2f", "g");
 
     misc_f32(-0.5, 0.5, p.gyro[0] * 57.2958, "p", "%6.2f", "dps");
     misc_f32(-0.5, 0.5, p.gyro[1] * 57.2958, "q", "%6.2f", "dps");
     misc_f32(-0.5, 0.5, p.gyro[2] * 57.2958, "r", "%6.2f", "dps");
-    misc_f32(18, 40, p.temperature - 273.15, "Temp", "%5.1f", "C");
+    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_printf("Count %7.3f s  |", p.dataTime);
 
     misc_printf("\n");

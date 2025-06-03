@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_ROSFLIGHT.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_ROSFLIGHT_XML_HASH -9168130151729935904
+#define MAVLINK_ROSFLIGHT_XML_HASH -7137736376506596709
 
 #ifdef __cplusplus
 extern "C" {
@@ -236,36 +236,7 @@ typedef enum MAV_VTOL_STATE
 typedef enum MAV_COMPONENT
 {
    MAV_COMP_ID_ALL=0, /*  | */
-   MAV_COMP_ID_CAMERA=100, /*  | */
-   MAV_COMP_ID_SERVO1=140, /*  | */
-   MAV_COMP_ID_SERVO2=141, /*  | */
-   MAV_COMP_ID_SERVO3=142, /*  | */
-   MAV_COMP_ID_SERVO4=143, /*  | */
-   MAV_COMP_ID_SERVO5=144, /*  | */
-   MAV_COMP_ID_SERVO6=145, /*  | */
-   MAV_COMP_ID_SERVO7=146, /*  | */
-   MAV_COMP_ID_SERVO8=147, /*  | */
-   MAV_COMP_ID_SERVO9=148, /*  | */
-   MAV_COMP_ID_SERVO10=149, /*  | */
-   MAV_COMP_ID_SERVO11=150, /*  | */
-   MAV_COMP_ID_SERVO12=151, /*  | */
-   MAV_COMP_ID_SERVO13=152, /*  | */
-   MAV_COMP_ID_SERVO14=153, /*  | */
-   MAV_COMP_ID_GIMBAL=154, /*  | */
-   MAV_COMP_ID_LOG=155, /*  | */
-   MAV_COMP_ID_ADSB=156, /*  | */
-   MAV_COMP_ID_OSD=157, /* On Screen Display (OSD) devices for video links | */
-   MAV_COMP_ID_PERIPHERAL=158, /* Generic autopilot peripheral component ID. Meant for devices that do not implement the parameter sub-protocol | */
-   MAV_COMP_ID_MAPPER=180, /*  | */
-   MAV_COMP_ID_MISSIONPLANNER=190, /*  | */
-   MAV_COMP_ID_PATHPLANNER=195, /*  | */
-   MAV_COMP_ID_IMU=200, /*  | */
-   MAV_COMP_ID_IMU_2=201, /*  | */
-   MAV_COMP_ID_IMU_3=202, /*  | */
-   MAV_COMP_ID_GPS=220, /*  | */
-   MAV_COMP_ID_UDP_BRIDGE=240, /*  | */
-   MAV_COMP_ID_UART_BRIDGE=241, /*  | */
-   MAV_COMP_ID_SYSTEM_CONTROL=250, /*  | */
+   MAV_COMP_ID_ROSFLIGHT_FIRMWARE=250, /* Rosflight Firmware ID | */
    MAV_COMPONENT_ENUM_END=251, /*  | */
 } MAV_COMPONENT;
 #endif

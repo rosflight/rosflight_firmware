@@ -72,8 +72,11 @@ uint32_t Adis165xx::init(
   // ADIS165xx initializers
   GPIO_TypeDef * reset_port, // Reset GPIO Port
   uint16_t reset_pin,        // Reset GPIO Pin
-  TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us)
+  TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
+  const double *rotation
+)
 {
+  memcpy(rotation_, rotation, sizeof(double)*9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Adis165xx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
@@ -260,15 +263,20 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       p.drdy = drdy_;
       p.groupDelay = groupDelay_;
       p.header.status = (uint16_t) data[1];
-      p.gyro[0] = -val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.gyro[1] = -val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
+      p.gyro[0] = val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
+      p.gyro[1] = val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
       p.gyro[2] = val(rx + 12) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.accel[0] = -val(rx + 16) * 0.01225;             // m/s^2
-      p.accel[1] = -val(rx + 20) * 0.01225;             // m/s^2
+      p.accel[0] = val(rx + 16) * 0.01225;             // m/s^2
+      p.accel[1] = val(rx + 20) * 0.01225;             // m/s^2
       p.accel[2] = val(rx + 24) * 0.01225;              // m/s^2
       p.temperature = (double) data[14] * 0.1 + 273.15; // K
       p.dataTime = (double) ((uint16_t) data[15]) / sampleRateHz_;
-      if (p.header.status == ADIS_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+      if (p.header.status == ADIS_OK)
+      {
+        rotate(p.gyro);
+        rotate(p.accel);
+        rxFifo_.write((uint8_t *) &p, sizeof(p));
+      }
     }
   }
 }
@@ -306,9 +314,11 @@ bool Adis165xx::display(void)
   char name[] = "Adis165xx (imu)";
   if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_f32(-0.1, 0.1, p.accel[0] / 9.80665, "ax", "%6.2f", "g");
-    misc_f32(-0.1, 0.1, p.accel[1] / 9.80665, "ay", "%6.2f", "g");
-    misc_f32(-1.1, -0.9, p.accel[2] / 9.80665, "az", "%6.2f", "g");
+    misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
+    misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
+    misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");
+    double a = sqrt(p.accel[0]*p.accel[0]+p.accel[1]*p.accel[1]+p.accel[2]*p.accel[2]);
+    misc_f32(0.8, 1.2, a / 9.80665, "|a|", "%6.2f", "g");
 
     misc_f32(-1, 1, (float) p.gyro[0] * 57.2958, "p", "%6.2f", "dps");
     misc_f32(-1, 1, (float) p.gyro[1] * 57.2958, "q", "%6.2f", "dps");

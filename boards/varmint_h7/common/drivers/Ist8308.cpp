@@ -107,8 +107,11 @@ uint32_t Ist8308::init(
   // Driver initializers
   uint16_t sample_rate_hz,
   // I2C initializers
-  I2C_HandleTypeDef * hi2c, uint16_t i2c_address)
+  I2C_HandleTypeDef * hi2c, uint16_t i2c_address,
+  const double *rotation
+)
 {
+  memcpy(rotation_,rotation, sizeof(double)*9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ist8308");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
@@ -231,18 +234,23 @@ void Ist8308::endDma(void)
     p.drdy = drdy_;
     p.groupDelay = p.header.timestamp - (launchUs_ + drdy_) / 2;
     p.header.status = ist8308_i2c_dma_buf[0];
-    p.temperature = 0;
 
-    int16_t iflux = ((int16_t) ist8308_i2c_dma_buf[2] << 8) | (int16_t) ist8308_i2c_dma_buf[1];
-    p.flux[0] = (double) iflux * 1.515e-7; // Tesla
+    if (p.header.status == STAT1_VAL_DRDY)
+    {
+      p.temperature = 0;
 
-    iflux = ((int16_t) ist8308_i2c_dma_buf[4] << 8) | (int16_t) ist8308_i2c_dma_buf[3];
-    p.flux[1] = (double) iflux * 1.1515e-7; // Tesla
+      int16_t iflux = ((int16_t) ist8308_i2c_dma_buf[2] << 8) | (int16_t) ist8308_i2c_dma_buf[1];
+      p.flux[0] = (double) iflux * 1.515e-7; // Tesla
 
-    iflux = ((int16_t) ist8308_i2c_dma_buf[6] << 8) | (int16_t) ist8308_i2c_dma_buf[5];
-    p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
+      iflux = ((int16_t) ist8308_i2c_dma_buf[4] << 8) | (int16_t) ist8308_i2c_dma_buf[3];
+      p.flux[1] = (double) iflux * 1.1515e-7; // Tesla
 
-    if (p.header.status == STAT1_VAL_DRDY) rxFifo_.write((uint8_t *) &p, sizeof(p));
+      iflux = ((int16_t) ist8308_i2c_dma_buf[6] << 8) | (int16_t) ist8308_i2c_dma_buf[5];
+      p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
+
+      rotate(p.flux);
+      rxFifo_.write((uint8_t *) &p, sizeof(p));
+    }
   }
   i2cState_ = IST8308_STATE_ERROR;
   dmaRunning_ = false;

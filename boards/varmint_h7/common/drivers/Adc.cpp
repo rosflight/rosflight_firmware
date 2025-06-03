@@ -218,8 +218,8 @@ bool Adc::display(void)
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "Pwr");
-    misc_f32(22.2 / 1.02, 22.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "Batt", "%5.1f", "V"); //
-    misc_f32(0.1, 1.0, p.volts[ADC_BATTERY_CURRENT], "Batt", "%5.1f", "A");               //
+    misc_f32(22.2 / 1.02, 22.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "BattV", "%5.1f", "V"); //
+    misc_f32(0.1, 1.0, p.volts[ADC_BATTERY_CURRENT], "BattI", "%5.1f", "A");               //
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "PS_FC");
@@ -228,28 +228,28 @@ bool Adc::display(void)
     misc_f32(3.3 / 1.02, 3.3 * 1.02, p.volts[ADC_3V3], "3V3_FC", "%5.1f", "V"); //
 #endif
 #ifdef ADC_3V3_CURRENT
-    misc_f32(0.0, 1.0, p.volts[ADC_3V3_CURRENT], "3V3_FC", "%5.1f", "A"); //
+    misc_f32(0.0, 1.0, p.volts[ADC_3V3_CURRENT], "3I3_FC", "%5.1f", "A"); //
 #endif
 
 #ifdef ADC_5V0
     misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_5V0], "5V0_FC", "%5.1f", "V"); //
 #endif
 #ifdef ADC_5V0_CURRENT
-    misc_f32(0.0, 1.0, p.volts[ADC_5V0_CURRENT], "5V0_FC", "%5.1f", "A"); //
+    misc_f32(0.0, 1.0, p.volts[ADC_5V0_CURRENT], "5I0_FC", "%5.1f", "A"); //
 #endif
 
 #ifdef ADC_12V
     misc_f32(12 / 1.02, 12 * 1.02, p.volts[ADC_12V], "12V_FC", "%5.1f", "V"); //
 #endif
 #ifdef ADC_12V_CURRENT
-    misc_f32(0.0, 1.0, p.volts[ADC_12V_CURRENT], "12V_FC", "%5.1f", "A"); //
+    misc_f32(0.0, 1.0, p.volts[ADC_12V_CURRENT], "12I_FC", "%5.1f", "A"); //
 #endif
 
 #ifdef ADC_SERVO_VOLTS
-    misc_f32(8.2 / 1.02, 8.2 * 1.02, p.volts[ADC_SERVO_VOLTS], "Servo", "%5.1f", "V"); //
+    misc_f32(8.2 / 1.02, 8.2 * 1.02, p.volts[ADC_SERVO_VOLTS], "ServoV", "%5.1f", "V"); //
 #endif
 #ifdef ADC_SERVO_CURRENT
-    misc_f32(0.0, 2.0, p.volts[ADC_SERVO_CURRENT], "Servo", "%5.1f", "A"); //
+    misc_f32(0.0, 2.0, p.volts[ADC_SERVO_CURRENT], "ServoI", "%5.1f", "A"); //
 #endif
     misc_printf("\n");
 
@@ -258,14 +258,14 @@ bool Adc::display(void)
     misc_f32(3.3 / 1.02, 3.3 * 1.02, p.volts[ADC_CC_3V3], "3V3_CC", "%5.1f", "V"); //
 #endif
 #ifdef ADC_CC_3V3_CURRENT
-    misc_f32(0.0, 2.0, p.volts[ADC_CC_3V3_CURRENT], "3V3_CC", "%5.1f", "A"); //
+    misc_f32(0.0, 2.0, p.volts[ADC_CC_3V3_CURRENT], "3I3_CC", "%5.1f", "A"); //
 #endif
 
 #ifdef ADC_CC_5V0
     misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_CC_5V0], "5V0_CC", "%5.1f", "V"); //
 #endif
 #ifdef ADC_CC_5V0_CURRENT
-    misc_f32(0.0, 2.0, p.volts[ADC_CC_5V0_CURRENT], " ", "%5.1f", "A"); //
+    misc_f32(0.0, 2.0, p.volts[ADC_CC_5V0_CURRENT], "5I0_CC", "%5.1f", "A"); //
 #endif
 
     misc_printf("\n");

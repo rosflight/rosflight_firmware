@@ -61,7 +61,8 @@ public:
     uint16_t drdy_pin,                                 // Reset GPIO Pin
     // SPI initializers
     SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-    uint16_t cs_pin                                   // Chip Select GPIO Pin
+    uint16_t cs_pin,                                   // Chip Select GPIO Pin
+    const double *rotation
   );
   // bool poll(void);
   bool poll(uint64_t poll_counter);

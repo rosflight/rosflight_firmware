@@ -151,7 +151,8 @@ void Varmint::init_board(void)
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
   init_status =
     imu0_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
-               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G);
+               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G,
+               BMI088_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
 
@@ -172,7 +173,7 @@ void Varmint::init_board(void)
   // Mag initialization
 
   misc_printf("\n\nIST3808 (mag) Initialization\n");
-  init_status = mag_.init(IST3808_HZ, IST3808_I2C, IST3808_I2C_ADDRESS);
+  init_status = mag_.init(IST3808_HZ, IST3808_I2C, IST3808_I2C_ADDRESS, IST3808_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
 

@@ -51,7 +51,8 @@ public:
     // Driver initializers
     uint16_t sample_rate_hz,
     // I2C initializers
-    I2C_HandleTypeDef * hi2c, uint16_t i2c_address);
+    I2C_HandleTypeDef * hi2c, uint16_t i2c_address,
+    const double *rotation);
 
   bool poll(uint64_t poll_counter);
   void endDma(void);

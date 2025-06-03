@@ -57,7 +57,9 @@ public:
     // ADIS165xx initializers
     GPIO_TypeDef * reset_port, // Reset GPIO Port
     uint16_t reset_pin,        // Reset GPIO Pin
-    TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us);
+    TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
+    const double *rotation
+  );
 
   void endDma(void);
   bool startDma(void);
@@ -65,6 +67,7 @@ public:
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
+  void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}
 
 private:
   // SPI Stuff
