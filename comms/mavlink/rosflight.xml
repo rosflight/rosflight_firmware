@@ -7,13 +7,14 @@ git clone https://github.com/rosflight/mavlink.git
 # Put the rosflight.xml file there if not already there
 
 # Create the .c/h files from that directory
+# If python3 doesn't work install Python2.7 and run with python2.7 instead.
 # in windows:
 rmdir /s v1.0 
-Y
+
 set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
 # e.g., 
 rmdir /s v1.0 
-Y
+
 set PYTHONPATH=%PYTHONPATH%;C:\Projects\mavlink && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
 
 # in linux:
