@@ -126,6 +126,8 @@ private:
   float mix_multirotor_with_motor_parameters(Controller::Output commands);
   float mix_multirotor_without_motor_parameters(Controller::Output commands);
   void select_primary_or_secondary_mixer();
+  void save_primary_mixer_params();
+  void save_secondary_mixer_params();
 
   // clang-format off
 
