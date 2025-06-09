@@ -54,6 +54,11 @@ void RC::init_rc()
   init_switches();
 }
 
+RcStruct * RC::get_rc(void) { return &rc_; }
+float RC::read_chan(uint8_t chan) { return rc_.chan[chan]; }
+
+bool RC::receive(void) { return RF_.board_.rc_read(&rc_); }
+
 void RC::param_change_callback(uint16_t param_id)
 {
   switch (param_id) {
@@ -167,12 +172,12 @@ bool RC::check_rc_lost()
   bool failsafe = false;
 
   // If the board reports that we have lost RC, tell the state manager
-  if (RF_.board_.rc_lost()) {
+  if (rc_.frameLost | rc_.failsafeActivated) {
     failsafe = true;
   } else {
     // go into failsafe if we get an invalid RC command for any channel
     for (int8_t i = 0; i < RF_.params_.get_param_int(PARAM_RC_NUM_CHANNELS); i++) {
-      float pwm = RF_.board_.rc_read(i);
+      float pwm = read_chan(i);
       if (pwm < -0.25 || pwm > 1.25) { failsafe = true; }
     }
   }
@@ -237,7 +242,7 @@ bool RC::run()
 
   // read and normalize stick values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(STICKS_COUNT); channel++) {
-    float pwm = RF_.board_.rc_read(sticks[channel].channel);
+    float pwm = read_chan(sticks[channel].channel);
     if (sticks[channel].one_sided) { // generally only F is one_sided
       stick_values[channel] = pwm;
     } else {
@@ -248,7 +253,7 @@ bool RC::run()
   // read and interpret switch values
   for (uint8_t channel = 0; channel < static_cast<uint8_t>(SWITCHES_COUNT); channel++) {
     if (switches[channel].mapped) {
-      float pwm = RF_.board_.rc_read(switches[channel].channel);
+      float pwm = read_chan(switches[channel].channel);
       if (switches[channel].direction < 0) {
         switch_values[channel] = pwm < 0.2;
       } else {
@@ -276,5 +281,18 @@ bool RC::new_command()
     return false;
   }
 }
+
+uint16_t RC::fake_rx(uint16_t * chan, uint16_t len, bool lost, bool failsafe)
+{
+  len = (len < RC_STRUCT_CHANNELS) ? len : RC_STRUCT_CHANNELS;
+  for (int i = 0; i < len; i++) rc_.chan[i] = (static_cast<float>(chan[i]) - 1000.) / 1000.;
+  rc_.failsafeActivated = failsafe;
+  rc_.frameLost = lost;
+  rc_.nChan = RC_STRUCT_CHANNELS;
+  rc_.header.timestamp = RF_.board_.clock_micros();
+  rc_.header.status = failsafe | lost;
+  run();
+  return len;
+};
 
 } // namespace rosflight_firmware

@@ -142,16 +142,35 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, const turbomath
                              gyro.x, gyro.y, gyro.z, temperature);
   send_message(msg, 0);
 }
+
+#ifdef MAVLINK_MESSAGE_INFO_ROSFLIGHT2_GNSS
+void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
+{
+  mavlink_message_t msg;
+  mavlink_msg_rosflight2_gnss_pack(
+    system_id, compid_, &msg,
+    data.unix_seconds, // Unix time in seconds
+    data.nano, // nanoseconds
+    data.fix_type,
+    data.num_sat,
+    data.lat, data.lon, data.height_ellipsoid,
+    data.vel_n, data.vel_e, data.vel_d,
+    data.h_acc, data.v_acc, data.speed_accy,
+    data.header.timestamp);
+  send_message(msg);
+}
+#else
 void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_gnss_pack(
-    system_id, compid_, &msg, data.time_of_week, data.fix_type, data.time, data.nanos, data.lat,
-    data.lon, data.height, data.vel_n, data.vel_e, data.vel_d, data.h_acc, data.v_acc, data.ecef.x,
+    system_id, compid_, &msg, data.time_of_week, data.fix_type, data.unix_seconds, data.nano, data.lat,
+    data.lon, data.height_ellipsoid, data.vel_n, data.vel_e, data.vel_d, data.h_acc, data.v_acc, data.ecef.x,
     data.ecef.y, data.ecef.z, data.ecef.p_acc, data.ecef.vx, data.ecef.vy, data.ecef.vz,
-    data.ecef.s_acc, data.rosflight_timestamp);
+    data.ecef.s_acc, data.header.timestamp);
   send_message(msg);
 }
+#endif
 
 void Mavlink::send_gnss_full(uint8_t system_id, const GNSSFull & full)
 {
@@ -171,19 +190,19 @@ void Mavlink::send_gnss_full(uint8_t system_id, const GNSSFull & full)
   data.num_sat = full.num_sat;
   data.lon = full.lon;
   data.lat = full.lat;
-  data.height = full.height;
+  data.height = full.height_ellipsoid;
   data.height_msl = full.height_msl;
   data.h_acc = full.h_acc;
   data.v_acc = full.v_acc;
   data.vel_n = full.vel_n;
   data.vel_e = full.vel_e;
   data.vel_d = full.vel_d;
-  data.g_speed = full.g_speed;
-  data.head_mot = full.head_mot;
-  data.s_acc = full.s_acc;
-  data.head_acc = full.head_acc;
-  data.p_dop = full.p_dop;
-  data.rosflight_timestamp = full.rosflight_timestamp;
+  data.g_speed = full.ground_speed;
+  data.head_mot = full.course;
+  data.s_acc = full.speed_accy;
+  data.head_acc = full.course_accy;
+  data.p_dop = full.dop;
+  data.rosflight_timestamp = full.header.timestamp;
   mavlink_msg_rosflight_gnss_full_encode(system_id, compid_, &msg, &data);
   send_message(msg);
 }
@@ -219,21 +238,21 @@ void Mavlink::send_mag(uint8_t system_id, const turbomath::Vector & mag)
   send_message(msg);
 }
 
-void Mavlink::send_named_value_int(uint8_t system_id, uint32_t timestamp_ms,
-                                   const char * const name, int32_t value)
-{
-  mavlink_message_t msg;
-  mavlink_msg_named_value_int_pack(system_id, compid_, &msg, timestamp_ms, name, value);
-  send_message(msg);
-}
-
-void Mavlink::send_named_value_float(uint8_t system_id, uint32_t timestamp_ms,
-                                     const char * const name, float value)
-{
-  mavlink_message_t msg;
-  mavlink_msg_named_value_float_pack(system_id, compid_, &msg, timestamp_ms, name, value);
-  send_message(msg);
-}
+//void Mavlink::send_named_value_int(uint8_t system_id, uint32_t timestamp_ms,
+//                                   const char * const name, int32_t value)
+//{
+//  mavlink_message_t msg;
+//  mavlink_msg_named_value_int_pack(system_id, compid_, &msg, timestamp_ms, name, value);
+//  send_message(msg);
+//}
+//
+//void Mavlink::send_named_value_float(uint8_t system_id, uint32_t timestamp_ms,
+//                                     const char * const name, float value)
+//{
+//  mavlink_message_t msg;
+//  mavlink_msg_named_value_float_pack(system_id, compid_, &msg, timestamp_ms, name, value);
+//  send_message(msg);
+//}
 
 void Mavlink::send_output_raw(uint8_t system_id, uint32_t timestamp_ms, const float raw_outputs[14])
 {

@@ -452,9 +452,9 @@ void Mixer::load_secondary_mixer_values()
 void Mixer::init_PWM()
 {
   if (primary_mixer_is_selected_) {
-    RF_.board_.pwm_init_multi(primary_mixer_.default_pwm_rate, NUM_MIXER_OUTPUTS);
+    RF_.board_.pwm_init(primary_mixer_.default_pwm_rate, NUM_MIXER_OUTPUTS);
   } else {
-    RF_.board_.pwm_init_multi(esc_calibration_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
+    RF_.board_.pwm_init(esc_calibration_mixing.default_pwm_rate, NUM_MIXER_OUTPUTS);
   }
 }
 

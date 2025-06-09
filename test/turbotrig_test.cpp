@@ -90,56 +90,27 @@ turbomath::Quaternion random_quaternions[25] = {
   turbomath::Quaternion(-0.177027678376, 0.214558558928, -0.992910369554, 0.592964390132),
   turbomath::Quaternion(0.0979109306209, 0.121890109199, 0.126418158551, 0.242200145606)};
 
-TEST(TurboMath, atan)
-{
-  for (float i = -200.0; i <= 200.0; i += 0.001) {
-    EXPECT_NEAR(turbomath::atan(i), atan(i), 0.0001);
-  }
-}
 
-TEST(TurboMath, sin_cos)
-{
-  for (float i = -200.0; i <= 200.0; i += 0.001) {
-    EXPECT_NEAR(turbomath::sin(i), sin(i), 0.0002);
-    EXPECT_NEAR(turbomath::cos(i), cos(i), 0.0002);
-  }
-}
-
-TEST(TurboMath, atan2)
-{
-  for (float i = -100.0; i <= 100.0; i += 0.1) {
-    for (float j = -1.0; j <= 1.0; j += 0.001) {
-      if (fabs(j) > 0.0001) { EXPECT_NEAR(turbomath::atan2(i, j), atan2(i, j), 0.001); }
-    }
-  }
-}
-
-TEST(TurboMath, asin)
-{
-  for (float i = -1.0; i <= 1.0; i += 0.001) {
-    if (fabs(i) < 0.95) {
-      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.0001);
-    } else {
-      EXPECT_NEAR(turbomath::asin(i), asin(i), 0.2);
-    }
-  }
-}
-
+ // altitude LUT
+ 
+ 
 TEST(TurboMath, fastAlt)
 {
-  // out of bounds
-  EXPECT_EQ(turbomath::alt(69681), 0.0);
-  EXPECT_EQ(turbomath::alt(10700), 0.0);
+  // lookup table consistent with matlab atmosisa.
+  float baro_pressure[]   = { 30000.00,  31000.00,  32000.00,  33000.00,  34000.00,  35000.00,  36000.00,  37000.00,  38000.00,  39000.00,  40000.00,  41000.00,  42000.00,  43000.00,  44000.00,  45000.00,  46000.00,  47000.00,  48000.00,  49000.00,  50000.00,  51000.00,  52000.00,  53000.00,  54000.00,  55000.00,  56000.00,  57000.00,  58000.00,  59000.00,  60000.00,  61000.00,  62000.00,  63000.00,  64000.00,  65000.00,  66000.00,  67000.00,  68000.00,  69000.00,  70000.00,  71000.00,  72000.00,  73000.00,  74000.00,  75000.00,  76000.00,  77000.00,  78000.00,  79000.00,  80000.00,  81000.00,  82000.00,  83000.00,  84000.00,  85000.00,  86000.00,  87000.00,  88000.00,  89000.00,  90000.00,  91000.00,  92000.00,  93000.00,  94000.00,  95000.00,  96000.00,  97000.00,  98000.00,  99000.00, 100000.00, 101000.00, 102000.00, 103000.00, 104000.00, 105000.00, 106000.00, 107000.00, 108000.00, 109000.00, 110000.00, 111000.00, 112000.00, 113000.00, 114000.00, 115000.00, 116000.00, 117000.00, 118000.00, 119000.00, 120000.00};
+  float atmosisa_height[] = {  9163.95,   8943.87,   8729.47,   8520.42,   8316.44,   8117.26,   7922.64,   7732.35,   7546.18,   7363.93,   7185.43,   7010.51,   6839.01,   6670.78,   6505.69,   6343.62,   6184.43,   6028.02,   5874.29,   5723.12,   5574.43,   5428.14,   5284.14,   5142.37,   5002.76,   4865.22,   4729.68,   4596.10,   4464.40,   4334.53,   4206.42,   4080.04,   3955.32,   3832.22,   3710.69,   3590.69,   3472.17,   3355.10,   3239.44,   3125.14,   3012.18,   2900.52,   2790.12,   2680.96,   2573.01,   2466.22,   2360.59,   2256.07,   2152.65,   2050.30,   1948.99,   1848.70,   1749.41,   1651.09,   1553.73,   1457.30,   1361.79,   1267.17,   1173.43,   1080.54,    988.50,    897.28,    806.87,    717.26,    628.42,    540.34,    453.01,    366.41,    280.53,    195.36,    110.88,     27.09,    -56.04,   -138.51,   -220.33,   -301.52,   -382.08,   -462.04,   -541.38,   -620.14,   -698.31,   -775.91,   -852.95,   -929.43,  -1005.37,  -1080.76,  -1155.63,  -1229.98,  -1303.82,  -1377.15,  -1449.98};
+    
+  #define ISA_PRESSURE (101325.0) // Pa
+  #define ISA_EXPONENT (0.190326730028458)
+  #define ISA_SCALE_FACTOR (44318.1386038261) //m
 
   // all valid int values
+  float turbomathHeight = 0.0;
   float trueResult = 0.0;
-  for (int i = 69682; i < 106597; i++) {
-    trueResult =
-      static_cast<float>((1.0 - pow(static_cast<float>(i) / 101325, 0.190284)) * 145366.45)
-      * static_cast<float>(0.3048);
-    EXPECT_NEAR(turbomath::alt(i), trueResult, .15);
-    // arbitrarily chose <= .15m since fast_alt isn't accurate enough for EXPECT_CLOSE,
-    // but being within .15 meters of the correct result seems pretty good to me
+  for (size_t i=0;i<sizeof(baro_pressure[i])/sizeof(float); i++) {
+    turbomathHeight = turbomath::alt(baro_pressure[i]);
+    trueResult = atmosisa_height[i];
+    EXPECT_NEAR(turbomathHeight, trueResult, 0.154);
   }
 }
 

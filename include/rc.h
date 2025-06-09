@@ -32,7 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_RC_H
 #define ROSFLIGHT_FIRMWARE_RC_H
 
-#include "interface/param_listener.h"
+#include "rosflight_structs.h"
+
+#include "param_listener.h"
 
 #include <cstdbool>
 #include <cstdint>
@@ -72,7 +74,16 @@ public:
   bool new_command();
   void param_change_callback(uint16_t param_id) override;
 
+  RcStruct * get_rc(void);
+  float read_chan(uint8_t chan);
+  bool receive(void);
+
+  // _FAKE_ RC receive. Use set_chan for testing only!
+  uint16_t fake_rx(uint16_t * chan, uint16_t len, bool lost, bool failsafe);
+
 private:
+  RcStruct rc_ = {};
+
   ROSflight & RF_;
 
   typedef struct
