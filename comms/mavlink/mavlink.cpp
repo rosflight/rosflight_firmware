@@ -143,67 +143,25 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, const turbomath
   send_message(msg, 0);
 }
 
-#ifdef MAVLINK_MESSAGE_INFO_ROSFLIGHT2_GNSS
 void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
 {
   mavlink_message_t msg;
-  mavlink_msg_rosflight2_gnss_pack(
+  mavlink_msg_rosflight_gnss_pack(
     system_id, compid_, &msg,
     data.unix_seconds, // Unix time in seconds
     data.nano, // nanoseconds
     data.fix_type,
     data.num_sat,
-    data.lat, data.lon, data.height_ellipsoid,
-    data.vel_n, data.vel_e, data.vel_d,
-    data.h_acc, data.v_acc, data.speed_accy,
-    data.header.timestamp);
-  send_message(msg);
-}
-#else
-void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
-{
-  mavlink_message_t msg;
-  mavlink_msg_rosflight_gnss_pack(
-    system_id, compid_, &msg, data.time_of_week, data.fix_type, data.unix_seconds, data.nano, data.lat,
-    data.lon, data.height_ellipsoid, data.vel_n, data.vel_e, data.vel_d, data.h_acc, data.v_acc, data.ecef.x,
-    data.ecef.y, data.ecef.z, data.ecef.p_acc, data.ecef.vx, data.ecef.vy, data.ecef.vz,
-    data.ecef.s_acc, data.header.timestamp);
-  send_message(msg);
-}
-#endif
-
-void Mavlink::send_gnss_full(uint8_t system_id, const GNSSFull & full)
-{
-  mavlink_message_t msg;
-  mavlink_rosflight_gnss_full_t data = {};
-  data.time_of_week = full.time_of_week;
-  data.year = full.year;
-  data.month = full.month;
-  data.day = full.day;
-  data.hour = full.hour;
-  data.min = full.min;
-  data.sec = full.sec;
-  data.valid = full.valid;
-  data.t_acc = full.t_acc;
-  data.nano = full.nano;
-  data.fix_type = full.fix_type;
-  data.num_sat = full.num_sat;
-  data.lon = full.lon;
-  data.lat = full.lat;
-  data.height = full.height_ellipsoid;
-  data.height_msl = full.height_msl;
-  data.h_acc = full.h_acc;
-  data.v_acc = full.v_acc;
-  data.vel_n = full.vel_n;
-  data.vel_e = full.vel_e;
-  data.vel_d = full.vel_d;
-  data.g_speed = full.ground_speed;
-  data.head_mot = full.course;
-  data.s_acc = full.speed_accy;
-  data.head_acc = full.course_accy;
-  data.p_dop = full.dop;
-  data.rosflight_timestamp = full.header.timestamp;
-  mavlink_msg_rosflight_gnss_full_encode(system_id, compid_, &msg, &data);
+    (double)data.lat * 1e-7, // Convert 100's of nanodegs into deg (DDS format)
+    (double)data.lon * 1e-7, // Convert 100's of nanodegs into deg (DDS format)
+    (float)data.height_ellipsoid * 1e-3, // mm to m
+    (float)data.vel_n * 1e-3, // mm/s to m/s
+    (float)data.vel_e * 1e-3, // mm/s to m/s
+    (float)data.vel_d * 1e-3, // mm/s to m/s
+    (float)data.h_acc * 1e-3, // mm/s to m/s
+    (float)data.v_acc * 1e-3, // mm/s to m/s
+    (float)data.speed_accy * 1e-3, // mm/s to m/s
+    (float)data.header.timestamp);
   send_message(msg);
 }
 

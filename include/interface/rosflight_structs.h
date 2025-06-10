@@ -168,7 +168,6 @@ typedef struct
 {
   bool imu;
   bool gnss;
-  bool gnss_full;
   bool baro;
   bool mag;
   bool diff_pressure;

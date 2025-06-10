@@ -460,16 +460,6 @@ void CommManager::send_gnss(void)
   }
 }
 
-void CommManager::send_gnss_full()
-{
-  const GNSSFull & gnss_full = *RF_.sensors_.get_gnss();
-
-  if (gnss_full.time_of_week != last_sent_gnss_full_tow_) {
-    comm_link_.send_gnss_full(sysid_, gnss_full);
-    last_sent_gnss_full_tow_ = gnss_full.time_of_week;
-  }
-}
-
 void CommManager::send_1hz_heartbeat(void)
 {
   uint64_t time_us = RF_.board_.clock_micros();
@@ -518,8 +508,6 @@ void CommManager::stream(got_flags got)
   if (got.battery) { send_battery_status(); }
   // GPS data (GNSS Packed)
   if (got.gnss) { send_gnss(); }
-  // GPS full data (not needed)
-  //if (got.gnss_full) { send_gnss_full(); }
 
   send_1hz_heartbeat();
 
