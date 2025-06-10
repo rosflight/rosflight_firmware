@@ -154,7 +154,7 @@ void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
     data.num_sat,
     (double)data.lat * 1e-7, // Convert 100's of nanodegs into deg (DDS format)
     (double)data.lon * 1e-7, // Convert 100's of nanodegs into deg (DDS format)
-    (float)data.height_ellipsoid * 1e-3, // mm to m
+    (float)data.height_msl * 1e-3, // mm to m
     (float)data.vel_n * 1e-3, // mm/s to m/s
     (float)data.vel_e * 1e-3, // mm/s to m/s
     (float)data.vel_d * 1e-3, // mm/s to m/s
