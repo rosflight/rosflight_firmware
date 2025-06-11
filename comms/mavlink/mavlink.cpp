@@ -143,7 +143,7 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, const turbomath
   send_message(msg, 0);
 }
 
-void Mavlink::send_gnss(uint8_t system_id, const GNSSData & data)
+void Mavlink::send_gnss(uint8_t system_id, const GnssStruct & data)
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_gnss_pack(

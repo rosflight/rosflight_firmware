@@ -160,10 +160,6 @@ typedef struct //__attribute__((__packed__))
   } ecef;
 } GnssStruct;
 
-typedef GnssStruct GNSSData;
-typedef GnssStruct GNSSFull;
-
-
 typedef struct
 {
   bool imu;

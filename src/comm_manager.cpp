@@ -452,7 +452,7 @@ void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
 
 void CommManager::send_gnss(void)
 {
-  const GNSSData & gnss_data = *RF_.sensors_.get_gnss();
+  const GnssStruct & gnss_data = *RF_.sensors_.get_gnss();
 
   if (gnss_data.time_of_week != last_sent_gnss_tow_) {
     comm_link_.send_gnss(sysid_, gnss_data);
