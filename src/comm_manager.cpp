@@ -452,21 +452,11 @@ void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
 
 void CommManager::send_gnss(void)
 {
-  const GNSSData & gnss_data = *RF_.sensors_.get_gnss();
+  const GnssStruct & gnss_data = *RF_.sensors_.get_gnss();
 
   if (gnss_data.time_of_week != last_sent_gnss_tow_) {
     comm_link_.send_gnss(sysid_, gnss_data);
     last_sent_gnss_tow_ = gnss_data.time_of_week;
-  }
-}
-
-void CommManager::send_gnss_full()
-{
-  const GNSSFull & gnss_full = *RF_.sensors_.get_gnss();
-
-  if (gnss_full.time_of_week != last_sent_gnss_full_tow_) {
-    comm_link_.send_gnss_full(sysid_, gnss_full);
-    last_sent_gnss_full_tow_ = gnss_full.time_of_week;
   }
 }
 
@@ -518,8 +508,6 @@ void CommManager::stream(got_flags got)
   if (got.battery) { send_battery_status(); }
   // GPS data (GNSS Packed)
   if (got.gnss) { send_gnss(); }
-  // GPS full data (not needed)
-  //if (got.gnss_full) { send_gnss_full(); }
 
   send_1hz_heartbeat();
 

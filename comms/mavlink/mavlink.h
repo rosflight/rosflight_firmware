@@ -88,8 +88,7 @@ public:
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
   void send_version(uint8_t system_id, const char * const version) override;
-  void send_gnss(uint8_t system_id, const GNSSData & data) override;
-  void send_gnss_full(uint8_t system_id, const GNSSFull & full) override;
+  void send_gnss(uint8_t system_id, const GnssStruct & data) override;
   void send_error_data(uint8_t system_id, const StateManager::BackupData & error_data) override;
   void send_battery_status(uint8_t system_id, float voltage, float current) override;
 

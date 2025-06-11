@@ -322,16 +322,15 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
 			<field type="uint32_t" name="reset_count"/>
 			<field type="uint32_t" name="doRearm"/>
 		</message>
-		<!--
-		<message id="197" name="ROSFLIGHT2_GNSS">
-			<description>Rosflight2 GNSS message</description>
+		<message id="197" name="ROSFLIGHT_GNSS">
+			<description>Rosflight GNSS message</description>
 			<field type="int64_t" name="seconds">Unix time, in seconds</field>
 			<field type="int32_t" name="nanos">Fractional Unix time</field>
 			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE">GNSS fix type</field>
 			<field type="uint8_t" name="num_sat">Number of satellites seen</field>
 			<field type="double" name="lat">In deg DDS format</field>
 			<field type="double" name="lon">In deg DDs format</field>
-			<field type="float" name="height">meters</field>
+			<field type="float" name="height">meters, MSL</field>
 			<field type="float" name="vel_n">meters per second</field>
 			<field type="float" name="vel_e">meters per second</field>
 			<field type="float" name="vel_d">meters per second</field>
@@ -339,65 +338,6 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
 			<field type="float" name="v_acc">meters</field>
 			<field type="float" name="s_acc">meters</field>
 			<field type="uint64_t" name="rosflight_timestamp">microseconds, estimated firmware timestamp for the time of validity of the gnss data</field>
-		</message>
-		-->
-		<message id="197" name="ROSFLIGHT_GNSS">
-			<description>Rosflight ECEF GPS Message</description>
-			<!-- time_of_week is only for determining which packets where calculated at the same time.
-				 Use the time and nanos field to get GPS time. -->
-			<field type="uint32_t" name="time_of_week"/>
-			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE"/>
-			<field type="uint64_t" name="time"/> <!--unix time, in seconds -->
-			<field type="uint64_t" name="nanos"/>
-			<field type="int32_t" name="lat"/> <!-- deg*10^-7 -->
-			<field type="int32_t" name="lon"/> <!-- deg*10^-7 -->
-			<field type="int32_t" name="height"/> <!-- mm -->
-			<field type="int32_t" name="vel_n"/> <!-- mm/s -->
-			<field type="int32_t" name="vel_e"/> <!-- mm/s -->
-			<field type="int32_t" name="vel_d"/> <!-- mm/s -->
-			<field type="uint32_t" name="h_acc"/> <!-- mm -->
-			<field type="uint32_t" name="v_acc"/> <!-- mm -->
-			<field type="int32_t" name="ecef_x"/> <!-- cm -->
-			<field type="int32_t" name="ecef_y"/> <!-- cm -->
-			<field type="int32_t" name="ecef_z"/> <!-- cm -->
-			<field type="uint32_t" name="p_acc"/> <!-- cm -->
-			<field type="int32_t" name="ecef_v_x"/> <!-- cm/s -->
-			<field type="int32_t" name="ecef_v_y"/> <!-- cm/s -->
-			<field type="int32_t" name="ecef_v_z"/> <!-- cm/s -->
-			<field type="uint32_t" name="s_acc"/> <!-- cm/s -->
-			<field type="uint64_t" name="rosflight_timestamp"/> <!-- microseconds -->
-		</message>
-		<message id="198" name="ROSFLIGHT_GNSS_FULL">
-			<description>Rosflight Full GPS Message</description>
-			<!-- time_of_week is only for determining which packets where calculated at the same time.
-				 Use the various time and date fields to get GPS time. -->
-			<field type="uint32_t" name="time_of_week"/>
-			<field type="uint16_t" name="year"/>
-			<field type="uint8_t" name="month"/>
-			<field type="uint8_t" name="day"/>
-			<field type="uint8_t" name="hour"/>
-			<field type="uint8_t" name="min"/>
-			<field type="uint8_t" name="sec"/>
-			<field type="uint8_t" name="valid"/>
-			<field type="uint32_t" name="t_acc"/> <!-- ns -->
-			<field type="int32_t" name="nano"/> <!-- ns -->
-			<field type="uint8_t" name="fix_type" enum="GNSS_FIX_TYPE"/>
-			<field type="uint8_t" name="num_sat"/>
-			<field type="int32_t" name="lon"/> <!-- deg *10^-7 -->
-			<field type="int32_t" name="lat"/> <!-- deg *10^-7 -->
-			<field type="int32_t" name="height"/> <!-- mm above elipsoid -->
-			<field type="int32_t" name="height_msl"/> <!-- mm above mean sea level -->
-			<field type="uint32_t" name="h_acc"/> <!-- mm -->
-			<field type="uint32_t" name="v_acc"/> <!-- mm -->
-			<field type="int32_t" name="vel_n"/> <!-- mm/s -->
-			<field type="int32_t" name="vel_e"/> <!-- mm/s -->
-			<field type="int32_t" name="vel_d"/> <!-- mm/s -->
-			<field type="int32_t" name="g_speed"/> <!-- mm/s -->
-			<field type="int32_t" name="head_mot"/> <!--deg *10^-5 -->
-			<field type="uint32_t" name="s_acc"/> <!--mm/s-->
-			<field type="uint32_t" name="head_acc"/> <!-- deg * 10^-5 -->
-			<field type="uint16_t" name="p_dop"/> <!-- *.01 -->
-			<field type="uint64_t" name="rosflight_timestamp"/> <!-- microseconds -->
 		</message>
 		<message id="199" name="ROSFLIGHT_BATTERY_STATUS">
 			<description>Battery data</description>

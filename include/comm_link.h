@@ -165,8 +165,7 @@ public:
                            int16_t num_errors, int16_t loop_time_us) = 0;
   virtual void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) = 0;
   virtual void send_version(uint8_t system_id, const char * const version) = 0;
-  virtual void send_gnss(uint8_t system_id, const GNSSData & data) = 0;
-  virtual void send_gnss_full(uint8_t system_id, const GNSSFull & data) = 0;
+  virtual void send_gnss(uint8_t system_id, const GnssStruct & data) = 0;
   virtual void send_error_data(uint8_t system_id, const StateManager::BackupData & error_data) = 0;
   virtual void send_battery_status(uint8_t system_id, float voltage, float current) = 0;
 

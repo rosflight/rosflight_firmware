@@ -247,7 +247,10 @@ void Mixer::init_mixing()
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                             "Inverting selected mixing matrix...");
       primary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
-      
+
+      // Save the primary mixer values to the params
+      save_primary_mixer_params();
+
       // If using a canned mixer but the USE_MOTOR_PARAM is set to 1 (true), raise a warning.
       // Motor parameters (thus motor speed/voltage calculations) should not be used with the canned
       // mixers, since the output will be vanishingly small. Check online documentation for more 
@@ -262,6 +265,9 @@ void Mixer::init_mixing()
     } else {
       // Don't invert the fixedwing mixers
       primary_mixer_ = *array_of_mixers_[mixer_choice];
+
+      // Save the primary mixer values to the params
+      save_primary_mixer_params();
 
       // For the fixedwing canned mixers, the RC_F_AXIS parameter should be set to 0 (X-AXIS).
       // Otherwise, the aircraft will arm and appear to be ok, but will zero out any RC throttle
@@ -305,6 +311,7 @@ void Mixer::init_mixing()
         "Secondary mixer defaulting to primary!");
     
     secondary_mixer_ = primary_mixer_;
+    save_secondary_mixer_params();
   } else if (mixer_choice == CUSTOM) {
     // Load the custom mixer for the secondary mixer based off the saved parameters.
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
@@ -317,10 +324,13 @@ void Mixer::init_mixing()
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                           "Inverting selected mixing matrix...");
 
+    // Invert the secondary mixer
     secondary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
+    save_secondary_mixer_params();
   } else {
     // Don't invert the fixedwing mixers
     secondary_mixer_ = *array_of_mixers_[mixer_choice];
+    save_secondary_mixer_params();
   }
 
   init_PWM();
@@ -393,6 +403,46 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   }
 
   return inverted_mixer;
+}
+
+void Mixer::save_primary_mixer_params()
+{
+  // Save the mixer header values
+  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
+    // This assumes the parameters are stored in order in the param enum
+    int output_param_index = (int) PARAM_PRIMARY_MIXER_OUTPUT_0 + i;
+    int pwm_rate_param_index = (int) PARAM_PRIMARY_MIXER_PWM_RATE_0 + i;
+    RF_.params_.set_param_int(output_param_index, primary_mixer_.output_type[i]);
+    RF_.params_.set_param_float(pwm_rate_param_index, primary_mixer_.default_pwm_rate[i]);
+  }
+
+  // Save the mixer values to the firmware parameters
+  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
+    // This assumes the parameters are stored in order in the param enum
+    int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
+    RF_.params_.set_param_float(param_index++, primary_mixer_.Fx[i]);
+    RF_.params_.set_param_float(param_index++, primary_mixer_.Fy[i]);
+    RF_.params_.set_param_float(param_index++, primary_mixer_.Fz[i]);
+    RF_.params_.set_param_float(param_index++, primary_mixer_.Qx[i]);
+    RF_.params_.set_param_float(param_index++, primary_mixer_.Qy[i]);
+    RF_.params_.set_param_float(param_index, primary_mixer_.Qz[i]);
+  }
+}
+
+void Mixer::save_secondary_mixer_params()
+{
+  // Save the mixer values to the firmware parameters
+  // The secondary mixer does not have header values (they are the same as the primary mixer)
+  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
+    // This assumes the parameters are stored in order in the param enum
+    int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
+    RF_.params_.set_param_float(param_index++, secondary_mixer_.Fx[i]);
+    RF_.params_.set_param_float(param_index++, secondary_mixer_.Fy[i]);
+    RF_.params_.set_param_float(param_index++, secondary_mixer_.Fz[i]);
+    RF_.params_.set_param_float(param_index++, secondary_mixer_.Qx[i]);
+    RF_.params_.set_param_float(param_index++, secondary_mixer_.Qy[i]);
+    RF_.params_.set_param_float(param_index, secondary_mixer_.Qz[i]);
+  }
 }
 
 void Mixer::load_primary_mixer_values()
