@@ -42,7 +42,7 @@
 
 #define SANDBOX false
 #define BOARD_STATUS_PRINT false
-#define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
+#define USE_TELEM 1 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
 #define MISC_HUART (&huart2)

@@ -113,51 +113,70 @@ enum class GNSSFixType // quality from GGA
   END = 8
 };
 
+//typedef struct //__attribute__((__packed__))
+//{
+//  PacketHeader header; //
+//  uint64_t pps;        // most recent pps timestamp
+//  int64_t unix_seconds; // Unix time, in seconds (redundant)
+//  // GPS Time
+//  uint32_t time_of_week; //     / PVT
+//  uint16_t year;         // RMC / PVT
+//  uint8_t month;         // RMC / PVT
+//  uint8_t day;           // RMC / PVT
+//  uint8_t hour;          // GGA RMC UTC Time / PVT
+//  uint8_t min;           // GGA RMC UTC Time / PVT
+//  uint8_t sec;           // GGA RMC UTC Time / PVT
+//  int32_t unix_nanos;    // GGA RMC UTC Time (ms) / PVT nano (this and unix_seconds adjusted so unitx_nanos is positive)
+//  uint32_t t_acc;
+//  int32_t lon;              // GGA RMC / PVT
+//  int32_t lat;              // GGA RMC / PVT
+//  int32_t height_ellipsoid; //GGA RMC (computed) / PVT
+//  int32_t height_msl;       // GGA / PVT
+//  uint32_t h_acc;           // GST (lat and lon) / PVT hAcc
+//  uint32_t v_acc;           // GST / PVT vAcc
+//  int32_t ground_speed;     // RMC / PVT gSpeed
+//  int32_t course;           // RMC / PVT headMot
+//  int32_t course_accy;
+//  int32_t vel_n;       // no / PVT (RMC compute from ground velocity)
+//  int32_t vel_e;       // no / PVT (RMC compute from ground velocity)
+//  int32_t vel_d;       // no / PVT
+//  uint32_t speed_accy; // no /PVT (sACC) speed accuracy
+//  uint32_t mag_var;    // RMC / PVT
+//  // Fix
+//  uint8_t fix_type; // RMC (posmode), compute from GGA(quality) /PVT flags
+//  uint8_t valid;    // RMC (status), compute from GGA (0 or 6)
+//  uint8_t num_sat;  // GGA
+//  uint16_t dop;     // GGA RMC / PVT (pdop)
+//  struct
+//  {
+//    int32_t x;      // cm // not available on NMEA
+//    int32_t y;      // cm
+//    int32_t z;      // cm
+//    uint32_t p_acc; // cm
+//    int32_t vx;     // cm/s
+//    int32_t vy;     // cm/s
+//    int32_t vz;     // cm/s
+//    uint32_t s_acc; // cm/s
+//  } ecef;
+//} GnssStruct;
+
 typedef struct //__attribute__((__packed__))
 {
-  PacketHeader header; //
-  uint64_t pps;        // most recent pps timestamp
-  int64_t unix_seconds;       // Unix time, in seconds (redundant)
-  // GPS Time
-  uint32_t time_of_week; //     / PVT
-  uint16_t year;         // RMC / PVT
-  uint8_t month;         // RMC / PVT
-  uint8_t day;           // RMC / PVT
-  uint8_t hour;          // GGA RMC UTC Time / PVT
-  uint8_t min;           // GGA RMC UTC Time / PVT
-  uint8_t sec;           // GGA RMC UTC Time / PVT
-  int32_t nano;         // GGA RMC UTC Time (ms) / PVT nano
-  uint32_t t_acc;
-  int32_t lon;              // GGA RMC / PVT
-  int32_t lat;              // GGA RMC / PVT
-  int32_t height_ellipsoid; //GGA RMC (computed) / PVT
-  int32_t height_msl;       // GGA / PVT
-  uint32_t h_acc;           // GST (lat and lon) / PVT hAcc
-  uint32_t v_acc;           // GST / PVT vAcc
-  int32_t ground_speed;     // RMC / PVT gSpeed
-  int32_t course;           // RMC / PVT headMot
-  int32_t course_accy;
-  int32_t vel_n;       // no / PVT (RMC compute from ground velocity)
-  int32_t vel_e;       // no / PVT (RMC compute from ground velocity)
-  int32_t vel_d;       // no / PVT
-  uint32_t speed_accy; // no /PVT (sACC) speed accuracy
-  uint32_t mag_var;    // RMC / PVT
-  // Fix
-  uint8_t fix_type; // RMC (posmode), compute from GGA(quality) /PVT flags
-  uint8_t valid;    // RMC (status), compute from GGA (0 or 6)
-  uint8_t num_sat;  // GGA
-  uint16_t dop;     // GGA RMC / PVT (pdop)
-  struct
-  {
-    int32_t x;      // cm // not available on NMEA
-    int32_t y;      // cm
-    int32_t z;      // cm
-    uint32_t p_acc; // cm
-    int32_t vx;     // cm/s
-    int32_t vy;     // cm/s
-    int32_t vz;     // cm/s
-    uint32_t s_acc; // cm/s
-  } ecef;
+  PacketHeader header;    //
+  uint64_t pps;           // most recent pps timestamp (us)
+  int64_t unix_seconds;   // Unix time, in seconds (redundant)
+  int32_t unix_nanos;     // GGA RMC UTC Time (ms) / PVT nano (this and unix_seconds adjusted so unitx_nanos is positive)
+  uint8_t fix_type;       // RMC (posmode), compute from GGA(quality) /PVT flags
+  uint8_t num_sat;        // GGA
+  double lon;            // GGA RMC / PVT
+  double lat;            // GGA RMC / PVT
+  float height_msl;     // GGA / PVT
+  float vel_n;          // RMC / PVT (RMC compute from ground velocity)
+  float vel_e;          // RMC / PVT (RMC compute from ground velocity)
+  float vel_d;          // no / PVT
+  float h_acc;         // GST (lat and lon) / PVT hAcc
+  float v_acc;         // GST / PVT vAcc
+  float speed_accy;    // no /PVT (sACC) speed accuracy
 } GnssStruct;
 
 typedef struct
