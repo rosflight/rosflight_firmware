@@ -130,6 +130,7 @@ void Estimator::run()
     last_time_ = now_us;
     last_acc_update_us_ = now_us;
     last_extatt_update_us_ = now_us;
+    state_.timestamp_us = now_us;
     return;
   } else if (now_us < last_time_) {
     // this shouldn't happen

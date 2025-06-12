@@ -118,6 +118,7 @@ void Controller::run()
   int32_t dt_us = (RF_.estimator_.state().timestamp_us - prev_time_us_);
   if (dt_us < 0) {
     RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+    prev_time_us_ = RF_.estimator_.state().timestamp_us;
     return;
   }
   prev_time_us_ = RF_.estimator_.state().timestamp_us;
