@@ -309,7 +309,7 @@ bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
     gnss->header = p.header;
     gnss->pps = p.pps;
     gnss->unix_seconds = p.unix_seconds; // Unix time
-    gnss->unix_nanos = p.pvt.nano;
+    gnss->unix_nanos = p.unix_nanos;
     gnss->fix_type = p.pvt.fixType;
     gnss->num_sat = p.pvt.numSV;
     gnss->lon = (double)p.pvt.lon* 1e-7; // Convert 100's of nanodegs into deg (DDS format)

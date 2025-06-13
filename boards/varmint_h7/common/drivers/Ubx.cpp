@@ -64,6 +64,7 @@ uint32_t Ubx::init(
   drdyPort_ = drdy_port;
   drdyPin_ = drdy_pin;
   hasPps_ = has_pps;
+  ppsHz_ = 1; // To match top of second.
 
   dtimeout_ = 1000000; // 1 seconds
   timeout_ = 0;
@@ -75,14 +76,14 @@ uint32_t Ubx::init(
   baud_ = baud;
 
   ubxProtocol_ = ubx_protocol;
-
+  ubx_.pps = 0;
   groupDelay_ = 0;
 
   // gotNav_ = false;
   gotPvt_ = 0;
-  gotTime_ = 0;
-  gotEcefP_ = 0;
-  gotEcefV_ = 0;
+//  gotTime_ = 0;
+//  gotEcefP_ = 0;
+//  gotEcefV_ = 0;
 
   // USART initialization
   huart_->Instance = huart_instance;
@@ -181,17 +182,20 @@ uint32_t Ubx::init(
   error |= (uint16_t) cfgMsg(0x01, 0x20, 0); // NAV-TIMEGPS
   error |= (uint16_t) cfgMsg(0x01, 0x01, 0); // NAV-POSECEF (length 20)
   error |= (uint16_t) cfgMsg(0x01, 0x11, 0); // NAV-VELECEF (length 20)
+  error |= (uint16_t) cfgMsg(0x01, 0x20, 0); // NAV-TIMEGPS (length 16)
+  error |= (uint16_t) cfgMsg(0x01, 0x01, 0); // NAV-POSECEF (length 20)
+  error |= (uint16_t) cfgMsg(0x01, 0x11, 0); // NAV-VELECEF (length 20)
 
   // Enable these messages
-  error |= (uint16_t) cfgMsg(0x01, 0x20, 1); // NAV-TIMEGPS (length 16)
+  //error |= (uint16_t) cfgMsg(0x01, 0x20, 1); // NAV-TIMEGPS (length 16)
   error |= (uint16_t) cfgMsg(0x01, 0x07, 1); // NAV-PVT (length 92)
-  error |= (uint16_t) cfgMsg(0x01, 0x01, 1); // NAV-POSECEF (length 20)
-  error |= (uint16_t) cfgMsg(0x01, 0x11, 1); // NAV-VELECEF (length 20)
+  //error |= (uint16_t) cfgMsg(0x01, 0x01, 1); // NAV-POSECEF (length 20)
+  //error |= (uint16_t) cfgMsg(0x01, 0x11, 1); // NAV-VELECEF (length 20)
 
   // Set GPS Configuration (already done in pollCfgPrtM9() for UBX_M9)
   if (ubxProtocol_ == UBX_M8) {
     error |= (uint16_t) cfgRate(sampleRateHz_); // Nav rate 0x06 0x08
-    error |= (uint16_t) cfgTp5(sampleRateHz_);  // PPS rate 0x06 0x31
+    error |= (uint16_t) cfgTp5(ppsHz_);  // PPS rate 0x06 0x31
     error |= (uint16_t) cfgNav5();              // airplane mode 0x06 0x24
   }
 
@@ -242,37 +246,46 @@ void Ubx::endDma(void)
         tm.tm_mday = ubx_.pvt.day;
         tm.tm_mon  = ubx_.pvt.month - 1;
         tm.tm_year = ubx_.pvt.year - 1900;
-        ubx_.unix_seconds = mktime(&tm);
+        ubx_.unix_nanos = ubx_.pvt.nano;
+
         if (ubx_.pvt.nano<0)
         {
-          ubx_.unix_seconds -= 1;
-          ubx_.pvt.nano += 1000000000;
+          tm.tm_sec--;
+          ubx_.unix_nanos += 1000000000;
         }
-      } else if ((p.cl == 0x01) && (p.id == 0x20)) {
-        gotTime_ = time64.Us();
-        memcpy((uint8_t *) (&ubx_.time), p.payload, sizeof(ubx_.time));
-      } else if ((p.cl == 0x01) && (p.id == 0x01)) {
-        gotEcefP_ = time64.Us();
-        memcpy((uint8_t *) (&ubx_.ecefp), p.payload, sizeof(ubx_.ecefp));
-      } else if ((p.cl == 0x01) && (p.id == 0x11)) {
-        gotEcefV_ = time64.Us();
-        memcpy((uint8_t *) (&ubx_.ecefv), p.payload, sizeof(ubx_.ecefv));
-      }
 
-      if (gotPvt_ && gotTime_ && gotEcefP_ && gotEcefV_) {
+        ubx_.unix_seconds = mktime(&tm);
+      }
+//      else if ((p.cl == 0x01) && (p.id == 0x20)) {
+//        gotTime_ = time64.Us();
+//        memcpy((uint8_t *) (&ubx_.time), p.payload, sizeof(ubx_.time));
+//      } else if ((p.cl == 0x01) && (p.id == 0x01)) {
+//        gotEcefP_ = time64.Us();
+//        memcpy((uint8_t *) (&ubx_.ecefp), p.payload, sizeof(ubx_.ecefp));
+//      } else if ((p.cl == 0x01) && (p.id == 0x11)) {
+//        gotEcefV_ = time64.Us();
+//        memcpy((uint8_t *) (&ubx_.ecefv), p.payload, sizeof(ubx_.ecefv));
+//      }
+
+      if (gotPvt_) { // && gotTime_ && gotEcefP_ && gotEcefV_) {
+//        ubx_.drdy = time64.Us(); // usTime();
+
         ubx_.header.timestamp = time64.Us(); // usTime();
 
-        ubx_.drdy = drdy_;
-        if (!hasPps_) ubx_.pps = 0; //ubx_.drdy - 25000; // fake number if we don't have PPS hooked up
-
-        if (ubx_.pps > ubx_.drdy) ubx_.pps -= 1000000 / sampleRateHz_;
-        ubx_.groupDelay = ubx_.drdy - ubx_.pps;
+        if (!hasPps_) { // just use current time.
+          ubx_.pps = 0; // zero means error
+        } else if(ubx_.pps!=0) { // adjust to time of validity
+//          uint64_t period_us = 1000000/sampleRateHz_;
+//          ubx_.header.timestamp =  ubx_.pps + (((ubx_.header.timestamp - ubx_.pps) % 1000000 )/period_us)*period_us;
+          ubx_.header.timestamp =  ubx_.pps + ubx_.unix_nanos/1000;
+        }
+//        ubx_.groupDelay = 0;
 
         rxFifo_.write((uint8_t *) &ubx_, sizeof(ubx_));
         gotPvt_ = 0;
-        gotTime_ = 0;
-        gotEcefP_ = 0;
-        gotEcefV_ = 0;
+//        gotTime_ = 0;
+//        gotEcefP_ = 0;
+//        gotEcefV_ = 0;
         drdy_ = 0;
       }
     }
@@ -315,7 +328,6 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
     p->A += c;
     p->B += p->A;
 
-    if ((p->cl == 0x01) && (p->id == 0x07)) drdy_ = time64.Us() - UBX_DMA_BUFFER_SIZE * 10000000 / baud_;
   } else if (n == 4) // length LSB
   {
     p->length = (uint16_t) c;
@@ -350,49 +362,6 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
 }
 
 void Ubx::pps(uint64_t pps_timestamp) { ubx_.pps = pps_timestamp; }
-
-bool Ubx::display(void)
-{
-  UbxPacket p;
-
-  char name_pvt[] = "Ubx (pvt)";
-  char name_time[] = "Ubx (time)";
-  char name_ecefp[] = "Ubx (ecefp)";
-  char name_ecefv[] = "Ubx (ecefv)";
-
-  if (rxFifo_.read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_pvt, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.pvt.iTOW);
-    misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
-    misc_printf("%02u:%02u:%09.6f", p.pvt.hour, p.pvt.min, (double) p.pvt.sec + (double) p.pvt.nano * 1e-9);
-    misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
-    misc_printf("numSV %02d | ", p.pvt.numSV);
-    misc_printf("Fix %02d\n", p.pvt.fixType);
-
-    misc_header(name_time, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.time.iTOW);
-    misc_printf("  TOW %14.3f ms | valid 0x%02X\n", (double) p.time.iTOW + (double) p.time.fTOW / 1000, p.time.valid);
-
-    misc_header(name_ecefp, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.ecefp.iTOW);
-    misc_printf("  %10d %10d %10d %10u cm\n", p.ecefp.ecefX, p.ecefp.ecefY, p.ecefp.ecefZ, p.ecefp.pAcc);
-
-    misc_header(name_ecefv, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.ecefv.iTOW);
-    misc_printf("  %10d %10d %10d %10u cm/s\n", p.ecefv.ecefVX, p.ecefv.ecefVY, p.ecefv.ecefVZ, p.ecefv.sAcc);
-  } else {
-    misc_printf("%s\n", name_pvt);
-    misc_printf("%s\n", name_time);
-    misc_printf("%s\n", name_ecefp);
-    misc_printf("%s\n", name_ecefv);
-  }
-
-  return 1;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Packet Stuff
@@ -520,12 +489,12 @@ uint16_t Ubx::cfgTp5(uint32_t hz)
   payload[3] = 0x00;                 // reserved
   SET(payload + 4, 0x0000, int16_t); // antenna delay
   SET(payload + 6, 0x0000, int16_t); // rf delay
-  SET(payload + 8, period_us, uint32_t);
-  SET(payload + 12, period_us / 2, uint32_t);
-  SET(payload + 16, pulse_len_us, uint32_t); // no pulse when not locked =0 ?
-  SET(payload + 20, pulse_len_us / 2, uint32_t);
+  SET(payload + 8, period_us, uint32_t); // period when not locked
+  SET(payload + 12, period_us, uint32_t); // period when locked
+  SET(payload + 16, pulse_len_us, uint32_t);
+  SET(payload + 20, pulse_len_us, uint32_t);
   SET(payload + 24, 0x0000, uint32_t); // delay
-  SET(payload + 28, 0x01F7, uint32_t); // 0001 1111 1111 0111 = 0x01F7
+  SET(payload + 28, 0x0077, uint32_t); // 0001 1111 1111 0111 = 0x01F7 // 0000 0000 0111 0111 = 0x0077
 
   return tx(message, SFG_TP5_LENGTH);
 }
@@ -578,7 +547,7 @@ uint16_t Ubx::cfgMsg(uint8_t cl, uint8_t id, uint8_t decimation_rate)
 
 uint16_t Ubx::cfgM9(uint32_t baud, uint16_t sampleRateHz)
 {
-  uint8_t cfg_message[64] = {0};
+  uint8_t cfg_message[128] = {0};
   uint16_t length = 0;
   uint8_t * p = cfg_message;
   // Header
@@ -595,8 +564,21 @@ uint16_t Ubx::cfgM9(uint32_t baud, uint16_t sampleRateHz)
   SETKV(p, 0x40520001, baud, uint32_t);                // baud rate (8 bytes)
   SETKV(p, 0x30210001, 1000 / sampleRateHz, uint16_t); // output rate in milliseconds (6 bytes)
   SETKV(p, 0x30210002, 1, uint16_t);                   // 1 data output per nav measurement (6 bytes)
+  SETKV(p, 0x20210003, 0, uint8_t);                    // CFG-RATE-TIMEREF 0 = UTC
   SETKV(p, 0x20110021, 8, uint8_t);                    // CFG-NAVSPG-DYNMODEL 8 = 4G Airborne (5 bytes)
   SETKV(p, 0x20110011, 3, uint8_t);                    // CFG-NAVSPG-FIXMODE 3 = Auto 2/3D (5 bytes)
+  SETKV(p, 0x20050023, 0, uint8_t); // CFG-TP-PULSE_DEF = 0 set period in us
+  SETKV(p, 0x20050030, 1, uint8_t); // CFG-TP-PULSE_LENGTH_DEF = 1 set pulse length in us
+  SETKV(p, 0x40050002, 1000000, uint32_t); // CFG-TP-PERIOD_TP1
+  SETKV(p, 0x40050003, 1000000, uint32_t);  // CFG-TP-PERIOD_LOCK_TP1 = 1000000 us (1 second)
+  SETKV(p, 0x40050003, 1000000, uint32_t); //CFG-TP-PERIOD_LOCK_TP1 = 1000000 us (1 second)
+  SETKV(p, 0x40050004, 500, uint32_t); // CFG-TP-LEN_TP1 = 500 us (0.5 ms)
+  SETKV(p, 0x40050005, 1000, uint32_t); // CFG-TP-LEN_LOCK_TP1 = 1000 us (1ms)
+  SETKV(p, 0x10050008, 1, uint8_t); // CFG-TP-SYNC_GNSS_TP1
+  SETKV(p, 0x1005000a, 1, uint8_t); // CFG-TP-ALIGN_TO_TOW_TP1
+  SETKV(p, 0x2005000c, 1, uint8_t); //CFG-TP-POL_TP1 1= rising edge
+  SETKV(p, 0x10050009, 1, uint8_t); // CFG-TP-USE_LOCKED_TP1
+  SETKV(p, 0x2005000c, 0, uint8_t); // CFG-TP-TIMEGRID_TP1, 0 = UTC
 
   // compute and insert message length length
   length = p - cfg_message - 6;
@@ -652,3 +634,50 @@ uint32_t Ubx::pollBaudM9(void)
   }
   return 0;
 }
+
+bool Ubx::display(void)
+{
+  UbxPacket p;
+
+  char name_pvt[] = "Ubx (pvt)";
+//  char name_time[] = "Ubx (time)";
+//  char name_ecefp[] = "Ubx (ecefp)";
+//  char name_ecefv[] = "Ubx (ecefv)";
+
+  if (rxFifo_.read((uint8_t *) &p, sizeof(p))) {
+//    misc_header(name_pvt, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_header(name_pvt, p.pps , p.header.timestamp, 0);
+    misc_printf("| pps %10.6f s | ", (double)p.pps * 1e-6);
+    misc_printf(" iTOW %10.3f s | ", (double)p.pvt.iTOW/1000);
+    misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
+
+    misc_printf("%02u:%02u:%02u.%+010d", p.pvt.hour, p.pvt.min, p.pvt.sec, p.pvt.nano);
+
+    misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
+    misc_printf("numSV %02d | ", p.pvt.numSV);
+    misc_printf("Fix %02d\n", p.pvt.fixType);
+
+//    misc_header(name_time, p.drdy, p.header.timestamp, p.groupDelay);
+//    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
+//    misc_printf(" iTOW %10u | ", p.time.iTOW);
+//    misc_printf("  TOW %14.3f ms | valid 0x%02X\n", (double) p.time.iTOW + (double) p.time.fTOW / 1000, p.time.valid);
+//
+//    misc_header(name_ecefp, p.drdy, p.header.timestamp, p.groupDelay);
+//    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
+//    misc_printf(" iTOW %10u | ", p.ecefp.iTOW);
+//    misc_printf("  %10d %10d %10d %10u cm\n", p.ecefp.ecefX, p.ecefp.ecefY, p.ecefp.ecefZ, p.ecefp.pAcc);
+//
+//    misc_header(name_ecefv, p.drdy, p.header.timestamp, p.groupDelay);
+//    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
+//    misc_printf(" iTOW %10u | ", p.ecefv.iTOW);
+//    misc_printf("  %10d %10d %10d %10u cm/s\n", p.ecefv.ecefVX, p.ecefv.ecefVY, p.ecefv.ecefVZ, p.ecefv.sAcc);
+  } else {
+    misc_printf("%s\n", name_pvt);
+//    misc_printf("%s\n", name_time);
+//    misc_printf("%s\n", name_ecefp);
+//    misc_printf("%s\n", name_ecefv);
+  }
+
+  return 1;
+}
+

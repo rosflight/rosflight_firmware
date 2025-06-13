@@ -94,35 +94,35 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
 } UbxPvt;
 
 // Class 0x01, ID 0x20
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  uint32_t iTOW; // ms, GPS time of week
-  int32_t fTOW;  // ns, (iTOW * 1e-3) + (fTOW * 1e-9) seconds
-  int16_t week;  // GPS week number
-  int8_t leapS;
-  uint8_t valid;
-  uint32_t tAcc;
-} UbxTime;
+//typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
+//{
+//  uint32_t iTOW; // ms, GPS time of week
+//  int32_t fTOW;  // ns, (iTOW * 1e-3) + (fTOW * 1e-9) seconds
+//  int16_t week;  // GPS week number
+//  int8_t leapS;
+//  uint8_t valid;
+//  uint32_t tAcc;
+//} UbxTime;
 
 // Class 0x01, ID 0x01
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  uint32_t iTOW; // ms, GPS time of week
-  int32_t ecefX;
-  int32_t ecefY;
-  int32_t ecefZ;
-  uint32_t pAcc;
-} UbxEcefPos;
+//typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
+//{
+//  uint32_t iTOW; // ms, GPS time of week
+//  int32_t ecefX;
+//  int32_t ecefY;
+//  int32_t ecefZ;
+//  uint32_t pAcc;
+//} UbxEcefPos;
 
 // Class 0x01, ID 0x11
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  uint32_t iTOW; // ms, GPS time of week
-  int32_t ecefVX;
-  int32_t ecefVY;
-  int32_t ecefVZ;
-  uint32_t sAcc;
-} UbxEcefVel;
+//typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
+//{
+//  uint32_t iTOW; // ms, GPS time of week
+//  int32_t ecefVX;
+//  int32_t ecefVY;
+//  int32_t ecefVZ;
+//  uint32_t sAcc;
+//} UbxEcefVel;
 
 #define UBX_MAX_PAYLOAD_BYTES (256)
 typedef struct __attribute__((__packed__))
@@ -135,15 +135,16 @@ typedef struct __attribute__((__packed__))
 
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
-  rosflight_firmware::PacketHeader header;
+  rosflight_firmware::PacketHeader header; // time of validity, status
   int64_t unix_seconds; // computed from pvt time values
-  uint64_t drdy;
-  uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
+  int32_t unix_nanos;
+//  uint64_t drdy; // time of packet parse complete
+//  uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
   uint64_t pps;
   UbxPvt pvt;
-  UbxTime time;
-  UbxEcefPos ecefp;
-  UbxEcefVel ecefv;
+//  UbxTime time;
+//  UbxEcefPos ecefp;
+//  UbxEcefVel ecefv;
 } UbxPacket;
 
 /**
@@ -181,13 +182,14 @@ public:
 
 private:
   UbxPacket ubx_;
-  uint64_t gotPvt_, gotTime_, gotEcefP_, gotEcefV_; //, gotNav_;
+  uint64_t gotPvt_; //, gotTime_, gotEcefP_, gotEcefV_; //, gotNav_;
   uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
   uint32_t baud_, baud_initial_;
   UbxProtocol ubxProtocol_;
   bool hasPps_;
+  uint16_t ppsHz_;
 
   void checksum(uint8_t * buffer);
   void header(uint8_t * buffer, uint8_t cl, uint8_t id, uint16_t length);

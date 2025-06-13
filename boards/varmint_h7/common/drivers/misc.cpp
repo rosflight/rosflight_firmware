@@ -267,8 +267,8 @@ size_t misc_getline(uint8_t * line, size_t len)
 
 void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay)
 {
-  misc_printf("%-16s [%8.2f s %8.2f ms %8.3f ms] ", name, (double) drdy / 1e6, (double) (timestamp - drdy) / 1000.,
-              (double) delay / 1000.);
+  misc_printf("%-16s [t:%12.6f s dt:%12.6f s group_delay:%12.6f s] ", name, (double) timestamp / 1e6, (double) (timestamp - drdy) / 1e6,
+              (double) delay / 1e6);
 }
 
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size)
