@@ -39,8 +39,8 @@
 #define UBX_H_
 
 #include "BoardConfig.h"
-#include "Driver.h"
 #include "Packets.h"
+#include "Signal.h"
 
 typedef enum
 {
@@ -138,8 +138,7 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
   rosflight_firmware::PacketHeader header; // time of validity, status
   int64_t unix_seconds; // computed from pvt time values
   int32_t unix_nanos;
-//  uint64_t drdy; // time of packet parse complete
-//  uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
+  int64_t read_complete;
   uint64_t pps;
   UbxPvt pvt;
 //  UbxTime time;
@@ -153,7 +152,7 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
  *
  */
 
-class Ubx : public Driver
+class Ubx : public Status
 {
   /**
      * \brief
@@ -171,17 +170,25 @@ public:
   bool poll(void);
   void endDma(void);
   bool startDma(void);
-  bool display(void) override;
+  bool display(void);
   bool parseByte(uint8_t c, UbxFrame * p);
   UART_HandleTypeDef * huart(void) { return huart_; }
 
-  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  bool isMy(uint16_t exti_pin) { return ppsPin_ == exti_pin; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
 
   void pps(uint64_t pps_timestamp);
 
+  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
+  Signal signal_;
+  uint16_t sampleRateHz_;
   UbxPacket ubx_;
+  uint16_t ppsPin_;
+  uint64_t timeout_;
+
   uint64_t gotPvt_; //, gotTime_, gotEcefP_, gotEcefV_; //, gotNav_;
   uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;

@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
- * File     : Driver.h
- * Date     : Sep 20, 2023
+ * File     : Signal.h
+ * Date     : June 6, 2025
  ******************************************************************************
  *
- * Copyright (c) 2023, AeroVironment, Inc.
+ * Copyright (c) 2025, AeroVironment, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,48 +35,100 @@
  ******************************************************************************
  **/
 
-#ifndef DRIVER_H_
-#define DRIVER_H_
+#ifndef DRIVERS_SIGNAL_H_
+#define DRIVERS_SIGNAL_H_
 
-#include "stm32h7xx_hal.h"
-
-#include "BoardConfig.h"
-#include "PacketFifo.h"
-#include "Polling.h"
 #include "Status.h"
 
-#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
-class Driver : public Status
+enum class SignalStatus
 {
-public:
-  Driver() { initializationStatus_ = DRIVER_NOT_INITIALIZED; }
-  //  bool initGood(void) { return initializationStatus_ == DRIVER_OK; }
-
-  virtual bool display(void) = 0;
-
-  uint16_t rxFifoCount(void) { return rxFifo_.packetCount(); }
-  uint16_t rxFifoRead(uint8_t * data, uint16_t size) { return rxFifo_.read(data, size); }
-  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size) { return rxFifo_.readMostRecent(data, size); }
-  bool drdy(void) { return HAL_GPIO_ReadPin(drdyPort_, drdyPin_); }
-  bool dmaRunning(void) { return dmaRunning_; }
-  void rotate(double *x) {
-    double y[3];
-    y[0] = x[0]*rotation_[0] + x[1]*rotation_[1] + x[2]*rotation_[2];
-    y[1] = x[0]*rotation_[3] + x[1]*rotation_[4] + x[2]*rotation_[5];
-    y[2] = x[0]*rotation_[6] + x[1]*rotation_[7] + x[2]*rotation_[8];
-    memcpy(x,y,sizeof(double)*3);
-  }
-
-protected:
-  PacketFifo rxFifo_;
-  GPIO_TypeDef * drdyPort_;
-  uint16_t drdyPin_;
-  uint16_t sampleRateHz_;
-  uint64_t drdy_, timeout_, launchUs_;
-  uint64_t groupDelay_ = 0;
-  bool dmaRunning_ = 0;
-  double rotation_[9];
+  ERROR=-1,
+  EMPTY=0,
+  OK=1,
+//  OVERWRITE=2,
 };
 
-#endif /* DRIVER_H_ */
+class Signal : public Status
+{
+  public:
+
+  uint32_t init(uint8_t * packet_buffer, size_t packet_sizeX2 )
+  {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Signal");
+    initializationStatus_ = DRIVER_OK;
+
+    size_   = packet_sizeX2/2;
+
+    if (packet_buffer==NULL)
+    {
+      size_ = 0;
+      packet_[0] = NULL;
+      packet_[1] = NULL;
+      initializationStatus_ = DRIVER_NOT_INITIALIZED;
+    }
+
+    packet_[0] = packet_buffer;
+    packet_[1] = packet_buffer + size_;
+
+    reset();
+
+    return initializationStatus_;
+  }
+
+  void reset(void)
+  {
+    rx_ = 0;
+    tx_ = 0;
+    memset(packet_[0],0,size_);
+    memset(packet_[1],0,size_);
+  }
+
+  SignalStatus write(uint8_t * packet, size_t size)
+  {
+    if ((initializationStatus_ == DRIVER_NOT_INITIALIZED) || (packet==NULL) || (size != size_) ) return SignalStatus::ERROR;
+    memcpy(packet_[tx_], packet, size_);
+    if(rx_ != tx_) return SignalStatus::OK; //SignalStatus::OVERWRITE; // buffer not empty overwrote next value, still a good write.
+    tx_ = !tx_;
+    return SignalStatus::OK;
+  }
+
+  SignalStatus read(uint8_t * packet, size_t size)
+  {
+    if ((initializationStatus_ == DRIVER_NOT_INITIALIZED) || (packet==NULL) || (size != size_) ) return SignalStatus::ERROR;
+    if(rx_ == tx_) return SignalStatus::EMPTY; // buffer empty
+    memcpy(packet, packet_[rx_], size_);
+    rx_ = !rx_;
+    return SignalStatus::OK;
+  }
+
+private:
+  volatile uint32_t rx_, tx_;
+  size_t size_;
+  uint8_t * packet_[2];
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif /* DRIVERS_SIGNAL_H_ */

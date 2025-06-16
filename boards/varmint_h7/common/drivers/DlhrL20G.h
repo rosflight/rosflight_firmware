@@ -39,9 +39,10 @@
 #define DLHRL20G_H_
 
 #include "BoardConfig.h"
-#include "Driver.h"
+
 #include "Packets.h"
 #include "Time64.h"
+#include "Signal.h"
 
 #define DLHRL20G_OK (0x40)
 
@@ -49,7 +50,7 @@
 /*
  *
  */
-class DlhrL20G : public Driver
+class DlhrL20G : public Status
 {
   /**
      * \brief
@@ -69,11 +70,19 @@ public:
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
+  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
+  Signal signal_;
   I2C_HandleTypeDef * hi2c_;
   uint16_t address_;
   uint8_t cmdByte_;
   double dtMs_;
+  GPIO_TypeDef * drdyPort_;
+  uint16_t drdyPin_;
+  uint64_t drdy_;
+  uint16_t sampleRateHz_;
 };
 
 #endif /* DLHRL20G_H_ */

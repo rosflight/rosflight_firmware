@@ -39,12 +39,12 @@
 #define SBUS_H_
 
 #include "BoardConfig.h"
-#include "Driver.h"
+#include "Signal.h"
 
 /*
  *
  */
-class Sbus : public Driver
+class Sbus : public Status
 {
   /**
      * \brief
@@ -61,14 +61,22 @@ public:
   bool poll(void);
   void endDma(void);
   bool startDma(void);
-  bool display(void) override;
+  bool display(void);
   bool lol(void) { return lol_; }
 
   UART_HandleTypeDef * huart(void) { return huart_; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
 
+  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
+  Signal signal_;
+  uint16_t sampleRateHz_;
   bool lol_;
+  uint64_t drdy_;
+  uint64_t timeout_;
+
   uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;

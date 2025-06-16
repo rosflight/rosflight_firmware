@@ -75,7 +75,7 @@ typedef struct __attribute__((__packed__))
 #define SBUS_DMA_BUFFER_SIZE (sizeof(SbusPacket) * 4)
 DMA_RAM uint8_t sbus_dma_rxbuf[SBUS_DMA_BUFFER_SIZE];
 
-DTCM_RAM uint8_t sbus_fifo_rx_buffer[SBUS_FIFO_BUFFERS * sizeof(RcPacket)];
+DTCM_RAM uint8_t sbus_signal_rx_buffer[2 * sizeof(RcPacket)];
 
 uint32_t Sbus::init(
   // Driver initializers
@@ -86,11 +86,9 @@ uint32_t Sbus::init(
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Sbus");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = 0;      // do not use
-  drdyPin_ = 0;       // do not use
   dtimeout_ = 100000; // 0.1 seconds
   timeout_ = 0;
-
+  drdy_ = 0;
   huart_ = huart;
   hdmaUartRx_ = hdma_uart_rx;
 
@@ -126,7 +124,7 @@ uint32_t Sbus::init(
   }
   // USART initialization end
 
-  rxFifo_.init(SBUS_FIFO_BUFFERS, sizeof(RcPacket), sbus_fifo_rx_buffer);
+  signal_.init(sbus_signal_rx_buffer, sizeof(sbus_signal_rx_buffer));
 
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);
@@ -150,6 +148,7 @@ bool Sbus::poll(void)
 
 bool Sbus::startDma(void)
 {
+  drdy_ = time64.Us();
   timeout_ = time64.Us() + dtimeout_; // 0.1 second timeout
   HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, sbus_dma_rxbuf, SBUS_DMA_BUFFER_SIZE); // start next read
   return HAL_OK == hal_status;
@@ -157,7 +156,7 @@ bool Sbus::startDma(void)
 
 void Sbus::endDma(void)
 {
-  drdy_ = time64.Us();
+//  drdy_ = time64.Us();
 
   RcPacket p;
   SbusPacket * sbus = (SbusPacket *) sbus_dma_rxbuf;
@@ -201,14 +200,13 @@ void Sbus::endDma(void)
     p.failsafeActivated = sbus->dig_chan3;
     for (int n = 0; n < RC_PACKET_CHANNELS; n++) p.chan[n] = (p.chan[n] - 172) / 1639.0;
 
-    p.header.timestamp = time64.Us(); // usTime();
-    p.drdy = drdy_;
-    p.groupDelay = 9000; // Use one packet time latency for now.
+    p.header.timestamp = drdy_;
+    p.read_complete = time64.Us();
     p.header.status = !(p.frameLost | p.failsafeActivated);
 
     lol_ = p.frameLost | p.failsafeActivated;
 
-    rxFifo_.write((uint8_t *) &p, sizeof(p));
+    write((uint8_t *) &p, sizeof(p));
     timeout_ = drdy_ + dtimeout_; // Give it a second before we say it's lost
   }
   startDma();
@@ -218,17 +216,17 @@ bool Sbus::display(void)
 {
   RcPacket p;
   char name[] = "Sbus (rc)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header.timestamp, p.read_complete );
     for (int i = 0; i < 8; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_header(name, p.header.timestamp, p.read_complete );
     for (int i = 8; i < 16; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_header(name, p.header.timestamp, p.read_complete );
     for (int i = 16; i < 24; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_header(name, p.header.timestamp, p.read_complete );
     misc_printf("Frame Lost: %1u, Failsafe Activated: %1u, Status: %1u\n", p.frameLost, p.failsafeActivated,
                 p.header.status);
     return 1;

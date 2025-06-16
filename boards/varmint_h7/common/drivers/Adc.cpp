@@ -49,7 +49,8 @@ extern Time64 time64;
 #define ADC_DMA_BUF_SIZE_EXT (ADC_CHANNELS_EXT * sizeof(uint32_t))
 #define ADC_DMA_BUF_SIZE_MAX (16 * sizeof(uint32_t)) // 16 channels is max for the ADC sequencer
 
-DTCM_RAM uint8_t adc_fifo_rx_buffer[ADC_FIFO_BUFFERS * sizeof(AdcPacket)];
+DTCM_RAM uint8_t adc_signal_buffer[2 * sizeof(AdcPacket)];
+
 DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
 
 ADC_EXT_DMA_RAM uint32_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX / 4];
@@ -70,9 +71,7 @@ uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
   hadcInt_ = hadc_int;
   cfg_ = adc_cfg;
 
-  groupDelay_ = 1000000 / sampleRateHz_;
-
-  rxFifo_.init(ADC_FIFO_BUFFERS, sizeof(AdcPacket), adc_fifo_rx_buffer);
+  signal_.init(adc_signal_buffer, sizeof(adc_signal_buffer));
 
   if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT)) {
     initializationStatus_ = DRIVER_HAL_ERROR;
@@ -193,10 +192,9 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
       p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * p.vRef - vcc * cfg_[i].offset) * cfg_[i].scaleFactor;
     }
 
-    p.header.timestamp = time64.Us();
-    p.drdy = drdy_;
-    p.groupDelay = groupDelay_;
-    rxFifo_.write((uint8_t *) &p, sizeof(p));
+    p.header.timestamp = drdy_;
+    p.read_complete = time64.Us();
+    write((uint8_t *) &p, sizeof(p));
     ext_read = 0;
     int_read = 0;
   }
@@ -207,8 +205,8 @@ bool Adc::display(void)
   AdcPacket p;
   char name[] = "Adc (adc)";
 
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header.timestamp, p.read_complete );
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "STM");

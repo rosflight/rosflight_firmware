@@ -39,16 +39,18 @@
 #define DPS310_H_
 
 #include "BoardConfig.h"
-#include "Driver.h"
+
 #include "Spi.h"
 #include "Time64.h"
+#include "Signal.h"
+#include "Polling.h"
 
 #define DPS310_OK (0xE0D0)
 
 /*
  *
  */
-class Dps310 : public Driver
+class Dps310 : public Status
 {
   /**
      * \brief
@@ -84,16 +86,25 @@ public:
 
   // void endTxDma(void);
 
-  bool display(void) override;
+  bool display(void);
 
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
 
+  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
+  uint64_t drdy_;
+  Signal signal_;
+  uint16_t sampleRateHz_;
   // SPI Stuff
   Spi spi_;
   PollingState spiState_;
+  uint16_t drdyPin_;
+  bool dmaRunning_;
+
   uint16_t timeoutMs_;
 
   // Dps310 Stuff

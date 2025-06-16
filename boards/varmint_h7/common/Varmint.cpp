@@ -148,7 +148,7 @@ uint16_t Varmint::sensors_init_message(char * message, uint16_t size, uint16_t i
 bool Varmint::imu_read(rosflight_firmware::ImuStruct * imu)
 {
   ImuPacket p;
-  if (imu0_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (imu0_.read((uint8_t *) &p, sizeof(p))) {
     imu->header = p.header;
     imu->accel[0] = p.accel[0];
     imu->accel[1] = p.accel[1];
@@ -167,7 +167,7 @@ bool Varmint::imu_read(rosflight_firmware::ImuStruct * imu)
 bool Varmint::mag_read(rosflight_firmware::MagStruct * mag)
 {
   MagPacket p;
-  if (mag_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (mag_.read((uint8_t *) &p, sizeof(p))) {
     mag->header = p.header;
     mag->flux[0] = p.flux[0];
     mag->flux[1] = p.flux[1];
@@ -183,7 +183,7 @@ bool Varmint::mag_read(rosflight_firmware::MagStruct * mag)
 bool Varmint::baro_read(rosflight_firmware::PressureStruct * baro)
 {
   PressurePacket p;
-  if (baro_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (baro_.read((uint8_t *) &p, sizeof(p))) {
     baro->header = p.header;
     baro->pressure = p.pressure;
     baro->temperature = p.temperature;
@@ -197,7 +197,7 @@ bool Varmint::baro_read(rosflight_firmware::PressureStruct * baro)
 bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure)
 {
   PressurePacket p;
-  if (pitot_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (pitot_.read((uint8_t *) &p, sizeof(p))) {
     diff_pressure->header = p.header;
     diff_pressure->pressure = p.pressure;
     diff_pressure->temperature = p.temperature;
@@ -219,7 +219,7 @@ bool Varmint::sonar_read(rosflight_firmware::RangeStruct * sonar)
 bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
 {
   AdcPacket p;
-  if (adc_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (adc_.read((uint8_t *) &p, sizeof(p))) {
     batt->header = p.header;
     batt->current = p.volts[ADC_BATTERY_CURRENT];
     batt->voltage = p.volts[ADC_BATTERY_VOLTS];
@@ -241,71 +241,11 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // GNSS
-//bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
-//{
-//  UbxPacket p;
-//
-//  if (gps_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
-//    gnss->header = p.header;
-//    gnss->pps = p.pps;
-//    gnss->unix_seconds = p.unix_seconds; // Unix time
-//    gnss->t_acc = p.pvt.tAcc;
-//    gnss->time_of_week = p.pvt.iTOW;
-//    gnss->year = p.pvt.year;
-//    gnss->month = p.pvt.month;
-//    gnss->day = p.pvt.day;
-//    gnss->hour = p.pvt.hour;
-//    gnss->min = p.pvt.min;
-//    gnss->sec = p.pvt.sec;
-//    gnss->u = p.pvt.nano;
-//    gnss->lon = p.pvt.lon;
-//    gnss->lat = p.pvt.lat;
-//    gnss->height_ellipsoid = p.pvt.height;
-//    gnss->height_msl = p.pvt.hMSL;
-//    gnss->h_acc = p.pvt.hAcc;
-//    gnss->v_acc = p.pvt.vAcc;
-//    gnss->vel_n = p.pvt.velN;
-//    gnss->vel_e = p.pvt.velE;
-//    gnss->vel_d = p.pvt.velD;
-//    gnss->mag_var = p.pvt.magDec;
-//    gnss->ground_speed = p.pvt.gSpeed;
-//    gnss->course = p.pvt.headMot;
-//    gnss->course_accy = p.pvt.headAcc;
-//    gnss->vel_n = p.pvt.velN;
-//    gnss->vel_e = p.pvt.velE;
-//    gnss->vel_d = p.pvt.velD;
-//    gnss->speed_accy = p.pvt.sAcc;
-//    gnss->mag_var = p.pvt.magDec;
-//    gnss->valid = ((p.pvt.flags & 0x01) != 0);
-//    gnss->num_sat = p.pvt.numSV;
-//    gnss->dop = p.pvt.pDOP;
-//    gnss->fix_type = p.pvt.fixType;
-//
-//    // These are not available from standard NMEA messages
-//    // from ublox Class 0x01, ID 0x20
-//    gnss->ecef.x = p.ecefp.ecefX;
-//    gnss->ecef.y = p.ecefp.ecefY;
-//    gnss->ecef.z = p.ecefp.ecefZ;
-//    gnss->ecef.p_acc = p.ecefp.pAcc;
-//    // from ublox Class 0x01, ID 0x11
-//    gnss->ecef.vx = p.ecefv.ecefVX;
-//    gnss->ecef.vy = p.ecefv.ecefVY;
-//    gnss->ecef.vz = p.ecefv.ecefVZ;
-//    gnss->ecef.s_acc = p.ecefv.sAcc;
-//
-//    return true;
-//  }
-//
-//  return false;
-//}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-// GNSS
 bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 {
   UbxPacket p;
 
-  if (gps_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (gps_.read((uint8_t *) &p, sizeof(p))) {
     gnss->header = p.header;
     gnss->pps = p.pps;
     gnss->unix_seconds = p.unix_seconds; // Unix time
@@ -333,7 +273,7 @@ bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
 {
   RcPacket p;
 
-  if (rc_.rxFifoReadMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (rc_.read((uint8_t *) &p, sizeof(p))) {
     rc_struct->header = p.header;
     uint16_t len = RC_STRUCT_CHANNELS < RC_PACKET_CHANNELS ? RC_STRUCT_CHANNELS : RC_PACKET_CHANNELS;
     for (uint16_t i = 0; i < len; i++) { rc_struct->chan[i] = p.chan[i]; }

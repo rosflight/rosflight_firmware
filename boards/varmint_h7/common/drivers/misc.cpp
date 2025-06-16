@@ -265,10 +265,9 @@ size_t misc_getline(uint8_t * line, size_t len)
   return len;
 }
 
-void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay)
+void misc_header(char * name, uint64_t timestamp , uint64_t read_done)
 {
-  misc_printf("%-16s [t:%12.6f s dt:%12.6f s group_delay:%12.6f s] ", name, (double) timestamp / 1e6, (double) (timestamp - drdy) / 1e6,
-              (double) delay / 1e6);
+  misc_printf("%-16s [t:%12.6f s dt:%10d us] ", name, (double) timestamp / 1e6, (int64_t)read_done-(int64_t)timestamp);
 }
 
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size)
@@ -296,3 +295,4 @@ void misc_exit_status(uint32_t status)
   if (status & VOLTAGE_SET_FAIL) misc_printf(" VOLTAGE_SET_FAIL");
   misc_printf("\033[0m\n");
 }
+

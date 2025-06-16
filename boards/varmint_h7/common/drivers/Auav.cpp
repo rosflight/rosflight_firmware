@@ -47,8 +47,8 @@ extern Time64 time64;
 DMA_RAM uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t auav_pitot_fifo_rx_buffer[AUAV_FIFO_BUFFERS * sizeof(PressurePacket)];
-DTCM_RAM uint8_t auav_baro_fifo_rx_buffer[AUAV_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_signal_pitot_buffer[2 * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_signal_baro_buffer[2 * sizeof(PressurePacket)];
 
 #define ROLLOVER 10000
 
@@ -99,7 +99,8 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   {
     spi_[AUAV_PITOT].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, pitot_cs_port, pitot_cs_pin);
 
-    rxFifo_[AUAV_PITOT].init(AUAV_FIFO_BUFFERS, sizeof(PressurePacket), auav_pitot_fifo_rx_buffer);
+    signal_[AUAV_PITOT].init(auav_signal_pitot_buffer, sizeof(auav_signal_pitot_buffer));
+
     char name[] = "Auav (pitot)";
     memset(name_local_[AUAV_PITOT], '\0', sizeof(name_local_[AUAV_PITOT]));
     strcpy(name_local_[AUAV_PITOT], name);
@@ -126,7 +127,8 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   {
     spi_[AUAV_BARO].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, baro_cs_port, baro_cs_pin);
 
-    rxFifo_[AUAV_BARO].init(AUAV_FIFO_BUFFERS, sizeof(PressurePacket), auav_baro_fifo_rx_buffer);
+    signal_[AUAV_BARO].init(auav_signal_baro_buffer, sizeof(auav_signal_baro_buffer));
+
     char name[] = "Auav (baro) ";
     memset(name_local_[AUAV_BARO], '\0', sizeof(name_local_[AUAV_BARO]));
     strcpy(name_local_[AUAV_BARO], name);
@@ -176,7 +178,6 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   }
 
   for (int i = 0; i < 2; i++) {
-    launchUs_[i] = 0;
     groupDelay_[i] = 0;
 
     // Read Status
@@ -260,7 +261,6 @@ bool Auav::poll(uint64_t poll_counter)
     spiState_ = STATUS_IDLE;
     if ((dmaRunning_ = (HAL_OK == spi_[AUAV_BARO].startDma(cmdBytes_[AUAV_BARO], AUAV_CMD_BYTES)))) {
       spiState_ = STATUS_BARO_START;
-      launchUs_[AUAV_BARO] = time64.Us();
     }
   }
   return false;
@@ -273,7 +273,6 @@ void Auav::endDma(void)
     spiState_ = STATUS_IDLE;
     if ((dmaRunning_ = (HAL_OK == spi_[AUAV_PITOT].startDma(cmdBytes_[AUAV_PITOT], AUAV_CMD_BYTES)))) {
       spiState_ = STATUS_PITOT_START;
-      launchUs_[AUAV_PITOT] = time64.Us();
     }
 
   } else if (spiState_ == STATUS_PITOT_START) { // Done starting Pitot, Wait for Pitot Read
@@ -288,19 +287,21 @@ void Auav::endDma(void)
     PressurePacket p;
     makePacket(&p, inbuf, AUAV_PITOT);
     spiState_ = STATUS_IDLE;
-    //if(p.header.status==sensor_status_ready_[AUAV_PITOT]) // PTT uncomment if needed
+    if(p.header.status==sensor_status_ready_[AUAV_PITOT]) // PTT uncomment if needed
     {
-      rxFifo_[AUAV_PITOT].write((uint8_t *) &p, sizeof(p));
+      p.read_complete = time64.Us();
+      write2((uint8_t *) &p, sizeof(p), AUAV_PITOT);
     }
   } else if (spiState_ == STATUS_BARO_READ) {   // Done starting Baro
     uint8_t * inbuf = spi_[AUAV_BARO].endDma(); // close chip select, data ignored
     PressurePacket p;
     makePacket(&p, inbuf, AUAV_BARO);
     spiState_ = STATUS_IDLE;
-    // if(p.header.status==sensor_status_ready_[AUAV_BARO]) // PTT uncomment this when we fix the sensor.
+    if(p.header.status==sensor_status_ready_[AUAV_BARO]) // PTT uncomment this when we fix the sensor.
     {
-      rxFifo_[AUAV_BARO].write((uint8_t *) &p, sizeof(p));
-    }
+      p.read_complete = time64.Us();
+      write2((uint8_t *) &p, sizeof(p), AUAV_BARO);
+   }
   } else {
     spiState_ = STATUS_IDLE;
   }
@@ -382,21 +383,19 @@ void Auav::makePacket(PressurePacket * p, uint8_t * inbuf, uint8_t device)
   uint32_t Pdig = (uint32_t) (PCorrt * (double) 0xFFFFFF);
 #endif
 
-  p->drdy = drdy_[device];
-  p->groupDelay = (drdy_[device] - launchUs_[device]) / 2;
   p->header.status = (uint16_t) inbuf[0];
 
   p->temperature = (double) iTemp * 155.0 / 16777216.0 - 45.0 + 273.15;
   p->pressure = off_[device] + 1.25 * ((double) Pdig / 16777216.0 - osDig_[device]) * fss_[device];
-  p->header.timestamp = time64.Us();
+  p->header.timestamp = drdy_[device];
 }
 
 bool Auav::display(void)
 {
   PressurePacket p;
 
-  if (rxFifoReadMostRecent((uint8_t *) &p, sizeof(p), AUAV_BARO)) {
-    misc_header(name_local_[AUAV_BARO], p.drdy, p.header.timestamp, p.groupDelay);
+  if (read2((uint8_t *) &p, sizeof(p), AUAV_BARO)) {
+    misc_header(name_local_[AUAV_BARO], p.header.timestamp, p.read_complete);
 
     misc_f32(99, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
@@ -407,8 +406,8 @@ bool Auav::display(void)
     misc_printf("%s\n", name_local_[AUAV_BARO]);
   }
 
-  if (rxFifoReadMostRecent((uint8_t *) &p, sizeof(p), AUAV_PITOT)) {
-    misc_header(name_local_[AUAV_PITOT], p.drdy, p.header.timestamp, p.groupDelay);
+  if (read2((uint8_t *) &p, sizeof(p), AUAV_PITOT)) {
+    misc_header(name_local_[AUAV_PITOT], p.header.timestamp, p.read_complete);
     misc_f32(-5.0, 5.0, p.pressure, "Press", "%6.2f", "Pa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(sensorOk(AUAV_PITOT), p.header.status, "Status");

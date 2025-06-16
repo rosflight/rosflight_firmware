@@ -64,7 +64,7 @@ extern Time64 time64;
 DMA_RAM uint8_t iis2mdc_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t iis2mdc_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t iis2mdc_fifo_rx_buffer[IIS2MDC_FIFO_BUFFERS * sizeof(MagPacket)];
+DTCM_RAM uint8_t iis2mdc_signal_rx_buffer[2 * sizeof(MagPacket)];
 
 #define ROLLOVER 10000
 #define IIS2MDC_CMD 0
@@ -87,14 +87,15 @@ uint32_t Iis2mdc::init(
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Iis2mdc");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
-  drdyPin_ = drdy_pin;
 
+  drdyPin_ = drdy_pin;
+  drdy_ = 0;
   spi_.init(hspi, iis2mdc_dma_txbuf, iis2mdc_dma_rxbuf, cs_port, cs_pin);
 
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
 
-  rxFifo_.init(IIS2MDC_FIFO_BUFFERS, sizeof(MagPacket), iis2mdc_fifo_rx_buffer);
+
+  signal_.init(iis2mdc_signal_rx_buffer, sizeof(iis2mdc_signal_rx_buffer));
 
   spiState_ = IIS2MDC_IDLE_STATE;
   dmaRunning_ = false;
@@ -192,7 +193,7 @@ bool Iis2mdc::poll(uint64_t poll_counter)
   // Start measurement sequence
   if (poll_state == IIS2MDC_CMD) // Command Pressure Read
   {
-    launchUs_ = time64.Us();
+    drdy_ = time64.Us();
     uint8_t cmd[2] = {CFG_REG_A | SPI_WRITE, 0x81}; // CFG_REG_A
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
     else spiState_ = IIS2MDC_STATE_ERROR;
@@ -219,7 +220,7 @@ void Iis2mdc::endDma(void)
   if (spiState_ == IIS2MDC_RX_H) // Flux Data and DRDY
   {
     memset(&p, 0, sizeof(p)); // clear p
-    p.drdy = time64.Us();
+    p.read_complete = time64.Us();
     p.header.status = rx[1];
 
     int16_t data = (rx[3] << 8) | rx[2];
@@ -238,13 +239,12 @@ void Iis2mdc::endDma(void)
     int16_t data = (rx[2] << 8) | rx[1];
     p.temperature = (double) data / 8.0 + 25.0 + 273.15; // K
 
-    p.header.timestamp = time64.Us();
-    // 5 ms is added to group delay because of the set/reset averaging used in the flux measurement above.
-    p.groupDelay = p.header.timestamp - (p.drdy + launchUs_) / 2 + 5000;
+    p.header.timestamp = drdy_;
+    p.read_complete = time64.Us();
     if (p.header.status == IIS2MDC_OK)
     {
       rotate(p.flux);
-      rxFifo_.write((uint8_t *) &p, sizeof(p));
+      write((uint8_t *) &p, sizeof(p));
     }
   }
 
@@ -256,17 +256,17 @@ bool Iis2mdc::display()
 {
   MagPacket p;
   char name[] = "Iis2mdc (mag)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
+  if (read((uint8_t *) &p, sizeof(p))) {
 
     float total_flux = sqrt(p.flux[0] * p.flux[0] + p.flux[1] * p.flux[1] + p.flux[2] * p.flux[2]);
 
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+    misc_header(name, p.header.timestamp, p.read_complete );
 
     misc_f32(NAN, NAN, p.flux[0] * 1e6, "hx", "%6.2f", "uT");
     misc_f32(NAN, NAN, p.flux[1] * 1e6, "hy", "%6.2f", "uT");
     misc_f32(NAN, NAN, p.flux[2] * 1e6, "hz", "%6.2f", "uT");
 
-    misc_f32(20, 70, total_flux * 1e6, "|h|", "%6.2f", "uT");
+    misc_f32(20, 100, total_flux * 1e6, "|h|", "%6.2f", "uT");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(IIS2MDC_OK, p.header.status, "Status");
     misc_printf("\n");

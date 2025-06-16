@@ -49,7 +49,7 @@ extern Time64 time64;
 #define IST8308_IDLE_STATE 0xFFFF
 
 DMA_RAM uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t ist8308_fifo_rx_buffer[IST8308_FIFO_BUFFERS * sizeof(MagPacket)];
+DTCM_RAM uint8_t ist8308_signal_rx_buffer[2 * sizeof(MagPacket)];
 
 #define WAI_REG 0x0
 #define DEVICE_ID 0x08
@@ -118,13 +118,13 @@ uint32_t Ist8308::init(
 
   hi2c_ = hi2c;
   address_ = i2c_address << 1;
-  launchUs_ = 0;
-  // groupDelay_ = 0; //Computed later based on launchUs_ and drdy_ timestamps.
 
   i2cState_ = IST8308_IDLE_STATE;
   dmaRunning_ = false;
 
-  rxFifo_.init(IST8308_FIFO_BUFFERS, sizeof(MagPacket), ist8308_fifo_rx_buffer);
+  signal_.init(ist8308_signal_rx_buffer, sizeof(ist8308_signal_rx_buffer));
+
+  drdy_ = 0;
 
   dtMs_ = 1000. / (double) sampleRateHz_;
 
@@ -201,7 +201,7 @@ bool Ist8308::poll(uint64_t poll_counter)
 {
   PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
   if (poll_state == IST8308_CMD) {
-    launchUs_ = time64.Us();
+//    drdy_ = time64.Us();
     ist8308_i2c_dma_buf[0] = CNTL2_REG;
     ist8308_i2c_dma_buf[1] = CNTL2_VAL_SINGLE_MODE;
 
@@ -230,9 +230,8 @@ void Ist8308::endDma(void)
   //  else
   if (i2cState_ == IST8308_RX) {
     MagPacket p;
-    p.header.timestamp = time64.Us();
-    p.drdy = drdy_;
-    p.groupDelay = p.header.timestamp - (launchUs_ + drdy_) / 2;
+    p.header.timestamp = drdy_;
+    p.read_complete = time64.Us();
     p.header.status = ist8308_i2c_dma_buf[0];
 
     if (p.header.status == STAT1_VAL_DRDY)
@@ -249,7 +248,7 @@ void Ist8308::endDma(void)
       p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
 
       rotate(p.flux);
-      rxFifo_.write((uint8_t *) &p, sizeof(p));
+      write((uint8_t *) &p, sizeof(p));
     }
   }
   i2cState_ = IST8308_STATE_ERROR;
@@ -259,8 +258,8 @@ bool Ist8308::display()
 {
   MagPacket p;
   char name[] = "Ist8308 (mag)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header.timestamp, p.read_complete );
 
     misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
     misc_printf(" |                                       ");
