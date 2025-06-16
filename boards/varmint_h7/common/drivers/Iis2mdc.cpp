@@ -64,7 +64,7 @@ extern Time64 time64;
 DMA_RAM uint8_t iis2mdc_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t iis2mdc_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t iis2mdc_signal_rx_buffer[2 * sizeof(MagPacket)];
+DTCM_RAM uint8_t iis2mdc_double_buffer[2 * sizeof(MagPacket)];
 
 #define ROLLOVER 10000
 #define IIS2MDC_CMD 0
@@ -95,7 +95,7 @@ uint32_t Iis2mdc::init(
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
 
 
-  signal_.init(iis2mdc_signal_rx_buffer, sizeof(iis2mdc_signal_rx_buffer));
+  double_buffer_.init(iis2mdc_double_buffer, sizeof(iis2mdc_double_buffer));
 
   spiState_ = IIS2MDC_IDLE_STATE;
   dmaRunning_ = false;

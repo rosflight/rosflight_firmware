@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : Signal.h
+ * File     : DoubleBuffer.h
  * Date     : June 6, 2025
  ******************************************************************************
  *
@@ -35,15 +35,16 @@
  ******************************************************************************
  **/
 
-#ifndef DRIVERS_SIGNAL_H_
-#define DRIVERS_SIGNAL_H_
+#ifndef DRIVERS_DOUBLEBUFFER_H_
+#define DRIVERS_DOUBLEBUFFER_H_
 
 #include "Status.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
-enum class SignalStatus
+enum class DoubleBufferStatus
 {
   ERROR=-1,
   EMPTY=0,
@@ -51,13 +52,13 @@ enum class SignalStatus
 //  OVERWRITE=2,
 };
 
-class Signal : public Status
+class DoubleBuffer : public Status
 {
   public:
 
   uint32_t init(uint8_t * packet_buffer, size_t packet_sizeX2 )
   {
-    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Signal");
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "DoubleBuffer");
     initializationStatus_ = DRIVER_OK;
 
     size_   = packet_sizeX2/2;
@@ -86,22 +87,22 @@ class Signal : public Status
     memset(packet_[1],0,size_);
   }
 
-  SignalStatus write(uint8_t * packet, size_t size)
+  DoubleBufferStatus write(uint8_t * packet, size_t size)
   {
-    if ((initializationStatus_ == DRIVER_NOT_INITIALIZED) || (packet==NULL) || (size != size_) ) return SignalStatus::ERROR;
+    if ((initializationStatus_ == DRIVER_NOT_INITIALIZED) || (packet==NULL) || (size != size_) ) return DoubleBufferStatus::ERROR;
     memcpy(packet_[tx_], packet, size_);
-    if(rx_ != tx_) return SignalStatus::OK; //SignalStatus::OVERWRITE; // buffer not empty overwrote next value, still a good write.
+    if(rx_ != tx_) return DoubleBufferStatus::OK; //DoubleBufferStatus::OVERWRITE; // buffer not empty overwrote next value, still a good write.
     tx_ = !tx_;
-    return SignalStatus::OK;
+    return DoubleBufferStatus::OK;
   }
 
-  SignalStatus read(uint8_t * packet, size_t size)
+  DoubleBufferStatus read(uint8_t * packet, size_t size)
   {
-    if ((initializationStatus_ == DRIVER_NOT_INITIALIZED) || (packet==NULL) || (size != size_) ) return SignalStatus::ERROR;
-    if(rx_ == tx_) return SignalStatus::EMPTY; // buffer empty
+    if ((initializationStatus_ == DRIVER_NOT_INITIALIZED) || (packet==NULL) || (size != size_) ) return DoubleBufferStatus::ERROR;
+    if(rx_ == tx_) return DoubleBufferStatus::EMPTY; // buffer empty
     memcpy(packet, packet_[rx_], size_);
     rx_ = !rx_;
-    return SignalStatus::OK;
+    return DoubleBufferStatus::OK;
   }
 
 private:
@@ -131,4 +132,4 @@ private:
 
 
 
-#endif /* DRIVERS_SIGNAL_H_ */
+#endif /* DRIVERS_DOUBLEBUFFER_H_ */

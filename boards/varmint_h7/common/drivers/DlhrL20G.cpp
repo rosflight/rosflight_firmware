@@ -43,7 +43,7 @@ extern Time64 time64;
 //#define DLHRL20G_OK (0x40)
 
 DMA_RAM uint8_t dlhr_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t dlhr_signal_rx_buffer[2 * sizeof(PressurePacket)];
+DTCM_RAM uint8_t dlhr_double_buffer[2 * sizeof(PressurePacket)];
 
 #define DLHR_I2C_STATUS_SIZE 1
 #define DLHR_I2C_DMA_SIZE 7
@@ -64,7 +64,7 @@ uint32_t DlhrL20G::init(
   hi2c_ = hi2c;
   address_ = i2c_address << 1;
 
-  signal_.init(dlhr_signal_rx_buffer, sizeof(dlhr_signal_rx_buffer) );
+  double_buffer_.init(dlhr_double_buffer, sizeof(dlhr_double_buffer) );
 
   dtMs_ = 1000. / (double) sampleRateHz_;
 

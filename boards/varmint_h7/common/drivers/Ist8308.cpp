@@ -49,7 +49,7 @@ extern Time64 time64;
 #define IST8308_IDLE_STATE 0xFFFF
 
 DMA_RAM uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t ist8308_signal_rx_buffer[2 * sizeof(MagPacket)];
+DTCM_RAM uint8_t ist8308_double_buffer[2 * sizeof(MagPacket)];
 
 #define WAI_REG 0x0
 #define DEVICE_ID 0x08
@@ -122,7 +122,7 @@ uint32_t Ist8308::init(
   i2cState_ = IST8308_IDLE_STATE;
   dmaRunning_ = false;
 
-  signal_.init(ist8308_signal_rx_buffer, sizeof(ist8308_signal_rx_buffer));
+  double_buffer_.init(ist8308_double_buffer, sizeof(ist8308_double_buffer));
 
   drdy_ = 0;
 

@@ -38,9 +38,9 @@
 #ifndef BMI088_H_
 #define BMI088_H_
 
+#include <DoubleBuffer.h>
 #include "Spi.h"
 #include "misc.h"
-#include "Signal.h"
 
 /*
  *
@@ -76,11 +76,11 @@ public:
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spiA_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spiA_.hspi(); }
 
-  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
-  Signal signal_;
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   // SPI Stuff
   Spi spiA_;

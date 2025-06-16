@@ -49,7 +49,7 @@ extern Time64 time64;
 #define ADC_DMA_BUF_SIZE_EXT (ADC_CHANNELS_EXT * sizeof(uint32_t))
 #define ADC_DMA_BUF_SIZE_MAX (16 * sizeof(uint32_t)) // 16 channels is max for the ADC sequencer
 
-DTCM_RAM uint8_t adc_signal_buffer[2 * sizeof(AdcPacket)];
+DTCM_RAM uint8_t adc_double_buffer[2 * sizeof(AdcPacket)];
 
 DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
 
@@ -71,7 +71,7 @@ uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
   hadcInt_ = hadc_int;
   cfg_ = adc_cfg;
 
-  signal_.init(adc_signal_buffer, sizeof(adc_signal_buffer));
+  double_buffer_.init(adc_double_buffer, sizeof(adc_double_buffer));
 
   if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT)) {
     initializationStatus_ = DRIVER_HAL_ERROR;

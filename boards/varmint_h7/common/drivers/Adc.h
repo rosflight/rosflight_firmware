@@ -38,9 +38,9 @@
 #ifndef ADC_H_
 #define ADC_H_
 
+#include <DoubleBuffer.h>
 #include "BoardConfig.h"
 
-#include "Signal.h"
 
 typedef struct __attribute__((__packed__))
 {
@@ -69,11 +69,11 @@ public:
   bool isMy(ADC_HandleTypeDef * hadc) { return (hadcExt_ == hadc) || (hadcInt_ == hadc); }
   void setScaleFactor(uint16_t n, float scale_factor);
 
-  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
-  Signal signal_;
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   uint64_t drdy_;
 

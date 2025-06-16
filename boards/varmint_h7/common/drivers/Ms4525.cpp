@@ -43,7 +43,7 @@ extern Time64 time64;
 #define MS4525_OK (0x0000)
 
 DMA_RAM uint8_t ms4525_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t ms4525_signal_rx_buffer[2 * sizeof(PressurePacket)];
+DTCM_RAM uint8_t ms4525_double_buffer[2 * sizeof(PressurePacket)];
 
 #define MS4525_I2C_DMA_SIZE (4)
 
@@ -72,7 +72,7 @@ uint32_t Ms4525::init(
   hi2c_ = hi2c;
   address_ = i2c_address << 1;
 
-  signal_.init(ms4525_signal_rx_buffer, sizeof(ms4525_signal_rx_buffer));
+  double_buffer_.init(ms4525_double_buffer, sizeof(ms4525_double_buffer));
 
   dtMs_ = 1000. / (double) sampleRateHz_;
   drdy_ = 0;

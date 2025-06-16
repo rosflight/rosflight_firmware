@@ -49,7 +49,7 @@ extern Time64 time64;
 #define UBX_DMA_BUFFER_SIZE 16 * 2 // must be multiple of 16
 DMA_RAM uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
 
-DTCM_RAM uint8_t ubx_signal_rx_buffer[2 * sizeof(UbxPacket)];
+DTCM_RAM uint8_t ubx_double_buffer[2 * sizeof(UbxPacket)];
 
 void Ubx::pps(uint64_t pps_timestamp)
 {
@@ -175,7 +175,7 @@ uint32_t Ubx::init(
     return initializationStatus_;
   }
 
-  signal_.init(ubx_signal_rx_buffer, sizeof(ubx_signal_rx_buffer) );
+  double_buffer_.init(ubx_double_buffer, sizeof(ubx_double_buffer) );
 
   // Disable these messages to get rid of clutter
   uint16_t error = 0;

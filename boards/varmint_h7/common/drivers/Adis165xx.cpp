@@ -60,7 +60,7 @@ extern Time64 time64;
 DMA_RAM uint8_t adis165xx_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t adis165xx_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t adis165xx_signal_buffer[2* sizeof(ImuPacket)];
+DTCM_RAM uint8_t adis165xx_double_buffer[2* sizeof(ImuPacket)];
 
 uint32_t Adis165xx::init(
   // Driver initializers
@@ -98,7 +98,7 @@ uint32_t Adis165xx::init(
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
   HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
 
-  signal_.init(adis165xx_signal_buffer, sizeof(adis165xx_signal_buffer));
+  double_buffer_.init(adis165xx_double_buffer, sizeof(adis165xx_double_buffer));
 
   // Startup the external clock
 

@@ -75,7 +75,7 @@ typedef struct __attribute__((__packed__))
 #define SBUS_DMA_BUFFER_SIZE (sizeof(SbusPacket) * 4)
 DMA_RAM uint8_t sbus_dma_rxbuf[SBUS_DMA_BUFFER_SIZE];
 
-DTCM_RAM uint8_t sbus_signal_rx_buffer[2 * sizeof(RcPacket)];
+DTCM_RAM uint8_t sbus_double_buffer[2 * sizeof(RcPacket)];
 
 uint32_t Sbus::init(
   // Driver initializers
@@ -124,7 +124,7 @@ uint32_t Sbus::init(
   }
   // USART initialization end
 
-  signal_.init(sbus_signal_rx_buffer, sizeof(sbus_signal_rx_buffer));
+  double_buffer_.init(sbus_double_buffer, sizeof(sbus_double_buffer));
 
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);

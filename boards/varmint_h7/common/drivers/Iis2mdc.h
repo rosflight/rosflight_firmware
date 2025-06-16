@@ -38,11 +38,11 @@
 #ifndef IIS2MDC_H_
 #define IIS2MDC_H_
 
+#include <DoubleBuffer.h>
 #include "BoardConfig.h"
 
 #include "Spi.h"
 #include "misc.h"
-#include "Signal.h"
 #include "Polling.h"
 
 #define IIS2MDC_OK (0x0F)
@@ -77,11 +77,11 @@ public:
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
 
-  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
-  Signal signal_;
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   // SPI Stuff
   Spi spi_;

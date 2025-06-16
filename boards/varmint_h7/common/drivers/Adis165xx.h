@@ -38,11 +38,11 @@
 #ifndef ADIS165XX_H_
 #define ADIS165XX_H_
 
+#include <DoubleBuffer.h>
 #include "BoardConfig.h"
 
 #include "Spi.h"
 #include "misc.h"
-#include "Signal.h"
 
 #define ADIS_OK (0x0000)
 
@@ -70,12 +70,12 @@ public:
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
   void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}
-  bool read(uint8_t * data, uint16_t size) { return (uint16_t)(signal_.read(data, size)==SignalStatus::OK); }
+  bool read(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.read(data, size)==DoubleBufferStatus::OK); }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return (uint16_t)(signal_.write(data, size)==SignalStatus::OK); }
+  bool write(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.write(data, size)==DoubleBufferStatus::OK); }
 
-  Signal signal_;
+  DoubleBuffer double_buffer_;
 
   uint16_t sampleRateHz_;
   // SPI Stuff

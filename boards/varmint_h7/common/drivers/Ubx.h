@@ -38,9 +38,9 @@
 #ifndef UBX_H_
 #define UBX_H_
 
+#include <DoubleBuffer.h>
 #include "BoardConfig.h"
 #include "Packets.h"
-#include "Signal.h"
 
 typedef enum
 {
@@ -179,11 +179,11 @@ public:
 
   void pps(uint64_t pps_timestamp);
 
-  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
-  Signal signal_;
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   UbxPacket ubx_;
   uint16_t ppsPin_;

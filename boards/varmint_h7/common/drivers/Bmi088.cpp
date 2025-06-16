@@ -59,7 +59,7 @@ extern Time64 time64;
 DMA_RAM uint8_t bmi088_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t bmi088_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t bmi088_signal_rx_buffer[2 * sizeof(ImuPacket)];
+DTCM_RAM uint8_t bmi088_double_buffer[2 * sizeof(ImuPacket)];
 
 uint32_t Bmi088::init(
   // Driver initializers
@@ -91,7 +91,7 @@ uint32_t Bmi088::init(
   rangeA_ = range_a;
   rangeG_ = range_g;
 
-  signal_.init( bmi088_signal_rx_buffer, sizeof(bmi088_signal_rx_buffer) );
+  double_buffer_.init( bmi088_double_buffer, sizeof(bmi088_double_buffer) );
 
 
   if (sampleRateHz_ <= 400) {

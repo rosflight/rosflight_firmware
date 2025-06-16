@@ -72,7 +72,7 @@ extern Time64 time64;
 DMA_RAM uint8_t dps310_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t dps310_signal_rx_buffer[2 * sizeof(PressurePacket)];
+DTCM_RAM uint8_t dps310_double_buffer[2 * sizeof(PressurePacket)];
 
 #define ROLLOVER 20000
 #define DPS310_CMD_P 0
@@ -134,7 +134,7 @@ uint32_t Dps310::init(
   // groupDelay_		= 1000000/sampleRateHz_;
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
 
-  signal_.init(dps310_signal_rx_buffer, sizeof(dps310_signal_rx_buffer) );
+  double_buffer_.init(dps310_double_buffer, sizeof(dps310_double_buffer) );
 
 #define RESET 0x0C
   writeRegister(RESET, 0x09);

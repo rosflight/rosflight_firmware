@@ -40,10 +40,10 @@
 #ifndef AUAV_H_
 #define AUAV_H_
 
+#include <DoubleBuffer.h>
 #include "BoardConfig.h"
 #include "Packets.h"
 #include "Spi.h"
-#include "Signal.h"
 
 #define AUAV_PITOT 0
 #define AUAV_BARO 1
@@ -77,8 +77,8 @@ public:
 
   void drdyIsr(uint64_t timestamp, uint16_t exti_pin);
 
-  bool read2(uint8_t * data, uint16_t size, uint8_t id) { return signal_[id].read(data, size)==SignalStatus::OK; }
-  bool write2(uint8_t * data, uint16_t size, uint8_t id) { return signal_[id].write(data, size)==SignalStatus::OK; }
+  bool read2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].read(data, size)==DoubleBufferStatus::OK; }
+  bool write2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].write(data, size)==DoubleBufferStatus::OK; }
 
   uint8_t sensorOk(uint8_t id) { return sensor_status_ready_[id]; }
   bool read(uint8_t * data, uint16_t size) { return read2(data,size,AUAV_PITOT); }
@@ -99,7 +99,7 @@ private:
   uint8_t sensor_status_ready_[2];
   char name_local_[2][16]; // for display
 
-  Signal signal_[2];
+  DoubleBuffer double_buffer_[2];
   GPIO_TypeDef * drdyPort_[2];
   uint16_t drdyPin_[2];
   uint16_t sampleRateHz_;

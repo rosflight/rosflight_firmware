@@ -38,12 +38,12 @@
 #ifndef DRIVERS_IST8308_H_
 #define DRIVERS_IST8308_H_
 
+#include <DoubleBuffer.h>
 #include "BoardConfig.h"
 
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
-#include "Signal.h"
 #include "Polling.h"
 
 class Ist8308 : public Status, public MiscRotatable
@@ -63,11 +63,11 @@ public:
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
-  bool read(uint8_t * data, uint16_t size) { return signal_.read(data, size)==SignalStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return signal_.write(data, size)==SignalStatus::OK; }
-  Signal signal_;
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   uint64_t drdy_;
   bool dmaRunning_;
