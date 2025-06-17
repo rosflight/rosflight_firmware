@@ -56,7 +56,12 @@ void Mixer::init()
 
 void Mixer::param_change_callback(uint16_t param_id)
 {
-  switch (param_id) {
+
+  if ((param_id >=PARAM_PRIMARY_MIXER_OUTPUT_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
+    load_primary_mixer_values();
+  } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
+    load_secondary_mixer_values();
+  } else switch (param_id) {
     case PARAM_PRIMARY_MIXER:
     case PARAM_SECONDARY_MIXER:
       init_mixing();
