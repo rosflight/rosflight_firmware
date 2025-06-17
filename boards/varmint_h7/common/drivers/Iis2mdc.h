@@ -38,7 +38,7 @@
 #ifndef IIS2MDC_H_
 #define IIS2MDC_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 #include "Spi.h"

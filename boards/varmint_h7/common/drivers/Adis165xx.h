@@ -38,7 +38,7 @@
 #ifndef ADIS165XX_H_
 #define ADIS165XX_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 #include "Spi.h"

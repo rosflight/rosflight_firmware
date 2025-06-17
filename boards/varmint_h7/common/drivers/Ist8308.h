@@ -38,7 +38,7 @@
 #ifndef DRIVERS_IST8308_H_
 #define DRIVERS_IST8308_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 #include "Packets.h"

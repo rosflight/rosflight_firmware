@@ -38,7 +38,7 @@
 #ifndef MS4525_H_
 #define MS4525_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 #include "Packets.h"
 #include "Time64.h"

@@ -40,7 +40,7 @@
 #ifndef AUAV_H_
 #define AUAV_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 #include "Packets.h"
 #include "Spi.h"

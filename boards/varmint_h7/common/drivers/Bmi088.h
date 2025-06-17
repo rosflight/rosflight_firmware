@@ -38,7 +38,7 @@
 #ifndef BMI088_H_
 #define BMI088_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "Spi.h"
 #include "misc.h"
 

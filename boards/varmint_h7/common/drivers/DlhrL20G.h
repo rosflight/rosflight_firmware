@@ -38,7 +38,7 @@
 #ifndef DLHRL20G_H_
 #define DLHRL20G_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 #include "Packets.h"

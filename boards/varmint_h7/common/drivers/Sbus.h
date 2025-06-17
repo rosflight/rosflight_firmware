@@ -38,7 +38,7 @@
 #ifndef SBUS_H_
 #define SBUS_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 /*

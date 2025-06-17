@@ -38,7 +38,7 @@
 #ifndef ADC_H_
 #define ADC_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 

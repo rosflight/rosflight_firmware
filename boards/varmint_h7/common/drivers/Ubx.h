@@ -38,7 +38,7 @@
 #ifndef UBX_H_
 #define UBX_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 #include "Packets.h"
 

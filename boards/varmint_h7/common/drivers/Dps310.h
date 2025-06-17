@@ -38,7 +38,7 @@
 #ifndef DPS310_H_
 #define DPS310_H_
 
-#include <DoubleBuffer.h>
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
 #include "Spi.h"
