@@ -46,7 +46,13 @@ Mixer::Mixer(ROSflight & _rf)
   }
 }
 
-void Mixer::init() { init_mixing(); }
+void Mixer::init()
+{
+  load_primary_mixer_values();
+  load_secondary_mixer_values();
+
+  init_mixing();
+}
 
 void Mixer::param_change_callback(uint16_t param_id)
 {
@@ -192,7 +198,7 @@ void Mixer::param_change_callback(uint16_t param_id)
     case PARAM_SECONDARY_MIXER_3_9:
     case PARAM_SECONDARY_MIXER_4_9:
     case PARAM_SECONDARY_MIXER_5_9:
-
+      break;
     case PARAM_PRIMARY_MIXER:
     case PARAM_SECONDARY_MIXER:
       init_mixing();
@@ -244,8 +250,7 @@ void Mixer::init_mixing()
     } else if (mixer_choice != FIXEDWING &&
                mixer_choice != INVERTED_VTAIL) {
       // Invert the selected "canned" matrix
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                            "Inverting selected mixing matrix...");
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,"Inverting selected mixing matrix...");
       primary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
 
       // Save the primary mixer values to the params
@@ -324,7 +329,7 @@ void Mixer::init_mixing()
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                           "Inverting selected mixing matrix...");
 
-    // Invert the secondary mixer
+    // Invert the selected mixer and copy to secondary mixer
     secondary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
     save_secondary_mixer_params();
   } else {
@@ -353,7 +358,6 @@ void Mixer::update_parameters()
   num_motors_ = RF_.params_.get_param_int(PARAM_NUM_MOTORS);
   V_max_ = RF_.params_.get_param_float(PARAM_VOLT_MAX);
 }
-
 Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
 {
   Eigen::Matrix<float, 6, NUM_MIXER_OUTPUTS> mixer_matrix;
@@ -388,9 +392,8 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> mixer_matrix_pinv =
     svd.matrixV() * Sig * svd.matrixU().transpose();
 
-  // Fill in the mixing matrix from the inverted matrix above
   mixer_t inverted_mixer;
-
+  // Fill in the mixing matrix from the inverted matrix above
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
     inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
@@ -401,7 +404,6 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
     inverted_mixer.Qy[i] = mixer_matrix_pinv(i, 4);
     inverted_mixer.Qz[i] = mixer_matrix_pinv(i, 5);
   }
-
   return inverted_mixer;
 }
 
