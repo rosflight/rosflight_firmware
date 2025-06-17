@@ -46,6 +46,7 @@ ROSflight::ROSflight(Board & board, CommLinkInterface & comm_link)
     , rc_(*this)
     , sensors_(*this)
     , state_manager_(*this)
+    , dt_(0)
 {
   comm_link.set_listener(&comm_manager_);
   params_.set_listeners(param_listeners_, num_param_listeners_);
@@ -109,13 +110,13 @@ void ROSflight::run()
  
   got_flags got = sensors_.run(); // IMU, GNSS, Baro, Mag, Pitot, SONAR, Battery
 
-  if (got.imu) {
+  if (got.imu && check_time_going_forwards()) {
     uint64_t start = board_.clock_micros();
-    estimator_.run();
-    controller_.run();
+    estimator_.run(dt_);
+    controller_.run(dt_);
     mixer_.mix_output();
     board_.pwm_write(mixer_.raw_outputs(), Mixer::NUM_TOTAL_OUTPUTS);
-    loop_time_us = board_.clock_micros() - start;
+    loop_time_us_ = board_.clock_micros() - start;
   }
 
   /*********************/
@@ -140,6 +141,31 @@ void ROSflight::run()
   command_manager_.run();
 }
 
-uint32_t ROSflight::get_loop_time_us() { return loop_time_us; }
+uint32_t ROSflight::get_loop_time_us() { return loop_time_us_; }
+
+/**
+* @fn bool check_time_going_forwards()
+* @brief Checks to make sure time is going forward. Raises an error if time is detected
+* to be going backwards.
+*/
+bool ROSflight::check_time_going_forwards()
+{
+  const uint64_t now_us = sensors_.get_imu()->header.timestamp;
+  if (last_time_ == 0) {
+    last_time_ = now_us;
+    return false;
+  }
+  dt_ = (now_us - last_time_) * 1e-6f;
+  last_time_ = now_us;
+
+  // Check if time is going backwards
+  if (dt_ < 0.0) {
+    state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+    return false;
+  }
+
+  state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
+  return true;
+}
 
 } // namespace rosflight_firmware

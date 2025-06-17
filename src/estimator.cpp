@@ -91,7 +91,7 @@ void Estimator::reset_adaptive_bias()
 
 void Estimator::init()
 {
-  last_time_ = 0;
+  is_initialized_ = 0;
   last_acc_update_us_ = 0;
   last_extatt_update_us_ = 0;
   reset_state();
@@ -119,31 +119,21 @@ void Estimator::set_external_attitude_update(const turbomath::Quaternion & q)
   q_extatt_ = q;
 }
 
-void Estimator::run()
+void Estimator::run(const float dt)
 {
   //
   // Timing Setup
   //
 
   const uint64_t now_us = RF_.sensors_.get_imu()->header.timestamp;
-  if (last_time_ == 0) {
-    last_time_ = now_us;
+  state_.timestamp_us = now_us;
+
+  if (!is_initialized_) {
     last_acc_update_us_ = now_us;
     last_extatt_update_us_ = now_us;
-    state_.timestamp_us = now_us;
-    return;
-  } else if (now_us < last_time_) {
-    // this shouldn't happen
-    RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-    last_time_ = now_us;
+    is_initialized_ = true;
     return;
   }
-
-  RF_.state_manager_.clear_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-
-  float dt = (now_us - last_time_) * 1e-6f;
-  last_time_ = now_us;
-  state_.timestamp_us = now_us;
 
   // Low-pass filter accel and gyro measurements
   run_LPF();
