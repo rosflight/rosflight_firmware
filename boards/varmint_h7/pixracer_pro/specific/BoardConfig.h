@@ -213,8 +213,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define GPS_HZ (UBX_HZ)
 #define GPS_BAUD (UBX_BAUD)
 
-#define UBX_PROTOCOL (UBX_M8) //(UBX_M9)
-#define GPS_HAS_PPS (true)
 #define GPS_PPS_PORT GPS_PPS_GPIO_Port // wire up to MOSI pin on external SPI connector
 #define GPS_PPS_PIN GPS_PPS_Pin  // wire up to MOSI pin on external SPI connector
 #define GPS_UART (&huart4)

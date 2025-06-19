@@ -181,8 +181,8 @@ void Varmint::init_board(void)
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_HAS_PPS, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA,
-                          GPS_BAUD, UBX_PROTOCOL);
+  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA,
+                          GPS_BAUD);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
 

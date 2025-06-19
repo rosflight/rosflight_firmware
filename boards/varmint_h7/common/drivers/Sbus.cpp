@@ -201,7 +201,7 @@ void Sbus::endDma(void)
     for (int n = 0; n < RC_PACKET_CHANNELS; n++) p.chan[n] = (p.chan[n] - 172) / 1639.0;
 
     p.header.timestamp = drdy_;
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     p.header.status = !(p.frameLost | p.failsafeActivated);
 
     lol_ = p.frameLost | p.failsafeActivated;

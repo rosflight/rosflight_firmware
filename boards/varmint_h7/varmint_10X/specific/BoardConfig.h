@@ -220,8 +220,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define GPS_HZ (UBX_HZ)
 #define GPS_BAUD (UBX_BAUD)
 
-#define UBX_PROTOCOL (UBX_M8)
-#define GPS_HAS_PPS (true)
 #define GPS_PPS_PORT (GPS_1PPS_GPIO_Port)
 #define GPS_PPS_PIN (GPS_1PPS_Pin)
 #define GPS_UART (&huart1)

@@ -61,17 +61,15 @@ void Ubx::pps(uint64_t pps_timestamp)
 
 uint32_t Ubx::init(
   // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin, bool has_pps,
+  uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
   // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud,
-  UbxProtocol ubx_protocol)
+  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ubx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
   ppsPin_ = pps_pin;
-  hasPps_ = has_pps;
   ppsHz_ = 1; // To match top of second.
 
   dtimeout_ = 1000000; // 1 seconds
@@ -83,7 +81,6 @@ uint32_t Ubx::init(
   baud_initial_ = 9600;
   baud_ = baud;
 
-  ubxProtocol_ = ubx_protocol;
   ubx_.pps = 0;
 
   // gotNav_ = false;
@@ -138,8 +135,7 @@ uint32_t Ubx::init(
         return initializationStatus_;
       }
       // Set UBLOX Baud
-      if (ubxProtocol_ == UBX_M8) cfgPrt(baud_);
-      else cfgM9(baud_, sampleRateHz_);
+      cfgPrt(baud_);
       HAL_Delay(2);
     }
 
@@ -152,8 +148,7 @@ uint32_t Ubx::init(
     HAL_Delay(100); // Give the UBLOX some time to get there
 
     // Check if we have acquired the baud rate
-    if (ubxProtocol_ == UBX_M8) ubx_baud = pollBaud();
-    else ubx_baud = pollBaudM9();
+    ubx_baud = pollBaud();
 
     if (ubx_baud == baud_) break;
     misc_printf("%6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
@@ -197,11 +192,10 @@ uint32_t Ubx::init(
   //error |= (uint16_t) cfgMsg(0x01, 0x11, 1); // NAV-VELECEF (length 20)
 
   // Set GPS Configuration (already done in pollCfgPrtM9() for UBX_M9)
-  if (ubxProtocol_ == UBX_M8) {
-    error |= (uint16_t) cfgRate(sampleRateHz_); // Nav rate 0x06 0x08
-    error |= (uint16_t) cfgTp5(ppsHz_);  // PPS rate 0x06 0x31
-    error |= (uint16_t) cfgNav5();              // airplane mode 0x06 0x24
-  }
+  error |= (uint16_t) cfgRate(sampleRateHz_); // Nav rate 0x06 0x08
+  error |= (uint16_t) cfgTp5(ppsHz_);  // PPS rate 0x06 0x31
+  error |= (uint16_t) cfgNav5();              // airplane mode 0x06 0x24
+
 
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);
@@ -241,7 +235,6 @@ void Ubx::endDma(void)
 
     if (found) {
       if ((p.cl == 0x01) && (p.id == 0x07)) {
-        gotPvt_ = time64.Us();
         memcpy((uint8_t *) &(ubx_.pvt), p.payload, sizeof(ubx_.pvt));
         struct tm tm;
         tm.tm_sec  = ubx_.pvt.sec;
@@ -259,7 +252,8 @@ void Ubx::endDma(void)
           ubx_.unix_nanos += 1000000000;
         }
 
-        if (hasPps_ && ubx_.pps!=0 && ((ubx_.pvt.valid & 0x07)== 0x07) && ((ubx_.pvt.flags & 0x01)==0x01) )
+        gotPvt_ = time64.Us();
+        if ( (ubx_.pps !=0) && (ubx_.pps < gotPvt_) && ((ubx_.pvt.valid & 0x07)== 0x07) && ((ubx_.pvt.flags & 0x01)==0x01) )
         {
            if(ubx_.pvt.nano<0)
            {
@@ -268,10 +262,10 @@ void Ubx::endDma(void)
              ubx_.header.timestamp  = ubx_.pps + (uint64_t)(ubx_.pvt.nano/1000);
           }
         } else {
-          ubx_.header.timestamp = gotPvt_-45000; //
+          ubx_.header.timestamp = gotPvt_-22000; //
         }
 
-        ubx_.read_complete =  gotPvt_;
+        ubx_.header.complete =  gotPvt_;
 
         write((uint8_t *) &ubx_, sizeof(ubx_));
         gotPvt_ = 0;
@@ -513,116 +507,6 @@ uint16_t Ubx::cfgMsg(uint8_t cl, uint8_t id, uint8_t decimation_rate)
   return tx(message, CFG_MSG_LENGTH);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// M9 Protocol
-
-//#define SET(buf,data,type) *((type*)(buf))=data
-
-// M9 parameters setting functions
-#define SETVAL(ptr, value, type)                                                                                       \
-  {                                                                                                                    \
-    *((type *) (ptr)) = value;                                                                                         \
-    ptr += sizeof(type);                                                                                               \
-  }
-
-#define SETKV(ptr, key, value, type)                                                                                   \
-  {                                                                                                                    \
-    *(uint32_t *) (ptr) = key;                                                                                         \
-    ptr += 4;                                                                                                          \
-    *((type *) (ptr)) = value;                                                                                         \
-    ptr += sizeof(type);                                                                                               \
-  }
-
-uint16_t Ubx::cfgM9(uint32_t baud, uint16_t sampleRateHz)
-{
-  uint8_t cfg_message[128] = {0};
-  uint16_t length = 0;
-  uint8_t * p = cfg_message;
-  // Header
-  SETVAL(p, 0xB5, uint8_t); // mu (1 bytes)
-  SETVAL(p, 0x62, uint8_t); // b (1 bytes)
-  SETVAL(p, 0x06, uint8_t); // class CFG (1 bytes)
-  SETVAL(p, 0x8A, uint8_t); // id Write Value (1 bytes)
-  p += 2;                   // space for length (2 bytes)
-  // Message
-  SETVAL(p, 0x00, uint8_t); // Message Version (1 bytes)
-  SETVAL(p, 0x01, uint8_t); // Write to RAM bit 1 is ram, 2 is bbr layer, 3 is flash (1 bytes)
-  p += 2;                   // reserved (2 bytes)
-  // Key value pairs
-  SETKV(p, 0x40520001, baud, uint32_t);                // baud rate (8 bytes)
-  SETKV(p, 0x30210001, 1000 / sampleRateHz, uint16_t); // output rate in milliseconds (6 bytes)
-  SETKV(p, 0x30210002, 1, uint16_t);                   // 1 data output per nav measurement (6 bytes)
-  SETKV(p, 0x20210003, 0, uint8_t);                    // CFG-RATE-TIMEREF 0 = UTC
-  SETKV(p, 0x20110021, 8, uint8_t);                    // CFG-NAVSPG-DYNMODEL 8 = 4G Airborne (5 bytes)
-  SETKV(p, 0x20110011, 3, uint8_t);                    // CFG-NAVSPG-FIXMODE 3 = Auto 2/3D (5 bytes)
-  SETKV(p, 0x20050023, 0, uint8_t); // CFG-TP-PULSE_DEF = 0 set period in us
-  SETKV(p, 0x20050030, 1, uint8_t); // CFG-TP-PULSE_LENGTH_DEF = 1 set pulse length in us
-  SETKV(p, 0x40050002, 1000000, uint32_t); // CFG-TP-PERIOD_TP1
-  SETKV(p, 0x40050003, 1000000, uint32_t);  // CFG-TP-PERIOD_LOCK_TP1 = 1000000 us (1 second)
-  SETKV(p, 0x40050003, 1000000, uint32_t); //CFG-TP-PERIOD_LOCK_TP1 = 1000000 us (1 second)
-  SETKV(p, 0x40050004, 500, uint32_t); // CFG-TP-LEN_TP1 = 500 us (0.5 ms)
-  SETKV(p, 0x40050005, 1000, uint32_t); // CFG-TP-LEN_LOCK_TP1 = 1000 us (1ms)
-  SETKV(p, 0x10050008, 1, uint8_t); // CFG-TP-SYNC_GNSS_TP1
-  SETKV(p, 0x1005000a, 1, uint8_t); // CFG-TP-ALIGN_TO_TOW_TP1
-  SETKV(p, 0x2005000c, 1, uint8_t); //CFG-TP-POL_TP1 1= rising edge
-  SETKV(p, 0x10050009, 1, uint8_t); // CFG-TP-USE_LOCKED_TP1
-  SETKV(p, 0x2005000c, 0, uint8_t); // CFG-TP-TIMEGRID_TP1, 0 = UTC
-
-  // compute and insert message length length
-  length = p - cfg_message - 6;
-  SET(cfg_message + 4, length, uint16_t);
-
-  return tx(cfg_message, length);
-}
-uint32_t Ubx::pollBaudM9(void)
-{
-#define CFG_MESSAGE_SIZE 64
-  uint8_t cfg_message[CFG_MESSAGE_SIZE] = {0};
-  uint16_t length = 0;
-  uint8_t * p = cfg_message;
-  // Header
-  SETVAL(p, 0xB5, uint8_t); // mu (1 bytes)
-  SETVAL(p, 0x62, uint8_t); // b (1 bytes)
-  SETVAL(p, 0x06, uint8_t); // class CFG (1 bytes)
-  SETVAL(p, 0x8B, uint8_t); // id Write Value (1 bytes)
-  p += 2;                   // space for length (2 bytes)
-  // Message
-  SETVAL(p, 0x00, uint8_t);    // Message Version (1 bytes)
-  SETVAL(p, 0x00, uint8_t);    // Read to RAM
-  SETVAL(p, 0x0000, uint16_t); // Offset (position)
-
-  SETVAL(p, 0x40520001, uint32_t); // baud
-
-  // compute and insert message length length
-  length = p - cfg_message - 6;
-  SET(cfg_message + 4, length, uint16_t);
-
-  if (tx(cfg_message, length) != HAL_OK) return 0;
-
-  UbxFrame ubx;
-  memset(&ubx, 0, sizeof(ubx));
-
-  for (int i = 0; 256; i++) {
-    uint8_t ch;
-    HAL_StatusTypeDef hal_status = HAL_UART_Receive(huart_, &ch, 1, 1000);
-
-    if (hal_status == HAL_OK)
-      if (parseByte(ch, &ubx)) {
-        if ((ubx.cl == 0x06) && (ubx.id == 0x8B)) {
-          uint32_t key = (uint32_t) ubx.payload[7] << 24 | (uint32_t) ubx.payload[6] << 16
-            | (uint32_t) ubx.payload[5] << 8 | (uint32_t) ubx.payload[4];
-          if (key == 0x40520001)
-            return (uint32_t) ubx.payload[11] << 24 | (uint32_t) ubx.payload[10] << 16 | (uint32_t) ubx.payload[9] << 8
-              | (uint32_t) ubx.payload[8];
-          ; // baud key
-        } else {
-          memset(&ubx, 0, sizeof(ubx));
-        }
-      }
-  }
-  return 0;
-}
-
 bool Ubx::display(void)
 {
   UbxPacket p;
@@ -632,9 +516,9 @@ bool Ubx::display(void)
   if (read((uint8_t *) &p, sizeof(p))) {
 
     static double lag = 0;
-    if(p.header.timestamp!=(uint64_t)p.read_complete)
+    if(p.header.complete>p.header.timestamp)
     {
-      lag = (lag*0.99 + 0.01*((double)p.read_complete-(double)p.header.timestamp));
+      lag = (lag*0.99 + 0.01*(double)(p.header.complete-p.header.timestamp));
     }
     struct tm *gmt;
     time_t seconds = p.unix_seconds;

@@ -43,12 +43,6 @@
 #include "Packets.h"
 #include "Status.h"
 
-typedef enum
-{
-  UBX_M8,
-  UBX_M9
-} UbxProtocol;
-
 // Class 0x01, ID 0x07
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
@@ -108,7 +102,6 @@ typedef struct //__attribute__((__packed__)) // This matches the Ubx packet, do 
   rosflight_firmware::PacketHeader header; // time of validity, status
   int64_t unix_seconds; // computed from pvt time values
   int32_t unix_nanos;
-  int64_t read_complete;
   uint64_t pps;
   UbxPvt pvt;
 } UbxPacket;
@@ -129,10 +122,9 @@ class Ubx : public Status
 public:
   uint32_t init(
     // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin, bool has_pps,
+    uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
     // UART initializers
-    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired,
-    UbxProtocol ubx_protocol);
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 
   bool poll(void);
   void endDma(void);
@@ -161,8 +153,6 @@ private:
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
   uint32_t baud_, baud_initial_;
-  UbxProtocol ubxProtocol_;
-  bool hasPps_;
   uint16_t ppsHz_;
 
   void checksum(uint8_t * buffer);

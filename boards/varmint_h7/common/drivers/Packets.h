@@ -57,7 +57,6 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-//  uint64_t read_complete;  // us, time of pushing data to signal
   double temperature;
   double vBku;
   double vRef;
@@ -67,7 +66,6 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-//  uint64_t read_complete;  // us, time of pushing data to signal
   double gyro[3];      // rad/s
   double accel[3];     // rad/s
   double temperature;  // K
@@ -77,7 +75,6 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-//  uint64_t read_complete;  // us, time of pushing data to signal
   double pressure;     // Pa
   double temperature;  // K
 } PressurePacket;
@@ -85,7 +82,6 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((packed))
 {
   rosflight_firmware::PacketHeader header;
-//  uint64_t read_complete;  // us, time of pushing data to signal
   double flux[3];      // T, magnetic flux density
   double temperature;  // K
 } MagPacket;
@@ -94,7 +90,6 @@ typedef struct //__attribute__((packed))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-  uint64_t read_complete;  // us, time of pushing data to signal
   uint8_t nChan;
   float chan[RC_PACKET_CHANNELS];
   bool frameLost;
