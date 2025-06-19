@@ -92,7 +92,7 @@ private:
     &comm_manager_, &command_manager_, &controller_, &estimator_, &mixer_, &rc_, &sensors_};
 
   uint32_t loop_time_us_;
-  uint64_t last_time_;
+  int64_t last_time_;
   float dt_;
 };
 

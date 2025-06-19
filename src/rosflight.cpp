@@ -46,9 +46,9 @@ ROSflight::ROSflight(Board & board, CommLinkInterface & comm_link)
     , rc_(*this)
     , sensors_(*this)
     , state_manager_(*this)
-    , dt_(0)
-    , last_time_(0)
     , loop_time_us_(0)
+    , last_time_(0)
+    , dt_(0)
 {
   comm_link.set_listener(&comm_manager_);
   params_.set_listeners(param_listeners_, num_param_listeners_);
@@ -112,7 +112,7 @@ void ROSflight::run()
  
   got_flags got = sensors_.run(); // IMU, GNSS, Baro, Mag, Pitot, SONAR, Battery
 
-  if (got.imu && check_time_going_forwards()) {
+  if (got.imu && check_time_going_forwards()) { // dt_ is computed by check_time_going_forwards
     uint64_t start = board_.clock_micros();
     estimator_.run(dt_);
     controller_.run(dt_);
@@ -152,7 +152,7 @@ uint32_t ROSflight::get_loop_time_us() { return loop_time_us_; }
 */
 bool ROSflight::check_time_going_forwards()
 {
-  const uint64_t now_us = sensors_.get_imu()->header.timestamp;
+  const int64_t now_us = static_cast<int64_t>(sensors_.get_imu()->header.timestamp);
   if (last_time_ == 0) {
     last_time_ = now_us;
     return false;
