@@ -47,8 +47,8 @@ extern Time64 time64;
 DMA_RAM uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t pitot_double_buffer[2 * sizeof(PressurePacket)];
-DTCM_RAM uint8_t baro_double_buffer[2 * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_pitot_double_buffer[2 * sizeof(PressurePacket)];
+DTCM_RAM uint8_t auav_baro_double_buffer[2 * sizeof(PressurePacket)];
 
 #define ROLLOVER 10000
 
@@ -99,7 +99,7 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   {
     spi_[AUAV_PITOT].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, pitot_cs_port, pitot_cs_pin);
 
-    double_buffer_[AUAV_PITOT].init(pitot_double_buffer, sizeof(pitot_double_buffer));
+    double_buffer_[AUAV_PITOT].init(auav_pitot_double_buffer, sizeof(auav_pitot_double_buffer));
 
     char name[] = "Auav (pitot)";
     memset(name_local_[AUAV_PITOT], '\0', sizeof(name_local_[AUAV_PITOT]));
@@ -127,7 +127,7 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   {
     spi_[AUAV_BARO].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, baro_cs_port, baro_cs_pin);
 
-    double_buffer_[AUAV_BARO].init(baro_double_buffer, sizeof(baro_double_buffer));
+    double_buffer_[AUAV_BARO].init(auav_baro_double_buffer, sizeof(auav_baro_double_buffer));
 
     char name[] = "Auav (baro) ";
     memset(name_local_[AUAV_BARO], '\0', sizeof(name_local_[AUAV_BARO]));
