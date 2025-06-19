@@ -69,7 +69,7 @@ public:
 
   void init();
   void param_change_callback(uint16_t param_id) override;
-  void run();
+  void run(const float dt);
   void reset_state();
   void reset_adaptive_bias();
   void set_external_attitude_update(const turbomath::Quaternion & q);
@@ -80,7 +80,7 @@ private:
   ROSflight & RF_;
   State state_;
 
-  uint64_t last_time_;
+  bool is_initialized_ = false;
   uint64_t last_acc_update_us_;
   uint64_t last_extatt_update_us_;
 

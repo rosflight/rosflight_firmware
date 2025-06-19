@@ -68,8 +68,6 @@ public:
   Sensors sensors_;
   StateManager state_manager_;
 
-  uint32_t loop_time_us;
-
   /**
    * @brief Main initialization routine for the ROSflight autopilot flight stack
    */
@@ -82,10 +80,20 @@ public:
 
   uint32_t get_loop_time_us();
 
+  /**
+  * @brief Checks to make sure time is going forward. Raises an error if time is detected
+  * to be going backwards.
+  */
+  bool check_time_going_forwards();
+
 private:
   static constexpr size_t num_param_listeners_ = 7;
   ParamListenerInterface * const param_listeners_[num_param_listeners_] = {
     &comm_manager_, &command_manager_, &controller_, &estimator_, &mixer_, &rc_, &sensors_};
+
+  uint32_t loop_time_us_;
+  int64_t last_time_;
+  float dt_;
 };
 
 } // namespace rosflight_firmware

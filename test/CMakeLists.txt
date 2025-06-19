@@ -23,6 +23,7 @@ add_executable(unit_tests
         command_manager_test.cpp
         estimator_test.cpp
         parameters_test.cpp
+        rosflight_test.cpp
         )
 
 target_include_directories(unit_tests PUBLIC .)
