@@ -65,7 +65,7 @@ public:
   inline float max_thrust() const { return max_thrust_; }
 
   void init();
-  void run();
+  void run(const float dt);
 
   void calculate_max_thrust();
   void calculate_equilbrium_torque_from_rc();
@@ -78,8 +78,8 @@ private:
   public:
     PID();
     void init(float kp, float ki, float kd, float max, float min, float tau);
-    float run(float dt, float x, float x_c, bool update_integrator);
-    float run(float dt, float x, float x_c, bool update_integrator, float xdot);
+    float run(const float dt, float x, float x_c, bool update_integrator);
+    float run(const float dt, float x, float x_c, bool update_integrator, float xdot);
 
   private:
     float kp_;
@@ -97,7 +97,7 @@ private:
 
   ROSflight & RF_;
 
-  Controller::Output run_pid_loops(uint32_t dt, const Estimator::State & state,
+  Controller::Output run_pid_loops(const float dt, const Estimator::State & state,
                                    const control_t & command, bool update_integrators);
 
   Output output_;

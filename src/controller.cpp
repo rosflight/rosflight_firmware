@@ -107,28 +107,15 @@ bool Controller::is_throttle_high(float threshold) {
           RF_.command_manager_.combined_control().Fz.value > threshold;
 }
 
-void Controller::run()
+void Controller::run(const float dt)
 {
-  // Time calculation
-  if (prev_time_us_ == 0) {
-    prev_time_us_ = RF_.estimator_.state().timestamp_us;
-    return;
-  }
-
-  int32_t dt_us = (RF_.estimator_.state().timestamp_us - prev_time_us_);
-  if (dt_us < 0) {
-    RF_.state_manager_.set_error(StateManager::ERROR_TIME_GOING_BACKWARDS);
-    return;
-  }
-  prev_time_us_ = RF_.estimator_.state().timestamp_us;
-
   // Check if integrators should be updated
   bool update_integrators = (RF_.state_manager_.state().armed)
-    && is_throttle_high(0.1f) && dt_us < 10000;
+    && is_throttle_high(0.1f) && dt < 0.01;
 
   // Run the PID loops
   Controller::Output pid_output = run_pid_loops(
-    dt_us, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
+    dt, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
   output_.Qx = pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
@@ -225,13 +212,11 @@ void Controller::param_change_callback(uint16_t param_id)
   }
 }
 
-Controller::Output Controller::run_pid_loops(uint32_t dt_us, const Estimator::State & state,
+Controller::Output Controller::run_pid_loops(const float dt, const Estimator::State & state,
                                              const control_t & command, bool update_integrators)
 {
   // Based on the control types coming from the command manager, run the appropriate PID loops
   Controller::Output out;
-
-  float dt = 1e-6 * dt_us;
 
   // ROLL
   if (command.Qx.type == RATE) {
@@ -330,7 +315,7 @@ void Controller::PID::init(float kp, float ki, float kd, float max, float min, f
   tau_ = tau;
 }
 
-float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
+float Controller::PID::run(const float dt, float x, float x_c, bool update_integrator)
 {
   float xdot;
   if (dt > 0.0001f) {
@@ -348,7 +333,7 @@ float Controller::PID::run(float dt, float x, float x_c, bool update_integrator)
   return run(dt, x, x_c, update_integrator, xdot);
 }
 
-float Controller::PID::run(float dt, float x, float x_c, bool update_integrator, float xdot)
+float Controller::PID::run(const float dt, float x, float x_c, bool update_integrator, float xdot)
 {
   // Calculate Error
   float error = x_c - x;
