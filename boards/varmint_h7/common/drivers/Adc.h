@@ -38,8 +38,9 @@
 #ifndef ADC_H_
 #define ADC_H_
 
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
-#include "Driver.h"
+
 
 typedef struct __attribute__((__packed__))
 {
@@ -52,7 +53,7 @@ typedef struct __attribute__((__packed__))
 /*
  *
  */
-class Adc : public Driver
+class Adc : public Status
 {
 public:
   uint32_t init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
@@ -64,11 +65,19 @@ public:
   bool poll(uint64_t poll_offset);
   void endDma(ADC_HandleTypeDef * hadc);
 
-  bool display(void) override;
+  bool display(void);
   bool isMy(ADC_HandleTypeDef * hadc) { return (hadcExt_ == hadc) || (hadcInt_ == hadc); }
   void setScaleFactor(uint16_t n, float scale_factor);
 
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
+  uint16_t sampleRateHz_;
+  uint64_t drdy_;
+
+
   uint32_t configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg);
   uint32_t configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, AdcChannelCfg * cfg, uint16_t cfg_channels);
   ADC_HandleTypeDef *hadcExt_, *hadcInt_; // The shared SPI handle

@@ -38,15 +38,10 @@
 #ifndef UBX_H_
 #define UBX_H_
 
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
-#include "Driver.h"
 #include "Packets.h"
-
-typedef enum
-{
-  UBX_M8,
-  UBX_M9
-} UbxProtocol;
+#include "Status.h"
 
 // Class 0x01, ID 0x07
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
@@ -93,39 +88,8 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
   uint16_t magAcc; // degx 10^-2
 } UbxPvt;
 
-// Class 0x01, ID 0x20
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  uint32_t iTOW; // ms, GPS time of week
-  int32_t fTOW;  // ns, (iTOW * 1e-3) + (fTOW * 1e-9) seconds
-  int16_t week;  // GPS week number
-  int8_t leapS;
-  uint8_t valid;
-  uint32_t tAcc;
-} UbxTime;
-
-// Class 0x01, ID 0x01
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  uint32_t iTOW; // ms, GPS time of week
-  int32_t ecefX;
-  int32_t ecefY;
-  int32_t ecefZ;
-  uint32_t pAcc;
-} UbxEcefPos;
-
-// Class 0x01, ID 0x11
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  uint32_t iTOW; // ms, GPS time of week
-  int32_t ecefVX;
-  int32_t ecefVY;
-  int32_t ecefVZ;
-  uint32_t sAcc;
-} UbxEcefVel;
-
 #define UBX_MAX_PAYLOAD_BYTES (256)
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   uint8_t cl, id;
   uint16_t length;
@@ -133,17 +97,13 @@ typedef struct __attribute__((__packed__))
   uint8_t payload[UBX_MAX_PAYLOAD_BYTES];
 } UbxFrame;
 
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
+typedef struct //__attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
-  rosflight_firmware::PacketHeader header;
+  rosflight_firmware::PacketHeader header; // time of validity, status
   int64_t unix_seconds; // computed from pvt time values
-  uint64_t drdy;
-  uint64_t groupDelay; // us, time from measurement to drdy, (approximate!)
+  int32_t unix_nanos;
   uint64_t pps;
   UbxPvt pvt;
-  UbxTime time;
-  UbxEcefPos ecefp;
-  UbxEcefVel ecefv;
 } UbxPacket;
 
 /**
@@ -152,7 +112,7 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
  *
  */
 
-class Ubx : public Driver
+class Ubx : public Status
 {
   /**
      * \brief
@@ -162,32 +122,38 @@ class Ubx : public Driver
 public:
   uint32_t init(
     // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, bool has_pps,
+    uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
     // UART initializers
-    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired,
-    UbxProtocol ubx_protocol);
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 
   bool poll(void);
   void endDma(void);
   bool startDma(void);
-  bool display(void) override;
+  bool display(void);
   bool parseByte(uint8_t c, UbxFrame * p);
   UART_HandleTypeDef * huart(void) { return huart_; }
 
-  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  bool isMy(uint16_t exti_pin) { return ppsPin_ == exti_pin; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
 
   void pps(uint64_t pps_timestamp);
 
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
+  uint16_t sampleRateHz_;
   UbxPacket ubx_;
-  uint64_t gotPvt_, gotTime_, gotEcefP_, gotEcefV_; //, gotNav_;
+  uint16_t ppsPin_;
+  uint64_t timeout_;
+
+  uint64_t gotPvt_;
   uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
   uint32_t baud_, baud_initial_;
-  UbxProtocol ubxProtocol_;
-  bool hasPps_;
+  uint16_t ppsHz_;
 
   void checksum(uint8_t * buffer);
   void header(uint8_t * buffer, uint8_t cl, uint8_t id, uint16_t length);

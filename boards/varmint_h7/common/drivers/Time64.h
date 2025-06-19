@@ -39,9 +39,10 @@
 #define TIME64_H_
 
 #include "BoardConfig.h"
-#include "Driver.h"
 #include "Status.h"
 #include <stdint.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 class Time64 : public Status
 {

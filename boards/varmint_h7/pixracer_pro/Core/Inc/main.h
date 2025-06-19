@@ -65,7 +65,6 @@ void MX_SDMMC1_SD_Init(void);
 void MX_SPI1_Init(void);
 void MX_SPI2_Init(void);
 void MX_SPI5_Init(void);
-void MX_SPI6_Init(void);
 void MX_TIM1_Init(void);
 void MX_TIM2_Init(void);
 void MX_TIM4_Init(void);
@@ -104,10 +103,10 @@ void MX_TIM3_Init(void);
 #define I2C1_SCL_GPIO_Port GPIOB
 #define VDD_BRICK_VALID_Pin GPIO_PIN_5
 #define VDD_BRICK_VALID_GPIO_Port GPIOB
-#define EXTERNAL_SPI6_MOSI_Pin GPIO_PIN_14
-#define EXTERNAL_SPI6_MOSI_GPIO_Port GPIOG
-#define EXTERNAL_SPI6_SCK_Pin GPIO_PIN_13
-#define EXTERNAL_SPI6_SCK_GPIO_Port GPIOG
+#define PROBE3_Pin GPIO_PIN_14
+#define PROBE3_GPIO_Port GPIOG
+#define PROBE1_Pin GPIO_PIN_13
+#define PROBE1_GPIO_Port GPIOG
 #define LED_BLUE_Pin GPIO_PIN_3
 #define LED_BLUE_GPIO_Port GPIOB
 #define DPS310_CSn_Pin GPIO_PIN_7
@@ -128,8 +127,9 @@ void MX_TIM3_Init(void);
 #define FMU_UART1_RX_GPIO_Port GPIOB
 #define FMU_UART1_TX_Pin GPIO_PIN_6
 #define FMU_UART1_TX_GPIO_Port GPIOB
-#define EXTERNAL_SPI6_MISO_Pin GPIO_PIN_12
-#define EXTERNAL_SPI6_MISO_GPIO_Port GPIOG
+#define GPS_PPS_Pin GPIO_PIN_12
+#define GPS_PPS_GPIO_Port GPIOG
+#define GPS_PPS_EXTI_IRQn EXTI15_10_IRQn
 #define TELEM1_USART2_RX_Pin GPIO_PIN_6
 #define TELEM1_USART2_RX_GPIO_Port GPIOD
 #define CAN1_RX_Pin GPIO_PIN_0
@@ -144,8 +144,8 @@ void MX_TIM3_Init(void);
 #define PWM_08_GPIO_Port GPIOI
 #define PWM_07_Pin GPIO_PIN_5
 #define PWM_07_GPIO_Port GPIOI
-#define EXTERNAL_SPI6_CS_Pin GPIO_PIN_9
-#define EXTERNAL_SPI6_CS_GPIO_Port GPIOG
+#define PROBE2_Pin GPIO_PIN_9
+#define PROBE2_GPIO_Port GPIOG
 #define TELEM1_USART2_TX_Pin GPIO_PIN_5
 #define TELEM1_USART2_TX_GPIO_Port GPIOD
 #define CAN1_TX_Pin GPIO_PIN_1
@@ -259,9 +259,6 @@ void MX_TIM3_Init(void);
 #define CAN2_EN_GPIO_Port GPIOF
 #define DEBUG_UART7_RX_Pin GPIO_PIN_7
 #define DEBUG_UART7_RX_GPIO_Port GPIOE
-#define ICM_20948_DRDY_Pin GPIO_PIN_12
-#define ICM_20948_DRDY_GPIO_Port GPIOE
-#define ICM_20948_DRDY_EXTI_IRQn EXTI15_10_IRQn
 #define ICM_20948_CS_Pin GPIO_PIN_15
 #define ICM_20948_CS_GPIO_Port GPIOE
 #define DPS310_FRAM_SCK_Pin GPIO_PIN_10

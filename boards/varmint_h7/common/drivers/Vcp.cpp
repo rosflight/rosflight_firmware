@@ -47,7 +47,6 @@
 
 extern Time64 time64;
 
-//#define VCP_TX_FIFO_BUFFERS SERIAL_TX_FIFO_BUFFERS
 #define VCP_TX_FIFO_BUFFERS 256
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 

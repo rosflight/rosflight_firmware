@@ -46,153 +46,22 @@ Mixer::Mixer(ROSflight & _rf)
   }
 }
 
-void Mixer::init() { init_mixing(); }
+void Mixer::init()
+{
+  load_primary_mixer_values();
+  load_secondary_mixer_values();
+
+  init_mixing();
+}
 
 void Mixer::param_change_callback(uint16_t param_id)
 {
-  switch (param_id) {
-    case PARAM_PRIMARY_MIXER_OUTPUT_0:
-    case PARAM_PRIMARY_MIXER_OUTPUT_1:
-    case PARAM_PRIMARY_MIXER_OUTPUT_2:
-    case PARAM_PRIMARY_MIXER_OUTPUT_3:
-    case PARAM_PRIMARY_MIXER_OUTPUT_4:
-    case PARAM_PRIMARY_MIXER_OUTPUT_5:
-    case PARAM_PRIMARY_MIXER_OUTPUT_6:
-    case PARAM_PRIMARY_MIXER_OUTPUT_7:
-    case PARAM_PRIMARY_MIXER_OUTPUT_8:
-    case PARAM_PRIMARY_MIXER_OUTPUT_9:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_0:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_1:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_2:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_3:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_4:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_5:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_6:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_7:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_8:
-    case PARAM_PRIMARY_MIXER_PWM_RATE_9:
-    case PARAM_PRIMARY_MIXER_0_0:
-    case PARAM_PRIMARY_MIXER_1_0:
-    case PARAM_PRIMARY_MIXER_2_0:
-    case PARAM_PRIMARY_MIXER_3_0:
-    case PARAM_PRIMARY_MIXER_4_0:
-    case PARAM_PRIMARY_MIXER_5_0:
-    case PARAM_PRIMARY_MIXER_0_1:
-    case PARAM_PRIMARY_MIXER_1_1:
-    case PARAM_PRIMARY_MIXER_2_1:
-    case PARAM_PRIMARY_MIXER_3_1:
-    case PARAM_PRIMARY_MIXER_4_1:
-    case PARAM_PRIMARY_MIXER_5_1:
-    case PARAM_PRIMARY_MIXER_0_2:
-    case PARAM_PRIMARY_MIXER_1_2:
-    case PARAM_PRIMARY_MIXER_2_2:
-    case PARAM_PRIMARY_MIXER_3_2:
-    case PARAM_PRIMARY_MIXER_4_2:
-    case PARAM_PRIMARY_MIXER_5_2:
-    case PARAM_PRIMARY_MIXER_0_3:
-    case PARAM_PRIMARY_MIXER_1_3:
-    case PARAM_PRIMARY_MIXER_2_3:
-    case PARAM_PRIMARY_MIXER_3_3:
-    case PARAM_PRIMARY_MIXER_4_3:
-    case PARAM_PRIMARY_MIXER_5_3:
-    case PARAM_PRIMARY_MIXER_0_4:
-    case PARAM_PRIMARY_MIXER_1_4:
-    case PARAM_PRIMARY_MIXER_2_4:
-    case PARAM_PRIMARY_MIXER_3_4:
-    case PARAM_PRIMARY_MIXER_4_4:
-    case PARAM_PRIMARY_MIXER_5_4:
-    case PARAM_PRIMARY_MIXER_0_5:
-    case PARAM_PRIMARY_MIXER_1_5:
-    case PARAM_PRIMARY_MIXER_2_5:
-    case PARAM_PRIMARY_MIXER_3_5:
-    case PARAM_PRIMARY_MIXER_4_5:
-    case PARAM_PRIMARY_MIXER_5_5:
-    case PARAM_PRIMARY_MIXER_0_6:
-    case PARAM_PRIMARY_MIXER_1_6:
-    case PARAM_PRIMARY_MIXER_2_6:
-    case PARAM_PRIMARY_MIXER_3_6:
-    case PARAM_PRIMARY_MIXER_4_6:
-    case PARAM_PRIMARY_MIXER_5_6:
-    case PARAM_PRIMARY_MIXER_0_7:
-    case PARAM_PRIMARY_MIXER_1_7:
-    case PARAM_PRIMARY_MIXER_2_7:
-    case PARAM_PRIMARY_MIXER_3_7:
-    case PARAM_PRIMARY_MIXER_4_7:
-    case PARAM_PRIMARY_MIXER_5_7:
-    case PARAM_PRIMARY_MIXER_0_8:
-    case PARAM_PRIMARY_MIXER_1_8:
-    case PARAM_PRIMARY_MIXER_2_8:
-    case PARAM_PRIMARY_MIXER_3_8:
-    case PARAM_PRIMARY_MIXER_4_8:
-    case PARAM_PRIMARY_MIXER_5_8:
-    case PARAM_PRIMARY_MIXER_0_9:
-    case PARAM_PRIMARY_MIXER_1_9:
-    case PARAM_PRIMARY_MIXER_2_9:
-    case PARAM_PRIMARY_MIXER_3_9:
-    case PARAM_PRIMARY_MIXER_4_9:
-    case PARAM_PRIMARY_MIXER_5_9:
 
-    case PARAM_SECONDARY_MIXER_0_0:
-    case PARAM_SECONDARY_MIXER_1_0:
-    case PARAM_SECONDARY_MIXER_2_0:
-    case PARAM_SECONDARY_MIXER_3_0:
-    case PARAM_SECONDARY_MIXER_4_0:
-    case PARAM_SECONDARY_MIXER_5_0:
-    case PARAM_SECONDARY_MIXER_0_1:
-    case PARAM_SECONDARY_MIXER_1_1:
-    case PARAM_SECONDARY_MIXER_2_1:
-    case PARAM_SECONDARY_MIXER_3_1:
-    case PARAM_SECONDARY_MIXER_4_1:
-    case PARAM_SECONDARY_MIXER_5_1:
-    case PARAM_SECONDARY_MIXER_0_2:
-    case PARAM_SECONDARY_MIXER_1_2:
-    case PARAM_SECONDARY_MIXER_2_2:
-    case PARAM_SECONDARY_MIXER_3_2:
-    case PARAM_SECONDARY_MIXER_4_2:
-    case PARAM_SECONDARY_MIXER_5_2:
-    case PARAM_SECONDARY_MIXER_0_3:
-    case PARAM_SECONDARY_MIXER_1_3:
-    case PARAM_SECONDARY_MIXER_2_3:
-    case PARAM_SECONDARY_MIXER_3_3:
-    case PARAM_SECONDARY_MIXER_4_3:
-    case PARAM_SECONDARY_MIXER_5_3:
-    case PARAM_SECONDARY_MIXER_0_4:
-    case PARAM_SECONDARY_MIXER_1_4:
-    case PARAM_SECONDARY_MIXER_2_4:
-    case PARAM_SECONDARY_MIXER_3_4:
-    case PARAM_SECONDARY_MIXER_4_4:
-    case PARAM_SECONDARY_MIXER_5_4:
-    case PARAM_SECONDARY_MIXER_0_5:
-    case PARAM_SECONDARY_MIXER_1_5:
-    case PARAM_SECONDARY_MIXER_2_5:
-    case PARAM_SECONDARY_MIXER_3_5:
-    case PARAM_SECONDARY_MIXER_4_5:
-    case PARAM_SECONDARY_MIXER_5_5:
-    case PARAM_SECONDARY_MIXER_0_6:
-    case PARAM_SECONDARY_MIXER_1_6:
-    case PARAM_SECONDARY_MIXER_2_6:
-    case PARAM_SECONDARY_MIXER_3_6:
-    case PARAM_SECONDARY_MIXER_4_6:
-    case PARAM_SECONDARY_MIXER_5_6:
-    case PARAM_SECONDARY_MIXER_0_7:
-    case PARAM_SECONDARY_MIXER_1_7:
-    case PARAM_SECONDARY_MIXER_2_7:
-    case PARAM_SECONDARY_MIXER_3_7:
-    case PARAM_SECONDARY_MIXER_4_7:
-    case PARAM_SECONDARY_MIXER_5_7:
-    case PARAM_SECONDARY_MIXER_0_8:
-    case PARAM_SECONDARY_MIXER_1_8:
-    case PARAM_SECONDARY_MIXER_2_8:
-    case PARAM_SECONDARY_MIXER_3_8:
-    case PARAM_SECONDARY_MIXER_4_8:
-    case PARAM_SECONDARY_MIXER_5_8:
-    case PARAM_SECONDARY_MIXER_0_9:
-    case PARAM_SECONDARY_MIXER_1_9:
-    case PARAM_SECONDARY_MIXER_2_9:
-    case PARAM_SECONDARY_MIXER_3_9:
-    case PARAM_SECONDARY_MIXER_4_9:
-    case PARAM_SECONDARY_MIXER_5_9:
-
+  if ((param_id >=PARAM_PRIMARY_MIXER_OUTPUT_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
+    load_primary_mixer_values();
+  } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
+    load_secondary_mixer_values();
+  } else switch (param_id) {
     case PARAM_PRIMARY_MIXER:
     case PARAM_SECONDARY_MIXER:
       init_mixing();
@@ -208,7 +77,6 @@ void Mixer::param_change_callback(uint16_t param_id)
       update_parameters();
       break;
     case PARAM_MOTOR_PWM_SEND_RATE:
-    case PARAM_RC_TYPE:
       init_PWM();
       break;
     default:
@@ -244,8 +112,7 @@ void Mixer::init_mixing()
     } else if (mixer_choice != FIXEDWING &&
                mixer_choice != INVERTED_VTAIL) {
       // Invert the selected "canned" matrix
-      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
-                            "Inverting selected mixing matrix...");
+      RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,"Inverting selected mixing matrix...");
       primary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
 
       // Save the primary mixer values to the params
@@ -324,7 +191,7 @@ void Mixer::init_mixing()
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_INFO,
                           "Inverting selected mixing matrix...");
 
-    // Invert the secondary mixer
+    // Invert the selected mixer and copy to secondary mixer
     secondary_mixer_ = invert_mixer(array_of_mixers_[mixer_choice]);
     save_secondary_mixer_params();
   } else {
@@ -388,9 +255,8 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> mixer_matrix_pinv =
     svd.matrixV() * Sig * svd.matrixU().transpose();
 
-  // Fill in the mixing matrix from the inverted matrix above
   mixer_t inverted_mixer;
-
+  // Fill in the mixing matrix from the inverted matrix above
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
     inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
@@ -401,7 +267,6 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
     inverted_mixer.Qy[i] = mixer_matrix_pinv(i, 4);
     inverted_mixer.Qz[i] = mixer_matrix_pinv(i, 5);
   }
-
   return inverted_mixer;
 }
 

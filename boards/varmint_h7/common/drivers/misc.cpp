@@ -265,10 +265,12 @@ size_t misc_getline(uint8_t * line, size_t len)
   return len;
 }
 
-void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay)
+void misc_header(char * name, rosflight_firmware::PacketHeader &header)
 {
-  misc_printf("%-16s [%8.2f s %8.2f ms %8.3f ms] ", name, (double) drdy / 1e6, (double) (timestamp - drdy) / 1000.,
-              (double) delay / 1000.);
+  int64_t dt=0;
+  if (header.timestamp>header.complete) dt = -(header.timestamp-header.complete);
+  else dt = header.complete-header.timestamp;
+  misc_printf("%-16s [t:%12.6f s dt:%10d us] ", name, (double) header.timestamp / 1e6, dt);
 }
 
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size)
@@ -296,3 +298,4 @@ void misc_exit_status(uint32_t status)
   if (status & VOLTAGE_SET_FAIL) misc_printf(" VOLTAGE_SET_FAIL");
   misc_printf("\033[0m\n");
 }
+
