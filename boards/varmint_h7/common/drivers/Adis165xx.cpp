@@ -235,7 +235,7 @@ void Adis165xx::endDma(void) // called when DMA data is ready
     if (sum == data[10]) {
       ImuPacket p;
       p.header.timestamp = drdy_;
-      p.read_complete = time64.Us();      p.header.status = (uint16_t) data[1];
+      p.header.complete = time64.Us();      p.header.status = (uint16_t) data[1];
       p.gyro[0] = -(double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
       p.gyro[1] = -(double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
       p.gyro[2] = (double) data[4] * 0.001745329251994;  // rad/s, or use 0.1 deg/s
@@ -258,7 +258,7 @@ void Adis165xx::endDma(void) // called when DMA data is ready
     if (sum == data[16]) {
       ImuPacket p;
       p.header.timestamp = drdy_;
-      p.read_complete = time64.Us();
+      p.header.complete = time64.Us();
       p.header.status = (uint16_t) data[1];
       p.gyro[0] = val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
       p.gyro[1] = val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
@@ -310,7 +310,7 @@ bool Adis165xx::display(void)
   ImuPacket p;
   char name[] = "Adis165xx (imu)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");

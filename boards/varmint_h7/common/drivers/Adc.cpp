@@ -193,7 +193,7 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
     }
 
     p.header.timestamp = drdy_;
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     write((uint8_t *) &p, sizeof(p));
     ext_read = 0;
     int_read = 0;
@@ -206,7 +206,7 @@ bool Adc::display(void)
   char name[] = "Adc (adc)";
 
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header);
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "STM");

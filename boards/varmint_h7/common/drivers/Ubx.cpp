@@ -61,7 +61,7 @@ void Ubx::pps(uint64_t pps_timestamp)
 
 uint32_t Ubx::init(
   // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, bool has_pps,
+  uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin, bool has_pps,
   // UART initializers
   UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud,
   UbxProtocol ubx_protocol)
@@ -70,7 +70,7 @@ uint32_t Ubx::init(
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  ppsPin_ = drdy_pin;
+  ppsPin_ = pps_pin;
   hasPps_ = has_pps;
   ppsHz_ = 1; // To match top of second.
 
@@ -88,9 +88,6 @@ uint32_t Ubx::init(
 
   // gotNav_ = false;
   gotPvt_ = 0;
-//  gotTime_ = 0;
-//  gotEcefP_ = 0;
-//  gotEcefV_ = 0;
 
   // USART initialization
   huart_->Instance = huart_instance;
@@ -271,7 +268,7 @@ void Ubx::endDma(void)
              ubx_.header.timestamp  = ubx_.pps + (uint64_t)(ubx_.pvt.nano/1000);
           }
         } else {
-          ubx_.header.timestamp = gotPvt_; //
+          ubx_.header.timestamp = gotPvt_-45000; //
         }
 
         ubx_.read_complete =  gotPvt_;
@@ -643,7 +640,7 @@ bool Ubx::display(void)
     time_t seconds = p.unix_seconds;
     gmt = gmtime(&seconds);
 
-    misc_header(name_pvt, p.header.timestamp, p.read_complete );
+    misc_header(name_pvt, p.header );
     misc_printf("| pps %10.6f s | ", (double)p.pps * 1e-6);
     misc_printf(" iTOW %10.3f s | ", (double)p.pvt.iTOW/1000);
 

@@ -265,9 +265,9 @@ size_t misc_getline(uint8_t * line, size_t len)
   return len;
 }
 
-void misc_header(char * name, uint64_t timestamp , uint64_t read_done)
+void misc_header(char * name, rosflight_firmware::PacketHeader &header)
 {
-  misc_printf("%-16s [t:%12.6f s dt:%10d us] ", name, (double) timestamp / 1e6, (int64_t)read_done-(int64_t)timestamp);
+  misc_printf("%-16s [t:%12.6f s dt:%10d us] ", name, (double) header.timestamp / 1e6, (int64_t)header.complete-(int64_t)header.timestamp);
 }
 
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size)

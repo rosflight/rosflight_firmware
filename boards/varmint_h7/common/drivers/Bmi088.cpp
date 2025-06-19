@@ -330,7 +330,7 @@ void Bmi088::endDma(void) // DMA complete routine
     data = (int16_t) rx[6] << 8 | (int16_t) rx[5];
     p.gyro[2] = scale_factor * (double) data;
 
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     p.header.timestamp = drdy_;
 
     rotate(p.gyro);
@@ -383,7 +383,7 @@ bool Bmi088::display(void)
   ImuPacket p;
   char name[] = "Bmi088 (imu)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");

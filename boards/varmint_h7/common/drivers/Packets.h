@@ -57,7 +57,7 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-  uint64_t read_complete;  // us, time of pushing data to signal
+//  uint64_t read_complete;  // us, time of pushing data to signal
   double temperature;
   double vBku;
   double vRef;
@@ -67,7 +67,7 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-  uint64_t read_complete;  // us, time of pushing data to signal
+//  uint64_t read_complete;  // us, time of pushing data to signal
   double gyro[3];      // rad/s
   double accel[3];     // rad/s
   double temperature;  // K
@@ -77,7 +77,7 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   rosflight_firmware::PacketHeader header;
-  uint64_t read_complete;  // us, time of pushing data to signal
+//  uint64_t read_complete;  // us, time of pushing data to signal
   double pressure;     // Pa
   double temperature;  // K
 } PressurePacket;
@@ -85,7 +85,7 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((packed))
 {
   rosflight_firmware::PacketHeader header;
-  uint64_t read_complete;  // us, time of pushing data to signal
+//  uint64_t read_complete;  // us, time of pushing data to signal
   double flux[3];      // T, magnetic flux density
   double temperature;  // K
 } MagPacket;
@@ -100,5 +100,28 @@ typedef struct //__attribute__((__packed__))
   bool frameLost;
   bool failsafeActivated;
 } RcPacket;
+
+
+//typedef struct GnssStruct GnssPacket;
+
+typedef struct //__attribute__((__packed__))
+{
+  rosflight_firmware::PacketHeader header;
+  uint64_t pps;           // most recent pps timestamp (us)
+  int64_t unix_seconds;   // Unix time, in seconds
+  int32_t unix_nanos;
+  uint8_t fix_type;
+  uint8_t num_sat;
+  double lon;
+  double lat;
+  float height_msl;
+  float vel_n;
+  float vel_e;
+  float vel_d;
+  float h_acc;
+  float v_acc;
+  float speed_accy;
+} GnssPacket;
+
 
 #endif /* DRIVERPACKETS_H_ */

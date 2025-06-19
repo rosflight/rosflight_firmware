@@ -90,7 +90,7 @@ void Varmint::init_board(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_SPI5_Init();
-  MX_SPI6_Init();
+//  MX_SPI6_Init(); // NOt using
 
   //	MX_TIM1_Init();  // PWM, initialized elsewhere
   //	MX_TIM2_Init();	 // PWM (Buzzer) not used as such
@@ -257,6 +257,7 @@ void Varmint::init_board(void)
 
   HAL_NVIC_EnableIRQ(BMI088_INT4_GYRO_EXTI_IRQn);  // EXTI4_IRQn Gyro DRDY Feedback
   HAL_NVIC_EnableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
+  HAL_NVIC_EnableIRQ(GPS_PPS_EXTI_IRQn); // EXTI15_10_IRQn GPS PPD
 
   __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
   __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);

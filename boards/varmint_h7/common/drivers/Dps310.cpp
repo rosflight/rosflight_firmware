@@ -363,7 +363,7 @@ void Dps310::endDma(void)
   {
     if (rx[1] & 0x10) {
       p.header.status |= (uint16_t) rx[1];
-      p.read_complete = time64.Us();
+      p.header.complete = time64.Us();
     }
   } else if (spiState_ == DPS310_DRDY_T) // Temperature DRDY
   {
@@ -380,7 +380,7 @@ void Dps310::endDma(void)
     p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_)) + Traw * (C01_ + Praw * (C11_ + Praw * C21_)); // Pa
 
     p.header.timestamp = drdy_;
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     if (p.header.status == DPS310_OK) write((uint8_t *) &p, sizeof(p));
     p.header.status = 0;
   }
@@ -394,7 +394,7 @@ bool Dps310::display(void)
   PressurePacket p;
 
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_, p.header.timestamp, p.read_complete );
+    misc_header(name_, p.header );
     misc_f32(98, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(DPS310_OK, p.header.status, "Status");

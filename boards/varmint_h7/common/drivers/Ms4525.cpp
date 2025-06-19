@@ -135,7 +135,7 @@ void Ms4525::endDma(void)
         p.header.status = ms4525_i2c_dma_buf[0] & 0xC0;
 
         p.header.timestamp = drdy_;
-        p.read_complete = time64.Us();
+        p.header.complete = time64.Us();
 
         write((uint8_t *) &p, sizeof(p));
       }
@@ -150,7 +150,7 @@ bool Ms4525::display(void)
   PressurePacket p;
   char name[] = "MS4525 (pitot)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     misc_printf("%10.3f Pa                          |                                        | "
                 "%7.1f C |           "
                 "   | 0x%04X",

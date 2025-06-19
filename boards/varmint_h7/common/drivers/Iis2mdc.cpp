@@ -220,7 +220,7 @@ void Iis2mdc::endDma(void)
   if (spiState_ == IIS2MDC_RX_H) // Flux Data and DRDY
   {
     memset(&p, 0, sizeof(p)); // clear p
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     p.header.status = rx[1];
 
     int16_t data = (rx[3] << 8) | rx[2];
@@ -240,7 +240,7 @@ void Iis2mdc::endDma(void)
     p.temperature = (double) data / 8.0 + 25.0 + 273.15; // K
 
     p.header.timestamp = drdy_;
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     if (p.header.status == IIS2MDC_OK)
     {
       rotate(p.flux);
@@ -260,7 +260,7 @@ bool Iis2mdc::display()
 
     float total_flux = sqrt(p.flux[0] * p.flux[0] + p.flux[1] * p.flux[1] + p.flux[2] * p.flux[2]);
 
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
 
     misc_f32(NAN, NAN, p.flux[0] * 1e6, "hx", "%6.2f", "uT");
     misc_f32(NAN, NAN, p.flux[1] * 1e6, "hy", "%6.2f", "uT");

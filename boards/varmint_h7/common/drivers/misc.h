@@ -40,6 +40,7 @@
 
 #include <stdint.h>
 #include <stm32h7xx_hal.h>
+#include "rosflight_structs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,7 +81,7 @@ void misc_u32(uint32_t lo, uint32_t hi, uint32_t x, const char * pre, const char
 
 void misc_printf(const char * format, ...);
 size_t misc_getline(uint8_t * line, size_t len);
-void misc_header(char * name, uint64_t drdy, uint64_t timestamp);
+void misc_header(char * name, rosflight_firmware::PacketHeader &header);
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size);
 void misc_exit_status(uint32_t status);
 

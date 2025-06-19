@@ -158,7 +158,7 @@ void DlhrL20G::endDma(void)
   p.header.status = dlhr_i2c_dma_buf[0];
   if (p.header.status == 0x0040) {
     p.header.timestamp = drdy_;
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     uint32_t i_pressure =
       (uint32_t) dlhr_i2c_dma_buf[1] << 16 | (uint32_t) dlhr_i2c_dma_buf[2] << 8 | (uint32_t) dlhr_i2c_dma_buf[3];
     uint32_t i_temperature =
@@ -179,7 +179,7 @@ bool DlhrL20G::display(void)
   PressurePacket p;
   char name[] = "DlhrL20G (pitot)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     misc_f32(-5, 5, p.pressure, "Press", "%6.2f", "Pa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(DLHRL20G_OK, p.header.status, "Status");

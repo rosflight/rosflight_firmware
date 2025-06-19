@@ -40,8 +40,8 @@
 
 #include "CommonConfig.h"
 
-#define SANDBOX false
-#define BOARD_STATUS_PRINT false
+#define SANDBOX true
+#define BOARD_STATUS_PRINT true
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
@@ -208,15 +208,15 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // uBlox
 #define UBX_HZ (10)
 #define UBX_NUM (3) // number of different types of packets
-//#define	UBX_BAUD					(57600)
+#define	UBX_BAUD					(115200)
 
 #define GPS_HZ (UBX_HZ)
-#define GPS_BAUD (57600)
+#define GPS_BAUD (UBX_BAUD)
 
-#define UBX_PROTOCOL (UBX_M9)
-#define GPS_HAS_PPS (false)
-#define GPS_PPS_PORT 0 // ignored on pixracer
-#define GPS_PPS_PIN 0  // ignored on pixracer
+#define UBX_PROTOCOL (UBX_M8) //(UBX_M9)
+#define GPS_HAS_PPS (true)
+#define GPS_PPS_PORT GPS_PPS_GPIO_Port // wire up to MOSI pin on external SPI connector
+#define GPS_PPS_PIN GPS_PPS_Pin  // wire up to MOSI pin on external SPI connector
 #define GPS_UART (&huart4)
 #define GPS_UART_INSTANCE (UART4)
 #define GPS_UART_DMA (&hdma_uart4_rx)
@@ -295,14 +295,22 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Probes
 #if 1
 // Probe PIN PG9
-#define PROBE1_HI HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_SET)
-#define PROBE1_LO HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_RESET)
-#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_9)
+#define PROBE1_HI HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_SET)
+#define PROBE1_LO HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_RESET)
+#define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
+
+#define PROBE2_HI HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_SET)
+#define PROBE2_LO HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_RESET)
+#define PROBE2_TOG HAL_GPIO_TogglePin(PROBE2_GPIO_Port, PROBE2_Pin)
+
+#define PROBE3_HI HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_SET)
+#define PROBE3_LO HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_RESET)
+#define PROBE3_TOG HAL_GPIO_TogglePin(PROBE3_GPIO_Port, PROBE3_Pin)
+
 #else
 #define PROBE1_HI
 #define PROBE1_LO
 #define PROBE1_TOG
-#endif
 
 #define PROBE2_HI
 #define PROBE2_LO
@@ -315,5 +323,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define PROBE4_HI
 #define PROBE4_LO
 #define PROBE4_TOG
+#endif
 
 #endif /* BOARDCONFIG_H_ */

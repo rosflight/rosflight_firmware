@@ -289,7 +289,7 @@ void Auav::endDma(void)
     spiState_ = STATUS_IDLE;
     if(p.header.status==sensor_status_ready_[AUAV_PITOT]) // PTT uncomment if needed
     {
-      p.read_complete = time64.Us();
+      p.header.complete = time64.Us();
       write2((uint8_t *) &p, sizeof(p), AUAV_PITOT);
     }
   } else if (spiState_ == STATUS_BARO_READ) {   // Done starting Baro
@@ -299,7 +299,7 @@ void Auav::endDma(void)
     spiState_ = STATUS_IDLE;
     if(p.header.status==sensor_status_ready_[AUAV_BARO]) // PTT uncomment this when we fix the sensor.
     {
-      p.read_complete = time64.Us();
+      p.header.complete = time64.Us();
       write2((uint8_t *) &p, sizeof(p), AUAV_BARO);
    }
   } else {
@@ -395,7 +395,7 @@ bool Auav::display(void)
   PressurePacket p;
 
   if (read2((uint8_t *) &p, sizeof(p), AUAV_BARO)) {
-    misc_header(name_local_[AUAV_BARO], p.header.timestamp, p.read_complete);
+    misc_header(name_local_[AUAV_BARO], p.header);
 
     misc_f32(99, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
@@ -407,7 +407,7 @@ bool Auav::display(void)
   }
 
   if (read2((uint8_t *) &p, sizeof(p), AUAV_PITOT)) {
-    misc_header(name_local_[AUAV_PITOT], p.header.timestamp, p.read_complete);
+    misc_header(name_local_[AUAV_PITOT], p.header );
     misc_f32(-5.0, 5.0, p.pressure, "Press", "%6.2f", "Pa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(sensorOk(AUAV_PITOT), p.header.status, "Status");

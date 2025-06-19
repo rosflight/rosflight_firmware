@@ -41,6 +41,7 @@
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
 #include "Packets.h"
+#include "Status.h"
 
 typedef enum
 {
@@ -93,39 +94,8 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
   uint16_t magAcc; // degx 10^-2
 } UbxPvt;
 
-// Class 0x01, ID 0x20
-//typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-//{
-//  uint32_t iTOW; // ms, GPS time of week
-//  int32_t fTOW;  // ns, (iTOW * 1e-3) + (fTOW * 1e-9) seconds
-//  int16_t week;  // GPS week number
-//  int8_t leapS;
-//  uint8_t valid;
-//  uint32_t tAcc;
-//} UbxTime;
-
-// Class 0x01, ID 0x01
-//typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-//{
-//  uint32_t iTOW; // ms, GPS time of week
-//  int32_t ecefX;
-//  int32_t ecefY;
-//  int32_t ecefZ;
-//  uint32_t pAcc;
-//} UbxEcefPos;
-
-// Class 0x01, ID 0x11
-//typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
-//{
-//  uint32_t iTOW; // ms, GPS time of week
-//  int32_t ecefVX;
-//  int32_t ecefVY;
-//  int32_t ecefVZ;
-//  uint32_t sAcc;
-//} UbxEcefVel;
-
 #define UBX_MAX_PAYLOAD_BYTES (256)
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   uint8_t cl, id;
   uint16_t length;
@@ -133,7 +103,7 @@ typedef struct __attribute__((__packed__))
   uint8_t payload[UBX_MAX_PAYLOAD_BYTES];
 } UbxFrame;
 
-typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
+typedef struct //__attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
   rosflight_firmware::PacketHeader header; // time of validity, status
   int64_t unix_seconds; // computed from pvt time values
@@ -141,9 +111,6 @@ typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do no
   int64_t read_complete;
   uint64_t pps;
   UbxPvt pvt;
-//  UbxTime time;
-//  UbxEcefPos ecefp;
-//  UbxEcefVel ecefv;
 } UbxPacket;
 
 /**
@@ -162,7 +129,7 @@ class Ubx : public Status
 public:
   uint32_t init(
     // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, bool has_pps,
+    uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin, bool has_pps,
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired,
     UbxProtocol ubx_protocol);
@@ -189,7 +156,7 @@ private:
   uint16_t ppsPin_;
   uint64_t timeout_;
 
-  uint64_t gotPvt_; //, gotTime_, gotEcefP_, gotEcefV_; //, gotNav_;
+  uint64_t gotPvt_;
   uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;

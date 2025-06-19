@@ -231,7 +231,7 @@ void Ist8308::endDma(void)
   if (i2cState_ == IST8308_RX) {
     MagPacket p;
     p.header.timestamp = drdy_;
-    p.read_complete = time64.Us();
+    p.header.complete = time64.Us();
     p.header.status = ist8308_i2c_dma_buf[0];
 
     if (p.header.status == STAT1_VAL_DRDY)
@@ -259,7 +259,7 @@ bool Ist8308::display()
   MagPacket p;
   char name[] = "Ist8308 (mag)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
 
     misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
     misc_printf(" |                                       ");

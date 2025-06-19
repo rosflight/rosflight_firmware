@@ -217,16 +217,16 @@ bool Sbus::display(void)
   RcPacket p;
   char name[] = "Sbus (rc)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     for (int i = 0; i < 8; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     for (int i = 8; i < 16; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     for (int i = 16; i < 24; i++) misc_printf("[%2u]:%4.0f, ", i + 1, (p.chan[i] * 100.0));
     misc_printf("%\n");
-    misc_header(name, p.header.timestamp, p.read_complete );
+    misc_header(name, p.header );
     misc_printf("Frame Lost: %1u, Failsafe Activated: %1u, Status: %1u\n", p.frameLost, p.failsafeActivated,
                 p.header.status);
     return 1;

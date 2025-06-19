@@ -43,9 +43,10 @@
 namespace rosflight_firmware
 {
 
-typedef struct __attribute__((__packed__))
+typedef struct //__attribute__((__packed__))
 {
   uint64_t timestamp; // us, time of data read complete
+  uint64_t complete;  //
   uint16_t status;    // device dependent
 } PacketHeader;
 
@@ -115,21 +116,21 @@ enum class GNSSFixType // quality from GGA
 
 typedef struct //__attribute__((__packed__))
 {
-  PacketHeader header;    //
+  PacketHeader header;
   uint64_t pps;           // most recent pps timestamp (us)
-  int64_t unix_seconds;   // Unix time, in seconds (redundant)
-  int32_t unix_nanos;     // GGA RMC UTC Time (ms) / PVT nano (this and unix_seconds adjusted so unitx_nanos is positive)
-  uint8_t fix_type;       // RMC (posmode), compute from GGA(quality) /PVT flags
-  uint8_t num_sat;        // GGA
-  double lon;            // GGA RMC / PVT
-  double lat;            // GGA RMC / PVT
-  float height_msl;     // GGA / PVT
-  float vel_n;          // RMC / PVT (RMC compute from ground velocity)
-  float vel_e;          // RMC / PVT (RMC compute from ground velocity)
-  float vel_d;          // no / PVT
-  float h_acc;         // GST (lat and lon) / PVT hAcc
-  float v_acc;         // GST / PVT vAcc
-  float speed_accy;    // no /PVT (sACC) speed accuracy
+  int64_t unix_seconds;   // Unix time, in seconds
+  int32_t unix_nanos;
+  uint8_t fix_type;
+  uint8_t num_sat;
+  double lon;
+  double lat;
+  float height_msl;
+  float vel_n;
+  float vel_e;
+  float vel_d;
+  float h_acc;
+  float v_acc;
+  float speed_accy;
 } GnssStruct;
 
 typedef struct
