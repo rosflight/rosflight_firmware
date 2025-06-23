@@ -38,13 +38,14 @@
 #ifndef BMI088_H_
 #define BMI088_H_
 
-#include "Driver.h"
+#include "DoubleBuffer.h"
 #include "Spi.h"
+#include "misc.h"
 
 /*
  *
  */
-class Bmi088 : public Driver
+class Bmi088 : public Status, public MiscRotatable
 {
   /**
      * \brief
@@ -69,16 +70,25 @@ public:
 
   void endDma(void);
   bool startDma(void);
-  bool display(void) override;
+  bool display(void);
 
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spiA_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spiA_.hspi(); }
 
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
+  uint16_t sampleRateHz_;
+  uint64_t groupDelay_;
   // SPI Stuff
   Spi spiA_;
   Spi spiG_;
+  uint16_t drdyPin_;
+  uint64_t drdy_;
+
   uint16_t timeoutMs_;
   uint16_t seqCount_;
   // BMI088 Stuff

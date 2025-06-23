@@ -40,6 +40,7 @@
 #include "misc.h"
 
 #include <string.h>
+#include <stdio.h>
 
 extern Time64 time64;
 

@@ -38,16 +38,19 @@
 #ifndef IIS2MDC_H_
 #define IIS2MDC_H_
 
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
-#include "Driver.h"
+
 #include "Spi.h"
+#include "misc.h"
+#include "Polling.h"
 
 #define IIS2MDC_OK (0x0F)
 
 /*
  *
  */
-class Iis2mdc : public Driver
+class Iis2mdc : public Status, public MiscRotatable
 {
   /**
      * \brief
@@ -68,19 +71,27 @@ public:
   bool poll(uint64_t poll_counter);
   void endDma(void);
 
-  bool display(void) override;
+  bool display(void);
 
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
 
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+
 private:
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  DoubleBuffer double_buffer_;
+  uint16_t sampleRateHz_;
   // SPI Stuff
   Spi spi_;
   PollingState spiState_;
-
+  uint16_t drdyPin_;
+  uint64_t drdy_;
+  bool dmaRunning_;
   void writeRegister(uint8_t address, uint8_t value);
   uint8_t readRegister(uint8_t address);
+
 };
 
 #endif /* IIS2MDC_H_ */

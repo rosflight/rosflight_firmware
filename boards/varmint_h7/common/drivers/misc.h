@@ -38,9 +38,9 @@
 #ifndef MISC_H_
 #define MISC_H_
 
-#include <Driver.h>
 #include <stdint.h>
 #include <stm32h7xx_hal.h>
+#include "rosflight_structs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,12 +81,29 @@ void misc_u32(uint32_t lo, uint32_t hi, uint32_t x, const char * pre, const char
 
 void misc_printf(const char * format, ...);
 size_t misc_getline(uint8_t * line, size_t len);
-void misc_header(char * name, uint64_t drdy, uint64_t timestamp, uint64_t delay);
+void misc_header(char * name, rosflight_firmware::PacketHeader &header);
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size);
 void misc_exit_status(uint32_t status);
+
 
 #ifdef __cplusplus
 }
 #endif
+
+class MiscRotatable
+{
+public:
+  void rotate(double *x) {
+    double y[3];
+    y[0] = x[0]*rotation_[0] + x[1]*rotation_[1] + x[2]*rotation_[2];
+    y[1] = x[0]*rotation_[3] + x[1]*rotation_[4] + x[2]*rotation_[5];
+    y[2] = x[0]*rotation_[6] + x[1]*rotation_[7] + x[2]*rotation_[8];
+    x[0] = y[0];
+    x[1] = y[1];
+    x[2] = y[2];
+  }
+protected:
+  double rotation_[9];
+};
 
 #endif /* MISC_H_ */

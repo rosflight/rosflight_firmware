@@ -41,7 +41,7 @@
 #include "CommonConfig.h"
 
 #define SANDBOX false
-#define BOARD_STATUS_PRINT false
+#define BOARD_STATUS_PRINT (false|SANDBOX)
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
@@ -83,8 +83,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Ist8308 mag_;	 	/* PixRacer Pro */ \
   /**/
 // clang-format on
-
-#define AUAV_FIFO_BUFFERS 0 // not used in pixracer pro
 
 // 48-bit us counter.
 // Prefer to have the 32-bit counter on the low order bytes:
@@ -146,21 +144,17 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define BMI088_HZ (EPOCH_HZ) // 400, 1000, 2000 are the only options
 #define BMI088_RANGE_A (3)   // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
 #define BMI088_RANGE_G (2)   // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-#define BMI088_FIFO_BUFFERS (FIFO_MIN_BUFFERS + BMI088_HZ / EPOCH_HZ)
 #define BMI088_ROTATION (const double[]){ -1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // ADIS IMU
 #define ADIS165XX_HZ (EPOCH_HZ)
-#define ADIS165XX_FIFO_BUFFERS (FIFO_MIN_BUFFERS + ADIS165XX_HZ / EPOCH_HZ)
 #define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // DLHR Pitot is on i2c1
 #define DLHRL20G_HZ (100)
-#define DLHRL20G_FIFO_BUFFERS (FIFO_MIN_BUFFERS + DLHRL20G_HZ / EPOCH_HZ)
 
 // MS4525D Pitot
 #define MS4525_HZ (100)
-#define MS4525_FIFO_BUFFERS (FIFO_MIN_BUFFERS + MS4525_HZ / EPOCH_HZ)
 #define PITOT_HZ (MS4525_HZ)
 #define PITOT_I2C (&hi2c1)
 #define PITOT_I2C_ADDRESS (MS4525_I2C_ADDRESS)
@@ -170,11 +164,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define AUAV_HZ (100)
 // Absolute (Baro)
 #define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
-#define AUAV_BARO_FIFO_BUFFERS (FIFO_MIN_BUFFERS + AUAV_BARO_HZ / EPOCH_HZ)
 
 // Differential (Pitot)
 #define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
-#define AUAV_PITOT_FIFO_BUFFERS (FIFO_MIN_BUFFERS + AUAV_PITOT_HZ / EPOCH_HZ)
 
 // Digital Potentiometer used in later versions
 //	#define MCP4017_I2C_ADDRESS 		(0x2F)
@@ -190,25 +182,21 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 // Baro is DPS310
 #define DPS310_HZ (50) // up to 50 Hz.
-#define DPS310_FIFO_BUFFERS (FIFO_MIN_BUFFERS + DPS310_HZ / EPOCH_HZ)
 
 // Mag is IIS2MDC
 // HZ no faster than 100Hz. 10, 20, 50, 100 are the only options for continuous mode
 #define IIS2MDC_HZ (100)
-#define IIS2MDC_FIFO_BUFFERS (FIFO_MIN_BUFFERS + IIS2MDC_HZ / EPOCH_HZ)
 #define IIS2MDC_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
 
 // Mag IST8308 (pixracer Pro)
 // HZ no faster than 100Hz
 #define IST3808_HZ (100)
-#define IST8308_FIFO_BUFFERS (FIFO_MIN_BUFFERS + IST3808_HZ / EPOCH_HZ)
 #define IST3808_I2C (&hi2c1)
 #define IST3808_I2C_ADDRESS (0X0C)
 #define IST3808_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
 
 // SBus is on UART3 for Varmints, UART6 for PixRacer Pro
 #define SBUS_HZ (112) // 1000/9ms = 111.1Hz, 112 is rounds up
-#define SBUS_FIFO_BUFFERS (FIFO_MIN_BUFFERS + SBUS_HZ / EPOCH_HZ)
 #define SBUS_BAUD (100000)
 //
 #define RC_HZ (SBUS_HZ)
@@ -220,16 +208,13 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // uBlox
 #define UBX_HZ (10)
 #define UBX_NUM (3) // number of different types of packets
-#define UBX_FIFO_BUFFERS (UBX_NUM * (FIFO_MIN_BUFFERS + UBX_HZ / EPOCH_HZ))
-//#define	UBX_BAUD					(57600)
+#define	UBX_BAUD					(115200)
 
 #define GPS_HZ (UBX_HZ)
-#define GPS_BAUD (57600)
+#define GPS_BAUD (UBX_BAUD)
 
-#define UBX_PROTOCOL (UBX_M9)
-#define GPS_HAS_PPS (false)
-#define GPS_PPS_PORT 0 // ignored on pixracer
-#define GPS_PPS_PIN 0  // ignored on pixracer
+#define GPS_PPS_PORT GPS_PPS_GPIO_Port // wire up to MOSI pin on external SPI connector
+#define GPS_PPS_PIN GPS_PPS_Pin  // wire up to MOSI pin on external SPI connector
 #define GPS_UART (&huart4)
 #define GPS_UART_INSTANCE (UART4)
 #define GPS_UART_DMA (&hdma_uart4_rx)
@@ -238,8 +223,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Serial
 #define SERIAL_HZ (EPOCH_HZ) // Loop time is driven by IMU period.
 #define SERIAL_QOS_FIFOS (3)
-#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
 #define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
+#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
+
 // Telem (USART2)
 #define TELEM_HZ (SERIAL_HZ)
 #define TELEM_BAUD (921600) //(57600)
@@ -251,7 +237,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 // Onboard ADC's
 #define ADC_HZ (10) // Maximum is 500 Hz.
-#define ADC_FIFO_BUFFERS (FIFO_MIN_BUFFERS)
 
 #define ADC_ADC_EXTERNAL (&hadc1)
 #define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
@@ -279,7 +264,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 { \
   {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},         /* ADC_RSSI_V */ \
   {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 12.62, 0.0},         /* ADC_BATTERY_VOLTS */ \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 60.5, 0.0},         /* ADC_BATTERY_CURRENT */ \
+  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 60.5, 0.0747},         /* ADC_BATTERY_CURRENT */ \
   {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},         /* ADC_5V0 */ \
   {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */ \
   {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */ \
@@ -308,14 +293,22 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Probes
 #if 1
 // Probe PIN PG9
-#define PROBE1_HI HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_SET)
-#define PROBE1_LO HAL_GPIO_WritePin(GPIOG, GPIO_PIN_9, GPIO_PIN_RESET)
-#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_9)
+#define PROBE1_HI HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_SET)
+#define PROBE1_LO HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_RESET)
+#define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
+
+#define PROBE2_HI HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_SET)
+#define PROBE2_LO HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_RESET)
+#define PROBE2_TOG HAL_GPIO_TogglePin(PROBE2_GPIO_Port, PROBE2_Pin)
+
+#define PROBE3_HI HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_SET)
+#define PROBE3_LO HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_RESET)
+#define PROBE3_TOG HAL_GPIO_TogglePin(PROBE3_GPIO_Port, PROBE3_Pin)
+
 #else
 #define PROBE1_HI
 #define PROBE1_LO
 #define PROBE1_TOG
-#endif
 
 #define PROBE2_HI
 #define PROBE2_LO
@@ -328,5 +321,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define PROBE4_HI
 #define PROBE4_LO
 #define PROBE4_TOG
+#endif
 
 #endif /* BOARDCONFIG_H_ */

@@ -19,6 +19,8 @@
 cmake-build*
 *.map
 scripts/parameter-descriptions.md
+CMakeFiles/
+CMakeCache.txt
 
 *.aux
 *.fdb_latexmk
