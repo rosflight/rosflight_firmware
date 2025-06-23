@@ -188,12 +188,11 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
     double vcc = p.vRef;
 #endif
     for (int i = 0; i < ADC_CHANNELS; i++) {
-      //    	p.volts[i] = ((double)(adc_counts[i]&0xFFFF)/65535.0 - cfg_[i].offset) * p.vRef * cfg_[i].scaleFactor;
-      p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * p.vRef - vcc * cfg_[i].offset) * cfg_[i].scaleFactor;
+      p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * p.vRef - cfg_[i].offset) * cfg_[i].scaleFactor;
     }
 
-    p.header.timestamp = drdy_;
     p.header.complete = time64.Us();
+    p.header.timestamp = (drdy_+p.header.complete)/2;
     write((uint8_t *) &p, sizeof(p));
     ext_read = 0;
     int_read = 0;

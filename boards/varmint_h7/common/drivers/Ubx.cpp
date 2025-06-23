@@ -471,10 +471,10 @@ uint16_t Ubx::cfgTp5(uint32_t hz)
   payload[3] = 0x00;                 // reserved
   SET(payload + 4, 0x0000, int16_t); // antenna delay
   SET(payload + 6, 0x0000, int16_t); // rf delay
-  SET(payload + 8, 0, uint32_t); // frequency when not locked
+  SET(payload + 8, hz, uint32_t); // frequency when not locked
   SET(payload + 12, hz, uint32_t); // frequency when locked
-  SET(payload + 16, pulse_len_us, uint32_t); // pulse length (1ms)
-  SET(payload + 20, pulse_len_us, uint32_t); // pulse length (1ms)
+  SET(payload + 16, 0, uint32_t); // pulse length when not locked (1ms)
+  SET(payload + 20, pulse_len_us, uint32_t); // pulse length when locked (1ms)
   SET(payload + 24, 0x0000, uint32_t); // delay
   SET(payload + 28, 0x007F, uint32_t); // 0x0111 1111
 

@@ -97,19 +97,19 @@ uint32_t Bmi088::init(
   if (sampleRateHz_ <= 400) {
     sampleRateHz_ = 400;
     syncCfgMode_ = BMI08_ACCEL_DATA_SYNC_MODE_400HZ;
-   // groupDelay_ = 7000;
+    groupDelay_ = 7000;
   } else if (sampleRateHz_ <= 1000) {
     sampleRateHz_ = 1000;
     syncCfgMode_ = BMI08_ACCEL_DATA_SYNC_MODE_1000HZ;
-  //  groupDelay_ = 2500;
+    groupDelay_ = 2500;
   } else if (sampleRateHz_ <= 2000) {
     sampleRateHz_ = 2000;
     syncCfgMode_ = BMI08_ACCEL_DATA_SYNC_MODE_2000HZ;
-  //  groupDelay_ = 1500;
+    groupDelay_ = 1500;
   } else {
     sampleRateHz_ = 400;
     syncCfgMode_ = BMI08_ACCEL_DATA_SYNC_MODE_400HZ;
-  //  groupDelay_ = 7000;
+    groupDelay_ = 7000;
   }
 
   time64.dMs(50); // Some time to ensure power-on completed.
@@ -331,7 +331,7 @@ void Bmi088::endDma(void) // DMA complete routine
     p.gyro[2] = scale_factor * (double) data;
 
     p.header.complete = time64.Us();
-    p.header.timestamp = drdy_;
+    p.header.timestamp = drdy_-groupDelay_;
 
     rotate(p.gyro);
     rotate(p.accel);

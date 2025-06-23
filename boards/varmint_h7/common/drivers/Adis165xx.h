@@ -78,6 +78,7 @@ private:
   DoubleBuffer double_buffer_;
 
   uint16_t sampleRateHz_;
+  uint64_t groupDelay_;
   // SPI Stuff
   Spi spi_;
   uint16_t drdyPin_;

@@ -82,6 +82,7 @@ private:
   bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
+  uint64_t groupDelay_;
   // SPI Stuff
   Spi spiA_;
   Spi spiG_;
