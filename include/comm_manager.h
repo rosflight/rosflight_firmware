@@ -81,7 +81,7 @@ private:
   uint64_t offboard_control_time_;
   ROSflight & RF_;
   CommLinkInterface & comm_link_;
-  uint8_t send_params_index_;
+  uint16_t send_params_index_;
   bool initialized_ = false;
   bool connected_ = false;
 
