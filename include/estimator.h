@@ -82,6 +82,7 @@ private:
 
   bool is_initialized_ = false;
   uint64_t last_acc_update_us_;
+  uint64_t last_mag_update_us_;
   uint64_t last_extatt_update_us_;
 
   turbomath::Vector w1_;
@@ -91,18 +92,29 @@ private:
 
   turbomath::Vector accel_LPF_;
   turbomath::Vector gyro_LPF_;
+  turbomath::Vector mag_LPF_;
+  turbomath::Vector mag_dir_;
+
+  bool mag_direction_found_ = false; // TODO: Init correctly
+
+  float mag_[3];
 
   turbomath::Vector w_acc_;
 
   bool extatt_update_next_run_;
   turbomath::Quaternion q_extatt_;
 
-  void run_LPF();
+  void run_accel_LPF();
+  void run_mag_LPF();
 
   bool can_use_accel() const;
   bool can_use_extatt() const;
+  bool can_use_mag();
+  bool mag_disturbance_is_large();
   turbomath::Vector accel_correction() const;
   turbomath::Vector extatt_correction() const;
+  turbomath::Vector mag_correction() const;
+  turbomath::Vector update_correction(turbomath::Vector w_err, float kp, float ki, float dt, const uint64_t now_us);
   turbomath::Vector smoothed_gyro_measurement();
   void integrate_angular_rate(turbomath::Quaternion & quat, const turbomath::Vector & omega,
                               const float dt) const;

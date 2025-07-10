@@ -330,17 +330,20 @@ void Params::set_defaults(void)
   init_param_float(PARAM_FILTER_KP_ACC, "FILTER_KP_ACC", 0.5f); // estimator proportional gain on accel-based error - See estimator documentation | 0 | 10.0
   init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.01f); // estimator integral gain - See estimator documentation | 0 | 1.0
   init_param_float(PARAM_FILTER_KP_EXT, "FILTER_KP_EXT", 1.5f); // estimator proportional gain on external attitude-based error - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_KP_MAG, "FILTER_KP_MAG", 1.0f); // estimator proportional gain on magnetometer-based error - See estimator documentation | 0 | 10.0
   init_param_float(PARAM_FILTER_ACCEL_MARGIN, "FILTER_ACCMARGIN", 0.1f); // allowable accel norm margin around 1g to determine if accel is usable | 0 | 1.0
 
   init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
   init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
   init_param_int(PARAM_FILTER_USE_ACC, "FILTER_USE_ACC", 1);  // Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | 0 | 1
+  init_param_int(PARAM_FILTER_USE_MAG, "FILTER_USE_MAG", 1);  // Use magnetometer to correct gyro integration drift (adds ?? us to estimation loop) | 0 | 1
 
   init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "CAL_GYRO_ARM", false); // True if desired to calibrate gyros on arm | 0 | 1
 
   init_param_float(PARAM_GYRO_XY_ALPHA, "GYROXY_LPF_ALPHA", 0.3f); // Low-pass filter constant on gyro X and Y axes - See estimator documentation | 0 | 1.0
   init_param_float(PARAM_GYRO_Z_ALPHA, "GYROZ_LPF_ALPHA", 0.3f); // Low-pass filter constant on gyro Z axis - See estimator documentation | 0 | 1.0
   init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.5f); // Low-pass filter constant on all accel axes - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_MAG_ALPHA, "MAG_LPF_ALPHA", 0.3f); // Low-pass filter constant on all mag axes - See estimator documentation | 0 | 1.0
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
@@ -364,6 +367,8 @@ void Params::set_defaults(void)
   init_param_float(PARAM_MAG_X_BIAS,  "MAG_X_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_Y_BIAS,  "MAG_Y_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_Z_BIAS,  "MAG_Z_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_INCLINATION,  "MAG_INCLINATION", 0.0f); // Inclination of the magnetic field in radians | 0.0 | pi/2
+  init_param_float(PARAM_MAG_DECLINATION,  "MAG_DECLINATION", 0.069132f); // Declination of the magnetic field in radians | -pi | pi
 
   init_param_float(PARAM_BARO_BIAS, "BARO_BIAS", 0.0f); // Barometer measurement bias (Pa) | 0 | inf
   init_param_float(PARAM_GROUND_LEVEL, "GROUND_LEVEL", 1387.0f); // Altitude of ground level (m) | -1000 | 10000

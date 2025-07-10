@@ -99,7 +99,7 @@ void Estimator::init()
 
 void Estimator::param_change_callback(uint16_t param_id) { (void) param_id; }
 
-void Estimator::run_LPF()
+void Estimator::run_accel_LPF()
 {
   float alpha_acc = RF_.params_.get_param_float(PARAM_ACC_ALPHA);
   accel_LPF_.x = (1.0f - alpha_acc) * RF_.sensors_.get_imu()->accel[0] + alpha_acc * accel_LPF_.x;
@@ -111,6 +111,14 @@ void Estimator::run_LPF()
   gyro_LPF_.x = (1.0f - alpha_gyro_xy) * RF_.sensors_.get_imu()->gyro[0] + alpha_gyro_xy * gyro_LPF_.x;
   gyro_LPF_.y = (1.0f - alpha_gyro_xy) * RF_.sensors_.get_imu()->gyro[1] + alpha_gyro_xy * gyro_LPF_.y;
   gyro_LPF_.z = (1.0f - alpha_gyro_z)  * RF_.sensors_.get_imu()->gyro[2] + alpha_gyro_z * gyro_LPF_.z;
+}
+
+void Estimator::run_mag_LPF()
+{
+  float alpha_mag = RF_.params_.get_param_float(PARAM_MAG_ALPHA);
+  mag_LPF_.x = (1.0f - alpha_mag) * RF_.sensors_.get_mag()->flux[0] + alpha_mag * mag_LPF_.x;
+  mag_LPF_.y = (1.0f - alpha_mag) * RF_.sensors_.get_mag()->flux[1] + alpha_mag * mag_LPF_.y;
+  mag_LPF_.z = (1.0f - alpha_mag) * RF_.sensors_.get_mag()->flux[2] + alpha_mag * mag_LPF_.z;
 }
 
 void Estimator::set_external_attitude_update(const turbomath::Quaternion & q)
@@ -136,16 +144,17 @@ void Estimator::run(const float dt)
   }
 
   // Low-pass filter accel and gyro measurements
-  run_LPF();
+  run_accel_LPF();
 
   //
   // Gyro Correction Term (werr)
   //
 
   float kp = 0.0f;
-  float ki = RF_.params_.get_param_float(PARAM_FILTER_KI);
+  float ki = RF_.params_.get_param_float(PARAM_FILTER_KI); // TODO: Should this be specific to the sensor?
 
   turbomath::Vector w_err;
+  turbomath::Vector correction_term;
 
   if (can_use_accel()) {
     // Get error estimated by accelerometer measurement
@@ -153,6 +162,62 @@ void Estimator::run(const float dt)
     kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC);
 
     last_acc_update_us_ = now_us;
+
+    correction_term += update_correction(w_err, kp, ki, dt, now_us);
+  }
+
+  if (can_use_mag()) {
+
+    run_mag_LPF();
+
+    // Get error estimated by magnetometer measurement
+    w_err = mag_correction();
+    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_MAG);
+    
+    last_mag_update_us_ = now_us;
+
+    correction_term += update_correction(w_err, kp, ki, dt, now_us);
+    
+  } else if (RF_.params_.get_param_float(PARAM_MAG_INCLINATION) > 0.0f) {
+
+    // If we know the inclination we can find the mag direction.
+
+    turbomath::Vector e_0(0.0, 0.0, 1.0);
+
+    float inclination = RF_.params_.get_param_float(PARAM_MAG_INCLINATION);
+    float declination = RF_.params_.get_param_float(PARAM_MAG_DECLINATION);
+
+    turbomath::Quaternion mag_frame_to_inertial(0.0, inclination, declination);
+
+    // Use the magnetometer measurement in the inertial frame as the reference vector.
+    mag_dir_ = mag_frame_to_inertial.rotate(e_0);
+
+  }
+  else if (!mag_direction_found_ && now_us > static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)) * 1000) {
+    
+    // If the mag direction found has not been found, use the assumption that 
+    // we have the correct attitude after the init period to backout what the mag_dir is.
+    
+    float roll = 0.0;
+    float pitch = 0.0;
+    float yaw = 0.0;
+
+    state_.attitude.get_RPY(&roll, &pitch, &yaw);
+
+    turbomath::Quaternion tilt_compensation(roll, pitch, 0.0);
+    
+    turbomath::Vector tilt_adjusted_mag = tilt_compensation.rotate(mag_LPF_);
+
+    yaw = atan2(tilt_adjusted_mag.y, tilt_adjusted_mag.x);
+
+    float declination = RF_.params_.get_param_float(PARAM_MAG_DECLINATION);
+    
+    turbomath::Quaternion body_to_inertial(roll, pitch, yaw + declination);
+
+    mag_dir_ = body_to_inertial.rotate(mag_LPF_);
+    mag_dir_.normalize();
+
+    mag_direction_found_ = true;
   }
 
   if (can_use_extatt()) {
@@ -171,26 +236,19 @@ void Estimator::run(const float dt)
 
     last_extatt_update_us_ = now_us;
     extatt_update_next_run_ = false;
-  }
 
-  // Crank up the gains for the first few seconds for quick convergence
-  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)) * 1000) {
-    kp = RF_.params_.get_param_float(PARAM_FILTER_KP_ACC) * 10.0f;
-    ki = RF_.params_.get_param_float(PARAM_FILTER_KI) * 10.0f;
+    correction_term += update_correction(w_err, kp, ki, dt, now_us);
+    
   }
 
   //
   // Composite Bias-Free Angular Rate (wfinal)
   //
 
-  // Integrate biases driven by measured angular error
-  // eq 47b Mahony Paper, using correction term w_err found above
-  bias_ -= ki * w_err * dt;
-
   // Build the composite omega vector for kinematic propagation
   // This the stuff inside the p function in eq. 47a - Mahony Paper
   turbomath::Vector wbar = smoothed_gyro_measurement();
-  turbomath::Vector wfinal = wbar - bias_ + kp * w_err;
+  turbomath::Vector wfinal = wbar - bias_ + correction_term;
 
   //
   // Propagate Dynamics
@@ -218,10 +276,24 @@ void Estimator::run(const float dt)
   }
 }
 
+turbomath::Vector Estimator::update_correction(turbomath::Vector w_err, float kp, float ki, float dt, const uint64_t now_us)
+{
+  // Crank up the gains for the first few seconds for quick convergence
+  if (now_us < static_cast<uint64_t>(RF_.params_.get_param_int(PARAM_INIT_TIME)) * 1000) {
+    kp *= 10.;
+    ki *= 10.;
+  }
+  
+  // Integrate biases driven by measured angular error
+  // eq 47b Mahony Paper, using correction term w_err found above
+  bias_ -= ki * w_err * dt;
+  return kp * w_err;
+}
+
 bool Estimator::can_use_accel() const
 {
-  // if we are not using accel, just bail
-  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC)) { return false; }
+  // if we are not using accel or we are using extatt, just bail
+  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_ACC) || can_use_extatt()) { return false; }
 
   // current magnitude of LPF'd accelerometer
   const float a_sqrd_norm = accel_LPF_.sqrd_norm();
@@ -238,6 +310,32 @@ bool Estimator::can_use_accel() const
   // if the magnitude of the accel measurement is close to 1g, we can use the
   // accelerometer to correct roll and pitch and estimate gyro biases.
   return (lowerbound < a_sqrd_norm && a_sqrd_norm < upperbound);
+}
+
+bool Estimator::can_use_mag() // TODO: make const
+{
+  // if we are not using mag, just bail
+  if (!RF_.params_.get_param_int(PARAM_FILTER_USE_MAG)
+      || mag_disturbance_is_large()
+      || !mag_direction_found_
+      || can_use_extatt())
+      { return false; }
+
+  if (mag_ == RF_.sensors_.get_mag()->flux) {
+    return false;
+  }
+  else {
+    for (int i = 0; i < 3; i++) {
+      mag_[i] = RF_.sensors_.get_mag()->flux[i];
+    }
+  }
+
+  return true;
+}
+
+bool Estimator::mag_disturbance_is_large() {
+  // TODO: Somehow check if the disturbance is large.
+  return false;
 }
 
 bool Estimator::can_use_extatt() const { return extatt_update_next_run_; }
@@ -263,6 +361,29 @@ turbomath::Vector Estimator::accel_correction() const
   w_acc.z = 0.0f; // Don't correct z, because it's unobservable from the accelerometer
 
   return w_acc;
+}
+
+turbomath::Vector Estimator::mag_correction() const
+{
+  // turn measurement into a unit vector
+  turbomath::Vector m = mag_LPF_.normalized();
+
+  // Get the quaternion from accelerometer (low-frequency measure q)
+  // (Not in either paper)
+  turbomath::Quaternion q_mag_inv(mag_dir_, m);
+
+  // Get the error quaternion between observer and low-freq q
+  // Below Eq. 45 Mahony Paper
+  turbomath::Quaternion q_tilde = q_mag_inv * state_.attitude;
+
+  // Correction Term of Eq. 47a and 47b Mahony Paper
+  // w_acc = 2*s_tilde*v_tilde
+  turbomath::Vector w_mag;
+  w_mag.x = -2.0f * q_tilde.w * q_tilde.x;
+  w_mag.y = -2.0f * q_tilde.w * q_tilde.y;
+  w_mag.z = -2.0f * q_tilde.w * q_tilde.z;
+
+  return w_mag;
 }
 
 turbomath::Vector Estimator::extatt_correction() const
