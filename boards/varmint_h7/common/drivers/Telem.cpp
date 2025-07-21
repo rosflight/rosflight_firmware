@@ -46,9 +46,11 @@
 
 extern Time64 time64;
 
-#define TELEM_RX_BUFFER_SIZE (4096-32) // Use a multiple of 32!
+//#define TELEM_RX_BUFFER_SIZE (4096-32) // Use a multiple of 32!
+//DTCM_RAM uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
+#define TELEM_RX_BUFFER_SIZE (8*1024)
+static uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
 
 #define TELEM_DMA_TX_BUFFER_SIZE (SERIAL_MAX_PAYLOAD_SIZE)
 DMA_RAM uint8_t telem_dma_txbuf[TELEM_DMA_TX_BUFFER_SIZE];
