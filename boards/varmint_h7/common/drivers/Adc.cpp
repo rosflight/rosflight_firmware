@@ -188,7 +188,7 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
     double vcc = p.vRef;
 #endif
     for (int i = 0; i < ADC_CHANNELS; i++) {
-      p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * p.vRef - cfg_[i].offset) * cfg_[i].scaleFactor;
+      p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * vcc - cfg_[i].offset) * cfg_[i].scaleFactor;
     }
 
     p.header.complete = time64.Us();
