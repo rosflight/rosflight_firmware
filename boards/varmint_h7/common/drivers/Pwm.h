@@ -63,7 +63,7 @@ typedef enum
   PWM_DSHOT
 } pwm_type;
 
-typedef struct __attribute__((__packed__))
+typedef struct // __attribute__((__packed__))
 {
   TIM_HandleTypeDef * htim;
   pwm_type type;

@@ -452,12 +452,7 @@ void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
 
 void CommManager::send_gnss(void)
 {
-  const GnssStruct & gnss_data = *RF_.sensors_.get_gnss();
-
-  if (gnss_data.time_of_week != last_sent_gnss_tow_) {
-    comm_link_.send_gnss(sysid_, gnss_data);
-    last_sent_gnss_tow_ = gnss_data.time_of_week;
-  }
+  comm_link_.send_gnss(sysid_, RF_.sensors_.get_gnss());
 }
 
 void CommManager::send_1hz_heartbeat(void)

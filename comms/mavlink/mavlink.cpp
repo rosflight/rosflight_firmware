@@ -143,25 +143,25 @@ void Mavlink::send_imu(uint8_t system_id, uint64_t timestamp_us, const turbomath
   send_message(msg, 0);
 }
 
-void Mavlink::send_gnss(uint8_t system_id, const GnssStruct & data)
+void Mavlink::send_gnss(uint8_t system_id, GnssStruct * data)
 {
   mavlink_message_t msg;
   mavlink_msg_rosflight_gnss_pack(
     system_id, compid_, &msg,
-    data.unix_seconds, // Unix time in seconds
-    data.nano, // nanoseconds
-    data.fix_type,
-    data.num_sat,
-    (double)data.lat * 1e-7, // Convert 100's of nanodegs into deg (DDS format)
-    (double)data.lon * 1e-7, // Convert 100's of nanodegs into deg (DDS format)
-    (float)data.height_msl * 1e-3, // mm to m
-    (float)data.vel_n * 1e-3, // mm/s to m/s
-    (float)data.vel_e * 1e-3, // mm/s to m/s
-    (float)data.vel_d * 1e-3, // mm/s to m/s
-    (float)data.h_acc * 1e-3, // mm/s to m/s
-    (float)data.v_acc * 1e-3, // mm/s to m/s
-    (float)data.speed_accy * 1e-3, // mm/s to m/s
-    (float)data.header.timestamp);
+    data->unix_seconds, // Unix time in seconds
+    data->unix_nanos,   // Unix nanoseconds
+    data->fix_type,
+    data->num_sat,
+    data->lat,
+    data->lon,
+    data->height_msl,
+    data->vel_n,
+    data->vel_e,
+    data->vel_d,
+    data->h_acc,
+    data->v_acc,
+    data->speed_accy,
+    data->header.timestamp);
   send_message(msg);
 }
 

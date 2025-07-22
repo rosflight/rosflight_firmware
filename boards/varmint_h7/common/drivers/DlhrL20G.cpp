@@ -43,7 +43,7 @@ extern Time64 time64;
 //#define DLHRL20G_OK (0x40)
 
 DMA_RAM uint8_t dlhr_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t dlhr_fifo_rx_buffer[DLHRL20G_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t dlhr_double_buffer[2 * sizeof(PressurePacket)];
 
 #define DLHR_I2C_STATUS_SIZE 1
 #define DLHR_I2C_DMA_SIZE 7
@@ -63,10 +63,8 @@ uint32_t DlhrL20G::init(
 
   hi2c_ = hi2c;
   address_ = i2c_address << 1;
-  launchUs_ = 0;
-  // groupDelay_ = 0; //Computed later based on launchUs_ and drdy_ timestamps.
 
-  rxFifo_.init(DLHRL20G_FIFO_BUFFERS, sizeof(PressurePacket), dlhr_fifo_rx_buffer);
+  double_buffer_.init(dlhr_double_buffer, sizeof(dlhr_double_buffer) );
 
   dtMs_ = 1000. / (double) sampleRateHz_;
 
@@ -142,7 +140,6 @@ bool DlhrL20G::poll(uint64_t poll_counter)
   {
     dlhr_i2c_dma_buf[0] = cmdByte_;
     dlhr_i2c_dma_buf[1] = 0x00;
-    launchUs_ = time64.Us();
     status = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, dlhr_i2c_dma_buf, 1));
   } else if (!previous_drdy && current_drdy) // drdy triggers a read.
   {
@@ -160,9 +157,8 @@ void DlhrL20G::endDma(void)
   PressurePacket p;
   p.header.status = dlhr_i2c_dma_buf[0];
   if (p.header.status == 0x0040) {
-    p.header.timestamp = time64.Us();
-    p.drdy = drdy_;
-    p.groupDelay = (p.drdy - launchUs_) / 2;
+    p.header.timestamp = drdy_;
+    p.header.complete = time64.Us();
     uint32_t i_pressure =
       (uint32_t) dlhr_i2c_dma_buf[1] << 16 | (uint32_t) dlhr_i2c_dma_buf[2] << 8 | (uint32_t) dlhr_i2c_dma_buf[3];
     uint32_t i_temperature =
@@ -174,7 +170,7 @@ void DlhrL20G::endDma(void)
     p.pressure = 1.25 * FS * ((double) i_pressure / 16777216.0 - OSdig);         // Pa
     p.temperature = 125.0 * (double) i_temperature / 16777216.0 - 40.0 + 273.15; // K
 
-    if (p.header.status == DLHRL20G_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    if (p.header.status == DLHRL20G_OK) write((uint8_t *) &p, sizeof(p));
   }
 }
 
@@ -182,9 +178,9 @@ bool DlhrL20G::display(void)
 {
   PressurePacket p;
   char name[] = "DlhrL20G (pitot)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_f32(-2.5, 2.5, p.pressure, "Press", "%6.2f", "Pa");
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header );
+    misc_f32(-5, 5, p.pressure, "Press", "%6.2f", "Pa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(DLHRL20G_OK, p.header.status, "Status");
     misc_printf("\n");

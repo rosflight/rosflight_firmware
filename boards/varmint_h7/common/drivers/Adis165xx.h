@@ -38,13 +38,15 @@
 #ifndef ADIS165XX_H_
 #define ADIS165XX_H_
 
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
-#include "Driver.h"
+
 #include "Spi.h"
+#include "misc.h"
 
 #define ADIS_OK (0x0000)
 
-class Adis165xx : public Driver
+class Adis165xx : public Status , public MiscRotatable
 {
 public:
   uint32_t init(
@@ -63,15 +65,25 @@ public:
 
   void endDma(void);
   bool startDma(void);
-  bool display(void) override;
+  bool display(void);
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
   void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}
+  bool read(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.read(data, size)==DoubleBufferStatus::OK); }
 
 private:
+  bool write(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.write(data, size)==DoubleBufferStatus::OK); }
+
+  DoubleBuffer double_buffer_;
+
+  uint16_t sampleRateHz_;
+  uint64_t groupDelay_;
   // SPI Stuff
   Spi spi_;
+  uint16_t drdyPin_;
+  uint64_t drdy_;
+
   uint16_t timeoutMs_;
   // ADIS165xx Stuff
   GPIO_TypeDef * resetPort_;

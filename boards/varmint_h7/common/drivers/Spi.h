@@ -41,6 +41,7 @@
 #include "stm32h7xx_hal.h"
 
 #include <string.h> // for memset
+#include <stdarg.h>
 
 #include "BoardConfig.h"
 #include "Status.h"
@@ -134,21 +135,6 @@ public:
 
     return hal_status;
   }
-
-  //	HAL_StatusTypeDef startTxDma(uint8_t tx_byte, uint16_t size)
-  //	{
-  //		bool software_nss 	= !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);
-  //
-  //		memset(txBuffer_,0,SPI_DMA_MAX_BUFFER_SIZE);
-  //		txBuffer_[0] = tx_byte;
-  //
-  //		if(software_nss) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_RESET);
-  //		HAL_StatusTypeDef hal_status = HAL_SPI_Transmit_DMA(hspi_, txBuffer_, size);
-  //		if((HAL_OK!=hal_status) && (software_nss)) HAL_GPIO_WritePin(port_, pin_, GPIO_PIN_SET);
-  //		time64.dUs(2);
-  //
-  //		return hal_status;
-  //	}
 
   HAL_StatusTypeDef startTxDma(uint8_t * tx_bytes, uint16_t size)
   {

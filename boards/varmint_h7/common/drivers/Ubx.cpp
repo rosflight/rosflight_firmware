@@ -49,21 +49,28 @@ extern Time64 time64;
 #define UBX_DMA_BUFFER_SIZE 16 * 2 // must be multiple of 16
 DMA_RAM uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
 
-DTCM_RAM uint8_t ubx_fifo_rx_buffer[UBX_FIFO_BUFFERS * sizeof(UbxPacket)];
+DTCM_RAM uint8_t ubx_double_buffer[2 * sizeof(UbxPacket)];
+
+void Ubx::pps(uint64_t pps_timestamp)
+{
+  static bool first_time = true;
+  if(!first_time) ubx_.pps = pps_timestamp;
+  first_time = false;
+}
+
 
 uint32_t Ubx::init(
   // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, bool has_pps,
+  uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
   // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud,
-  UbxProtocol ubx_protocol)
+  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ubx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
-  drdyPin_ = drdy_pin;
-  hasPps_ = has_pps;
+
+  ppsPin_ = pps_pin;
+  ppsHz_ = 1; // To match top of second.
 
   dtimeout_ = 1000000; // 1 seconds
   timeout_ = 0;
@@ -74,15 +81,10 @@ uint32_t Ubx::init(
   baud_initial_ = 9600;
   baud_ = baud;
 
-  ubxProtocol_ = ubx_protocol;
-
-  groupDelay_ = 0;
+  ubx_.pps = 0;
 
   // gotNav_ = false;
   gotPvt_ = 0;
-  gotTime_ = 0;
-  gotEcefP_ = 0;
-  gotEcefV_ = 0;
 
   // USART initialization
   huart_->Instance = huart_instance;
@@ -118,7 +120,7 @@ uint32_t Ubx::init(
   }
   //     baud_initial_ = 100000000/huart_->Instance->BRR;
 
-  uint32_t bauds[] = {9600, 230400, 57600, 460800}; // { 9600, 19200, 38400, 57600, 115200, 230400};
+  uint32_t bauds[] = {9600, 115200, 38400, 57600,  230400}; // { 9600, 19200, 38400, 57600, 115200, 230400, 460800};
   unsigned int i, retry;
   HAL_Delay(1000);
 
@@ -133,8 +135,7 @@ uint32_t Ubx::init(
         return initializationStatus_;
       }
       // Set UBLOX Baud
-      if (ubxProtocol_ == UBX_M8) cfgPrt(baud_);
-      else cfgM9(baud_, sampleRateHz_);
+      cfgPrt(baud_);
       HAL_Delay(2);
     }
 
@@ -147,8 +148,7 @@ uint32_t Ubx::init(
     HAL_Delay(100); // Give the UBLOX some time to get there
 
     // Check if we have acquired the baud rate
-    if (ubxProtocol_ == UBX_M8) ubx_baud = pollBaud();
-    else ubx_baud = pollBaudM9();
+    ubx_baud = pollBaud();
 
     if (ubx_baud == baud_) break;
     misc_printf("%6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
@@ -167,7 +167,7 @@ uint32_t Ubx::init(
     return initializationStatus_;
   }
 
-  rxFifo_.init(UBX_FIFO_BUFFERS, sizeof(UbxPacket), ubx_fifo_rx_buffer);
+  double_buffer_.init(ubx_double_buffer, sizeof(ubx_double_buffer) );
 
   // Disable these messages to get rid of clutter
   uint16_t error = 0;
@@ -181,19 +181,21 @@ uint32_t Ubx::init(
   error |= (uint16_t) cfgMsg(0x01, 0x20, 0); // NAV-TIMEGPS
   error |= (uint16_t) cfgMsg(0x01, 0x01, 0); // NAV-POSECEF (length 20)
   error |= (uint16_t) cfgMsg(0x01, 0x11, 0); // NAV-VELECEF (length 20)
+  error |= (uint16_t) cfgMsg(0x01, 0x20, 0); // NAV-TIMEGPS (length 16)
+  error |= (uint16_t) cfgMsg(0x01, 0x01, 0); // NAV-POSECEF (length 20)
+  error |= (uint16_t) cfgMsg(0x01, 0x11, 0); // NAV-VELECEF (length 20)
 
   // Enable these messages
-  error |= (uint16_t) cfgMsg(0x01, 0x20, 1); // NAV-TIMEGPS (length 16)
+  //error |= (uint16_t) cfgMsg(0x01, 0x20, 1); // NAV-TIMEGPS (length 16)
   error |= (uint16_t) cfgMsg(0x01, 0x07, 1); // NAV-PVT (length 92)
-  error |= (uint16_t) cfgMsg(0x01, 0x01, 1); // NAV-POSECEF (length 20)
-  error |= (uint16_t) cfgMsg(0x01, 0x11, 1); // NAV-VELECEF (length 20)
+  //error |= (uint16_t) cfgMsg(0x01, 0x01, 1); // NAV-POSECEF (length 20)
+  //error |= (uint16_t) cfgMsg(0x01, 0x11, 1); // NAV-VELECEF (length 20)
 
   // Set GPS Configuration (already done in pollCfgPrtM9() for UBX_M9)
-  if (ubxProtocol_ == UBX_M8) {
-    error |= (uint16_t) cfgRate(sampleRateHz_); // Nav rate 0x06 0x08
-    error |= (uint16_t) cfgTp5(sampleRateHz_);  // PPS rate 0x06 0x31
-    error |= (uint16_t) cfgNav5();              // airplane mode 0x06 0x24
-  }
+  error |= (uint16_t) cfgRate(sampleRateHz_); // Nav rate 0x06 0x08
+  error |= (uint16_t) cfgTp5(ppsHz_);  // PPS rate 0x06 0x31
+  error |= (uint16_t) cfgNav5();              // airplane mode 0x06 0x24
+
 
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);
@@ -233,7 +235,6 @@ void Ubx::endDma(void)
 
     if (found) {
       if ((p.cl == 0x01) && (p.id == 0x07)) {
-        gotPvt_ = time64.Us();
         memcpy((uint8_t *) &(ubx_.pvt), p.payload, sizeof(ubx_.pvt));
         struct tm tm;
         tm.tm_sec  = ubx_.pvt.sec;
@@ -243,37 +244,31 @@ void Ubx::endDma(void)
         tm.tm_mon  = ubx_.pvt.month - 1;
         tm.tm_year = ubx_.pvt.year - 1900;
         ubx_.unix_seconds = mktime(&tm);
+        ubx_.unix_nanos = ubx_.pvt.nano;
+
         if (ubx_.pvt.nano<0)
         {
-          ubx_.unix_seconds -= 1;
-          ubx_.pvt.nano += 1000000000;
+          ubx_.unix_seconds--;
+          ubx_.unix_nanos += 1000000000;
         }
-      } else if ((p.cl == 0x01) && (p.id == 0x20)) {
-        gotTime_ = time64.Us();
-        memcpy((uint8_t *) (&ubx_.time), p.payload, sizeof(ubx_.time));
-      } else if ((p.cl == 0x01) && (p.id == 0x01)) {
-        gotEcefP_ = time64.Us();
-        memcpy((uint8_t *) (&ubx_.ecefp), p.payload, sizeof(ubx_.ecefp));
-      } else if ((p.cl == 0x01) && (p.id == 0x11)) {
-        gotEcefV_ = time64.Us();
-        memcpy((uint8_t *) (&ubx_.ecefv), p.payload, sizeof(ubx_.ecefv));
-      }
 
-      if (gotPvt_ && gotTime_ && gotEcefP_ && gotEcefV_) {
-        ubx_.header.timestamp = time64.Us(); // usTime();
+        gotPvt_ = time64.Us();
+        if ( (ubx_.pps !=0) && (ubx_.pps < gotPvt_) && ((ubx_.pvt.valid & 0x07)== 0x07) && ((ubx_.pvt.flags & 0x01)==0x01) )
+        {
+           if(ubx_.pvt.nano<0)
+           {
+             ubx_.header.timestamp  = ubx_.pps - (uint64_t)(-ubx_.pvt.nano/1000);
+           } else {
+             ubx_.header.timestamp  = ubx_.pps + (uint64_t)(ubx_.pvt.nano/1000);
+          }
+        } else {
+          ubx_.header.timestamp = gotPvt_-22000; //
+        }
 
-        ubx_.drdy = drdy_;
-        if (!hasPps_) ubx_.pps = 0; //ubx_.drdy - 25000; // fake number if we don't have PPS hooked up
+        ubx_.header.complete =  gotPvt_;
 
-        if (ubx_.pps > ubx_.drdy) ubx_.pps -= 1000000 / sampleRateHz_;
-        ubx_.groupDelay = ubx_.drdy - ubx_.pps;
-
-        rxFifo_.write((uint8_t *) &ubx_, sizeof(ubx_));
+        write((uint8_t *) &ubx_, sizeof(ubx_));
         gotPvt_ = 0;
-        gotTime_ = 0;
-        gotEcefP_ = 0;
-        gotEcefV_ = 0;
-        drdy_ = 0;
       }
     }
   }
@@ -315,7 +310,6 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
     p->A += c;
     p->B += p->A;
 
-    if ((p->cl == 0x01) && (p->id == 0x07)) drdy_ = time64.Us() - UBX_DMA_BUFFER_SIZE * 10000000 / baud_;
   } else if (n == 4) // length LSB
   {
     p->length = (uint16_t) c;
@@ -349,50 +343,7 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
   return false;
 }
 
-void Ubx::pps(uint64_t pps_timestamp) { ubx_.pps = pps_timestamp; }
 
-bool Ubx::display(void)
-{
-  UbxPacket p;
-
-  char name_pvt[] = "Ubx (pvt)";
-  char name_time[] = "Ubx (time)";
-  char name_ecefp[] = "Ubx (ecefp)";
-  char name_ecefv[] = "Ubx (ecefv)";
-
-  if (rxFifo_.read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_pvt, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.pvt.iTOW);
-    misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
-    misc_printf("%02u:%02u:%09.6f", p.pvt.hour, p.pvt.min, (double) p.pvt.sec + (double) p.pvt.nano * 1e-9);
-    misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
-    misc_printf("numSV %02d | ", p.pvt.numSV);
-    misc_printf("Fix %02d\n", p.pvt.fixType);
-
-    misc_header(name_time, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.time.iTOW);
-    misc_printf("  TOW %14.3f ms | valid 0x%02X\n", (double) p.time.iTOW + (double) p.time.fTOW / 1000, p.time.valid);
-
-    misc_header(name_ecefp, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.ecefp.iTOW);
-    misc_printf("  %10d %10d %10d %10u cm\n", p.ecefp.ecefX, p.ecefp.ecefY, p.ecefp.ecefZ, p.ecefp.pAcc);
-
-    misc_header(name_ecefv, p.drdy, p.header.timestamp, p.groupDelay);
-    misc_printf("%10.3f ms | ", (double) (p.header.timestamp - p.pps) / 1000.);
-    misc_printf(" iTOW %10u | ", p.ecefv.iTOW);
-    misc_printf("  %10d %10d %10d %10u cm/s\n", p.ecefv.ecefVX, p.ecefv.ecefVY, p.ecefv.ecefVZ, p.ecefv.sAcc);
-  } else {
-    misc_printf("%s\n", name_pvt);
-    misc_printf("%s\n", name_time);
-    misc_printf("%s\n", name_ecefp);
-    misc_printf("%s\n", name_ecefv);
-  }
-
-  return 1;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Packet Stuff
@@ -510,22 +461,22 @@ uint16_t Ubx::cfgTp5(uint32_t hz)
 #define SFG_TP5_LENGTH 32
   uint8_t message[SFG_TP5_LENGTH + 8] = {0};
   uint8_t * payload = message + 6;
-  uint32_t period_us = 1000000 / hz;
+//  uint32_t period_us = 1000000 / hz;
   uint32_t pulse_len_us = 1000;
   header(message, 0x06, 0x31, SFG_TP5_LENGTH);
 
   payload[0] = 0x00;                 // Timepulse pin 0
-  payload[1] = 0x01;                 // Version 1
+  payload[1] = 0x00;                 // Version 0
   payload[2] = 0x00;                 // reserved
   payload[3] = 0x00;                 // reserved
   SET(payload + 4, 0x0000, int16_t); // antenna delay
   SET(payload + 6, 0x0000, int16_t); // rf delay
-  SET(payload + 8, period_us, uint32_t);
-  SET(payload + 12, period_us / 2, uint32_t);
-  SET(payload + 16, pulse_len_us, uint32_t); // no pulse when not locked =0 ?
-  SET(payload + 20, pulse_len_us / 2, uint32_t);
+  SET(payload + 8, hz, uint32_t); // frequency when not locked
+  SET(payload + 12, hz, uint32_t); // frequency when locked
+  SET(payload + 16, 0, uint32_t); // pulse length when not locked (1ms)
+  SET(payload + 20, pulse_len_us, uint32_t); // pulse length when locked (1ms)
   SET(payload + 24, 0x0000, uint32_t); // delay
-  SET(payload + 28, 0x01F7, uint32_t); // 0001 1111 1111 0111 = 0x01F7
+  SET(payload + 28, 0x007F, uint32_t); // 0x0111 1111
 
   return tx(message, SFG_TP5_LENGTH);
 }
@@ -556,99 +507,43 @@ uint16_t Ubx::cfgMsg(uint8_t cl, uint8_t id, uint8_t decimation_rate)
   return tx(message, CFG_MSG_LENGTH);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// M9 Protocol
-
-//#define SET(buf,data,type) *((type*)(buf))=data
-
-// M9 parameters setting functions
-#define SETVAL(ptr, value, type)                                                                                       \
-  {                                                                                                                    \
-    *((type *) (ptr)) = value;                                                                                         \
-    ptr += sizeof(type);                                                                                               \
-  }
-
-#define SETKV(ptr, key, value, type)                                                                                   \
-  {                                                                                                                    \
-    *(uint32_t *) (ptr) = key;                                                                                         \
-    ptr += 4;                                                                                                          \
-    *((type *) (ptr)) = value;                                                                                         \
-    ptr += sizeof(type);                                                                                               \
-  }
-
-uint16_t Ubx::cfgM9(uint32_t baud, uint16_t sampleRateHz)
+bool Ubx::display(void)
 {
-  uint8_t cfg_message[64] = {0};
-  uint16_t length = 0;
-  uint8_t * p = cfg_message;
-  // Header
-  SETVAL(p, 0xB5, uint8_t); // mu (1 bytes)
-  SETVAL(p, 0x62, uint8_t); // b (1 bytes)
-  SETVAL(p, 0x06, uint8_t); // class CFG (1 bytes)
-  SETVAL(p, 0x8A, uint8_t); // id Write Value (1 bytes)
-  p += 2;                   // space for length (2 bytes)
-  // Message
-  SETVAL(p, 0x00, uint8_t); // Message Version (1 bytes)
-  SETVAL(p, 0x01, uint8_t); // Write to RAM bit 1 is ram, 2 is bbr layer, 3 is flash (1 bytes)
-  p += 2;                   // reserved (2 bytes)
-  // Key value pairs
-  SETKV(p, 0x40520001, baud, uint32_t);                // baud rate (8 bytes)
-  SETKV(p, 0x30210001, 1000 / sampleRateHz, uint16_t); // output rate in milliseconds (6 bytes)
-  SETKV(p, 0x30210002, 1, uint16_t);                   // 1 data output per nav measurement (6 bytes)
-  SETKV(p, 0x20110021, 8, uint8_t);                    // CFG-NAVSPG-DYNMODEL 8 = 4G Airborne (5 bytes)
-  SETKV(p, 0x20110011, 3, uint8_t);                    // CFG-NAVSPG-FIXMODE 3 = Auto 2/3D (5 bytes)
+  UbxPacket p;
 
-  // compute and insert message length length
-  length = p - cfg_message - 6;
-  SET(cfg_message + 4, length, uint16_t);
+  char name_pvt[] = "Ubx (pvt)";
 
-  return tx(cfg_message, length);
-}
-uint32_t Ubx::pollBaudM9(void)
-{
-#define CFG_MESSAGE_SIZE 64
-  uint8_t cfg_message[CFG_MESSAGE_SIZE] = {0};
-  uint16_t length = 0;
-  uint8_t * p = cfg_message;
-  // Header
-  SETVAL(p, 0xB5, uint8_t); // mu (1 bytes)
-  SETVAL(p, 0x62, uint8_t); // b (1 bytes)
-  SETVAL(p, 0x06, uint8_t); // class CFG (1 bytes)
-  SETVAL(p, 0x8B, uint8_t); // id Write Value (1 bytes)
-  p += 2;                   // space for length (2 bytes)
-  // Message
-  SETVAL(p, 0x00, uint8_t);    // Message Version (1 bytes)
-  SETVAL(p, 0x00, uint8_t);    // Read to RAM
-  SETVAL(p, 0x0000, uint16_t); // Offset (position)
+  if (read((uint8_t *) &p, sizeof(p))) {
 
-  SETVAL(p, 0x40520001, uint32_t); // baud
+    static double lag = 0;
+    if(p.header.complete>p.header.timestamp)
+    {
+      lag = (lag*0.99 + 0.01*(double)(p.header.complete-p.header.timestamp));
+    }
+    struct tm *gmt;
+    time_t seconds = p.unix_seconds;
+    gmt = gmtime(&seconds);
 
-  // compute and insert message length length
-  length = p - cfg_message - 6;
-  SET(cfg_message + 4, length, uint16_t);
+    misc_header(name_pvt, p.header );
+    misc_printf("| pps %10.6f s | ", (double)p.pps * 1e-6);
+    misc_printf(" iTOW %10.3f s | ", (double)p.pvt.iTOW/1000);
 
-  if (tx(cfg_message, length) != HAL_OK) return 0;
+//    misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
+//    misc_printf("%02u:%02u:%02u%+011.9lf | ", p.pvt.hour, p.pvt.min, p.pvt.sec, (double)p.pvt.nano*1e-9);
 
-  UbxFrame ubx;
-  memset(&ubx, 0, sizeof(ubx));
+    misc_printf("%02u/%02u/%04u ", gmt->tm_mon+1, gmt->tm_mday, gmt->tm_year+1900);
+    misc_printf("%02u:%02u:%02u.%09u | ", gmt->tm_hour, gmt->tm_min, gmt->tm_sec,p.unix_nanos);
 
-  for (int i = 0; 256; i++) {
-    uint8_t ch;
-    HAL_StatusTypeDef hal_status = HAL_UART_Receive(huart_, &ch, 1, 1000);
-
-    if (hal_status == HAL_OK)
-      if (parseByte(ch, &ubx)) {
-        if ((ubx.cl == 0x06) && (ubx.id == 0x8B)) {
-          uint32_t key = (uint32_t) ubx.payload[7] << 24 | (uint32_t) ubx.payload[6] << 16
-            | (uint32_t) ubx.payload[5] << 8 | (uint32_t) ubx.payload[4];
-          if (key == 0x40520001)
-            return (uint32_t) ubx.payload[11] << 24 | (uint32_t) ubx.payload[10] << 16 | (uint32_t) ubx.payload[9] << 8
-              | (uint32_t) ubx.payload[8];
-          ; // baud key
-        } else {
-          memset(&ubx, 0, sizeof(ubx));
-        }
-      }
+    misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
+    misc_printf("numSV %02u | ", p.pvt.numSV);
+    misc_printf("Fix %02u | ", p.pvt.fixType);
+    misc_printf("valid 0x%02X | ", p.pvt.valid);
+    misc_printf("flags 0x%02X | ", p.pvt.flags);
+    misc_printf("dt %9.0lf us\n", lag);
+  } else {
+    misc_printf("%s\n", name_pvt);
   }
-  return 0;
+
+  return 1;
 }
+

@@ -38,6 +38,9 @@
 #ifndef STATUS_H_
 #define STATUS_H_
 
+#include <stdint.h>
+#include <CommonConfig.h>
+
 #define STATUS_LIST_MAX_LEN 16
 #define STATUS_NAME_MAX_LEN 16
 

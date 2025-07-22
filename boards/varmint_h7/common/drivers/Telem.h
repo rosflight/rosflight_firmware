@@ -40,9 +40,9 @@
 
 #include "BoardConfig.h"
 #include "ByteFifo.h"
-#include "Driver.h"
 #include "Packets.h"
 #include "Time64.h"
+#include "PacketFifo.h"
 
 extern Time64 time64;
 enum DmaItType

@@ -60,7 +60,7 @@ extern Time64 time64;
 DMA_RAM uint8_t adis165xx_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t adis165xx_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t adis165xx_fifo_rx_buffer[ADIS165XX_FIFO_BUFFERS * sizeof(ImuPacket)];
+DTCM_RAM uint8_t adis165xx_double_buffer[2* sizeof(ImuPacket)];
 
 uint32_t Adis165xx::init(
   // Driver initializers
@@ -80,7 +80,7 @@ uint32_t Adis165xx::init(
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Adis165xx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
+
   drdyPin_ = drdy_pin;
 
   spi_.init(hspi, adis165xx_dma_txbuf, adis165xx_dma_rxbuf, cs_port, cs_pin);
@@ -92,13 +92,13 @@ uint32_t Adis165xx::init(
   htim_ = htim;
   htimChannel_ = htim_channel;
 
-  groupDelay_ = (uint64_t) 1510
-    + (uint64_t) 500000 / sampleRateHz_; // us, Approximate, Accel is 1.57ms, Gyro x&y are 1.51ms, and Gyro z is 1.29ms.
+  groupDelay_ = (uint64_t) 1510 + (uint64_t) 500000 / sampleRateHz_- 250;
+  // us, Approximate, Accel is 1.57ms, Gyro x&y are 1.51ms, and Gyro z is 1.29ms.
 
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
   HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
 
-  rxFifo_.init(ADIS165XX_FIFO_BUFFERS, sizeof(ImuPacket), adis165xx_fifo_rx_buffer);
+  double_buffer_.init(adis165xx_double_buffer, sizeof(adis165xx_double_buffer));
 
   // Startup the external clock
 
@@ -224,6 +224,8 @@ bool Adis165xx::startDma(void) // called to start dma read
 void Adis165xx::endDma(void) // called when DMA data is ready
 {
   uint8_t * rx = spi_.endDma();
+  ImuPacket p = {0};
+
   if (sampleRateHz_ == 2000) {
     // compute checksum
     uint16_t sum = 0;
@@ -233,10 +235,6 @@ void Adis165xx::endDma(void) // called when DMA data is ready
     for (int i = 0; i < ADIS_BUFFBYTES16 / 2; i++)
       data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
     if (sum == data[10]) {
-      ImuPacket p;
-      p.header.timestamp = time64.Us();
-      p.drdy = drdy_;
-      p.groupDelay = groupDelay_;
       p.header.status = (uint16_t) data[1];
       p.gyro[0] = -(double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
       p.gyro[1] = -(double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
@@ -246,7 +244,6 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       p.accel[2] = (double) data[7] * 0.01225;           // m/s^2
       p.temperature = (double) data[8] * 0.1 + 273.15;   // K
       p.dataTime = (double) ((uint16_t) data[9]) / sampleRateHz_;
-      if (p.header.status == ADIS_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
     }
   } else {
     // compute checksum
@@ -258,10 +255,6 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
 
     if (sum == data[16]) {
-      ImuPacket p;
-      p.header.timestamp = time64.Us();
-      p.drdy = drdy_;
-      p.groupDelay = groupDelay_;
       p.header.status = (uint16_t) data[1];
       p.gyro[0] = val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
       p.gyro[1] = val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
@@ -271,14 +264,17 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       p.accel[2] = val(rx + 24) * 0.01225;              // m/s^2
       p.temperature = (double) data[14] * 0.1 + 273.15; // K
       p.dataTime = (double) ((uint16_t) data[15]) / sampleRateHz_;
-      if (p.header.status == ADIS_OK)
-      {
-        rotate(p.gyro);
-        rotate(p.accel);
-        rxFifo_.write((uint8_t *) &p, sizeof(p));
-      }
     }
   }
+  if (p.header.status == ADIS_OK)
+  {
+    p.header.timestamp = drdy_-groupDelay_;
+    rotate(p.gyro);
+    rotate(p.accel);
+    p.header.complete = time64.Us();
+    write((uint8_t *) &p, sizeof(p));
+  }
+
 }
 
 void Adis165xx::writeRegister(uint8_t address, uint16_t value)
@@ -312,8 +308,8 @@ bool Adis165xx::display(void)
 {
   ImuPacket p;
   char name[] = "Adis165xx (imu)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header );
     misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");

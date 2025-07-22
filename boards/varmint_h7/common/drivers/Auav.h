@@ -40,8 +40,8 @@
 #ifndef AUAV_H_
 #define AUAV_H_
 
+#include "DoubleBuffer.h"
 #include "BoardConfig.h"
-#include "Driver.h"
 #include "Packets.h"
 #include "Spi.h"
 
@@ -50,7 +50,7 @@
 
 #define AUAV_CMD_BYTES 3
 
-class Auav : public Driver
+class Auav : public Status
 {
   /**
      * \brief
@@ -77,18 +77,15 @@ public:
 
   void drdyIsr(uint64_t timestamp, uint16_t exti_pin);
 
-  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size, uint8_t id)
-  {
-    return rxFifo_[id].readMostRecent(data, size);
-  }
+  bool read2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].read(data, size)==DoubleBufferStatus::OK; }
+  bool write2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].write(data, size)==DoubleBufferStatus::OK; }
 
-  uint16_t rxFifoReadMostRecent(uint8_t * data, uint16_t size)
-  {
-    return rxFifo_[AUAV_PITOT].readMostRecent(data, size);
-  }
   uint8_t sensorOk(uint8_t id) { return sensor_status_ready_[id]; }
+  bool read(uint8_t * data, uint16_t size) { return read2(data,size,AUAV_PITOT); }
 
 private:
+  bool write(uint8_t * data, uint16_t size) { return write2(data, size,AUAV_PITOT); }
+
   void makePacket(PressurePacket * p, uint8_t * inbuff, uint8_t device);
   int32_t readCfg(uint8_t address, Spi * spi);
   // SPI Stuff
@@ -102,11 +99,12 @@ private:
   uint8_t sensor_status_ready_[2];
   char name_local_[2][16]; // for display
 
-  PacketFifo rxFifo_[2];
+  DoubleBuffer double_buffer_[2];
   GPIO_TypeDef * drdyPort_[2];
   uint16_t drdyPin_[2];
   uint16_t sampleRateHz_;
-  uint64_t drdy_[2], timeout_[2], launchUs_[2];
+
+  uint64_t drdy_[2], timeout_[2];
   uint64_t groupDelay_[2];
   bool dmaRunning_;
 };

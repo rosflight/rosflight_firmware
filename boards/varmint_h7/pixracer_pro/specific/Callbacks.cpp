@@ -88,6 +88,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
     HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_RESET);
 
   if (varmint.imu0_.isMy(exti_pin)) varmint.imu0_.startDma();
+  if (varmint.gps_.isMy(exti_pin)) { varmint.gps_.pps(time64.Us()); }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

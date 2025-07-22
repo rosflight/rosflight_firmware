@@ -59,7 +59,7 @@ extern Time64 time64;
 DMA_RAM uint8_t bmi088_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t bmi088_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t bmi088_fifo_rx_buffer[BMI088_FIFO_BUFFERS * sizeof(ImuPacket)];
+DTCM_RAM uint8_t bmi088_double_buffer[2 * sizeof(ImuPacket)];
 
 uint32_t Bmi088::init(
   // Driver initializers
@@ -80,7 +80,7 @@ uint32_t Bmi088::init(
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Bmi088");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
+
   drdyPin_ = drdy_pin;
 
   spiA_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_port_a, cs_pin_a);
@@ -91,7 +91,8 @@ uint32_t Bmi088::init(
   rangeA_ = range_a;
   rangeG_ = range_g;
 
-  rxFifo_.init(BMI088_FIFO_BUFFERS, sizeof(ImuPacket), bmi088_fifo_rx_buffer);
+  double_buffer_.init( bmi088_double_buffer, sizeof(bmi088_double_buffer) );
+
 
   if (sampleRateHz_ <= 400) {
     sampleRateHz_ = 400;
@@ -329,14 +330,12 @@ void Bmi088::endDma(void) // DMA complete routine
     data = (int16_t) rx[6] << 8 | (int16_t) rx[5];
     p.gyro[2] = scale_factor * (double) data;
 
-    p.drdy = drdy_;
-    p.groupDelay = groupDelay_;
-
-    p.header.timestamp = time64.Us();
+    p.header.complete = time64.Us();
+    p.header.timestamp = drdy_-groupDelay_;
 
     rotate(p.gyro);
     rotate(p.accel);
-    rxFifo_.write((uint8_t *) &p, sizeof(p));
+    write((uint8_t *) &p, sizeof(p));
 
     seqCount_ = 0;
 
@@ -383,8 +382,8 @@ bool Bmi088::display(void)
 {
   ImuPacket p;
   char name[] = "Bmi088 (imu)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header );
     misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
     misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");

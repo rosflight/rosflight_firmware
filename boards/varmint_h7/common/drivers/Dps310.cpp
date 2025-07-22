@@ -72,7 +72,7 @@ extern Time64 time64;
 DMA_RAM uint8_t dps310_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t dps310_fifo_rx_buffer[DPS310_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t dps310_double_buffer[2 * sizeof(PressurePacket)];
 
 #define ROLLOVER 20000
 #define DPS310_CMD_P 0
@@ -122,8 +122,9 @@ uint32_t Dps310::init(
   initializationStatus_ = DRIVER_OK;
 
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
+
   drdyPin_ = drdy_pin;
+  drdy_ = 0;
 
   spi_.init(hspi, dps310_dma_txbuf, dps310_dma_rxbuf, cs_port, cs_pin);
   spiState_ = DPS310_IDLE_STATE;
@@ -133,7 +134,7 @@ uint32_t Dps310::init(
   // groupDelay_		= 1000000/sampleRateHz_;
   HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
 
-  rxFifo_.init(DPS310_FIFO_BUFFERS, sizeof(PressurePacket), dps310_fifo_rx_buffer);
+  double_buffer_.init(dps310_double_buffer, sizeof(dps310_double_buffer) );
 
 #define RESET 0x0C
   writeRegister(RESET, 0x09);
@@ -313,8 +314,8 @@ bool Dps310::poll(uint64_t poll_counter)
   // Start P measurement sequence
   if (poll_state == DPS310_CMD_P) // Command Pressure Read
   {
+    drdy_ = time64.Us();
     uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x01};
-    launchUs_ = time64.Us();
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = DPS310_CMD_P;
     else spiState_ = DPS310_STATE_ERROR;
   }
@@ -362,7 +363,7 @@ void Dps310::endDma(void)
   {
     if (rx[1] & 0x10) {
       p.header.status |= (uint16_t) rx[1];
-      p.drdy = time64.Us();
+      p.header.complete = time64.Us();
     }
   } else if (spiState_ == DPS310_DRDY_T) // Temperature DRDY
   {
@@ -378,9 +379,9 @@ void Dps310::endDma(void)
     double Praw = (double) praw / KP;
     p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_)) + Traw * (C01_ + Praw * (C11_ + Praw * C21_)); // Pa
 
-    p.header.timestamp = time64.Us();
-    p.groupDelay = p.header.timestamp - (p.drdy + launchUs_) / 2;
-    if (p.header.status == DPS310_OK) rxFifo_.write((uint8_t *) &p, sizeof(p));
+    p.header.timestamp = drdy_;
+    p.header.complete = time64.Us();
+    if (p.header.status == DPS310_OK) write((uint8_t *) &p, sizeof(p));
     p.header.status = 0;
   }
 
@@ -392,8 +393,8 @@ bool Dps310::display(void)
 {
   PressurePacket p;
 
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name_, p.header );
     misc_f32(98, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(DPS310_OK, p.header.status, "Status");

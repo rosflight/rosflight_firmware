@@ -47,7 +47,7 @@ extern Time64 time64;
 
 extern bool verbose;
 
-#define ROWSIZE 180
+#define ROWSIZE 256
 #define ASCII_ESC 27
 
 void verbose_dashes(void)

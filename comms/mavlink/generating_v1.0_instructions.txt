@@ -1,5 +1,6 @@
 # get the mavlink/mavlink repository
-git clone https://github.com/rosflight/mavlink.git
+# git clone https://github.com/rosflight/mavlink.git
+git clone https://github.com/mavlink/mavlink.git
 
 # Go to your rosflight_firmware/comms/mavlink folder
 # Put the rosflight.xml file there if not already there

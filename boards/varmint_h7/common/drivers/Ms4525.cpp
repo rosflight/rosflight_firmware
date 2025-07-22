@@ -43,7 +43,7 @@ extern Time64 time64;
 #define MS4525_OK (0x0000)
 
 DMA_RAM uint8_t ms4525_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
-DTCM_RAM uint8_t ms4525_fifo_rx_buffer[MS4525_FIFO_BUFFERS * sizeof(PressurePacket)];
+DTCM_RAM uint8_t ms4525_double_buffer[2 * sizeof(PressurePacket)];
 
 #define MS4525_I2C_DMA_SIZE (4)
 
@@ -71,12 +71,11 @@ uint32_t Ms4525::init(
 
   hi2c_ = hi2c;
   address_ = i2c_address << 1;
-  launchUs_ = 0;
-  // groupDelay_ = 0; //Computed later based on launchUs_ and drdy_ timestamps.
 
-  rxFifo_.init(MS4525_FIFO_BUFFERS, sizeof(PressurePacket), ms4525_fifo_rx_buffer);
+  double_buffer_.init(ms4525_double_buffer, sizeof(ms4525_double_buffer));
 
   dtMs_ = 1000. / (double) sampleRateHz_;
+  drdy_ = 0;
 
   // Read the status register
   uint8_t sensor_status[2];
@@ -100,11 +99,8 @@ bool Ms4525::poll(uint64_t poll_counter)
   PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
   if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX1) || (poll_state == MS4525_CMDRX2)
       || (poll_state == MS4525_CMDRX3) || (poll_state == MS4525_CMDRX4) || (poll_state == MS4525_CMDRXSEND)) {
-    if (poll_state == MS4525_CMDRXSTART) launchUs_ = time64.Us();
-
-    if ((dmaRunning_ = (HAL_OK
-                        == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ms4525_i2c_dma_buf,
-                                                      MS4525_I2C_DMA_SIZE)))) // Receive 7 bytes of data over I2C
+    drdy_ = time64.Us();
+    if (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ms4525_i2c_dma_buf, MS4525_I2C_DMA_SIZE)) // Receive 7 bytes of data over I2C
       i2cState_ = poll_state;
     else i2cState_ = MS4525_STATE_ERROR;
   }
@@ -138,25 +134,23 @@ void Ms4525::endDma(void)
         p.temperature = (double) i_temperature * 200.0 / 2047.0 - 50.0 + 273.15; // K
         p.header.status = ms4525_i2c_dma_buf[0] & 0xC0;
 
-        p.header.timestamp = time64.Us();
-        p.drdy = p.header.timestamp;
-        p.groupDelay = (p.header.timestamp - launchUs_) / 2;
+        p.header.timestamp = drdy_;
+        p.header.complete = time64.Us();
 
-        rxFifo_.write((uint8_t *) &p, sizeof(p));
+        write((uint8_t *) &p, sizeof(p));
       }
     }
   }
 
   i2cState_ = MS4525_IDLE_STATE;
-  dmaRunning_ = false;
 }
 
 bool Ms4525::display(void)
 {
   PressurePacket p;
   char name[] = "MS4525 (pitot)";
-  if (rxFifo_.readMostRecent((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.drdy, p.header.timestamp, p.groupDelay);
+  if (read((uint8_t *) &p, sizeof(p))) {
+    misc_header(name, p.header );
     misc_printf("%10.3f Pa                          |                                        | "
                 "%7.1f C |           "
                 "   | 0x%04X",

@@ -46,9 +46,11 @@
 
 extern Time64 time64;
 
-#define TELEM_RX_BUFFER_SIZE (4096) // Use a multiple of 32!
+//#define TELEM_RX_BUFFER_SIZE (4096-32) // Use a multiple of 32!
+//DTCM_RAM uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
 
-DTCM_RAM uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
+#define TELEM_RX_BUFFER_SIZE (8*1024)
+static uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
 
 #define TELEM_DMA_TX_BUFFER_SIZE (SERIAL_MAX_PAYLOAD_SIZE)
 DMA_RAM uint8_t telem_dma_txbuf[TELEM_DMA_TX_BUFFER_SIZE];
@@ -62,8 +64,8 @@ DTCM_RAM uint8_t telem_fifo_tx_buffer1[SERIAL_TX_FIFO_BUFFERS1 * sizeof(SerialTx
 DTCM_RAM uint8_t telem_fifo_tx_buffer2[SERIAL_TX_FIFO_BUFFERS2 * sizeof(SerialTxPacket)];
 DTCM_RAM PacketFifo telem_tx_fifos[SERIAL_QOS_FIFOS];
 
-DATA_RAM uint8_t * telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] = {telem_fifo_tx_buffer0, telem_fifo_tx_buffer1,
-                                                             telem_fifo_tx_buffer2};
+DATA_RAM uint8_t * telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] =
+  {telem_fifo_tx_buffer0, telem_fifo_tx_buffer1, telem_fifo_tx_buffer2};
 
 uint32_t Telem::init(
   // Driver initializers
