@@ -19,8 +19,10 @@ jobs:
       run: sudo apt -y install gcc-arm-none-eabi
     - name: check toolchain
       run: arm-none-eabi-gcc --version
-    - name: build varmint
-      run: mkdir varmint_build && cd varmint_build && cmake .. -DBOARD_TO_BUILD=varmint && make
+    - name: build varmint_10X
+      run: mkdir varmint_10X_build && cd varmint_10X_build && cmake .. -DBOARD_TO_BUILD=varmint_10X && make
+    - name: build varmint_11X
+      run: mkdir varmint_11X_build && cd varmint_11X_build && cmake .. -DBOARD_TO_BUILD=varmint_11X && make
     - name: build pixracer pro
       run: mkdir pixracer_pro_build && cd pixracer_pro_build && cmake .. -DBOARD_TO_BUILD=pixracer_pro && make
 
@@ -31,6 +33,7 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          varmint_build/varmint_10X.hex
+          varmint_10X_build/varmint_10X.hex
+          varmint_11X_build/varmint_11X.hex
           pixracer_pro_build/pixracer_pro.hex
 
