@@ -56,35 +56,52 @@ void Mixer::init()
 
 void Mixer::param_change_callback(uint16_t param_id)
 {
+  // Follows parameter ordered in mixer.h
 
-  if ((param_id >=PARAM_PRIMARY_MIXER_OUTPUT_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
-    load_primary_mixer_values();
+  if ((param_id >=PARAM_PRIMARY_MIXER_OUTPUT_0 )&&(param_id <=PARAM_PRIMARY_MIXER_OUTPUT_9 )) {
+    primary_mixer_.output_type[param_id-PARAM_PRIMARY_MIXER_OUTPUT_0] = (output_type_t) RF_.params_.get_param_int(param_id);
 
-    // Check to see if the secondary mixer needs to be updated.
-    // Without a call to init_mixing, the primary and secondary mixer parameters can get out of sync, if
-    // the PARAM_SECONDARY_MIXER is set to an invalid mixer (and thus is defaulting to primary mixer).
-    mixer_type_t mixer_choice = static_cast<mixer_type_t>(RF_.params_.get_param_int(PARAM_SECONDARY_MIXER));
-    if (mixer_choice >= NUM_MIXERS) {
-      secondary_mixer_ = primary_mixer_;
-      save_secondary_mixer_params();
-    }
+  } else if ((param_id >=PARAM_PRIMARY_MIXER_PWM_RATE_0 )&&(param_id <=PARAM_PRIMARY_MIXER_PWM_RATE_9 )) {
+    primary_mixer_.default_pwm_rate[param_id-PARAM_PRIMARY_MIXER_PWM_RATE_0] = RF_.params_.get_param_float(param_id);
+
+  } else if ((param_id >=PARAM_PRIMARY_MIXER_0_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
+
+    uint16_t param_id_offset =  param_id-PARAM_PRIMARY_MIXER_0_0;
+    uint16_t parma_id_row = param_id_offset%6;
+    uint16_t parma_id_col = param_id_offset/6;
+
+    if(parma_id_row==0) { primary_mixer_.Fx[parma_id_col] = RF_.params_.get_param_float(param_id); }
+    if(parma_id_row==1) { primary_mixer_.Fy[parma_id_col] = RF_.params_.get_param_float(param_id); }
+    if(parma_id_row==2) { primary_mixer_.Fz[parma_id_col] = RF_.params_.get_param_float(param_id); }
+    if(parma_id_row==3) { primary_mixer_.Qx[parma_id_col] = RF_.params_.get_param_float(param_id); }
+    if(parma_id_row==4) { primary_mixer_.Qy[parma_id_col] = RF_.params_.get_param_float(param_id); }
+    if(parma_id_row==5) { primary_mixer_.Qz[parma_id_col] = RF_.params_.get_param_float(param_id); }
+
   } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
-    load_secondary_mixer_values();
+
+     uint16_t param_id_offset =  param_id-PARAM_SECONDARY_MIXER_0_0;
+     uint16_t parma_id_row = param_id_offset%6;
+     uint16_t parma_id_col = param_id_offset/6;
+     if(parma_id_row==0) { secondary_mixer_.Fx[parma_id_col] = RF_.params_.get_param_float(param_id); }
+     if(parma_id_row==1) { secondary_mixer_.Fy[parma_id_col] = RF_.params_.get_param_float(param_id); }
+     if(parma_id_row==2) { secondary_mixer_.Fz[parma_id_col] = RF_.params_.get_param_float(param_id); }
+     if(parma_id_row==3) { secondary_mixer_.Qx[parma_id_col] = RF_.params_.get_param_float(param_id); }
+     if(parma_id_row==4) { secondary_mixer_.Qy[parma_id_col] = RF_.params_.get_param_float(param_id); }
+     if(parma_id_row==5) { secondary_mixer_.Qz[parma_id_col] = RF_.params_.get_param_float(param_id); }
+
   } else switch (param_id) {
     case PARAM_PRIMARY_MIXER:
     case PARAM_SECONDARY_MIXER:
       init_mixing();
       break;
-    case PARAM_MOTOR_RESISTANCE:
-    case PARAM_MOTOR_KV:
-    case PARAM_NO_LOAD_CURRENT:
-    case PARAM_PROP_DIAMETER:
-    case PARAM_PROP_CT:
-    case PARAM_PROP_CQ:
-    case PARAM_NUM_MOTORS:
-    case PARAM_VOLT_MAX:
-      update_parameters();
-      break;
+    case PARAM_MOTOR_RESISTANCE: R_ = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE); break;
+    case PARAM_MOTOR_KV: K_V_ = RF_.params_.get_param_float(PARAM_MOTOR_KV); K_Q_ = K_V_; break;
+    case PARAM_NO_LOAD_CURRENT: i_0_ = RF_.params_.get_param_float(PARAM_NO_LOAD_CURRENT); break;
+    case PARAM_PROP_DIAMETER: D_ = RF_.params_.get_param_float(PARAM_PROP_DIAMETER); break;
+    case PARAM_PROP_CT: C_T_ = RF_.params_.get_param_float(PARAM_PROP_CT); break;
+    case PARAM_PROP_CQ: C_Q_ = RF_.params_.get_param_float(PARAM_PROP_CQ); break;
+    case PARAM_NUM_MOTORS: num_motors_ = RF_.params_.get_param_int(PARAM_NUM_MOTORS); break;
+    case PARAM_VOLT_MAX: V_max_ = RF_.params_.get_param_float(PARAM_VOLT_MAX); break;
     case PARAM_MOTOR_PWM_SEND_RATE:
       init_PWM();
       break;
@@ -93,6 +110,7 @@ void Mixer::param_change_callback(uint16_t param_id)
       break;
   }
 }
+
 
 void Mixer::init_mixing()
 {
