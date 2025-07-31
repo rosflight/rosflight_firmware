@@ -59,6 +59,15 @@ void Mixer::param_change_callback(uint16_t param_id)
 
   if ((param_id >=PARAM_PRIMARY_MIXER_OUTPUT_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
     load_primary_mixer_values();
+
+    // Check to see if the secondary mixer needs to be updated.
+    // Without a call to init_mixing, the primary and secondary mixer parameters can get out of sync, if
+    // the PARAM_SECONDARY_MIXER is set to an invalid mixer (and thus is defaulting to primary mixer).
+    mixer_type_t mixer_choice = static_cast<mixer_type_t>(RF_.params_.get_param_int(PARAM_SECONDARY_MIXER));
+    if (mixer_choice >= NUM_MIXERS) {
+      secondary_mixer_ = primary_mixer_;
+      save_secondary_mixer_params();
+    }
   } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
     load_secondary_mixer_values();
   } else switch (param_id) {
