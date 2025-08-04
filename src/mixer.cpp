@@ -60,9 +60,13 @@ void Mixer::param_change_callback(uint16_t param_id)
 
   if ((param_id >=PARAM_PRIMARY_MIXER_OUTPUT_0 )&&(param_id <=PARAM_PRIMARY_MIXER_OUTPUT_9 )) {
     primary_mixer_.output_type[param_id-PARAM_PRIMARY_MIXER_OUTPUT_0] = (output_type_t) RF_.params_.get_param_int(param_id);
+    // Note: secondary mixer output types are not used, but should match the primary mixer in case code elsewhere changes.
+    secondary_mixer_.output_type[param_id-PARAM_PRIMARY_MIXER_OUTPUT_0] = (output_type_t) RF_.params_.get_param_int(param_id);
 
   } else if ((param_id >=PARAM_PRIMARY_MIXER_PWM_RATE_0 )&&(param_id <=PARAM_PRIMARY_MIXER_PWM_RATE_9 )) {
     primary_mixer_.default_pwm_rate[param_id-PARAM_PRIMARY_MIXER_PWM_RATE_0] = RF_.params_.get_param_float(param_id);
+    // Note: secondary micer pwm rates are not used, but should match the primary mixer in case code elsewhere changes.
+    secondary_mixer_.default_pwm_rate[param_id-PARAM_PRIMARY_MIXER_PWM_RATE_0] = RF_.params_.get_param_float(param_id);
 
   } else if ((param_id >=PARAM_PRIMARY_MIXER_0_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
 
