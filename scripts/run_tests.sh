@@ -22,11 +22,19 @@ if [ $BASENAME == "scripts" ]; then
   cd ..
 fi
 
-echo_blue "Test 1: Build varmint firmware"
+echo_blue "Test 1a: Build varmint_10X firmware"
 rm -rf build
 mkdir build
 cd build
-cmake .. -DBOARD_TO_BUILD=varmint -DCMAKE_BUILD_TYPE=Release && make -j
+cmake .. -DBOARD_TO_BUILD=varmint_10X -DCMAKE_BUILD_TYPE=Release && make -j
+print_result $?
+cd ..
+
+echo_blue "Test 1b: Build varmint_11X firmware"
+rm -rf build
+mkdir build
+cd build
+cmake .. -DBOARD_TO_BUILD=varmint_11X -DCMAKE_BUILD_TYPE=Release && make -j
 print_result $?
 cd ..
 
