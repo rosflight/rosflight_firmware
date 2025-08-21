@@ -43,7 +43,7 @@
 
 #include "estimator.h"
 
-#include "rosflight_structs.h"
+#include "board.h"
 
 namespace rosflight_firmware
 {
