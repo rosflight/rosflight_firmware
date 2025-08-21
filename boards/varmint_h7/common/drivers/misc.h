@@ -40,7 +40,7 @@
 
 #include <stdint.h>
 #include <stm32h7xx_hal.h>
-#include "rosflight_structs.h"
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {

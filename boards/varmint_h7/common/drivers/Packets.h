@@ -41,7 +41,7 @@
 //#include "Ubx.h"
 #include <stdint.h>
 
-#include "interface/rosflight_structs.h"
+#include "board.h"
 
 #define SERIAL_MAX_PAYLOAD_SIZE (256 + 8) // for MAVLINK1, really 255+8, added 1 byte to make it an even multiple of 8
 typedef struct //__attribute__((__packed__))
