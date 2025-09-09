@@ -167,6 +167,9 @@ public:
 
   // register listener
   virtual void set_listener(ListenerInterface * listener) = 0;
+
+  // Timing experiments
+  virtual void send_previous_offboard_control() = 0;
 };
 
 } // namespace rosflight_firmware

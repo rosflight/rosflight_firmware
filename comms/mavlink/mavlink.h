@@ -112,6 +112,11 @@ private:
   bool initialized_ = false;
 
   ListenerInterface * listener_ = nullptr;
+
+  // Timing experiment
+  bool received_offboard_ctrl_ = false;
+  mavlink_message_t prev_offboard_msg_;
+  void send_previous_offboard_control() override;
 };
 
 } // namespace rosflight_firmware

@@ -479,6 +479,17 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
   control.Fz.valid = !(ctrl.ignore & IGNORE_VALUE6);
 
   if (listener_ != nullptr) { listener_->offboard_control_callback(control); }
+
+  received_offboard_ctrl_ = true;
+  prev_offboard_msg_ = *msg;
+}
+
+void Mavlink::send_previous_offboard_control()
+{
+  if (received_offboard_ctrl_) {
+    send_message(prev_offboard_msg_);
+    received_offboard_ctrl_ = false;
+  }
 }
 
 void Mavlink::handle_msg_external_attitude(const mavlink_message_t * const msg)
