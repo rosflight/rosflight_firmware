@@ -510,6 +510,7 @@ void CommManager::stream(got_flags got)
 
   send_buffered_log_messages();
 
+  comm_link_.send_previous_offboard_control();
 }
 
 void CommManager::send_next_param(void)
