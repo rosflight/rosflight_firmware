@@ -445,6 +445,8 @@ void Mavlink::handle_msg_timesync(const mavlink_message_t * const msg)
 
 void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
 {
+  send_message(*msg);
+
   mavlink_offboard_control_t ctrl;
   mavlink_msg_offboard_control_decode(msg, &ctrl);
 
@@ -480,8 +482,8 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
 
   if (listener_ != nullptr) { listener_->offboard_control_callback(control); }
 
-  received_offboard_ctrl_ = true;
-  prev_offboard_msg_ = *msg;
+  // received_offboard_ctrl_ = true;
+  // prev_offboard_msg_ = *msg;
 }
 
 void Mavlink::send_previous_offboard_control()
