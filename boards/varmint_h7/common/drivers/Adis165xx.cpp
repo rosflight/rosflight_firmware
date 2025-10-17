@@ -236,11 +236,11 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
     if (sum == data[10]) {
       p.header.status = (uint16_t) data[1];
-      p.gyro[0] = -(double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
-      p.gyro[1] = -(double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
+      p.gyro[0] = (double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
+      p.gyro[1] = (double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
       p.gyro[2] = (double) data[4] * 0.001745329251994;  // rad/s, or use 0.1 deg/s
-      p.accel[0] = -(double) data[5] * 0.01225;          // m/s^2
-      p.accel[1] = -(double) data[6] * 0.01225;          // m/s^2
+      p.accel[0] = (double) data[5] * 0.01225;          // m/s^2
+      p.accel[1] = (double) data[6] * 0.01225;          // m/s^2
       p.accel[2] = (double) data[7] * 0.01225;           // m/s^2
       p.temperature = (double) data[8] * 0.1 + 273.15;   // K
       p.dataTime = (double) ((uint16_t) data[9]) / sampleRateHz_;
