@@ -32,7 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_RC_H
 #define ROSFLIGHT_FIRMWARE_RC_H
 
-#include "rosflight_structs.h"
+#include "board.h"
 
 #include "param_listener.h"
 
