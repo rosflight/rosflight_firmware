@@ -118,41 +118,54 @@ uint32_t Ubx::init(
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
-  //     baud_initial_ = 100000000/huart_->Instance->BRR;
 
-  uint32_t bauds[] = {9600, 115200, 38400, 57600,  230400}; // { 9600, 19200, 38400, 57600, 115200, 230400, 460800};
-  unsigned int i, retry;
-  HAL_Delay(1000);
+  // New Sync Baudrate
 
-  uint32_t ubx_baud = 0;
+   uint32_t bauds[] = {9600, 57600, 115200, 230400}; // { 9600, 19200, 38400, 57600, 115200, 230400, 460800};
+   unsigned int i, retry;
+   uint32_t ubx_baud = 0;
 
-  for (retry = 0; retry < 5; retry++) {
-    for (i = 0; i < sizeof(bauds) / sizeof(uint32_t); i++) {
-      // Set STM Baud
-      huart_->Init.BaudRate = bauds[i];
-      if (HAL_UART_Init(huart_) != HAL_OK) {
-        initializationStatus_ |= DRIVER_HAL_ERROR;
-        return initializationStatus_;
-      }
-      // Set UBLOX Baud
-      cfgPrt(baud_);
-      HAL_Delay(2);
-    }
+   uint8_t ack[10] = {0xB5, 0x62, 0x05, 0x01, 0x02, 0x00, 0x06, 0x00, 0x0E, 0x37};
+   for(retry=0;retry<2;retry++)
+   {
+     uint8_t offset = 0;
+     for(i=0;i<sizeof(bauds)/sizeof(uint32_t);i++)
+     {
+       misc_printf("Sending with baud %u\n",bauds[i]);
+       // Set STM Baud
+         huart_->Init.BaudRate = bauds[i];
+         if (HAL_UART_Init(huart_) != HAL_OK) {
+           initializationStatus_ |= DRIVER_HAL_ERROR;
+           return initializationStatus_;
+         }
+         // Send UBLOX Baud configuration message
+         cfgPrt(baud_);
 
-    // Set STM Baud
-    huart_->Init.BaudRate = baud_;
-    if (HAL_UART_Init(huart_) != HAL_OK) {
-      initializationStatus_ |= DRIVER_HAL_ERROR;
-      return initializationStatus_;
-    }
-    HAL_Delay(100); // Give the UBLOX some time to get there
+         // Look for Ack message
+         offset = 0; // rest to start of packet
+         for(int j=0;j<128;j++)
+         {
+           uint8_t ch = 0;
+           //HAL_StatusTypeDef hal_status =
+               HAL_UART_Receive(huart_, &ch, 1, 1);
+           if(ch == ack[offset]) offset++;
+           else offset = 0;
 
-    // Check if we have acquired the baud rate
-    ubx_baud = pollBaud();
+           if(offset==10) // we have a match
+           {
+             misc_printf("ubx characters read till match %u, baud tx %u\n",j+1,bauds[i]);
+             ubx_baud = bauds[i];
+             break;
+           }
+         }
+         if(offset==10) break;
+     }
+     if(offset==10) break;
+      misc_printf("retry %u\n",retry+1);
+   }
 
-    if (ubx_baud == baud_) break;
-    misc_printf("%6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
-  }
+
+
 
   if (ubx_baud != baud_) {
     initializationStatus_ |= UBX_FAIL_BAUD_CHANGE;
