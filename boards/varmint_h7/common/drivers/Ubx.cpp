@@ -118,41 +118,6 @@ uint32_t Ubx::init(
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
-  //     baud_initial_ = 100000000/huart_->Instance->BRR;
-
-//  uint32_t bauds[] = {9600, 115200, 38400, 57600,  230400}; // { 9600, 19200, 38400, 57600, 115200, 230400, 460800};
-//  unsigned int i, retry;
-//  HAL_Delay(1000);
-//
-//  uint32_t ubx_baud = 0;
-//
-//  for (retry = 0; retry < 5; retry++) {
-//    for (i = 0; i < sizeof(bauds) / sizeof(uint32_t); i++) {
-//      // Set STM Baud
-//      huart_->Init.BaudRate = bauds[i];
-//      if (HAL_UART_Init(huart_) != HAL_OK) {
-//        initializationStatus_ |= DRIVER_HAL_ERROR;
-//        return initializationStatus_;
-//      }
-//      // Set UBLOX Baud
-//      cfgPrt(baud_);
-//      HAL_Delay(2);
-//    }
-//
-//    // Set STM Baud
-//    huart_->Init.BaudRate = baud_;
-//    if (HAL_UART_Init(huart_) != HAL_OK) {
-//      initializationStatus_ |= DRIVER_HAL_ERROR;
-//      return initializationStatus_;
-//    }
-//    HAL_Delay(100); // Give the UBLOX some time to get there
-//
-//    // Check if we have acquired the baud rate
-//    ubx_baud = pollBaud();
-//
-//    if (ubx_baud == baud_) break;
-//    misc_printf("%6lu, %u retries\n", 100000000 / huart_->Instance->BRR, retry);
-//  }
 
   // New Sync Baudrate
 
@@ -174,9 +139,6 @@ uint32_t Ubx::init(
            return initializationStatus_;
          }
          // Send UBLOX Baud configuration message
-//         if (ubxProtocol_ == UBX_M8) cfgPrt(baud_);
-//         else cfgM9(baud_, sampleRateHz_);
-
          cfgPrt(baud_);
 
          // Look for Ack message
