@@ -1798,24 +1798,22 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
     __HAL_RCC_GPIOD_CLK_ENABLE();
     /**USART3 GPIO Configuration
-    PD12     ------> USART3_RTS
-    PD11     ------> USART3_CTS
     PD9     ------> USART3_RX
     PD8     ------> USART3_TX
     */
-    GPIO_InitStruct.Pin = TELEM2_USART3_RTS_Pin|TELEM2_USART3_CTS_Pin|TELEM2_USART3_TX_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
     GPIO_InitStruct.Pin = TELEM2_USART3_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
     HAL_GPIO_Init(TELEM2_USART3_RX_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = TELEM2_USART3_TX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+    HAL_GPIO_Init(TELEM2_USART3_TX_GPIO_Port, &GPIO_InitStruct);
 
     /* USART3 interrupt Init */
     HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
@@ -2018,12 +2016,10 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     __HAL_RCC_USART3_CLK_DISABLE();
 
     /**USART3 GPIO Configuration
-    PD12     ------> USART3_RTS
-    PD11     ------> USART3_CTS
     PD9     ------> USART3_RX
     PD8     ------> USART3_TX
     */
-    HAL_GPIO_DeInit(GPIOD, TELEM2_USART3_RTS_Pin|TELEM2_USART3_CTS_Pin|TELEM2_USART3_RX_Pin|TELEM2_USART3_TX_Pin);
+    HAL_GPIO_DeInit(GPIOD, TELEM2_USART3_RX_Pin|TELEM2_USART3_TX_Pin);
 
     /* USART3 interrupt DeInit */
     HAL_NVIC_DisableIRQ(USART3_IRQn);
