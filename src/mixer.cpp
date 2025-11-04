@@ -65,7 +65,7 @@ void Mixer::param_change_callback(uint16_t param_id)
 
   } else if ((param_id >=PARAM_PRIMARY_MIXER_PWM_RATE_0 )&&(param_id <=PARAM_PRIMARY_MIXER_PWM_RATE_9 )) {
     primary_mixer_.default_pwm_rate[param_id-PARAM_PRIMARY_MIXER_PWM_RATE_0] = RF_.params_.get_param_float(param_id);
-    // Note: secondary micer pwm rates are not used, but should match the primary mixer in case code elsewhere changes.
+    // Note: secondary mixer pwm rates are not used, but should match the primary mixer in case code elsewhere changes.
     secondary_mixer_.default_pwm_rate[param_id-PARAM_PRIMARY_MIXER_PWM_RATE_0] = RF_.params_.get_param_float(param_id);
 
   } else if ((param_id >=PARAM_PRIMARY_MIXER_0_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
@@ -73,23 +73,28 @@ void Mixer::param_change_callback(uint16_t param_id)
     uint16_t param_id_offset =  param_id-PARAM_PRIMARY_MIXER_0_0;
     uint16_t param_id_row = param_id_offset%6;
     uint16_t param_id_col = param_id_offset/6;
+    float param_value = RF_.params_.get_param_float(param_id);
 
-    if(param_id_row==0) { primary_mixer_.Fx[param_id_col] = RF_.params_.get_param_float(param_id); }
-    if(param_id_row==1) { primary_mixer_.Fy[param_id_col] = RF_.params_.get_param_float(param_id); }
-    if(param_id_row==2) { primary_mixer_.Fz[param_id_col] = RF_.params_.get_param_float(param_id); }
-    if(param_id_row==3) { primary_mixer_.Qx[param_id_col] = RF_.params_.get_param_float(param_id); }
-    if(param_id_row==4) { primary_mixer_.Qy[param_id_col] = RF_.params_.get_param_float(param_id); }
-    if(param_id_row==5) { primary_mixer_.Qz[param_id_col] = RF_.params_.get_param_float(param_id); }
+    if(param_id_row==0) { primary_mixer_.Fx[param_id_col] = param_value; }
+    if(param_id_row==1) { primary_mixer_.Fy[param_id_col] = param_value; }
+    if(param_id_row==2) { primary_mixer_.Fz[param_id_col] = param_value; }
+    if(param_id_row==3) { primary_mixer_.Qx[param_id_col] = param_value; }
+    if(param_id_row==4) { primary_mixer_.Qy[param_id_col] = param_value; }
+    if(param_id_row==5) { primary_mixer_.Qz[param_id_col] = param_value; }
 
     // Special Case for when secondary mixer is mirroring primary mixer.
     mixer_type_t mixer_choice = static_cast<mixer_type_t>(RF_.params_.get_param_int(PARAM_SECONDARY_MIXER));
     if (mixer_choice >= NUM_MIXERS) {
-      if(param_id_row==0) { secondary_mixer_.Fx[param_id_col] = RF_.params_.get_param_float(param_id); }
-      if(param_id_row==1) { secondary_mixer_.Fy[param_id_col] = RF_.params_.get_param_float(param_id); }
-      if(param_id_row==2) { secondary_mixer_.Fz[param_id_col] = RF_.params_.get_param_float(param_id); }
-      if(param_id_row==3) { secondary_mixer_.Qx[param_id_col] = RF_.params_.get_param_float(param_id); }
-      if(param_id_row==4) { secondary_mixer_.Qy[param_id_col] = RF_.params_.get_param_float(param_id); }
-      if(param_id_row==5) { secondary_mixer_.Qz[param_id_col] = RF_.params_.get_param_float(param_id); }
+      if(param_id_row==0) { secondary_mixer_.Fx[param_id_col] = param_value; }
+      if(param_id_row==1) { secondary_mixer_.Fy[param_id_col] = param_value; }
+      if(param_id_row==2) { secondary_mixer_.Fz[param_id_col] = param_value; }
+      if(param_id_row==3) { secondary_mixer_.Qx[param_id_col] = param_value; }
+      if(param_id_row==4) { secondary_mixer_.Qy[param_id_col] = param_value; }
+      if(param_id_row==5) { secondary_mixer_.Qz[param_id_col] = param_value; }
+
+      // Write the value to params -- otherwise, the secondary mixer gets out of sync
+      uint16_t secondary_mixer_param_id = PARAM_SECONDARY_MIXER_0_0 + param_id_col*6 + param_id_row;
+      RF_.params_.set_param_float(secondary_mixer_param_id, param_value);
     }
 
   } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
