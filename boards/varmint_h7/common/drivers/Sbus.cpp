@@ -161,7 +161,15 @@ void Sbus::endDma(void)
   RcPacket p;
   SbusPacket * sbus = (SbusPacket *) sbus_dma_rxbuf;
 
-  if ((sbus->header == 0x0F) && (sbus->footer == 0x00)) {
+  if ((sbus->header == 0x0F) &&
+        (
+          (sbus->footer == 0x00) ||
+          (sbus->footer == 0x04) ||
+          (sbus->footer == 0x14) ||
+          (sbus->footer == 0x24) ||
+          (sbus->footer == 0x34)
+        )
+      ) {
     p.chan[0] = sbus->chan0;
     p.chan[1] = sbus->chan1;
     p.chan[2] = sbus->chan2;
