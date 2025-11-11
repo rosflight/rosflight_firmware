@@ -121,7 +121,6 @@ void Mixer::param_change_callback(uint16_t param_id)
     case PARAM_PROP_CT: C_T_ = RF_.params_.get_param_float(PARAM_PROP_CT); break;
     case PARAM_PROP_CQ: C_Q_ = RF_.params_.get_param_float(PARAM_PROP_CQ); break;
     case PARAM_NUM_MOTORS: num_motors_ = RF_.params_.get_param_int(PARAM_NUM_MOTORS); break;
-    case PARAM_VOLT_MAX: V_max_ = RF_.params_.get_param_float(PARAM_VOLT_MAX); break;
     case PARAM_MOTOR_PWM_SEND_RATE:
       init_PWM();
       break;
@@ -265,7 +264,6 @@ void Mixer::update_parameters()
   C_T_ = RF_.params_.get_param_float(PARAM_PROP_CT);
   C_Q_ = RF_.params_.get_param_float(PARAM_PROP_CQ);
   num_motors_ = RF_.params_.get_param_int(PARAM_NUM_MOTORS);
-  V_max_ = RF_.params_.get_param_float(PARAM_VOLT_MAX);
 }
 
 Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
@@ -479,7 +477,8 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
         + R_ * i_0_ + K_V_ * sqrt(omega_squared);
 
       // Convert desired V_in setting to a throttle setting
-      outputs_[i] = V_in / V_max_;
+      BatteryStruct * batt = RF_.sensors_.get_battery();
+      outputs_[i] = V_in / batt->voltage;
 
       // Save off the largest control output (for motors) if it is greater than 1.0 for future scaling
       if (abs(outputs_[i]) > max_output) { max_output = abs(outputs_[i]); }

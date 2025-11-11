@@ -122,6 +122,7 @@ private:
   void correct_mag(void);
   void correct_baro(void);
   void correct_diff_pressure(void);
+  void lpf_battery(void);
   void update_battery_monitor_multipliers(void);
 
   // IMU calibration
@@ -151,6 +152,8 @@ private:
   // Battery Monitor
   float battery_voltage_alpha_{0.995};
   float battery_current_alpha_{0.995};
+  float previous_battery_voltage_{0.0};
+  float previous_battery_current_{0.0};
 };
 
 } // namespace rosflight_firmware
