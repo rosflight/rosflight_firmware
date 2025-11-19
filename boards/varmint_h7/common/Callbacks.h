@@ -49,6 +49,8 @@ void CDC_TransmitCplt_Callback(uint8_t chan, uint8_t * buffer, uint16_t size);
 
 //   void UART_RxIdleCallback (UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_rx);
 void UART_RxIsrCallback(UART_HandleTypeDef * huart);
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c);
 
 #ifdef __cplusplus
 }

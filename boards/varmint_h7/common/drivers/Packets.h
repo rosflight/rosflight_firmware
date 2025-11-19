@@ -38,7 +38,6 @@
 #ifndef DRIVERPACKETS_H_
 #define DRIVERPACKETS_H_
 
-//#include "Ubx.h"
 #include <stdint.h>
 
 #include "board.h"
@@ -118,5 +117,6 @@ typedef struct //__attribute__((__packed__))
   float speed_accy;
 } GnssPacket;
 
+typedef rosflight_firmware::RangeStruct RangePacket;
 
 #endif /* DRIVERPACKETS_H_ */

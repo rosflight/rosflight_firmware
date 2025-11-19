@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
- * File     : MS4525.h
- * Date     : May 28, 2024
+ * File     : Lidarlitev3hp.h
+ * Date     : Nov 17, 2025
  ******************************************************************************
  *
- * Copyright (c) 2023, AeroVironment, Inc.
+ * Copyright (c) 2025, AeroVironment, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,39 +35,33 @@
  ******************************************************************************
  **/
 
-#ifndef MS4525_H_
-#define MS4525_H_
+#ifndef DRIVERS_LIDARLITEV3HP_H_
+#define DRIVERS_LIDARLITEV3HP_H_
 
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
+
 #include "Packets.h"
 #include "Time64.h"
-#include  "Polling.h"
+#include "misc.h"
+#include "Polling.h"
 
-#define MS4525_I2C_ADDRESS (0x28)
-/*
- *
- */
-class Ms4525 : public Status
+#define LIDARLITEV3HP_ADDRESS 0x62
+
+
+class Lidarlitev3hp : public Status
 {
-  /**
-     * \brief
-     *
-     *
-     */
 public:
   uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate_hz,
-    // I2C initializers
-    I2C_HandleTypeDef * hi2c, // The SPI handle
-    uint16_t i2c_address      // Chip select Port
-  );
-  bool poll(uint64_t poll_counter);
+        uint16_t sample_rate_hz,
+        I2C_HandleTypeDef * hi2c, uint16_t i2c_address
+      );
 
-  void endDma(void);
+  bool poll(uint64_t poll_counter);
+  void endRxDma(void);
+  void endTxDma(void);
+
   bool display(void);
-  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
@@ -76,12 +70,19 @@ private:
   bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
+  uint64_t drdy_;
+  bool dmaRunning_;
+  uint8_t status_;
+
   I2C_HandleTypeDef * hi2c_;
   PollingState i2cState_;
   uint16_t address_;
+  uint8_t cmdByte_;
   double dtMs_;
-  uint64_t drdy_;
-  bool write_data_;
+
+  void startDrdyQuery(void);
+  void startMeasure(void);
+  void startDataRead(void);
 };
 
-#endif /* DLHRL20G_H_ */
+#endif /* DRIVERS_LIDARLITEV3HP_H_ */

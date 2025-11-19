@@ -206,11 +206,18 @@ bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_press
   return false;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Sonar
-bool Varmint::sonar_read(rosflight_firmware::RangeStruct * sonar)
+bool Varmint::sonar_read(rosflight_firmware::RangeStruct * range)
 {
-  (void) sonar; // unused
+  // note we can do a direct read since in Packets.h:
+  // typedef rosflight_firmware::RangeStruct RangePacket;
+
+  if (range_.read((uint8_t *) range, sizeof(rosflight_firmware::RangeStruct))) {
+    return true;
+  }
+
   return false;
 }
 

@@ -90,6 +90,9 @@ void sandbox_dashboard(bool clear)
   varmint.rc_.display();
   verbose_dashes();
   varmint.gps_.display();
+  verbose_dashes();
+  varmint.range_.display();
+
 
   verbose_equals();
 }

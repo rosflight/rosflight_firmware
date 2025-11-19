@@ -76,6 +76,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Iis2mdc mag_;             /* Varmint 10-12X */ \
   DlhrL20G pitot_;          /* Varmint 10-11X */ \
   Mcp4017 servoV_;          /* Varmint 11-12X */ \
+  Lidarlitev3hp range_;    /* External I2C */ \
   /*		Auav pitot_; */     /* Varmint 12X */ \
   /*		Auav baro2_; */     /* Varmint 12X */ \
   /*		Bmi088 imu0_;    */ /* PixRacer Pro */ \
@@ -151,6 +152,11 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADIS165XX_TIM_INSTANCE (TIM12)        // ADIS 16500 ExtClk
 #define ADIS165XX_TIM_PERIOD_US (500)         // 500 us, 2kHz
 #define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+
+// Range Lidar Sensor on i2c2
+#define LIDAR_HZ (100)
+#define LIDAR_I2C (&hi2c2)
+#define LIDAR_I2C_ADDRESS (LIDARLITEV3HP_ADDRESS)
 
 // DLHR Pitot is on i2c1
 #define DLHRL20G_HZ (100)

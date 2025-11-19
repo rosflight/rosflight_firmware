@@ -47,15 +47,12 @@ DTCM_RAM uint8_t ms4525_double_buffer[2 * sizeof(PressurePacket)];
 
 #define MS4525_I2C_DMA_SIZE (4)
 
-#define ROLLOVER 10000
-#define MS4525_CMDRXSTART 0
-#define MS4525_CMDRX1 15
-#define MS4525_CMDRX2 30
-#define MS4525_CMDRX3 45
-#define MS4525_CMDRX4 60
-#define MS4525_CMDRXSEND 75
-#define MS4525_IDLE_STATE 0xFFFE
+#define REPORTING_US 10000
+#define DECIMATION 25
+#define MS4525_IDLE_STATE 0
+#define MS4525_STATE_READ 1
 #define MS4525_STATE_ERROR 0xFFFF
+
 
 uint32_t Ms4525::init(
   // Driver initializers
@@ -77,6 +74,8 @@ uint32_t Ms4525::init(
   dtMs_ = 1000. / (double) sampleRateHz_;
   drdy_ = 0;
 
+  write_data_ = 0;
+
   // Read the status register
   uint8_t sensor_status[2];
   // Receive 1 bytes of data over I2C
@@ -96,38 +95,46 @@ uint32_t Ms4525::init(
 
 bool Ms4525::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
-  if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX1) || (poll_state == MS4525_CMDRX2)
-      || (poll_state == MS4525_CMDRX3) || (poll_state == MS4525_CMDRX4) || (poll_state == MS4525_CMDRXSEND)) {
+  PollingState poll_state = (PollingState) (poll_counter % (REPORTING_US / POLLING_PERIOD_US));
+
+  if((poll_state%DECIMATION)==0)
+  {
+    write_data_ = (poll_state==0);
     drdy_ = time64.Us();
     if (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ms4525_i2c_dma_buf, MS4525_I2C_DMA_SIZE)) // Receive 7 bytes of data over I2C
-      i2cState_ = poll_state;
-    else i2cState_ = MS4525_STATE_ERROR;
+      i2cState_ = MS4525_STATE_READ;
+    else
+      i2cState_ = MS4525_STATE_ERROR;
   }
+
   return false;
 }
 
 void Ms4525::endDma(void)
 {
-  static float pressure_filtered = 0;
 
-  if ((i2cState_ == MS4525_CMDRXSTART) || (i2cState_ == MS4525_CMDRX1) || (i2cState_ == MS4525_CMDRX2)
-      || (i2cState_ == MS4525_CMDRX3) || (i2cState_ == MS4525_CMDRX4) || (i2cState_ == MS4525_CMDRXSEND)) {
-    if ((ms4525_i2c_dma_buf[0] & 0xC0) == MS4525_OK) {
+  if (i2cState_ == MS4525_STATE_READ)
+  {
+    if ((ms4525_i2c_dma_buf[0] & 0xC0) == MS4525_OK)
+    {
+      static uint64_t i_pressure_sum=0;
+      static uint32_t sum_count=0;
+
       uint32_t i_pressure = (uint32_t) (ms4525_i2c_dma_buf[0] & 0x3F) << 8 | (uint32_t) ms4525_i2c_dma_buf[1];
 
-      static double pmax = 6894.76; // (=-pmin) Pa
+      i_pressure_sum += i_pressure;
+      sum_count++;
 
-      float pressure = (((double) i_pressure - 1638.3) / 6553.2 - 1.0) * pmax; // Pa
+      // put in decimation here.
+      if( write_data_ && (sum_count!=0)) {
+        double pmax = 6894.76; // (=-pmin) Pa
+        double pressure = (((double) i_pressure_sum/(double)sum_count - 1638.3) / 6553.2 - 1.0) * pmax; // Pa
 
-      // Anti-alias filter since we are reporting data at a lower rate.
-      const float alpha = 0.5;
-      pressure_filtered = alpha * pressure + (1.0 - alpha) * pressure_filtered;
+        i_pressure_sum = 0;
+        sum_count = 0;
 
-      if (i2cState_ == MS4525_CMDRXSEND) {
         PressurePacket p;
-
-        p.pressure = pressure_filtered;
+        p.pressure = pressure;
 
         uint32_t i_temperature =
           ((uint32_t) ms4525_i2c_dma_buf[2] << 3 | (uint32_t) (ms4525_i2c_dma_buf[3] & 0xE0) >> 5);
@@ -139,6 +146,7 @@ void Ms4525::endDma(void)
 
         write((uint8_t *) &p, sizeof(p));
       }
+
     }
   }
 
