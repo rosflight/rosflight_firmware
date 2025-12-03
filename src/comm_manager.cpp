@@ -234,46 +234,46 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
 {
   // put values into a new command struct
   control_t new_offboard_command;
-  new_offboard_command.Qx.value = control.Qx.value;
-  new_offboard_command.Qy.value = control.Qy.value;
-  new_offboard_command.Qz.value = control.Qz.value;
-  new_offboard_command.Fx.value = control.Fx.value;
-  new_offboard_command.Fy.value = control.Fy.value;
-  new_offboard_command.Fz.value = control.Fz.value;
+  new_offboard_command.u[0].value = control.u[0].value;
+  new_offboard_command.u[1].value = control.u[1].value;
+  new_offboard_command.u[2].value = control.u[2].value;
+  new_offboard_command.u[3].value = control.u[3].value;
+  new_offboard_command.u[4].value = control.u[4].value;
+  new_offboard_command.u[5].value = control.u[5].value;
 
   // Move flags into standard message
-  new_offboard_command.Qx.active = control.Qx.valid;
-  new_offboard_command.Qy.active = control.Qy.valid;
-  new_offboard_command.Qz.active = control.Qz.valid;
-  new_offboard_command.Fx.active = control.Fx.valid;
-  new_offboard_command.Fy.active = control.Fy.valid;
-  new_offboard_command.Fz.active = control.Fz.valid;
+  new_offboard_command.u[0].active = control.u[0].valid;
+  new_offboard_command.u[1].active = control.u[1].valid;
+  new_offboard_command.u[2].active = control.u[2].valid;
+  new_offboard_command.u[3].active = control.u[3].valid;
+  new_offboard_command.u[4].active = control.u[4].valid;
+  new_offboard_command.u[5].active = control.u[5].valid;
 
   // translate modes into standard message
   switch (control.mode) {
     case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
-      new_offboard_command.Qx.type = PASSTHROUGH;
-      new_offboard_command.Qy.type = PASSTHROUGH;
-      new_offboard_command.Qz.type = PASSTHROUGH;
-      new_offboard_command.Fx.type = PASSTHROUGH;
-      new_offboard_command.Fy.type = PASSTHROUGH;
-      new_offboard_command.Fz.type = PASSTHROUGH;
+      new_offboard_command.u[0].type = PASSTHROUGH;
+      new_offboard_command.u[1].type = PASSTHROUGH;
+      new_offboard_command.u[2].type = PASSTHROUGH;
+      new_offboard_command.u[3].type = PASSTHROUGH;
+      new_offboard_command.u[4].type = PASSTHROUGH;
+      new_offboard_command.u[5].type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-      new_offboard_command.Qx.type = RATE;
-      new_offboard_command.Qy.type = RATE;
-      new_offboard_command.Qz.type = RATE;
-      new_offboard_command.Fx.type = THROTTLE;
-      new_offboard_command.Fy.type = THROTTLE;
-      new_offboard_command.Fz.type = THROTTLE;
+      new_offboard_command.u[0].type = RATE;
+      new_offboard_command.u[1].type = RATE;
+      new_offboard_command.u[2].type = RATE;
+      new_offboard_command.u[3].type = THROTTLE;
+      new_offboard_command.u[4].type = THROTTLE;
+      new_offboard_command.u[5].type = THROTTLE;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
-      new_offboard_command.Qx.type = ANGLE;
-      new_offboard_command.Qy.type = ANGLE;
-      new_offboard_command.Qz.type = RATE;
-      new_offboard_command.Fx.type = THROTTLE;
-      new_offboard_command.Fy.type = THROTTLE;
-      new_offboard_command.Fz.type = THROTTLE;
+      new_offboard_command.u[0].type = ANGLE;
+      new_offboard_command.u[1].type = ANGLE;
+      new_offboard_command.u[2].type = RATE;
+      new_offboard_command.u[3].type = THROTTLE;
+      new_offboard_command.u[4].type = THROTTLE;
+      new_offboard_command.u[5].type = THROTTLE;
       break;
   }
 
@@ -363,9 +363,9 @@ void CommManager::send_status(void)
 
   uint8_t control_mode = 0;
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)
-      || RF_.command_manager_.combined_control().Qx.type == PASSTHROUGH) {
+      || RF_.command_manager_.combined_control().u[0].type == PASSTHROUGH) {
     control_mode = MODE_PASS_THROUGH;
-  } else if (RF_.command_manager_.combined_control().Qx.type == ANGLE) {
+  } else if (RF_.command_manager_.combined_control().u[0].type == ANGLE) {
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
   } else {
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;

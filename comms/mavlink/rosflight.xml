@@ -196,15 +196,10 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
     
     <messages>
         <message id="180" name="OFFBOARD_CONTROL">
-			<description>Offboard Control (6-DOF)</description>
+			<description>Offboard Control (10-DOF)</description>
 			<field type="uint8_t" name="mode" enum="OFFBOARD_CONTROL_MODE">Offboard control mode, see OFFBOARD_CONTROL_MODE</field>
 			<field type="uint8_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
-			<field type="float" name="Qx">Qx control channel interpreted according to mode</field>
-			<field type="float" name="Qy">Qy control channel, interpreted according to mode</field>
-			<field type="float" name="Qz">Qz control channel, interpreted according to mode</field>
-			<field type="float" name="Fx">Fx control channel interpreted according to mode</field>
-			<field type="float" name="Fy">Fy control channel, interpreted according to mode</field>
-			<field type="float" name="Fz">Fz control channel, interpreted according to mode</field>
+			<field type="float[10]" name="u">u control channel interpreted according to mode</field>
         </message>
         <message id="181" name="SMALL_IMU">
 			<description>IMU data</description>
@@ -313,7 +308,7 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
 			<field type="float" name="battery_voltage"/> <!-- V -->
 			<field type="float" name="battery_current"/> <!-- A -->
 		</message>
-	<!-- From Common -->	
+	<!-- From Common -->	 
 	 <message id="0" name="HEARTBEAT">
 		<description>The heartbeat message shows that a system is present and responding. The type of the MAV and Autopilot hardware allow the receiving system to treat further messages from this system appropriate (e.g. by laying out the user interface based on the autopilot).</description>
 		<field type="uint8_t" name="type">Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)</field>

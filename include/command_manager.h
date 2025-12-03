@@ -68,12 +68,7 @@ typedef enum
 typedef struct
 {
   uint32_t stamp_ms;
-  control_channel_t Qx;
-  control_channel_t Qy;
-  control_channel_t Qz;
-  control_channel_t Fx;
-  control_channel_t Fy;
-  control_channel_t Fz;
+  control_channel_t u[10];  // Control channels, first 6 are hard coded to be Qx, Qy, Qz, Fx, Fy, Fz
 } control_t;
 
 class CommandManager : public ParamListenerInterface
@@ -107,50 +102,70 @@ private:
     control_channel_t * combined;
   } mux_t;
 
-  mux_t muxes_[6] = {{&rc_command_.Qx, &offboard_command_.Qx, &combined_command_.Qx},
-                    {&rc_command_.Qy, &offboard_command_.Qy, &combined_command_.Qy},
-                    {&rc_command_.Qz, &offboard_command_.Qz, &combined_command_.Qz},
-                    {&rc_command_.Fx, &offboard_command_.Fx, &combined_command_.Fx},
-                    {&rc_command_.Fy, &offboard_command_.Fy, &combined_command_.Fy},
-                    {&rc_command_.Fz, &offboard_command_.Fz, &combined_command_.Fz}};
+  mux_t muxes[6] = {{&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},  // Qx
+                    {&rc_command_.u[1], &offboard_command_.u[1], &combined_command_.u[1]},  // Qy
+                    {&rc_command_.u[2], &offboard_command_.u[2], &combined_command_.u[2]},  // Qz
+                    {&rc_command_.u[3], &offboard_command_.u[3], &combined_command_.u[3]},  // Fx
+                    {&rc_command_.u[4], &offboard_command_.u[4], &combined_command_.u[4]},  // Fy
+                    {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]}}; // Fz
 
   // clang-format off
   control_t rc_command_ = {0,
-                           {false, ANGLE, 0.0},
-                           {false, ANGLE, 0.0},
-                           {false, RATE, 0.0},
-                           {false, THROTTLE, 0.0},
-                           {false, THROTTLE, 0.0},
-                           {false, THROTTLE, 0.0}};
+                            [{false, ANGLE, 0.0},
+                            {false, ANGLE, 0.0},
+                            {false, RATE, 0.0},
+                            {false, THROTTLE, 0.0},
+                            {false, THROTTLE, 0.0},
+                            {false, THROTTLE, 0.0},
+                            {false, PASSTHROUGH, 0.0},
+                            {false, PASSTHROUGH, 0.0},
+                            {false, PASSTHROUGH, 0.0},
+                            {false, PASSTHROUGH, 0.0}]};
   control_t offboard_command_ = {0,
-                                 {false, ANGLE, 0.0},
-                                 {false, ANGLE, 0.0},
-                                 {false, RATE, 0.0},
-                                 {false, THROTTLE, 0.0},
-                                 {false, THROTTLE, 0.0},
-                                 {false, THROTTLE, 0.0}};
+                                  [{false, ANGLE, 0.0},
+                                  {false, ANGLE, 0.0},
+                                  {false, RATE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, PASSTHROUGH, 0.0},
+                                  {false, PASSTHROUGH, 0.0},
+                                  {false, PASSTHROUGH, 0.0},
+                                  {false, PASSTHROUGH, 0.0}]};
   control_t combined_command_ = {0,
-                                 {false, ANGLE, 0.0},
-                                 {false, ANGLE, 0.0},
-                                 {false, RATE, 0.0},
-                                 {false, THROTTLE, 0.0},
-                                 {false, THROTTLE, 0.0},
-                                 {false, THROTTLE, 0.0}};
+                                  [{false, ANGLE, 0.0},
+                                  {false, ANGLE, 0.0},
+                                  {false, RATE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, PASSTHROUGH, 0.0},
+                                  {false, PASSTHROUGH, 0.0},
+                                  {false, PASSTHROUGH, 0.0},
+                                  {false, PASSTHROUGH, 0.0}]};
 
   control_t multirotor_failsafe_command_ = {0,
-                                            {true, ANGLE, 0.0},
+                                            [{true, ANGLE, 0.0},
                                             {true, ANGLE, 0.0},
                                             {true, RATE, 0.0},
                                             {true, THROTTLE, 0.0},
                                             {true, THROTTLE, 0.0},
-                                            {true, THROTTLE, 0.0}};
+                                            {true, THROTTLE, 0.0},
+                                            {false, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0}]};
   control_t fixedwing_failsafe_command_ = {0,
-                                           {true, PASSTHROUGH, 0.0},
-                                           {true, PASSTHROUGH, 0.0},
-                                           {true, PASSTHROUGH, 0.0},
-                                           {true, PASSTHROUGH, 0.0},
-                                           {true, PASSTHROUGH, 0.0},
-                                           {true, PASSTHROUGH, 0.0}};
+                                            [{true, PASSTHROUGH, 0.0},
+                                            {true, PASSTHROUGH, 0.0},
+                                            {true, PASSTHROUGH, 0.0},
+                                            {true, PASSTHROUGH, 0.0},
+                                            {true, PASSTHROUGH, 0.0},
+                                            {true, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0},
+                                            {false, PASSTHROUGH, 0.0}]};
   // clang-format on
 
   typedef enum
