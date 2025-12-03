@@ -239,8 +239,11 @@ uint32_t Bmi088::init(
   readRegisterA(BMI08_REG_ACCEL_INT1_IO_CONF);        // (0xD3)
   writeRegisterA(BMI08_REG_ACCEL_INT1_IO_CONF, 0x0A); // (0x53,0x0A) Int1 as output, active high
 
-  //	readRegisterA(BMI08_REG_ACCEL_CONF); 		// (0x40)
-  //	writeRegisterA(BMI08_REG_ACCEL_CONF, rangeA_);// (0x40,0x0A) Int1 as output, active high
+//  	readRegisterA(BMI08_REG_ACCEL_CONF); 		// (0x40)
+//  	writeRegisterA(BMI08_REG_ACCEL_CONF, 0x0A);// (0x40,0x0A) Int1 as output, active high
+
+  readRegisterA(BMI08_REG_ACCEL_RANGE);     // (0x41)
+  writeRegisterA(BMI08_REG_ACCEL_RANGE, rangeA_);// (0x41,_)
 
   readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP); // (0x18)
   writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP,

@@ -358,7 +358,7 @@ bool Ist8308::display()
   if (read((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.header );
 
-    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
+    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 , p.flux[1] * 1e6 , p.flux[2] * 1e6 );
     misc_printf(" |                                       ");
     misc_printf(" |     N/A C |              | 0x%04X", p.header.status);
     if (p.header.status == STAT1_VAL_DRDY) misc_printf(" - OK\n");
