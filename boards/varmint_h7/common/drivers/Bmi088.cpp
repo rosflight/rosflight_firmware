@@ -283,7 +283,7 @@ void Bmi088::endDma(void) // DMA complete routine
   if (seqCount_ == 1) {
     memset(&p, 0, sizeof(p));
     uint8_t * rx = spiA_.endDma();
-    scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
+    scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L); // m/s^2
 
     p.dataTime = (double) (39.0625e-6 * (double) ((uint32_t) rx[8] | (uint32_t) rx[9] << 8 | (uint32_t) rx[10] << 16));
     p.temperature = (double) ((int16_t) rx[18] << 3 | (((int16_t) rx[19] >> 6) & 0x0003));
@@ -307,7 +307,7 @@ void Bmi088::endDma(void) // DMA complete routine
 
   } else if (seqCount_ == 2) { // We never get here...
     uint8_t * rx = spiA_.endDma();
-    scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
+    scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L); // m/s^2
 
     int16_t az = (int16_t) rx[3] << 8 | (int16_t) rx[2];
     p.accel[2] = az * scale_factor;
