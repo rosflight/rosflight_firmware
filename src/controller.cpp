@@ -87,6 +87,9 @@ void Controller::calculate_max_thrust()
   float KQ = KV;
   int num_motors = RF_.params_.get_param_int(PARAM_NUM_MOTORS);
 
+  // Note: As voltage drops during flight, this max voltage stays constant.
+  // This means that a constant throttle setting will result in a constant
+  // output thrust command (if converting from throttle to thrust).
   float V_max = RF_.params_.get_param_float(PARAM_VOLT_MAX);
   float a = R * rho * pow(D, 5.0) * CQ / (4 * pow(M_PI, 2.0) * KQ);
   float b = KV;
