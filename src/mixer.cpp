@@ -75,22 +75,22 @@ void Mixer::param_change_callback(uint16_t param_id)
     uint16_t param_id_col = param_id_offset/6;
     float param_value = RF_.params_.get_param_float(param_id);
 
-    if(param_id_row==0) { primary_mixer_.Fx[param_id_col] = param_value; }
-    if(param_id_row==1) { primary_mixer_.Fy[param_id_col] = param_value; }
-    if(param_id_row==2) { primary_mixer_.Fz[param_id_col] = param_value; }
-    if(param_id_row==3) { primary_mixer_.Qx[param_id_col] = param_value; }
-    if(param_id_row==4) { primary_mixer_.Qy[param_id_col] = param_value; }
-    if(param_id_row==5) { primary_mixer_.Qz[param_id_col] = param_value; }
+    if(param_id_row==0) { primary_mixer_.u[0][param_id_col] = param_value; }
+    if(param_id_row==1) { primary_mixer_.u[1][param_id_col] = param_value; }
+    if(param_id_row==2) { primary_mixer_.u[2][param_id_col] = param_value; }
+    if(param_id_row==3) { primary_mixer_.u[3][param_id_col] = param_value; }
+    if(param_id_row==4) { primary_mixer_.u[4][param_id_col] = param_value; }
+    if(param_id_row==5) { primary_mixer_.u[5][param_id_col] = param_value; }
 
     // Special Case for when secondary mixer is mirroring primary mixer.
     mixer_type_t mixer_choice = static_cast<mixer_type_t>(RF_.params_.get_param_int(PARAM_SECONDARY_MIXER));
     if (mixer_choice >= NUM_MIXERS) {
-      if(param_id_row==0) { secondary_mixer_.Fx[param_id_col] = param_value; }
-      if(param_id_row==1) { secondary_mixer_.Fy[param_id_col] = param_value; }
-      if(param_id_row==2) { secondary_mixer_.Fz[param_id_col] = param_value; }
-      if(param_id_row==3) { secondary_mixer_.Qx[param_id_col] = param_value; }
-      if(param_id_row==4) { secondary_mixer_.Qy[param_id_col] = param_value; }
-      if(param_id_row==5) { secondary_mixer_.Qz[param_id_col] = param_value; }
+      if(param_id_row==0) { secondary_mixer_.u[0][param_id_col] = param_value; }
+      if(param_id_row==1) { secondary_mixer_.u[1][param_id_col] = param_value; }
+      if(param_id_row==2) { secondary_mixer_.u[2][param_id_col] = param_value; }
+      if(param_id_row==3) { secondary_mixer_.u[3][param_id_col] = param_value; }
+      if(param_id_row==4) { secondary_mixer_.u[4][param_id_col] = param_value; }
+      if(param_id_row==5) { secondary_mixer_.u[5][param_id_col] = param_value; }
 
       // Write the value to params -- otherwise, the secondary mixer gets out of sync
       uint16_t secondary_mixer_param_id = PARAM_SECONDARY_MIXER_0_0 + param_id_col*6 + param_id_row;
@@ -102,12 +102,12 @@ void Mixer::param_change_callback(uint16_t param_id)
      uint16_t param_id_offset =  param_id-PARAM_SECONDARY_MIXER_0_0;
      uint16_t param_id_row = param_id_offset%6;
      uint16_t param_id_col = param_id_offset/6;
-     if(param_id_row==0) { secondary_mixer_.Fx[param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==1) { secondary_mixer_.Fy[param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==2) { secondary_mixer_.Fz[param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==3) { secondary_mixer_.Qx[param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==4) { secondary_mixer_.Qy[param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==5) { secondary_mixer_.Qz[param_id_col] = RF_.params_.get_param_float(param_id); }
+     if(param_id_row==0) { secondary_mixer_.u[0][param_id_col] = RF_.params_.get_param_float(param_id); }
+     if(param_id_row==1) { secondary_mixer_.u[1][param_id_col] = RF_.params_.get_param_float(param_id); }
+     if(param_id_row==2) { secondary_mixer_.u[2][param_id_col] = RF_.params_.get_param_float(param_id); }
+     if(param_id_row==3) { secondary_mixer_.u[3][param_id_col] = RF_.params_.get_param_float(param_id); }
+     if(param_id_row==4) { secondary_mixer_.u[4][param_id_col] = RF_.params_.get_param_float(param_id); }
+     if(param_id_row==5) { secondary_mixer_.u[5][param_id_col] = RF_.params_.get_param_float(param_id); }
 
   } else switch (param_id) {
     case PARAM_PRIMARY_MIXER:
@@ -206,12 +206,12 @@ void Mixer::init_mixing()
     mixer_to_use_.default_pwm_rate = &primary_mixer_.default_pwm_rate;
 
     // Load the primary mixing values into the mixer_to_use_ by default
-    mixer_to_use_.Fx = &primary_mixer_.Fx;
-    mixer_to_use_.Fy = &primary_mixer_.Fy;
-    mixer_to_use_.Fz = &primary_mixer_.Fz;
-    mixer_to_use_.Qx = &primary_mixer_.Qx;
-    mixer_to_use_.Qx = &primary_mixer_.Qx;
-    mixer_to_use_.Qx = &primary_mixer_.Qx;
+    mixer_to_use_.u = &primary_mixer_.u;
+    // mixer_to_use_.Fy = &primary_mixer_.Fy;
+    // mixer_to_use_.Fz = &primary_mixer_.Fz;
+    // mixer_to_use_.Qx = &primary_mixer_.Qx;
+    // mixer_to_use_.Qx = &primary_mixer_.Qx;
+    // mixer_to_use_.Qx = &primary_mixer_.Qx;
 
     primary_mixer_is_selected_ = true;
   }
@@ -270,17 +270,20 @@ void Mixer::update_parameters()
 
 Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
 {
-  Eigen::Matrix<float, 6, NUM_MIXER_OUTPUTS> mixer_matrix;
+  Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> mixer_matrix;
   mixer_matrix.setZero();
 
   // Convert the mixer_t to an Eigen matrix
   for (int i=0; i<NUM_MIXER_OUTPUTS; i++) {
-    mixer_matrix(0, i) = mixer_to_invert->Fx[i];
-    mixer_matrix(1, i) = mixer_to_invert->Fy[i];
-    mixer_matrix(2, i) = mixer_to_invert->Fz[i];
-    mixer_matrix(3, i) = mixer_to_invert->Qx[i];
-    mixer_matrix(4, i) = mixer_to_invert->Qy[i];
-    mixer_matrix(5, i) = mixer_to_invert->Qz[i];
+    for (int j=0; j<NUM_MIXER_OUTPUTS; j++) {
+      mixer_matrix(i, j) = mixer_to_invert->u[i][j];
+    }
+    // mixer_matrix(0, i) = mixer_to_invert->Fx[i];
+    // mixer_matrix(1, i) = mixer_to_invert->Fy[i];
+    // mixer_matrix(2, i) = mixer_to_invert->Fz[i];
+    // mixer_matrix(3, i) = mixer_to_invert->Qx[i];
+    // mixer_matrix(4, i) = mixer_to_invert->Qy[i];
+    // mixer_matrix(5, i) = mixer_to_invert->Qz[i];
   }
 
   // Calculate the pseudoinverse of the mixing matrix using the SVD
@@ -307,12 +310,15 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
     inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
-    inverted_mixer.Fx[i] = mixer_matrix_pinv(i, 0);
-    inverted_mixer.Fy[i] = mixer_matrix_pinv(i, 1);
-    inverted_mixer.Fz[i] = mixer_matrix_pinv(i, 2);
-    inverted_mixer.Qx[i] = mixer_matrix_pinv(i, 3);
-    inverted_mixer.Qy[i] = mixer_matrix_pinv(i, 4);
-    inverted_mixer.Qz[i] = mixer_matrix_pinv(i, 5);
+    for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+      inverted_mixer.u[j][i] = mixer_matrix_pinv(i, j);
+    }
+    // inverted_mixer.Fx[i] = mixer_matrix_pinv(i, 0);
+    // inverted_mixer.Fy[i] = mixer_matrix_pinv(i, 1);
+    // inverted_mixer.Fz[i] = mixer_matrix_pinv(i, 2);
+    // inverted_mixer.Qx[i] = mixer_matrix_pinv(i, 3);
+    // inverted_mixer.Qy[i] = mixer_matrix_pinv(i, 4);
+    // inverted_mixer.Qz[i] = mixer_matrix_pinv(i, 5);
   }
   return inverted_mixer;
 }
@@ -332,12 +338,15 @@ void Mixer::save_primary_mixer_params()
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
     int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
-    RF_.params_.set_param_float(param_index++, primary_mixer_.Fx[i]);
-    RF_.params_.set_param_float(param_index++, primary_mixer_.Fy[i]);
-    RF_.params_.set_param_float(param_index++, primary_mixer_.Fz[i]);
-    RF_.params_.set_param_float(param_index++, primary_mixer_.Qx[i]);
-    RF_.params_.set_param_float(param_index++, primary_mixer_.Qy[i]);
-    RF_.params_.set_param_float(param_index, primary_mixer_.Qz[i]);
+    for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+      RF_.params_.set_param_float(param_index++, primary_mixer_.u[j][i]);
+    }
+    // RF_.params_.set_param_float(param_index++, primary_mixer_.Fx[i]);
+    // RF_.params_.set_param_float(param_index++, primary_mixer_.Fy[i]);
+    // RF_.params_.set_param_float(param_index++, primary_mixer_.Fz[i]);
+    // RF_.params_.set_param_float(param_index++, primary_mixer_.Qx[i]);
+    // RF_.params_.set_param_float(param_index++, primary_mixer_.Qy[i]);
+    // RF_.params_.set_param_float(param_index, primary_mixer_.Qz[i]);
   }
 }
 
@@ -348,12 +357,15 @@ void Mixer::save_secondary_mixer_params()
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
     int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
-    RF_.params_.set_param_float(param_index++, secondary_mixer_.Fx[i]);
-    RF_.params_.set_param_float(param_index++, secondary_mixer_.Fy[i]);
-    RF_.params_.set_param_float(param_index++, secondary_mixer_.Fz[i]);
-    RF_.params_.set_param_float(param_index++, secondary_mixer_.Qx[i]);
-    RF_.params_.set_param_float(param_index++, secondary_mixer_.Qy[i]);
-    RF_.params_.set_param_float(param_index, secondary_mixer_.Qz[i]);
+    for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+      RF_.params_.set_param_float(param_index++, secondary_mixer_.u[j][i]);
+    }
+    // RF_.params_.set_param_float(param_index++, secondary_mixer_.Fx[i]);
+    // RF_.params_.set_param_float(param_index++, secondary_mixer_.Fy[i]);
+    // RF_.params_.set_param_float(param_index++, secondary_mixer_.Fz[i]);
+    // RF_.params_.set_param_float(param_index++, secondary_mixer_.Qx[i]);
+    // RF_.params_.set_param_float(param_index++, secondary_mixer_.Qy[i]);
+    // RF_.params_.set_param_float(param_index, secondary_mixer_.Qz[i]);
   }
 }
 
@@ -386,12 +398,15 @@ void Mixer::load_primary_mixer_values()
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
     int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
-    primary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
-    primary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
-    primary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
-    primary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
-    primary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
-    primary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
+    for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+      primary_mixer_.u[j][i] = RF_.params_.get_param_float(param_index++);
+    }
+    // primary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
+    // primary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
+    // primary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
+    // primary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
+    // primary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
+    // primary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
   }
 }
 
@@ -402,12 +417,15 @@ void Mixer::load_secondary_mixer_values()
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
     int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
-    secondary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
-    secondary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
-    secondary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
-    secondary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
-    secondary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
-    secondary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
+    for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+      secondary_mixer_.u[j][i] = RF_.params_.get_param_float(param_index++);
+    }
+    // secondary_mixer_.Fx[i] = RF_.params_.get_param_float(param_index++);
+    // secondary_mixer_.Fy[i] = RF_.params_.get_param_float(param_index++);
+    // secondary_mixer_.Fz[i] = RF_.params_.get_param_float(param_index++);
+    // secondary_mixer_.Qx[i] = RF_.params_.get_param_float(param_index++);
+    // secondary_mixer_.Qy[i] = RF_.params_.get_param_float(param_index++);
+    // secondary_mixer_.Qz[i] = RF_.params_.get_param_float(param_index);
   }
 }
 
@@ -435,13 +453,11 @@ float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if ((*mixer_to_use_.output_type)[i] != AUX) {
+      outputs_[i] = 0.0;
       // Matrix multiply to mix outputs
-      outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
-                    commands.Fy * (*mixer_to_use_.Fy)[i] +
-                    commands.Fz * (*mixer_to_use_.Fz)[i] + 
-                    commands.Qx * (*mixer_to_use_.Qx)[i] + 
-                    commands.Qy * (*mixer_to_use_.Qy)[i] + 
-                    commands.Qz * (*mixer_to_use_.Qz)[i];
+      for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+        outputs_[i] += commands.u[j] * (*mixer_to_use_.u)[j][i];
+      }
 
       // Save off the largest control output (for motors) if it is greater than 1.0 for future scaling
       if ((*mixer_to_use_.output_type)[i] == M) {
@@ -461,13 +477,11 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if ((*mixer_to_use_.output_type)[i] == M) {
+      float omega_squared = 0.0;
       // Matrix multiply to mix outputs for Motor type
-      float omega_squared = commands.Fx * (*mixer_to_use_.Fx)[i] +
-                            commands.Fy * (*mixer_to_use_.Fy)[i] +
-                            commands.Fz * (*mixer_to_use_.Fz)[i] +
-                            commands.Qx * (*mixer_to_use_.Qx)[i] +
-                            commands.Qy * (*mixer_to_use_.Qy)[i] +
-                            commands.Qz * (*mixer_to_use_.Qz)[i];
+      for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+        omega_squared += commands.u[j] * (*mixer_to_use_.u)[j][i];
+      }
 
       // Ensure that omega_squared is non-negative
       if (omega_squared < 0.0) { omega_squared = 0.0; }
@@ -501,13 +515,11 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
       if (abs(outputs_[i]) > max_output) { max_output = abs(outputs_[i]); }
 
     } else if ((*mixer_to_use_.output_type)[i] == S) {
+      outputs_[i] = 0.0;
       // Matrix multiply to mix outputs for Servo type
-      outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
-                    commands.Fy * (*mixer_to_use_.Fy)[i] +
-                    commands.Fz * (*mixer_to_use_.Fz)[i] +
-                    commands.Qx * (*mixer_to_use_.Qx)[i] +
-                    commands.Qy * (*mixer_to_use_.Qy)[i] +
-                    commands.Qz * (*mixer_to_use_.Qz)[i];
+      for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+        outputs_[i] += commands.u[j] * (*mixer_to_use_.u)[j][i];
+      }
     }
   }
 
@@ -522,13 +534,13 @@ void Mixer::mix_multirotor()
   float throttle_command{0.0};
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
     case X_AXIS:
-      throttle_command = commands.Fx;
+      throttle_command = commands.u[0];
       break;
     case Y_AXIS:
-      throttle_command = commands.Fy;
+      throttle_command = commands.u[1];
       break;
     case Z_AXIS:
-      throttle_command = commands.Fz;
+      throttle_command = commands.u[2];
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
@@ -583,13 +595,10 @@ void Mixer::mix_fixedwing()
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if ((*mixer_to_use_.output_type)[i] != AUX) {
-      // Matrix multiply to mix outputs
-      outputs_[i] = commands.Fx * (*mixer_to_use_.Fx)[i] +
-                    commands.Fy * (*mixer_to_use_.Fy)[i] +
-                    commands.Fz * (*mixer_to_use_.Fz)[i] +
-                    commands.Qx * (*mixer_to_use_.Qx)[i] +
-                    commands.Qy * (*mixer_to_use_.Qy)[i] +
-                    commands.Qz * (*mixer_to_use_.Qz)[i];
+      outputs_[i] = 0.0;
+      for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
+        outputs_[i] += commands.u[j] * (*mixer_to_use_.u)[j][i];
+      }
     }
   }
 }
@@ -602,24 +611,24 @@ void Mixer::select_primary_or_secondary_mixer()
 
   uint16_t rc_attitude_override_active = static_cast<uint16_t>(rc_override & CommandManager::ATTITUDE_OVERRIDDEN);
   if (rc_attitude_override_active == 0) {
-    mixer_to_use_.Fx = &primary_mixer_.Fx;
-    mixer_to_use_.Fy = &primary_mixer_.Fy;
-    mixer_to_use_.Fz = &primary_mixer_.Fz;
+    mixer_to_use_.u[0] = &primary_mixer_.u[0];
+    mixer_to_use_.u[1] = &primary_mixer_.u[1];
+    mixer_to_use_.u[2] = &primary_mixer_.u[2];
   } else {
-    mixer_to_use_.Fx = &secondary_mixer_.Fx;
-    mixer_to_use_.Fy = &secondary_mixer_.Fy;
-    mixer_to_use_.Fz = &secondary_mixer_.Fz;
+    mixer_to_use_.u[0] = &secondary_mixer_.u[0];
+    mixer_to_use_.u[1] = &secondary_mixer_.u[1];
+    mixer_to_use_.u[2] = &secondary_mixer_.u[2];
   }
 
   uint16_t rc_throttle_override_active = static_cast<uint16_t>(rc_override & CommandManager::T_OVERRIDDEN);
   if (rc_throttle_override_active == 0) {
-    mixer_to_use_.Qx = &primary_mixer_.Qx;
-    mixer_to_use_.Qy = &primary_mixer_.Qy;
-    mixer_to_use_.Qz = &primary_mixer_.Qz;
+    mixer_to_use_.u[3] = &primary_mixer_.u[3];
+    mixer_to_use_.u[4] = &primary_mixer_.u[4];
+    mixer_to_use_.u[5] = &primary_mixer_.u[5];
   } else {
-    mixer_to_use_.Qx = &secondary_mixer_.Qx;
-    mixer_to_use_.Qy = &secondary_mixer_.Qy;
-    mixer_to_use_.Qz = &secondary_mixer_.Qz;
+    mixer_to_use_.u[3] = &secondary_mixer_.u[3];
+    mixer_to_use_.u[4] = &secondary_mixer_.u[4];
+    mixer_to_use_.u[5] = &secondary_mixer_.u[5];
   }
 }
 
