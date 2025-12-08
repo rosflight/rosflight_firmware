@@ -270,7 +270,7 @@ void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override 
   *muxes_[channel].combined = override_this_channel ? *muxes_[channel].rc : *muxes_[channel].onboard;
 }
 
-uint16_t CommandManager::get_rc_override() { return rc_override_; }
+uint16_t CommandManager::get_rc_override() const { return rc_override_; }
 
 bool CommandManager::offboard_control_active()
 {

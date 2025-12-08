@@ -78,6 +78,27 @@ typedef struct
 
 class CommandManager : public ParamListenerInterface
 {
+public:
+  enum RCOverrideReason : uint16_t
+  {
+    OVERRIDE_NO_OVERRIDE = 0x0,
+    OVERRIDE_ATT_SWITCH = 0x1,
+    OVERRIDE_THR_SWITCH = 0x2,
+    OVERRIDE_X = 0x4,
+    OVERRIDE_Y = 0x8,
+    OVERRIDE_Z = 0x10,
+    OVERRIDE_T = 0x20,
+    OVERRIDE_OFFBOARD_X_INACTIVE = 0x40,
+    OVERRIDE_OFFBOARD_Y_INACTIVE = 0x80,
+    OVERRIDE_OFFBOARD_Z_INACTIVE = 0x100,
+    OVERRIDE_OFFBOARD_T_INACTIVE = 0x200,
+  };
+  static constexpr uint16_t X_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_X | OVERRIDE_OFFBOARD_X_INACTIVE};
+  static constexpr uint16_t Y_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Y | OVERRIDE_OFFBOARD_Y_INACTIVE};
+  static constexpr uint16_t Z_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Z | OVERRIDE_OFFBOARD_Z_INACTIVE};
+  static constexpr uint16_t T_OVERRIDDEN{OVERRIDE_THR_SWITCH | OVERRIDE_T | OVERRIDE_OFFBOARD_T_INACTIVE};
+  static constexpr uint16_t ATTITUDE_OVERRIDDEN{X_OVERRIDDEN | Y_OVERRIDDEN | Z_OVERRIDDEN};
+
 private:
   typedef struct
   {
@@ -149,21 +170,6 @@ private:
     NUM_MUX_CHANNELS
   };
 
-  enum RCOverrideReason : uint16_t
-  {
-    OVERRIDE_NO_OVERRIDE = 0x0,
-    OVERRIDE_ATT_SWITCH = 0x1,
-    OVERRIDE_THR_SWITCH = 0x2,
-    OVERRIDE_X = 0x4,
-    OVERRIDE_Y = 0x8,
-    OVERRIDE_Z = 0x10,
-    OVERRIDE_T = 0x20,
-    OVERRIDE_OFFBOARD_X_INACTIVE = 0x40,
-    OVERRIDE_OFFBOARD_Y_INACTIVE = 0x80,
-    OVERRIDE_OFFBOARD_Z_INACTIVE = 0x100,
-    OVERRIDE_OFFBOARD_T_INACTIVE = 0x200,
-  };
-
   typedef struct
   {
     RC::Stick rc_channel;
@@ -214,12 +220,6 @@ private:
   bool stick_deviated(MuxChannel channel);
 
 public:
-  static constexpr uint16_t X_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_X | OVERRIDE_OFFBOARD_X_INACTIVE};
-  static constexpr uint16_t Y_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Y | OVERRIDE_OFFBOARD_Y_INACTIVE};
-  static constexpr uint16_t Z_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Z | OVERRIDE_OFFBOARD_Z_INACTIVE};
-  static constexpr uint16_t T_OVERRIDDEN{OVERRIDE_THR_SWITCH | OVERRIDE_T | OVERRIDE_OFFBOARD_T_INACTIVE};
-  static constexpr uint16_t ATTITUDE_OVERRIDDEN{X_OVERRIDDEN | Y_OVERRIDDEN | Z_OVERRIDDEN};
-
   CommandManager(ROSflight & _rf);
   void init();
   bool run();
@@ -235,13 +235,14 @@ public:
    * This value is updated if a new RC command is available
    * @return A bitfield, with overriden reasons indicated
    */
-  uint16_t get_rc_override();
+  uint16_t get_rc_override() const;
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
   void override_combined_command_with_rc();
   inline const control_t & combined_control() const { return combined_command_; }
   inline const control_t & rc_control() const { return rc_command_; }
+
 };
 
 } // namespace rosflight_firmware
