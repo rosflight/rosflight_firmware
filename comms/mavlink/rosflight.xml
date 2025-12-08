@@ -283,7 +283,7 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
 			<description>Flight Status</description>
 			<field type="uint8_t" name="armed"/>
 			<field type="uint8_t" name="failsafe"/>
-			<field type="uint8_t" name="rc_override"/>
+			<field type="uint16_t" name="rc_override"/>
 			<field type="uint8_t" name="offboard"/>
 			<field type="uint8_t" name="error_code" enum="ROSFLIGHT_ERROR_CODE"/>
 			<field type="uint8_t" name="control_mode" enum="OFFBOARD_CONTROL_MODE"/>
