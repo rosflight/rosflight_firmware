@@ -51,7 +51,7 @@ class Controller : public ParamListenerInterface
 public:
   struct Output
   {
-    float[10] u;
+    float u[10];
   };
 
   Controller(ROSflight & rf);

@@ -84,7 +84,7 @@ public:
     };
 
     Mode mode;
-    Channel[10] u; // Qx, Qy, Qz, Fx, Fy, Fz, aux1, aux2, aux3, aux4
+    Channel u[10]; // Qx, Qy, Qz, Fx, Fy, Fz, aux1, aux2, aux3, aux4
   };
 
   struct AuxCommand
