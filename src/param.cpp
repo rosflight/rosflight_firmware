@@ -146,6 +146,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_0, "PRI_MIXER_3_0", 0.0f); // Value of the custom mixer at element [3,0] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_0, "PRI_MIXER_4_0", 0.0f); // Value of the custom mixer at element [4,0] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_0, "PRI_MIXER_5_0", 0.0f); // Value of the custom mixer at element [5,0] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_0, "PRI_MIXER_6_0", 0.0f); // Value of the custom mixer at element [6,0] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_0, "PRI_MIXER_7_0", 0.0f); // Value of the custom mixer at element [7,0] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_0, "PRI_MIXER_8_0", 0.0f); // Value of the custom mixer at element [8,0] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_0, "PRI_MIXER_9_0", 0.0f); // Value of the custom mixer at element [9,0] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_1, "PRI_MIXER_0_1", 0.0f); // Value of the custom mixer at element [0,1] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_1, "PRI_MIXER_1_1", 0.0f); // Value of the custom mixer at element [1,1] | -inf | inf
@@ -153,6 +157,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_1, "PRI_MIXER_3_1", 0.0f); // Value of the custom mixer at element [3,1] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_1, "PRI_MIXER_4_1", 0.0f); // Value of the custom mixer at element [4,1] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_1, "PRI_MIXER_5_1", 0.0f); // Value of the custom mixer at element [5,1] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_1, "PRI_MIXER_6_1", 0.0f); // Value of the custom mixer at element [6,1] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_1, "PRI_MIXER_7_1", 0.0f); // Value of the custom mixer at element [7,1] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_1, "PRI_MIXER_8_1", 0.0f); // Value of the custom mixer at element [8,1] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_1, "PRI_MIXER_9_1", 0.0f); // Value of the custom mixer at element [9,1] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_2, "PRI_MIXER_0_2", 0.0f); // Value of the custom mixer at element [0,2] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_2, "PRI_MIXER_1_2", 0.0f); // Value of the custom mixer at element [1,2] | -inf | inf
@@ -160,6 +168,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_2, "PRI_MIXER_3_2", 0.0f); // Value of the custom mixer at element [3,2] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_2, "PRI_MIXER_4_2", 0.0f); // Value of the custom mixer at element [4,2] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_2, "PRI_MIXER_5_2", 0.0f); // Value of the custom mixer at element [5,2] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_2, "PRI_MIXER_6_2", 0.0f); // Value of the custom mixer at element [6,2] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_2, "PRI_MIXER_7_2", 0.0f); // Value of the custom mixer at element [7,2] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_2, "PRI_MIXER_8_2", 0.0f); // Value of the custom mixer at element [8,2] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_2, "PRI_MIXER_9_2", 0.0f); // Value of the custom mixer at element [9,2] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_3, "PRI_MIXER_0_3", 0.0f); // Value of the custom mixer at element [0,3] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_3, "PRI_MIXER_1_3", 0.0f); // Value of the custom mixer at element [1,3] | -inf | inf
@@ -167,6 +179,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_3, "PRI_MIXER_3_3", 0.0f); // Value of the custom mixer at element [3,3] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_3, "PRI_MIXER_4_3", 0.0f); // Value of the custom mixer at element [4,3] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_3, "PRI_MIXER_5_3", 0.0f); // Value of the custom mixer at element [5,3] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_3, "PRI_MIXER_6_3", 0.0f); // Value of the custom mixer at element [6,3] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_3, "PRI_MIXER_7_3", 0.0f); // Value of the custom mixer at element [7,3] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_3, "PRI_MIXER_8_3", 0.0f); // Value of the custom mixer at element [8,3] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_3, "PRI_MIXER_9_3", 0.0f); // Value of the custom mixer at element [9,3] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_4, "PRI_MIXER_0_4", 0.0f); // Value of the custom mixer at element [0,4] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_4, "PRI_MIXER_1_4", 0.0f); // Value of the custom mixer at element [1,4] | -inf | inf
@@ -174,6 +190,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_4, "PRI_MIXER_3_4", 0.0f); // Value of the custom mixer at element [3,4] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_4, "PRI_MIXER_4_4", 0.0f); // Value of the custom mixer at element [4,4] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_4, "PRI_MIXER_5_4", 0.0f); // Value of the custom mixer at element [5,4] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_4, "PRI_MIXER_6_4", 0.0f); // Value of the custom mixer at element [6,4] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_4, "PRI_MIXER_7_4", 0.0f); // Value of the custom mixer at element [7,4] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_4, "PRI_MIXER_8_4", 0.0f); // Value of the custom mixer at element [8,4] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_4, "PRI_MIXER_9_4", 0.0f); // Value of the custom mixer at element [9,4] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_5, "PRI_MIXER_0_5", 0.0f); // Value of the custom mixer at element [0,5] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_5, "PRI_MIXER_1_5", 0.0f); // Value of the custom mixer at element [1,5] | -inf | inf
@@ -181,6 +201,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_5, "PRI_MIXER_3_5", 0.0f); // Value of the custom mixer at element [3,5] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_5, "PRI_MIXER_4_5", 0.0f); // Value of the custom mixer at element [4,5] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_5, "PRI_MIXER_5_5", 0.0f); // Value of the custom mixer at element [5,5] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_5, "PRI_MIXER_6_5", 0.0f); // Value of the custom mixer at element [6,5] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_5, "PRI_MIXER_7_5", 0.0f); // Value of the custom mixer at element [7,5] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_5, "PRI_MIXER_8_5", 0.0f); // Value of the custom mixer at element [8,5] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_5, "PRI_MIXER_9_5", 0.0f); // Value of the custom mixer at element [9,5] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_6, "PRI_MIXER_0_6", 0.0f); // Value of the custom mixer at element [0,6] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_6, "PRI_MIXER_1_6", 0.0f); // Value of the custom mixer at element [1,6] | -inf | inf
@@ -188,6 +212,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_6, "PRI_MIXER_3_6", 0.0f); // Value of the custom mixer at element [3,6] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_6, "PRI_MIXER_4_6", 0.0f); // Value of the custom mixer at element [4,6] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_6, "PRI_MIXER_5_6", 0.0f); // Value of the custom mixer at element [5,6] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_6, "PRI_MIXER_6_6", 0.0f); // Value of the custom mixer at element [6,6] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_6, "PRI_MIXER_7_6", 0.0f); // Value of the custom mixer at element [7,6] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_6, "PRI_MIXER_8_6", 0.0f); // Value of the custom mixer at element [8,6] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_6, "PRI_MIXER_9_6", 0.0f); // Value of the custom mixer at element [9,6] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_7, "PRI_MIXER_0_7", 0.0f); // Value of the custom mixer at element [0,7] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_7, "PRI_MIXER_1_7", 0.0f); // Value of the custom mixer at element [1,7] | -inf | inf
@@ -195,6 +223,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_7, "PRI_MIXER_3_7", 0.0f); // Value of the custom mixer at element [3,7] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_7, "PRI_MIXER_4_7", 0.0f); // Value of the custom mixer at element [4,7] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_7, "PRI_MIXER_5_7", 0.0f); // Value of the custom mixer at element [5,7] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_7, "PRI_MIXER_6_7", 0.0f); // Value of the custom mixer at element [6,7] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_7, "PRI_MIXER_7_7", 0.0f); // Value of the custom mixer at element [7,7] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_7, "PRI_MIXER_8_7", 0.0f); // Value of the custom mixer at element [8,7] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_7, "PRI_MIXER_9_7", 0.0f); // Value of the custom mixer at element [9,7] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_8, "PRI_MIXER_0_8", 0.0f); // Value of the custom mixer at element [0,8] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_8, "PRI_MIXER_1_8", 0.0f); // Value of the custom mixer at element [1,8] | -inf | inf
@@ -202,6 +234,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_8, "PRI_MIXER_3_8", 0.0f); // Value of the custom mixer at element [3,8] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_8, "PRI_MIXER_4_8", 0.0f); // Value of the custom mixer at element [4,8] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_8, "PRI_MIXER_5_8", 0.0f); // Value of the custom mixer at element [5,8] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_8, "PRI_MIXER_6_8", 0.0f); // Value of the custom mixer at element [6,8] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_8, "PRI_MIXER_7_8", 0.0f); // Value of the custom mixer at element [7,8] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_8, "PRI_MIXER_8_8", 0.0f); // Value of the custom mixer at element [8,8] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_8, "PRI_MIXER_9_8", 0.0f); // Value of the custom mixer at element [9,8] | -inf | inf
 
   init_param_float(PARAM_PRIMARY_MIXER_0_9, "PRI_MIXER_0_9", 0.0f); // Value of the custom mixer at element [0,9] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_1_9, "PRI_MIXER_1_9", 0.0f); // Value of the custom mixer at element [1,9] | -inf | inf
@@ -209,13 +245,21 @@ void Params::set_defaults(void)
   init_param_float(PARAM_PRIMARY_MIXER_3_9, "PRI_MIXER_3_9", 0.0f); // Value of the custom mixer at element [3,9] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_4_9, "PRI_MIXER_4_9", 0.0f); // Value of the custom mixer at element [4,9] | -inf | inf
   init_param_float(PARAM_PRIMARY_MIXER_5_9, "PRI_MIXER_5_9", 0.0f); // Value of the custom mixer at element [5,9] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_6_9, "PRI_MIXER_6_9", 0.0f); // Value of the custom mixer at element [6,9] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_7_9, "PRI_MIXER_7_9", 0.0f); // Value of the custom mixer at element [7,9] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_8_9, "PRI_MIXER_8_9", 0.0f); // Value of the custom mixer at element [8,9] | -inf | inf
+  init_param_float(PARAM_PRIMARY_MIXER_9_9, "PRI_MIXER_9_9", 0.0f); // Value of the custom mixer at element [9,9] | -inf | inf
 
   init_param_float(PARAM_SECONDARY_MIXER_0_0, "SEC_MIXER_0_0", 0.0f); // Value of the custom mixer at element [0,0] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_0, "SEC_MIXER_1_0", 0.0f); // Value of the custom mixer at element [1,0] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_2_0, "SEC_MIXER_2_0", 0.0f); // Value of the custom mixer at element [2,0] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_3_0, "SEC_MIXER_3_0", 0.0f); // Value of the custom mixer at element [3,0] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_0, "SEC_MIXER_4_0", 0.0f); // Value of the custom mixer at element [4,0] | -inf | inf 
-  init_param_float(PARAM_SECONDARY_MIXER_5_0, "SEC_MIXER_5_0", 0.0f); // Value of the custom mixer at element [5,0] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_5_0, "SEC_MIXER_5_0", 0.0f); // Value of the custom mixer at element [5,0] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_6_0, "SEC_MIXER_6_0", 0.0f); // Value of the custom mixer at element [6,0] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_0, "SEC_MIXER_7_0", 0.0f); // Value of the custom mixer at element [7,0] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_8_0, "SEC_MIXER_8_0", 0.0f); // Value of the custom mixer at element [8,0] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_9_0, "SEC_MIXER_9_0", 0.0f); // Value of the custom mixer at element [9,0] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_1, "SEC_MIXER_0_1", 0.0f); // Value of the custom mixer at element [0,1] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_1, "SEC_MIXER_1_1", 0.0f); // Value of the custom mixer at element [1,1] | -inf | inf 
@@ -223,6 +267,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_1, "SEC_MIXER_3_1", 0.0f); // Value of the custom mixer at element [3,1] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_1, "SEC_MIXER_4_1", 0.0f); // Value of the custom mixer at element [4,1] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_1, "SEC_MIXER_5_1", 0.0f); // Value of the custom mixer at element [5,1] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_1, "SEC_MIXER_6_1", 0.0f); // Value of the custom mixer at element [6,1] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_1, "SEC_MIXER_7_1", 0.0f); // Value of the custom mixer at element [7,1] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_8_1, "SEC_MIXER_8_1", 0.0f); // Value of the custom mixer at element [8,1] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_9_1, "SEC_MIXER_9_1", 0.0f); // Value of the custom mixer at element [9,1] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_2, "SEC_MIXER_0_2", 0.0f); // Value of the custom mixer at element [0,2] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_2, "SEC_MIXER_1_2", 0.0f); // Value of the custom mixer at element [1,2] | -inf | inf 
@@ -230,6 +278,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_2, "SEC_MIXER_3_2", 0.0f); // Value of the custom mixer at element [3,2] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_2, "SEC_MIXER_4_2", 0.0f); // Value of the custom mixer at element [4,2] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_2, "SEC_MIXER_5_2", 0.0f); // Value of the custom mixer at element [5,2] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_2, "SEC_MIXER_6_2", 0.0f); // Value of the custom mixer at element [6,2] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_2, "SEC_MIXER_7_2", 0.0f); // Value of the custom mixer at element [7,2] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_8_2, "SEC_MIXER_8_2", 0.0f); // Value of the custom mixer at element [8,2] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_9_2, "SEC_MIXER_9_2", 0.0f); // Value of the custom mixer at element [9,2] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_3, "SEC_MIXER_0_3", 0.0f); // Value of the custom mixer at element [0,3] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_3, "SEC_MIXER_1_3", 0.0f); // Value of the custom mixer at element [1,3] | -inf | inf 
@@ -237,6 +289,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_3, "SEC_MIXER_3_3", 0.0f); // Value of the custom mixer at element [3,3] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_3, "SEC_MIXER_4_3", 0.0f); // Value of the custom mixer at element [4,3] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_3, "SEC_MIXER_5_3", 0.0f); // Value of the custom mixer at element [5,3] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_3, "SEC_MIXER_6_3", 0.0f); // Value of the custom mixer at element [6,3] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_3, "SEC_MIXER_7_3", 0.0f); // Value of the custom mixer at element [7,3] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_8_3, "SEC_MIXER_8_3", 0.0f); // Value of the custom mixer at element [8,3] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_9_3, "SEC_MIXER_9_3", 0.0f); // Value of the custom mixer at element [9,3] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_4, "SEC_MIXER_0_4", 0.0f); // Value of the custom mixer at element [0,4] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_4, "SEC_MIXER_1_4", 0.0f); // Value of the custom mixer at element [1,4] | -inf | inf 
@@ -244,6 +300,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_4, "SEC_MIXER_3_4", 0.0f); // Value of the custom mixer at element [3,4] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_4, "SEC_MIXER_4_4", 0.0f); // Value of the custom mixer at element [4,4] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_4, "SEC_MIXER_5_4", 0.0f); // Value of the custom mixer at element [5,4] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_4, "SEC_MIXER_6_4", 0.0f); // Value of the custom mixer at element [6,4] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_4, "SEC_MIXER_7_4", 0.0f); // Value of the custom mixer at element [7,4] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_8_4, "SEC_MIXER_8_4", 0.0f); // Value of the custom mixer at element [8,4] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_9_4, "SEC_MIXER_9_4", 0.0f); // Value of the custom mixer at element [9,4] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_5, "SEC_MIXER_0_5", 0.0f); // Value of the custom mixer at element [0,5] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_5, "SEC_MIXER_1_5", 0.0f); // Value of the custom mixer at element [1,5] | -inf | inf 
@@ -251,6 +311,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_5, "SEC_MIXER_3_5", 0.0f); // Value of the custom mixer at element [3,5] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_5, "SEC_MIXER_4_5", 0.0f); // Value of the custom mixer at element [4,5] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_5, "SEC_MIXER_5_5", 0.0f); // Value of the custom mixer at element [5,5] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_5, "SEC_MIXER_6_5", 0.0f); // Value of the custom mixer at element [6,5] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_5, "SEC_MIXER_7_5", 0.0f); // Value of the custom mixer at element [7,5] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_8_5, "SEC_MIXER_8_5", 0.0f); // Value of the custom mixer at element [8,5] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_9_5, "SEC_MIXER_9_5", 0.0f); // Value of the custom mixer at element [9,5] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_6, "SEC_MIXER_0_6", 0.0f); // Value of the custom mixer at element [0,6] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_6, "SEC_MIXER_1_6", 0.0f); // Value of the custom mixer at element [1,6] | -inf | inf 
@@ -258,6 +322,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_6, "SEC_MIXER_3_6", 0.0f); // Value of the custom mixer at element [3,6] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_6, "SEC_MIXER_4_6", 0.0f); // Value of the custom mixer at element [4,6] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_6, "SEC_MIXER_5_6", 0.0f); // Value of the custom mixer at element [5,6] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_6, "SEC_MIXER_6_6", 0.0f); // Value of the custom mixer at element [6,6] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_6, "SEC_MIXER_7_6", 0.0f); // Value of the custom mixer at element [7,6] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_8_6, "SEC_MIXER_8_6", 0.0f); // Value of the custom mixer at element [8,6] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_9_6, "SEC_MIXER_9_6", 0.0f); // Value of the custom mixer at element [9,6] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_7, "SEC_MIXER_0_7", 0.0f); // Value of the custom mixer at element [0,7] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_7, "SEC_MIXER_1_7", 0.0f); // Value of the custom mixer at element [1,7] | -inf | inf 
@@ -265,6 +333,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_7, "SEC_MIXER_3_7", 0.0f); // Value of the custom mixer at element [3,7] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_7, "SEC_MIXER_4_7", 0.0f); // Value of the custom mixer at element [4,7] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_7, "SEC_MIXER_5_7", 0.0f); // Value of the custom mixer at element [5,7] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_7, "SEC_MIXER_6_7", 0.0f); // Value of the custom mixer at element [6,7] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_7, "SEC_MIXER_7_7", 0.0f); // Value of the custom mixer at element [7,7] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_8_7, "SEC_MIXER_8_7", 0.0f); // Value of the custom mixer at element [8,7] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_9_7, "SEC_MIXER_9_7", 0.0f); // Value of the custom mixer at element [9,7] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_8, "SEC_MIXER_0_8", 0.0f); // Value of the custom mixer at element [0,8] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_8, "SEC_MIXER_1_8", 0.0f); // Value of the custom mixer at element [1,8] | -inf | inf 
@@ -272,6 +344,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_8, "SEC_MIXER_3_8", 0.0f); // Value of the custom mixer at element [3,8] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_8, "SEC_MIXER_4_8", 0.0f); // Value of the custom mixer at element [4,8] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_8, "SEC_MIXER_5_8", 0.0f); // Value of the custom mixer at element [5,8] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_8, "SEC_MIXER_6_8", 0.0f); // Value of the custom mixer at element [6,8] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_8, "SEC_MIXER_7_8", 0.0f); // Value of the custom mixer at element [7,8] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_8_8, "SEC_MIXER_8_8", 0.0f); // Value of the custom mixer at element [8,8] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_9_8, "SEC_MIXER_9_8", 0.0f); // Value of the custom mixer at element [9,8] | -inf | inf
                                                                                                                                  
   init_param_float(PARAM_SECONDARY_MIXER_0_9, "SEC_MIXER_0_9", 0.0f); // Value of the custom mixer at element [0,9] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_1_9, "SEC_MIXER_1_9", 0.0f); // Value of the custom mixer at element [1,9] | -inf | inf 
@@ -279,6 +355,10 @@ void Params::set_defaults(void)
   init_param_float(PARAM_SECONDARY_MIXER_3_9, "SEC_MIXER_3_9", 0.0f); // Value of the custom mixer at element [3,9] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_4_9, "SEC_MIXER_4_9", 0.0f); // Value of the custom mixer at element [4,9] | -inf | inf 
   init_param_float(PARAM_SECONDARY_MIXER_5_9, "SEC_MIXER_5_9", 0.0f); // Value of the custom mixer at element [5,9] | -inf | inf 
+  init_param_float(PARAM_SECONDARY_MIXER_6_9, "SEC_MIXER_6_9", 0.0f); // Value of the custom mixer at element [6,9] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_7_9, "SEC_MIXER_7_9", 0.0f); // Value of the custom mixer at element [7,9] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_8_9, "SEC_MIXER_8_9", 0.0f); // Value of the custom mixer at element [8,9] | -inf | inf
+  init_param_float(PARAM_SECONDARY_MIXER_9_9, "SEC_MIXER_9_9", 0.0f); // Value of the custom mixer at element [9,9] | -inf | inf
 
   /*****************************/
   /*** MAVLINK CONFIGURATION ***/
