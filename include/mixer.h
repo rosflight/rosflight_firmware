@@ -34,6 +34,7 @@
 
 #include "param_listener.h"
 #include "controller.h"
+#include "command_manager.h"
 
 #include <eigen/Eigen/Dense>
 #include <eigen/Eigen/SVD>

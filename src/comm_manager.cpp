@@ -373,7 +373,7 @@ void CommManager::send_status(void)
 
   comm_link_.send_status(
     sysid_, RF_.state_manager_.state().armed, RF_.state_manager_.state().failsafe,
-    RF_.command_manager_.rc_override_active(), RF_.command_manager_.offboard_control_active(),
+    RF_.command_manager_.get_rc_override(), RF_.command_manager_.offboard_control_active(),
     RF_.state_manager_.state().error_codes, control_mode, RF_.board_.sensors_errors_count(),
     RF_.get_loop_time_us());
 }

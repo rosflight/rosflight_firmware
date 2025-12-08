@@ -86,7 +86,7 @@ private:
     control_channel_t * combined;
   } mux_t;
 
-  mux_t muxes[6] = {{&rc_command_.Qx, &offboard_command_.Qx, &combined_command_.Qx},
+  mux_t muxes_[6] = {{&rc_command_.Qx, &offboard_command_.Qx, &combined_command_.Qx},
                     {&rc_command_.Qy, &offboard_command_.Qy, &combined_command_.Qy},
                     {&rc_command_.Qz, &offboard_command_.Qz, &combined_command_.Qz},
                     {&rc_command_.Fx, &offboard_command_.Fx, &combined_command_.Fx},
@@ -146,40 +146,96 @@ private:
     MUX_FX,
     MUX_FY,
     MUX_FZ,
+    NUM_MUX_CHANNELS
+  };
+
+  enum RCOverrideReason : uint16_t
+  {
+    OVERRIDE_NO_OVERRIDE = 0x0,
+    OVERRIDE_ATT_SWITCH = 0x1,
+    OVERRIDE_THR_SWITCH = 0x2,
+    OVERRIDE_X = 0x4,
+    OVERRIDE_Y = 0x8,
+    OVERRIDE_Z = 0x10,
+    OVERRIDE_T = 0x20,
+    OVERRIDE_OFFBOARD_X_INACTIVE = 0x40,
+    OVERRIDE_OFFBOARD_Y_INACTIVE = 0x80,
+    OVERRIDE_OFFBOARD_Z_INACTIVE = 0x100,
+    OVERRIDE_OFFBOARD_T_INACTIVE = 0x200,
   };
 
   typedef struct
   {
     RC::Stick rc_channel;
     uint32_t last_override_time;
-  } rc_stick_override_t;
+    RCOverrideReason stick_override_reason;
+    RCOverrideReason offboard_inactive_override_reason;
+    uint16_t override_mask;
+  } channel_override_t;
 
-  rc_stick_override_t rc_stick_override_[3] = {{RC::STICK_X, 0},
-                                               {RC::STICK_Y, 0},
-                                               {RC::STICK_Z, 0}};
+  channel_override_t channel_override_[6] = {
+      {RC::STICK_X, 0, OVERRIDE_X, OVERRIDE_OFFBOARD_X_INACTIVE, X_OVERRIDDEN},
+      {RC::STICK_Y, 0, OVERRIDE_Y, OVERRIDE_OFFBOARD_Y_INACTIVE, Y_OVERRIDDEN},
+      {RC::STICK_Z, 0, OVERRIDE_Z, OVERRIDE_OFFBOARD_Z_INACTIVE, Z_OVERRIDDEN},
+      {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
+      {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
+      {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE,
+        T_OVERRIDDEN} // Note that throttle overriding works a bit differently
+  };
 
   ROSflight & RF_;
 
   bool new_command_;
-  uint8_t rc_override_;
+  uint16_t rc_override_;
 
   control_t & failsafe_command_;
 
   void param_change_callback(uint16_t param_id) override;
   void init_failsafe();
 
-  uint8_t do_roll_pitch_yaw_muxing(MuxChannel channel);
-  uint8_t do_throttle_muxing(void);
-  void do_min_throttle_muxing();
+  /**
+   * @brief Checks which channels are overridden
+   * @details There are many reasons that a channel could be overriden. These reasons include:
+   *  - A stick is deflected
+   *  - The commanded throttle is less than the RC throttle, and the MIN_THROTTLE parameter is set
+   *  - The attitude or throttle override switch is flipped
+   *  - The onboard computer has not sent any commands recently
+   * The returned bitfield indicates which reasons have caused an override.
+   * By anding with a constant such as X_OVERRIDDEN, you can check if a specific channel is overridden.
+   * @return A bitfield, with overriden reasons indicated
+   */
+  uint16_t determine_override_status();
+  uint16_t check_if_attitude_channel_is_overriden_by_rc(MuxChannel channel);
+  uint16_t check_if_throttle_channel_is_overriden_by_rc();
+  void do_muxing(uint16_t rc_override);
+  void do_channel_muxing(MuxChannel channel, uint16_t rc_override);
 
   void interpret_rc(void);
   bool stick_deviated(MuxChannel channel);
 
 public:
+  static constexpr uint16_t X_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_X | OVERRIDE_OFFBOARD_X_INACTIVE};
+  static constexpr uint16_t Y_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Y | OVERRIDE_OFFBOARD_Y_INACTIVE};
+  static constexpr uint16_t Z_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Z | OVERRIDE_OFFBOARD_Z_INACTIVE};
+  static constexpr uint16_t T_OVERRIDDEN{OVERRIDE_THR_SWITCH | OVERRIDE_T | OVERRIDE_OFFBOARD_T_INACTIVE};
+  static constexpr uint16_t ATTITUDE_OVERRIDDEN{X_OVERRIDDEN | Y_OVERRIDDEN | Z_OVERRIDDEN};
+
   CommandManager(ROSflight & _rf);
   void init();
   bool run();
-  uint8_t rc_override_active();
+  /**
+   * @brief Checks which channels are overridden, and why
+   * @details There are many reasons that a channel could be overriden. These reasons include:
+   *  - A stick is deflected
+   *  - The commanded throttle is less than the RC throttle, and the MIN_THROTTLE parameter is set
+   *  - The attitude or throttle override switch is flipped
+   *  - The onboard computer has not sent any commands recently
+   * The returned bitfield indicates which reasons have caused an override.
+   * Because c++ can use integers as booleans, this function can be treated as providing a boolean
+   * This value is updated if a new RC command is available
+   * @return A bitfield, with overriden reasons indicated
+   */
+  uint16_t get_rc_override();
   bool offboard_control_active();
   void set_new_offboard_command(control_t new_offboard_command);
   void set_new_rc_command(control_t new_rc_command);
