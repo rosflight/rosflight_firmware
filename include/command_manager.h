@@ -111,7 +111,7 @@ private:
 
   // clang-format off
   control_t rc_command_ = {0,
-                            [{false, ANGLE, 0.0},
+                            {{false, ANGLE, 0.0},
                             {false, ANGLE, 0.0},
                             {false, RATE, 0.0},
                             {false, THROTTLE, 0.0},
@@ -120,9 +120,9 @@ private:
                             {false, PASSTHROUGH, 0.0},
                             {false, PASSTHROUGH, 0.0},
                             {false, PASSTHROUGH, 0.0},
-                            {false, PASSTHROUGH, 0.0}]};
+                            {false, PASSTHROUGH, 0.0}}};
   control_t offboard_command_ = {0,
-                                  [{false, ANGLE, 0.0},
+                                  {{false, ANGLE, 0.0},
                                   {false, ANGLE, 0.0},
                                   {false, RATE, 0.0},
                                   {false, THROTTLE, 0.0},
@@ -131,9 +131,9 @@ private:
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
-                                  {false, PASSTHROUGH, 0.0}]};
+                                  {false, PASSTHROUGH, 0.0}}};
   control_t combined_command_ = {0,
-                                  [{false, ANGLE, 0.0},
+                                  {{false, ANGLE, 0.0},
                                   {false, ANGLE, 0.0},
                                   {false, RATE, 0.0},
                                   {false, THROTTLE, 0.0},
@@ -142,10 +142,10 @@ private:
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
-                                  {false, PASSTHROUGH, 0.0}]};
+                                  {false, PASSTHROUGH, 0.0}}};
 
   control_t multirotor_failsafe_command_ = {0,
-                                            [{true, ANGLE, 0.0},
+                                            {{true, ANGLE, 0.0},
                                             {true, ANGLE, 0.0},
                                             {true, RATE, 0.0},
                                             {true, THROTTLE, 0.0},
@@ -154,9 +154,9 @@ private:
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0},
-                                            {false, PASSTHROUGH, 0.0}]};
+                                            {false, PASSTHROUGH, 0.0}}};
   control_t fixedwing_failsafe_command_ = {0,
-                                            [{true, PASSTHROUGH, 0.0},
+                                            {{true, PASSTHROUGH, 0.0},
                                             {true, PASSTHROUGH, 0.0},
                                             {true, PASSTHROUGH, 0.0},
                                             {true, PASSTHROUGH, 0.0},
@@ -165,7 +165,7 @@ private:
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0},
-                                            {false, PASSTHROUGH, 0.0}]};
+                                            {false, PASSTHROUGH, 0.0}}};
   // clang-format on
 
   typedef enum

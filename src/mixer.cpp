@@ -71,9 +71,9 @@ void Mixer::param_change_callback(uint16_t param_id)
   } else if ((param_id >=PARAM_PRIMARY_MIXER_0_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
 
     uint16_t param_id_offset =  param_id-PARAM_PRIMARY_MIXER_0_0;
-    uint16_t param_id_row = param_id_offset%6;
-    uint16_t param_id_col = param_id_offset/6;
     float param_value = RF_.params_.get_param_float(param_id);
+    uint16_t param_id_row = param_id_offset % NUM_MIXER_OUTPUTS;
+    uint16_t param_id_col = param_id_offset / NUM_MIXER_OUTPUTS;
 
     if(param_id_row==0) { primary_mixer_.u[0][param_id_col] = param_value; }
     if(param_id_row==1) { primary_mixer_.u[1][param_id_col] = param_value; }
@@ -100,8 +100,8 @@ void Mixer::param_change_callback(uint16_t param_id)
   } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
 
      uint16_t param_id_offset =  param_id-PARAM_SECONDARY_MIXER_0_0;
-     uint16_t param_id_row = param_id_offset%6;
-     uint16_t param_id_col = param_id_offset/6;
+     uint16_t param_id_row = param_id_offset%NUM_MIXER_OUTPUTS;
+     uint16_t param_id_col = param_id_offset/NUM_MIXER_OUTPUTS;
      if(param_id_row==0) { secondary_mixer_.u[0][param_id_col] = RF_.params_.get_param_float(param_id); }
      if(param_id_row==1) { secondary_mixer_.u[1][param_id_col] = RF_.params_.get_param_float(param_id); }
      if(param_id_row==2) { secondary_mixer_.u[2][param_id_col] = RF_.params_.get_param_float(param_id); }
@@ -206,7 +206,13 @@ void Mixer::init_mixing()
     mixer_to_use_.default_pwm_rate = &primary_mixer_.default_pwm_rate;
 
     // Load the primary mixing values into the mixer_to_use_ by default
-    mixer_to_use_.u = &primary_mixer_.u;
+    mixer_to_use_.u[0] = &primary_mixer_.u[0];
+    mixer_to_use_.u[1] = &primary_mixer_.u[1];
+    mixer_to_use_.u[2] = &primary_mixer_.u[2];
+    mixer_to_use_.u[3] = &primary_mixer_.u[3];
+    mixer_to_use_.u[4] = &primary_mixer_.u[4];
+    mixer_to_use_.u[5] = &primary_mixer_.u[5];
+    // mixer_to_use_.Fx = &primary_mixer_.Fx;
     // mixer_to_use_.Fy = &primary_mixer_.Fy;
     // mixer_to_use_.Fz = &primary_mixer_.Fz;
     // mixer_to_use_.Qx = &primary_mixer_.Qx;
@@ -287,10 +293,10 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   }
 
   // Calculate the pseudoinverse of the mixing matrix using the SVD
-  Eigen::JacobiSVD<Eigen::Matrix<float, 6, NUM_MIXER_OUTPUTS>> svd(
+  Eigen::JacobiSVD<Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS>> svd(
     mixer_matrix,
     Eigen::FullPivHouseholderQRPreconditioner | Eigen::ComputeFullU | Eigen::ComputeFullV);
-  Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> Sig;
+  Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> Sig;
   Sig.setZero();
 
   // Avoid dividing by zero in the Sigma matrix
@@ -302,7 +308,7 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   if (svd.singularValues()[5] != 0.0) { Sig(5, 5) = 1.0 / svd.singularValues()[5]; }
 
   // Pseudoinverse of the mixing matrix
-  Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> mixer_matrix_pinv =
+  Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> mixer_matrix_pinv =
     svd.matrixV() * Sig * svd.matrixU().transpose();
 
   mixer_t inverted_mixer;
@@ -337,7 +343,7 @@ void Mixer::save_primary_mixer_params()
   // Save the mixer values to the firmware parameters
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
-    int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
+    int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + NUM_MIXER_OUTPUTS * i;
     for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
       RF_.params_.set_param_float(param_index++, primary_mixer_.u[j][i]);
     }
@@ -356,7 +362,7 @@ void Mixer::save_secondary_mixer_params()
   // The secondary mixer does not have header values (they are the same as the primary mixer)
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
-    int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
+    int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + NUM_MIXER_OUTPUTS * i;
     for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
       RF_.params_.set_param_float(param_index++, secondary_mixer_.u[j][i]);
     }
@@ -397,7 +403,7 @@ void Mixer::load_primary_mixer_values()
   // Load the mixer values from the firmware parameters
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
-    int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + 6 * i;
+    int param_index = (int) PARAM_PRIMARY_MIXER_0_0 + NUM_MIXER_OUTPUTS * i;
     for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
       primary_mixer_.u[j][i] = RF_.params_.get_param_float(param_index++);
     }
@@ -416,7 +422,7 @@ void Mixer::load_secondary_mixer_values()
   // The header values will be the same as the primary mixer
   for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
     // This assumes the parameters are stored in order in the param enum
-    int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + 6 * i;
+    int param_index = (int) PARAM_SECONDARY_MIXER_0_0 + NUM_MIXER_OUTPUTS * i;
     for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
       secondary_mixer_.u[j][i] = RF_.params_.get_param_float(param_index++);
     }
@@ -545,14 +551,14 @@ void Mixer::mix_multirotor()
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      throttle_command = commands.Fz;
+      throttle_command = commands.u[5]; // Fz
       break;
   }
   
   if (abs(throttle_command) < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
     // arming/disarming
-    commands.Qz = 0.0;
+    commands.u[2] = 0.0; // Qz
   }
 
   // Mix the outputs based on if a custom mixer (i.e. with motor parameters) is selected.
@@ -588,9 +594,9 @@ void Mixer::mix_fixedwing()
   Controller::Output commands = RF_.controller_.output();
   
   // Reverse fixed-wing channels just before mixing if we need to
-  commands.Qx *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-  commands.Qy *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-  commands.Qz *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+  commands.u[0] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+  commands.u[1] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+  commands.u[2] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
 
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
