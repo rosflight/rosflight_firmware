@@ -201,18 +201,18 @@ private:
 
   /**
    * @brief Checks which channels are overridden
-   * @details There are many reasons that a channel could be overriden. These reasons include:
+   * @details There are many reasons that a channel could be overridden. These reasons include:
    *  - A stick is deflected
    *  - The commanded throttle is less than the RC throttle, and the MIN_THROTTLE parameter is set
    *  - The attitude or throttle override switch is flipped
    *  - The onboard computer has not sent any commands recently
    * The returned bitfield indicates which reasons have caused an override.
    * By anding with a constant such as X_OVERRIDDEN, you can check if a specific channel is overridden.
-   * @return A bitfield, with overriden reasons indicated
+   * @return A bitfield, with overridden reasons indicated
    */
   uint16_t determine_override_status();
-  uint16_t check_if_attitude_channel_is_overriden_by_rc(MuxChannel channel);
-  uint16_t check_if_throttle_channel_is_overriden_by_rc();
+  uint16_t check_if_attitude_channel_is_overridden_by_rc(MuxChannel channel);
+  uint16_t check_if_throttle_channel_is_overridden_by_rc();
   void do_muxing(uint16_t rc_override);
   void do_channel_muxing(MuxChannel channel, uint16_t rc_override);
 
@@ -225,7 +225,7 @@ public:
   bool run();
   /**
    * @brief Checks which channels are overridden, and why
-   * @details There are many reasons that a channel could be overriden. These reasons include:
+   * @details There are many reasons that a channel could be overridden. These reasons include:
    *  - A stick is deflected
    *  - The commanded throttle is less than the RC throttle, and the MIN_THROTTLE parameter is set
    *  - The attitude or throttle override switch is flipped
@@ -233,7 +233,7 @@ public:
    * The returned bitfield indicates which reasons have caused an override.
    * Because c++ can use integers as booleans, this function can be treated as providing a boolean
    * This value is updated if a new RC command is available
-   * @return A bitfield, with overriden reasons indicated
+   * @return A bitfield, with overridden reasons indicated
    */
   uint16_t get_rc_override() const;
   bool offboard_control_active();

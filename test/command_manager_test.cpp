@@ -445,8 +445,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
-  EXPECT_EQ(rf.command_manager_.get_rc_override(),
-            rf.command_manager_.get_rc_override() | CommandManager::OVERRIDE_X);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_X, 0);
 
   rc_values[0] = 1500; // return stick to center
 
@@ -454,8 +453,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
   setOffboard(offboard_command);
   output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, 0.0); // lag
-  EXPECT_EQ(rf.command_manager_.get_rc_override(),
-            rf.command_manager_.get_rc_override() | CommandManager::OVERRIDE_X);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_X, 0);
 
   stepFirmware(600000);
   setOffboard(offboard_command);
@@ -466,8 +464,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
   stepFirmware(20000);
   output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
-  EXPECT_NE(rf.command_manager_.get_rc_override(),
-            rf.command_manager_.get_rc_override() | CommandManager::OVERRIDE_X);
+  EXPECT_EQ(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_X, 0);
 }
 
 TEST_F(CommandManagerTest, StaleOffboardCommand)
@@ -481,8 +478,7 @@ TEST_F(CommandManagerTest, StaleOffboardCommand)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, 0.0);
-  EXPECT_EQ(rf.command_manager_.get_rc_override(),
-            rf.command_manager_.get_rc_override() | CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE, 0);
 }
 
 TEST_F(CommandManagerTest, PartialMux)
@@ -499,8 +495,7 @@ TEST_F(CommandManagerTest, PartialMux)
   EXPECT_CLOSE(output.Fx.value, 0.0);
   EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
-  EXPECT_EQ(rf.command_manager_.get_rc_override(),
-            rf.command_manager_.get_rc_override() | CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE, 0);
 }
 
 TEST_F(CommandManagerTest, MixedTypes)

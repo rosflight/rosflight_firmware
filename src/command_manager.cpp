@@ -203,15 +203,15 @@ uint16_t CommandManager::determine_override_status()
     rc_override |= OVERRIDE_THR_SWITCH;
   }
 
-  rc_override |= check_if_attitude_channel_is_overriden_by_rc(MUX_QX);
-  rc_override |= check_if_attitude_channel_is_overriden_by_rc(MUX_QY);
-  rc_override |= check_if_attitude_channel_is_overriden_by_rc(MUX_QZ);
-  rc_override |= check_if_throttle_channel_is_overriden_by_rc();
+  rc_override |= check_if_attitude_channel_is_overridden_by_rc(MUX_QX);
+  rc_override |= check_if_attitude_channel_is_overridden_by_rc(MUX_QY);
+  rc_override |= check_if_attitude_channel_is_overridden_by_rc(MUX_QZ);
+  rc_override |= check_if_throttle_channel_is_overridden_by_rc();
 
   return rc_override;
 }
 
-uint16_t CommandManager::check_if_attitude_channel_is_overriden_by_rc(MuxChannel channel)
+uint16_t CommandManager::check_if_attitude_channel_is_overridden_by_rc(MuxChannel channel)
 {
   uint16_t rc_overrides{0};
   if (stick_deviated(channel)) {
@@ -223,7 +223,7 @@ uint16_t CommandManager::check_if_attitude_channel_is_overriden_by_rc(MuxChannel
   return rc_overrides;
 }
 
-uint16_t CommandManager::check_if_throttle_channel_is_overriden_by_rc()
+uint16_t CommandManager::check_if_throttle_channel_is_overridden_by_rc()
 {
   MuxChannel selected_channel;
   // Determine which channel to check based on which axis the RC F channel corresponds to
