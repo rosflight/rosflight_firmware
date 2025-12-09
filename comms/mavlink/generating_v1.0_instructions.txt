@@ -1,13 +1,12 @@
 # get the mavlink/mavlink repository
-# git clone https://github.com/rosflight/mavlink.git
-git clone https://github.com/mavlink/mavlink.git
+git clone https://github.com/mavlink/mavlink.git --recursive
 
 # Go to your rosflight_firmware/comms/mavlink folder
 # Put the rosflight.xml file there if not already there
 
 # Create the .c/h files from that directory
 # If python3 doesn't work try installing future (pip install future).
-# If that doesn't work install Python2.7 and run with python2.7 instead.
+# If that doesn't work install Python3.8 and run with python3.8 instead.
 # in windows:
 rmdir /s v1.0 
 set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
