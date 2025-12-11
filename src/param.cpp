@@ -426,8 +426,8 @@ void Params::set_defaults(void)
   /*****************************/
   /*** BATTERY MONITOR SETUP ***/
   /*****************************/
-  init_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER, "BATT_VOLT_MULT", 0.0f); // Multiplier for the voltage sensor | 0 | inf
-  init_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER, "BATT_CURR_MULT", 0.0f); // Multiplier for the current sensor | 0 | inf
+  init_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER, "BATT_VOLT_MULT", 1.0f); // Multiplier for the voltage sensor | 0 | inf
+  init_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER, "BATT_CURR_MULT", 1.0f); // Multiplier for the current sensor | 0 | inf
   init_param_float(PARAM_BATTERY_VOLTAGE_ALPHA, "BATT_VOLT_ALPHA", 0.995f);   // Alpha value for the low pass filter on the reported battery voltage | 0 | 1
   init_param_float(PARAM_BATTERY_CURRENT_ALPHA, "BATT_CURR_ALPHA", 0.995f);   // Alpha value for the low pass filter on the reported battery current | 0 | 1
 
