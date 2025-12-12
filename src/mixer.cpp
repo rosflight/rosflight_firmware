@@ -581,7 +581,10 @@ void Mixer::select_primary_or_secondary_mixer()
 {
   // Check if under RC control. If RC throttle or attitude override is active,
   // adjust the mixer_to_use_ accordingly.
-  if (RF_.command_manager_.rc_throttle_override_active()) {
+  uint16_t rc_override = RF_.command_manager_.get_rc_override();
+
+  uint16_t rc_attitude_override_active = static_cast<uint16_t>(rc_override & CommandManager::ATTITUDE_OVERRIDDEN);
+  if (rc_attitude_override_active == 0) {
     mixer_to_use_.Fx = &primary_mixer_.Fx;
     mixer_to_use_.Fy = &primary_mixer_.Fy;
     mixer_to_use_.Fz = &primary_mixer_.Fz;
@@ -591,7 +594,8 @@ void Mixer::select_primary_or_secondary_mixer()
     mixer_to_use_.Fz = &secondary_mixer_.Fz;
   }
 
-  if (RF_.command_manager_.rc_attitude_override_active()) {
+  uint16_t rc_throttle_override_active = static_cast<uint16_t>(rc_override & CommandManager::T_OVERRIDDEN);
+  if (rc_throttle_override_active == 0) {
     mixer_to_use_.Qx = &primary_mixer_.Qx;
     mixer_to_use_.Qy = &primary_mixer_.Qy;
     mixer_to_use_.Qz = &primary_mixer_.Qz;

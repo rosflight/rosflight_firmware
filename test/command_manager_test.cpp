@@ -40,6 +40,14 @@ public:
                                 {true, THROTTLE, OFFBOARD_FY},
                                 {true, THROTTLE, OFFBOARD_FZ}};
 
+  uint16_t default_rc_override = CommandManager::OVERRIDE_X
+    | CommandManager::OVERRIDE_Y
+    | CommandManager::OVERRIDE_Z
+    | CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE
+    | CommandManager::OVERRIDE_OFFBOARD_Y_INACTIVE
+    | CommandManager::OVERRIDE_OFFBOARD_Z_INACTIVE
+    | CommandManager::OVERRIDE_OFFBOARD_T_INACTIVE;
+
   CommandManagerTest()
       : mavlink(board)
       , rf(board, mavlink)
@@ -205,7 +213,7 @@ TEST_F(CommandManagerTest, DisarmStickReversed)
   EXPECT_EQ(rf.state_manager_.state().armed, false);
 }
 
-TEST_F(CommandManagerTest, DefaultRCOutputd)
+TEST_F(CommandManagerTest, DefaultRCOutput)
 {
   stepFirmware(600000);
 
@@ -337,6 +345,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxNoMinThrottle)
   EXPECT_CLOSE(output.Fx.value, OFFBOARD_FX);
   EXPECT_CLOSE(output.Fy.value, OFFBOARD_FY);
   EXPECT_CLOSE(output.Fz.value, OFFBOARD_FZ);
+  EXPECT_EQ(rf.command_manager_.get_rc_override(), CommandManager::OVERRIDE_NO_OVERRIDE);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxMinThrottle)
@@ -356,6 +365,8 @@ TEST_F(CommandManagerTest, OffboardCommandMuxMinThrottle)
   EXPECT_CLOSE(output.Fx.value, 0.0);
   EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
+
+  EXPECT_EQ(rf.command_manager_.get_rc_override(), CommandManager::OVERRIDE_T);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxRollDeviation)
@@ -370,7 +381,14 @@ TEST_F(CommandManagerTest, OffboardCommandMuxRollDeviation)
   EXPECT_CLOSE(output.Qx.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
   EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
   EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fx.value, 0.0);
+  EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
+
+  uint16_t correct_rc_override =
+    CommandManager::OVERRIDE_T
+    | CommandManager::OVERRIDE_X;
+  EXPECT_EQ(rf.command_manager_.get_rc_override(), correct_rc_override);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxPitchDeviation)
@@ -385,7 +403,14 @@ TEST_F(CommandManagerTest, OffboardCommandMuxPitchDeviation)
   EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
   EXPECT_CLOSE(output.Qy.value, 0.5 * rf.params_.get_param_float(PARAM_RC_MAX_PITCH));
   EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fx.value, 0.0);
+  EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
+
+  uint16_t correct_rc_override =
+    CommandManager::OVERRIDE_T
+    | CommandManager::OVERRIDE_Y;
+  EXPECT_EQ(rf.command_manager_.get_rc_override(), correct_rc_override);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxYawrateDeviation)
@@ -400,7 +425,14 @@ TEST_F(CommandManagerTest, OffboardCommandMuxYawrateDeviation)
   EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
   EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
   EXPECT_CLOSE(output.Qz.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_YAWRATE));
+  EXPECT_CLOSE(output.Fx.value, 0.0);
+  EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
+
+  uint16_t correct_rc_override =
+    CommandManager::OVERRIDE_T
+    | CommandManager::OVERRIDE_Z;
+  EXPECT_EQ(rf.command_manager_.get_rc_override(), correct_rc_override);
 }
 
 TEST_F(CommandManagerTest, OffboardCommandMuxLag)
@@ -413,6 +445,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, -0.5 * rf.params_.get_param_float(PARAM_RC_MAX_ROLL));
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_X, 0);
 
   rc_values[0] = 1500; // return stick to center
 
@@ -420,6 +453,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
   setOffboard(offboard_command);
   output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, 0.0); // lag
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_X, 0);
 
   stepFirmware(600000);
   setOffboard(offboard_command);
@@ -430,6 +464,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxLag)
   stepFirmware(20000);
   output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, OFFBOARD_QX);
+  EXPECT_EQ(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_X, 0);
 }
 
 TEST_F(CommandManagerTest, StaleOffboardCommand)
@@ -443,6 +478,7 @@ TEST_F(CommandManagerTest, StaleOffboardCommand)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.Qx.value, 0.0);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE, 0);
 }
 
 TEST_F(CommandManagerTest, PartialMux)
@@ -456,7 +492,10 @@ TEST_F(CommandManagerTest, PartialMux)
   EXPECT_CLOSE(output.Qx.value, 0.0);
   EXPECT_CLOSE(output.Qy.value, OFFBOARD_QY);
   EXPECT_CLOSE(output.Qz.value, OFFBOARD_QZ);
+  EXPECT_CLOSE(output.Fx.value, 0.0);
+  EXPECT_CLOSE(output.Fy.value, 0.0);
   EXPECT_CLOSE(output.Fz.value, 0.0);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE, 0);
 }
 
 TEST_F(CommandManagerTest, MixedTypes)
@@ -471,4 +510,59 @@ TEST_F(CommandManagerTest, MixedTypes)
   EXPECT_EQ(output.Qy.type, ANGLE);
   EXPECT_EQ(output.Qz.type, RATE);
   EXPECT_EQ(output.Fz.type, THROTTLE);
+}
+
+TEST_F(CommandManagerTest, DefaultRCOverride)
+{
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  EXPECT_EQ(override, default_rc_override);
+}
+
+TEST_F(CommandManagerTest, RCOverrideGivenBothOvrdSwitchesOn)
+{
+  rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
+  rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
+  rc_values[4] = CHN_HIGH;
+  stepFirmware(1000000);
+
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  uint16_t correct_override =
+    CommandManager::OVERRIDE_ATT_SWITCH
+    | CommandManager::OVERRIDE_THR_SWITCH
+    | default_rc_override;
+  EXPECT_EQ(override, correct_override);
+}
+
+TEST_F(CommandManagerTest, RCOverrideOnlyThrOvrdSwitchOn)
+{
+  rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 5);
+  rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 4);
+  rc_values[4] = CHN_HIGH;
+  rc_values[5] = CHN_LOW;
+  stepFirmware(1000000);
+
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  uint16_t correct_override =
+    CommandManager::OVERRIDE_THR_SWITCH
+    | default_rc_override;
+  EXPECT_EQ(override, correct_override);
+}
+
+TEST_F(CommandManagerTest, RCOverrideOnlyAttOvrdSwitchOn)
+{
+  rf.params_.set_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, 4);
+  rf.params_.set_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, 5);
+  rc_values[4] = CHN_HIGH;
+  rc_values[5] = CHN_LOW;
+  stepFirmware(1000000);
+
+  uint16_t override = rf.command_manager_.get_rc_override();
+
+  uint16_t correct_override =
+    CommandManager::OVERRIDE_ATT_SWITCH
+    | default_rc_override;
+  EXPECT_EQ(override, correct_override);
 }

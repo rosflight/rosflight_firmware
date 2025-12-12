@@ -593,15 +593,15 @@ static void mavlink_test_rosflight_status(uint8_t system_id, uint8_t component_i
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
         uint16_t i;
     mavlink_rosflight_status_t packet_in = {
-        17235,17339,17,84,151,218,29,96
+        17235,17339,17443,151,218,29,96,163
     };
     mavlink_rosflight_status_t packet1, packet2;
         memset(&packet1, 0, sizeof(packet1));
+        packet1.rc_override = packet_in.rc_override;
         packet1.num_errors = packet_in.num_errors;
         packet1.loop_time_us = packet_in.loop_time_us;
         packet1.armed = packet_in.armed;
         packet1.failsafe = packet_in.failsafe;
-        packet1.rc_override = packet_in.rc_override;
         packet1.offboard = packet_in.offboard;
         packet1.error_code = packet_in.error_code;
         packet1.control_mode = packet_in.control_mode;

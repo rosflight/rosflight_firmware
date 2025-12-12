@@ -1,29 +1,6 @@
 <?xml version="1.0"?>
 <?note
-# get the mavlink/mavlink repository
-git clone https://github.com/rosflight/mavlink.git
-
-# Go to your rosflight_firmware/comms/mavlink folder
-# Put the rosflight.xml file there if not already there
-
-# Create the .c/h files from that directory
-# If python3 doesn't work try installing future (pip install future).
-# If that doesn't work install Python2.7 and run with python2.7 instead.
-# in windows:
-rmdir /s v1.0 
-set PYTHONPATH=%PYTHONPATH%;path\to\mavlink\repo && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
-
-# e.g., 
-rmdir /s v1.0 
-set PYTHONPATH=%PYTHONPATH%;C:\Projects\mavlink && python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
-
-# in Linux:
-sudo rm -r ./v1.0
-PYTHONPATH=$PYTHONPATH:/path/to/mavlink/repo python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=./v1.0 rosflight.xml
-
-# If you are in the mavlink repo environment with rosflight.xml in the standard location:
-python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generated/include/mavlink/v1.0 message_definitions/v1.0/rosflight.xml
-# copy/paste the v1.0 directory into your rosflight_firmware/comms/mavlink folder
+See the generating_v1.0_instructions.txt to regenerate mavlink headers based off this file.
 ?>
 <mavlink>
     <enums>
@@ -283,7 +260,7 @@ python3 -m pymavlink.tools.mavgen --lang=C --wire-protocol=1.0 --output=generate
 			<description>Flight Status</description>
 			<field type="uint8_t" name="armed"/>
 			<field type="uint8_t" name="failsafe"/>
-			<field type="uint8_t" name="rc_override"/>
+			<field type="uint16_t" name="rc_override"/>
 			<field type="uint8_t" name="offboard"/>
 			<field type="uint8_t" name="error_code" enum="ROSFLIGHT_ERROR_CODE"/>
 			<field type="uint8_t" name="control_mode" enum="OFFBOARD_CONTROL_MODE"/>
