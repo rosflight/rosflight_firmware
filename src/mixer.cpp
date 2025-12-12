@@ -112,6 +112,8 @@ void Mixer::param_change_callback(uint16_t param_id)
   } else switch (param_id) {
     case PARAM_PRIMARY_MIXER:
     case PARAM_SECONDARY_MIXER:
+    case PARAM_USE_MOTOR_PARAMETERS:
+    case PARAM_RC_F_AXIS:
       init_mixing();
       break;
     case PARAM_MOTOR_RESISTANCE: R_ = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE); break;
@@ -429,7 +431,7 @@ void Mixer::set_new_aux_command(aux_command_t new_aux_command)
 float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands)
 {
   // Mix the inputs
-  float max_output = 1.0;
+  float max_output{1.0};
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     if ((*mixer_to_use_.output_type)[i] != AUX) {
@@ -454,8 +456,7 @@ float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands
 float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
 {
   // Mix the inputs
-  float max_output = 1.0;
-
+  float max_output{1.0};
   float rho = RF_.sensors_.rho();
 
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
@@ -467,9 +468,16 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
                             commands.Qx * (*mixer_to_use_.Qx)[i] +
                             commands.Qy * (*mixer_to_use_.Qy)[i] +
                             commands.Qz * (*mixer_to_use_.Qz)[i];
-      
+
       // Ensure that omega_squared is non-negative
       if (omega_squared < 0.0) { omega_squared = 0.0; }
+
+      if (K_Q_ < 0.0000001) {
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
+                              "Divide by K_V, which is zero! Skipping");
+        outputs_[i] = 0.0;
+        continue;
+      }
 
       // Ch. 4, setting equation for torque produced by a propeller equal to Eq. 4.19
       // Note that we assume constant advance ratio, leading to constant torque and thrust constants.
@@ -478,6 +486,15 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
 
       // Convert desired V_in setting to a throttle setting
       BatteryStruct * batt = RF_.sensors_.get_battery();
+      if (batt->voltage < 0.0001) {
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
+                              "Divide by battery voltage, which is near zero!");
+        RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_ERROR,
+                              "Is battery multiplier set correctly?");
+        outputs_[i] = 0.0;
+        continue;
+      }
+
       outputs_[i] = V_in / batt->voltage;
 
       // Save off the largest control output (for motors) if it is greater than 1.0 for future scaling
@@ -502,7 +519,7 @@ void Mixer::mix_multirotor()
   Controller::Output commands = RF_.controller_.output();
 
   // Check the throttle command based on the axis corresponding to the RC F channel
-  float throttle_command = 0.0;
+  float throttle_command{0.0};
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
     case X_AXIS:
       throttle_command = commands.Fx;
@@ -527,7 +544,7 @@ void Mixer::mix_multirotor()
   }
 
   // Mix the outputs based on if a custom mixer (i.e. with motor parameters) is selected.
-  float max_output;
+  float max_output{1.0};
   if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
     max_output = mix_multirotor_with_motor_parameters(commands);
   } else {
@@ -544,7 +561,7 @@ void Mixer::mix_multirotor()
   // There is no relative scaling on the above equations. In other words, if the input F command is too
   // high, then it will "drown out" all other desired outputs. Therefore, we saturate motor outputs to 
   // maintain controllability even during aggressive maneuvers.
-  float scale_factor = 1.0;
+  float scale_factor{1.0};
   if (max_output > 1.0) { scale_factor = 1.0 / max_output; }
 
   // Perform Motor Output Scaling
@@ -621,7 +638,6 @@ void Mixer::mix_output()
   }
 
   // Insert AUX Commands, and assemble combined_output_types array (Does not override mixer values)
-
   // For the first NUM_MIXER_OUTPUTS channels, only write aux_command to channels the mixer is not
   // using
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
