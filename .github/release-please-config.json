@@ -1,0 +1,11 @@
+{
+  "versioning": "prerelease",
+  "prerelease": true,
+  "prerelease-type": "beta",
+  "release-type": "simple",
+  "include-component-in-tag": false,
+  "always-update": true,
+  "packages": {
+    ".": {}
+  }
+}

@@ -33,7 +33,7 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          varmint_10X_build/varmint_10X.hex
-          varmint_11X_build/varmint_11X.hex
-          pixracer_pro_build/pixracer_pro.hex
+          varmint_10X_build/boards/varmint_h7/varmint_10X.hex
+          varmint_11X_build/boards/varmint_h7/varmint_11X.hex
+          pixracer_pro_build/boards/varmint_h7/pixracer_pro.hex
 
