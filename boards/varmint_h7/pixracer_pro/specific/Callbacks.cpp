@@ -60,16 +60,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     poll_counter++;
     varmint.baro_.poll(poll_counter);
 
-    // Mag and Pitot are on the same I2C. Avoid i2c collisions, this is not done automatically!
-    // Offset Pitot to avoid collision with mag. The first mag command takes around 4 time slots at 10kHz.
-    varmint.mag_.poll(poll_counter);
-    varmint.pitot_.poll(poll_counter - 5);
-
+    // Mag, Pitot, and Range are on the same I2C.
+    varmint.pitot_.poll(poll_counter);
+    varmint.mag_.poll(poll_counter-6);
+    varmint.range_.poll(poll_counter-58);
+    
     varmint.rc_.poll();              // Restart if dead
     varmint.gps_.poll();             // Restart if dead
     varmint.telem_.poll();           // Check for new data packet to tx
     varmint.adc_.poll(poll_counter); // Start dma read
     varmint.vcp_.poll();             // Timeout
+
 
     // Blink Green LED at 1 Hz.
     if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG;
@@ -110,7 +111,18 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interr
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
   if (varmint.pitot_.isMy(hi2c)) varmint.pitot_.endDma();
-  if (varmint.mag_.isMy(hi2c)) varmint.mag_.endDma();
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (varmint.range_.isMy(hi2c)) varmint.range_.endRxDma();
+  if (varmint.mag_.isMy(hi2c)) varmint.mag_.endRxDma();
+}
+
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (varmint.range_.isMy(hi2c)) varmint.range_.endTxDma();
+  if (varmint.mag_.isMy(hi2c)) varmint.mag_.endTxDma();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

@@ -36,8 +36,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "board.h"
-
 namespace rosflight_firmware
 {
 
@@ -89,7 +87,7 @@ typedef struct //__attribute__((__packed__))
   float range;          // m
   float min_range;      // m
   float max_range;      // m
-  SensorRangeType type; // ROSFLIGHT_RANGE_SONAR, ROSFLIGHT_RANGE_SONAR
+  SensorRangeType type; // ROSFLIGHT_RANGE_SONAR, ROSFLIGHT_RANGE_LIDAR
 } RangeStruct;
 
 typedef struct //__attribute__((packed))

@@ -171,6 +171,14 @@ void Varmint::init_board(void)
   status_list_[status_len_++] = &baro_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Lidar initialization
+
+  misc_printf("\n\nLIDARLITEV3 (range) Initialization\n");                // I2C must already be initialized
+  init_status = range_.init(LIDAR_HZ,  LIDAR_I2C, LIDAR_I2C_ADDRESS);     // I2C
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &range_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
 
   misc_printf("\n\nIIS2MDC (mag) Initialization\n");
