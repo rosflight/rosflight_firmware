@@ -424,8 +424,16 @@ void CommManager::send_baro(void)
 void CommManager::send_sonar(void)
 {
   comm_link_.send_sonar(sysid_,
-                        0, // TODO set sensor type (sonar/lidar), use enum
-                        RF_.sensors_.get_sonar()->range, 8.0, 0.25);
+    RF_.sensors_.get_sonar()->type,
+    RF_.sensors_.get_sonar()->range,
+    RF_.sensors_.get_sonar()->max_range,
+    RF_.sensors_.get_sonar()->min_range );
+}
+
+
+void CommManager::send_oflow(void)
+{
+  comm_link_.send_oflow(sysid_,RF_.sensors_.get_oflow());
 }
 
 void CommManager::send_mag(void)
@@ -499,6 +507,8 @@ void CommManager::stream(got_flags got)
   if (got.mag) { send_mag(); }
   // Height above ground sensor
   if (got.sonar) { send_sonar(); }
+  // Height above ground sensor
+  if (got.oflow) { send_oflow(); }
   // Battery V & I
   if (got.battery) { send_battery_status(); }
   // GPS data (GNSS Packed)

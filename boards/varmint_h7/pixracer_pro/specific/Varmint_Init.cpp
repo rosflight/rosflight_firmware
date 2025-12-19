@@ -90,7 +90,7 @@ void Varmint::init_board(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_SPI5_Init();
-//  MX_SPI6_Init(); // NOt using
+  MX_SPI6_Init();
 
   //	MX_TIM1_Init();  // PWM, initialized elsewhere
   //	MX_TIM2_Init();	 // PWM (Buzzer) not used as such
@@ -101,11 +101,9 @@ void Varmint::init_board(void)
   //	MX_TIM5_Init();  // Time64, initialized elsewhere
   //	MX_TIM15_Init(); // Time64, initialized elsewhere
 
-  //	MX_UART4_Init(); // GPS, initialized elsewhere
-  //	MX_UART7_Init(); // Serial 5&6 connector, not used
   //	MX_UART8_Init(); // Telem "FRSKY" connector
   //	MX_USART1_UART_Init(); // Serial 5&6 connector, not used
-  MX_USART2_UART_Init(); // Telem/Serial 1
+  MX_USART2_UART_Init(); // Telem and Debug
   //	MX_USART3_UART_Init(); // Serial 2 connector, not used
   //	MX_USART6_UART_Init(); // RC UART, initialized elsewhere
 
@@ -141,6 +139,20 @@ void Varmint::init_board(void)
   misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
   status_list_[status_len_++] = &time64;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Optical Flow initialization
+
+  // Make sure 3.3V power is enabled
+
+  HAL_GPIO_WritePin(SPEKTRUM_POWER_EN_GPIO_Port, SPEKTRUM_POWER_EN_Pin, GPIO_PIN_RESET);
+
+  misc_printf("\n\nPMW3901 (oflow) Initialization\n");
+  init_status = oflow_.init(
+      PMW3901_HZ, PMW3901_SPI, PMW3901_CS_PORT, PMW3901_CS_PIN
+  );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &oflow_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization

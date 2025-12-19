@@ -57,6 +57,7 @@
 #include "Ubx.h"
 #include "Vcp.h"
 #include "Lidarlitev3hp.h"
+#include "Pmw3901.h"
 #include "interface/board.h"
 
 /*
@@ -122,6 +123,8 @@ public:
   bool diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure) override;
 
   bool sonar_read(rosflight_firmware::RangeStruct * sonar) override;
+
+  bool flow_read(rosflight_firmware::OpticalFlowStruct * flow) override;
 
   // Battery
   bool battery_read(rosflight_firmware::BatteryStruct * bat) override;

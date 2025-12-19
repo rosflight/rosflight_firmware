@@ -98,6 +98,7 @@ void Varmint::init_board(void)
   //  MX_TIM7_Init(); 				// Poll, initialized elsewhere
   //  MX_TIM8_Init(); 				// Time64, initialized elsewhere
   //  MX_TIM12_Init();  			// ADIS16500 Ext Clock, initialized elsewhere
+  MX_TIM17_Init();            // Used for programmed time delays to interrupts.
   //  MX_USART1_UART_Init();	// uBlox, initialized elsewhere
   MX_USART2_UART_Init(); // Telem and Debug
   //  MX_USART3_UART_Init();  // S.Bus, initialized elsewhere
@@ -133,6 +134,20 @@ void Varmint::init_board(void)
   status_list_[status_len_++] = &time64;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Optical Flow initialization
+
+  misc_printf("\n\nPMW3901 (oflow) Initialization\n");
+  init_status = oflow_.init(
+      ADIS165XX_HZ, PMW3901_HZ, PMW3901_DELAY_US,
+      PMW3901_SPI, PMW3901_CS_PORT, PMW3901_CS_PIN,
+//      PMW3901_DRDY_PORT, PMW3901_DRDY_PIN, // DRDY
+      PMW3901_RST_PORT, PMW3901_RST_PIN, // Reset
+      PMW3901_TIMER
+  );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &oflow_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
 
   misc_printf("\n\nADIS165xx (imu0) Initialization\n");
@@ -153,6 +168,8 @@ void Varmint::init_board(void)
                BMI088_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu1_;
+
+
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
@@ -264,10 +281,16 @@ void Varmint::init_board(void)
   // Interrupt initializations
 
   misc_printf("\n\nSet-up EXTI IRQ's\n");
+  // Unused
+  //HAL_NVIC_EnableIRQ(EXTI0_IRQn);     // IIS2MDC
+  //HAL_NVIC_EnableIRQ(EXTI1_IRQn);     // Bosh IMU Gyro
+  //HAL_NVIC_EnableIRQ(EXTI2_IRQn);     // J105_3_SYNC_IN
+  //HAL_NVIC_EnableIRQ(EXTI4_IRQn);     // None
 
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);     // uBlox GPS PPS
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);   // ADIS IMU DRDY
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn); // Bosh IMU DRDY
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);   // ADIS IMU (8) & Pitot (9) DRDY
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn); // Bosh IMU Accel (15), J000 Jetson SYNC (13), DPS310 (11)
+                                      // J105 DRDY - PMW3901 (10),
 
   __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
   __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);

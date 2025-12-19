@@ -72,6 +72,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 
     if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG; // Blink Green LED at 1 Hz.
   }
+  if(varmint.oflow_.isMy(htim))
+  {
+    varmint.oflow_.poll();
+  }
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +84,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 {
-  if (varmint.imu0_.isMy(exti_pin)) { varmint.imu0_.startDma(); }
+  if (varmint.imu0_.isMy(exti_pin)) {
+    varmint.oflow_.trigger();
+    varmint.imu0_.startDma();
+  }
   if (varmint.imu1_.isMy(exti_pin)) { varmint.imu1_.startDma(); }
   if (varmint.gps_.isMy(exti_pin)) { varmint.gps_.pps(time64.Us()); }
 }
@@ -99,6 +107,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interr
   if (varmint.imu1_.isMy(hspi)) { varmint.imu1_.endDma(); }
   if (varmint.mag_.isMy(hspi)) { varmint.mag_.endDma(); }
   if (varmint.baro_.isMy(hspi)) { varmint.baro_.endDma(); }
+  if (varmint.oflow_.isMy(hspi)) { varmint.oflow_.endDma(); }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 // I2C Rx/Tx complete callback
@@ -108,15 +117,17 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
   if (varmint.pitot_.isMy(hi2c)) varmint.pitot_.endDma();
 }
 
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (varmint.range_.isMy(hi2c)) varmint.range_.endRxDma();
+}
+
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
   if (varmint.range_.isMy(hi2c)) varmint.range_.endTxDma();
 }
 
-void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-  if (varmint.range_.isMy(hi2c)) varmint.range_.endRxDma();
-}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // UART Rx complete callbacks

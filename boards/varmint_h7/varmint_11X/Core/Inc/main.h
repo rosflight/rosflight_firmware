@@ -83,6 +83,7 @@ void MX_RNG_Init(void);
 void MX_I2C1_Init(void);
 void MX_UART7_Init(void);
 void MX_USB_OTG_FS_PCD_Init(void);
+void MX_TIM17_Init(void);
 
 /* USER CODE BEGIN EFP */
 

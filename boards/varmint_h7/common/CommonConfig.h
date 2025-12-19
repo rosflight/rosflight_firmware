@@ -149,6 +149,7 @@ extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim12;
 extern TIM_HandleTypeDef htim15;
+extern TIM_HandleTypeDef htim17;
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;

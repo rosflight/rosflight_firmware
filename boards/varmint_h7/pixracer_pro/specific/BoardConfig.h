@@ -40,8 +40,8 @@
 
 #include "CommonConfig.h"
 
-#define SANDBOX false
-#define BOARD_STATUS_PRINT false
+#define SANDBOX true
+#define BOARD_STATUS_PRINT true
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
@@ -75,13 +75,15 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 /*Bmi088 imu1_; 	 */	/* Varmint 10-12X */\
 /*Iis2mdc mag_;	 */ /* Varmint 10-12X */ \
 /*DlhrL20G pitot_; */	/* Varmint 10-11X */\
+  Lidarlitev3hp range_;    /* External I2C Lidar Range Sensor */ \
+  Pmw3901 oflow_;         /* External SPI Optical Flow Sensor */ \
 /*Mcp4017 servoV_; */ /* Varmint 11-12X */ \
 /*Auav pitot_;	 */ /* Varmint 12X */ \
 /*Auav baro2_;	 */ /* Varmint 12X */ \
   Bmi088 imu0_; 		/* PixRacer Pro */\
   Ms4525 pitot_;   	/* PixRacer Pro */ \
   Ist8308 mag_;	 	/* PixRacer Pro */ \
-  Lidarlitev3hp range_;    /* External I2C */ \
+
   /**/
 // clang-format on
 
@@ -150,6 +152,16 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // ADIS IMU
 //#define ADIS165XX_HZ (EPOCH_HZ)
 //#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+ // PMW3901 Optical Flow Sensor
+
+#define PMW3901_HZ (10)
+#define PMW3901_SPI (&hspi6)
+
+// Define if different from regular DMA_RAM:
+#define PMW3901_DMA_RAM BDMA_RAM
+
+#define PMW3901_CS_PIN SPI6_CS_Pin
+#define PMW3901_CS_PORT SPI6_CS_GPIO_Port
 
 // DLHR Pitot is on i2c1
 //#define DLHRL20G_HZ (100)
@@ -229,8 +241,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Serial
 #define SERIAL_HZ (EPOCH_HZ) // Loop time is driven by IMU period.
 #define SERIAL_QOS_FIFOS (3)
-#define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
 #define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
+#define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
 
 // Telem (USART2)
 #define TELEM_HZ (SERIAL_HZ)
@@ -299,19 +311,20 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Probes
 #if 1
 // Probe PIN PG9
-#define PROBE1_HI HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_SET)
-#define PROBE1_LO HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_RESET)
-#define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
+//#define PROBE1_HI HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_SET)
+//#define PROBE1_LO HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_RESET)
+//#define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
 
-#define PROBE2_HI HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_SET)
-#define PROBE2_LO HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_RESET)
-#define PROBE2_TOG HAL_GPIO_TogglePin(PROBE2_GPIO_Port, PROBE2_Pin)
+//#define PROBE2_HI HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_SET)
+//#define PROBE2_LO HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_RESET)
+//#define PROBE2_TOG HAL_GPIO_TogglePin(PROBE2_GPIO_Port, PROBE2_Pin)
 
-#define PROBE3_HI HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_SET)
-#define PROBE3_LO HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_RESET)
-#define PROBE3_TOG HAL_GPIO_TogglePin(PROBE3_GPIO_Port, PROBE3_Pin)
+//#define PROBE3_HI HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_SET)
+//#define PROBE3_LO HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_RESET)
+//#define PROBE3_TOG HAL_GPIO_TogglePin(PROBE3_GPIO_Port, PROBE3_Pin)
 
 #else
+
 #define PROBE1_HI
 #define PROBE1_LO
 #define PROBE1_TOG

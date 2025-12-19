@@ -59,6 +59,7 @@ public:
   BatteryStruct * get_battery(void) { return &battery_; }
   MagStruct * get_mag(void) { return &mag_; }
   GnssStruct * get_gnss(void) { return &gnss_; }
+  OpticalFlowStruct * get_oflow(void) { return &oflow_; }
 
   Sensors(ROSflight & rosflight);
 
@@ -80,6 +81,7 @@ private:
   PressureStruct diff_pressure_ = {};
   PressureStruct baro_ = {};
   RangeStruct sonar_ = {};
+  OpticalFlowStruct oflow_ = {};
   ImuStruct imu_ = {};
   BatteryStruct battery_ = {};
   MagStruct mag_ = {};

@@ -168,6 +168,9 @@ got_flags Sensors::run()
   // SONAR:
   got.sonar = rf_.board_.sonar_read(&sonar_);
 
+  // SONAR:
+  got.oflow = rf_.board_.flow_read(&oflow_);
+
   // BATTERY_MONITOR:
   got.battery = rf_.board_.battery_read(&battery_);
 

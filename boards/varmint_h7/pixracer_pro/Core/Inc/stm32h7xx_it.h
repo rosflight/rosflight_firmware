@@ -88,9 +88,12 @@ void USART6_IRQHandler(void);
 void UART7_IRQHandler(void);
 void UART8_IRQHandler(void);
 void SPI5_IRQHandler(void);
+void SPI6_IRQHandler(void);
 void OTG_FS_IRQHandler(void);
 void ADC3_IRQHandler(void);
 void BDMA_Channel0_IRQHandler(void);
+void BDMA_Channel1_IRQHandler(void);
+void BDMA_Channel2_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

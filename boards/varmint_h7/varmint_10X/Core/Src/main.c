@@ -81,6 +81,7 @@ TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim12;
+TIM_HandleTypeDef htim17;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -177,6 +178,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_I2C1_Init();
   MX_USART1_UART_Init();
+  MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 
@@ -935,7 +937,7 @@ void MX_SPI4_Init(void)
   hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi4.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi4.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi4.Init.NSS = SPI_NSS_SOFT;
   hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
@@ -947,7 +949,7 @@ void MX_SPI4_Init(void)
   hspi4.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
   hspi4.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
   hspi4.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
-  hspi4.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+  hspi4.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_01CYCLE;
   hspi4.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
   hspi4.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
   hspi4.Init.IOSwap = SPI_IO_SWAP_DISABLE;
@@ -1338,6 +1340,38 @@ void MX_TIM12_Init(void)
 }
 
 /**
+  * @brief TIM17 Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_TIM17_Init(void)
+{
+
+  /* USER CODE BEGIN TIM17_Init 0 */
+
+  /* USER CODE END TIM17_Init 0 */
+
+  /* USER CODE BEGIN TIM17_Init 1 */
+
+  /* USER CODE END TIM17_Init 1 */
+  htim17.Instance = TIM17;
+  htim17.Init.Prescaler = 199;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.Period = 299;
+  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim17.Init.RepetitionCounter = 0;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM17_Init 2 */
+
+  /* USER CODE END TIM17_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -1620,14 +1654,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, TP4_Pin|TP6_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, J105_2_SPI4_EXT_CS_Pin|J000_JETSON_DRDY_Pin|LED_RED_Pin|LED_GRN_Pin
+  HAL_GPIO_WritePin(GPIOE, J105_2_SPI4_EXT_CS_Pin|DPS310_CSn_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, ADIS165XX_CSn_Pin|J000_JETSON_DRDY_Pin|LED_RED_Pin|LED_GRN_Pin
                           |LED_BLU_Pin|ADIS165XX_RESET_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DPS310_CSn_GPIO_Port, DPS310_CSn_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(J105_2_SPI4_EXT_RST_GPIO_Port, J105_2_SPI4_EXT_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, GPIO_PIN_SET);
@@ -1660,10 +1691,10 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : J105_2_SPI4_EXT_CS_Pin DPS310_CSn_Pin J000_JETSON_DRDY_Pin LED_RED_Pin
-                           LED_GRN_Pin LED_BLU_Pin */
-  GPIO_InitStruct.Pin = J105_2_SPI4_EXT_CS_Pin|DPS310_CSn_Pin|J000_JETSON_DRDY_Pin|LED_RED_Pin
-                          |LED_GRN_Pin|LED_BLU_Pin;
+  /*Configure GPIO pins : J105_2_SPI4_EXT_CS_Pin ADIS165XX_CSn_Pin DPS310_CSn_Pin J000_JETSON_DRDY_Pin
+                           LED_RED_Pin LED_GRN_Pin LED_BLU_Pin */
+  GPIO_InitStruct.Pin = J105_2_SPI4_EXT_CS_Pin|ADIS165XX_CSn_Pin|DPS310_CSn_Pin|J000_JETSON_DRDY_Pin
+                          |LED_RED_Pin|LED_GRN_Pin|LED_BLU_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1677,9 +1708,8 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : J105_2_SPI4_EXT_RST_Pin */
   GPIO_InitStruct.Pin = J105_2_SPI4_EXT_RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(J105_2_SPI4_EXT_RST_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : IIS2MDC_DRDY_Pin J105_2_DRDY_Pin PITOT_DRDY_Pin */

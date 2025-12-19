@@ -137,6 +137,7 @@ typedef struct
   bool mag;
   bool diff_pressure;
   bool sonar;
+  bool oflow; // optical flow
   bool battery;
 } got_flags;
 
@@ -150,6 +151,13 @@ typedef struct //__attribute__((packed))
   bool frameLost;
   bool failsafeActivated;
 } RcStruct;
+
+typedef struct //__attribute__((__packed__))
+{
+  rosflight_firmware::PacketHeader header;
+  double rate[2];     // rad/s
+  uint16_t shutter;
+} OpticalFlowStruct;
 
 typedef struct //__attribute__((__packed__))
 {
@@ -206,8 +214,12 @@ public:
   // Sonar
   virtual bool sonar_read(RangeStruct * sonar) = 0;
 
+  // Optical Flow
+  virtual bool flow_read(OpticalFlowStruct * oflow) = 0;
+
   // GPS
   virtual bool gnss_read(rosflight_firmware::GnssStruct * gnss) = 0;
+
   // Battery
   virtual bool battery_read(rosflight_firmware::BatteryStruct * bat) = 0;
   virtual void battery_voltage_set_multiplier(double multiplier) = 0;

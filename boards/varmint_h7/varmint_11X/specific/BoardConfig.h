@@ -40,8 +40,8 @@
 
 #include <CommonConfig.h>
 
-#define SANDBOX false
-#define BOARD_STATUS_PRINT false
+#define SANDBOX true
+#define BOARD_STATUS_PRINT true
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
@@ -75,8 +75,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Bmi088 imu1_;             /* Varmint 10-12X */ \
   Iis2mdc mag_;             /* Varmint 10-12X */ \
   DlhrL20G pitot_;          /* Varmint 10-11X */ \
+  Lidarlitev3hp range_;    /* External I2C Lidar Range Sensor */ \
+  Pmw3901 oflow_;          /* External SPI Optical Flow Sensor */ \
   Mcp4017 servoV_;          /* Varmint 11-12X */ \
-  Lidarlitev3hp range_;    /* External I2C */ \
   /*		Auav pitot_; */     /* Varmint 12X */ \
   /*		Auav baro2_; */     /* Varmint 12X */ \
   /*		Bmi088 imu0_;    */ /* PixRacer Pro */ \
@@ -152,6 +153,23 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADIS165XX_TIM_INSTANCE (TIM12)        // ADIS 16500 ExtClk
 #define ADIS165XX_TIM_PERIOD_US (500)         // 500 us, 2kHz
 #define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+
+ // PMW3901 Optical Flow Sensor
+
+#define PMW3901_HZ (ADIS165XX_HZ/40)
+#define PMW3901_DELAY_US (500) // 500 us from trigger to reading.
+#define PMW3901_SPI (&hspi4)
+
+#define PMW3901_CS_PIN J105_2_SPI4_EXT_CS_Pin
+#define PMW3901_CS_PORT J105_2_SPI4_EXT_CS_GPIO_Port
+
+#define PMW3901_RST_PIN  J105_2_SPI4_EXT_RST_Pin
+#define PMW3901_RST_PORT J105_2_SPI4_EXT_RST_GPIO_Port
+//
+//#define PMW3901_DRDY_PIN J105_2_DRDY_Pin
+//#define PMW3901_DRDY_PORT J105_2_DRDY_GPIO_Port
+
+#define PMW3901_TIMER (&htim17)
 
 // Range Lidar Sensor on i2c2
 #define LIDAR_HZ (100)
@@ -312,14 +330,22 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #if 1
 
 // Real Board - PE3 J105 pin 19 CS
-#define PROBE1_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET)
-#define PROBE1_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET)
-#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3)
+//#define PROBE1_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET)
+//#define PROBE1_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET)
+//#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3)
+// Reserve for External Optical Flow SPI
+//#define PROBE1_HI
+//#define PROBE1_LO
+//#define PROBE1_TOG
 
 // Real Board - PH1 J105 pin 18 RST
-#define PROBE2_HI HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_SET)
-#define PROBE2_LO HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_RESET)
-#define PROBE2_TOG HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_1)
+//#define PROBE2_HI HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_SET)
+//#define PROBE2_LO HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_RESET)
+//#define PROBE2_TOG HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_1)
+// Reserve for External Optical Flow SPI
+//#define PROBE2_HI
+//#define PROBE2_LO
+//#define PROBE2_TOG
 
 // PB15
 #define PROBE3_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET)
@@ -331,20 +357,20 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define PROBE4_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET)
 #define PROBE4_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1)
 
-// CN11 34 TP5 PB0
-#define PB0_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET)
-#define PB0_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET)
-#define PB0_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
+// CN11 34 TP5 PB0 (VER_1)
+//#define PB0_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET)
+//#define PB0_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET)
+//#define PB0_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
 
-// CN12 19 TP6 PC7
-#define PC7_HI HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET)
-#define PC7_LO HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET)
-#define PC7_TOG HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7)
+// CN12 19 TP6 PC7 J103 Pin 15 (UART6_RX)
+//#define PC7_HI HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET)
+//#define PC7_LO HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET)
+//#define PC7_TOG HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7)
 
 // CN11 47 (Jetson DRDY) PE5
-#define PE5_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET)
-#define PE5_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_RESET)
-#define PE5_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_5)
+//#define PE5_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET)
+//#define PE5_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_RESET)
+//#define PE5_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_5)
 
 #else
 

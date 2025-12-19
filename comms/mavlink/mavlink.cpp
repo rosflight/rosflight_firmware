@@ -250,15 +250,27 @@ void Mavlink::send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16
 }
 
 void Mavlink::send_sonar(uint8_t system_id,
-                         /* TODO enum type*/ uint8_t type, float range, float max_range,
-                         float min_range)
+  uint8_t type,
+  float range,
+  float max_range,
+  float min_range
+)
 {
-  (void) type;
   mavlink_message_t msg;
-  mavlink_msg_small_range_pack(system_id, compid_, &msg, /* TODO */ ROSFLIGHT_RANGE_SONAR, range,
-                               max_range, min_range);
+  mavlink_msg_small_range_pack(system_id, compid_, &msg,
+    type, range, max_range, min_range);
   send_message(msg);
 }
+
+
+virtual void Mavlink::send_oflow(uint8_t system_id, OpticalFlowStruct *oflow)
+{
+  float timestamp = oflow->header.timestamp;
+  float x = oflow->rate[0];
+  float y - oflow->rate[1];
+  // TODO. Add Optical flow packet...
+}
+
 
 void Mavlink::send_status(uint8_t system_id, bool armed, bool failsafe, bool rc_override,
                           bool offboard, uint8_t error_code, uint8_t control_mode,

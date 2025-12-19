@@ -44,6 +44,10 @@ extern DMA_HandleTypeDef hdma_spi5_rx;
 
 extern DMA_HandleTypeDef hdma_spi5_tx;
 
+extern DMA_HandleTypeDef hdma_spi6_rx;
+
+extern DMA_HandleTypeDef hdma_spi6_tx;
+
 extern DMA_HandleTypeDef hdma_tim1_up;
 
 extern DMA_HandleTypeDef hdma_tim4_up;
@@ -989,6 +993,69 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
   /* USER CODE END SPI5_MspInit 1 */
   }
+  else if(hspi->Instance==SPI6)
+  {
+  /* USER CODE BEGIN SPI6_MspInit 0 */
+
+  /* USER CODE END SPI6_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_SPI6_CLK_ENABLE();
+
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    /**SPI6 GPIO Configuration
+    PG14     ------> SPI6_MOSI
+    PG13     ------> SPI6_SCK
+    PG12     ------> SPI6_MISO
+    */
+    GPIO_InitStruct.Pin = SPI6_MOSI_Pin|SPI6_SCK_Pin|SPI6_MISO_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI6;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+    /* SPI6 DMA Init */
+    /* SPI6_RX Init */
+    hdma_spi6_rx.Instance = BDMA_Channel1;
+    hdma_spi6_rx.Init.Request = BDMA_REQUEST_SPI6_RX;
+    hdma_spi6_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_spi6_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi6_rx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi6_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi6_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi6_rx.Init.Mode = DMA_NORMAL;
+    hdma_spi6_rx.Init.Priority = DMA_PRIORITY_LOW;
+    if (HAL_DMA_Init(&hdma_spi6_rx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(hspi,hdmarx,hdma_spi6_rx);
+
+    /* SPI6_TX Init */
+    hdma_spi6_tx.Instance = BDMA_Channel2;
+    hdma_spi6_tx.Init.Request = BDMA_REQUEST_SPI6_TX;
+    hdma_spi6_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_spi6_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_spi6_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_spi6_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_spi6_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_spi6_tx.Init.Mode = DMA_NORMAL;
+    hdma_spi6_tx.Init.Priority = DMA_PRIORITY_LOW;
+    if (HAL_DMA_Init(&hdma_spi6_tx) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(hspi,hdmatx,hdma_spi6_tx);
+
+    /* SPI6 interrupt Init */
+    HAL_NVIC_SetPriority(SPI6_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(SPI6_IRQn);
+  /* USER CODE BEGIN SPI6_MspInit 1 */
+
+  /* USER CODE END SPI6_MspInit 1 */
+  }
 
 }
 
@@ -1074,6 +1141,31 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
   /* USER CODE BEGIN SPI5_MspDeInit 1 */
 
   /* USER CODE END SPI5_MspDeInit 1 */
+  }
+  else if(hspi->Instance==SPI6)
+  {
+  /* USER CODE BEGIN SPI6_MspDeInit 0 */
+
+  /* USER CODE END SPI6_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_SPI6_CLK_DISABLE();
+
+    /**SPI6 GPIO Configuration
+    PG14     ------> SPI6_MOSI
+    PG13     ------> SPI6_SCK
+    PG12     ------> SPI6_MISO
+    */
+    HAL_GPIO_DeInit(GPIOG, SPI6_MOSI_Pin|SPI6_SCK_Pin|SPI6_MISO_Pin);
+
+    /* SPI6 DMA DeInit */
+    HAL_DMA_DeInit(hspi->hdmarx);
+    HAL_DMA_DeInit(hspi->hdmatx);
+
+    /* SPI6 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(SPI6_IRQn);
+  /* USER CODE BEGIN SPI6_MspDeInit 1 */
+
+  /* USER CODE END SPI6_MspDeInit 1 */
   }
 
 }
@@ -1732,8 +1824,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     /**USART2 GPIO Configuration
     PD6     ------> USART2_RX
     PD5     ------> USART2_TX
-    PD4     ------> USART2_RTS
-    PD3     ------> USART2_CTS
     */
     GPIO_InitStruct.Pin = TELEM1_USART2_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -1742,12 +1832,12 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
     HAL_GPIO_Init(TELEM1_USART2_RX_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = TELEM1_USART2_TX_Pin|TELEM1_USART2_RTS_Pin|TELEM1_USART2_CTS_Pin;
+    GPIO_InitStruct.Pin = TELEM1_USART2_TX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    HAL_GPIO_Init(TELEM1_USART2_TX_GPIO_Port, &GPIO_InitStruct);
 
     /* USART2 DMA Init */
     /* USART2_TX Init */
@@ -1993,10 +2083,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     /**USART2 GPIO Configuration
     PD6     ------> USART2_RX
     PD5     ------> USART2_TX
-    PD4     ------> USART2_RTS
-    PD3     ------> USART2_CTS
     */
-    HAL_GPIO_DeInit(GPIOD, TELEM1_USART2_RX_Pin|TELEM1_USART2_TX_Pin|TELEM1_USART2_RTS_Pin|TELEM1_USART2_CTS_Pin);
+    HAL_GPIO_DeInit(GPIOD, TELEM1_USART2_RX_Pin|TELEM1_USART2_TX_Pin);
 
     /* USART2 DMA DeInit */
     HAL_DMA_DeInit(huart->hdmatx);

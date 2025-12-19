@@ -47,6 +47,7 @@ void MpuConfig(void)
   HAL_MPU_Disable();
 
   /** Initializes and configures the Region and the memory to be protected
+   * SRAM3
   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER0;
@@ -63,6 +64,7 @@ void MpuConfig(void)
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
   /** Initializes and configures the Region and the memory to be protected
+   * SRAM4
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER1;
   MPU_InitStruct.BaseAddress = 0x38000000;

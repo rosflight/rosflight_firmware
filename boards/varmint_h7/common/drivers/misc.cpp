@@ -270,7 +270,7 @@ void misc_header(char * name, rosflight_firmware::PacketHeader &header)
   int64_t dt=0;
   if (header.timestamp>header.complete) dt = -(header.timestamp-header.complete);
   else dt = header.complete-header.timestamp;
-  misc_printf("%-16s [t:%12.6f s dt:%10d us] ", name, (double) header.timestamp / 1e6, dt);
+  misc_printf("%-16s [t:%12.6f s dt:%10d us] ", name, (double) header.timestamp / 1e6, (int32_t) dt);
 }
 
 uint16_t misc_bytes_in_dma(DMA_HandleTypeDef * hdma_uart_rx, uint16_t dma_buffer_size)

@@ -59,8 +59,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     static uint64_t poll_counter = 0;
     poll_counter++;
     varmint.baro_.poll(poll_counter);
-
-    // Mag, Pitot, and Range are on the same I2C.
+    // Pitot, Mag, and Range are on the same I2C.
     varmint.pitot_.poll(poll_counter);
     varmint.mag_.poll(poll_counter-6);
     varmint.range_.poll(poll_counter-58);
@@ -70,11 +69,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     varmint.telem_.poll();           // Check for new data packet to tx
     varmint.adc_.poll(poll_counter); // Start dma read
     varmint.vcp_.poll();             // Timeout
+    varmint.oflow_.poll(poll_counter);
 
-
-    // Blink Green LED at 1 Hz.
-    if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG;
+    if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG; // Blink Green LED at 1 Hz.
   }
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -87,13 +86,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
     HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_SET);
   if (exti_pin == BMI088_INT1_ACCEL_Pin)
     HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_RESET);
-
-  if (varmint.imu0_.isMy(exti_pin)) varmint.imu0_.startDma();
+  if (varmint.imu0_.isMy(exti_pin)) { varmint.imu0_.startDma();}
   if (varmint.gps_.isMy(exti_pin)) { varmint.gps_.pps(time64.Us()); }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // SPI Tx complete callback
+//
 // void HAL_SPI_TxCpltCallback (SPI_HandleTypeDef *hspi)  // All spi dma tx interrupts are handled here.
 //{
 //}
@@ -101,12 +100,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 // SPI Rx complete callback
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interrupts are handled here.
 {
-  if (varmint.imu0_.isMy(hspi)) varmint.imu0_.endDma();
-  if (varmint.baro_.isMy(hspi)) varmint.baro_.endDma();
+  // do not use 'else if' since some of these share SPI
+  if (varmint.imu0_.isMy(hspi)) { varmint.imu0_.endDma(); }
+  if (varmint.baro_.isMy(hspi)) { varmint.baro_.endDma(); }
+  if (varmint.oflow_.isMy(hspi)) { varmint.oflow_.endDma(); }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// I2C Rx complete callback
+// I2C Rx/Tx complete callback
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {

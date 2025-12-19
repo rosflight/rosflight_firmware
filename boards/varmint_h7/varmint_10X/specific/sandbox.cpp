@@ -91,12 +91,16 @@ void sandbox_dashboard(bool clear)
   varmint.gps_.display();
   verbose_dashes();
   varmint.range_.display();
-
+  verbose_dashes();
+  varmint.oflow_.display();
   verbose_equals();
 }
 
 void sandbox(void)
 {
+  // Give us time to read the initialization messages
+  time64.dMs(5000);
+  verbose = true;
 
   //  time64.dMs(5000);
   //  SD Card read/write (and CRC & RNG)
@@ -141,12 +145,23 @@ void sandbox(void)
   //	  time64.dUs(450); ~ 2khs update rate
   //	}
 
-  time64.dMs(5000);
+//  OpticalFlowPacket p;
+//  ImuPacket q;
+//  while(1) {
+//    if (varmint.oflow_.read((uint8_t *) &p, sizeof(p))) {
+//      misc_printf("%f, %f, %f, %u, %u, %u\n", (double)p.header.timestamp*1e-6, p.rate[0], p.rate[1],p.header.status>>15, p.header.status&0xFF, p.shutter );
+//    }
+//    if (varmint.imu0_.read((uint8_t *) &q, sizeof(q))) {
+//      misc_printf(",,,,,,%f, %f, %f, %f\n", (double)q.header.timestamp*1e-6, q.gyro[0],q.gyro[1],q.gyro[2]);
+//    }
+//  }
 
-  verbose = true;
+
+
+
+
   uint32_t n = 0;
   while (1) {
     sandbox_dashboard((n++) % 100 == 0);
-    // time64.dMs(200);
   }
 }

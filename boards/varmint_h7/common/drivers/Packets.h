@@ -118,5 +118,6 @@ typedef struct //__attribute__((__packed__))
 } GnssPacket;
 
 typedef rosflight_firmware::RangeStruct RangePacket;
+typedef rosflight_firmware::OpticalFlowStruct OpticalFlowPacket;
 
 #endif /* DRIVERPACKETS_H_ */

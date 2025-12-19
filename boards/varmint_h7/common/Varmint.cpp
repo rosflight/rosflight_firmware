@@ -222,6 +222,17 @@ bool Varmint::sonar_read(rosflight_firmware::RangeStruct * range)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
+// Optical Flow Sensor
+bool Varmint::flow_read(rosflight_firmware::OpticalFlowStruct * oflow)
+{
+  if (range_.read((uint8_t *) oflow, sizeof(rosflight_firmware::OpticalFlowStruct))) {
+    return true;
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 // Battery
 bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
 {

@@ -87,6 +87,7 @@ void MX_CRC_Init(void);
 void MX_USB_OTG_FS_PCD_Init(void);
 void MX_TIM12_Init(void);
 void MX_TIM3_Init(void);
+void MX_SPI6_Init(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -103,10 +104,10 @@ void MX_TIM3_Init(void);
 #define I2C1_SCL_GPIO_Port GPIOB
 #define VDD_BRICK_VALID_Pin GPIO_PIN_5
 #define VDD_BRICK_VALID_GPIO_Port GPIOB
-#define PROBE3_Pin GPIO_PIN_14
-#define PROBE3_GPIO_Port GPIOG
-#define PROBE1_Pin GPIO_PIN_13
-#define PROBE1_GPIO_Port GPIOG
+#define SPI6_MOSI_Pin GPIO_PIN_14
+#define SPI6_MOSI_GPIO_Port GPIOG
+#define SPI6_SCK_Pin GPIO_PIN_13
+#define SPI6_SCK_GPIO_Port GPIOG
 #define LED_BLUE_Pin GPIO_PIN_3
 #define LED_BLUE_GPIO_Port GPIOB
 #define DPS310_CSn_Pin GPIO_PIN_7
@@ -127,6 +128,8 @@ void MX_TIM3_Init(void);
 #define FMU_UART1_RX_GPIO_Port GPIOB
 #define FMU_UART1_TX_Pin GPIO_PIN_6
 #define FMU_UART1_TX_GPIO_Port GPIOB
+#define SPI6_MISO_Pin GPIO_PIN_12
+#define SPI6_MISO_GPIO_Port GPIOG
 #define TELEM1_USART2_RX_Pin GPIO_PIN_6
 #define TELEM1_USART2_RX_GPIO_Port GPIOD
 #define CAN1_RX_Pin GPIO_PIN_0
@@ -141,8 +144,8 @@ void MX_TIM3_Init(void);
 #define PWM_08_GPIO_Port GPIOI
 #define PWM_07_Pin GPIO_PIN_5
 #define PWM_07_GPIO_Port GPIOI
-#define PROBE2_Pin GPIO_PIN_9
-#define PROBE2_GPIO_Port GPIOG
+#define SPI6_CS_Pin GPIO_PIN_9
+#define SPI6_CS_GPIO_Port GPIOG
 #define TELEM1_USART2_TX_Pin GPIO_PIN_5
 #define TELEM1_USART2_TX_GPIO_Port GPIOD
 #define CAN1_TX_Pin GPIO_PIN_1
@@ -217,6 +220,8 @@ void MX_TIM3_Init(void);
 #define GPS_PPS_Pin GPIO_PIN_12
 #define GPS_PPS_GPIO_Port GPIOD
 #define GPS_PPS_EXTI_IRQn EXTI15_10_IRQn
+#define SPI6_CSD11_Pin GPIO_PIN_11
+#define SPI6_CSD11_GPIO_Port GPIOD
 #define FRAM_CS_Pin GPIO_PIN_10
 #define FRAM_CS_GPIO_Port GPIOD
 #define ADC_BATT_V_Pin GPIO_PIN_2

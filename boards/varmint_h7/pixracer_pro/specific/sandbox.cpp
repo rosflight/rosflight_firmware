@@ -89,7 +89,8 @@ void sandbox_dashboard(bool clear)
   varmint.gps_.display();
   verbose_dashes();
   varmint.range_.display();
-  
+  verbose_dashes();
+  varmint.oflow_.display();
   verbose_equals();
 }
 
@@ -116,5 +117,8 @@ void sandbox(void)
   //	}
 
   uint32_t n = 0;
-  while (1) { sandbox_dashboard((n++) % 100 == 0); }
+  while (1) {
+    sandbox_dashboard((n++) % 100 == 0);
+    // time64.dMs(200);
+  }
 }

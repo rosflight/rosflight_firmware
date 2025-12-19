@@ -91,6 +91,7 @@ void DMA2_Stream6_IRQHandler(void);
 void DMA2_Stream7_IRQHandler(void);
 void SPI4_IRQHandler(void);
 void OTG_FS_IRQHandler(void);
+void TIM17_IRQHandler(void);
 void ADC3_IRQHandler(void);
 void BDMA_Channel0_IRQHandler(void);
 /* USER CODE BEGIN EFP */
