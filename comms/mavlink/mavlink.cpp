@@ -253,7 +253,7 @@ void Mavlink::send_sonar(uint8_t system_id,
   uint8_t type,
   float range, 
   float max_range,
- float min_range
+  float min_range
 )
 {
   mavlink_message_t msg;

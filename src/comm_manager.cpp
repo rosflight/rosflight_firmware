@@ -424,7 +424,7 @@ void CommManager::send_baro(void)
 void CommManager::send_sonar(void)
 {
   comm_link_.send_sonar(sysid_,
-    RF_.sensors_.get_sonar()->type,
+    (uint8_t)RF_.sensors_.get_sonar()->type,
     RF_.sensors_.get_sonar()->range, 
     RF_.sensors_.get_sonar()->max_range, 
     RF_.sensors_.get_sonar()->min_range );
