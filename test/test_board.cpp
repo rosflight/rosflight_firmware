@@ -127,6 +127,12 @@
    (void) sonar;
    return false;
  }
+
+bool testBoard::flow_read(rosflight_firmware::OpticalFlowStruct * flow)
+ {
+   (void) flow;
+   return false;
+ }
  
  bool testBoard::gnss_read(rosflight_firmware::GnssStruct * gnss) { return false; }
  

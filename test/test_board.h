@@ -84,6 +84,8 @@
  
    bool sonar_read(rosflight_firmware::RangeStruct * sonar) override;
  
+   bool flow_read(rosflight_firmware::OpticalFlowStruct * flow) override;
+
    // Battery
    bool battery_read(rosflight_firmware::BatteryStruct * bat) override;
    void battery_voltage_set_multiplier(double multiplier) override;

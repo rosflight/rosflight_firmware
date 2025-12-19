@@ -152,6 +152,7 @@ private:
   void send_diff_pressure(void);
   void send_baro(void);
   void send_sonar(void);
+  void send_oflow(void);
   void send_mag(void);
   void send_battery_status(void);
   void send_gnss(void);

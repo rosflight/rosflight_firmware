@@ -79,6 +79,7 @@ public:
   void send_sonar(uint8_t system_id,
                   /* TODO enum type*/ uint8_t type, float range, float max_range,
                   float min_range) override;
+  void send_oflow(uint8_t system_id, OpticalFlowStruct *oflow) override;
   void send_status(uint8_t system_id, bool armed, bool failsafe, bool rc_override, bool offboard,
                    uint8_t error_code, uint8_t control_mode, int16_t num_errors,
                    int16_t loop_time_us) override;

@@ -263,11 +263,13 @@ void Mavlink::send_sonar(uint8_t system_id,
 }
 
 
-virtual void Mavlink::send_oflow(uint8_t system_id, OpticalFlowStruct *oflow)
+void Mavlink::send_oflow(uint8_t system_id, OpticalFlowStruct *oflow)
 {
-  float timestamp = oflow->header.timestamp;
-  float x = oflow->rate[0];
-  float y - oflow->rate[1];
+  (void)system_id;
+  (void)oflow;
+  //float timestamp = oflow->header.timestamp;
+  //float x = oflow->rate[0];
+  //float y = oflow->rate[1];
   // TODO. Add Optical flow packet...
 }
 
