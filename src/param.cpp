@@ -417,6 +417,9 @@ void Params::set_defaults(void)
   init_param_float(PARAM_FC_PITCH, "FC_PITCH", 0.0f); // pitch angle (deg) of flight controller wrt aircraft body | 0 | 360
   init_param_float(PARAM_FC_YAW, "FC_YAW", 0.0f); // yaw angle (deg) of flight controller wrt aircraft body | 0 | 360
 
+  init_param_float(PARAM_MAG_ROLL, "MAG_ROLL", 0.0f); // roll angle (deg) of magnetometer wrt aircraft body | 0 | 360
+  init_param_float(PARAM_MAG_PITCH, "MAG_PITCH", 0.0f); // pitch angle (deg) of magnetometer wrt aircraft body | 0 | 360
+  init_param_float(PARAM_MAG_YAW, "MAG_YAW", 0.0f); // yaw angle (deg) of magnetometer wrt aircraft body | 0 | 360
 
   /********************/
   /*** ARMING SETUP ***/

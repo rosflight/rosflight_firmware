@@ -217,6 +217,9 @@ TEST(Parameters, DefaultParameters)
   EXPECT_PARAM_EQ_FLOAT(PARAM_FC_ROLL, 0.0f); // roll angle (deg) of flight controller wrt aircraft body | 0 | 360
   EXPECT_PARAM_EQ_FLOAT(PARAM_FC_PITCH, 0.0f); // pitch angle (deg) of flight controller wrt aircraft body | 0 | 360
   EXPECT_PARAM_EQ_FLOAT(PARAM_FC_YAW, 0.0f); // yaw angle (deg) of flight controller wrt aircraft body | 0 | 360
+  EXPECT_PARAM_EQ_FLOAT(PARAM_MAG_ROLL, 0.0f); // roll angle (deg) of magnetometer wrt aircraft body | 0 | 360
+  EXPECT_PARAM_EQ_FLOAT(PARAM_MAG_PITCH, 0.0f); // pitch angle (deg) of magnetometer wrt aircraft body | 0 | 360
+  EXPECT_PARAM_EQ_FLOAT(PARAM_MAG_YAW, 0.0f); // yaw angle (deg) of magnetometer wrt aircraft body | 0 | 360
   EXPECT_PARAM_EQ_FLOAT(PARAM_BATTERY_VOLTAGE_MULTIPLIER, 1.0f); // Multiplier for the voltage sensor | 0 | inf
   EXPECT_PARAM_EQ_FLOAT(PARAM_BATTERY_CURRENT_MULTIPLIER, 1.0f); // Multiplier for the current sensor | 0 | inf
   EXPECT_PARAM_EQ_INT(PARAM_OFFBOARD_TIMEOUT, 100); // Timeout in milliseconds for offboard commands, after which RC override is activated | 0 | 100000

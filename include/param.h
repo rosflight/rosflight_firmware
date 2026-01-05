@@ -370,6 +370,10 @@ enum : uint16_t
   PARAM_FC_PITCH,
   PARAM_FC_YAW,
 
+  PARAM_MAG_ROLL,
+  PARAM_MAG_PITCH,
+  PARAM_MAG_YAW,
+
   /********************/
   /*** ARMING SETUP ***/
   /********************/
