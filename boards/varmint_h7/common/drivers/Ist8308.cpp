@@ -37,11 +37,13 @@
 
 #include "Ist8308.h"
 #include "Time64.h"
+#include "Polling.h"
 #include "misc.h"
 
 extern Time64 time64;
+extern Polling polling;
 
-#define ROLLOVER 10000
+#define ROLLOVER_US 10000
 
 #define IST8308_STATE_READING 0
 #define IST8308_STATE_ACQ_CMD 1
@@ -108,11 +110,11 @@ DTCM_RAM uint8_t ist8308_double_buffer[2 * sizeof(MagPacket)];
 #define OSRCNTL_VAL_Y_16 (4 << 3)
 #define OSRCNTL_VAL_Y_32 (5 << 3)
 
+#define IST3808_I2C_ADDRESS (0X0C)
+
 uint32_t Ist8308::init(
-  // Driver initializers
   uint16_t sample_rate_hz,
-  // I2C initializers
-  I2C_HandleTypeDef * hi2c, uint16_t i2c_address,
+  I2C_HandleTypeDef * hi2c,
   const double *rotation
 )
 {
@@ -122,7 +124,7 @@ uint32_t Ist8308::init(
   sampleRateHz_ = sample_rate_hz;
 
   hi2c_ = hi2c;
-  address_ = i2c_address << 1;
+  address_ = IST3808_I2C_ADDRESS << 1;
 
   i2cState_ = IST8308_IDLE_STATE;
   //dmaRunning_ = false;
@@ -204,7 +206,7 @@ uint32_t Ist8308::init(
 
 bool Ist8308::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  PollingState poll_state = polling.index(poll_counter,ROLLOVER_US); //(PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
 
   if(poll_state == 0) {
     // Read previous data.

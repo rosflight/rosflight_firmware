@@ -88,7 +88,8 @@ public:
     size = (size > dataSizeMax_) ? dataSizeMax_ : size;
     packet_[head_].size = size;
     memcpy(packet_[head_].data, data, size);
-    if (++head_ == packetCountMax_) head_ = 0;
+    head_ = head_+1;
+    if (head_ == packetCountMax_) head_ = 0;
     return size;
   }
   /**
@@ -104,7 +105,8 @@ public:
     if (head_ == tail_) return 0; // buffer is empty
     if (size > packet_[tail_].size) size = packet_[tail_].size;
     memcpy(data, packet_[tail_].data, size);
-    if (++tail_ == packetCountMax_) tail_ = 0;
+    tail_ = tail_+1;
+    if (tail_ == packetCountMax_) tail_ = 0;
     return size;
   }
   /**

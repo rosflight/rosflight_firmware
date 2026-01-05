@@ -42,6 +42,7 @@
 #include "BoardConfig.h"
 #include "Packets.h"
 #include "Status.h"
+#include "Gpio.h"
 
 // Class 0x01, ID 0x07
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
@@ -122,7 +123,8 @@ class Ubx : public Status
 public:
   uint32_t init(
     // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
+    uint16_t sample_rate_hz,
+    gpio_t pps, //GPIO_TypeDef * pps_port, uint16_t pps_pin,
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 

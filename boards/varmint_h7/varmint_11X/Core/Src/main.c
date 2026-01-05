@@ -1169,7 +1169,7 @@ void MX_TIM7_Init(void)
 {
 
   /* USER CODE BEGIN TIM7_Init 0 */
-//#define POLLING_PERIOD_US         (100) // 100us, 10kHz
+#define POLLING_PERIOD_US         (100) // 100us, 10kHz
 //#define POLLING_FREQ_HZ          	(1000000/POLLING_PERIOD_US) // 10000 Hz
   /* USER CODE END TIM7_Init 0 */
 
@@ -1255,6 +1255,7 @@ void MX_TIM12_Init(void)
 {
 
   /* USER CODE BEGIN TIM12_Init 0 */
+  #define ADIS165XX_TIM_PERIOD_US (500)
   /* USER CODE END TIM12_Init 0 */
 
   TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -1431,7 +1432,7 @@ void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
-#define UART2_BAUD        				(TELEM_BAUD)
+#define UART2_BAUD        				(921600)
   /* USER CODE END USART2_Init 0 */
 
   /* USER CODE BEGIN USART2_Init 1 */

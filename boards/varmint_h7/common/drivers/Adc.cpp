@@ -42,57 +42,67 @@
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
+#include "Polling.h"
 
 extern Time64 time64;
+extern Polling polling;
 
 #define ADC_DMA_BUF_SIZE_INT (ADC_CHANNELS_INT * sizeof(uint32_t))
 #define ADC_DMA_BUF_SIZE_EXT (ADC_CHANNELS_EXT * sizeof(uint32_t))
 #define ADC_DMA_BUF_SIZE_MAX (16 * sizeof(uint32_t)) // 16 channels is max for the ADC sequencer
 
-DTCM_RAM uint8_t adc_double_buffer[2 * sizeof(AdcPacket)];
+//DTCM_RAM uint8_t adc_double_buffer[2 * sizeof(Adc::AdcPacket)];
+//DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
 
-DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
-
-ADC_EXT_DMA_RAM uint32_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX / 4];
-ADC_INT_DMA_RAM uint32_t adc_dma_buf_int[ADC_DMA_BUF_SIZE_MAX / 4];
+DMA_RAM uint32_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX / 4];
+BDMA_RAM uint32_t adc_dma_buf_int[ADC_DMA_BUF_SIZE_MAX / 4]; // internal is adc3 is BDMA
 
 DATA_RAM AdcChannelCfg adc_cfg[ADC_CHANNELS] = ADC_CFG_CHANS_DEFINE;
 
-uint32_t Adc::init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
-                   ADC_TypeDef * adc_instance_ext, //
-                   ADC_HandleTypeDef * hadc_int,
-                   ADC_TypeDef * adc_instance_int // This ADC has the calibration values
-)
+template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
+uint32_t Adc< adc1_len, adc2_len, adc3_len>::init(uint16_t sample_rate_hz)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Adc");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  hadcExt_ = hadc_ext;
-  hadcInt_ = hadc_int;
-  cfg_ = adc_cfg;
+//  hadcExt_ = &hadc1;
+//  hadcInt_ = &hadc3;
+
+  // count up the channels on each adc
 
   double_buffer_.init(adc_double_buffer, sizeof(adc_double_buffer));
 
-  if (DRIVER_OK != configAdc(hadcExt_, adc_instance_ext, cfg_, ADC_CHANNELS_EXT)) {
+  if (DRIVER_OK != configAdc(&hadc1)) {
     initializationStatus_ = DRIVER_HAL_ERROR;
   }
-  if (DRIVER_OK != configAdc(hadcInt_, adc_instance_int, &(cfg_[ADC_CHANNELS_EXT]), ADC_CHANNELS_INT)) {
+//  if (DRIVER_OK != configAdc(&hadc2)) {
+//    initializationStatus_ |= DRIVER_HAL_ERROR;
+//  }
+  if (DRIVER_OK != configAdc(&hadc3)) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
   }
   return initializationStatus_;
 }
 
-uint32_t Adc::configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg)
+template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
+uint32_t Adc< adc1_len, adc2_len, adc3_len>::configAdc(ADC_HandleTypeDef * hadc)
 {
-  sConfig->Rank = cfg->rank;
-  sConfig->Channel = cfg->chan;
-  if (HAL_ADC_ConfigChannel(hadc, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-  return DRIVER_OK;
-}
+  ADC_TypeDef * adc_instance = ADC3;
+  uint32_t cfg_channels = adc3_len;
 
-uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, AdcChannelCfg * cfg,
-                        uint16_t cfg_channels)
-{
+  if (hadc == &hadc1) {
+    adc_instance = ADC1;
+    cfg_channels = adc1_len;
+  }
+  else if (hadc == &hadc2) {
+    adc_instance = ADC2;
+    cfg_channels = adc2_len;
+  }
+//  else if (hadc == &hadc3) {
+//    adc_instance = ADC3;
+//    cfg_channels = adc3_len;
+//  }
+
   // uint32_t clock_prescaler ADC_CLOCK_ASYNC_DIV256; // This is reset below
   uint32_t sampling_cycles = ADC_SAMPLETIME_810CYCLES_5;
   uint32_t conversion_cycles = 8; // not adjustable
@@ -137,17 +147,35 @@ uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, Ad
   sConfig.Offset = 0;
   sConfig.OffsetSignedSaturation = DISABLE;
 
-  for (int i = 0; i < cfg_channels; i++)
-    if (configChan(hadc, &sConfig, &(cfg[i])) != DRIVER_OK) return DRIVER_HAL_ERROR;
+  if (hadc == &hadc1) {
+    for (uint32_t i=0; i<adc1_len; i++){
+      sConfig->Rank = adc1_chan_[i].rank;
+      sConfig->Channel = adc1_chan_[i].chan;
+      if (HAL_ADC_ConfigChannel(&hadc1, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+    }
+  } else if(hadc == &hadc2) {
+    for (uint32_t i=0; i<adc2_len; i++){
+      sConfig->Rank = adc2_chan_[i].rank;
+      sConfig->Channel = adc2_chan_[i].chan;
+      if (HAL_ADC_ConfigChannel(&hadc2, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+    }
+  } else if(hadc == &hadc3) {
+    for (uint32_t i=0; i<adc3_len; i++){
+      sConfig->Rank = adc3_chan_[i].rank;
+      sConfig->Channel = adc3_chan_[i].chan;
+      if (HAL_ADC_ConfigChannel(&hadc3, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+    }
+  }
 
   HAL_ADCEx_Calibration_Start(hadc, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
 
   return DRIVER_OK;
 }
 
-bool Adc::poll(uint64_t poll_counter)
+template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
+bool Adc< adc1_len, adc3_len>::poll(uint64_t poll_counter)
 {
-  uint32_t poll_offset = (uint32_t) (poll_counter % (POLLING_FREQ_HZ / ADC_HZ));
+  uint32_t poll_offset = polling.index(poll_counter, 1000000/sampleRateHz_); //(uint32_t) (poll_counter % (adc_us/POLLING_PERIOD_US));
 
   if (poll_offset == 0) // launch a read
   {
@@ -160,7 +188,8 @@ bool Adc::poll(uint64_t poll_counter)
   return false;
 }
 
-void Adc::endDma(ADC_HandleTypeDef * hadc)
+template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
+void Adc< adc1_len, adc2_len, adc3_len>::endDma(ADC_HandleTypeDef * hadc)
 {
   static bool int_read = 0, ext_read = 0;
 
@@ -199,7 +228,8 @@ void Adc::endDma(ADC_HandleTypeDef * hadc)
   }
 }
 
-bool Adc::display(void)
+template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
+bool Adc< adc1_len, adc2_len, adc3_len>::display(void)
 {
   AdcPacket p;
   char name[] = "Adc (adc)";

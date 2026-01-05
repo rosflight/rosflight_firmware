@@ -39,10 +39,59 @@
 #ifndef DRIVERS_POLLING_H_
 #define DRIVERS_POLLING_H_
 
-#include "stm32h7xx_hal.h"
+//#include "stm32h7xx_hal.h"
+
+#include "BoardConfig.h"
+#include "stdint.h"
 
 typedef uint16_t PollingState;
 
-uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel);
+class Polling: public Status {
+public:
+  uint32_t init(
+    TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t period_us
+  )
+  {
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Pmw9301");
+    initializationStatus_ = DRIVER_OK;
+
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    period_us_ = period_us;
+    htim_ = htim;
+
+    htim->Instance = instance;
+    htim->Init.Prescaler = 199;
+    htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim->Init.Period = period_us - 1;
+    htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    if (HAL_TIM_Base_Init(htim) != HAL_OK) return initializationStatus_ = DRIVER_HAL_ERROR;
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) return initializationStatus_ = DRIVER_HAL_ERROR;
+
+    HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
+    HAL_TIM_Base_Start_IT(htim);
+
+    return initializationStatus_;
+  }
+
+  bool isMy(TIM_HandleTypeDef * htim) { return htim == htim_; }
+
+  PollingState index(uint64_t counter, uint64_t dt_us) {
+    return  (PollingState)(counter % (dt_us / period_us_));
+  }
+
+  uint32_t period_us(void) {return period_us_;}
+
+
+private:
+  TIM_HandleTypeDef * htim_;
+  uint64_t period_us_;
+
+};
+
+
+
 
 #endif /* DRIVERS_POLLING_H_ */

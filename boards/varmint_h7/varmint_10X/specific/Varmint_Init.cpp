@@ -53,9 +53,12 @@
 
 #include "Mpu.h"
 
+#include "Gpio.h"
+
 bool verbose = BOARD_STATUS_PRINT;
 
 Time64 time64;
+Polling polling;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -111,19 +114,18 @@ void Varmint::init_board(void)
   MX_CRC_Init(); // Used for SD Card data checksum
   MX_RNG_Init(); // not used
 
-#if _USBD_USE_HS // USB HS (480MB/s
-  MX_USB_OTG_HS_PCD_Init();
-#else // USB FS (48 MB/s)
   MX_USB_OTG_FS_PCD_Init();
-#endif
-
   MX_USB_DEVICE_Init();
 
   status_len_ = 0;
 
-  //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
-  //misc_printf("\nStarted Timestamp Timer\n");
-  init_status = time64.init(HTIM_LOW, HTIM_LOW_INSTANCE, HTIM_HIGH, HTIM_HIGH_INSTANCE);
+  // Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
+  init_status = time64.init(
+    &htim5, // HTIM_LOW, (32-bit counter)
+    TIM5, // HTIM_LOW_INSTANCE,
+    &htim8, //HTIM_HIGH, (16-bit overflow counter)
+    TIM8 // HTIM_HIGH_INSTANCE
+  );
 
 #define ASCII_ESC 27
   misc_printf("\n\n%c[H", ASCII_ESC); // home
@@ -134,55 +136,64 @@ void Varmint::init_board(void)
   status_list_[status_len_++] = &time64;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Optical Flow initialization
-
-  misc_printf("\n\nPMW3901 (oflow) Initialization\n");
-  init_status = oflow_.init(
-      ADIS165XX_HZ, PMW3901_HZ, PMW3901_DELAY_US,
-      PMW3901_SPI, PMW3901_CS_PORT, PMW3901_CS_PIN,
-//      PMW3901_DRDY_PORT, PMW3901_DRDY_PIN, // DRDY
-      PMW3901_RST_PORT, PMW3901_RST_PIN, // Reset
-      PMW3901_TIMER
-  );
-  misc_exit_status(init_status);
-  status_list_[status_len_++] = &oflow_;
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
 
   misc_printf("\n\nADIS165xx (imu0) Initialization\n");
-  init_status = imu0_.init(ADIS165XX_HZ, ADIS165XX_DRDY_GPIO_Port, ADIS165XX_DRDY_Pin, // Driver
-                           ADIS165XX_SPI, ADIS165XX_CSn_GPIO_Port, ADIS165XX_CSn_Pin,  // SPI
-                           ADIS165XX_RESET_GPIO_Port, ADIS165XX_RESET_Pin,             // Reset Pin
-                           ADIS165XX_HTIM, ADIS165XX_TIM_INSTANCE, ADIS165XX_TIM_CHANNEL,
-                           ADIS165XX_TIM_PERIOD_US, // ADIS external clock
-                           ADIS165XX_ROTATION // rotation into board coordinate system.
+
+  #define IMU_HZ (400) // Hz
+
+  init_status = imu0_.init(
+    IMU_HZ,  // Hz, sample rate
+	gpio("PB8"), // drdy
+	&hspi4, // spi port
+	gpio("PE4"), // chip select
+	gpio("PE12"), // reset pin
+	&htim12, TIM12, TIM_CHANNEL_1, // timer for external clock
+	500, // us, period of external clock
+	(const double[]){-1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0} // rotation matrix into board coordinate system
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
-  init_status =
-    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
-               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G,
-               BMI088_ROTATION);
+  #define BMI088_RANGE_A (3)   // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
+  #define BMI088_RANGE_G (2)   // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+
+  init_status = imu1_.init(
+    IMU_HZ,
+    gpio("PA15"), // drdy pin (accel)
+    &hspi1,
+    gpio("PA4"), // accel chip select
+    gpio("PD10"), // gyro chip select
+    BMI088_RANGE_A, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
+    BMI088_RANGE_G, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+    (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+  );
+  // note gyro drdy pin, PA1, exists but is not used
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu1_;
 
-
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Pitot/Baro initialization
+  // Pitot initialization
 
   misc_printf("\n\nDLHRL20G (pitot) Initialization\n");                // I2C must already be initialized
-  init_status = pitot_.init(PITOT_HZ, PITOT_DRDY_PORT, PITOT_DRDY_PIN, // Driver
-                            PITOT_I2C, PITOT_I2C_ADDRESS);             // I2C
+  init_status = pitot_.init(
+    100, // Hz
+    gpio("PE9"), // data ready EXTI
+    &hi2c1 // i2c port
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Baro initialization
+
   misc_printf("\n\nDPS310 (baro) Initialization\n");
-  init_status = baro_.init(DPS310_HZ, DPS310_DRDY_GPIO_Port, DPS310_DRDY_Pin, // Driver
-                           DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin   // SPI
+  init_status = baro_.init(
+    50, // Hz
+    gpio("PD11"), // data ready (implies 3-wire mode)
+    &hspi3, // SPI
+    gpio("PE1") // chip select
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
@@ -190,18 +201,42 @@ void Varmint::init_board(void)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Lidar initialization
 
+  // Range Lidar Sensor on i2c2
   misc_printf("\n\nLIDARLITEV3 (range) Initialization\n");                // I2C must already be initialized
-  init_status = range_.init(LIDAR_HZ,  LIDAR_I2C, LIDAR_I2C_ADDRESS);     // I2C
+  init_status = range_.init(
+      100, //LIDAR_HZ,
+      &hi2c2 //LIDAR_I2C,
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &range_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Optical Flow initialization
+
+  misc_printf("\n\nPMW3901 (oflow) Initialization\n");
+  init_status = oflow_.init(
+    IMU_HZ, // IMU Rate
+    10, // Hz output rate
+    100,  // us delay after IMU Trigger
+    &hspi4, // spi4
+    gpio("PE3"), // chip select
+    gpio("PE10"), // data ready
+    gpio("PH1"), // reset
+    &htim17 // delay timer
+  );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &oflow_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
 
   misc_printf("\n\nIIS2MDC (mag) Initialization\n");
-  init_status = mag_.init(IIS2MDC_HZ, IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // Driver
-                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,   // SPI
-                          IIS2MDC_ROTATION
+  init_status = mag_.init(
+    100, // Hz
+    gpio("PE0"), // data ready
+    &hspi2, // SPI
+    gpio("PB12"), // chip select
+    (const double[]){-1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0} // rotation matrix
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
@@ -210,7 +245,14 @@ void Varmint::init_board(void)
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+  init_status = gps_.init(
+    10, // GPS_HZ,
+    gpio("PA3"), // GPS_PPS_PORT, GPS_PPS_PIN,
+    &huart1, // GPS_UART,
+    USART1, // GPS_UART_INSTANCE,
+    &hdma_usart1_rx, //GPS_UART_DMA,
+    115200 //GPS_BAUD
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
 
@@ -218,36 +260,90 @@ void Varmint::init_board(void)
   // RC/S.Bus initialization
 
   misc_printf("\n\nS.Bus (rc) Initialization\n");
-  init_status = rc_.init(RC_HZ, RC_UART, RC_UART_INSTANCE, RC_UART_DMA, RC_BAUD);
+  init_status = rc_.init(
+    112, //RC_HZ,
+    &huart3, // RC_UART,
+    USART3, // RC_UART_INSTANCE,
+    &hdma_usart3_rx, //RC_UART_DMA,
+    100000 //RC_BAUD
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &rc_;
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // ADC initialization
-
-  misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status =
-    adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL, ADC_ADC_INSTANCE_INTERNAL);
-  misc_exit_status(init_status);
-  status_list_[status_len_++] = &adc_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // COM initialization
 
   misc_printf("\n\nVcp (vcp) Initialization\n");
-  init_status = vcp_.init(VCP_HZ);
+  init_status = vcp_.init(
+    IMU_HZ // Hz for computing time between imu readings.
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &vcp_;
 
   misc_printf("\n\nTelem (telem) Initialization\n");
-  init_status = telem_.init(TELEM_HZ, TELEM_UART, TELEM_UART_INSTANCE, TELEM_UART_DMA, TELEM_BAUD);
+  init_status = telem_.init(
+    IMU_HZ, // Hz, for computing time between imu readings.
+    &huart2, // TELEM_UART,
+    USART2, //TELEM_UART_INSTANCE,
+    nullptr, // Polling, no DMA TELEM_UART_DMA (&hdma_usart2_rx)
+    921600 // TELEM_BAUD
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &telem_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ADC initialization
+
+  misc_printf("\n\nAdc (adc) Initialization\n");
+
+  // clang-format on
+  adc_.adc1_chan_ = std::array<Adc::AdcChan,6> {{
+    {ADC_REGULAR_RANK_1, ADC_CHANNEL_4         ,  1.100, 0.0, "3V3            "}, /* ADC_CC_3V3 */
+    {ADC_REGULAR_RANK_2, ADC_CHANNEL_7         ,  2.690, 0.0, "V Servo        "}, /* ADC_SERVO_VOLTS */
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_8         ,  4.010, 0.0, "12.0V          "}, /* ADC_12V */
+    {ADC_REGULAR_RANK_4, ADC_CHANNEL_10        ,  1.680, 0.0, "5.0V           "}, /* ADC_5V0 */
+    {ADC_REGULAR_RANK_5, ADC_CHANNEL_11        , 10.000, 0.0, "I Batt         "}, /* ADC_BATTERY_CURRENT */
+    {ADC_REGULAR_RANK_6, ADC_CHANNEL_16        , 11.215, 0.0, "V Batt         "}  /* ADC_BATTERY_VOLTS */
+  }};
+  // no support for adc2 for now
+  adc_.adc3_chan_ = std::array<Adc::AdcChan,3> {{
+    {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR,  1.000, 0.0, "T STM          "}, /* ADC_STM_TEMPERATURE */
+    {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT      ,  4.000, 0.0, "V Batt STM     "}, /* ADC_STM_VBAT */
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT   ,  1.000, 0.0  "V Ref STM      "}  /* ADC_STM_VREFINT */
+  }};
+  // clang-format off
+  init_status = adc_.init(10 /* Hz */ );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &adc_;
+
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // PWM initialization
 
   misc_printf("\n\nPWM (PWM) Initialization\n");
+  // clang-format on
+  // PWM_MAX_TIMERS = 3
+  pwm_.timer_ =     std::array< PwmTimer, PWM_MAX_TIMERS>{{
+    {&htim1, PWM_STANDARD, PWM_STD_RATE_HZ},
+    {&htim3, PWM_STANDARD, PWM_STD_RATE_HZ},
+    {&htim4, PWM_STANDARD, PWM_STD_RATE_HZ}
+    // for an unused timer entry use: { nullptr, PWM_NONE, 0.0 }
+  }};
+  // PWM_MAX_CHANNELS = 10
+  pwm_.channel_ =  std::array< PwmChannel, PWM_MAX_CHANNELS>{{
+    { &htim1, TIM_CHANNEL_1 }, // Servo 1
+    { &htim1, TIM_CHANNEL_2 }, // Servo 2
+    { &htim1, TIM_CHANNEL_3 }, // Servo 3
+    { &htim1, TIM_CHANNEL_4 }, // Servo 4
+    { &htim4, TIM_CHANNEL_3 }, // Servo 5
+    { &htim4, TIM_CHANNEL_3 }, // Servo 6
+    { &htim4, TIM_CHANNEL_1 }, // Servo 7
+    { &htim4, TIM_CHANNEL_4 }, // Servo 8
+    { &htim3, TIM_CHANNEL_1 }, // Servo 9
+    { &htim3, TIM_CHANNEL_2 }  // Servo 10
+    // for an unused channel use: { nullptr, TIM_CHANNEL_NONE}
+  }};
+  // clang-format off
   init_status = pwm_.init();
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pwm_;
@@ -255,12 +351,22 @@ void Varmint::init_board(void)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Servo Power Supply initialization
 
+  // 11X only
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // uSD Card initialization
+
   misc_printf("\n\nSDMMC Initialization\n");
-  init_status = sd_.init(SD_HSD, SD_HSD_INSTANCE);
+  init_status = sd_.init( &hsd1, SDMMC1 );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &sd_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // LED initialization
+
+  red_led_.init(gpio("PB11"), false);
+  green_led_.init(gpio("PB1"), false);
+  blue_led_.init(gpio("PB3"), false);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Review Status List
@@ -301,12 +407,19 @@ void Varmint::init_board(void)
   // High Rate Timer initialization
 
   misc_printf("\n\nPolling Timer Initialization\n");
-  init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL);
+  init_status = polling.init(
+    &htim7, //POLL_HTIM,
+    TIM7, // POLL_HTIM_INSTANCE,
+    TIM_CHANNEL_1, //POLL_TIM_CHANNEL
+    100 // us Polling period 100us = 10kHz
+  );
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &polling;
 
-  RED_LO;
-  GRN_LO;
-  BLU_LO;
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Done Initialization
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 #if SANDBOX
   misc_printf("\n\nStarting Sandbox\n");

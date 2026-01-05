@@ -44,6 +44,7 @@
 #include "Pmw3901.h"
 #include "Packets.h"
 #include "Time64.h"
+#include "Polling.h"
 #include "misc.h"
 
 #define PMW3901_OK 0xB0
@@ -68,6 +69,7 @@
 #define CHIP_ID_INVERSE 0xB6  // 10110110
 
 extern Time64 time64;
+extern Polling polling;
 
 #ifndef PMW3901_DMA_RAM
   #define PMW3901_DMA_RAM DMA_RAM
@@ -79,39 +81,43 @@ DTCM_RAM uint8_t pmw3901_double_buffer[2 * sizeof(OpticalFlowPacket)];
 
 uint32_t Pmw3901::init(
    uint16_t reference_rate_hz, uint16_t sample_rate_hz, uint16_t delay_us,
-   SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin, // SPI
-   GPIO_TypeDef * reset_port, uint16_t reset_pin, // Reset
+   SPI_HandleTypeDef * hspi,
+   gpio_t cs, //GPIO_TypeDef * cs_port, uint16_t cs_pin, // SPI
+   gpio_t drdy, //
+   gpio_t reset, // GPIO_TypeDef * reset_port, uint16_t reset_pin, // Reset
    TIM_HandleTypeDef * htim
  )
 {
-  HAL_GPIO_WritePin(reset_port, reset_pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(reset.port, reset.pin, GPIO_PIN_RESET);
   time64.dMs(50);
-  HAL_GPIO_WritePin(reset_port, reset_pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(reset.port, reset.pin, GPIO_PIN_SET);
   time64.dMs(50);
 
+  drdyPin_ = drdy.pin;
   decimation_ = (reference_rate_hz + sample_rate_hz -1)/sample_rate_hz; // round up
   sampleRateHz_ = (double)reference_rate_hz/(double)decimation_;
   delayUs_ = delay_us-1;
   htim_ = htim;
 
-  return init(hspi, cs_port, cs_pin);
+  return init(hspi, cs);
 }
 
 uint32_t Pmw3901::init(
    uint16_t sample_rate_hz,
-   SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin // SPI
+   SPI_HandleTypeDef * hspi,
+   gpio_t cs // SPI
 )
 {
   decimation_ = 1;
   sampleRateHz_ = sample_rate_hz;
   delayUs_ = 0;
   htim_ = nullptr;
-  return init(hspi, cs_port, cs_pin);
+  return init(hspi, cs);
 }
 
 
 uint32_t Pmw3901::init(
-   SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin // SPI
+   SPI_HandleTypeDef * hspi, gpio_t cs // SPI
  )
  {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Pmw9301");
@@ -120,8 +126,8 @@ uint32_t Pmw3901::init(
   drdy_ = time64.Us();
 
   hspi_    = hspi;
-  spiPort_ = cs_port;
-  spiPin_  = cs_pin;
+  spiPort_ = cs.port;
+  spiPin_  = cs.pin;
 
   if (htim_!=nullptr) HAL_TIM_Base_Stop_IT(htim_);
 
@@ -131,11 +137,11 @@ uint32_t Pmw3901::init(
   time64.dMs(100); // make sure we are at least 100ms from power ON.
 
 // Make sure the SPI bus is reset
-  HAL_GPIO_WritePin(cs_port, cs_pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(cs.port, cs.pin, GPIO_PIN_SET);
   time64.dMs(1);
-  HAL_GPIO_WritePin(cs_port, cs_pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(cs.port, cs.pin, GPIO_PIN_RESET);
   time64.dMs(1);
-  HAL_GPIO_WritePin(cs_port, cs_pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(cs.port, cs.pin, GPIO_PIN_SET);
   time64.dMs(1);
 
   // Power on reset
@@ -265,7 +271,7 @@ uint32_t Pmw3901::init(
 
 bool Pmw3901::poll(uint64_t poll_counter){
 
-  uint64_t decimation = (double)1e6 / sampleRateHz_ / (double)POLLING_PERIOD_US;
+  uint64_t decimation = (double)1e6 / sampleRateHz_ / (double)polling.period_us();
   uint16_t poll_state = (uint16_t) (poll_counter % decimation);
 
   if( poll_state == 0 ) poll();

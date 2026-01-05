@@ -162,7 +162,7 @@ public:
     volatile uint32_t high1 = __HAL_TIM_GET_COUNTER(htimHigh_);
     volatile uint32_t low2 = __HAL_TIM_GET_COUNTER(htimLow_);
     volatile uint32_t high2 = __HAL_TIM_GET_COUNTER(htimHigh_);
-    if ((low1 > low2) && (high1 == high2)) high1--; // rollover correction
+    if ((low1 > low2) && (high1 == high2)) {high1 = high1-1;} // rollover correction
     uint64_t us = ((high1 << shift_) | low1)&0x0000FFFFFFFFFFFF;
     return us;
   }

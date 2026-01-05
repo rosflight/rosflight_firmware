@@ -46,15 +46,12 @@
 #include "misc.h"
 #include "Polling.h"
 
-#define LIDARLITEV3HP_ADDRESS 0x62
-
-
 class Lidarlitev3hp : public Status
 {
 public:
   uint32_t init(
         uint16_t sample_rate_hz,
-        I2C_HandleTypeDef * hi2c, uint16_t i2c_address
+        I2C_HandleTypeDef * hi2c
       );
 
   bool poll(uint64_t poll_counter);

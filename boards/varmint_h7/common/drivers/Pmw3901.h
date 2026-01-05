@@ -43,6 +43,7 @@
 
 #include "Time64.h"
 #include "Polling.h"
+#include "Gpio.h"
 
 class Pmw3901: public Status {
 
@@ -50,19 +51,21 @@ public:
   // Shared SPI
   uint32_t init(
       uint16_t reference_rate_hz, uint16_t sample_rate_hz, uint16_t delay_us,
-      SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin, // SPI
-      GPIO_TypeDef * reset_port, uint16_t reset_pin, // Reset
+      SPI_HandleTypeDef * hspi,
+      gpio_t cs, //GPIO_TypeDef * cs_port, uint16_t cs_pin, // SPI
+      gpio_t drdy, // data ready pin
+      gpio_t reset, // GPIO_TypeDef * reset_port, uint16_t reset_pin, // Reset
       TIM_HandleTypeDef * htim
   );
 
   // Dedicated SPI
   uint32_t init(
       uint16_t sample_rate_hz,
-      SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin // SPI
+      SPI_HandleTypeDef * hspi, gpio_t cs // SPI
   );
 
   uint32_t init(
-      SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, uint16_t cs_pin // SPI
+      SPI_HandleTypeDef * hspi, gpio_t cs // SPI
   );
 
 

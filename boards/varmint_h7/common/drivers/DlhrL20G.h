@@ -43,6 +43,7 @@
 
 #include "Packets.h"
 #include "Time64.h"
+#include "Gpio.h"
 
 #define DLHRL20G_OK (0x40)
 
@@ -59,10 +60,9 @@ class DlhrL20G : public Status
      */
 public:
   uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-    uint16_t drdy_pin,                                 // Reset GPIO Pin
-    I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
+    uint16_t sample_rate_hz,
+    gpio_t drdy, // Data ready
+    I2C_HandleTypeDef * hi2c
   );
   bool poll(uint64_t poll_offset);
   void endDma(void);

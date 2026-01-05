@@ -44,7 +44,6 @@
 #include "Time64.h"
 #include  "Polling.h"
 
-#define MS4525_I2C_ADDRESS (0x28)
 /*
  *
  */
@@ -57,11 +56,8 @@ class Ms4525 : public Status
      */
 public:
   uint32_t init(
-    // Driver initializers
     uint16_t sample_rate_hz,
-    // I2C initializers
-    I2C_HandleTypeDef * hi2c, // The SPI handle
-    uint16_t i2c_address      // Chip select Port
+    I2C_HandleTypeDef * hi2c
   );
   bool poll(uint64_t poll_counter);
 

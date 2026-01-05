@@ -42,6 +42,9 @@ extern Varmint varmint;
 #include "Time64.h"
 extern Time64 time64;
 
+#include "Polling.h"
+extern Polling polling;
+
 #include "Callbacks.h"
 
 #include "BoardConfig.h"
@@ -53,7 +56,8 @@ extern Time64 time64;
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
-  if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
+  //if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
+  if (polling.isMy(htim))
   {
 
     static uint64_t poll_counter = 0;
@@ -69,7 +73,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     varmint.adc_.poll(poll_counter); // Start dma read
     varmint.vcp_.poll();             // Timeout
   
-    if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG; // Blink Green LED at 1 Hz.
+    if (0 == poll_counter % (500000/polling.period_us())) varmint.green_led_.toggle(); // Blink Green LED at 1 Hz.
+
   }
   if(varmint.oflow_.isMy(htim))
   {

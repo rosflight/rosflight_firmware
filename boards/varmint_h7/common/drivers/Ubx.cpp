@@ -60,16 +60,18 @@ void Ubx::pps(uint64_t pps_timestamp)
 
 
 uint32_t Ubx::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
-  // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
+    // Driver initializers
+    uint16_t sample_rate_hz,
+    gpio_t pps, //GPIO_TypeDef * pps_port, uint16_t pps_pin,
+    // UART initializers
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx,
+    uint32_t baud)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ubx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  ppsPin_ = pps_pin;
+  ppsPin_ = pps.pin;
   ppsHz_ = 1; // To match top of second.
 
   dtimeout_ = 1000000; // 1 seconds

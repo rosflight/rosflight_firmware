@@ -53,14 +53,14 @@ typedef struct //__attribute__((__packed__))
   uint8_t payload[SERIAL_MAX_PAYLOAD_SIZE];
 } SerialTxPacket;
 
-typedef struct //__attribute__((__packed__))
-{
-  rosflight_firmware::PacketHeader header;
-  double temperature;
-  double vBku;
-  double vRef;
-  double volts[ADC_CHANNELS];
-} AdcPacket;
+//typedef struct //__attribute__((__packed__))
+//{
+//  rosflight_firmware::PacketHeader header;
+//  double temperature;
+//  double vBku;
+//  double vRef;
+//  double volts[ADC_CHANNELS];
+//} AdcPacket;
 
 typedef struct //__attribute__((__packed__))
 {

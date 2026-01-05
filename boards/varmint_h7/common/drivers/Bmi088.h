@@ -41,6 +41,7 @@
 #include "DoubleBuffer.h"
 #include "Spi.h"
 #include "misc.h"
+#include "Gpio.h"
 
 /*
  *
@@ -54,17 +55,13 @@ class Bmi088 : public Status, public MiscRotatable
      */
 public:
   uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate, GPIO_TypeDef * drdy_port, // DRDY GPIO Port
-    uint16_t drdy_pin,                              // DRDY GPIO Pin
-    // SPI initializers
-    SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port_a, // Chip Select GPIO Port
-    uint16_t cs_pin_a,                                  // Chip Select GPIO Pin
-    GPIO_TypeDef * cs_port_g,                           // Chip Select GPIO Port
-    uint16_t cs_pin_g,                                  // Chip Select GPIO Pin
-    // Sensor Specific
-    uint8_t range_a, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-    uint8_t range_g,  // // 0,1,2,3 --> 3,6,12,24g
+    uint16_t sample_rate_hz,
+    gpio_t drdy, // data ready
+    SPI_HandleTypeDef * hspi,
+    gpio_t cs_a,
+    gpio_t cs_g,
+    uint8_t range_a, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2, 4, 8, 16g for BMI085
+    uint8_t range_g,  // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
     const double *rotation
   );
 

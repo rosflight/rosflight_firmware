@@ -40,7 +40,7 @@
 #include "Packets.h"
 #include "Time64.h"
 #include "bmi08_defs.h"
-#include "misc.h"
+
 
 #define SPI_READ (uint8_t) 0x80
 #define SPI_WRITE (uint8_t) 0x00
@@ -62,15 +62,11 @@ DMA_RAM uint8_t bmi088_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t bmi088_double_buffer[2 * sizeof(ImuPacket)];
 
 uint32_t Bmi088::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // DRDY GPIO Port
-  uint16_t drdy_pin,                                 // DRDY GPIO Pin
-  // SPI initializers
-  SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port_a, // Chip Select GPIO Port
-  uint16_t cs_pin_a,                                  // Chip Select GPIO Pin
-  GPIO_TypeDef * cs_port_g,                           // Chip Select GPIO Port
-  uint16_t cs_pin_g,                                  // Chip Select GPIO Pin
-  // Sensor Specific
+  uint16_t sample_rate_hz,
+  gpio_t drdy, // data ready
+  SPI_HandleTypeDef * hspi,
+  gpio_t cs_a,
+  gpio_t cs_g,
   uint8_t range_a, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2, 4, 8, 16g for BMI085
   uint8_t range_g,  // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
   const double *rotation
@@ -81,10 +77,10 @@ uint32_t Bmi088::init(
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPin_ = drdy_pin;
+  drdyPin_ = drdy.pin;
 
-  spiA_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_port_a, cs_pin_a);
-  spiG_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_port_g, cs_pin_g);
+  spiA_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_a.port, cs_a.pin);
+  spiG_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_g.port, cs_g.pin);
 
   seqCount_ = 0;
   timeoutMs_ = 1000;

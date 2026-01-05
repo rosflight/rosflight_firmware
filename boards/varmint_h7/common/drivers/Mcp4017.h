@@ -55,7 +55,6 @@ class Mcp4017 : public Status
      */
 public:
   uint32_t init(I2C_HandleTypeDef * hi2c, // The SPI handle
-                uint16_t i2c_address,     // Chip select Port
                 double v                  // voltage
   )
   {
@@ -63,7 +62,7 @@ public:
     initializationStatus_ = DRIVER_OK;
 
     hi2c_ = hi2c;
-    address_ = i2c_address << 1;
+    address_ = MCP4017_I2C_ADDRESS << 1;
 
     uint32_t initializationStatus_ = set(v);
     if (initializationStatus_ == DRIVER_OK) misc_printf("Servo voltage set to %.1fV, %u counts\n", v_, pot_);

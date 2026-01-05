@@ -46,6 +46,10 @@
 
 extern Time64 time64;
 
+#define SERIAL_QOS_FIFOS (3)
+#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
+//#define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
+
 //#define TELEM_RX_BUFFER_SIZE (4096-32) // Use a multiple of 32!
 //DTCM_RAM uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
 

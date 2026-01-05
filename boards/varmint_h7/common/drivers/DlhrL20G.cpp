@@ -36,9 +36,11 @@
  **/
 #include "DlhrL20G.h"
 #include "Time64.h"
+#include "Polling.h"
 #include "misc.h"
 
 extern Time64 time64;
+extern Polling polling;
 
 //#define DLHRL20G_OK (0x40)
 
@@ -50,19 +52,19 @@ DTCM_RAM uint8_t dlhr_double_buffer[2 * sizeof(PressurePacket)];
 
 uint32_t DlhrL20G::init(
   // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-  uint16_t drdy_pin,                                 // Reset GPIO Pin
-  I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
+  uint16_t sample_rate_hz,
+  gpio_t drdy, //GPIO_TypeDef * drdy_port, int16_t drdy_pin,
+  I2C_HandleTypeDef * hi2c// I2C initializers
 )
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "DlhrL20G");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  drdyPort_ = drdy_port;
-  drdyPin_ = drdy_pin;
+  drdyPort_ = drdy.port;
+  drdyPin_ = drdy.pin;
 
   hi2c_ = hi2c;
-  address_ = i2c_address << 1;
+  address_ = DLHRL20G_I2C_ADDRESS << 1;
 
   double_buffer_.init(dlhr_double_buffer, sizeof(dlhr_double_buffer) );
 
@@ -131,12 +133,13 @@ uint32_t DlhrL20G::init(
 
 bool DlhrL20G::poll(uint64_t poll_counter)
 {
-  uint16_t poll_offset = (uint16_t) (poll_counter % (POLLING_FREQ_HZ / PITOT_HZ));
+  uint32_t sample_period_us = 1000000/sampleRateHz_;
+  PollingState poll_state = polling.index(poll_counter, sample_period_us); //(uint16_t) (poll_counter % (sample_period_us/POLLING_PERIOD_HZ));
 
   bool status = false;
   static bool previous_drdy = 0;
   bool current_drdy = HAL_GPIO_ReadPin(drdyPort_, drdyPin_);
-  if (poll_offset == 0) // polled sensor measurement start
+  if (poll_state == 0) // polled sensor measurement start
   {
     dlhr_i2c_dma_buf[0] = cmdByte_;
     dlhr_i2c_dma_buf[1] = 0x00;

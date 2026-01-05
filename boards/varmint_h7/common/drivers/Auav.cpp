@@ -39,8 +39,10 @@
 #include "Polling.h"
 #include "Time64.h"
 #include "misc.h"
+#include "Polling.h"
 
 extern Time64 time64;
+extern Polling polling;
 
 #define AUAV_READ_BYTES 7
 
@@ -50,7 +52,7 @@ DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t auav_pitot_double_buffer[2 * sizeof(PressurePacket)];
 DTCM_RAM uint8_t auav_baro_double_buffer[2 * sizeof(PressurePacket)];
 
-#define ROLLOVER 10000
+#define ROLLOVER_US 10000
 
 #define STATUS_BARO_START 1
 #define STATUS_PITOT_START 2
@@ -254,7 +256,7 @@ int32_t Auav::readCfg(uint8_t address, Spi * spi)
 
 bool Auav::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  PollingState poll_state = polling.index(poll_counter, ROLLOVER_US); // (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
 
   if (poll_state == 0) // Start Baro Read
   {

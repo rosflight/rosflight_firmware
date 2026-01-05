@@ -38,6 +38,7 @@
 #include "Dps310.h"
 #include "Packets.h"
 #include "Time64.h"
+#include "Polling.h"
 #include "misc.h"
 
 //#define DPS310_OK (0xE0D0)
@@ -68,13 +69,14 @@
 //   etc.
 
 extern Time64 time64;
+extern Polling polling;
 
 DMA_RAM uint8_t dps310_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DMA_RAM uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
 DTCM_RAM uint8_t dps310_double_buffer[2 * sizeof(PressurePacket)];
 
-#define ROLLOVER 20000
+#define ROLLOVER_US 20000
 #define DPS310_CMD_P 0
 #define DPS310_DRDY_P 145
 #define DPS310_RX_P 146
@@ -109,24 +111,23 @@ static int32_t Compliment(int32_t x, int16_t bits)
 //}
 
 uint32_t Dps310::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-  uint16_t drdy_pin,                                 // Reset GPIO Pin
-  // SPI initializers
-  SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-  uint16_t cs_pin,                                  // Chip Select GPIO Pin
-  // Mode
-  bool three_wire)
+  uint16_t sample_rate_hz,
+  gpio_t drdy,
+  SPI_HandleTypeDef * hspi,
+  gpio_t cs,
+  bool three_wire
+)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Dps310");
   initializationStatus_ = DRIVER_OK;
 
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPin_ = drdy_pin;
+  if (drdy.port == nullptr) drdyPin_ = 0;
+
   drdy_ = 0;
 
-  spi_.init(hspi, dps310_dma_txbuf, dps310_dma_rxbuf, cs_port, cs_pin);
+  spi_.init(hspi, dps310_dma_txbuf, dps310_dma_rxbuf, cs.port, cs.pin);
   spiState_ = DPS310_IDLE_STATE;
   dmaRunning_ = false;
 
@@ -309,7 +310,7 @@ uint8_t Dps310::readRegister(uint8_t address)
 
 bool Dps310::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  PollingState poll_state = polling.index(poll_counter, ROLLOVER_US); //(PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
 
   // Start P measurement sequence
   if (poll_state == DPS310_CMD_P) // Command Pressure Read

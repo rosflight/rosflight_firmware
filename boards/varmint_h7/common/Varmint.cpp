@@ -74,8 +74,7 @@ void Varmint::clock_delay(uint32_t ms) { time64.dMs(ms); }
 // serial comms to the Companion computer
 void Varmint::serial_init(uint32_t baud_rate, uint32_t dev)
 {
-  serial_device_ = USE_TELEM; // dev; // 1 = telem uart, otherwise = VCP
-  if (serial_device_ == 1) telem_.reset_baud(baud_rate);
+  if (USE_UART_TELEM) telem_.reset_baud(baud_rate);
 }
 
 void Varmint::serial_write(const uint8_t * src, size_t len, uint8_t qos)
@@ -88,20 +87,20 @@ void Varmint::serial_write(const uint8_t * src, size_t len, uint8_t qos)
   if (len > (256 + 8)) len = (256 + 8);
   memcpy(p.payload, src, len);
 
-  if (serial_device_ == 1) telem_.writePacket(&p);
+  if (USE_UART_TELEM) telem_.writePacket(&p);
   else vcp_.writePacket(&p);
 }
 
 uint16_t Varmint::serial_bytes_available(void)
 {
-  if (serial_device_ == 1) return telem_.byteCount();
+  if (USE_UART_TELEM) return telem_.byteCount();
   else return vcp_.byteCount();
 }
 
 uint8_t Varmint::serial_read(void)
 {
   uint8_t c = 0;
-  if (serial_device_ == 1) telem_.readByte(&c);
+  if (USE_UART_TELEM) telem_.readByte(&c);
   else vcp_.readByte(&c);
   return c;
 }
@@ -119,12 +118,12 @@ void Varmint::serial_flush(void)
 
 void Varmint::sensors_init()
 {
-  sensor_errors_ = 0;
+  status_errors_ = 0;
   for (uint32_t i = 0; i < varmint.status_len(); i++) {
-    if (varmint.status(i)->status() != DRIVER_OK) sensor_errors_++;
+    if (varmint.status(i)->status() != DRIVER_OK) status_errors_++;
   }
 }
-uint16_t Varmint::sensors_errors_count() { return sensor_errors_; }
+uint16_t Varmint::sensors_errors_count() { return status_errors_; }
 
 uint16_t Varmint::sensors_init_message_count() { return varmint.status_len(); }
 
@@ -308,19 +307,19 @@ bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
 void Varmint::pwm_init(const float * rate, uint32_t channels) { pwm_.updateConfig(rate, channels); }
 void Varmint::pwm_disable(void)
 {
-  for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.disable(ch);
+  for (uint32_t ch = 0; ch < PWM_MAX_CHANNELS; ch++) pwm_.disable(ch);
 }
 void Varmint::pwm_write(float * value, uint32_t channels) { pwm_.write(value, channels); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // LEDs
-void Varmint::led0_on() { RED_HI; }
-void Varmint::led0_off() { RED_LO; }
-void Varmint::led0_toggle() { RED_TOG; }
+void Varmint::led0_on() { red_led_.on(); }
+void Varmint::led0_off() { red_led_.off();  }
+void Varmint::led0_toggle() { red_led_.toggle();  }
 
-void Varmint::led1_on() { BLU_HI; }
-void Varmint::led1_off() { BLU_LO; }
-void Varmint::led1_toggle() { BLU_TOG; }
+void Varmint::led1_on() { blue_led_.on(); }
+void Varmint::led1_off() { blue_led_.off(); }
+void Varmint::led1_toggle() { blue_led_.toggle(); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Backup Data (Register and SRAM)

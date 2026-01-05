@@ -1247,7 +1247,7 @@ void MX_TIM7_Init(void)
 {
 
   /* USER CODE BEGIN TIM7_Init 0 */
-
+#define POLLING_PERIOD_US         (100) // 100us, 10kHz
   /* USER CODE END TIM7_Init 0 */
 
   TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -1785,10 +1785,10 @@ void MX_BDMA_Init(void)
   HAL_NVIC_SetPriority(BDMA_Channel0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(BDMA_Channel0_IRQn);
   /* BDMA_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BDMA_Channel1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(BDMA_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(BDMA_Channel1_IRQn);
   /* BDMA_Channel2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BDMA_Channel2_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(BDMA_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(BDMA_Channel2_IRQn);
 
 }

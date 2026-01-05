@@ -36,9 +36,11 @@
  **/
 #include "Ms4525.h"
 #include "Time64.h"
+#include "Polling.h"
 #include "misc.h"
 
 extern Time64 time64;
+extern Polling polling;
 
 #define MS4525_OK (0x0000)
 
@@ -53,13 +55,11 @@ DTCM_RAM uint8_t ms4525_double_buffer[2 * sizeof(PressurePacket)];
 #define MS4525_STATE_READ 1
 #define MS4525_STATE_ERROR 0xFFFF
 
+#define MS4525_I2C_ADDRESS (0x28)
 
 uint32_t Ms4525::init(
-  // Driver initializers
-  uint16_t sample_rate_hz,
-  // I2C initializers
-  I2C_HandleTypeDef * hi2c, // The SPI handle
-  uint16_t i2c_address      // Chip select Port
+    uint16_t sample_rate_hz,
+    I2C_HandleTypeDef * hi2c
 )
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ms4525");
@@ -67,7 +67,7 @@ uint32_t Ms4525::init(
   sampleRateHz_ = sample_rate_hz;
 
   hi2c_ = hi2c;
-  address_ = i2c_address << 1;
+  address_ = MS4525_I2C_ADDRESS << 1;
 
   double_buffer_.init(ms4525_double_buffer, sizeof(ms4525_double_buffer));
 
@@ -95,7 +95,7 @@ uint32_t Ms4525::init(
 
 bool Ms4525::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (REPORTING_US / POLLING_PERIOD_US));
+  PollingState poll_state = polling.index(poll_counter, REPORTING_US); //(PollingState) (poll_counter % (REPORTING_US / POLLING_PERIOD_US));
 
   if((poll_state%DECIMATION)==0)
   {

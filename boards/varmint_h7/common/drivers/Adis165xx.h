@@ -43,6 +43,7 @@
 
 #include "Spi.h"
 #include "misc.h"
+#include "Gpio.h"
 
 #define ADIS_OK (0x0000)
 
@@ -50,17 +51,13 @@ class Adis165xx : public Status , public MiscRotatable
 {
 public:
   uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-    uint16_t drdy_pin,                                 // Reset GPIO Pin
-    // SPI initializers
-    SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-    uint16_t cs_pin,                                  // Chip Select GPIO Pin
-    // ADIS165xx initializers
-    GPIO_TypeDef * reset_port, // Reset GPIO Port
-    uint16_t reset_pin,        // Reset GPIO Pin
-    TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
-    const double *rotation
+	  uint16_t sample_rate_hz,
+	  gpio_t drdy,
+	  SPI_HandleTypeDef * hspi,
+	  gpio_t cs,
+	  gpio_t reset,
+	  TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
+	  const double *rotation
   );
 
   void endDma(void);

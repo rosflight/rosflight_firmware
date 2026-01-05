@@ -286,7 +286,7 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   // Calculate the pseudoinverse of the mixing matrix using the SVD
   Eigen::JacobiSVD<Eigen::Matrix<float, 6, NUM_MIXER_OUTPUTS>> svd(
     mixer_matrix,
-    Eigen::FullPivHouseholderQRPreconditioner | Eigen::ComputeFullU | Eigen::ComputeFullV);
+    (unsigned int)Eigen::FullPivHouseholderQRPreconditioner | (unsigned int)Eigen::ComputeFullU | (unsigned int)Eigen::ComputeFullV);
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, 6> Sig;
   Sig.setZero();
 

@@ -42,7 +42,7 @@
 
 #define SANDBOX false
 #define BOARD_STATUS_PRINT false
-#define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
+#define USE_UART_TELEM 1 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
 #define MISC_HUART (&huart2)
@@ -52,10 +52,8 @@
 // See CommonConfig.h for more #defines
 
 #define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
-//#define VCP_Transmit(buffer, length) CDC_Transmit_FS(buffer, length)
-//#define VCP_Transmit(buffer, length) CDC_Transmit_HS(buffer, length)
 
-#define _USBD_USE_HS false
+//#define _USBD_USE_HS false
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define _USBD_CDC_ACM_COUNT 1
 //
@@ -63,42 +61,40 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 // clang-format off
 #define INTERFACE_LIST \
-  Sbus rc_;                 /* All */ \
-  Ubx gps_;                 /* All */ \
-  Adc adc_;                 /* All */ \
-  Telem telem_;             /* All */ \
-  Vcp vcp_;                 /* All */ \
-  Pwm pwm_;                 /* All */ \
-  Sd sd_;                   /* All */ \
-  Dps310 baro_;             /* All */ \
-  Adis165xx imu0_;          /* Varmint 10-12X */ \
-  Bmi088 imu1_;             /* Varmint 10-12X */ \
-  Iis2mdc mag_;             /* Varmint 10-12X */ \
-  DlhrL20G pitot_;          /* Varmint 10-11X */ \
+  Sbus rc_; \
+  Ubx gps_; \
+  Adc adc_; \
+  Telem telem_; \
+  Vcp vcp_; \
+  Pwm pwm_; \
+  Sd sd_; \
+  Dps310 baro_; \
+  Adis165xx imu0_; \
+  Bmi088 imu1_; \
+  Iis2mdc mag_; \
+  DlhrL20G pitot_; \
   Lidarlitev3hp range_;    /* External I2C Lidar Range Sensor */ \
   Pmw3901 oflow_;          /* External SPI Optical Flow Sensor */ \
-  Mcp4017 servoV_;          /* Varmint 11-12X */ \
-  /*		Auav pitot_; */     /* Varmint 12X */ \
-  /*		Auav baro2_; */     /* Varmint 12X */ \
-  /*		Bmi088 imu0_;    */ /* PixRacer Pro */ \
-  /*		Ms4525 pitot_; */   /* PixRacer Pro */ \
-  /*		Ist8308 mag_;  */   /* PixRacer Pro */ \
-  /**/
+  Led red_led_; \
+  Led green_led_; \
+  Led blue_led_; \
+  Mcp4017 servoV_;
+
 // clang-format on
 
 
 // 48-bit us counter.
 // Prefer to have the 32-bit counter on the low order bytes:
-#define HTIM_LOW (&htim5) // 32-bit counter
-#define HTIM_LOW_INSTANCE (TIM5)
-#define HTIM_HIGH (&htim8) // 16-bit overflow counter
-#define HTIM_HIGH_INSTANCE (TIM8)
-
-#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
-#define POLL_TIM_CHANNEL TIM_CHANNEL_1
-#define POLL_HTIM_INSTANCE (TIM7)
-#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
-#define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
+//#define HTIM_LOW (&htim5) // 32-bit counter
+//#define HTIM_LOW_INSTANCE (TIM5)
+//#define HTIM_HIGH (&htim8) // 16-bit overflow counter
+//#define HTIM_HIGH_INSTANCE (TIM8)
+//
+//#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
+//#define POLL_TIM_CHANNEL TIM_CHANNEL_1
+//#define POLL_HTIM_INSTANCE (TIM7)
+//#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
+//#define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Pwm's
@@ -112,8 +108,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 //#define PWM_MKS_RATE_HZ 	(333.0)
 //#define PWM_STD_RATE_HZ 	(50.0)
 
-#define PWM_CHANNELS (10) // Number of PWM output channels on the board
-#define PWM_TIMER_BLOCKS (3)
+//#define PWM_CHANNELS (10) // Number of PWM output channels on the board
+//#define PWM_TIMER_BLOCKS (3)
 
 //typedef enum : uint8_t
 //{
@@ -123,12 +119,14 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 // Arrays are the mapping of CH1-4 to the 10 PWM Channels Index
 // clang-format off
+#if 0
 #define PWM_INIT_DEFINE \
 { \
   {(&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, {0, 1, 2, 3}}, \
   {(&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, {6, 5, 4, 7}}, \
   {(&htim3), PWM_STANDARD, PWM_STD_RATE_HZ, { 8, 9, 255, 255 }} \
 }
+#endif
 // clang-format on
 
 // Channel order based on hardware pinout naming
@@ -137,141 +135,141 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 //	TIMER 3 TIM_CHANNEL_1, TIM_CHANNEL_2
 
 // BMI088 IMU
-#define BMI088_SPI (&hspi1)
-
-#define BMI088_HZ (EPOCH_HZ) // 400, 1000, 2000 are the only options
-#define BMI088_RANGE_A (3)   // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
-#define BMI088_RANGE_G (2)   // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-#define BMI088_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+//#define BMI088_SPI (&hspi1)
+//
+//#define BMI088_HZ (EPOCH_HZ) // 400, 1000, 2000 are the only options
+//#define BMI088_RANGE_A (3)   // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
+//#define BMI088_RANGE_G (2)   // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+//#define BMI088_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // ADIS IMU
-#define ADIS165XX_HZ (EPOCH_HZ)
-#define ADIS165XX_SPI (&hspi4)
-
-#define ADIS165XX_HTIM (&htim12)              // ADIS 16500 ExtClk
-#define ADIS165XX_TIM_CHANNEL (TIM_CHANNEL_1) // ADIS 16500 ExtClk
-#define ADIS165XX_TIM_INSTANCE (TIM12)        // ADIS 16500 ExtClk
-#define ADIS165XX_TIM_PERIOD_US (500)         // 500 us, 2kHz
-#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+//#define ADIS165XX_HZ (EPOCH_HZ)
+//#define ADIS165XX_SPI (&hspi4)
+//
+//#define ADIS165XX_HTIM (&htim12)              // ADIS 16500 ExtClk
+//#define ADIS165XX_TIM_CHANNEL (TIM_CHANNEL_1) // ADIS 16500 ExtClk
+//#define ADIS165XX_TIM_INSTANCE (TIM12)        // ADIS 16500 ExtClk
+//#define ADIS165XX_TIM_PERIOD_US (500)         // 500 us, 2kHz
+//#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
  // PMW3901 Optical Flow Sensor
 
-#define PMW3901_HZ (ADIS165XX_HZ/40)
-#define PMW3901_DELAY_US (500) // 500 us from trigger to reading.
-#define PMW3901_SPI (&hspi4)
+//#define PMW3901_HZ (ADIS165XX_HZ/40)
+//#define PMW3901_DELAY_US (500) // 500 us from trigger to reading.
+//#define PMW3901_SPI (&hspi4)
 
-#define PMW3901_CS_PIN J105_2_SPI4_EXT_CS_Pin
-#define PMW3901_CS_PORT J105_2_SPI4_EXT_CS_GPIO_Port
-
-#define PMW3901_RST_PIN  J105_2_SPI4_EXT_RST_Pin
-#define PMW3901_RST_PORT J105_2_SPI4_EXT_RST_GPIO_Port
+//#define PMW3901_CS_PIN J105_2_SPI4_EXT_CS_Pin
+//#define PMW3901_CS_PORT J105_2_SPI4_EXT_CS_GPIO_Port
+//
+//#define PMW3901_RST_PIN  J105_2_SPI4_EXT_RST_Pin
+//#define PMW3901_RST_PORT J105_2_SPI4_EXT_RST_GPIO_Port
 //
 //#define PMW3901_DRDY_PIN J105_2_DRDY_Pin
 //#define PMW3901_DRDY_PORT J105_2_DRDY_GPIO_Port
 
-#define PMW3901_TIMER (&htim17)
+//#define PMW3901_TIMER (&htim17)
 
 // Range Lidar Sensor on i2c2
-#define LIDAR_HZ (100)
-#define LIDAR_I2C (&hi2c2)
-#define LIDAR_I2C_ADDRESS (LIDARLITEV3HP_ADDRESS)
+//#define LIDAR_HZ (100)
+//#define LIDAR_I2C (&hi2c2)
+//#define LIDAR_I2C_ADDRESS (LIDARLITEV3HP_ADDRESS)
 
 // DLHR Pitot is on i2c1
-#define DLHRL20G_HZ (100)
+//#define DLHRL20G_HZ (100)
 
-#define PITOT_DRDY_PORT (PITOT_DRDY_GPIO_Port)
-#define PITOT_DRDY_PIN (PITOT_DRDY_Pin)
-
-#define PITOT_HZ (DLHRL20G_HZ)
-#define PITOT_I2C (&hi2c1)
-#define PITOT_I2C_ADDRESS (DLHRL20G_I2C_ADDRESS)
-
-// MS4525D Pitot
-#define MS4525_HZ (100)
-
-// AUAV is both baro (absolute) and differtial (Pitot)
-#define AUAV_SPI (&hspi4)
-#define AUAV_HZ (100)
-// Absolute (Baro)
-#define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
-
-// Differential (Pitot)
-#define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
-
-// Digital Potentiometer used in later versions
-//	#define MCP4017_I2C_ADDRESS 		(0x2F)
-#define MCP4017_I2C (&hi2c1)
-#define SERVO_VOLTAGE (4.8) // Volts
-
-// I2C EEPROM in 11X
-#define EEPROM_I2C (&hi2c1)
-#define EEPROM_I2C_ADDRESS (0x50)
-
-#define DPS310_SPI (&hspi2)
-#define DPS310_3_WIRE (true)
-#define IIS2MDC_SPI (&hspi2)
-
-// Baro is DPS310
-#define DPS310_HZ (50) // up to 50 Hz.
-
-// Mag is IIS2MDC
-// HZ no faster than 100Hz. 10, 20, 50, 100 are the only options for continuous mode
-#define IIS2MDC_HZ (100)
-#define IIS2MDC_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, -1.0}
-
-// Mag IST8308 (pixracer Pro)
-// HZ no faster than 100Hz
-#define IST3808_HZ (100)
-#define IST3808_I2C (&hi2c1)
-#define IST3808_I2C_ADDRESS (0X0C)
-#define IST3808_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0}
-
-// SBus is on UART3 for Varmints, UART6 for PixRacer Pro
-#define SBUS_HZ (112) // 1000/9ms = 111.1Hz, 112 is rounds up
-#define SBUS_BAUD (100000)
+//#define PITOT_DRDY_PORT (PITOT_DRDY_GPIO_Port)
+//#define PITOT_DRDY_PIN (PITOT_DRDY_Pin)
 //
-#define RC_HZ (SBUS_HZ)
-#define RC_BAUD (SBUS_BAUD)
-#define RC_UART (&huart3)
-#define RC_UART_INSTANCE (USART3)
-#define RC_UART_DMA (&hdma_usart3_rx)
-
-// uBlox
-#define UBX_HZ (10)
-#define UBX_NUM (3) // number of different types of packets
-//#define	UBX_BAUD					(57600)
-
-#define GPS_HZ (UBX_HZ)
-#define GPS_BAUD (57600)
-
-#define GPS_PPS_PORT (GPS_1PPS_GPIO_Port)
-#define GPS_PPS_PIN (GPS_1PPS_Pin)
-#define GPS_UART (&huart1)
-#define GPS_UART_INSTANCE (USART1)
-#define GPS_UART_DMA (&hdma_usart1_rx)
-
-// Telemetry UART2 & VCP
-// Serial
-#define SERIAL_HZ (EPOCH_HZ) // Loop time is driven by IMU period.
-#define SERIAL_QOS_FIFOS (3)
-#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
-#define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
-// Telem (USART2)
-#define TELEM_HZ (SERIAL_HZ)
-#define TELEM_BAUD (921600) //(57600)
-#define TELEM_UART (&huart2)
-#define TELEM_UART_INSTANCE (USART2)
-#define TELEM_UART_DMA (0) //(&hdma_usart2_rx)
-// VCP
-#define VCP_HZ (SERIAL_HZ)
+//#define PITOT_HZ (DLHRL20G_HZ)
+//#define PITOT_I2C (&hi2c1)
+//#define PITOT_I2C_ADDRESS (DLHRL20G_I2C_ADDRESS)
+//
+//// MS4525D Pitot
+//#define MS4525_HZ (100)
+//
+//// AUAV is both baro (absolute) and differtial (Pitot)
+//#define AUAV_SPI (&hspi4)
+//#define AUAV_HZ (100)
+//// Absolute (Baro)
+//#define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
+//
+//// Differential (Pitot)
+//#define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
+//
+//// Digital Potentiometer used in later versions
+////	#define MCP4017_I2C_ADDRESS 		(0x2F)
+//#define MCP4017_I2C (&hi2c1)
+//#define SERVO_VOLTAGE (4.8) // Volts
+//
+//// I2C EEPROM in 11X
+//#define EEPROM_I2C (&hi2c1)
+//#define EEPROM_I2C_ADDRESS (0x50)
+//
+//#define DPS310_SPI (&hspi2)
+//#define DPS310_3_WIRE (true)
+//#define IIS2MDC_SPI (&hspi2)
+//
+//// Baro is DPS310
+//#define DPS310_HZ (50) // up to 50 Hz.
+//
+//// Mag is IIS2MDC
+//// HZ no faster than 100Hz. 10, 20, 50, 100 are the only options for continuous mode
+//#define IIS2MDC_HZ (100)
+//#define IIS2MDC_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, -1.0}
+//
+//// Mag IST8308 (pixracer Pro)
+//// HZ no faster than 100Hz
+//#define IST3808_HZ (100)
+//#define IST3808_I2C (&hi2c1)
+//#define IST3808_I2C_ADDRESS (0X0C)
+//#define IST3808_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0}
+//
+//// SBus is on UART3 for Varmints, UART6 for PixRacer Pro
+//#define SBUS_HZ (112) // 1000/9ms = 111.1Hz, 112 is rounds up
+//#define SBUS_BAUD (100000)
+////
+//#define RC_HZ (SBUS_HZ)
+//#define RC_BAUD (SBUS_BAUD)
+//#define RC_UART (&huart3)
+//#define RC_UART_INSTANCE (USART3)
+//#define RC_UART_DMA (&hdma_usart3_rx)
+//
+//// uBlox
+//#define UBX_HZ (10)
+//#define UBX_NUM (3) // number of different types of packets
+////#define	UBX_BAUD					(57600)
+//
+//#define GPS_HZ (UBX_HZ)
+//#define GPS_BAUD (57600)
+//
+//#define GPS_PPS_PORT (GPS_1PPS_GPIO_Port)
+//#define GPS_PPS_PIN (GPS_1PPS_Pin)
+//#define GPS_UART (&huart1)
+//#define GPS_UART_INSTANCE (USART1)
+//#define GPS_UART_DMA (&hdma_usart1_rx)
+//
+//// Telemetry UART2 & VCP
+//// Serial
+//#define SERIAL_HZ (EPOCH_HZ) // Loop time is driven by IMU period.
+//#define SERIAL_QOS_FIFOS (3)
+//#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
+//#define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
+//// Telem (USART2)
+//#define TELEM_HZ (SERIAL_HZ)
+//#define TELEM_BAUD (921600) //(57600)
+//#define TELEM_UART (&huart2)
+//#define TELEM_UART_INSTANCE (USART2)
+//#define TELEM_UART_DMA (0) //(&hdma_usart2_rx)
+//// VCP
+//#define VCP_HZ (SERIAL_HZ)
 
 // Onboard ADC's
-#define ADC_HZ (10) // Maximum is 500 Hz.
+//#define ADC_HZ (10) // Maximum is 500 Hz.
 
-#define ADC_ADC_EXTERNAL (&hadc1)
-#define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
-#define ADC_EXT_DMA_RAM DMA_RAM
-#define ADC_CHANNELS_EXT (6)
+//#define ADC_ADC_EXTERNAL (&hadc1)
+//#define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
+//#define ADC_EXT_DMA_RAM DMA_RAM
+
 
 #define ADC_CC_3V3 (0)          // INP 4
 #define ADC_SERVO_VOLTS (1)     // INP 7
@@ -279,16 +277,18 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADC_5V0 (3)             // INP 10
 #define ADC_BATTERY_CURRENT (4) // INP 11
 #define ADC_BATTERY_VOLTS (5)   // INP 16
+#define ADC_CHANNELS_EXT (6)
 
-#define ADC_ADC_INTERNAL (&hadc3)
-#define ADC_ADC_INSTANCE_INTERNAL (ADC3)
 
-#define ADC_INT_DMA_RAM BDMA_RAM // NOTE! ADC3 using BDMA so this needs to be in SRAM4
-#define ADC_CHANNELS_INT (3)
+//#define ADC_ADC_INTERNAL (&hadc3)
+//#define ADC_ADC_INSTANCE_INTERNAL (ADC3)
+
+//#define ADC_INT_DMA_RAM BDMA_RAM // NOTE! ADC3 using BDMA so this needs to be in SRAM4
 
 #define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
 #define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
 #define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
+#define ADC_CHANNELS_INT (3)
 
 // NOTE! This lets us put all the config in one file
 // clang-format off
@@ -310,21 +310,21 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 // Red LED
 // PE7
-#define RED_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET)
-#define RED_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET)
-#define RED_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_7)
-
-// Green LED
-// PE15
-#define GRN_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET)
-#define GRN_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET)
-#define GRN_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15)
-
-// Blue LED
-// PE8
-#define BLU_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_SET)
-#define BLU_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_RESET)
-#define BLU_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8)
+//#define RED_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET)
+//#define RED_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET)
+//#define RED_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_7)
+//
+//// Green LED
+//// PE15
+//#define GRN_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET)
+//#define GRN_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET)
+//#define GRN_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15)
+//
+//// Blue LED
+//// PE8
+//#define BLU_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_SET)
+//#define BLU_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_RESET)
+//#define BLU_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8)
 
 // Probes
 #if 1
@@ -374,13 +374,13 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 #else
 
-#define PROBE1_HI
-#define PROBE1_LO
-#define PROBE1_TOG
-
-#define PROBE2_HI
-#define PROBE2_LO
-#define PROBE2_TOG
+//#define PROBE1_HI
+//#define PROBE1_LO
+//#define PROBE1_TOG
+//
+//#define PROBE2_HI
+//#define PROBE2_LO
+//#define PROBE2_TOG
 
 #define PROBE3_HI
 #define PROBE3_LO

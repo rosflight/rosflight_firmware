@@ -38,9 +38,11 @@
 #include "Lidarlitev3hp.h"
 #include "Packets.h"
 #include "Time64.h"
+#include "Polling.h"
 #include "misc.h"
 
 extern Time64 time64;
+extern Polling polling;
 
 #define ROLLOVER_US 10000
 
@@ -52,6 +54,7 @@ extern Time64 time64;
 #define LIDARLITE_STATE_ERROR      0xF
 //#define LIDARLITE_STATE_CHK_STATUS 1
 
+#define LIDARLITEV3HP_ADDRESS 0x62
 
 // Control Register List - Address Definitions
 #define ACQ_COMMAND            0x00  // Device command
@@ -83,17 +86,16 @@ DMA_RAM uint8_t lidarlite_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t lidarlite_double_buffer[2 * sizeof(RangePacket)];
 
 uint32_t Lidarlitev3hp::init(
-  // Driver initializers
   uint16_t sample_rate_hz,
-  // I2C initializers
-  I2C_HandleTypeDef * hi2c, uint16_t i2c_address )
+  I2C_HandleTypeDef * hi2c
+)
 {
    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Lidarlite");
    initializationStatus_ = DRIVER_OK;
    sampleRateHz_ = sample_rate_hz;
 
    hi2c_ = hi2c;
-   address_ = i2c_address << 1;
+   address_ = LIDARLITEV3HP_ADDRESS << 1;
 
    i2cState_ = LIDARLITE_STATE_IDLE;
    dmaRunning_ = false;
@@ -203,7 +205,7 @@ uint32_t Lidarlitev3hp::init(
 
 bool Lidarlitev3hp::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER_US / POLLING_PERIOD_US));
+  PollingState poll_state = polling.index(poll_counter, ROLLOVER_US); //(PollingState) (poll_counter % (ROLLOVER_US / POLLING_PERIOD_US));
 
   if( poll_state == 0) {
     startDrdyQuery(); // Read most recent measurement

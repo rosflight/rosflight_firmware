@@ -40,33 +40,65 @@
 
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
+#include "board.h"
 
+#define ADC1_MAX_CHANNELS_ADC (20)
+#define ADC3_MAX_CHANNELS_ADC (19)
 
-typedef struct __attribute__((__packed__))
-{
-  uint32_t rank;
-  uint32_t chan;
-  double scaleFactor;
-  double offset;
-} AdcChannelCfg;
+#define ADC_MAX_CHANNELS (ADC1_MAX_CHANNELS_ADC+ADC3_MAX_CHANNELS_ADC)
+
+#include <array>
+
+//typedef struct __attribute__((__packed__))
+//{
+//  uint32_t rank;
+//  uint32_t chan;
+//  double scaleFactor;
+//  double offset;
+//} AdcChannelCfg;
 
 /*
  *
  */
+typedef struct
+{
+  uint32_t rank;
+  uint32_t chan;
+  float vLow;
+  float vHi;
+  char label[16];
+} AdcChan;
+
+typedef struct //__attribute__((__packed__))
+{
+  rosflight_firmware::PacketHeader header;
+  double temperature;
+  double vBku;
+  double vRef;
+  double volts[ADC_MAX_CHANNELS];
+} AdcPacket;
+
+template <size_t adc1_len, size_t adc3_len>
 class Adc : public Status
 {
 public:
-  uint32_t init(uint16_t sample_rate_hz, ADC_HandleTypeDef * hadc_ext,
-                ADC_TypeDef * adc_instance_ext, //
-                ADC_HandleTypeDef * hadc_int,
-                ADC_TypeDef * adc_instance_int // This ADC has the calibration values
-  );
+
+  std::array<AdcChan,adc1_len> adc1_chan_;
+  std::array<AdcChan,adc2_len> adc3_chan_;
+
+  uint32_t init(uint16_t sample_rate_hz);
+//  , ADC_HandleTypeDef * hadc_ext,
+//                ADC_TypeDef * adc_instance_ext, //
+//                ADC_HandleTypeDef * hadc_int,
+//                ADC_TypeDef * adc_instance_int // This ADC has the calibration values
+//  );
   bool poll(void) { return false; };
   bool poll(uint64_t poll_offset);
   void endDma(ADC_HandleTypeDef * hadc);
 
   bool display(void);
-  bool isMy(ADC_HandleTypeDef * hadc) { return (hadcExt_ == hadc) || (hadcInt_ == hadc); }
+  // always true:
+  bool isMy(ADC_HandleTypeDef * hadc) { return (&hadc1 == hadc) || (&hadc2 == hadc) || (&hadc3 == hadc); }
   void setScaleFactor(uint16_t n, float scale_factor);
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
@@ -78,10 +110,14 @@ private:
   uint64_t drdy_;
 
 
-  uint32_t configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg);
-  uint32_t configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, AdcChannelCfg * cfg, uint16_t cfg_channels);
-  ADC_HandleTypeDef *hadcExt_, *hadcInt_; // The shared SPI handle
-  AdcChannelCfg * cfg_;                   // has ADC_SCALE_FACTOR_EXT & INT
+  //uint32_t configChan(ADC_HandleTypeDef * hadc, ADC_ChannelConfTypeDef * sConfig, AdcChannelCfg * cfg);
+  uint32_t configAdc(ADC_HandleTypeDef * hadc);
+//  ADC_HandleTypeDef *hadcExt_, *hadcInt_; // The shared SPI handle
+
+
+  DTCM_RAM uint8_t adc_double_buffer[2 * sizeof(AdcPacket)];
+  DTCM_RAM uint32_t adc_counts[ADC_MAX_CHANNELS];
+
 };
 
 #endif /* ADC_H_ */

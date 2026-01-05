@@ -63,15 +63,11 @@ DMA_RAM uint8_t adis165xx_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t adis165xx_double_buffer[2* sizeof(ImuPacket)];
 
 uint32_t Adis165xx::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-  uint16_t drdy_pin,                                 // Reset GPIO Pin
-  // SPI initializers
-  SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Reset GPIO Port
-  uint16_t cs_pin,                                  // Reset GPIO Pin
-  // ADIS165xx initializers
-  GPIO_TypeDef * reset_port, // Reset GPIO Port
-  uint16_t reset_pin,        // Reset GPIO Pin
+  uint16_t sample_rate_hz,
+  gpio_t drdy,
+  SPI_HandleTypeDef * hspi,
+  gpio_t cs,
+  gpio_t reset,
   TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
   const double *rotation
 )
@@ -81,14 +77,14 @@ uint32_t Adis165xx::init(
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPin_ = drdy_pin;
+  drdyPin_ = drdy.pin;
 
-  spi_.init(hspi, adis165xx_dma_txbuf, adis165xx_dma_rxbuf, cs_port, cs_pin);
+  spi_.init(hspi, adis165xx_dma_txbuf, adis165xx_dma_rxbuf, cs.port, cs.pin);
 
   timeoutMs_ = 100;
 
-  resetPort_ = reset_port;
-  resetPin_ = reset_pin;
+  resetPort_ = reset.port;
+  resetPin_ = reset.pin;
   htim_ = htim;
   htimChannel_ = htim_channel;
 

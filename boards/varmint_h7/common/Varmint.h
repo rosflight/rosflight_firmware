@@ -73,7 +73,8 @@ class Varmint : public rosflight_firmware::Board
      */
 private:
   uint32_t serial_device_;
-  uint32_t sensor_errors_ = 0;
+
+  uint32_t status_errors_ = 0;
   uint32_t status_len_ = 0;
   Status * status_list_[STATUS_LIST_MAX_LEN];
 
@@ -88,80 +89,10 @@ public:
   uint32_t status_len(void) { return status_len_; }
 
   ////////////////////////////////////////////////////////////////////////////////
-  // Required ROSflight Board HAL functions:
+  // Required ROSflight Board HAL functions defined in board.h
 
-  // setup
+  PLATFORM_OVERRIDES
 
-  void init_board(void) override;
-  void board_reset(bool bootloader) override;
-
-  // clock
-  uint32_t clock_millis() override;
-  uint64_t clock_micros() override;
-  void clock_delay(uint32_t milliseconds) override;
-
-  // serial
-  void serial_init(uint32_t baud_rate, uint32_t dev) override;
-  void serial_write(const uint8_t * src, size_t len, uint8_t qos) override;
-  uint16_t serial_bytes_available() override;
-  uint8_t serial_read() override;
-  void serial_flush() override;
-
-  // sensors
-  void sensors_init() override;
-  uint16_t sensors_errors_count() override;
-  uint16_t sensors_init_message_count() override;
-  uint16_t sensors_init_message(char * message, uint16_t size, uint16_t i) override;
-  bool sensors_init_message_good(uint16_t i) override;
-
-  bool imu_read(rosflight_firmware::ImuStruct * imu) override;
-
-  bool mag_read(rosflight_firmware::MagStruct * mag) override;
-
-  bool baro_read(rosflight_firmware::PressureStruct * baro) override;
-
-  bool diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure) override;
-
-  bool sonar_read(rosflight_firmware::RangeStruct * sonar) override;
-
-  bool flow_read(rosflight_firmware::OpticalFlowStruct * flow) override;
-
-  // Battery
-  bool battery_read(rosflight_firmware::BatteryStruct * bat) override;
-  void battery_voltage_set_multiplier(double multiplier) override;
-  void battery_current_set_multiplier(double multiplier) override;
-
-  // GNSS
-  bool gnss_read(rosflight_firmware::GnssStruct * gnss) override;
-
-  // RC
-  void rc_init(rc_type_t rc_type) override;
-  bool rc_read(rosflight_firmware::RcStruct * rc) override;
-
-  // PWM
-  void pwm_init(const float * rate, uint32_t channels) override;
-  void pwm_disable() override;
-  void pwm_write(float * value, uint32_t channels) override;
-
-  // non-volatile memory
-  void memory_init() override;
-  bool memory_read(void * dest, size_t len) override;
-  bool memory_write(const void * src, size_t len) override;
-
-  // LEDs
-  void led0_on() override;
-  void led0_off() override;
-  void led0_toggle() override;
-
-  void led1_on() override;
-  void led1_off() override;
-  void led1_toggle() override;
-
-  // Backup Data
-  void backup_memory_init() override;
-  bool backup_memory_read(void * dest, size_t len) override;
-  void backup_memory_write(const void * src, size_t len) override;
-  void backup_memory_clear(size_t len) override;
 };
 
 #endif /* VARMINT_H_ */
