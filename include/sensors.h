@@ -87,7 +87,7 @@ private:
 
   void rotate_imu_in_place(ImuStruct * imu, turbomath::Quaternion q);
   void rotate_mag_in_place(MagStruct * mag, turbomath::Quaternion q);
-  turbomath::Quaternion fcu_orientation_ = {1, 0, 0, 0};
+  turbomath::Quaternion imu_orientation_ = {1, 0, 0, 0};
   turbomath::Quaternion mag_orientation_ = {1, 0, 0, 0};
 
   static const int SENSOR_CAL_DELAY_CYCLES;
