@@ -112,12 +112,13 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
   if (varmint.pitot_.isMy(hi2c)) varmint.pitot_.endDma();
   if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
+  if (varmint.mag_.isMy(hi2c))   varmint.mag_.stateMachine();
 }
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
   if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
-  if (varmint.mag_.isMy(hi2c))   varmint.mag_.endTxDma();
+  if (varmint.mag_.isMy(hi2c))   varmint.mag_.stateMachine();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
