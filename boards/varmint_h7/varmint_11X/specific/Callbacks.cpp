@@ -115,19 +115,13 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interr
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
   if (varmint.pitot_.isMy(hi2c)) varmint.pitot_.endDma();
+  if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
 }
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  if (varmint.range_.isMy(hi2c)) varmint.range_.endRxDma();
+  if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
 }
-
-void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-  if (varmint.range_.isMy(hi2c)) varmint.range_.endTxDma();
-}
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // UART Rx complete callbacks
