@@ -43,7 +43,7 @@
 #include <string.h> // for memset
 #include <stdarg.h>
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "Status.h"
 #include "Time64.h"
 

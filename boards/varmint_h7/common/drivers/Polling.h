@@ -41,7 +41,7 @@
 
 //#include "stm32h7xx_hal.h"
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "stdint.h"
 
 typedef uint16_t PollingState;
@@ -49,10 +49,13 @@ typedef uint16_t PollingState;
 class Polling: public Status {
 public:
   uint32_t init(
-    TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t period_us
+    TIM_HandleTypeDef * htim,
+    TIM_TypeDef * instance,
+    uint32_t channel,
+    uint32_t period_us
   )
   {
-    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Pmw9301");
+    snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Polling");
     initializationStatus_ = DRIVER_OK;
 
     TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -78,8 +81,8 @@ public:
 
   bool isMy(TIM_HandleTypeDef * htim) { return htim == htim_; }
 
-  PollingState index(uint64_t counter, uint64_t dt_us) {
-    return  (PollingState)(counter % (dt_us / period_us_));
+    uint32_t index(uint64_t counter, uint64_t dt_us) {
+    return  (uint32_t)(counter % (dt_us / period_us_));
   }
 
   uint32_t period_us(void) {return period_us_;}

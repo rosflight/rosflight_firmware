@@ -35,7 +35,7 @@
  ******************************************************************************
  **/
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "usb_device.h"
 //#include "usbd_cdc_if.h"
 #include "usbd_cdc_acm_if.h" // PTT
@@ -46,7 +46,12 @@
 
 #include "misc.h"
 
-extern bool verbose;
+bool verbose= false;
+
+#define MISC_HUART misc_huart
+
+extern UART_HandleTypeDef *misc_huart;
+
 
 extern "C" {
 int __io_putchar(int ch)

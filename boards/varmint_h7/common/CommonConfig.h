@@ -52,8 +52,13 @@
 // USB MiddleWare
 //
 // #define _USBD_USE_HS true // board dependent
+#define _USBD_USE_HS false
+
+extern PCD_HandleTypeDef hpcd_USB_OTG_HS; // USB HS (480 Mb/s)
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;    // USB FS (48 Mb/s)
+
 #define _USBD_USE_CDC_ACM true
-// #define _USBD_CDC_ACM_COUNT 1 // board specific
+#define _USBD_CDC_ACM_COUNT 1 // board specific
 
 #define _USBD_USE_CDC_RNDIS false
 #define _USBD_USE_CDC_ECM false
@@ -101,10 +106,10 @@
 #define AUAV_BARO_ERROR (0x00002000)
 
 extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc2;
+//extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
 extern DMA_HandleTypeDef hdma_adc1;
-extern DMA_HandleTypeDef hdma_adc2;
+//extern DMA_HandleTypeDef hdma_adc2;
 extern DMA_HandleTypeDef hdma_adc3;
 
 extern CRC_HandleTypeDef hcrc;
@@ -159,6 +164,7 @@ extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 extern UART_HandleTypeDef huart7;
+extern UART_HandleTypeDef huart8;
 
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;

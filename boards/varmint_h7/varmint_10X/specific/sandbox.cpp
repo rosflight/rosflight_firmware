@@ -36,10 +36,7 @@
  **/
 
 #include "sandbox.h"
-
-#include "BoardConfig.h"
 #include "misc.h"
-
 #include "Varmint.h"
 extern Varmint varmint;
 
@@ -98,9 +95,8 @@ void sandbox_dashboard(bool clear)
 
 void sandbox(void)
 {
-  // Give us time to read the initialization messages
   time64.dMs(5000);
-  verbose = true;
+
 
   //  time64.dMs(5000);
   //  SD Card read/write (and CRC & RNG)
@@ -155,10 +151,6 @@ void sandbox(void)
 //      misc_printf(",,,,,,%f, %f, %f, %f\n", (double)q.header.timestamp*1e-6, q.gyro[0],q.gyro[1],q.gyro[2]);
 //    }
 //  }
-
-
-
-
 
   uint32_t n = 0;
   while (1) {

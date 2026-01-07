@@ -35,37 +35,38 @@
  ******************************************************************************
  **/
 
-#ifndef BOARDCONFIG_H_
-#define BOARDCONFIG_H_
+#ifndef VARMINT_INIT_H_
+#define VARMINT_INIT_H_
 
 #include "CommonConfig.h"
 
-#define SANDBOX false
-#define BOARD_STATUS_PRINT false
+//#define SANDBOX // define to use
+//#define BOARD_STATUS_PRINT // define to use
+
 #define USE_UART_TELEM 1 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
-#define MISC_HUART (&huart2)
+//#define MISC_HUART (&huart2)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // USB MiddleWare
 // See CommonConfig.h for more #defines
 
-#define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
-
+// Override these if you are using HS vs FS
 //#define _USBD_USE_HS false
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
-#define _USBD_CDC_ACM_COUNT 1
+//#define _USBD_USE_HS true // true/false (for FS, use "false")
+//#define _USBD_CDC_ACM_COUNT 1
+
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-//clang-format off
+// clang-format off
 
 // This list is used in Varmint.h
-#define INTERFACE_LIST  \
+#define INTERFACE_LIST \
   Sbus rc_; \
   Ubx gps_; \
-  Adc<6,0,3> adc_; /* channels in adc1, adc2, & adc3 */ \
+  Adc adc_; /* channels in adc1, & adc3 */ \
   Telem telem_; \
   Vcp vcp_; \
   Pwm pwm_; \
@@ -75,68 +76,24 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Bmi088 imu1_; \
   Iis2mdc mag_; \
   DlhrL20G pitot_; \
-  Lidarlitev3hp range_; /* External I2C Lidar Range Sensor */ \
-  Pmw3901 oflow_; /* External SPI Optical Flow Sensor */ \
+  Lidarlitev3hp range_;    /* External I2C Lidar Range Sensor */ \
+  Pmw3901 oflow_;          /* External SPI Optical Flow Sensor */ \
   Led red_led_; \
   Led green_led_; \
-  Led blue_led_;
+  Led blue_led_; \
+  Mcp4017 servoV_;
 
-//clang-format on
-
-// Onboard ADC's
-
-//#define ADC_ADC_EXTERNAL (&hadc1)
-//#define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
-
-//#define ADC_EXT_DMA_RAM DMA_RAM
-
-// only the indices for ADC_BATTERY_* are used by the board.
-#define ADC_CC_3V3 (0)          // INP 4
-#define ADC_SERVO_VOLTS (1)     // INP 7
-#define ADC_12V (2)             // INP 8
-#define ADC_5V0 (3)             // INP 10
-#define ADC_BATTERY_CURRENT (4) // INP 11
-#define ADC_BATTERY_VOLTS (5)   // INP 16
-#define ADC_CHANNELS_EXT (6)
-
-//#define ADC_ADC_INTERNAL (&hadc3)
-//#define ADC_ADC_INSTANCE_INTERNAL (ADC3)
-
-//#define ADC_INT_DMA_RAM BDMA_RAM // NOTE! ADC3 using BDMA so this needs to be in SRAM4
-
-#define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
-#define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
-#define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
-#define ADC_CHANNELS_INT (3)
-
-// NOTE! This lets us put all the config in one file
-// clang-format off
-#define ADC_CFG_CHANS_DEFINE \
-{ \
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_4, 1.100, 0.0},          /* ADC_CC_3V3 */                   \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_7, 2.690, 0.0},          /* ADC_SERVO_VOLTS */              \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_8, 4.010, 0.0},          /* ADC_12V */                      \
-  {ADC_REGULAR_RANK_4, ADC_CHANNEL_10, 1.680, 0.0},         /* ADC_5V0 */                      \
-  {ADC_REGULAR_RANK_5, ADC_CHANNEL_11, 10.000, 0.0},        /* ADC_BATTERY_CURRENT */          \
-  {ADC_REGULAR_RANK_6, ADC_CHANNEL_16, 11.215, 0.0},        /* ADC_BATTERY_VOLTS */            \
-\
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */          \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */                 \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.000, 0.0}     /* ADC_STM_VREFINT */              \
-}
 // clang-format on
 
-#define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
-
-
-//// PB15
+// PB15
 //#define PROBE3_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET)
 //#define PROBE3_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET)
 //#define PROBE3_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15)
-//
-//// Real Board - PB1 J105 pin 23/25 Sync Bus (CAN XCVR)
+
+// Real Board - PB1 J105 pin 23/25 Sync Bus (CAN XCVR)
 //#define PROBE4_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET)
 //#define PROBE4_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET)
 //#define PROBE4_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1)
 
-#endif /* BOARDCONFIG_H_ */
+
+#endif /* VARMINT_INIT_H_ */

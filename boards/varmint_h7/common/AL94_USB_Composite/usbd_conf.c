@@ -30,6 +30,7 @@
 #else
 #include "usb_otg.h"
 #endif
+#include "CommonConfig.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

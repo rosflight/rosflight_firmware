@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * File     : Varmint.h
- * Date     : Sep 27, 2023
+ * File     : BoardConfig.h
+ * Date     : Sep 23, 2023
  ******************************************************************************
  *
  * Copyright (c) 2023, AeroVironment, Inc.
@@ -35,64 +35,64 @@
  ******************************************************************************
  **/
 
-#ifndef VARMINT_H_
-#define VARMINT_H_
+#ifndef VARMINT_INIT_H_
+#define VARMINT_INIT_H_
 
-#include "Varmint_Init.h"
+#include "CommonConfig.h"
 
-#include "Adc.h"
-#include "Adis165xx.h"
-#include "Auav.h"
-#include "Bmi088.h"
-#include "DlhrL20G.h"
-#include "Dps310.h"
-#include "Iis2mdc.h"
-#include "Ist8308.h"
-#include "Mcp4017.h"
-#include "Ms4525.h"
-#include "Pwm.h"
-#include "Sbus.h"
-#include "Sd.h"
-#include "Telem.h"
-#include "Ubx.h"
-#include "Vcp.h"
-#include "Lidarlitev3hp.h"
-#include "Pmw3901.h"
-#include "interface/board.h"
+#define SANDBOX // define to use
+#define BOARD_STATUS_PRINT // define to use
 
-/*
- *
- */
+#define USE_UART_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
-class Varmint : public rosflight_firmware::Board
-{
-  /**
-     * \brief
-     *
-     *
-     */
-private:
-  uint32_t serial_device_;
+// UART used for printf's
+//#define MISC_HUART (&huart2)
 
-  uint32_t status_errors_ = 0;
-  uint32_t status_len_ = 0;
-  Status * status_list_[STATUS_LIST_MAX_LEN];
+/////////////////////////////////////////////////////////////////////////////////////////////
+// USB MiddleWare
+// See CommonConfig.h for more #defines
 
-  RcPacket rcPacket_;
+// Override these if you are using HS vs FS
+//#define _USBD_USE_HS false
+//#define _USBD_USE_HS true // true/false (for FS, use "false")
+//#define _USBD_CDC_ACM_COUNT 1
 
-public:
-  Varmint(){};
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
 
-  INTERFACE_LIST
+//clang-format off
 
-  Status * status(uint32_t n) { return status_list_[n]; }
-  uint32_t status_len(void) { return status_len_; }
+// This list is used in Varmint.h
+#define INTERFACE_LIST  \
+  Sbus rc_; \
+  Ubx gps_; \
+  Adc adc_; /* channels in adc1, & adc3 */ \
+  Telem telem_; \
+  Vcp vcp_; \
+  Pwm pwm_; \
+  Sd sd_; \
+  Dps310 baro_; \
+  Adis165xx imu0_; \
+  Bmi088 imu1_; \
+  Iis2mdc mag_; \
+  DlhrL20G pitot_; \
+  Lidarlitev3hp range_; /* External I2C Lidar Range Sensor */ \
+  Pmw3901 oflow_; /* External SPI Optical Flow Sensor */ \
+  Led red_led_; \
+  Led green_led_; \
+  Led blue_led_;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // Required ROSflight Board HAL functions defined in board.h
+//clang-format on
 
-  PLATFORM_OVERRIDES
 
-};
+//// PB15
+//#define PROBE3_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET)
+//#define PROBE3_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET)
+//#define PROBE3_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15)
+//
+//// Real Board - PB1 J105 pin 23/25 Sync Bus (CAN XCVR)
+//#define PROBE4_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET)
+//#define PROBE4_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET)
+//#define PROBE4_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1)
 
-#endif /* VARMINT_H_ */
+#endif /* VARMINT_INIT_H_ */

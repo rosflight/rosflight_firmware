@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "BoardConfig.h" // NOTE! replaced "AL94.I-CUBE-USBD-COMPOSITE_conf.h"
+#include "CommonConfig.h" // NOTE! replaced "AL94.I-CUBE-USBD-COMPOSITE_conf.h"
 #include "stdbool.h"
 #include "usbd_ioreq.h"
 

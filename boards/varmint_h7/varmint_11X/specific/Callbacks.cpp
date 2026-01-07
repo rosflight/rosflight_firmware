@@ -35,28 +35,25 @@
  *
  ******************************************************************************
  **/
+
 #include "stm32h753xx.h"
-#include <Varmint.h>
+#include "Varmint.h"
 extern Varmint varmint;
 
-#include <Time64.h>
+#include "Time64.h"
 extern Time64 time64;
 
-#include <Callbacks.h>
-
-#include <BoardConfig.h>
+#include "Callbacks.h"
 
 #include "Polling.h"
 extern Polling polling;
-
-//#include "event_dispatch.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // High Rate (10kHz) Periodic Timer Interrupt Routine for Polling
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
-  if (polling.isMy(htim)) // Filter out other timer interrupts.
+  if (polling.isMy(htim))  
   {
     static uint64_t poll_counter = 0;
     poll_counter++;
@@ -184,6 +181,27 @@ void HAL_SD_TxCpltCallback(SD_HandleTypeDef * hsd)
 {
   if (varmint.sd_.isMy(hsd)) { varmint.sd_.endTxDma(hsd); }
 }
+
+//// This function is called if there is an error during the transmission
+//void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
+//{
+//    // Handle error
+//  if (varmint.sd_.isMy(hsd)) { varmint.sd_.errorDma(hsd,0); }
+//}
+//
+//// optional: This function is invoked when the SD card is not ready for I/O operation
+//void HAL_SD_CardErrorCallback(SD_HandleTypeDef *hsd)
+//{
+//    // Handle SD card-specific error
+//  if (varmint.sd_.isMy(hsd)) { varmint.sd_.errorDma(hsd,1); }
+//}
+//
+//// optional: This function is invoked when the SD card has been disconnected or reconnected
+//void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
+//{
+//    // Transmission has been aborted
+//  if (varmint.sd_.isMy(hsd)) { varmint.sd_.errorDma(hsd,2); }
+//}
 
 void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
 {

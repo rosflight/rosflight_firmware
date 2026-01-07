@@ -37,7 +37,7 @@
 
 #include "Mpu.h"
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 
 void MpuConfig(void)
 {

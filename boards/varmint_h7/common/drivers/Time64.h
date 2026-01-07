@@ -38,7 +38,7 @@
 #ifndef TIME64_H_
 #define TIME64_H_
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "Status.h"
 #include <stdint.h>
 #include <stdarg.h>

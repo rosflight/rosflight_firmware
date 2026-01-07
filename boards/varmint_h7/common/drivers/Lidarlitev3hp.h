@@ -39,7 +39,7 @@
 #define DRIVERS_LIDARLITEV3HP_H_
 
 #include "DoubleBuffer.h"
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 
 #include "Packets.h"
 #include "Time64.h"

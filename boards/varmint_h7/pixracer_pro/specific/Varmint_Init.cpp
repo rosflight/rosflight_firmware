@@ -36,41 +36,27 @@
  **/
 #include "Varmint.h"
 
-#include "BoardConfig.h"
-#include "Spi.h"
-#include "Time64.h"
-#include "misc.h"
-
 #include "usb_device.h"
-#include "usbd_cdc_acm_if.h"
-
-#include "main.h"
-#include <ctime>
-
-#include "Callbacks.h"
-#include "Polling.h"
-#include "sandbox.h"
 
 #include "Mpu.h"
 
-#include "Gpio.h"
-
-bool verbose = BOARD_STATUS_PRINT;
+#include "sandbox.h"
 
 Time64 time64;
 Polling polling;
 
+// Assign misc uart to huart2
+UART_HandleTypeDef *misc_huart = &huart2;
+
+extern bool verbose;
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //
-// Varmint Board
+// Varmint Board Initializers
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @fn void init_board(void)
- * @brief Board Initialization
- *
- */
+// clang-format off
 
 void Varmint::init_board(void)
 {
@@ -133,7 +119,11 @@ void Varmint::init_board(void)
     TIM12 // HTIM_HIGH_INSTANCE
   );
 
-#define ASCII_ESC 27
+  #ifdef BOARD_STATUS_PRINT
+    verbose = true;
+  #endif
+
+  #define ASCII_ESC 27
   misc_printf("\n\n%c[H", ASCII_ESC); // home
   misc_printf("%c[2J", ASCII_ESC);    // clear screen
 
@@ -196,6 +186,7 @@ void Varmint::init_board(void)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Lidar initialization
 
+  // Range Lidar Sensor on i2c1
   misc_printf("\n\nLIDARLITEV3 (range) Initialization\n");                // I2C must already be initialized
   init_status = range_.init(
     100, //LIDAR_HZ,
@@ -207,10 +198,9 @@ void Varmint::init_board(void)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Optical Flow initialization
 
-  // Make sure 3.3V power is enabled
-
+  // Enable 3.3V power
   gpio_t spectrum_power = gpio("PE4");
-  HAL_GPIO_WritePin(spectrum_power.port(), spectrum_power.pin(), GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(spectrum_power.port, spectrum_power.pin, GPIO_PIN_RESET);
 
   misc_printf("\n\nPMW3901 (oflow) Initialization\n");
   init_status = oflow_.init(
@@ -241,8 +231,8 @@ void Varmint::init_board(void)
     10, // GPS_HZ,
     gpio("PD12"), // GPS_PPS_PORT, GPS_PPS_PIN,
     &huart4, // GPS_UART,
-    USART4, // GPS_UART_INSTANCE,
-    &hdma_usart4_rx, //GPS_UART_DMA,
+    UART4, // GPS_UART_INSTANCE,
+    &hdma_uart4_rx, //GPS_UART_DMA,
     115200 //GPS_BAUD
   );
 
@@ -262,20 +252,6 @@ void Varmint::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &rc_;
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // ADC initialization
-
-  misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status = adc_.init(
-    10, // ADC_HZ,
-    &hadc1, // ADC_ADC_EXTERNAL,
-    ADC1, // ADC_ADC_INSTANCE_EXTERNAL,
-    &hadc3, // ADC_ADC_INTERNAL,
-    ADC3 // ADC_ADC_INSTANCE_INTERNAL
-  );
-  misc_exit_status(init_status);
-  status_list_[status_len_++] = &adc_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // COM initialization
@@ -299,43 +275,52 @@ void Varmint::init_board(void)
   status_list_[status_len_++] = &telem_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // ADC initialization
+
+  misc_printf("\n\nAdc (adc) Initialization\n");
+  // Only adc1&3 are supported
+  init_status = adc_.init(
+    10u, // Hz
+    // ADC1:
+    std::array<AdcChan,4> {{
+      {ADC_REGULAR_RANK_2 , ADC_CHANNEL_15       , 12.620, 0.0, ADC_VBATT_STRING }, /* ADC_BATTERY_VOLTAGE */
+      {ADC_REGULAR_RANK_2 , ADC_CHANNEL_15       , 60.500, 0.0, ADC_IBATT_STRING }, /* ADC_BATTERY_CURRENT */
+      {ADC_REGULAR_RANK_5 , ADC_CHANNEL_18       ,  2.000, 0.0, ADC_5V0_STRING   }, /* ADC_5V0 */
+      {ADC_REGULAR_RANK_1 , ADC_CHANNEL_11       ,  1.000, 0.0, ADC_VRSSI_STRING }, /* ADC_BATTERY_VOLTS */
+    }},
+    // ADC3:
+    std::array<AdcChan,3> {{
+      {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR,  1.000, 0.0, ADC_INT_TEMP_STRING}, /* ADC_STM_TEMPERATURE */
+      {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT      ,  4.000, 0.0, ADC_INT_VREF_STRING}, /* ADC_STM_VBAT */
+      {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT   ,  1.000, 0.0, ADC_INT_VBKU_STRING}, /* ADC_STM_VREFINT */
+    }}
+  );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &adc_;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // PWM initialization
 
   misc_printf("\n\nPWM (PWM) Initialization\n");
-  init_status = pwm_.init();
-
+   init_status = pwm_.init(
+    std::array< PwmTimer, 3>{{
+      {&htim1, PWM_STANDARD, PWM_STD_RATE_HZ},
+      {&htim4, PWM_STANDARD, PWM_STD_RATE_HZ},
+      {&htim8, PWM_STANDARD, PWM_STD_RATE_HZ}
+    }},
+    std::array< PwmChannel, 8>{{
+      { &htim1, TIM_CHANNEL_4 }, // Servo 1
+      { &htim1, TIM_CHANNEL_3 }, // Servo 2
+      { &htim1, TIM_CHANNEL_2 }, // Servo 3
+      { &htim1, TIM_CHANNEL_1 }, // Servo 4
+      { &htim4, TIM_CHANNEL_2 }, // Servo 5
+      { &htim4, TIM_CHANNEL_3 }, // Servo 6
+      { &htim8, TIM_CHANNEL_1 }, // Servo 7
+      { &htim8, TIM_CHANNEL_2 } // Servo 8
+     }}
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pwm_;
-
-
-  // TODO put in correct values here...
-
-  // PWM_MAX_TIMERS = 3
-  pwm_.timer_ =     std::array< PwmTimer, PWM_MAX_TIMERS>{{
-    {&htim1, PWM_STANDARD, PWM_STD_RATE_HZ},
-    {&htim4, PWM_STANDARD, PWM_STD_RATE_HZ},
-    {&htim8, PWM_STANDARD, PWM_STD_RATE_HZ}
-  }};
-  // for an unused timer entry use: { nullptr, PWM_NONE, 0.0 }
-
-  // PWM_MAX_CHANNELS = 10
-  pwm_.channel_ =  std::array< PwmChannel, PWM_MAX_CHANNELS>{{
-    { &htim1, TIM_CHANNEL_4 }, // Servo 1
-    { &htim1, TIM_CHANNEL_3 }, // Servo 2
-    { &htim1, TIM_CHANNEL_2 }, // Servo 3
-    { &htim1, TIM_CHANNEL_1 }, // Servo 4
-    { &htim4, TIM_CHANNEL_2 }, // Servo 5
-    { &htim4, TIM_CHANNEL_3 }, // Servo 6
-    { &htim8, TIM_CHANNEL_1 }, // Servo 7
-    { &htim8, TIM_CHANNEL_2 }, // Servo 8
-    { nullptr, TIM_CHANNEL_NONE }, // Servo 9, not implemented
-    { nullptr, TIM_CHANNEL_NONE }  // Servo 10, not implemented
-  }};
-
-  init_status = pwm_.init();
-  misc_exit_status(init_status);
-  status_list_[status_len_++] = &pwm_;
-
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Servo Power Supply initialization
@@ -344,6 +329,7 @@ void Varmint::init_board(void)
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // uSD Card initialization
+
   misc_printf("\n\nSDMMC Initialization\n");
   init_status = sd_.init( &hsd1, SDMMC1 );
   misc_exit_status(init_status);
@@ -355,21 +341,6 @@ void Varmint::init_board(void)
   red_led_.init(gpio("PE7"), false);
   green_led_.init(gpio("PE15"), false);
   blue_led_.init(gpio("PE8"), false);
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Review Status List
-
-  misc_printf("\n\nStatus List:\n");
-  for (uint32_t i = 0; i < status_len_; i++) {
-    //status_list_[i]->print();
-    if (status_list_[i]->initGood()) {
-      misc_printf("\033[0;42m");
-    } else {
-      misc_printf("\033[0;41m");
-    }
-    misc_printf("%-16s Status: 0x%08X", status_list_[i]->name(), status_list_[i]->status());
-    misc_printf("\033[0m\n");
-  }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt initializations
@@ -398,15 +369,27 @@ void Varmint::init_board(void)
   misc_exit_status(init_status);
   status_list_[status_len_++] = &polling;
 
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Review Status List
+
+  misc_printf("\n\nStatus Summary:\n");
+  for (uint32_t i = 0; i < status_len(); i++) {
+    misc_printf("%-16s ", status(i)->name());
+    misc_exit_status(status(i)->status());
+  }
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Done Initialization
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if SANDBOX
   misc_printf("\n\nStarting Sandbox\n");
+  verbose = true;
   sandbox();
 #else
   misc_printf("\n\nStarting Rosflight\n");
   verbose = false;
 #endif
 }
+// clang-format on

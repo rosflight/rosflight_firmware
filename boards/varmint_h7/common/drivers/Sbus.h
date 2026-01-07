@@ -39,7 +39,7 @@
 #define SBUS_H_
 
 #include "DoubleBuffer.h"
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 
 /*
  *

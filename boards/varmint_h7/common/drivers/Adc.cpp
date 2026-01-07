@@ -35,7 +35,7 @@
  ******************************************************************************
  **/
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 
 #include "Adc.h"
 
@@ -51,57 +51,57 @@ extern Polling polling;
 #define ADC_DMA_BUF_SIZE_EXT (ADC_CHANNELS_EXT * sizeof(uint32_t))
 #define ADC_DMA_BUF_SIZE_MAX (16 * sizeof(uint32_t)) // 16 channels is max for the ADC sequencer
 
-//DTCM_RAM uint8_t adc_double_buffer[2 * sizeof(Adc::AdcPacket)];
+DTCM_RAM uint8_t adc_double_buffer[2 * sizeof(AdcPacket)];
+uint8_t * adc_double_buffer_ptr = adc_double_buffer;
 //DTCM_RAM uint32_t adc_counts[ADC_CHANNELS];
 
-DMA_RAM uint32_t adc_dma_buf_ext[ADC_DMA_BUF_SIZE_MAX / 4];
-BDMA_RAM uint32_t adc_dma_buf_int[ADC_DMA_BUF_SIZE_MAX / 4]; // internal is adc3 is BDMA
+DMA_RAM  uint32_t adc_dma_buf_1[ADC_DMA_BUF_SIZE_MAX / 4];
+//DMA_RAM  uint32_t adc_dma_buf_2[ADC_DMA_BUF_SIZE_MAX / 4];
+BDMA_RAM uint32_t adc_dma_buf_3[ADC_DMA_BUF_SIZE_MAX / 4]; // internal is adc3 is BDMA
 
-DATA_RAM AdcChannelCfg adc_cfg[ADC_CHANNELS] = ADC_CFG_CHANS_DEFINE;
+//DATA_RAM AdcChannelCfg adc_cfg[ADC_CHANNELS] = ADC_CFG_CHANS_DEFINE;
 
-template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
-uint32_t Adc< adc1_len, adc2_len, adc3_len>::init(uint16_t sample_rate_hz)
-{
-  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Adc");
-  initializationStatus_ = DRIVER_OK;
-  sampleRateHz_ = sample_rate_hz;
-//  hadcExt_ = &hadc1;
-//  hadcInt_ = &hadc3;
-
-  // count up the channels on each adc
-
-  double_buffer_.init(adc_double_buffer, sizeof(adc_double_buffer));
-
-  if (DRIVER_OK != configAdc(&hadc1)) {
-    initializationStatus_ = DRIVER_HAL_ERROR;
-  }
-//  if (DRIVER_OK != configAdc(&hadc2)) {
+//template <size_t adc1_len, size_t adc3_len>
+//uint32_t Adc::init(
+//    uint16_t sample_rate_hz,
+//    std::array<AdcChan,adc1_len> adc1_config,
+//    std::array<AdcChan,adc3_len> adc3_config
+//)
+//{
+//  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Adc");
+//  initializationStatus_ = DRIVER_OK;
+//  sampleRateHz_ = sample_rate_hz;
+//
+//  std::copy(adc1_config.begin(), adc1_config.end(), adc1_chan_.begin());
+//  std::copy(adc3_config.begin(), adc3_config.end(), adc3_chan_.begin());
+//  adc1_len_ = adc1_len;
+//  adc3_len_ = adc3_len;
+//
+//
+//  // count up the channels on each adc
+//
+//  double_buffer_.init(adc_double_buffer, sizeof(adc_double_buffer));
+//
+//  if (DRIVER_OK != configAdc(&hadc1)) {
+//    initializationStatus_ = DRIVER_HAL_ERROR;
+//  }
+//  if (DRIVER_OK != configAdc(&hadc3)) {
 //    initializationStatus_ |= DRIVER_HAL_ERROR;
 //  }
-  if (DRIVER_OK != configAdc(&hadc3)) {
-    initializationStatus_ |= DRIVER_HAL_ERROR;
-  }
-  return initializationStatus_;
-}
+//  return initializationStatus_;
+//}
 
-template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
-uint32_t Adc< adc1_len, adc2_len, adc3_len>::configAdc(ADC_HandleTypeDef * hadc)
+
+uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc)
 {
   ADC_TypeDef * adc_instance = ADC3;
-  uint32_t cfg_channels = adc3_len;
+  uint32_t cfg_channels = adc3_len_;
 
   if (hadc == &hadc1) {
     adc_instance = ADC1;
-    cfg_channels = adc1_len;
+    cfg_channels = adc1_len_;
   }
-  else if (hadc == &hadc2) {
-    adc_instance = ADC2;
-    cfg_channels = adc2_len;
-  }
-//  else if (hadc == &hadc3) {
-//    adc_instance = ADC3;
-//    cfg_channels = adc3_len;
-//  }
+
 
   // uint32_t clock_prescaler ADC_CLOCK_ASYNC_DIV256; // This is reset below
   uint32_t sampling_cycles = ADC_SAMPLETIME_810CYCLES_5;
@@ -110,7 +110,7 @@ uint32_t Adc< adc1_len, adc2_len, adc3_len>::configAdc(ADC_HandleTypeDef * hadc)
   // The sample time in us = 1/(64MHz/2)*clock_prescalar*(sampling_cycles+conversion_cycles)*ADC_MAX*oversample_ratio
 
   uint32_t clock_prescaler = (64000000 / 2) / sampleRateHz_ / ((1621 + 2 * conversion_cycles) / 2)
-    / ((ADC_CHANNELS_EXT > ADC_CHANNELS_INT) ? ADC_CHANNELS_EXT : ADC_CHANNELS_INT);
+    / ((adc1_len_ > adc3_len_) ? adc1_len_ : adc3_len_);
   if (clock_prescaler > 256) clock_prescaler = ADC_CLOCK_ASYNC_DIV256;      // ~39.3 ms
   else if (clock_prescaler > 128) clock_prescaler = ADC_CLOCK_ASYNC_DIV128; // ~19.6 ms
   else clock_prescaler = ADC_CLOCK_ASYNC_DIV64;                             // ~ 9.8 ms
@@ -148,88 +148,114 @@ uint32_t Adc< adc1_len, adc2_len, adc3_len>::configAdc(ADC_HandleTypeDef * hadc)
   sConfig.OffsetSignedSaturation = DISABLE;
 
   if (hadc == &hadc1) {
-    for (uint32_t i=0; i<adc1_len; i++){
-      sConfig->Rank = adc1_chan_[i].rank;
-      sConfig->Channel = adc1_chan_[i].chan;
-      if (HAL_ADC_ConfigChannel(&hadc1, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
-    }
-  } else if(hadc == &hadc2) {
-    for (uint32_t i=0; i<adc2_len; i++){
-      sConfig->Rank = adc2_chan_[i].rank;
-      sConfig->Channel = adc2_chan_[i].chan;
-      if (HAL_ADC_ConfigChannel(&hadc2, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+    for (uint32_t i=0; i<adc1_len_; i++){
+      sConfig.Rank = adc1_chan_[i].rank;
+      sConfig.Channel = adc1_chan_[i].chan;
+      if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
     }
   } else if(hadc == &hadc3) {
-    for (uint32_t i=0; i<adc3_len; i++){
-      sConfig->Rank = adc3_chan_[i].rank;
-      sConfig->Channel = adc3_chan_[i].chan;
-      if (HAL_ADC_ConfigChannel(&hadc3, sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+    for (uint32_t i=0; i<adc3_len_; i++){
+      sConfig.Rank = adc3_chan_[i].rank;
+      sConfig.Channel = adc3_chan_[i].chan;
+      if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK) return DRIVER_HAL_ERROR;
     }
   }
 
   HAL_ADCEx_Calibration_Start(hadc, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
 
+
   return DRIVER_OK;
 }
 
-template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
-bool Adc< adc1_len, adc3_len>::poll(uint64_t poll_counter)
+
+bool Adc::poll(uint64_t poll_counter)
 {
   uint32_t poll_offset = polling.index(poll_counter, 1000000/sampleRateHz_); //(uint32_t) (poll_counter % (adc_us/POLLING_PERIOD_US));
 
   if (poll_offset == 0) // launch a read
   {
     drdy_ = time64.Us();
-    HAL_StatusTypeDef hal_status_ext = HAL_ADC_Start_DMA(hadcExt_, (uint32_t *) adc_dma_buf_ext, ADC_CHANNELS_EXT);
-    HAL_StatusTypeDef hal_status_int = HAL_ADC_Start_DMA(hadcInt_, (uint32_t *) adc_dma_buf_int, ADC_CHANNELS_INT);
-    return ((HAL_OK == hal_status_int) && (HAL_OK == hal_status_ext));
+
+    uint32_t hal_status = HAL_OK;
+
+    if( (adc1_len_>0) && (adc1_len_<=16) ) {
+      hal_status |= HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc_dma_buf_1, adc1_len_);
+    }
+    if( (adc3_len_>0) && (adc3_len_<=16) ) {
+      hal_status |= HAL_ADC_Start_DMA(&hadc3, (uint32_t *) adc_dma_buf_3, adc3_len_);
+    }
+
+    return hal_status == HAL_OK;
   }
 
   return false;
 }
 
-template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
-void Adc< adc1_len, adc2_len, adc3_len>::endDma(ADC_HandleTypeDef * hadc)
+
+void Adc::endDma(ADC_HandleTypeDef * hadc)
 {
-  static bool int_read = 0, ext_read = 0;
+  static uint8_t read=0;
 
-  if (hadc == hadcExt_) {
-    memcpy(adc_counts, adc_dma_buf_ext, ADC_CHANNELS_EXT * sizeof(uint32_t));
-    ext_read = 1;
-  } else if (hadc == hadcInt_) {
-    memcpy(&(adc_counts[ADC_CHANNELS_EXT]), adc_dma_buf_int, ADC_CHANNELS_INT * sizeof(uint32_t));
-    int_read = 1;
-  }
+  if (hadc == &hadc1) { read  |= 0x01; }
+  else if (hadc == &hadc3) { read |= 0x04;}
 
-  if (ext_read && int_read) {
+  if (read==0x05) {
+
+
     AdcPacket p;
-    p.temperature = (double) (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP)
+
+    // adc3-specific internal sensors
+    uint32_t *counts3 = (uint32_t *) adc_dma_buf_3;
+    if (adc3TempIndex_ < adc3_len_)
+    {
+      p.temperature = (double) (TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP)
         / (double) (*TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR)
-        * ((double) adc_counts[ADC_STM_TEMPERATURE] - (double) *TEMPSENSOR_CAL1_ADDR)
-      + (double) TEMPSENSOR_CAL1_TEMP;
-
-    p.vRef = (double) VREFINT_CAL_VREF / 1000.0 * (double) (*VREFINT_CAL_ADDR) / (double) adc_counts[ADC_STM_VREFINT];
-    p.vBku = 4.0 * (double) adc_counts[ADC_STM_VBAT] * p.vRef / 65535.0;
-
-#ifdef ADC_3V3
-    double vcc = (double) (adc_counts[ADC_3V3] & 0xFFFF) / 65535.0 * p.vRef * cfg_[ADC_3V3].scaleFactor;
-#else
-    double vcc = p.vRef;
-#endif
-    for (int i = 0; i < ADC_CHANNELS; i++) {
-      p.volts[i] = ((double) (adc_counts[i] & 0xFFFF) / 65535.0 * vcc - cfg_[i].offset) * cfg_[i].scaleFactor;
+        * ((double) (counts3[adc3TempIndex_] & 0xFFFF) - (double) *TEMPSENSOR_CAL1_ADDR)
+        + (double) TEMPSENSOR_CAL1_TEMP;
+    } else {
+      p.temperature = -273.15; // C
     }
+
+    if (adc3VrefIndex_ < adc3_len_)
+    {
+      p.vRef = (double) VREFINT_CAL_VREF / 1000.0 * (double) (*VREFINT_CAL_ADDR) / (double) (counts3[adc3VrefIndex_] & 0xFFFF);
+    } else {
+      p.vRef = 3.3; // V
+    }
+
+    if (adc3BkuIndex_ < adc3_len_)
+    {
+      p.vBku = 4.0 * (double) (counts3[adc3BkuIndex_] & 0xFFFF) / 65535.0 * p.vRef; // known offset and scale factor.
+    } else {
+      p.vBku = 0.0; // V
+    }
+
+    uint32_t *counts1 = (uint32_t *) adc_dma_buf_1;
+
+    for(uint32_t i=0;i<adc1_len_;i++) {
+      p.volts[i] = ((double) (counts1[i] & 0xFFFF) / 65535.0 * p.vRef - adc1_chan_[i].offset) * adc1_chan_[i].scale_factor;
+    }
+
+    for(uint32_t i=0;i<adc3_len_;i++) {
+      p.volts[i+adc1_len_] = ((double) (counts3[i] & 0xFFFF) / 65535.0 * p.vRef - adc3_chan_[i].offset) * adc3_chan_[i].scale_factor;
+    }
+    uint32_t channels = adc1_len_ + adc3_len_;
+    if (adcBattIIndex_< channels) p.current = p.volts[adcBattIIndex_]; else p.current = 0.0;
+    if (adcBattVIndex_< channels) p.voltage = p.volts[adcBattVIndex_]; else p.voltage = 0.0;
+
+    if (adc3BkuIndex_ < adc3_len_) p.volts[adc3BkuIndex_+adc1_len_] = p.vBku;
+    if (adc3VrefIndex_ < adc3_len_) p.volts[adc3VrefIndex_+adc1_len_] = p.vRef;
+    if (adc3TempIndex_ < adc3_len_) p.volts[adc3TempIndex_+adc1_len_] = p.temperature;
 
     p.header.complete = time64.Us();
     p.header.timestamp = (drdy_+p.header.complete)/2;
     write((uint8_t *) &p, sizeof(p));
-    ext_read = 0;
-    int_read = 0;
+    read = 0;
   }
 }
 
-template <size_t adc1_len, size_t adc2_len, size_t adc3_len>
-bool Adc< adc1_len, adc2_len, adc3_len>::display(void)
+
+bool Adc::display(void)
 {
   AdcPacket p;
   char name[] = "Adc (adc)";
@@ -239,82 +265,34 @@ bool Adc< adc1_len, adc2_len, adc3_len>::display(void)
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "STM");
-    misc_f32(3.0, 3.6, p.vBku, "Vbku", "%5.1f", "V");               //
-    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.vRef, "Vref", "%5.1f", "V"); //
-    misc_f32(18.0, 50.0, p.temperature, "Temp", "%5.1f", "C");      //
+    misc_f32(3.0       , 3.6       , p.vBku, "Vbku", "%5.1f", "V");
+    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.vRef, "Vref", "%5.1f", "V");
+    misc_f32(18.0, 50.0, p.temperature, "Temp", "%5.1f", "C");
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "Pwr");
-    misc_f32(22.2 / 1.02, 22.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "BattV", "%5.1f", "V"); //
-    misc_f32(0.1, 1.0, p.volts[ADC_BATTERY_CURRENT], "BattI", "%5.1f", "A");               //
+    misc_f32(22.2 / 1.02, 22.2 * 1.02, p.voltage, "Vbatt", "%5.1f", "V");
+    misc_f32(0.1, 1.0, p.current, "Ibatt", "%5.1f", "A");
     misc_printf("\n");
 
-    misc_printf("  %-8s : ", "PS_FC");
-
-#ifdef ADC_3V3
-    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.volts[ADC_3V3], "3V3_FC", "%5.1f", "V"); //
-#endif
-#ifdef ADC_3V3_CURRENT
-    misc_f32(0.0, 1.0, p.volts[ADC_3V3_CURRENT], "3I3_FC", "%5.1f", "A"); //
-#endif
-
-#ifdef ADC_5V0
-    misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_5V0], "5V0_FC", "%5.1f", "V"); //
-#endif
-#ifdef ADC_5V0_CURRENT
-    misc_f32(0.0, 1.0, p.volts[ADC_5V0_CURRENT], "5I0_FC", "%5.1f", "A"); //
-#endif
-
-#ifdef ADC_12V
-    misc_f32(12 / 1.02, 12 * 1.02, p.volts[ADC_12V], "12V_FC", "%5.1f", "V"); //
-#endif
-#ifdef ADC_12V_CURRENT
-    misc_f32(0.0, 1.0, p.volts[ADC_12V_CURRENT], "12I_FC", "%5.1f", "A"); //
-#endif
-
-#ifdef ADC_SERVO_VOLTS
-    misc_f32(8.2 / 1.02, 8.2 * 1.02, p.volts[ADC_SERVO_VOLTS], "ServoV", "%5.1f", "V"); //
-#endif
-#ifdef ADC_SERVO_CURRENT
-    misc_f32(0.0, 2.0, p.volts[ADC_SERVO_CURRENT], "ServoI", "%5.1f", "A"); //
-#endif
+    misc_printf("  %-8s : ", "ADC1");
+    for(uint32_t i = 0; i<num_channels1(); i++ ) {
+      char label[8] = {0};
+      char unit[8]  = {0};
+      if(name_channel(i,&label[0],&unit[0])) {
+        misc_printf("%-7s %4.1f %-3s |", label, p.volts[i], unit);
+      }
+    }
     misc_printf("\n");
 
-    misc_printf("  %-8s : ", "PS_CC");
-#ifdef ADC_CC_3V3
-    misc_f32(3.3 / 1.02, 3.3 * 1.02, p.volts[ADC_CC_3V3], "3V3_CC", "%5.1f", "V"); //
-#endif
-#ifdef ADC_CC_3V3_CURRENT
-    misc_f32(0.0, 2.0, p.volts[ADC_CC_3V3_CURRENT], "3I3_CC", "%5.1f", "A"); //
-#endif
-
-#ifdef ADC_CC_5V0
-    misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_CC_5V0], "5V0_CC", "%5.1f", "V"); //
-#endif
-#ifdef ADC_CC_5V0_CURRENT
-    misc_f32(0.0, 2.0, p.volts[ADC_CC_5V0_CURRENT], "5I0_CC", "%5.1f", "A"); //
-#endif
-
-    misc_printf("\n");
-
-    misc_printf("  %-8s : ", "ADC");
-
-#ifdef ADC_J107_ADC_1
-    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J107_ADC_1], "J107-1", "%5.1f", "V"); //
-#endif
-#ifdef ADC_J107_ADC_2
-    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J107_ADC_2], "J107-2", "%5.1f", "V"); //
-#endif
-#ifdef ADC_J109_ADC_3
-    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J109_ADC_3], "J109-3", "%5.1f", "V"); //
-#endif
-#ifdef ADC_J109_ADC4
-    misc_f32(0, 3.33 * 1.02, p.volts[ADC_J109_ADC4], "J109-4", "%5.1f", "V"); //
-#endif
-#ifdef ADC_RSSI_V                                                        // Pixracer Pro
-    misc_f32(0, 3.33 * 1.02, p.volts[ADC_RSSI_V], "RSSI", "%5.1f", "V"); //
-#endif
-
+    misc_printf("  %-8s : ", "ADC3");
+    for(uint32_t i = num_channels1(); i<num_channels(); i++ ) {
+      char label[8] = {0};
+      char unit[8]  = {0};
+      if(name_channel(i,&label[0],&unit[0])) {
+        misc_printf("%-7s %4.1f %-3s |", label, p.volts[i], unit);
+      }
+    }
     misc_printf("\n");
 
     return 1;
@@ -322,14 +300,24 @@ bool Adc< adc1_len, adc2_len, adc3_len>::display(void)
     misc_printf("%s\n", name);
     misc_printf("  STM\n");
     misc_printf("  Pwr\n");
-    misc_printf("  PS_FC\n");
-    misc_printf("  PS_CC\n");
-    misc_printf("  ADC\n");
+    misc_printf("  ADC1\n");
+    misc_printf("  ADC3\n");
   }
   return 0;
 }
 
-void Adc::setScaleFactor(uint16_t n, float scale_factor)
+
+void Adc::setScaleFactor(uint16_t n, float scale_factor, float offset)
 {
-  if (n < ADC_CHANNELS_EXT + ADC_CHANNELS_INT) cfg_[n].scaleFactor = scale_factor;
+  if (n < adc1_len_ ) {
+    adc1_chan_[n].offset = offset;
+    adc1_chan_[n].scale_factor = scale_factor;
+  } else if (n < (adc1_len_ + adc3_len_)) {
+    adc3_chan_[n-adc1_len_].offset = offset;
+    adc3_chan_[n-adc1_len_].scale_factor = scale_factor;
+  }
 }
+
+
+
+

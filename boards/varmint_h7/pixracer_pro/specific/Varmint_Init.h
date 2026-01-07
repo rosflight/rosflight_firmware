@@ -35,37 +35,37 @@
  ******************************************************************************
  **/
 
-#ifndef BOARDCONFIG_H_
-#define BOARDCONFIG_H_
+#ifndef VARMINT_INIT_H_
+#define VARMINT_INIT_H_
 
 #include "CommonConfig.h"
 
-#define SANDBOX false
-#define BOARD_STATUS_PRINT false
-#define USE_UART_TELEM false // 1 = use UART, 0 = use VCP for link to companion computer.
+//#define SANDBOX // define to use
+//#define BOARD_STATUS_PRINT // define to use
+#define USE_UART_TELEM 1 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
-#define MISC_HUART (&huart2)
+//#define MISC_HUART (&huart2)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // USB MiddleWare
 // See CommonConfig.h for more #defines
 
-#define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
-//#define VCP_Transmit(buffer, length) CDC_Transmit_FS(buffer, length)
-//#define VCP_Transmit(buffer, length) CDC_Transmit_HS(buffer, length)
+// Override these if you are using HS vs FS
+//#define _USBD_USE_HS false
+//#define _USBD_USE_HS true // true/false (for FS, use "false")
+//#define _USBD_CDC_ACM_COUNT 1
 
-#define _USBD_USE_HS false
-extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
-#define _USBD_CDC_ACM_COUNT 1
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // clang-format off
+
+// This list is used in Varmint.h
 #define INTERFACE_LIST \
   Sbus rc_; \
   Ubx gps_; \
-  Adc adc_; \
+  Adc adc_; /* channels in adc1, & adc3 */ \
   Telem telem_; \
   Vcp vcp_; \
   Pwm pwm_; \
@@ -78,49 +78,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Ms4525 pitot_;  /* External */ \
   Ist8308 mag_; /* External */ \
   Lidarlitev3hp range_; /* External */ \
-  Pmw3901 oflow_; /* External */ \
+  Pmw3901 oflow_; /* External */
 
-  /**/
-
-
-// Onboard ADC's
-#define ADC_HZ (10) // Maximum is 500 Hz.
-
-#define ADC_ADC_EXTERNAL (&hadc1)
-#define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
-#define ADC_EXT_DMA_RAM DMA_RAM
-#define ADC_CHANNELS_EXT (4)
-
-#define ADC_RSSI_V (0)          // INP 11
-#define ADC_BATTERY_VOLTS (1)   // INP 14
-#define ADC_BATTERY_CURRENT (2) // INP 15
-#define ADC_5V0 (3)             // INP 18
-
-#define ADC_ADC_INTERNAL (&hadc3)
-#define ADC_ADC_INSTANCE_INTERNAL (ADC3)
-
-#define ADC_INT_DMA_RAM BDMA_RAM // NOTE! ADC3 using BDMA so this needs to be in SRAM4
-#define ADC_CHANNELS_INT (3)
-
-#define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
-#define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
-#define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
-
-// NOTE! This lets us put all the config in one file
-// clang-format off
-#define ADC_CFG_CHANS_DEFINE \
-{ \
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},         /* ADC_RSSI_V */ \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 12.62, 0.0},         /* ADC_BATTERY_VOLTS */ \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 60.5, 0.0747},         /* ADC_BATTERY_CURRENT */ \
-  {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},         /* ADC_5V0 */ \
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */ \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */ \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.0,0.0}        /* ADC_STM_VREFINT */ \
-}
 // clang-format on
-
-#define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
 
 // Probes
 // Probe PIN PG9
@@ -129,4 +89,4 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 //#define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
 
 
-#endif /* BOARDCONFIG_H_ */
+#endif /* VARMINT_INIT_H_ */

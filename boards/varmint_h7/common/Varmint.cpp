@@ -34,6 +34,9 @@
  *
  ******************************************************************************
  **/
+
+#include "CommonConfig.h"
+
 #include "Varmint.h"
 
 #include "Time64.h"
@@ -238,8 +241,8 @@ bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
   AdcPacket p;
   if (adc_.read((uint8_t *) &p, sizeof(p))) {
     batt->header = p.header;
-    batt->current = p.volts[ADC_BATTERY_CURRENT];
-    batt->voltage = p.volts[ADC_BATTERY_VOLTS];
+    batt->current = p.current;
+    batt->voltage = p.voltage;
     batt->temperature = p.temperature;
     return true;
   }
@@ -247,13 +250,11 @@ bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
 }
 void Varmint::battery_voltage_set_multiplier(double multiplier)
 {
-  if (multiplier == 0) return;
-  adc_.setScaleFactor(ADC_BATTERY_VOLTS, multiplier);
+  adc_.setVoltageScaleFactor(multiplier, 0);
 }
 void Varmint::battery_current_set_multiplier(double multiplier)
 {
-  if (multiplier == 0) return;
-  adc_.setScaleFactor(ADC_BATTERY_CURRENT, multiplier);
+  adc_.setCurrentScaleFactor(multiplier, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -337,7 +338,7 @@ bool Varmint::backup_memory_read(void * dest, size_t len)
   //	HAL_PWR_EnableBkUpAccess();
   //	memcpy(dest, (void*)D3_BKPSRAM_BASE, len);
   //	HAL_PWR_DisableBkUpAccess();
-  return true;
+  return false;
 }
 void Varmint::backup_memory_write(const void * src, size_t len)
 {

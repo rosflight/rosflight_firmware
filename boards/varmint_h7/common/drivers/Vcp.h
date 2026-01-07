@@ -38,7 +38,7 @@
 #ifndef VCP_H_
 #define VCP_H_
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "ByteFifo.h"
 #include "PacketFifo.h"
 #include "Packets.h"
@@ -48,6 +48,7 @@
  * @brief
  *
  */
+#define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
 
 class Vcp : public Status
 {

@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : VarmintService.cpp
+ * File     : Callbacks.cpp
  *
  * Date     : Sep 27, 2023
  ******************************************************************************
@@ -35,28 +35,23 @@
  *
  ******************************************************************************
  **/
-#include "Varmint.h"
+
 #include "stm32h753xx.h"
+#include "Varmint.h"
 extern Varmint varmint;
 
 #include "Time64.h"
 extern Time64 time64;
 
+#include "Callbacks.h"
 #include "Polling.h"
 extern Polling polling;
-
-#include "Callbacks.h"
-
-#include "BoardConfig.h"
-
-#include "Polling.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // High Rate (10kHz) Periodic Timer Interrupt Routine for Polling
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
-  //if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
   if (polling.isMy(htim))
   {
 
@@ -65,7 +60,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     varmint.baro_.poll(poll_counter);
     varmint.pitot_.poll(poll_counter);
     varmint.mag_.poll(poll_counter);
-    varmint.range_.poll(poll_counter);         
+    varmint.range_.poll(poll_counter-100);
 
     varmint.rc_.poll();              // Restart if dead
     varmint.gps_.poll();             // Restart if dead

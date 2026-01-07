@@ -120,7 +120,7 @@ uint32_t Pmw3901::init(
    SPI_HandleTypeDef * hspi, gpio_t cs // SPI
  )
  {
-  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Pmw9301");
+  snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Pmw3901");
   initializationStatus_ = DRIVER_OK;
 
   drdy_ = time64.Us();
@@ -152,7 +152,7 @@ uint32_t Pmw3901::init(
   uint8_t product_id = readRegister(0x00);
   uint8_t not_product_id = readRegister(0x5F);
 
-  misc_printf("PMW9301: PRODUCT ID = 0x%02X  (0x49) ~ 0x%02X  (0xB6) -", product_id, not_product_id);
+  misc_printf("PMW3901: PRODUCT ID = 0x%02X  (0x49) ~ 0x%02X  (0xB6) -", product_id, not_product_id);
   if (product_id != CHIP_ID || not_product_id != CHIP_ID_INVERSE) {
     initializationStatus_ |= DRIVER_ID_MISMATCH;
     misc_printf(" Not OK\n");

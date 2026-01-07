@@ -57,29 +57,29 @@ extern Polling polling;
 #define LIDARLITEV3HP_ADDRESS 0x62
 
 // Control Register List - Address Definitions
-#define ACQ_COMMAND            0x00  // Device command
-#define STATUS                 0x01  // System status
-#define SIG_COUNT_VAL          0x02  // Maximum acquisition count
-#define ACQ_CONFIG_REG         0x04  // Acquisition mode control
-#define LEGACY_RESET_EN        0x06  // Enables unit reset
-#define SIGNAL_STRENGTH        0x0E  // Received signal strength
-#define FULL_DELAY_HIGH        0x0F  // Distance measurement high byte
-#define FULL_DELAY_LOW         0x10  // Distance measurement low byte
-#define REF_COUNT_VAL          0x12  // Reference acquisition count
-#define UNIT_ID_HIGH           0x16  // Serial number high byte
-#define UNIT_ID_LOW            0x17  // Serial number low byte
-#define I2C_ID_HIGH            0x18  // Write serial number high byte for I2C address unlock
-#define I2C_ID_LOW             0x19  // Write serial number low byte for I2C address unlock
-#define I2C_SEC_ADDR           0x1A  // Write new I2C address after unlock
-#define THRESHOLD_BYPASS       0x1C  // Peak detection threshold bypass
-#define I2C_CONFIG             0x1E  // Default address response control
-#define PEAK_STACK_HIGH_BYTE   0x26  // Registers read successive values from the peak stack register (high byte)
-#define PEAK_STACK_LOW_BYTE    0x27  // Registers read successive values from the peak stack register (low byte)
-#define COMMAND                0x40  // State command
-#define HEALTH_STATUS          0x48  // Used to diagnose major hardware issues at initialization
-#define CORR_DATA              0x52  // Correlation record data low byte
-#define CORR_DATA_SIGN         0x53  // Correlation record data high byte
-#define POWER_CONTROL          0x65  // Power state control
+#define ACQ_COMMAND            0x0000  // Device command
+#define STATUS                 0x0001  // System status
+#define SIG_COUNT_VAL          0x0002  // Maximum acquisition count
+#define ACQ_CONFIG_REG         0x0004  // Acquisition mode control
+#define LEGACY_RESET_EN        0x0006  // Enables unit reset
+#define SIGNAL_STRENGTH        0x000E  // Received signal strength
+#define FULL_DELAY_HIGH        0x000F  // Distance measurement high byte
+#define FULL_DELAY_LOW         0x0010  // Distance measurement low byte
+#define REF_COUNT_VAL          0x0012  // Reference acquisition count
+#define UNIT_ID_HIGH           0x0016  // Serial number high byte
+#define UNIT_ID_LOW            0x0017  // Serial number low byte
+#define I2C_ID_HIGH            0x0018  // Write serial number high byte for I2C address unlock
+#define I2C_ID_LOW             0x0019  // Write serial number low byte for I2C address unlock
+#define I2C_SEC_ADDR           0x001A  // Write new I2C address after unlock
+#define THRESHOLD_BYPASS       0x001C  // Peak detection threshold bypass
+#define I2C_CONFIG             0x001E  // Default address response control
+#define PEAK_STACK_HIGH_BYTE   0x0026  // Registers read successive values from the peak stack register (high byte)
+#define PEAK_STACK_LOW_BYTE    0x0027  // Registers read successive values from the peak stack register (low byte)
+#define COMMAND                0x0040  // State command
+#define HEALTH_STATUS          0x0048  // Used to diagnose major hardware issues at initialization
+#define CORR_DATA              0x0052  // Correlation record data low byte
+#define CORR_DATA_SIGN         0x0053  // Correlation record data high byte
+#define POWER_CONTROL          0x0065  // Power state control
 
 
 DMA_RAM uint8_t lidarlite_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
@@ -205,7 +205,8 @@ uint32_t Lidarlitev3hp::init(
 
 bool Lidarlitev3hp::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = polling.index(poll_counter, ROLLOVER_US); //(PollingState) (poll_counter % (ROLLOVER_US / POLLING_PERIOD_US));
+  PollingState poll_state = polling.index(poll_counter, ROLLOVER_US);
+//  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER_US / 100));
 
   if( poll_state == 0) {
     startDrdyQuery(); // Read most recent measurement
@@ -216,7 +217,10 @@ bool Lidarlitev3hp::poll(uint64_t poll_counter)
 
 void Lidarlitev3hp::startDrdyQuery(void) {
   lidarlite_i2c_dma_buf[0] = 0;
-  if (HAL_I2C_Mem_Read_DMA(hi2c_, address_, STATUS, I2C_MEMADD_SIZE_8BIT, lidarlite_i2c_dma_buf, 1) == HAL_OK)
+
+  HAL_StatusTypeDef hal_status = HAL_I2C_Mem_Read_DMA(hi2c_, address_, (uint16_t)STATUS, I2C_MEMADD_SIZE_8BIT, lidarlite_i2c_dma_buf, 1);
+
+  if (hal_status == HAL_OK)
   {
     i2cState_ = LIDARLITE_STATE_CHK_STATUS;
   } else {
@@ -230,12 +234,12 @@ void Lidarlitev3hp::endRxDma(void)
   if (i2cState_ == LIDARLITE_STATE_CHK_STATUS  )
   {
     status_ = lidarlite_i2c_dma_buf[0];
-    if ((status_ & 0x01)==0x00) {
+    if ((status_ & 0x01)==0x00) { // 0x3A is good.
       drdy_ = time64.Us();
       // status good, start a read
       startDataRead();
     } else {
-      // status not jump to command next read
+      // status bad jump to command next read
       startMeasure();
     }
   } else if (i2cState_ == LIDARLITE_STATE_READ_RANGE ) {
@@ -264,12 +268,16 @@ void Lidarlitev3hp::endRxDma(void)
 void Lidarlitev3hp::startDataRead(void) {
   lidarlite_i2c_dma_buf[0] = 0;
   lidarlite_i2c_dma_buf[1] = 0;
-  if (HAL_I2C_Mem_Read_DMA(hi2c_, address_, FULL_DELAY_HIGH, I2C_MEMADD_SIZE_8BIT, lidarlite_i2c_dma_buf,2) == HAL_OK)
+
+  HAL_StatusTypeDef hal_status = HAL_I2C_Mem_Read_DMA(hi2c_, address_, FULL_DELAY_HIGH, I2C_MEMADD_SIZE_8BIT, lidarlite_i2c_dma_buf,2);
+
+  if (hal_status == HAL_OK)
   {
     i2cState_ = LIDARLITE_STATE_READ_RANGE;
   } else {
     i2cState_ = LIDARLITE_STATE_ERROR;
   }
+
 }
 
 void Lidarlitev3hp::startMeasure(void)

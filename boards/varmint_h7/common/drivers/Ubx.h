@@ -39,7 +39,7 @@
 #define UBX_H_
 
 #include "DoubleBuffer.h"
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "Packets.h"
 #include "Status.h"
 #include "Gpio.h"

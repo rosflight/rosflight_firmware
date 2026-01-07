@@ -93,7 +93,7 @@ DMA_HandleTypeDef hdma_usart3_tx;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-#include <BoardConfig.h>
+#include "CommonConfig.h"
 #if 0
 /* USER CODE END PV */
 

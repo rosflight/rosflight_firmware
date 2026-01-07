@@ -38,7 +38,7 @@
 #ifndef TELEM_H_
 #define TELEM_H_
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "ByteFifo.h"
 #include "Packets.h"
 #include "Time64.h"

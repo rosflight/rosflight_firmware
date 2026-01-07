@@ -35,12 +35,9 @@
  ******************************************************************************
  **/
 
-#include <sandbox.h>
-
-#include <BoardConfig.h>
-#include <misc.h>
-
-#include <Varmint.h>
+#include "sandbox.h"
+#include "misc.h"
+#include "Varmint.h"
 extern Varmint varmint;
 
 extern Time64 time64;
@@ -61,7 +58,6 @@ void verbose_equals(void)
   for (int i = 0; i < ROWSIZE; i++) misc_printf("=");
   misc_printf("\n");
 }
-
 
 void sandbox_dashboard(bool clear)
 {
@@ -99,12 +95,6 @@ void sandbox_dashboard(bool clear)
 
 void sandbox(void)
 {
-
-  for (uint32_t i = 0; i < varmint.status_len(); i++) {
-    misc_printf("%-16s ", varmint.status(i)->name());
-    misc_exit_status(varmint.status(i)->status());
-  }
-
   time64.dMs(5000);
 
   //	 Test pwm outputs
@@ -123,8 +113,6 @@ void sandbox(void)
   //	  time64.dUs(450); ~ 2khs update rate
   //	}
 
-  time64.dMs(5000);
-
 //  verbose = true;
 //  OpticalFlowPacket p;
 //  ImuPacket q;
@@ -137,14 +125,9 @@ void sandbox(void)
 //    }
 //  }
 
-
-
-
-  verbose = true;
   uint32_t n = 0;
   while (1) {
     sandbox_dashboard((n++) % 100 == 0);
-    // time64.dMs(200);
   }
 }
 

@@ -36,7 +36,7 @@
  **/
 
 #include "Vcp.h"
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "Packets.h"
 
 #include "usb_device.h"

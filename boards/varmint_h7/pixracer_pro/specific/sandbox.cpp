@@ -36,10 +36,7 @@
  **/
 
 #include "sandbox.h"
-
-#include "BoardConfig.h"
 #include "misc.h"
-
 #include "Varmint.h"
 extern Varmint varmint;
 
@@ -96,9 +93,7 @@ void sandbox_dashboard(bool clear)
 
 void sandbox(void)
 {
-  // Give us time to read the initialization messages
   time64.dMs(5000);
-  verbose = true;
 
   //	 Test pwm outputs
   //
@@ -119,6 +114,5 @@ void sandbox(void)
   uint32_t n = 0;
   while (1) {
     sandbox_dashboard((n++) % 100 == 0);
-    // time64.dMs(200);
   }
 }
