@@ -87,7 +87,9 @@ void sandbox_dashboard(bool clear)
   varmint.rc_.display();
   verbose_dashes();
   varmint.gps_.display();
-
+  verbose_dashes();
+  varmint.range_.display();
+  
   verbose_equals();
 }
 
@@ -95,7 +97,6 @@ void sandbox(void)
 {
   // Give us time to read the initialization messages
   time64.dMs(5000);
-
   verbose = true;
 
   //	 Test pwm outputs

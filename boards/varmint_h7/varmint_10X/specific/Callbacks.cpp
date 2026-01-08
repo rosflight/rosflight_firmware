@@ -61,12 +61,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     varmint.baro_.poll(poll_counter);
     varmint.mag_.poll(poll_counter);
     varmint.pitot_.poll(poll_counter);
+    varmint.range_.poll(poll_counter);
+
     varmint.rc_.poll();              // Restart if dead
     varmint.gps_.poll();             // Restart if dead
     varmint.telem_.poll();           // Check for new data packet to tx
     varmint.adc_.poll(poll_counter); // Start dma read
     varmint.vcp_.poll();             // Timeout
-
+  
     if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG; // Blink Green LED at 1 Hz.
   }
 }
@@ -99,11 +101,17 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interr
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// I2C Rx complete callback
+// I2C Rx/Tx complete callback
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
   if (varmint.pitot_.isMy(hi2c)) varmint.pitot_.endDma();
+  if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
+}
+
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

@@ -41,12 +41,24 @@
 
 extern Time64 time64;
 
-#define ROLLOVER 10000
-#define IST8308_CMD 0
-#define IST8308_TX 89
-#define IST8308_RX 92
-#define IST8308_STATE_ERROR 0xFFFF
-#define IST8308_IDLE_STATE 0xFFFF
+#define ROLLOVER_US 10000
+
+//#define IST8308_STATE_READING 0
+//#define IST8308_STATE_ACQ_CMD 1
+//#define IST8308_STATE_WAITING 2
+
+#define IST8308_STATE_IDLE 0
+#define IST8308_STATE_POLLING 1
+#define IST8308_STATE_READ_CMD 2
+#define IST8308_STATE_DATA_READ 3
+#define IST8308_STATE_MEASURE_CMD 4
+#define IST8308_STATE_ERROR 5
+
+//#define IST8308_CMD 0
+//#define IST8308_TX 83 //89
+//#define IST8308_RX 92
+//#define IST8308_STATE_ERROR 0xFFFF
+//#define IST8308_IDLE_STATE 0xFFFF
 
 DMA_RAM uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t ist8308_double_buffer[2 * sizeof(MagPacket)];
@@ -119,8 +131,8 @@ uint32_t Ist8308::init(
   hi2c_ = hi2c;
   address_ = i2c_address << 1;
 
-  i2cState_ = IST8308_IDLE_STATE;
-  dmaRunning_ = false;
+  i2cState_ = IST8308_STATE_IDLE;
+  //dmaRunning_ = false;
 
   double_buffer_.init(ist8308_double_buffer, sizeof(ist8308_double_buffer));
 
@@ -197,63 +209,100 @@ uint32_t Ist8308::init(
   return initializationStatus_;
 }
 
+
+
 bool Ist8308::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
-  if (poll_state == IST8308_CMD) {
-//    drdy_ = time64.Us();
-    ist8308_i2c_dma_buf[0] = CNTL2_REG;
-    ist8308_i2c_dma_buf[1] = CNTL2_VAL_SINGLE_MODE;
+  uint16_t poll_state = (poll_counter % (ROLLOVER_US / POLLING_PERIOD_US));
 
-    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 2))))
-      i2cState_ = poll_state;
-    else i2cState_ = IST8308_STATE_ERROR;
-  } else if (poll_state == IST8308_TX) // Write the register we want to read
-  {
-    drdy_ = time64.Us();
-    ist8308_i2c_dma_buf[0] = STAT1_REG;
-    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 1))))
-      i2cState_ = poll_state;
-    else i2cState_ = IST8308_STATE_ERROR;
-  } else if (poll_state == IST8308_RX) {
-    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 7))))
-      i2cState_ = poll_state;
-    else i2cState_ = IST8308_STATE_ERROR;
+  if( poll_state == 0) {
+    i2cState_ = IST8308_STATE_POLLING;
+    stateMachine();
   }
-  return dmaRunning_;
+  return true;
 }
 
-void Ist8308::endDma(void)
+void Ist8308::stateMachine(void)
 {
-  //	if(i2cState_ == IST8308_CMD) {} // do nothing
-  //	if(i2cState_ == IST8308_TX) {}  // do nothing
-  //  else
-  if (i2cState_ == IST8308_RX) {
-    MagPacket p;
-    p.header.timestamp = drdy_;
-    p.header.complete = time64.Us();
-    p.header.status = ist8308_i2c_dma_buf[0];
-
-    if (p.header.status == STAT1_VAL_DRDY)
+  switch(i2cState_)
+  {
+    case IST8308_STATE_IDLE:
     {
-      p.temperature = 0;
+      i2cState_ = IST8308_STATE_ERROR;
+      break;
+    }
+    case IST8308_STATE_POLLING:
+    {
+      drdy_ = time64.Us();
+      ist8308_i2c_dma_buf[0] = STAT1_REG;
+      if (HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 1)==HAL_OK) {
+        i2cState_ = IST8308_STATE_READ_CMD;
+      } else {
+        i2cState_ = IST8308_STATE_ERROR;
+      }
+      break;
+    }
+    case IST8308_STATE_READ_CMD:
+    {
+      if (HAL_I2C_Master_Receive_DMA(hi2c_, address_, ist8308_i2c_dma_buf,7) == HAL_OK) {
+        i2cState_ = IST8308_STATE_DATA_READ;
+      } else {
+        i2cState_ = IST8308_STATE_ERROR;
+      }
+      break;
+    }
+    case IST8308_STATE_DATA_READ:
+    {
+      MagPacket p;
+      p.header.timestamp = drdy_;
+      p.header.complete = time64.Us();
+      p.header.status = ist8308_i2c_dma_buf[0];
 
-      int16_t iflux = ((int16_t) ist8308_i2c_dma_buf[2] << 8) | (int16_t) ist8308_i2c_dma_buf[1];
-      p.flux[0] = (double) iflux * 1.515e-7; // Tesla
+      if (p.header.status == STAT1_VAL_DRDY)
+      {
+        p.temperature = 0;
 
-      iflux = ((int16_t) ist8308_i2c_dma_buf[4] << 8) | (int16_t) ist8308_i2c_dma_buf[3];
-      p.flux[1] = (double) iflux * 1.1515e-7; // Tesla
+        int16_t iflux = ((int16_t) ist8308_i2c_dma_buf[2] << 8) | (int16_t) ist8308_i2c_dma_buf[1];
+        p.flux[0] = (double) iflux * 1.515e-7; // Tesla
 
-      iflux = ((int16_t) ist8308_i2c_dma_buf[6] << 8) | (int16_t) ist8308_i2c_dma_buf[5];
-      p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
+        iflux = ((int16_t) ist8308_i2c_dma_buf[4] << 8) | (int16_t) ist8308_i2c_dma_buf[3];
+        p.flux[1] = (double) iflux * 1.1515e-7; // Tesla
 
-      rotate(p.flux);
-      write((uint8_t *) &p, sizeof(p));
+        iflux = ((int16_t) ist8308_i2c_dma_buf[6] << 8) | (int16_t) ist8308_i2c_dma_buf[5];
+        p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
+
+        rotate(p.flux);
+        write((uint8_t *) &p, sizeof(p));
+
+        ist8308_i2c_dma_buf[0] = CNTL2_REG;
+        ist8308_i2c_dma_buf[1] = CNTL2_VAL_SINGLE_MODE;
+
+        if (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 2)) {
+          i2cState_ = IST8308_STATE_MEASURE_CMD;
+        } else {
+          i2cState_ = IST8308_STATE_ERROR;
+        }
+        return;
+      }
+      break;
+    }
+    case IST8308_STATE_MEASURE_CMD:
+    {
+      i2cState_ = IST8308_STATE_IDLE;
+      break;
+    }
+    case IST8308_STATE_ERROR:
+    {
+      break;
+    }
+    default:
+    {
+      i2cState_ = IST8308_STATE_ERROR;
+      break;
     }
   }
-  i2cState_ = IST8308_STATE_ERROR;
-  dmaRunning_ = false;
 }
+
 bool Ist8308::display()
 {
   MagPacket p;
@@ -261,7 +310,7 @@ bool Ist8308::display()
   if (read((uint8_t *) &p, sizeof(p))) {
     misc_header(name, p.header );
 
-    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
+    misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 , p.flux[1] * 1e6 , p.flux[2] * 1e6 );
     misc_printf(" |                                       ");
     misc_printf(" |     N/A C |              | 0x%04X", p.header.status);
     if (p.header.status == STAT1_VAL_DRDY) misc_printf(" - OK\n");

@@ -314,8 +314,7 @@ bool Dps310::poll(uint64_t poll_counter)
   // Start P measurement sequence
   if (poll_state == DPS310_CMD_P) // Command Pressure Read
   {
-    drdy_ = time64.Us();
-    uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x01};
+     uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x01};
     if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = DPS310_CMD_P;
     else spiState_ = DPS310_STATE_ERROR;
   }
@@ -361,9 +360,9 @@ void Dps310::endDma(void)
 
   if (spiState_ == DPS310_DRDY_P) // Pressure DRDY
   {
+    drdy_ = time64.Us();
     if (rx[1] & 0x10) {
       p.header.status |= (uint16_t) rx[1];
-      p.header.complete = time64.Us();
     }
   } else if (spiState_ == DPS310_DRDY_T) // Temperature DRDY
   {

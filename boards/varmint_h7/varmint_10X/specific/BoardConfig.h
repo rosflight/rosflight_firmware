@@ -75,6 +75,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Bmi088 imu1_;             /* Varmint 10-12X */     \
   Iis2mdc mag_;             /* Varmint 10-12X */     \
   DlhrL20G pitot_;          /* Varmint 10-11X */     \
+  Lidarlitev3hp range_;    /* External I2C */ \
   /*		Mcp4017 servoV_; */ /* Varmint 11-12X */ \
   /*		Auav pitot_; */     /* Varmint 12X */    \
   /*		Auav baro2_; */     /* Varmint 12X */    \
@@ -151,6 +152,10 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADIS165XX_TIM_PERIOD_US (500)         // 500 us, 2kHz
 #define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
+// Range Lidar Sensor on i2c2
+#define LIDAR_HZ (100)
+#define LIDAR_I2C (&hi2c2)
+#define LIDAR_I2C_ADDRESS (LIDARLITEV3HP_ADDRESS)
 
 // DLHR Pitot is on i2c1
 #define DLHRL20G_HZ (100)
@@ -304,42 +309,42 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define BLU_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8)
 
 // Probes
-#if 1
+#if 0
 
-// Real Board - PE3 J105 pin 19 CS
-#define PROBE1_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET)
-#define PROBE1_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET)
-#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3)
-
-// Real Board - PH1 J105 pin 18 RST
-#define PROBE2_HI HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_SET)
-#define PROBE2_LO HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_RESET)
-#define PROBE2_TOG HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_1)
+//// Real Board - PE3 J105 pin 19 CS
+//#define PROBE1_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET)
+//#define PROBE1_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET)
+//#define PROBE1_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3)
+//
+//// Real Board - PH1 J105 pin 18 RST
+//#define PROBE2_HI HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_SET)
+//#define PROBE2_LO HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, GPIO_PIN_RESET)
+//#define PROBE2_TOG HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_1)
 
 // PB15
-#define PROBE3_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET)
-#define PROBE3_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET)
-#define PROBE3_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15)
+#define PB15_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET)
+#define PB15_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET)
+#define PB15_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15)
 
-// Real Board - PB1 J105 pin 23/25 Sync Bus (CAN XCVR)
-#define PROBE4_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET)
-#define PROBE4_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET)
-#define PROBE4_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1)
-
-// CN11 34 TP5 PB0
-#define PB0_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET)
-#define PB0_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET)
-#define PB0_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
-
-// CN12 19 TP6 PC7
-#define PC7_HI HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET)
-#define PC7_LO HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET)
-#define PC7_TOG HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7)
-
-// CN11 47 (Jetson DRDY) PE5
-#define PE5_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET)
-#define PE5_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_RESET)
-#define PE5_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_5)
+//// Real Board - PB1 J105 pin 23/25 Sync Bus (CAN XCVR)
+//#define PROBE4_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET)
+//#define PROBE4_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET)
+//#define PROBE4_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1)
+//
+//// CN11 34 TP5 PB0
+//#define PB0_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET)
+//#define PB0_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET)
+//#define PB0_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
+//
+//// CN12 19 TP6 PC7
+//#define PC7_HI HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET)
+//#define PC7_LO HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET)
+//#define PC7_TOG HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_7)
+//
+//// CN11 47 (Jetson DRDY) PE5
+//#define PE5_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET)
+//#define PE5_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_RESET)
+//#define PE5_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_5)
 
 #else
 

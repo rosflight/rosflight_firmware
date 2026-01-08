@@ -41,7 +41,7 @@
 #include "CommonConfig.h"
 
 #define SANDBOX false
-#define BOARD_STATUS_PRINT (false|SANDBOX)
+#define BOARD_STATUS_PRINT false
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
@@ -81,6 +81,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Bmi088 imu0_; 		/* PixRacer Pro */\
   Ms4525 pitot_;   	/* PixRacer Pro */ \
   Ist8308 mag_;	 	/* PixRacer Pro */ \
+  Lidarlitev3hp range_;    /* External I2C */ \
   /**/
 // clang-format on
 
@@ -147,11 +148,11 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define BMI088_ROTATION (const double[]){ -1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // ADIS IMU
-#define ADIS165XX_HZ (EPOCH_HZ)
-#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
+//#define ADIS165XX_HZ (EPOCH_HZ)
+//#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
 
 // DLHR Pitot is on i2c1
-#define DLHRL20G_HZ (100)
+//#define DLHRL20G_HZ (100)
 
 // MS4525D Pitot
 #define MS4525_HZ (100)
@@ -160,22 +161,22 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define PITOT_I2C_ADDRESS (MS4525_I2C_ADDRESS)
 
 // AUAV is both baro (absolute) and differtial (Pitot)
-#define AUAV_SPI (&hspi4)
-#define AUAV_HZ (100)
+//#define AUAV_SPI (&hspi4)
+//#define AUAV_HZ (100)
 // Absolute (Baro)
-#define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
+//#define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
 
 // Differential (Pitot)
-#define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
+//#define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
 
 // Digital Potentiometer used in later versions
 //	#define MCP4017_I2C_ADDRESS 		(0x2F)
-#define MCP4017_I2C (&hi2c1)
-#define SERVO_VOLTAGE (4.8) // Volts
+//#define MCP4017_I2C (&hi2c1)
+//#define SERVO_VOLTAGE (4.8) // Volts
 
 // I2C EEPROM in 11X
-#define EEPROM_I2C (&hi2c1)
-#define EEPROM_I2C_ADDRESS (0x50)
+//#define EEPROM_I2C (&hi2c1)
+//#define EEPROM_I2C_ADDRESS (0x50)
 
 #define DPS310_SPI (&hspi2)
 #define DPS310_3_WIRE (false)
@@ -183,10 +184,15 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Baro is DPS310
 #define DPS310_HZ (50) // up to 50 Hz.
 
+// Range Lidar Sensor on i2c1
+#define LIDAR_HZ (100)
+#define LIDAR_I2C (&hi2c1)
+#define LIDAR_I2C_ADDRESS (LIDARLITEV3HP_ADDRESS)
+
 // Mag is IIS2MDC
 // HZ no faster than 100Hz. 10, 20, 50, 100 are the only options for continuous mode
-#define IIS2MDC_HZ (100)
-#define IIS2MDC_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
+//#define IIS2MDC_HZ (100)
+//#define IIS2MDC_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
 
 // Mag IST8308 (pixracer Pro)
 // HZ no faster than 100Hz
