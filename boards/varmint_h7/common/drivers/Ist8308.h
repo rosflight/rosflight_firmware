@@ -58,8 +58,9 @@ public:
     const double *rotation);
 
   bool poll(uint64_t poll_counter);
-  void endTxDma(void);
-  void endRxDma(void);
+
+  void stateMachine(void);
+
   bool display(void);
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
@@ -71,7 +72,6 @@ private:
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   uint64_t drdy_;
-//  bool dmaRunning_;
 
   I2C_HandleTypeDef * hi2c_;
   PollingState i2cState_;
