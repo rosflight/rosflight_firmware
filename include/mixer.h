@@ -78,10 +78,18 @@ public:
     G     // GPIO
   } output_type_t;
 
+  typedef enum
+  {
+    THR, // Throttle
+    ATT, // Attitude
+    NEI // Neither, always give control of this channel to offboard computer
+  } override_type_t;
+
   typedef struct
   {
     output_type_t output_type[NUM_MIXER_OUTPUTS];
     float default_pwm_rate[NUM_MIXER_OUTPUTS];
+    override_type_t override_type[NUM_MIXER_OUTPUTS];
     float u[NUM_MIXER_OUTPUTS][NUM_MIXER_OUTPUTS];
   } mixer_t;
 
@@ -89,6 +97,7 @@ public:
   {
     output_type_t (*output_type)[NUM_MIXER_OUTPUTS];
     float (*default_pwm_rate)[NUM_MIXER_OUTPUTS];
+    override_type_t (*override_type)[NUM_MIXER_OUTPUTS];
     float (*u[NUM_MIXER_OUTPUTS])[NUM_MIXER_OUTPUTS];
   } mixer_selection_t;
 
@@ -125,6 +134,7 @@ private:
   const mixer_t esc_calibration_mixing = {
     {   M,    M,    M,    M,    M,    M,    M,    M,    M,    M},  // output type
     {  50,   50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
+    {  THR,  THR,  THR,  THR,  THR,  THR,  THR,  THR,  THR,  THR},  // Override types (this is for each row of the mixer matrix)
     { {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix
       {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
       {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f},  // F_z Mix
@@ -139,6 +149,7 @@ private:
   const mixer_t quadcopter_plus_mixing = {
     {M, M, M, M, AUX, AUX, AUX, AUX, AUX, AUX},            // output type
     {490, 490, 490, 490, 50, 50, 50, 50, 50, 50},                // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0, 0, 0},  // F_y Mix
       {-0.2500f, -0.2500f, -0.2500f, -0.2500f, 0, 0, 0, 0, 0, 0},  // F_z Mix
@@ -153,6 +164,7 @@ private:
   const mixer_t quadcopter_x_mixing = {
     {M, M, M, M, AUX, AUX, AUX, AUX, AUX, AUX},             // output type
     {490, 490, 490, 490, 50, 50, 50, 50, 50, 50},                 // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0, 0, 0},   // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0, 0, 0},   // F_y Mix
       {-0.2500f, -0.2500f, -0.2500f, -0.2500f, 0, 0, 0, 0, 0, 0},   // F_z Mix
@@ -167,6 +179,7 @@ private:
   const mixer_t hex_plus_mixing = {
     {M, M, M, M, M, M, AUX, AUX, AUX, AUX},                                // output type
     {490, 490, 490, 490, 490, 490, 490, 490, 50, 50},                          // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0},  // F_y Mix
       {-0.1667f, -0.1667f, -0.1667f, -0.1667f, -0.1667f, -0.1667f, 0, 0, 0, 0},  // F_z Mix
@@ -181,6 +194,7 @@ private:
   const mixer_t hex_x_mixing = {
     {M, M, M, M, M, M, AUX, AUX, AUX, AUX},                                // output type
     {490, 490, 490, 490, 490, 490, 490, 490, 50, 50},                          // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0},  // F_y Mix
       {-0.1667f, -0.1667f, -0.1667f, -0.1667f, -0.1667f, -0.1667f, 0, 0, 0, 0},  // F_z Mix
@@ -195,6 +209,7 @@ private:
   const mixer_t octocopter_plus_mixing = {
     {M, M, M, M, M, M, M, M, AUX, AUX},                                                    // output type
     {490, 490, 490, 490, 490, 490, 490, 490, 50, 50},                                        // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0},  // F_y Mix
       {-0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, 0, 0},  // F_z Mix
@@ -209,6 +224,7 @@ private:
   const mixer_t octocopter_x_mixing = {
     {M, M, M, M, M, M, M, M, AUX, AUX},                                                    // output type
     {490, 490, 490, 490, 490, 490, 490, 490, 50, 50},                                        // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0},  // F_y Mix
       {-0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, 0, 0},  // F_z Mix
@@ -223,6 +239,7 @@ private:
   const mixer_t Y6_mixing = {
     {M, M, M, M, M, M, AUX, AUX, AUX, AUX},                                // output type
     {490, 490, 490, 490, 490, 490, 490, 490, 50, 50},                          // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0, 0, 0},  // F_y Mix
       {-0.1667f, -0.1667f, -0.1667f, -0.1667f, -0.1667f, -0.1667f, 0, 0, 0, 0},  // F_z Mix
@@ -237,6 +254,7 @@ private:
   const mixer_t X8_mixing = {
     {M, M, M, M, M, M, M, M, AUX, AUX},                                                    // output type
     {490, 490, 490, 490, 490, 490, 490, 490, 50, 50},                                        // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, NEI, NEI, NEI, NEI},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0},  // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f,  0.0000f, 0, 0},  // F_y Mix
       {-0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, -0.1250f, 0, 0},  // F_z Mix
@@ -250,7 +268,8 @@ private:
 
   const mixer_t fixedwing_mixing = {
     {   S,    S,    S, AUX,    M, AUX, AUX, AUX, AUX, AUX},  // output type
-    { 50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
+    {  50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
+    {  THR,   NEI,  NEI,  ATT,  ATT,  ATT,  NEI,  NEI,  NEI,  NEI},  // Override types (this is for each row of the mixer matrix)
     { {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
       {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
       {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
@@ -265,20 +284,22 @@ private:
   const mixer_t fixedwing_inverted_vtail_mixing = {
     {   S,     S,    S, AUX,    M, AUX, AUX, AUX, AUX, AUX},  // Ailerons, LRuddervator, RRuddervator, Motor
     {  50,    50,   50,   50,   50,   50,   50,   50,   50,   50},  // Rate (Hz)
+    {  THR,   NEI,  NEI,  ATT,  ATT,  ATT,  NEI,  NEI,  NEI,  NEI},  // Override types (this is for each row of the mixer matrix)
     { {0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_x Mix 
       {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_y Mix
       {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // F_z Mix
       {1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_x Mix 
       {0.0f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_y Mix 
       {0.0f,  0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // Q_z Mix
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}};
+      {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f,  0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}}};
 
   const mixer_t vtol_quad_plane_mixing = {
     {M,         M,        M,        M,       AUX,  S,     S,    S,    AUX,  M},  // output type
     {490,       490,      490,      490,     50,   50,    50,   50,   50,   50},  // Rate (Hz)
+    { NEI, NEI, THR, ATT, ATT, ATT, THR, ATT, ATT, ATT},  // Override types (this is for each row of the mixer matrix)
     { { 0.0000f,  0.0000f,  0.0000f,  0.0000f, 0,    0,     0,    0,    0,    0},   // F_x Mix
       { 0.0000f,  0.0000f,  0.0000f,  0.0000f, 0,    0,     0,    0,    0,    0},   // F_y Mix
       {-0.2500f, -0.2500f, -0.2500f, -0.2500f, 0,    0,     0,    0,    0,    0},   // F_z Mix
