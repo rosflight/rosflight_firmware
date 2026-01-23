@@ -68,7 +68,7 @@ typedef enum
 typedef struct
 {
   uint32_t stamp_ms;
-  control_channel_t u[10];  // Control channels, first 6 are hard coded to be Qx, Qy, Qz, Fx, Fy, Fz
+  control_channel_t u[10];  // Control channels, interpreted according to mode/mixer
 } control_t;
 
 class CommandManager : public ParamListenerInterface
@@ -102,12 +102,12 @@ private:
     control_channel_t * combined;
   } mux_t;
 
-  mux_t muxes[6] = {{&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},  // Qx
-                    {&rc_command_.u[1], &offboard_command_.u[1], &combined_command_.u[1]},  // Qy
-                    {&rc_command_.u[2], &offboard_command_.u[2], &combined_command_.u[2]},  // Qz
-                    {&rc_command_.u[3], &offboard_command_.u[3], &combined_command_.u[3]},  // Fx
-                    {&rc_command_.u[4], &offboard_command_.u[4], &combined_command_.u[4]},  // Fy
-                    {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]}}; // Fz
+  mux_t muxes_[6] = {{&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},
+                    {&rc_command_.u[1], &offboard_command_.u[1], &combined_command_.u[1]},
+                    {&rc_command_.u[2], &offboard_command_.u[2], &combined_command_.u[2]},
+                    {&rc_command_.u[3], &offboard_command_.u[3], &combined_command_.u[3]},
+                    {&rc_command_.u[4], &offboard_command_.u[4], &combined_command_.u[4]},
+                    {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]}};
 
   // clang-format off
   control_t rc_command_ = {0,

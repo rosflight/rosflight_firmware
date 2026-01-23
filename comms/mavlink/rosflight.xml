@@ -53,23 +53,35 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
             <entry value="0x00" name="IGNORE_NONE">
                 <description>Convenience value for specifying no fields should be ignored</description>
             </entry>
-            <entry value="0x01" name="IGNORE_VALUE1">
+            <entry value="0x01" name="IGNORE_VALUE0">
+                <description>Field value0 should be ignored</description>
+            </entry>
+            <entry value="0x02" name="IGNORE_VALUE1">
                 <description>Field value1 should be ignored</description>
             </entry>
-            <entry value="0x02" name="IGNORE_VALUE2">
+            <entry value="0x04" name="IGNORE_VALUE2">
                 <description>Field value2 should be ignored</description>
             </entry>
-            <entry value="0x04" name="IGNORE_VALUE3">
+            <entry value="0x08" name="IGNORE_VALUE3">
                 <description>Field value3 should be ignored</description>
             </entry>
-            <entry value="0x08" name="IGNORE_VALUE4">
-                <description>Field value4 should be ignored</description>
-            </entry>
-           <entry value="0x16" name="IGNORE_VALUE5">
+           <entry value="0x10" name="IGNORE_VALUE4">
+               <description>Field value4 should be ignored</description>
+           </entry>
+           <entry value="0x20" name="IGNORE_VALUE5">
                <description>Field value5 should be ignored</description>
            </entry>
-           <entry value="0x32" name="IGNORE_VALUE6">
+           <entry value="0x40" name="IGNORE_VALUE6">
                <description>Field value6 should be ignored</description>
+           </entry>
+           <entry value="0x80" name="IGNORE_VALUE7">
+               <description>Field value7 should be ignored</description>
+           </entry>
+           <entry value="0x100" name="IGNORE_VALUE8">
+               <description>Field value8 should be ignored</description>
+           </entry>
+           <entry value="0x200" name="IGNORE_VALUE9">
+               <description>Field value9 should be ignored</description>
            </entry>
         </enum>
         <enum name="ROSFLIGHT_ERROR_CODE">

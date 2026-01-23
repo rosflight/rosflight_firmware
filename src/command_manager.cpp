@@ -108,30 +108,22 @@ void CommandManager::interpret_rc(void)
   rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_Z);
 
   // Load the RC command based on the axis associated with the RC F command
-  rc_command_.Fx.value = 0.0;
-  rc_command_.Fy.value = 0.0;
-  rc_command_.Fz.value = 0.0;
+  rc_command_.u[3].value = 0.0;
+  rc_command_.u[4].value = 0.0;
+  rc_command_.u[5].value = 0.0;
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
     case X_AXIS:   // RC F = X axis
       rc_command_.u[3].value = RF_.rc_.stick(RC::STICK_F);
-      rc_command_.u[4].value = 0.0;
-      rc_command_.u[5].value = 0.0;
       break;
     case Y_AXIS:   // RC F = Y axis
-      rc_command_.u[3].value = 0.0;
       rc_command_.u[4].value = RF_.rc_.stick(RC::STICK_F);
-      rc_command_.u[5].value = 0.0;
       break;
     case Z_AXIS:
-      rc_command_.u[3].value = 0.0;
-      rc_command_.u[4].value = 0.0;
       rc_command_.u[5].value = RF_.rc_.stick(RC::STICK_F);
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      rc_command_.u[3].value = 0.0;
-      rc_command_.u[4].value = 0.0;
       rc_command_.u[5].value = RF_.rc_.stick(RC::STICK_F);
       break;
   }

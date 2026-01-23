@@ -33,6 +33,7 @@
 #include "board.h"
 
 #include <cstdint>
+#include <iterator>
 
 namespace rosflight_firmware
 {
@@ -464,19 +465,21 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
       return;
   }
 
-  control.u[0].value = ctrl.u[0];
-  control.u[1].value = ctrl.u[1];
-  control.u[2].value = ctrl.u[2];
-  control.u[3].value = ctrl.u[3];
-  control.u[4].value = ctrl.u[4];
-  control.u[5].value = ctrl.u[5];
+  for (std::size_t i=0; i<std::size(ctrl.u); ++i)
+  {
+    control.u[i].value = ctrl.u[i];
+  }
 
-  control.u[0].valid = !(ctrl.ignore & IGNORE_VALUE1);
-  control.u[1].valid = !(ctrl.ignore & IGNORE_VALUE2);
-  control.u[2].valid = !(ctrl.ignore & IGNORE_VALUE3);
-  control.u[3].valid = !(ctrl.ignore & IGNORE_VALUE4);
-  control.u[4].valid = !(ctrl.ignore & IGNORE_VALUE5);
-  control.u[5].valid = !(ctrl.ignore & IGNORE_VALUE6);
+  control.u[0].valid = !(ctrl.ignore & IGNORE_VALUE0);
+  control.u[1].valid = !(ctrl.ignore & IGNORE_VALUE1);
+  control.u[2].valid = !(ctrl.ignore & IGNORE_VALUE2);
+  control.u[3].valid = !(ctrl.ignore & IGNORE_VALUE3);
+  control.u[4].valid = !(ctrl.ignore & IGNORE_VALUE4);
+  control.u[5].valid = !(ctrl.ignore & IGNORE_VALUE5);
+  control.u[6].valid = !(ctrl.ignore & IGNORE_VALUE6);
+  control.u[7].valid = !(ctrl.ignore & IGNORE_VALUE7);
+  control.u[8].valid = !(ctrl.ignore & IGNORE_VALUE8);
+  control.u[9].valid = !(ctrl.ignore & IGNORE_VALUE9);
 
   if (listener_ != nullptr) { listener_->offboard_control_callback(control); }
 }

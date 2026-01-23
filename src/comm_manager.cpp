@@ -37,6 +37,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 
 namespace rosflight_firmware
 {
@@ -232,24 +233,18 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 
 void CommManager::offboard_control_callback(const CommLinkInterface::OffboardControl & control)
 {
-  // put values into a new command struct
+  // put values and flags into a new command struct
   control_t new_offboard_command;
-  new_offboard_command.u[0].value = control.u[0].value;
-  new_offboard_command.u[1].value = control.u[1].value;
-  new_offboard_command.u[2].value = control.u[2].value;
-  new_offboard_command.u[3].value = control.u[3].value;
-  new_offboard_command.u[4].value = control.u[4].value;
-  new_offboard_command.u[5].value = control.u[5].value;
+  for (std::size_t i=0; i<std::size(control.u); ++i)
+  {
+    new_offboard_command.u[i].value = control.u[i].value;
+    new_offboard_command.u[i].active = control.u[i].valid;
 
-  // Move flags into standard message
-  new_offboard_command.u[0].active = control.u[0].valid;
-  new_offboard_command.u[1].active = control.u[1].valid;
-  new_offboard_command.u[2].active = control.u[2].valid;
-  new_offboard_command.u[3].active = control.u[3].valid;
-  new_offboard_command.u[4].active = control.u[4].valid;
-  new_offboard_command.u[5].active = control.u[5].valid;
+  }
 
   // translate modes into standard message
+  // TODO: Need to standardize which channels are interpreted as what when using modes
+  // other than the passthrough mode... We should set all unused channels to passthrough?
   switch (control.mode) {
     case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
       new_offboard_command.u[0].type = PASSTHROUGH;
@@ -258,6 +253,10 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
       new_offboard_command.u[3].type = PASSTHROUGH;
       new_offboard_command.u[4].type = PASSTHROUGH;
       new_offboard_command.u[5].type = PASSTHROUGH;
+      new_offboard_command.u[6].type = PASSTHROUGH;
+      new_offboard_command.u[7].type = PASSTHROUGH;
+      new_offboard_command.u[8].type = PASSTHROUGH;
+      new_offboard_command.u[9].type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
       new_offboard_command.u[0].type = RATE;
@@ -266,6 +265,10 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
       new_offboard_command.u[3].type = THROTTLE;
       new_offboard_command.u[4].type = THROTTLE;
       new_offboard_command.u[5].type = THROTTLE;
+      new_offboard_command.u[6].type = PASSTHROUGH;
+      new_offboard_command.u[7].type = PASSTHROUGH;
+      new_offboard_command.u[8].type = PASSTHROUGH;
+      new_offboard_command.u[9].type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
       new_offboard_command.u[0].type = ANGLE;
@@ -274,6 +277,10 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
       new_offboard_command.u[3].type = THROTTLE;
       new_offboard_command.u[4].type = THROTTLE;
       new_offboard_command.u[5].type = THROTTLE;
+      new_offboard_command.u[6].type = PASSTHROUGH;
+      new_offboard_command.u[7].type = PASSTHROUGH;
+      new_offboard_command.u[8].type = PASSTHROUGH;
+      new_offboard_command.u[9].type = PASSTHROUGH;
       break;
   }
 
@@ -363,6 +370,8 @@ void CommManager::send_status(void)
 
   uint8_t control_mode = 0;
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)
+    // TODO: This works, since the first value in the control vector is interpreted as the attitude
+    // commands (previously the Qx field). It feels a bit fragile... Is there a more robust way to do this?
       || RF_.command_manager_.combined_control().u[0].type == PASSTHROUGH) {
     control_mode = MODE_PASS_THROUGH;
   } else if (RF_.command_manager_.combined_control().u[0].type == ANGLE) {
@@ -515,7 +524,7 @@ void CommManager::stream(got_flags got)
 void CommManager::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT) {
-    send_param_value(static_cast<uint16_t>(send_params_index_));
+    send_param_value(send_params_index_);
     send_params_index_++;
   }
 }
