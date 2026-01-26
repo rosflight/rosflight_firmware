@@ -78,18 +78,18 @@ void CommandManager::init_failsafe()
   // Make sure the failsafe is set to the axis associated with the RC F command
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
     case X_AXIS:
-      multirotor_failsafe_command_.u[3].value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[0].value = failsafe_thr_param;
       break;
     case Y_AXIS:
-      multirotor_failsafe_command_.u[4].value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[1].value = failsafe_thr_param;
       break;
     case Z_AXIS:
-      multirotor_failsafe_command_.u[5].value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[2].value = failsafe_thr_param;
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      multirotor_failsafe_command_.u[5].value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[2].value = failsafe_thr_param;
       break;
   }
 
@@ -103,28 +103,28 @@ void CommandManager::init_failsafe()
 void CommandManager::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  rc_command_.u[0].value = RF_.rc_.stick(RC::STICK_X);
-  rc_command_.u[1].value = RF_.rc_.stick(RC::STICK_Y);
-  rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_Z);
+  rc_command_.u[3].value = RF_.rc_.stick(RC::STICK_X);
+  rc_command_.u[4].value = RF_.rc_.stick(RC::STICK_Y);
+  rc_command_.u[5].value = RF_.rc_.stick(RC::STICK_Z);
 
   // Load the RC command based on the axis associated with the RC F command
-  rc_command_.u[3].value = 0.0;
-  rc_command_.u[4].value = 0.0;
-  rc_command_.u[5].value = 0.0;
+  rc_command_.u[0].value = 0.0;
+  rc_command_.u[1].value = 0.0;
+  rc_command_.u[2].value = 0.0;
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
     case X_AXIS:   // RC F = X axis
-      rc_command_.u[3].value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.u[0].value = RF_.rc_.stick(RC::STICK_F);
       break;
     case Y_AXIS:   // RC F = Y axis
-      rc_command_.u[4].value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.u[1].value = RF_.rc_.stick(RC::STICK_F);
       break;
     case Z_AXIS:
-      rc_command_.u[5].value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_F);
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      rc_command_.u[5].value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_F);
       break;
   }
 
@@ -146,30 +146,30 @@ void CommandManager::interpret_rc(void)
         (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE : ANGLE;
     }
 
-    rc_command_.u[0].type = roll_pitch_type;
-    rc_command_.u[1].type = roll_pitch_type;
+    rc_command_.u[3].type = roll_pitch_type;
+    rc_command_.u[4].type = roll_pitch_type;
 
     // Scale command to appropriate units
     switch (roll_pitch_type) {
       case RATE:
-        rc_command_.u[0].value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
-        rc_command_.u[1].value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
+        rc_command_.u[3].value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
+        rc_command_.u[4].value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
         break;
       case ANGLE:
-        rc_command_.u[0].value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
-        rc_command_.u[1].value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
+        rc_command_.u[3].value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
+        rc_command_.u[4].value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
       default:
         break;
     }
 
     // yaw
-    rc_command_.u[2].type = RATE;
-    rc_command_.u[2].value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
+    rc_command_.u[5].type = RATE;
+    rc_command_.u[5].value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
 
     // throttle
-    rc_command_.u[3].type = THROTTLE;
-    rc_command_.u[4].type = THROTTLE;
-    rc_command_.u[5].type = THROTTLE;
+    rc_command_.u[0].type = THROTTLE;
+    rc_command_.u[1].type = THROTTLE;
+    rc_command_.u[2].type = THROTTLE;
   }
 }
 
@@ -313,12 +313,12 @@ bool CommandManager::run()
     if (RF_.board_.clock_millis()
         > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT)) {
       // If it has been longer than 100 ms, then disable the offboard control
-      offboard_command_.u[3].active = false;
-      offboard_command_.u[4].active = false;
-      offboard_command_.u[5].active = false;
       offboard_command_.u[0].active = false;
       offboard_command_.u[1].active = false;
       offboard_command_.u[2].active = false;
+      offboard_command_.u[3].active = false;
+      offboard_command_.u[4].active = false;
+      offboard_command_.u[5].active = false;
     }
 
     // Perform muxing

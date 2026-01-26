@@ -243,40 +243,31 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
   }
 
   // translate modes into standard message
-  // TODO: Need to standardize which channels are interpreted as what when using modes
-  // other than the passthrough mode... We should set all unused channels to passthrough?
   switch (control.mode) {
     case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
-      new_offboard_command.u[0].type = PASSTHROUGH;
-      new_offboard_command.u[1].type = PASSTHROUGH;
-      new_offboard_command.u[2].type = PASSTHROUGH;
-      new_offboard_command.u[3].type = PASSTHROUGH;
-      new_offboard_command.u[4].type = PASSTHROUGH;
-      new_offboard_command.u[5].type = PASSTHROUGH;
-      new_offboard_command.u[6].type = PASSTHROUGH;
-      new_offboard_command.u[7].type = PASSTHROUGH;
-      new_offboard_command.u[8].type = PASSTHROUGH;
-      new_offboard_command.u[9].type = PASSTHROUGH;
+      for (std::size_t i=0; i<std::size(control.u); ++i) {
+        new_offboard_command.u[i].type = PASSTHROUGH;
+      }
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-      new_offboard_command.u[0].type = RATE;
-      new_offboard_command.u[1].type = RATE;
-      new_offboard_command.u[2].type = RATE;
-      new_offboard_command.u[3].type = THROTTLE;
-      new_offboard_command.u[4].type = THROTTLE;
-      new_offboard_command.u[5].type = THROTTLE;
+      new_offboard_command.u[0].type = THROTTLE;
+      new_offboard_command.u[1].type = THROTTLE;
+      new_offboard_command.u[2].type = THROTTLE;
+      new_offboard_command.u[3].type = RATE;
+      new_offboard_command.u[4].type = RATE;
+      new_offboard_command.u[5].type = RATE;
       new_offboard_command.u[6].type = PASSTHROUGH;
       new_offboard_command.u[7].type = PASSTHROUGH;
       new_offboard_command.u[8].type = PASSTHROUGH;
       new_offboard_command.u[9].type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
-      new_offboard_command.u[0].type = ANGLE;
-      new_offboard_command.u[1].type = ANGLE;
-      new_offboard_command.u[2].type = RATE;
-      new_offboard_command.u[3].type = THROTTLE;
-      new_offboard_command.u[4].type = THROTTLE;
-      new_offboard_command.u[5].type = THROTTLE;
+      new_offboard_command.u[0].type = THROTTLE;
+      new_offboard_command.u[1].type = THROTTLE;
+      new_offboard_command.u[2].type = THROTTLE;
+      new_offboard_command.u[3].type = ANGLE;
+      new_offboard_command.u[4].type = ANGLE;
+      new_offboard_command.u[5].type = RATE;
       new_offboard_command.u[6].type = PASSTHROUGH;
       new_offboard_command.u[7].type = PASSTHROUGH;
       new_offboard_command.u[8].type = PASSTHROUGH;
@@ -370,11 +361,9 @@ void CommManager::send_status(void)
 
   uint8_t control_mode = 0;
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)
-    // TODO: This works, since the first value in the control vector is interpreted as the attitude
-    // commands (previously the Qx field). It feels a bit fragile... Is there a more robust way to do this?
-      || RF_.command_manager_.combined_control().u[0].type == PASSTHROUGH) {
+      || RF_.command_manager_.combined_control().u[3].type == PASSTHROUGH) {
     control_mode = MODE_PASS_THROUGH;
-  } else if (RF_.command_manager_.combined_control().u[0].type == ANGLE) {
+  } else if (RF_.command_manager_.combined_control().u[3].type == ANGLE) {
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
   } else {
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;

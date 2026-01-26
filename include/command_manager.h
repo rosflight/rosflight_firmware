@@ -111,52 +111,52 @@ private:
 
   // clang-format off
   control_t rc_command_ = {0,
-                            {{false, ANGLE, 0.0},
+                          {{false, THROTTLE, 0.0},
+                            {false, THROTTLE, 0.0},
+                            {false, THROTTLE, 0.0},
+                            {false, ANGLE, 0.0},
                             {false, ANGLE, 0.0},
                             {false, RATE, 0.0},
-                            {false, THROTTLE, 0.0},
-                            {false, THROTTLE, 0.0},
-                            {false, THROTTLE, 0.0},
                             {false, PASSTHROUGH, 0.0},
                             {false, PASSTHROUGH, 0.0},
                             {false, PASSTHROUGH, 0.0},
                             {false, PASSTHROUGH, 0.0}}};
   control_t offboard_command_ = {0,
-                                  {{false, ANGLE, 0.0},
+                                {{false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, ANGLE, 0.0},
                                   {false, ANGLE, 0.0},
                                   {false, RATE, 0.0},
-                                  {false, THROTTLE, 0.0},
-                                  {false, THROTTLE, 0.0},
-                                  {false, THROTTLE, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0}}};
   control_t combined_command_ = {0,
-                                  {{false, ANGLE, 0.0},
+                                {{false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, THROTTLE, 0.0},
+                                  {false, ANGLE, 0.0},
                                   {false, ANGLE, 0.0},
                                   {false, RATE, 0.0},
-                                  {false, THROTTLE, 0.0},
-                                  {false, THROTTLE, 0.0},
-                                  {false, THROTTLE, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0},
                                   {false, PASSTHROUGH, 0.0}}};
 
   control_t multirotor_failsafe_command_ = {0,
-                                            {{true, ANGLE, 0.0},
+                                           {{true, THROTTLE, 0.0},
+                                            {true, THROTTLE, 0.0},
+                                            {true, THROTTLE, 0.0},
+                                            {true, ANGLE, 0.0},
                                             {true, ANGLE, 0.0},
                                             {true, RATE, 0.0},
-                                            {true, THROTTLE, 0.0},
-                                            {true, THROTTLE, 0.0},
-                                            {true, THROTTLE, 0.0},
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0},
                                             {false, PASSTHROUGH, 0.0}}};
   control_t fixedwing_failsafe_command_ = {0,
-                                            {{true, PASSTHROUGH, 0.0},
+                                          {{true, PASSTHROUGH, 0.0},
                                             {true, PASSTHROUGH, 0.0},
                                             {true, PASSTHROUGH, 0.0},
                                             {true, PASSTHROUGH, 0.0},
@@ -176,12 +176,12 @@ private:
 
   enum MuxChannel
   {
-    MUX_QX,
-    MUX_QY,
-    MUX_QZ,
     MUX_FX,
     MUX_FY,
     MUX_FZ,
+    MUX_QX,
+    MUX_QY,
+    MUX_QZ,
     NUM_MUX_CHANNELS
   };
 
@@ -195,13 +195,13 @@ private:
   } channel_override_t;
 
   channel_override_t channel_override_[6] = {
-      {RC::STICK_X, 0, OVERRIDE_X, OVERRIDE_OFFBOARD_X_INACTIVE, X_OVERRIDDEN},
-      {RC::STICK_Y, 0, OVERRIDE_Y, OVERRIDE_OFFBOARD_Y_INACTIVE, Y_OVERRIDDEN},
-      {RC::STICK_Z, 0, OVERRIDE_Z, OVERRIDE_OFFBOARD_Z_INACTIVE, Z_OVERRIDDEN},
       {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
       {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
       {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE,
-        T_OVERRIDDEN} // Note that throttle overriding works a bit differently
+        T_OVERRIDDEN}, // Note that throttle overriding works a bit differently
+      {RC::STICK_X, 0, OVERRIDE_X, OVERRIDE_OFFBOARD_X_INACTIVE, X_OVERRIDDEN},
+      {RC::STICK_Y, 0, OVERRIDE_Y, OVERRIDE_OFFBOARD_Y_INACTIVE, Y_OVERRIDDEN},
+      {RC::STICK_Z, 0, OVERRIDE_Z, OVERRIDE_OFFBOARD_Z_INACTIVE, Z_OVERRIDDEN}
   };
 
   ROSflight & RF_;

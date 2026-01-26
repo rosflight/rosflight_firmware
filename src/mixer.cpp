@@ -493,14 +493,14 @@ void Mixer::mix_multirotor()
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      throttle_command = commands.u[5]; // Fz
+      throttle_command = commands.u[2]; // Fz
       break;
   }
   
   if (abs(throttle_command) < RF_.params_.get_param_float(PARAM_MOTOR_IDLE_THROTTLE)) {
     // For multirotors, disregard yaw commands if throttle is low to prevent motor spin-up while
     // arming/disarming
-    commands.u[2] = 0.0; // Qz
+    commands.u[5] = 0.0; // Qz
   }
 
   // Mix the outputs based on if a custom mixer (i.e. with motor parameters) is selected.
@@ -536,9 +536,9 @@ void Mixer::mix_fixedwing()
   Controller::Output commands = RF_.controller_.output();
   
   // Reverse fixed-wing channels just before mixing if we need to
-  commands.u[0] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
-  commands.u[1] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
-  commands.u[2] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
+  commands.u[3] *= RF_.params_.get_param_int(PARAM_AILERON_REVERSE) ? -1 : 1;
+  commands.u[4] *= RF_.params_.get_param_int(PARAM_ELEVATOR_REVERSE) ? -1 : 1;
+  commands.u[5] *= RF_.params_.get_param_int(PARAM_RUDDER_REVERSE) ? -1 : 1;
 
   // Mix the outputs
   for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) {
@@ -559,17 +559,6 @@ void Mixer::select_primary_or_secondary_mixer()
 
   uint16_t rc_attitude_override_active = static_cast<uint16_t>(rc_override & CommandManager::ATTITUDE_OVERRIDDEN);
   if (rc_attitude_override_active == 0) {
-    mixer_to_use_.u[0] = &primary_mixer_.u[0];
-    mixer_to_use_.u[1] = &primary_mixer_.u[1];
-    mixer_to_use_.u[2] = &primary_mixer_.u[2];
-  } else {
-    mixer_to_use_.u[0] = &secondary_mixer_.u[0];
-    mixer_to_use_.u[1] = &secondary_mixer_.u[1];
-    mixer_to_use_.u[2] = &secondary_mixer_.u[2];
-  }
-
-  uint16_t rc_throttle_override_active = static_cast<uint16_t>(rc_override & CommandManager::T_OVERRIDDEN);
-  if (rc_throttle_override_active == 0) {
     mixer_to_use_.u[3] = &primary_mixer_.u[3];
     mixer_to_use_.u[4] = &primary_mixer_.u[4];
     mixer_to_use_.u[5] = &primary_mixer_.u[5];
@@ -577,6 +566,17 @@ void Mixer::select_primary_or_secondary_mixer()
     mixer_to_use_.u[3] = &secondary_mixer_.u[3];
     mixer_to_use_.u[4] = &secondary_mixer_.u[4];
     mixer_to_use_.u[5] = &secondary_mixer_.u[5];
+  }
+
+  uint16_t rc_throttle_override_active = static_cast<uint16_t>(rc_override & CommandManager::T_OVERRIDDEN);
+  if (rc_throttle_override_active == 0) {
+    mixer_to_use_.u[0] = &primary_mixer_.u[0];
+    mixer_to_use_.u[1] = &primary_mixer_.u[1];
+    mixer_to_use_.u[2] = &primary_mixer_.u[2];
+  } else {
+    mixer_to_use_.u[0] = &secondary_mixer_.u[0];
+    mixer_to_use_.u[1] = &secondary_mixer_.u[1];
+    mixer_to_use_.u[2] = &secondary_mixer_.u[2];
   }
 }
 
