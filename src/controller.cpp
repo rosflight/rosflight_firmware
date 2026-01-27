@@ -33,7 +33,7 @@
 
 #include "command_manager.h"
 #include "estimator.h"
-
+#include "mixer.h"
 #include "rosflight.h"
 
 #include <cstdbool>
@@ -128,6 +128,11 @@ void Controller::run(const float dt)
   output_.u[0] = pid_output.u[0];
   output_.u[1] = pid_output.u[1];
   output_.u[2] = pid_output.u[2];
+
+  // Propagate remaining command channels as passthrough
+  for (int i=6; i<Mixer::NUM_MIXER_OUTPUTS; ++i) {
+    output_.u[i] = RF_.command_manager_.combined_control().u[i].value;
+  }
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()

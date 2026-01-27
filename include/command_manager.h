@@ -102,12 +102,17 @@ private:
     control_channel_t * combined;
   } mux_t;
 
-  mux_t muxes_[6] = {{&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},
+  mux_t muxes_[10] = {
+                    {&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},
                     {&rc_command_.u[1], &offboard_command_.u[1], &combined_command_.u[1]},
                     {&rc_command_.u[2], &offboard_command_.u[2], &combined_command_.u[2]},
                     {&rc_command_.u[3], &offboard_command_.u[3], &combined_command_.u[3]},
                     {&rc_command_.u[4], &offboard_command_.u[4], &combined_command_.u[4]},
-                    {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]}};
+                    {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]},
+                    {&rc_command_.u[6], &offboard_command_.u[6], &combined_command_.u[6]},
+                    {&rc_command_.u[7], &offboard_command_.u[7], &combined_command_.u[7]},
+                    {&rc_command_.u[8], &offboard_command_.u[8], &combined_command_.u[8]},
+                    {&rc_command_.u[9], &offboard_command_.u[9], &combined_command_.u[9]}};
 
   // clang-format off
   control_t rc_command_ = {0,

@@ -68,46 +68,30 @@ void Mixer::param_change_callback(uint16_t param_id)
     // Note: secondary mixer pwm rates are not used, but should match the primary mixer in case code elsewhere changes.
     secondary_mixer_.default_pwm_rate[param_id-PARAM_PRIMARY_MIXER_PWM_RATE_0] = RF_.params_.get_param_float(param_id);
 
-  } else if ((param_id >=PARAM_PRIMARY_MIXER_0_0 )&&(param_id <=PARAM_PRIMARY_MIXER_5_9 )) {
+  } else if ((param_id >=PARAM_PRIMARY_MIXER_0_0 )&&(param_id <=PARAM_PRIMARY_MIXER_9_9 )) {
 
-    uint16_t param_id_offset =  param_id-PARAM_PRIMARY_MIXER_0_0;
+    uint16_t param_id_offset =  param_id - PARAM_PRIMARY_MIXER_0_0;
     float param_value = RF_.params_.get_param_float(param_id);
     uint16_t param_id_row = param_id_offset % NUM_MIXER_OUTPUTS;
     uint16_t param_id_col = param_id_offset / NUM_MIXER_OUTPUTS;
-
-    if(param_id_row==0) { primary_mixer_.u[0][param_id_col] = param_value; }
-    if(param_id_row==1) { primary_mixer_.u[1][param_id_col] = param_value; }
-    if(param_id_row==2) { primary_mixer_.u[2][param_id_col] = param_value; }
-    if(param_id_row==3) { primary_mixer_.u[3][param_id_col] = param_value; }
-    if(param_id_row==4) { primary_mixer_.u[4][param_id_col] = param_value; }
-    if(param_id_row==5) { primary_mixer_.u[5][param_id_col] = param_value; }
+    primary_mixer_.u[param_id_row][param_id_col] = param_value;
 
     // Special Case for when secondary mixer is mirroring primary mixer.
     mixer_type_t mixer_choice = static_cast<mixer_type_t>(RF_.params_.get_param_int(PARAM_SECONDARY_MIXER));
     if (mixer_choice >= NUM_MIXERS) {
-      if(param_id_row==0) { secondary_mixer_.u[0][param_id_col] = param_value; }
-      if(param_id_row==1) { secondary_mixer_.u[1][param_id_col] = param_value; }
-      if(param_id_row==2) { secondary_mixer_.u[2][param_id_col] = param_value; }
-      if(param_id_row==3) { secondary_mixer_.u[3][param_id_col] = param_value; }
-      if(param_id_row==4) { secondary_mixer_.u[4][param_id_col] = param_value; }
-      if(param_id_row==5) { secondary_mixer_.u[5][param_id_col] = param_value; }
+      secondary_mixer_.u[param_id_row][param_id_col] = param_value;
 
       // Write the value to params -- otherwise, the secondary mixer gets out of sync
-      uint16_t secondary_mixer_param_id = PARAM_SECONDARY_MIXER_0_0 + param_id_col*6 + param_id_row;
+      uint16_t secondary_mixer_param_id = PARAM_SECONDARY_MIXER_0_0 + param_id_col*NUM_MIXER_OUTPUTS + param_id_row;
       RF_.params_.set_param_float(secondary_mixer_param_id, param_value);
     }
 
-  } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_5_9 )) {
+  } else if ((param_id >=PARAM_SECONDARY_MIXER_0_0 )&&(param_id <=PARAM_SECONDARY_MIXER_9_9 )) {
 
-     uint16_t param_id_offset =  param_id-PARAM_SECONDARY_MIXER_0_0;
-     uint16_t param_id_row = param_id_offset%NUM_MIXER_OUTPUTS;
-     uint16_t param_id_col = param_id_offset/NUM_MIXER_OUTPUTS;
-     if(param_id_row==0) { secondary_mixer_.u[0][param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==1) { secondary_mixer_.u[1][param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==2) { secondary_mixer_.u[2][param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==3) { secondary_mixer_.u[3][param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==4) { secondary_mixer_.u[4][param_id_col] = RF_.params_.get_param_float(param_id); }
-     if(param_id_row==5) { secondary_mixer_.u[5][param_id_col] = RF_.params_.get_param_float(param_id); }
+    uint16_t param_id_offset =  param_id - PARAM_SECONDARY_MIXER_0_0;
+    uint16_t param_id_row = param_id_offset % NUM_MIXER_OUTPUTS;
+    uint16_t param_id_col = param_id_offset / NUM_MIXER_OUTPUTS;
+    secondary_mixer_.u[param_id_row][param_id_col] = RF_.params_.get_param_float(param_id);
 
   } else switch (param_id) {
     case PARAM_PRIMARY_MIXER:
@@ -207,7 +191,7 @@ void Mixer::init_mixing()
 
     // Load the primary mixing values into the mixer_to_use_ by default
     for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
-      mixer_to_use_.u[i] = &primary_mixer_.u[i];
+      mixer_to_use_.u[i] = primary_mixer_.u[i];
     }
 
     primary_mixer_is_selected_ = true;
@@ -285,16 +269,9 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   Sig.setZero();
 
   // Avoid dividing by zero in the Sigma matrix
-  if (svd.singularValues()[0] != 0.0) { Sig(0, 0) = 1.0 / svd.singularValues()[0]; }
-  if (svd.singularValues()[1] != 0.0) { Sig(1, 1) = 1.0 / svd.singularValues()[1]; }
-  if (svd.singularValues()[2] != 0.0) { Sig(2, 2) = 1.0 / svd.singularValues()[2]; }
-  if (svd.singularValues()[3] != 0.0) { Sig(3, 3) = 1.0 / svd.singularValues()[3]; }
-  if (svd.singularValues()[4] != 0.0) { Sig(4, 4) = 1.0 / svd.singularValues()[4]; }
-  if (svd.singularValues()[5] != 0.0) { Sig(5, 5) = 1.0 / svd.singularValues()[5]; }
-  if (svd.singularValues()[6] != 0.0) { Sig(6, 6) = 1.0 / svd.singularValues()[6]; }
-  if (svd.singularValues()[7] != 0.0) { Sig(7, 7) = 1.0 / svd.singularValues()[7]; }
-  if (svd.singularValues()[8] != 0.0) { Sig(8, 8) = 1.0 / svd.singularValues()[8]; }
-  if (svd.singularValues()[9] != 0.0) { Sig(9, 9) = 1.0 / svd.singularValues()[9]; }
+  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
+    if (svd.singularValues()[i] != 0.0) { Sig(i, i) = 1.0 / svd.singularValues()[i]; }
+  }
 
   // Pseudoinverse of the mixing matrix
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> mixer_matrix_pinv =
@@ -404,7 +381,7 @@ float Mixer::mix_multirotor_without_motor_parameters(Controller::Output commands
       outputs_[i] = 0.0;
       // Matrix multiply to mix outputs
       for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
-        outputs_[i] += commands.u[j] * (*mixer_to_use_.u)[j][i];
+        outputs_[i] += commands.u[j] * mixer_to_use_.u[j][i];
       }
 
       // Save off the largest control output (for motors) if it is greater than 1.0 for future scaling
@@ -428,7 +405,7 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
       float omega_squared = 0.0;
       // Matrix multiply to mix outputs for Motor type
       for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
-        omega_squared += commands.u[j] * (*mixer_to_use_.u)[j][i];
+        omega_squared += commands.u[j] * mixer_to_use_.u[j][i];
       }
 
       // Ensure that omega_squared is non-negative
@@ -466,7 +443,7 @@ float Mixer::mix_multirotor_with_motor_parameters(Controller::Output commands)
       outputs_[i] = 0.0;
       // Matrix multiply to mix outputs for Servo type
       for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
-        outputs_[i] += commands.u[j] * (*mixer_to_use_.u)[j][i];
+        outputs_[i] += commands.u[j] * mixer_to_use_.u[j][i];
       }
     }
   }
@@ -545,7 +522,7 @@ void Mixer::mix_fixedwing()
     if ((*mixer_to_use_.output_type)[i] != AUX) {
       outputs_[i] = 0.0;
       for (uint8_t j = 0; j < NUM_MIXER_OUTPUTS; j++) {
-        outputs_[i] += commands.u[j] * (*mixer_to_use_.u)[j][i];
+        outputs_[i] += commands.u[j] * mixer_to_use_.u[j][i];
       }
     }
   }
@@ -559,24 +536,24 @@ void Mixer::select_primary_or_secondary_mixer()
 
   uint16_t rc_attitude_override_active = static_cast<uint16_t>(rc_override & CommandManager::ATTITUDE_OVERRIDDEN);
   if (rc_attitude_override_active == 0) {
-    mixer_to_use_.u[3] = &primary_mixer_.u[3];
-    mixer_to_use_.u[4] = &primary_mixer_.u[4];
-    mixer_to_use_.u[5] = &primary_mixer_.u[5];
+    mixer_to_use_.u[3] = primary_mixer_.u[3];
+    mixer_to_use_.u[4] = primary_mixer_.u[4];
+    mixer_to_use_.u[5] = primary_mixer_.u[5];
   } else {
-    mixer_to_use_.u[3] = &secondary_mixer_.u[3];
-    mixer_to_use_.u[4] = &secondary_mixer_.u[4];
-    mixer_to_use_.u[5] = &secondary_mixer_.u[5];
+    mixer_to_use_.u[3] = secondary_mixer_.u[3];
+    mixer_to_use_.u[4] = secondary_mixer_.u[4];
+    mixer_to_use_.u[5] = secondary_mixer_.u[5];
   }
 
   uint16_t rc_throttle_override_active = static_cast<uint16_t>(rc_override & CommandManager::T_OVERRIDDEN);
   if (rc_throttle_override_active == 0) {
-    mixer_to_use_.u[0] = &primary_mixer_.u[0];
-    mixer_to_use_.u[1] = &primary_mixer_.u[1];
-    mixer_to_use_.u[2] = &primary_mixer_.u[2];
+    mixer_to_use_.u[0] = primary_mixer_.u[0];
+    mixer_to_use_.u[1] = primary_mixer_.u[1];
+    mixer_to_use_.u[2] = primary_mixer_.u[2];
   } else {
-    mixer_to_use_.u[0] = &secondary_mixer_.u[0];
-    mixer_to_use_.u[1] = &secondary_mixer_.u[1];
-    mixer_to_use_.u[2] = &secondary_mixer_.u[2];
+    mixer_to_use_.u[0] = secondary_mixer_.u[0];
+    mixer_to_use_.u[1] = secondary_mixer_.u[1];
+    mixer_to_use_.u[2] = secondary_mixer_.u[2];
   }
 }
 

@@ -37,12 +37,12 @@ static void mavlink_test_offboard_control(uint8_t system_id, uint8_t component_i
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
         uint16_t i;
     mavlink_offboard_control_t packet_in = {
-        { 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0 },125,192
+        { 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0 },19315,3
     };
     mavlink_offboard_control_t packet1, packet2;
         memset(&packet1, 0, sizeof(packet1));
-        packet1.mode = packet_in.mode;
         packet1.ignore = packet_in.ignore;
+        packet1.mode = packet_in.mode;
         
         mav_array_memcpy(packet1.u, packet_in.u, sizeof(float)*10);
         

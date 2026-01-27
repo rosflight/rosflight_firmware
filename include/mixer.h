@@ -89,7 +89,7 @@ public:
   {
     output_type_t (*output_type)[NUM_MIXER_OUTPUTS];
     float (*default_pwm_rate)[NUM_MIXER_OUTPUTS];
-    float (*u[NUM_MIXER_OUTPUTS])[NUM_MIXER_OUTPUTS];
+    float *u[NUM_MIXER_OUTPUTS];
   } mixer_selection_t;
 
   typedef struct

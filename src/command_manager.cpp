@@ -261,6 +261,10 @@ void CommandManager::do_muxing(uint16_t rc_override)
   for (uint8_t channel{0}; channel < NUM_MUX_CHANNELS; ++channel) {
     do_channel_muxing(static_cast<MuxChannel>(channel), rc_override);
   }
+  // Pass the remaining channels that RC does not override through to the combined command vector.
+  for (uint8_t channel{NUM_MUX_CHANNELS}; channel < Mixer::NUM_MIXER_OUTPUTS; ++channel) {
+    *muxes_[channel].combined = *muxes_[channel].onboard;
+  }
 }
 
 void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override )
@@ -313,12 +317,9 @@ bool CommandManager::run()
     if (RF_.board_.clock_millis()
         > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT)) {
       // If it has been longer than 100 ms, then disable the offboard control
-      offboard_command_.u[0].active = false;
-      offboard_command_.u[1].active = false;
-      offboard_command_.u[2].active = false;
-      offboard_command_.u[3].active = false;
-      offboard_command_.u[4].active = false;
-      offboard_command_.u[5].active = false;
+      for (int i=0; i<Mixer::NUM_MIXER_OUTPUTS; ++i) {
+        offboard_command_.u[i].active = false;
+      }
     }
 
     // Perform muxing

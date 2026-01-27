@@ -210,7 +210,7 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
         <message id="180" name="OFFBOARD_CONTROL">
 			<description>Offboard Control (10-DOF)</description>
 			<field type="uint8_t" name="mode" enum="OFFBOARD_CONTROL_MODE">Offboard control mode, see OFFBOARD_CONTROL_MODE</field>
-			<field type="uint8_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
+			<field type="uint16_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
 			<field type="float[10]" name="u">u control channel interpreted according to mode</field>
         </message>
         <message id="181" name="SMALL_IMU">
