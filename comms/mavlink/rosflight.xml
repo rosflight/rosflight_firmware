@@ -53,23 +53,35 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
             <entry value="0x00" name="IGNORE_NONE">
                 <description>Convenience value for specifying no fields should be ignored</description>
             </entry>
-            <entry value="0x01" name="IGNORE_VALUE1">
+            <entry value="0x01" name="IGNORE_VALUE0">
+                <description>Field value0 should be ignored</description>
+            </entry>
+            <entry value="0x02" name="IGNORE_VALUE1">
                 <description>Field value1 should be ignored</description>
             </entry>
-            <entry value="0x02" name="IGNORE_VALUE2">
+            <entry value="0x04" name="IGNORE_VALUE2">
                 <description>Field value2 should be ignored</description>
             </entry>
-            <entry value="0x04" name="IGNORE_VALUE3">
+            <entry value="0x08" name="IGNORE_VALUE3">
                 <description>Field value3 should be ignored</description>
             </entry>
-            <entry value="0x08" name="IGNORE_VALUE4">
-                <description>Field value4 should be ignored</description>
-            </entry>
-           <entry value="0x16" name="IGNORE_VALUE5">
+           <entry value="0x10" name="IGNORE_VALUE4">
+               <description>Field value4 should be ignored</description>
+           </entry>
+           <entry value="0x20" name="IGNORE_VALUE5">
                <description>Field value5 should be ignored</description>
            </entry>
-           <entry value="0x32" name="IGNORE_VALUE6">
+           <entry value="0x40" name="IGNORE_VALUE6">
                <description>Field value6 should be ignored</description>
+           </entry>
+           <entry value="0x80" name="IGNORE_VALUE7">
+               <description>Field value7 should be ignored</description>
+           </entry>
+           <entry value="0x100" name="IGNORE_VALUE8">
+               <description>Field value8 should be ignored</description>
+           </entry>
+           <entry value="0x200" name="IGNORE_VALUE9">
+               <description>Field value9 should be ignored</description>
            </entry>
         </enum>
         <enum name="ROSFLIGHT_ERROR_CODE">
@@ -196,15 +208,10 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
     
     <messages>
         <message id="180" name="OFFBOARD_CONTROL">
-			<description>Offboard Control (6-DOF)</description>
+			<description>Offboard Control (10-DOF)</description>
 			<field type="uint8_t" name="mode" enum="OFFBOARD_CONTROL_MODE">Offboard control mode, see OFFBOARD_CONTROL_MODE</field>
-			<field type="uint8_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
-			<field type="float" name="Qx">Qx control channel interpreted according to mode</field>
-			<field type="float" name="Qy">Qy control channel, interpreted according to mode</field>
-			<field type="float" name="Qz">Qz control channel, interpreted according to mode</field>
-			<field type="float" name="Fx">Fx control channel interpreted according to mode</field>
-			<field type="float" name="Fy">Fy control channel, interpreted according to mode</field>
-			<field type="float" name="Fz">Fz control channel, interpreted according to mode</field>
+			<field type="uint16_t" name="ignore" enum="OFFBOARD_CONTROL_IGNORE">Bitfield specifying which fields should be ignored, see OFFBOARD_CONTROL_IGNORE</field>
+			<field type="float[10]" name="u">u control channel interpreted according to mode</field>
         </message>
         <message id="181" name="SMALL_IMU">
 			<description>IMU data</description>
@@ -313,7 +320,7 @@ See the generating_v1.0_instructions.txt to regenerate mavlink headers based off
 			<field type="float" name="battery_voltage"/> <!-- V -->
 			<field type="float" name="battery_current"/> <!-- A -->
 		</message>
-	<!-- From Common -->	
+	<!-- From Common -->	 
 	 <message id="0" name="HEARTBEAT">
 		<description>The heartbeat message shows that a system is present and responding. The type of the MAV and Autopilot hardware allow the receiving system to treat further messages from this system appropriate (e.g. by laying out the user interface based on the autopilot).</description>
 		<field type="uint8_t" name="type">Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)</field>

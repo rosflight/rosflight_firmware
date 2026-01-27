@@ -37,6 +37,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 
 namespace rosflight_firmware
 {
@@ -232,48 +233,45 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 
 void CommManager::offboard_control_callback(const CommLinkInterface::OffboardControl & control)
 {
-  // put values into a new command struct
+  // put values and flags into a new command struct
   control_t new_offboard_command;
-  new_offboard_command.Qx.value = control.Qx.value;
-  new_offboard_command.Qy.value = control.Qy.value;
-  new_offboard_command.Qz.value = control.Qz.value;
-  new_offboard_command.Fx.value = control.Fx.value;
-  new_offboard_command.Fy.value = control.Fy.value;
-  new_offboard_command.Fz.value = control.Fz.value;
+  for (std::size_t i=0; i<std::size(control.u); ++i)
+  {
+    new_offboard_command.u[i].value = control.u[i].value;
+    new_offboard_command.u[i].active = control.u[i].valid;
 
-  // Move flags into standard message
-  new_offboard_command.Qx.active = control.Qx.valid;
-  new_offboard_command.Qy.active = control.Qy.valid;
-  new_offboard_command.Qz.active = control.Qz.valid;
-  new_offboard_command.Fx.active = control.Fx.valid;
-  new_offboard_command.Fy.active = control.Fy.valid;
-  new_offboard_command.Fz.active = control.Fz.valid;
+  }
 
   // translate modes into standard message
   switch (control.mode) {
     case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
-      new_offboard_command.Qx.type = PASSTHROUGH;
-      new_offboard_command.Qy.type = PASSTHROUGH;
-      new_offboard_command.Qz.type = PASSTHROUGH;
-      new_offboard_command.Fx.type = PASSTHROUGH;
-      new_offboard_command.Fy.type = PASSTHROUGH;
-      new_offboard_command.Fz.type = PASSTHROUGH;
+      for (std::size_t i=0; i<std::size(control.u); ++i) {
+        new_offboard_command.u[i].type = PASSTHROUGH;
+      }
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLLRATE_PITCHRATE_YAWRATE_THROTTLE:
-      new_offboard_command.Qx.type = RATE;
-      new_offboard_command.Qy.type = RATE;
-      new_offboard_command.Qz.type = RATE;
-      new_offboard_command.Fx.type = THROTTLE;
-      new_offboard_command.Fy.type = THROTTLE;
-      new_offboard_command.Fz.type = THROTTLE;
+      new_offboard_command.u[0].type = THROTTLE;
+      new_offboard_command.u[1].type = THROTTLE;
+      new_offboard_command.u[2].type = THROTTLE;
+      new_offboard_command.u[3].type = RATE;
+      new_offboard_command.u[4].type = RATE;
+      new_offboard_command.u[5].type = RATE;
+      new_offboard_command.u[6].type = PASSTHROUGH;
+      new_offboard_command.u[7].type = PASSTHROUGH;
+      new_offboard_command.u[8].type = PASSTHROUGH;
+      new_offboard_command.u[9].type = PASSTHROUGH;
       break;
     case CommLinkInterface::OffboardControl::Mode::ROLL_PITCH_YAWRATE_THROTTLE:
-      new_offboard_command.Qx.type = ANGLE;
-      new_offboard_command.Qy.type = ANGLE;
-      new_offboard_command.Qz.type = RATE;
-      new_offboard_command.Fx.type = THROTTLE;
-      new_offboard_command.Fy.type = THROTTLE;
-      new_offboard_command.Fz.type = THROTTLE;
+      new_offboard_command.u[0].type = THROTTLE;
+      new_offboard_command.u[1].type = THROTTLE;
+      new_offboard_command.u[2].type = THROTTLE;
+      new_offboard_command.u[3].type = ANGLE;
+      new_offboard_command.u[4].type = ANGLE;
+      new_offboard_command.u[5].type = RATE;
+      new_offboard_command.u[6].type = PASSTHROUGH;
+      new_offboard_command.u[7].type = PASSTHROUGH;
+      new_offboard_command.u[8].type = PASSTHROUGH;
+      new_offboard_command.u[9].type = PASSTHROUGH;
       break;
   }
 
@@ -363,9 +361,9 @@ void CommManager::send_status(void)
 
   uint8_t control_mode = 0;
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)
-      || RF_.command_manager_.combined_control().Qx.type == PASSTHROUGH) {
+      || RF_.command_manager_.combined_control().u[3].type == PASSTHROUGH) {
     control_mode = MODE_PASS_THROUGH;
-  } else if (RF_.command_manager_.combined_control().Qx.type == ANGLE) {
+  } else if (RF_.command_manager_.combined_control().u[3].type == ANGLE) {
     control_mode = MODE_ROLL_PITCH_YAWRATE_THROTTLE;
   } else {
     control_mode = MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
@@ -515,7 +513,7 @@ void CommManager::stream(got_flags got)
 void CommManager::send_next_param(void)
 {
   if (send_params_index_ < PARAMS_COUNT) {
-    send_param_value(static_cast<uint16_t>(send_params_index_));
+    send_param_value(send_params_index_);
     send_params_index_++;
   }
 }

@@ -33,7 +33,7 @@
 
 #include "command_manager.h"
 #include "estimator.h"
-
+#include "mixer.h"
 #include "rosflight.h"
 
 #include <cstdbool>
@@ -105,9 +105,9 @@ void Controller::calculate_max_thrust()
 }
 
 bool Controller::is_throttle_high(float threshold) {
-  return  RF_.command_manager_.combined_control().Fx.value > threshold ||
-          RF_.command_manager_.combined_control().Fy.value > threshold ||
-          RF_.command_manager_.combined_control().Fz.value > threshold;
+  return  RF_.command_manager_.combined_control().u[0].value > threshold ||
+          RF_.command_manager_.combined_control().u[1].value > threshold ||
+          RF_.command_manager_.combined_control().u[2].value > threshold;
 }
 
 void Controller::run(const float dt)
@@ -121,13 +121,18 @@ void Controller::run(const float dt)
     dt, RF_.estimator_.state(), RF_.command_manager_.combined_control(), update_integrators);
 
   // Add feedforward torques
-  output_.Qx = pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
-  output_.Qy = pid_output.Qy + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
-  output_.Qz = pid_output.Qz + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
+  output_.u[3] = pid_output.u[3] + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE);
+  output_.u[4] = pid_output.u[4] + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE);
+  output_.u[5] = pid_output.u[5] + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE);
 
-  output_.Fx = pid_output.Fx;
-  output_.Fy = pid_output.Fy;
-  output_.Fz = pid_output.Fz;
+  output_.u[0] = pid_output.u[0];
+  output_.u[1] = pid_output.u[1];
+  output_.u[2] = pid_output.u[2];
+
+  // Propagate remaining command channels as passthrough
+  for (int i=6; i<Mixer::NUM_MIXER_OUTPUTS; ++i) {
+    output_.u[i] = RF_.command_manager_.combined_control().u[i].value;
+  }
 }
 
 void Controller::calculate_equilbrium_torque_from_rc()
@@ -164,11 +169,11 @@ void Controller::calculate_equilbrium_torque_from_rc()
 
     // the output from the controller is going to be the static offsets
     RF_.params_.set_param_float(PARAM_X_EQ_TORQUE,
-                                pid_output.Qx + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
+                                pid_output.u[3] + RF_.params_.get_param_float(PARAM_X_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Y_EQ_TORQUE,
-                                pid_output.Qy + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
+                                pid_output.u[4] + RF_.params_.get_param_float(PARAM_Y_EQ_TORQUE));
     RF_.params_.set_param_float(PARAM_Z_EQ_TORQUE,
-                                pid_output.Qz + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
+                                pid_output.u[5] + RF_.params_.get_param_float(PARAM_Z_EQ_TORQUE));
 
     RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
                           "Equilibrium torques found and applied.");
@@ -222,75 +227,75 @@ Controller::Output Controller::run_pid_loops(const float dt, const Estimator::St
   Controller::Output out;
 
   // ROLL
-  if (command.Qx.type == RATE) {
-    out.Qx = roll_rate_.run(dt, state.angular_velocity.x, command.Qx.value, update_integrators);
-  } else if (command.Qx.type == ANGLE) {
-    out.Qx =
-      roll_.run(dt, state.roll, command.Qx.value, update_integrators, state.angular_velocity.x);
+  if (command.u[3].type == RATE) {
+    out.u[3] = roll_rate_.run(dt, state.angular_velocity.x, command.u[3].value, update_integrators);
+  } else if (command.u[3].type == ANGLE) {
+    out.u[3] =
+      roll_.run(dt, state.roll, command.u[3].value, update_integrators, state.angular_velocity.x);
   } else {
-    out.Qx = command.Qx.value;
+    out.u[3] = command.u[3].value;
   }
 
   // PITCH
-  if (command.Qy.type == RATE) {
-    out.Qy = pitch_rate_.run(dt, state.angular_velocity.y, command.Qy.value, update_integrators);
-  } else if (command.Qy.type == ANGLE) {
-    out.Qy =
-      pitch_.run(dt, state.pitch, command.Qy.value, update_integrators, state.angular_velocity.y);
+  if (command.u[4].type == RATE) {
+    out.u[4] = pitch_rate_.run(dt, state.angular_velocity.y, command.u[4].value, update_integrators);
+  } else if (command.u[4].type == ANGLE) {
+    out.u[4] =
+      pitch_.run(dt, state.pitch, command.u[4].value, update_integrators, state.angular_velocity.y);
   } else {
-    out.Qy = command.Qy.value;
+    out.u[4] = command.u[4].value;
   }
 
   // YAW
-  if (command.Qz.type == RATE) {
-    out.Qz = yaw_rate_.run(dt, state.angular_velocity.z, command.Qz.value, update_integrators);
+  if (command.u[5].type == RATE) {
+    out.u[5] = yaw_rate_.run(dt, state.angular_velocity.z, command.u[5].value, update_integrators);
   } else {
-    out.Qz = command.Qz.value;
+    out.u[5] = command.u[5].value;
   }
 
   // Fx
-  if (command.Fx.type == THROTTLE) {
+  if (command.u[0].type == THROTTLE) {
     // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
     // during aggressive maneuvers.
-    out.Fx = command.Fx.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+    out.u[0] = command.u[0].value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
     if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
-      out.Fx *= max_thrust_;
+      out.u[0] *= max_thrust_;
     }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
-    out.Fx = command.Fx.value;
+    out.u[0] = command.u[0].value;
   }
 
   // Fy
-  if (command.Fy.type == THROTTLE) {
+  if (command.u[1].type == THROTTLE) {
     // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
     // during aggressive maneuvers.
-    out.Fy = command.Fy.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+    out.u[1] = command.u[1].value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
     if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
-      out.Fy *= max_thrust_;
+      out.u[1] *= max_thrust_;
     }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
-    out.Fy = command.Fy.value;
+    out.u[1] = command.u[1].value;
   }
 
   // Fz
-  if (command.Fz.type == THROTTLE) {
+  if (command.u[2].type == THROTTLE) {
     // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
     // during aggressive maneuvers.
     // Also note the negative sign. Since the mixer assumes the inputs are in the NED
     // frame, a throttle command corresponds to a thrust command in the negative direction.
     // Note that this also assumes that a high throttle means fly "up" (negative down)
-    out.Fz = -command.Fz.value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
+    out.u[2] = -command.u[2].value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
     if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
-      out.Fz *= max_thrust_;
+      out.u[2] *= max_thrust_;
     }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
-    out.Fz = command.Fz.value;
+    out.u[2] = command.u[2].value;
   }
 
   return out;

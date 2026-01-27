@@ -78,18 +78,18 @@ void CommandManager::init_failsafe()
   // Make sure the failsafe is set to the axis associated with the RC F command
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
     case X_AXIS:
-      multirotor_failsafe_command_.Fx.value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[0].value = failsafe_thr_param;
       break;
     case Y_AXIS:
-      multirotor_failsafe_command_.Fy.value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[1].value = failsafe_thr_param;
       break;
     case Z_AXIS:
-      multirotor_failsafe_command_.Fz.value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[2].value = failsafe_thr_param;
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      multirotor_failsafe_command_.Fz.value = failsafe_thr_param;
+      multirotor_failsafe_command_.u[2].value = failsafe_thr_param;
       break;
   }
 
@@ -103,39 +103,39 @@ void CommandManager::init_failsafe()
 void CommandManager::interpret_rc(void)
 {
   // get initial, unscaled RC values
-  rc_command_.Qx.value = RF_.rc_.stick(RC::STICK_X);
-  rc_command_.Qy.value = RF_.rc_.stick(RC::STICK_Y);
-  rc_command_.Qz.value = RF_.rc_.stick(RC::STICK_Z);
+  rc_command_.u[3].value = RF_.rc_.stick(RC::STICK_X);
+  rc_command_.u[4].value = RF_.rc_.stick(RC::STICK_Y);
+  rc_command_.u[5].value = RF_.rc_.stick(RC::STICK_Z);
 
   // Load the RC command based on the axis associated with the RC F command
-  rc_command_.Fx.value = 0.0;
-  rc_command_.Fy.value = 0.0;
-  rc_command_.Fz.value = 0.0;
+  rc_command_.u[0].value = 0.0;
+  rc_command_.u[1].value = 0.0;
+  rc_command_.u[2].value = 0.0;
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
-    case X_AXIS:
-      rc_command_.Fx.value = RF_.rc_.stick(RC::STICK_F);
+    case X_AXIS:   // RC F = X axis
+      rc_command_.u[0].value = RF_.rc_.stick(RC::STICK_F);
       break;
-    case Y_AXIS:
-      rc_command_.Fy.value = RF_.rc_.stick(RC::STICK_F);
+    case Y_AXIS:   // RC F = Y axis
+      rc_command_.u[1].value = RF_.rc_.stick(RC::STICK_F);
       break;
     case Z_AXIS:
-      rc_command_.Fz.value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_F);
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
           "Invalid RC F axis. Defaulting to z-axis.");
-      rc_command_.Fz.value = RF_.rc_.stick(RC::STICK_F);
+      rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_F);
       break;
   }
 
   // determine control mode for each channel and scale command values accordingly
   if (RF_.params_.get_param_int(PARAM_FIXED_WING)) {
-    rc_command_.Qx.type = PASSTHROUGH;
-    rc_command_.Qy.type = PASSTHROUGH;
-    rc_command_.Qz.type = PASSTHROUGH;
-    rc_command_.Fx.type = PASSTHROUGH;
-    rc_command_.Fy.type = PASSTHROUGH;
-    rc_command_.Fz.type = PASSTHROUGH;
+    rc_command_.u[0].type = PASSTHROUGH;
+    rc_command_.u[1].type = PASSTHROUGH;
+    rc_command_.u[2].type = PASSTHROUGH;
+    rc_command_.u[3].type = PASSTHROUGH;
+    rc_command_.u[4].type = PASSTHROUGH;
+    rc_command_.u[5].type = PASSTHROUGH;
   } else {
     // roll and pitch
     control_type_t roll_pitch_type;
@@ -146,30 +146,30 @@ void CommandManager::interpret_rc(void)
         (RF_.params_.get_param_int(PARAM_RC_ATTITUDE_MODE) == ATT_MODE_RATE) ? RATE : ANGLE;
     }
 
-    rc_command_.Qx.type = roll_pitch_type;
-    rc_command_.Qy.type = roll_pitch_type;
+    rc_command_.u[3].type = roll_pitch_type;
+    rc_command_.u[4].type = roll_pitch_type;
 
     // Scale command to appropriate units
     switch (roll_pitch_type) {
       case RATE:
-        rc_command_.Qx.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
-        rc_command_.Qy.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
+        rc_command_.u[3].value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLLRATE);
+        rc_command_.u[4].value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCHRATE);
         break;
       case ANGLE:
-        rc_command_.Qx.value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
-        rc_command_.Qy.value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
+        rc_command_.u[3].value *= RF_.params_.get_param_float(PARAM_RC_MAX_ROLL);
+        rc_command_.u[4].value *= RF_.params_.get_param_float(PARAM_RC_MAX_PITCH);
       default:
         break;
     }
 
     // yaw
-    rc_command_.Qz.type = RATE;
-    rc_command_.Qz.value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
+    rc_command_.u[5].type = RATE;
+    rc_command_.u[5].value *= RF_.params_.get_param_float(PARAM_RC_MAX_YAWRATE);
 
     // throttle
-    rc_command_.Fx.type = THROTTLE;
-    rc_command_.Fy.type = THROTTLE;
-    rc_command_.Fz.type = THROTTLE;
+    rc_command_.u[0].type = THROTTLE;
+    rc_command_.u[1].type = THROTTLE;
+    rc_command_.u[2].type = THROTTLE;
   }
 }
 
@@ -261,6 +261,10 @@ void CommandManager::do_muxing(uint16_t rc_override)
   for (uint8_t channel{0}; channel < NUM_MUX_CHANNELS; ++channel) {
     do_channel_muxing(static_cast<MuxChannel>(channel), rc_override);
   }
+  // Pass the remaining channels that RC does not override through to the combined command vector.
+  for (uint8_t channel{NUM_MUX_CHANNELS}; channel < Mixer::NUM_MIXER_OUTPUTS; ++channel) {
+    *muxes_[channel].combined = *muxes_[channel].onboard;
+  }
 }
 
 void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override )
@@ -313,12 +317,9 @@ bool CommandManager::run()
     if (RF_.board_.clock_millis()
         > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT)) {
       // If it has been longer than 100 ms, then disable the offboard control
-      offboard_command_.Fx.active = false;
-      offboard_command_.Fy.active = false;
-      offboard_command_.Fz.active = false;
-      offboard_command_.Qx.active = false;
-      offboard_command_.Qy.active = false;
-      offboard_command_.Qz.active = false;
+      for (int i=0; i<Mixer::NUM_MIXER_OUTPUTS; ++i) {
+        offboard_command_.u[i].active = false;
+      }
     }
 
     // Perform muxing
