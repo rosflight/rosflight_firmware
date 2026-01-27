@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.0-beta.1](https://github.com/rosflight/rosflight_firmware/compare/v2.0.0-beta...v2.0.0-beta.1) (2026-01-27)
+
+
+### Features
+
+* add mag orientation params to firmware ([#476](https://github.com/rosflight/rosflight_firmware/issues/476)) ([2da05c1](https://github.com/rosflight/rosflight_firmware/commit/2da05c1bd158fad0a7d14b69aea49414edd37827))
+* change command message to vector from named force-torque values ([71ca9f6](https://github.com/rosflight/rosflight_firmware/commit/71ca9f6038b5deaa4ab58b4248c5da2c8fc55caa))
+
 ## [2.0.0-beta](https://github.com/rosflight/rosflight_firmware/compare/v1.3.1...v2.0.0-beta) (2025-12-13)
 
 
