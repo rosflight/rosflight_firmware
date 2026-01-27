@@ -63,17 +63,18 @@ void Sensors::init()
   rf_.board_.sensors_init();
 
   init_imu();
+  init_mag();
 
   this->update_battery_monitor_multipliers();
 }
 
 void Sensors::init_imu()
 {
-  // Quaternion to compensate for FCU orientation
-  float roll = rf_.params_.get_param_float(PARAM_FC_ROLL) * 0.017453293;
-  float pitch = rf_.params_.get_param_float(PARAM_FC_PITCH) * 0.017453293;
-  float yaw = rf_.params_.get_param_float(PARAM_FC_YAW) * 0.017453293;
-  fcu_orientation_ = turbomath::Quaternion(roll, pitch, yaw);
+  // Quaternion to compensate for IMU orientation
+  float roll = rf_.params_.get_param_float(PARAM_IMU_ROLL) * 0.017453293;
+  float pitch = rf_.params_.get_param_float(PARAM_IMU_PITCH) * 0.017453293;
+  float yaw = rf_.params_.get_param_float(PARAM_IMU_YAW) * 0.017453293;
+  imu_orientation_ = turbomath::Quaternion(roll, pitch, yaw);
 
   // See if the IMU is uncalibrated, and throw an error if it is
   if (rf_.params_.get_param_float(PARAM_ACC_X_BIAS) == 0.0
@@ -86,13 +87,27 @@ void Sensors::init_imu()
   }
 }
 
+void Sensors::init_mag()
+{
+  // Quaternion to compensate for mag orientation
+  float roll = rf_.params_.get_param_float(PARAM_MAG_ROLL) * 0.017453293;
+  float pitch = rf_.params_.get_param_float(PARAM_MAG_PITCH) * 0.017453293;
+  float yaw = rf_.params_.get_param_float(PARAM_MAG_YAW) * 0.017453293;
+  mag_orientation_ = turbomath::Quaternion(roll, pitch, yaw);
+}
+
 void Sensors::param_change_callback(uint16_t param_id)
 {
   switch (param_id) {
-    case PARAM_FC_ROLL:
-    case PARAM_FC_PITCH:
-    case PARAM_FC_YAW:
+    case PARAM_IMU_ROLL:
+    case PARAM_IMU_PITCH:
+    case PARAM_IMU_YAW:
       init_imu();
+      break;
+    case PARAM_MAG_ROLL:
+    case PARAM_MAG_PITCH:
+    case PARAM_MAG_YAW:
+      init_mag();
       break;
     case PARAM_BATTERY_VOLTAGE_MULTIPLIER:
     case PARAM_BATTERY_CURRENT_MULTIPLIER:
@@ -135,6 +150,20 @@ void Sensors::rotate_imu_in_place(ImuStruct * imu, turbomath::Quaternion rotatio
   imu->gyro[2] = gyro.z;
 }
 
+void Sensors::rotate_mag_in_place(MagStruct * mag, turbomath::Quaternion rotation)
+{
+  turbomath::Vector flux;
+  flux.x = mag->flux[0];
+  flux.y = mag->flux[1];
+  flux.z = mag->flux[2];
+
+  flux = rotation * flux;
+
+  mag->flux[0] = flux.x;
+  mag->flux[1] = flux.y;
+  mag->flux[2] = flux.z;
+}
+
 got_flags Sensors::run()
 {
   got_flags got = {};
@@ -142,7 +171,7 @@ got_flags Sensors::run()
   // IMU:
   if ((got.imu = rf_.board_.imu_read(&imu_))) {
     rf_.state_manager_.clear_error(StateManager::ERROR_IMU_NOT_RESPONDING);
-    rotate_imu_in_place(&imu_, fcu_orientation_);
+    rotate_imu_in_place(&imu_, imu_orientation_);
 
     if (calibrating_acc_flag_) { calibrate_accel(); }
     if (calibrating_gyro_flag_) { calibrate_gyro(); }
@@ -160,7 +189,10 @@ got_flags Sensors::run()
     }
 
   // MAGNETOMETER:
-  if ((got.mag = rf_.board_.mag_read(&mag_))) { correct_mag(); }
+  if ((got.mag = rf_.board_.mag_read(&mag_))) {
+    rotate_mag_in_place(&mag_, mag_orientation_);
+    correct_mag();
+  }
 
   // DIFF_PRESSURE:
   if ((got.diff_pressure = rf_.board_.diff_pressure_read(&diff_pressure_))) {
