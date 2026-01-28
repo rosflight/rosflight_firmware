@@ -81,6 +81,7 @@ private:
   uint16_t address_;
   double dtMs_;
   uint64_t drdy_;
+  bool write_data_;
 };
 
 #endif /* DLHRL20G_H_ */

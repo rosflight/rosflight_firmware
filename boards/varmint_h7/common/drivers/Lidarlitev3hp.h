@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
- * File     : IST8308.h
- * Date     : Jun 18, 2024
+ * File     : Lidarlitev3hp.h
+ * Date     : Nov 17, 2025
  ******************************************************************************
  *
- * Copyright (c) 2023, AeroVironment, Inc.
+ * Copyright (c) 2025, AeroVironment, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,8 @@
  ******************************************************************************
  **/
 
-#ifndef DRIVERS_IST8308_H_
-#define DRIVERS_IST8308_H_
+#ifndef DRIVERS_LIDARLITEV3HP_H_
+#define DRIVERS_LIDARLITEV3HP_H_
 
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
@@ -46,23 +46,22 @@
 #include "misc.h"
 #include "Polling.h"
 
-class Ist8308 : public Status, public MiscRotatable
-{
+#define LIDARLITEV3HP_ADDRESS 0x62
 
+
+class Lidarlitev3hp : public Status
+{
 public:
   uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate_hz,
-    // I2C initializers
-    I2C_HandleTypeDef * hi2c, uint16_t i2c_address,
-    const double *rotation);
+        uint16_t sample_rate_hz,
+        I2C_HandleTypeDef * hi2c, uint16_t i2c_address
+      );
 
   bool poll(uint64_t poll_counter);
 
   void stateMachine(void);
 
   bool display(void);
-  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
@@ -72,16 +71,17 @@ private:
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   uint64_t drdy_;
+  uint8_t status_;
 
   I2C_HandleTypeDef * hi2c_;
-  PollingState i2cState_;
+  uint32_t i2cState_;
   uint16_t address_;
   uint8_t cmdByte_;
   double dtMs_;
 
-  void startReadData(void);
-  void startAcq(void);
-
+  void startDrdyQuery(void);
+  void startMeasure(void);
+  void startDataRead(void);
 };
 
-#endif /* DRIVERS_IST8308_H_ */
+#endif /* DRIVERS_LIDARLITEV3HP_H_ */

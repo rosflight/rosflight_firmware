@@ -62,6 +62,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     varmint.mag_.poll(poll_counter + 1); // Checks for data ready and start dma read
 
     varmint.pitot_.poll(poll_counter); // Periodic start, check for data ready, and start dma read
+    varmint.range_.poll(poll_counter);
 
     varmint.rc_.poll();              // Restart if dead
     varmint.gps_.poll();             // Restart if dead
@@ -100,11 +101,17 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi) // All spi dma rx interr
   if (varmint.baro_.isMy(hspi)) { varmint.baro_.endDma(); }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
-// I2C Rx complete callback
+// I2C Rx/Tx complete callback
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
   if (varmint.pitot_.isMy(hi2c)) varmint.pitot_.endDma();
+  if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (varmint.range_.isMy(hi2c)) varmint.range_.stateMachine();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

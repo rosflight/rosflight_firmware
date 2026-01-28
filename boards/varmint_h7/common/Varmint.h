@@ -56,6 +56,7 @@
 #include "Telem.h"
 #include "Ubx.h"
 #include "Vcp.h"
+#include "Lidarlitev3hp.h"
 #include "interface/board.h"
 
 /*

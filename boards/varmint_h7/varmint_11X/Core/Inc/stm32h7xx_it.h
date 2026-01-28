@@ -70,6 +70,7 @@ void DMA1_Stream6_IRQHandler(void);
 void ADC_IRQHandler(void);
 void EXTI9_5_IRQHandler(void);
 void I2C1_EV_IRQHandler(void);
+void I2C2_EV_IRQHandler(void);
 void SPI1_IRQHandler(void);
 void SPI2_IRQHandler(void);
 void USART1_IRQHandler(void);
