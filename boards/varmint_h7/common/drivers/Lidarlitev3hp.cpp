@@ -222,17 +222,17 @@ void Lidarlitev3hp::stateMachine(void)
       break; // pedantic.
     }
     case LIDARLITE_STATE_POLLING:
-  {
+    {
       lidarlite_i2c_dma_buf[0] = STATUS;
       if (HAL_I2C_Master_Transmit_DMA(hi2c_, address_, lidarlite_i2c_dma_buf, 1)==HAL_OK) {
         i2cState_ = LIDARLITE_STATE_STATUS_CMD;
-  } else {
-    i2cState_ = LIDARLITE_STATE_ERROR;
-  }
+      } else {
+        i2cState_ = LIDARLITE_STATE_ERROR;
+      }
       break;
-}
+    }
     case LIDARLITE_STATE_STATUS_CMD:
-{
+    {
       // Start read of Status
       lidarlite_i2c_dma_buf[0] = 0;
       if (HAL_I2C_Master_Receive_DMA(hi2c_, address_, lidarlite_i2c_dma_buf,1) == HAL_OK) {
@@ -243,13 +243,13 @@ void Lidarlitev3hp::stateMachine(void)
       break;
     }
     case LIDARLITE_STATE_STATUS_READ:
-  {
+    {
       // Check status
-    status_ = lidarlite_i2c_dma_buf[0];
+      status_ = lidarlite_i2c_dma_buf[0];
       if ((status_ & 0x01)==0x00)
       {
-      drdy_ = time64.Us();
-      // status good, start a read
+        drdy_ = time64.Us();
+        // status good, start a read
         lidarlite_i2c_dma_buf[0] = FULL_DELAY_HIGH;
 
         if (HAL_I2C_Master_Transmit_DMA(hi2c_, address_, lidarlite_i2c_dma_buf,1) == HAL_OK) {
@@ -278,51 +278,51 @@ void Lidarlitev3hp::stateMachine(void)
         i2cState_ = LIDARLITE_STATE_DATA_READ;
     } else {
         i2cState_ = LIDARLITE_STATE_ERROR;
-      }
+    }
       break;
     }
     case LIDARLITE_STATE_DATA_READ:
     {
-    // Reading range data complete
-    uint16_t urange = (lidarlite_i2c_dma_buf[0]<<8) | lidarlite_i2c_dma_buf[1]; // cm
+      // Reading range data complete
+      uint16_t urange = (lidarlite_i2c_dma_buf[0]<<8) | lidarlite_i2c_dma_buf[1]; // cm
 
-    RangePacket p;
-    p.header.timestamp = drdy_;
-    p.header.complete = time64.Us();
-    p.header.status = status_;
-    p.range = ((float)urange)/100.0;
-    p.min_range = 0.0;
-    p.max_range = 40.0;
-    p.type = rosflight_firmware::SensorRangeType::ROSFLIGHT_RANGE_LIDAR;
-    // no specific check for status because we did that before starting the read.
-    write((uint8_t *) &p, sizeof(p));
+      RangePacket p;
+      p.header.timestamp = drdy_;
+      p.header.complete = time64.Us();
+      p.header.status = status_;
+      p.range = ((float)urange)/100.0;
+      p.min_range = 0.0;
+      p.max_range = 40.0;
+      p.type = rosflight_firmware::SensorRangeType::ROSFLIGHT_RANGE_LIDAR;
+      // no specific check for status because we did that before starting the read.
+      write((uint8_t *) &p, sizeof(p));
 
       // Start Next Measurement
       lidarlite_i2c_dma_buf[0] = ACQ_COMMAND;
       lidarlite_i2c_dma_buf[1] = 0x04;
       if (HAL_I2C_Master_Transmit_DMA(hi2c_, address_, lidarlite_i2c_dma_buf, 2)==HAL_OK) {
         i2cState_ = LIDARLITE_STATE_MEASURE_CMD;
-  } else {
-    i2cState_ = LIDARLITE_STATE_ERROR;
-  }
-      break;
-}
+      } else {
+        i2cState_ = LIDARLITE_STATE_ERROR;
+      }
+        break;
+    }
     case LIDARLITE_STATE_MEASURE_CMD:
-  {
+    {
       i2cState_ = LIDARLITE_STATE_IDLE;
       break;
-  }
+    }
     case LIDARLITE_STATE_ERROR:
     {
       break;
-}
+    }
     default:
-{
-    i2cState_ = LIDARLITE_STATE_ERROR;
+    {
+      i2cState_ = LIDARLITE_STATE_ERROR;
       break; // pedantic.
+    }
   }
 }
-  }
 
 bool Lidarlitev3hp::display(void)
 {
