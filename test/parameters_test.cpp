@@ -26,7 +26,7 @@ TEST(Parameters, DefaultParameters)
   EXPECT_PARAM_EQ_FLOAT(PARAM_PROP_DIAMETER, 0.381f); // Diameter of the propeller in meters | 0 | 1.0
   EXPECT_PARAM_EQ_FLOAT(PARAM_PROP_CT, 0.075f); // Thrust coefficient of the propeller | 0 | 100.0
   EXPECT_PARAM_EQ_FLOAT(PARAM_PROP_CQ, 0.0045f); // Torque coefficient of the propeller | 0 | 100.0
-  EXPECT_PARAM_EQ_FLOAT(PARAM_VOLT_MAX, 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
+  EXPECT_PARAM_EQ_FLOAT(PARAM_BATT_VOLT_MAX, 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
   EXPECT_PARAM_EQ_INT(PARAM_PRIMARY_MIXER_OUTPUT_0, 0); // Output type of mixer output 0. | 0 | 1 | 2 | 3
   EXPECT_PARAM_EQ_INT(PARAM_PRIMARY_MIXER_OUTPUT_1, 0); // Output type of mixer output 1. | 0 | 1 | 2 | 3
   EXPECT_PARAM_EQ_INT(PARAM_PRIMARY_MIXER_OUTPUT_2, 0); // Output type of mixer output 2. | 0 | 1 | 2 | 3
@@ -168,7 +168,6 @@ TEST(Parameters, DefaultParameters)
   EXPECT_PARAM_EQ_FLOAT(PARAM_Y_EQ_TORQUE, 0.0f); // Equilibrium torque added to output of controller on y axis | -1.0 | 1.0
   EXPECT_PARAM_EQ_FLOAT(PARAM_Z_EQ_TORQUE, 0.0f); // Equilibrium torque added to output of controller on z axis | -1.0 | 1.0
   EXPECT_PARAM_EQ_FLOAT(PARAM_PID_TAU, 0.05f); // Dirty Derivative time constant - See controller documentation | 0.0 | 1.0
-  EXPECT_PARAM_EQ_INT(PARAM_MOTOR_PWM_SEND_RATE, 0); // Overrides default PWM rate specified by mixer if non-zero - Requires reboot to take effect | 0 | 490
   EXPECT_PARAM_EQ_INT(PARAM_SPIN_MOTORS_WHEN_ARMED, true); // Enforce MOTOR_IDLE_THR | 0 | 1
   EXPECT_PARAM_EQ_INT(PARAM_INIT_TIME, 3000); // Time in ms to initialize estimator | 0 | 100000
   EXPECT_PARAM_EQ_FLOAT(PARAM_FILTER_KP_ACC, 0.5f); // estimator proportional gain on accel-based error - See estimator documentation | 0 | 10.0
