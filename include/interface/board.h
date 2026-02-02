@@ -138,7 +138,7 @@ typedef struct
   bool baro;
   bool mag;
   bool diff_pressure;
-  bool sonar;
+  bool range;
   bool battery;
 } got_flags;
 
@@ -206,7 +206,7 @@ public:
   virtual bool diff_pressure_read(PressureStruct * diff_pressure) = 0;
 
   // Sonar
-  virtual bool sonar_read(RangeStruct * sonar) = 0;
+  virtual bool range_read(RangeStruct * range) = 0;
 
   // GPS
   virtual bool gnss_read(rosflight_firmware::GnssStruct * gnss) = 0;

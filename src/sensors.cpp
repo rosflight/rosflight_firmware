@@ -200,7 +200,7 @@ got_flags Sensors::run()
   }
 
   // SONAR:
-  got.sonar = rf_.board_.sonar_read(&sonar_);
+  got.range = rf_.board_.range_read(&range_);
 
   // BATTERY_MONITOR:
   if ((got.battery = rf_.board_.battery_read(&battery_))) {

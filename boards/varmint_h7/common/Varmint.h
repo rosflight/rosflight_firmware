@@ -120,7 +120,7 @@ public:
 
   bool diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure) override;
 
-  bool sonar_read(rosflight_firmware::RangeStruct * sonar) override;
+  bool range_read(rosflight_firmware::RangeStruct * range) override;
 
   // Battery
   bool battery_read(rosflight_firmware::BatteryStruct * bat) override;

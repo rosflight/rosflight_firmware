@@ -419,11 +419,11 @@ void CommManager::send_baro(void)
       RF_.sensors_.get_baro()->temperature);
 }
 
-void CommManager::send_sonar(void)
+void CommManager::send_range(void)
 {
-  comm_link_.send_sonar(sysid_,
+  comm_link_.send_range(sysid_,
                         0, // TODO set sensor type (sonar/lidar), use enum
-                        RF_.sensors_.get_sonar()->range, 8.0, 0.25);
+                        RF_.sensors_.get_range()->range, 8.0, 0.25);
 }
 
 void CommManager::send_mag(void)
@@ -496,7 +496,7 @@ void CommManager::stream(got_flags got)
   // Magnetometer
   if (got.mag) { send_mag(); }
   // Height above ground sensor
-  if (got.sonar) { send_sonar(); }
+  if (got.range) { send_range(); }
   // Battery V & I
   if (got.battery) { send_battery_status(); }
   // GPS data (GNSS Packed)

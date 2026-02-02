@@ -208,9 +208,9 @@ bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_press
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Sonar
-bool Varmint::sonar_read(rosflight_firmware::RangeStruct * sonar)
+bool Varmint::range_read(rosflight_firmware::RangeStruct * range)
 {
-  (void) sonar; // unused
+  (void) range; // unused
   return false;
 }
 

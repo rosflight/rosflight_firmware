@@ -54,7 +54,7 @@ class Sensors : public ParamListenerInterface
 public:
   PressureStruct * get_diff_pressure(void) { return &diff_pressure_; }
   PressureStruct * get_baro(void) { return &baro_; }
-  RangeStruct * get_sonar(void) { return &sonar_; }
+  RangeStruct * get_range(void) { return &range_; }
   ImuStruct * get_imu(void) { return &imu_; }
   BatteryStruct * get_battery(void) { return &battery_; }
   MagStruct * get_mag(void) { return &mag_; }
@@ -79,7 +79,7 @@ private:
   // Data
   PressureStruct diff_pressure_ = {};
   PressureStruct baro_ = {};
-  RangeStruct sonar_ = {};
+  RangeStruct range_ = {};
   ImuStruct imu_ = {};
   BatteryStruct battery_ = {};
   MagStruct mag_ = {};

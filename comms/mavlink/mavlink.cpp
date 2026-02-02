@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2017, James Jackson and Daniel Koch, BYU MAGICC Lab
  *
  * All rights reserved.
@@ -250,7 +250,7 @@ void Mavlink::send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16
   send_message(msg);
 }
 
-void Mavlink::send_sonar(uint8_t system_id,
+void Mavlink::send_range(uint8_t system_id,
                          /* TODO enum type*/ uint8_t type, float range, float max_range,
                          float min_range)
 {
