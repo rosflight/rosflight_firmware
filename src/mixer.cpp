@@ -102,12 +102,11 @@ void Mixer::param_change_callback(uint16_t param_id)
       break;
     case PARAM_MOTOR_RESISTANCE: R_ = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE); break;
     case PARAM_MOTOR_KV: K_V_ = RF_.params_.get_param_float(PARAM_MOTOR_KV); K_Q_ = K_V_; break;
-    case PARAM_NO_LOAD_CURRENT: i_0_ = RF_.params_.get_param_float(PARAM_NO_LOAD_CURRENT); break;
+    case PARAM_MOTOR_NO_LOAD_CURRENT: i_0_ = RF_.params_.get_param_float(PARAM_MOTOR_NO_LOAD_CURRENT); break;
     case PARAM_PROP_DIAMETER: D_ = RF_.params_.get_param_float(PARAM_PROP_DIAMETER); break;
     case PARAM_PROP_CT: C_T_ = RF_.params_.get_param_float(PARAM_PROP_CT); break;
     case PARAM_PROP_CQ: C_Q_ = RF_.params_.get_param_float(PARAM_PROP_CQ); break;
     case PARAM_NUM_MOTORS: num_motors_ = RF_.params_.get_param_int(PARAM_NUM_MOTORS); break;
-    case PARAM_MOTOR_PWM_SEND_RATE:
       init_PWM();
       break;
     default:
@@ -242,7 +241,7 @@ void Mixer::update_parameters()
   R_ = RF_.params_.get_param_float(PARAM_MOTOR_RESISTANCE);
   K_V_ = RF_.params_.get_param_float(PARAM_MOTOR_KV);
   K_Q_ = K_V_;
-  i_0_ = RF_.params_.get_param_float(PARAM_NO_LOAD_CURRENT);
+  i_0_ = RF_.params_.get_param_float(PARAM_MOTOR_NO_LOAD_CURRENT);
   D_ = RF_.params_.get_param_float(PARAM_PROP_DIAMETER);
   C_T_ = RF_.params_.get_param_float(PARAM_PROP_CT);
   C_Q_ = RF_.params_.get_param_float(PARAM_PROP_CQ);

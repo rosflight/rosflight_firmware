@@ -83,14 +83,14 @@ void Controller::calculate_max_thrust()
   float CQ = RF_.params_.get_param_float(PARAM_PROP_CQ);
   float CT = RF_.params_.get_param_float(PARAM_PROP_CT);
   float KV = RF_.params_.get_param_float(PARAM_MOTOR_KV);
-  float i0 = RF_.params_.get_param_float(PARAM_NO_LOAD_CURRENT);
+  float i0 = RF_.params_.get_param_float(PARAM_MOTOR_NO_LOAD_CURRENT);
   float KQ = KV;
   int num_motors = RF_.params_.get_param_int(PARAM_NUM_MOTORS);
 
   // Note: As voltage drops during flight, this max voltage stays constant.
   // This means that a constant throttle setting will result in a constant
   // output thrust command (if converting from throttle to thrust).
-  float V_max = RF_.params_.get_param_float(PARAM_VOLT_MAX);
+  float V_max = RF_.params_.get_param_float(PARAM_BATT_VOLT_MAX);
   float a = R * rho * pow(D, 5.0) * CQ / (4 * pow(M_PI, 2.0) * KQ);
   float b = KV;
   float c = i0 * R - V_max;
@@ -207,8 +207,8 @@ void Controller::param_change_callback(uint16_t param_id)
     case PARAM_PROP_DIAMETER:
     case PARAM_PROP_CT:
     case PARAM_MOTOR_KV:
-    case PARAM_NO_LOAD_CURRENT:
-    case PARAM_VOLT_MAX:
+    case PARAM_MOTOR_NO_LOAD_CURRENT:
+    case PARAM_BATT_VOLT_MAX:
     case PARAM_NUM_MOTORS:
     case PARAM_RC_MAX_THROTTLE:
     case PARAM_PID_TAU:

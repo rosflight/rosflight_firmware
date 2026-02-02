@@ -53,7 +53,7 @@ const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 100.0; // standard
 Sensors::Sensors(ROSflight & rosflight)
     : rf_(rosflight)
 {
-  previous_battery_voltage_ = rf_.params_.get_param_float(PARAM_VOLT_MAX);
+  previous_battery_voltage_ = rf_.params_.get_param_float(PARAM_BATT_VOLT_MAX);
 }
 
 void Sensors::init()
@@ -488,15 +488,15 @@ void Sensors::correct_mag(void)
   float mag_hard_z = mag_.flux[2] - rf_.params_.get_param_float(PARAM_MAG_Z_BIAS);
 
   // correct according to known soft iron bias - converts to nT
-  mag_.flux[0] = rf_.params_.get_param_float(PARAM_MAG_A11_COMP) * mag_hard_x
-    + rf_.params_.get_param_float(PARAM_MAG_A12_COMP) * mag_hard_y
-    + rf_.params_.get_param_float(PARAM_MAG_A13_COMP) * mag_hard_z;
-  mag_.flux[1] = rf_.params_.get_param_float(PARAM_MAG_A21_COMP) * mag_hard_x
-    + rf_.params_.get_param_float(PARAM_MAG_A22_COMP) * mag_hard_y
-    + rf_.params_.get_param_float(PARAM_MAG_A23_COMP) * mag_hard_z;
-  mag_.flux[2] = rf_.params_.get_param_float(PARAM_MAG_A31_COMP) * mag_hard_x
-    + rf_.params_.get_param_float(PARAM_MAG_A32_COMP) * mag_hard_y
-    + rf_.params_.get_param_float(PARAM_MAG_A33_COMP) * mag_hard_z;
+  mag_.flux[0] = rf_.params_.get_param_float(PARAM_MAG_A00_COMP) * mag_hard_x
+    + rf_.params_.get_param_float(PARAM_MAG_A01_COMP) * mag_hard_y
+    + rf_.params_.get_param_float(PARAM_MAG_A02_COMP) * mag_hard_z;
+  mag_.flux[1] = rf_.params_.get_param_float(PARAM_MAG_A10_COMP) * mag_hard_x
+    + rf_.params_.get_param_float(PARAM_MAG_A11_COMP) * mag_hard_y
+    + rf_.params_.get_param_float(PARAM_MAG_A12_COMP) * mag_hard_z;
+  mag_.flux[2] = rf_.params_.get_param_float(PARAM_MAG_A20_COMP) * mag_hard_x
+    + rf_.params_.get_param_float(PARAM_MAG_A21_COMP) * mag_hard_y
+    + rf_.params_.get_param_float(PARAM_MAG_A22_COMP) * mag_hard_z;
 }
 
 void Sensors::correct_baro(void)

@@ -111,23 +111,23 @@ void Params::set_defaults(void)
   init_param_int(PARAM_NUM_MOTORS, "NUM_MOTORS", 4); // Number of vertical-facing motors on the vehicle | 1 | 8
   init_param_float(PARAM_MOTOR_RESISTANCE, "MOTOR_RESISTANCE", 0.042f); // Electrical resistance of the motor windings (ohms) | 0 | 1000.0
   init_param_float(PARAM_MOTOR_KV, "MOTOR_KV", 0.01706f); // Back emf constant of the motor in SI units (V/rad/s) | 0 | 1000.0
-  init_param_float(PARAM_NO_LOAD_CURRENT, "NO_LOAD_CURRENT", 1.5); // No-load current of the motor in amps | 0 | 1000.0
+  init_param_float(PARAM_MOTOR_NO_LOAD_CURRENT, "NO_LOAD_CURRENT", 1.5); // No-load current of the motor in amps | 0 | 1000.0
   init_param_float(PARAM_PROP_DIAMETER, "PROP_DIAMETER", 0.381f); // Diameter of the propeller in meters | 0 | 1.0
   init_param_float(PARAM_PROP_CT, "PROP_CT", 0.075f); // Thrust coefficient of the propeller | 0 | 100.0
   init_param_float(PARAM_PROP_CQ, "PROP_CQ", 0.0045f); // Torque coefficient of the propeller | 0 | 100.0
-  init_param_float(PARAM_VOLT_MAX, "VOLT_MAX", 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
+  init_param_float(PARAM_BATT_VOLT_MAX, "BATT_VOLT_MAX", 25.0f); // Maximum voltage of the battery (V) | 0 | 100.0
   init_param_int(PARAM_USE_MOTOR_PARAMETERS, "USE_MOTOR_PARAM", false);   // Flag to use motor parameters in the mixer | 0 | 1
 
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_0, "PRI_MIXER_OUT_0", 0); // Output type of mixer output 0. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_1, "PRI_MIXER_OUT_1", 0); // Output type of mixer output 1. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_2, "PRI_MIXER_OUT_2", 0); // Output type of mixer output 2. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_3, "PRI_MIXER_OUT_3", 0); // Output type of mixer output 3. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_4, "PRI_MIXER_OUT_4", 0); // Output type of mixer output 4. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_5, "PRI_MIXER_OUT_5", 0); // Output type of mixer output 5. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_6, "PRI_MIXER_OUT_6", 0); // Output type of mixer output 6. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7, "PRI_MIXER_OUT_7", 0); // Output type of mixer output 7. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8, "PRI_MIXER_OUT_8", 0); // Output type of mixer output 8. | 0 | 1 | 2 | 3
-  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9, "PRI_MIXER_OUT_9", 0); // Output type of mixer output 9. | 0 | 1 | 2 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_0, "PRI_MIXER_OUT_0", 0); // Output type of mixer output 0. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_1, "PRI_MIXER_OUT_1", 0); // Output type of mixer output 1. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_2, "PRI_MIXER_OUT_2", 0); // Output type of mixer output 2. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_3, "PRI_MIXER_OUT_3", 0); // Output type of mixer output 3. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_4, "PRI_MIXER_OUT_4", 0); // Output type of mixer output 4. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_5, "PRI_MIXER_OUT_5", 0); // Output type of mixer output 5. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_6, "PRI_MIXER_OUT_6", 0); // Output type of mixer output 6. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_7, "PRI_MIXER_OUT_7", 0); // Output type of mixer output 7. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_8, "PRI_MIXER_OUT_8", 0); // Output type of mixer output 8. | 0 | 3
+  init_param_int(PARAM_PRIMARY_MIXER_OUTPUT_9, "PRI_MIXER_OUT_9", 0); // Output type of mixer output 9. | 0 | 3
 
   init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_0, "PRI_MIXER_PWM_0", 0); // PWM frequenct output for mixer output 0 | 0 | 490
   init_param_float(PARAM_PRIMARY_MIXER_PWM_RATE_1, "PRI_MIXER_PWM_1", 0); // PWM frequenct output for mixer output 1 | 0 | 490
@@ -398,7 +398,6 @@ void Params::set_defaults(void)
   /*************************/
   /*** PWM CONFIGURATION ***/
   /*************************/
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_UPDATE", 0); // Overrides default PWM rate specified by mixer if non-zero - Requires reboot to take effect | 0 | 490
   init_param_float(PARAM_MOTOR_IDLE_THROTTLE, "MOTOR_IDLE_THR", 0.1); // min throttle command sent to motors when armed (Set above 0.1 to spin when armed) | 0.0 | 1.0
   init_param_float(PARAM_FAILSAFE_THROTTLE, "FAILSAFE_THR", -1.0); // Throttle sent to motors in failsafe condition (set just below hover throttle) | 0.0 | 1.0
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true); // Enforce MOTOR_IDLE_THR | 0 | 1
@@ -406,21 +405,21 @@ void Params::set_defaults(void)
   /*******************************/
   /*** ESTIMATOR CONFIGURATION ***/
   /*******************************/
-  init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
-  init_param_float(PARAM_FILTER_KP_ACC, "FILTER_KP_ACC", 0.5f); // estimator proportional gain on accel-based error - See estimator documentation | 0 | 10.0
-  init_param_float(PARAM_FILTER_KI, "FILTER_KI", 0.01f); // estimator integral gain - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_FILTER_KP_EXT, "FILTER_KP_EXT", 1.5f); // estimator proportional gain on external attitude-based error - See estimator documentation | 0 | 10.0
-  init_param_float(PARAM_FILTER_ACCEL_MARGIN, "FILTER_ACCMARGIN", 0.1f); // allowable accel norm margin around 1g to determine if accel is usable | 0 | 1.0
+  init_param_int(PARAM_INIT_TIME, "FILT_INIT_T", 3000); // Time in ms to initialize estimator | 0 | 100000
+  init_param_float(PARAM_FILTER_KP_ACC, "FILT_ACC_KP", 0.5f); // estimator proportional gain on accel-based error - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_KI, "FILT_KI", 0.01f); // estimator integral gain - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_FILTER_KP_EXT, "FILT_EXT_KP", 1.5f); // estimator proportional gain on external attitude-based error - See estimator documentation | 0 | 10.0
+  init_param_float(PARAM_FILTER_ACCEL_MARGIN, "FILT_ACC_MARGIN", 0.1f); // allowable accel norm margin around 1g to determine if accel is usable | 0 | 1.0
 
-  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILTER_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
-  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILTER_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
-  init_param_int(PARAM_FILTER_USE_ACC, "FILTER_USE_ACC", 1);  // Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | 0 | 1
+  init_param_int(PARAM_FILTER_USE_QUAD_INT, "FILT_QUAD_INT", 1); // Perform a quadratic averaging of LPF gyro data prior to integration (adds ~20 us to estimation loop on F1 processors) | 0 | 1
+  init_param_int(PARAM_FILTER_USE_MAT_EXP, "FILT_MAT_EXP", 1); // 1 - Use matrix exponential to improve gyro integration (adds ~90 us to estimation loop in F1 processors) 0 - use euler integration | 0 | 1
+  init_param_int(PARAM_FILTER_USE_ACC, "FILT_USE_ACC", 1);  // Use accelerometer to correct gyro integration drift (adds ~70 us to estimation loop) | 0 | 1
 
-  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "CAL_GYRO_ARM", false); // True if desired to calibrate gyros on arm | 0 | 1
+  init_param_int(PARAM_CALIBRATE_GYRO_ON_ARM, "ARM_CAL_GYRO", false); // True if desired to calibrate gyros on arm | 0 | 1
 
-  init_param_float(PARAM_GYRO_XY_ALPHA, "GYROXY_LPF_ALPHA", 0.3f); // Low-pass filter constant on gyro X and Y axes - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_GYRO_Z_ALPHA, "GYROZ_LPF_ALPHA", 0.3f); // Low-pass filter constant on gyro Z axis - See estimator documentation | 0 | 1.0
-  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF_ALPHA", 0.5f); // Low-pass filter constant on all accel axes - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_GYRO_XY_ALPHA, "GYRO_XY_LPF", 0.3f); // Low-pass filter constant on gyro X and Y axes - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_GYRO_Z_ALPHA, "GYRO_Z_LPF", 0.3f); // Low-pass filter constant on gyro Z axis - See estimator documentation | 0 | 1.0
+  init_param_float(PARAM_ACC_ALPHA, "ACC_LPF", 0.5f); // Low-pass filter constant on all accel axes - See estimator documentation | 0 | 1.0
 
   init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f); // Constant x-bias of gyroscope readings | -1.0 | 1.0
   init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f); // Constant y-bias of gyroscope readings | -1.0 | 1.0
@@ -432,15 +431,15 @@ void Params::set_defaults(void)
   init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f); // Linear y-axis temperature compensation constant | -2.0 | 2.0
   init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f); // Linear z-axis temperature compensation constant | -2.0 | 2.0
 
-  init_param_float(PARAM_MAG_A11_COMP,  "MAG_A11_COMP", 1.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A12_COMP,  "MAG_A12_COMP", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A13_COMP,  "MAG_A13_COMP", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A21_COMP,  "MAG_A21_COMP", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A22_COMP,  "MAG_A22_COMP", 1.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A23_COMP,  "MAG_A23_COMP", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A31_COMP,  "MAG_A31_COMP", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A32_COMP,  "MAG_A32_COMP", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
-  init_param_float(PARAM_MAG_A33_COMP,  "MAG_A33_COMP", 1.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A00_COMP,  "MAG_CAL_A00", 1.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A01_COMP,  "MAG_CAL_A01", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A02_COMP,  "MAG_CAL_A02", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A10_COMP,  "MAG_CAL_A10", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A11_COMP,  "MAG_CAL_A11", 1.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A12_COMP,  "MAG_CAL_A12", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A20_COMP,  "MAG_CAL_A20", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A21_COMP,  "MAG_CAL_A21", 0.0f); // Soft iron compensation constant | -999.0 | 999.0
+  init_param_float(PARAM_MAG_A22_COMP,  "MAG_CAL_A22", 1.0f); // Soft iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_X_BIAS,  "MAG_X_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_Y_BIAS,  "MAG_Y_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
   init_param_float(PARAM_MAG_Z_BIAS,  "MAG_Z_BIAS", 0.0f); // Hard iron compensation constant | -999.0 | 999.0
@@ -462,7 +461,7 @@ void Params::set_defaults(void)
   init_param_int(PARAM_RC_ATTITUDE_OVERRIDE_CHANNEL, "RC_ATT_OVRD_CHN", 4); // RC switch mapped to attitude override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_THROTTLE_OVERRIDE_CHANNEL, "RC_THR_OVRD_CHN", 4); // RC switch channel mapped to throttle override [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_ATT_CONTROL_TYPE_CHANNEL,  "RC_ATT_CTRL_CHN",-1); // RC switch channel mapped to attitude control type [0 indexed, -1 to disable] | 4 | 7
-  init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHANNEL",-1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
+  init_param_int(PARAM_RC_ARM_CHANNEL, "ARM_CHN",-1); // RC switch channel mapped to arming (only if PARAM_ARM_STICKS is false) [0 indexed, -1 to disable] | 4 | 7
   init_param_int(PARAM_RC_NUM_CHANNELS, "RC_NUM_CHN", 6); // number of RC input channels | 1 | 8
 
   init_param_int(PARAM_RC_SWITCH_5_DIRECTION, "SWITCH_5_DIR", 1); // RC switch 5 toggle direction | -1 | 1
@@ -471,8 +470,8 @@ void Params::set_defaults(void)
   init_param_int(PARAM_RC_SWITCH_8_DIRECTION, "SWITCH_8_DIR", 1); // RC switch 8 toggle direction | -1 | 1
 
   init_param_float(PARAM_RC_OVERRIDE_DEVIATION, "RC_OVRD_DEV", 0.1); // RC stick deviation from center for override | 0.0 | 1.0
-  init_param_int(PARAM_OVERRIDE_LAG_TIME, "OVRD_LAG_TIME", 1000); // RC stick deviation lag time before returning control (ms) | 0 | 100000
-  init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "MIN_THROTTLE", true); // Take minimum throttle between RC and computer at all times | 0 | 1
+  init_param_int(PARAM_OVERRIDE_LAG_TIME, "RC_OVRD_LAG_T", 1000); // RC stick deviation lag time before returning control (ms) | 0 | 100000
+  init_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE, "TAKE_MIN_THR", true); // Take minimum throttle between RC and computer at all times | 0 | 1
   init_param_float(PARAM_RC_MAX_THROTTLE, "RC_MAX_THR", 0.7f); // Maximum throttle command sent by full deflection of RC sticks, to maintain controllability during aggressive maneuvers | 0.0 | 1.0
 
   init_param_int(PARAM_RC_ATTITUDE_MODE, "RC_ATT_MODE", 1); // Attitude mode for RC sticks (0: rate, 1: angle). Overridden if RC_ATT_CTRL_CHN is set. | 0 | 1
@@ -489,9 +488,9 @@ void Params::set_defaults(void)
   init_param_int(PARAM_SECONDARY_MIXER, "SECONDARY_MIXER", Mixer::INVALID_MIXER); // Which mixer to choose for secondary mixer - See Mixer documentation | 0 | 11
 
   init_param_int(PARAM_FIXED_WING, "FIXED_WING", false); // switches on pass-through commands for fixed-wing operation | 0 | 1
-  init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0); // reverses elevator servo output | 0 | 1
-  init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0); // reverses aileron servo output | 0 | 1
-  init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0); // reverses rudder servo output | 0 | 1
+  init_param_int(PARAM_ELEVATOR_REVERSE, "REV_ELEVATOR", 0); // reverses elevator servo output | 0 | 1
+  init_param_int(PARAM_AILERON_REVERSE, "REV_AILERON", 0); // reverses aileron servo output | 0 | 1
+  init_param_int(PARAM_RUDDER_REVERSE, "REV_RUDDER", 0); // reverses rudder servo output | 0 | 1
 
   init_param_float(PARAM_IMU_ROLL, "IMU_ROLL", 0.0f); // roll angle (deg) of IMU wrt aircraft body | 0 | 360
   init_param_float(PARAM_IMU_PITCH, "IMU_PITCH", 0.0f); // pitch angle (deg) of IMU wrt aircraft body | 0 | 360
@@ -504,15 +503,15 @@ void Params::set_defaults(void)
   /********************/
   /*** ARMING SETUP ***/
   /********************/
-  init_param_float(PARAM_ARM_THRESHOLD, "ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
+  init_param_float(PARAM_ARM_THRESHOLD, "RC_ARM_THRESHOLD", 0.15); // RC deviation from max/min in yaw and throttle for arming and disarming check (us) | 0 | 500
 
   /*****************************/
   /*** BATTERY MONITOR SETUP ***/
   /*****************************/
   init_param_float(PARAM_BATTERY_VOLTAGE_MULTIPLIER, "BATT_VOLT_MULT", 1.0f); // Multiplier for the voltage sensor | 0 | inf
   init_param_float(PARAM_BATTERY_CURRENT_MULTIPLIER, "BATT_CURR_MULT", 1.0f); // Multiplier for the current sensor | 0 | inf
-  init_param_float(PARAM_BATTERY_VOLTAGE_ALPHA, "BATT_VOLT_ALPHA", 0.995f);   // Alpha value for the low pass filter on the reported battery voltage | 0 | 1
-  init_param_float(PARAM_BATTERY_CURRENT_ALPHA, "BATT_CURR_ALPHA", 0.995f);   // Alpha value for the low pass filter on the reported battery current | 0 | 1
+  init_param_float(PARAM_BATTERY_VOLTAGE_ALPHA, "BATT_VOLT_LPF", 0.995f);   // Alpha value for the low pass filter on the reported battery voltage | 0 | 1
+  init_param_float(PARAM_BATTERY_CURRENT_ALPHA, "BATT_CURR_LPF", 0.995f);   // Alpha value for the low pass filter on the reported battery current | 0 | 1
 
   /************************/
   /*** OFFBOARD CONTROL ***/
