@@ -151,7 +151,7 @@ private:
   void send_output_raw(void);
   void send_diff_pressure(void);
   void send_baro(void);
-  void send_sonar(void);
+  void send_range(void);
   void send_mag(void);
   void send_battery_status(void);
   void send_gnss(void);

@@ -122,9 +122,9 @@
    return false;
  }
  
- bool testBoard::sonar_read(rosflight_firmware::RangeStruct * sonar)
+ bool testBoard::range_read(rosflight_firmware::RangeStruct * range)
  {
-   (void) sonar;
+   (void) range;
    return false;
  }
  

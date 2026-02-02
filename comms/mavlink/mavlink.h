@@ -76,7 +76,7 @@ public:
   void send_param_value_float(uint8_t system_id, uint16_t index, const char * const name,
                               float value, uint16_t param_count) override;
   void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms, const uint16_t channels[8]) override;
-  void send_sonar(uint8_t system_id,
+  void send_range(uint8_t system_id,
                   /* TODO enum type*/ uint8_t type, float range, float max_range,
                   float min_range) override;
   void send_status(uint8_t system_id, bool armed, bool failsafe, uint16_t rc_override, bool offboard,

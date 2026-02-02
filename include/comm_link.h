@@ -148,7 +148,7 @@ public:
                                       float value, uint16_t param_count) = 0;
   virtual void send_rc_raw(uint8_t system_id, uint32_t timestamp_ms,
                            const uint16_t channels[8]) = 0;
-  virtual void send_sonar(uint8_t system_id,
+  virtual void send_range(uint8_t system_id,
                           /* TODO enum type*/ uint8_t type, float range, float max_range,
                           float min_range) = 0;
   virtual void send_status(uint8_t system_id, bool armed, bool failsafe, uint16_t rc_override,
