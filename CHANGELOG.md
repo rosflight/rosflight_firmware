@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.0](https://github.com/rosflight/rosflight_firmware/compare/v2.0.0-beta...v2.0.0) (2026-02-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename ARM_CHN parameter
+* rename firmware parameters
+* board.h functions regarding sonar are renamed.
+
+### Features
+
+* add mag orientation params to firmware ([#476](https://github.com/rosflight/rosflight_firmware/issues/476)) ([2da05c1](https://github.com/rosflight/rosflight_firmware/commit/2da05c1bd158fad0a7d14b69aea49414edd37827))
+* change command message to vector from named force-torque values ([71ca9f6](https://github.com/rosflight/rosflight_firmware/commit/71ca9f6038b5deaa4ab58b4248c5da2c8fc55caa))
+* rename ARM_CHN to RC_ARM_CHN for consistency ([#484](https://github.com/rosflight/rosflight_firmware/issues/484)) ([7e00236](https://github.com/rosflight/rosflight_firmware/commit/7e00236d4d2eadcd2d03dcf73a1c2563170037ed))
+* rename firmware parameters for consistency ([#483](https://github.com/rosflight/rosflight_firmware/issues/483)) ([535be09](https://github.com/rosflight/rosflight_firmware/commit/535be09476f18d38094aec298e24e58d9155464f))
+* rename sonar_read in board.h to be range_read ([#480](https://github.com/rosflight/rosflight_firmware/issues/480))  ([7732bb0](https://github.com/rosflight/rosflight_firmware/commit/7732bb07ad0a29e0a7363188ace148593eabb679))
+
 ## [2.0.0-beta](https://github.com/rosflight/rosflight_firmware/compare/v1.3.1...v2.0.0-beta) (2025-12-13)
 
 
