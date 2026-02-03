@@ -1,8 +1,7 @@
 {
-  "versioning": "prerelease",
-  "prerelease": true,
-  "prerelease-type": "beta",
+  "prerelease": false,
   "release-type": "simple",
+  "release-as": "2.0.0",
   "include-component-in-tag": false,
   "always-update": true,
   "packages": {
