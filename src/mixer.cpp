@@ -635,6 +635,13 @@ void Mixer::select_primary_or_secondary_mixer()
     mixer_to_use_.u[3] = &secondary_mixer_.u[3];
     mixer_to_use_.u[4] = &secondary_mixer_.u[4];
     mixer_to_use_.u[5] = &secondary_mixer_.u[5];
+
+  for (uint8_t i = 0; i < NUM_MIXER_OUTPUTS; i++) { // Go through each row of the mixing matrix
+    if (primary_mixer_.override_type[i] == override_type_t.THR || primary_mixer_.override_type[i] == override_type_t.ATT) {
+      mixer_to_use_.u[i] = &primary_mixer_.u[i];
+    } else {
+      mixer_to_use_.u[i] = &secondary_mixer_.u[i];
+    }
   }
 }
 
