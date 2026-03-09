@@ -534,7 +534,7 @@ void Mixer::select_primary_or_secondary_mixer()
   uint16_t rc_override = RF_.command_manager_.get_rc_override();
 
   uint16_t rc_attitude_override_active = static_cast<uint16_t>(rc_override & CommandManager::ATTITUDE_OVERRIDDEN);
-  if (rc_attitude_override_active == 0) {
+  if (rc_attitude_override_active != 0) {
     mixer_to_use_.u[3] = primary_mixer_.u[3];
     mixer_to_use_.u[4] = primary_mixer_.u[4];
     mixer_to_use_.u[5] = primary_mixer_.u[5];
@@ -545,7 +545,7 @@ void Mixer::select_primary_or_secondary_mixer()
   }
 
   uint16_t rc_throttle_override_active = static_cast<uint16_t>(rc_override & CommandManager::T_OVERRIDDEN);
-  if (rc_throttle_override_active == 0) {
+  if (rc_throttle_override_active != 0) {
     mixer_to_use_.u[0] = primary_mixer_.u[0];
     mixer_to_use_.u[1] = primary_mixer_.u[1];
     mixer_to_use_.u[2] = primary_mixer_.u[2];
