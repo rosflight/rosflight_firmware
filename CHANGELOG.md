@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/rosflight/rosflight_firmware/compare/v2.0.0...v2.0.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* primary and secondary mixer selection ([#485](https://github.com/rosflight/rosflight_firmware/issues/485)) ([6035309](https://github.com/rosflight/rosflight_firmware/commit/60353097bf27b686ae789a197387fcfc8f1239a1))
+
 ## [2.0.0](https://github.com/rosflight/rosflight_firmware/compare/v2.0.0-beta...v2.0.0) (2026-02-03)
 
 
