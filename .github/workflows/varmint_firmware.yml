@@ -26,4 +26,6 @@ jobs:
         cmake --preset varmint-11X
         cmake --build build/varmint-11X 
     - name: build pixracer pro
-      run: mkdir pixracer_pro_build && cd pixracer_pro_build && cmake -G Ninja .. -DBOARD_TO_BUILD=pixracer_pro && ninja
+      run: |
+        cmake --preset pixracer-pro
+        cmake --build build/pixracer-pro 
