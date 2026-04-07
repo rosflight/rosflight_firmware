@@ -2,7 +2,7 @@
   "version": 3,
   "configurePresets": [
     {
-      "name": "base-global",
+      "name": "base-global-debug",
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
@@ -13,43 +13,96 @@
       }
     },
     {
-      "name": "base-hardware",
+      "name": "base-global-release",
       "hidden": true,
-      "inherits": "base-global",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS_RELEASE": "-O3",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3"
+      }
+    },
+    {
+      "name": "base-hardware-debug",
+      "hidden": true,
+      "inherits": "base-global-debug",
       "toolchainFile": "${sourceDir}/cmake/stm32_gcc.cmake"
     },
     {
-      "name": "pixracer-pro",
-      "inherits": "base-hardware",
-      "displayName": "Pixracer Pro (H743VI)",
-      "description": "Target: Pixracer Pro hardware",
+      "name": "base-hardware-release",
+      "hidden": true,
+      "inherits": "base-global-release",
+      "toolchainFile": "${sourceDir}/cmake/stm32_gcc.cmake"
+    },
+    {
+      "name": "pixracer-pro-debug",
+      "inherits": "base-hardware-debug",
+      "displayName": "Pixracer Pro (H743VI) [Debug]",
+      "description": "Target: Pixracer Pro hardware (Debug)",
       "cacheVariables": {
         "BOARD_TO_BUILD": "pixracer_pro"
       }
     },
     {
-      "name": "varmint-10X",
-      "inherits": "base-hardware",
-      "displayName": "Varmint 10X (H753VI)",
-      "description": "Target: Varmint 10X hardware",
+      "name": "pixracer-pro-release",
+      "inherits": "base-hardware-release",
+      "displayName": "Pixracer Pro (H743VI) [Release]",
+      "description": "Target: Pixracer Pro hardware (Release)",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "pixracer_pro"
+      }
+    },
+    {
+      "name": "varmint-10X-debug",
+      "inherits": "base-hardware-debug",
+      "displayName": "Varmint 10X (H753VI) [Debug]",
+      "description": "Target: Varmint 10X hardware (Debug)",
       "cacheVariables": {
         "BOARD_TO_BUILD": "varmint_10X"
       }
     },
     {
-      "name": "varmint-11X",
-      "inherits": "base-hardware",
-      "displayName": "Varmint 11X (H753VI)",
-      "description": "Target: Varmint 11X hardware",
+      "name": "varmint-10X-release",
+      "inherits": "base-hardware-release",
+      "displayName": "Varmint 10X (H753VI) [Release]",
+      "description": "Target: Varmint 10X hardware (Release)",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "varmint_10X"
+      }
+    },
+    {
+      "name": "varmint-11X-debug",
+      "inherits": "base-hardware-debug",
+      "displayName": "Varmint 11X (H753VI) [Debug]",
+      "description": "Target: Varmint 11X hardware (Debug)",
       "cacheVariables": {
         "BOARD_TO_BUILD": "varmint_11X"
       }
     },
     {
-      "name": "test",
-      "inherits": "base-global",
-      "displayName": "Google Test (Native WSL)",
-      "description": "Target: Native Linux unit tests",
+      "name": "varmint-11X-release",
+      "inherits": "base-hardware-release",
+      "displayName": "Varmint 11X (H753VI) [Release]",
+      "description": "Target: Varmint 11X hardware (Release)",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "varmint_11X"
+      }
+    },
+    {
+      "name": "test-debug",
+      "inherits": "base-global-debug",
+      "displayName": "Google Test (Native WSL) [Debug]",
+      "description": "Target: Native Linux unit tests (Debug)",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "test"
+      }
+    },
+    {
+      "name": "test-release",
+      "inherits": "base-global-release",
+      "displayName": "Google Test (Native WSL) [Release]",
+      "description": "Target: Native Linux unit tests (Release)",
       "cacheVariables": {
         "BOARD_TO_BUILD": "test"
       }

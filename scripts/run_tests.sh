@@ -22,42 +22,32 @@ if [ $BASENAME == "scripts" ]; then
   cd ..
 fi
 
-echo_blue "Test 1a: Build varmint_10X firmware"
-mkdir varmint_10X_build && cd varmint_10X_build && cmake -G Ninja .. -DBOARD_TO_BUILD=varmint_10X && ninja
 rm -rf build
-mkdir build
-cd build
-cmake .. -DBOARD_TO_BUILD=varmint_10X -DCMAKE_BUILD_TYPE=Release && make -j
+echo_blue "Test 1a: Build varmint_10X firmware"
+cmake --preset varmint-10X-release
+cmake --build build/varmint-10X-release
 print_result $?
-cd ..
 
 echo_blue "Test 1b: Build varmint_11X firmware"
-rm -rf build
-mkdir build
-cd build
-cmake .. -DBOARD_TO_BUILD=varmint_11X -DCMAKE_BUILD_TYPE=Release && make -j
+cmake --preset varmint-11X-release
+cmake --build build/varmint-11X-release
 print_result $?
-cd ..
 
-echo_blue "Test 1: Build pixracer pro firmware"
-rm -rf build
-mkdir build
-cd build
-cmake .. -DBOARD_TO_BUILD=pixracer_pro -DCMAKE_BUILD_TYPE=Release && make -j
+
+echo_blue "Test 1c: Build pixracer pro firmware"
+cmake --preset pixracer-pro-release
+cmake --build build/pixracer-pro-release
 print_result $?
-cd ..
 
 echo_blue "Test 2: Build test suite"
-rm -rf build
-mkdir build
-cd build
-cmake .. -DBOARD_TO_BUILD=test -DCMAKE_BUILD_TYPE=Release && make -j
+
+cmake --preset test-release
+cmake --build build/test-release
 print_result $?
 
 echo_blue "Test 3: Run test suite"
-./test/unit_tests
+./build/test-release/test/unit_tests
 print_result $?
-
 
 if [ $EXIT_CODE -eq 0 ]; then
   echo_green "All tests passed!"

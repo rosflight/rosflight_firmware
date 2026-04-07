@@ -19,13 +19,13 @@ jobs:
         ninja --version
     - name: build varmint_10X
       run: |
-        cmake --preset varmint-10X
-        cmake --build build/varmint-10X 
+        cmake --preset varmint-10X-release
+        cmake --build build/varmint-10X-release 
     - name: build varmint_11X
       run: |
-        cmake --preset varmint-11X
-        cmake --build build/varmint-11X 
+        cmake --preset varmint-11X-release
+        cmake --build build/varmint-11X-release 
     - name: build pixracer pro
       run: |
-        cmake --preset pixracer-pro
-        cmake --build build/pixracer-pro 
+        cmake --preset pixracer-pro-release
+        cmake --build build/pixracer-pro-release 

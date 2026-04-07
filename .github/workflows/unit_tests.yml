@@ -15,16 +15,9 @@ jobs:
         sudo cmake -G Ninja CMakeLists.txt
         sudo ninja
         sudo cp ./lib/libgtest*.a /usr/lib
-    - name: cmake
+    - name: build test suite
       run: |
-        mkdir build
-        cd build
-        cmake -G Ninja .. -DBOARD_TO_BUILD=test -DCMAKE_BUILD_TYPE=Release
-    - name: build
-      run: |
-        cd build
-        ninja
-    - name: test
-      run: |
-        cd build
-        ./test/unit_tests
+        cmake --preset test-release
+        cmake --build build/test-release
+    - name: run test suite
+      run: ./build/test-release/test/unit_tests
