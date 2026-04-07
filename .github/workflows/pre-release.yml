@@ -9,7 +9,7 @@ jobs:
     name: "Pre Release"
     runs-on: "ubuntu-latest"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: checkout submodules
       run: git submodule update --init --recursive
     - name: install toolchain
