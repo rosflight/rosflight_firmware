@@ -215,7 +215,8 @@ bool Adc::display(void)
     misc_printf("\n");
 
     misc_printf("  %-8s : ", "Pwr");
-    misc_f32(22.2 / 1.02, 22.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "BattV", "%5.1f", "V"); //
+  //  misc_f32(22.2 / 1.02, 22.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "BattV", "%5.1f", "V"); //
+    misc_f32(14.0 / 1.02, 25.2 * 1.02, p.volts[ADC_BATTERY_VOLTS], "BattV", "%5.1f", "V"); //
     misc_f32(0.1, 1.0, p.volts[ADC_BATTERY_CURRENT], "BattI", "%5.1f", "A");               //
     misc_printf("\n");
 

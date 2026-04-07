@@ -177,7 +177,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Digital Potentiometer used in later versions
 //	#define MCP4017_I2C_ADDRESS 		(0x2F)
 #define MCP4017_I2C (&hi2c1)
-#define SERVO_VOLTAGE (4.8) // Volts
+#define SERVO_VOLTAGE (8.2) // Volts
 
 // I2C EEPROM in 11X
 #define EEPROM_I2C (&hi2c1)

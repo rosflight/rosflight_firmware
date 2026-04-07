@@ -1,0 +1,58 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base-global",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS_DEBUG": "-g3 -Og",
+        "CMAKE_CXX_FLAGS_DEBUG": "-g3 -Og"
+      }
+    },
+    {
+      "name": "base-hardware",
+      "hidden": true,
+      "inherits": "base-global",
+      "toolchainFile": "${sourceDir}/cmake/stm32_gcc.cmake"
+    },
+    {
+      "name": "pixracer-pro",
+      "inherits": "base-hardware",
+      "displayName": "Pixracer Pro (H743VI)",
+      "description": "Target: Pixracer Pro hardware",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "pixracer_pro"
+      }
+    },
+    {
+      "name": "varmint-10X",
+      "inherits": "base-hardware",
+      "displayName": "Varmint 10X (H753VI)",
+      "description": "Target: Varmint 10X hardware",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "varmint_10X"
+      }
+    },
+    {
+      "name": "varmint-11X",
+      "inherits": "base-hardware",
+      "displayName": "Varmint 11X (H753VI)",
+      "description": "Target: Varmint 11X hardware",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "varmint_11X"
+      }
+    },
+    {
+      "name": "test",
+      "inherits": "base-global",
+      "displayName": "Google Test (Native WSL)",
+      "description": "Target: Native Linux unit tests",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "test"
+      }
+    }
+  ]
+}

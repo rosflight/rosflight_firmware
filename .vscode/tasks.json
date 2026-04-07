@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cmake-build",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}",
+            "group": "build",
+            "problemMatcher": "$gcc"
+        }
+    ]
+}

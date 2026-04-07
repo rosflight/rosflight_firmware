@@ -1,0 +1,65 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug - Pixracer Pro",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/pixracer_pro.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "device": "STM32H743VI", 
+            "interface": "swd",
+            "runToEntryPoint": "main",
+            "preLaunchTask": "cmake-build",
+            "svdFile": "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H743.svd"
+        },
+        {
+            "name": "Debug - Varmint 10X",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/varmint_10X.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "device": "STM32H753VI",
+            "interface": "swd",
+            "runToEntryPoint": "main",
+            "preLaunchTask": "cmake-build",
+            "svdFile": "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd"
+        },
+        {
+            "name": "Debug - Varmint 11X",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/varmint_11X.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "jlink",
+            "device": "STM32H753VI",
+            "interface": "swd",
+            "runToEntryPoint": "main",
+            "preLaunchTask": "cmake-build",
+            "svdFile": "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd"
+        },
+        {
+            "name": "Debug - GTest Unit Tests (WSL)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/unit_tests",
+            "args": [], 
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "cmake-build"
+        }
+    ]
+}

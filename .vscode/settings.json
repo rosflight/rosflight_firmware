@@ -1,0 +1,6 @@
+{
+    "stm32cube.buildDirectory": "build/${command:cmake.activeConfigurePresetName}/output",
+    "clangd.arguments": [
+        "--compile-commands-dir=build/${command:cmake.activeConfigurePresetName}"
+    ]
+}

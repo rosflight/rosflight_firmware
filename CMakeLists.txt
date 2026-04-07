@@ -15,7 +15,10 @@
 # test:
 # ./test/unit_tests
 
+
+
 cmake_minimum_required(VERSION 3.8)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 project(rosflight_firmware C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -64,23 +67,23 @@ set(BOARD_TO_BUILD "" CACHE STRING "Select the board to build")
 if("${BOARD_TO_BUILD}" STREQUAL "varmint_10X")
     message("===== Selecting varmint_10X board target. =====")
     set(TARGET_NAME "varmint_10X")
-    add_subdirectory(boards/varmint_h7/varmint_10X)
+    add_subdirectory(boards/varmint_h7/varmint_10X ${CMAKE_BINARY_DIR}/output)
 
 elseif("${BOARD_TO_BUILD}" STREQUAL "varmint_11X")
     message("===== Selecting varmint_11X board target. =====")
     set(TARGET_NAME "varmint_11X")
-    add_subdirectory(boards/varmint_h7/varmint_11X)
+    add_subdirectory(boards/varmint_h7/varmint_11X ${CMAKE_BINARY_DIR}/output)
 
 elseif("${BOARD_TO_BUILD}" STREQUAL "pixracer_pro")
     message("===== Selecting pixracer pro board target. =====")
     set(TARGET_NAME "pixracer_pro")
-    add_subdirectory(boards/varmint_h7/pixracer_pro)
+    add_subdirectory(boards/varmint_h7/pixracer_pro ${CMAKE_BINARY_DIR}/output)
 
 elseif("${BOARD_TO_BUILD}" STREQUAL "test")
     message("===== Selecting test board target. ======")
     add_subdirectory(test)
 
 else()
-    message(FATAL_ERROR "No valid board selected! Please select the varmint_10X, varmint_11X, pixracer pro, or test board with -DBOARD_TO_BUILD=varmint_10X, -DBOARD_TO_BUILD=varmint_11X, -DBOARD_TO_BUILD=pixracer_pro, OR -DBOARD_TO_BUILD=test.")
+    message(FATAL_ERROR "No valid board selected! Please select the varmint_10X, varmint_11X, pixracer_pro, or test board with -DBOARD_TO_BUILD=varmint_10X, -DBOARD_TO_BUILD=varmint_11X, -DBOARD_TO_BUILD=pixracer_pro, OR -DBOARD_TO_BUILD=test.")
 
     endif()
