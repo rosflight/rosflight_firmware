@@ -23,6 +23,7 @@ if [ $BASENAME == "scripts" ]; then
 fi
 
 echo_blue "Test 1a: Build varmint_10X firmware"
+mkdir varmint_10X_build && cd varmint_10X_build && cmake -G Ninja .. -DBOARD_TO_BUILD=varmint_10X && ninja
 rm -rf build
 mkdir build
 cd build

@@ -38,16 +38,17 @@
             "interface": "swd",
             "runToEntryPoint": "main",
             "preLaunchTask": "cmake-build",
-            "svdFile": "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd"
+            "svdFile": "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd",
+            "showDevDebugOutput": "raw"
         },
         {
             "name": "Debug - GTest Unit Tests (WSL)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/unit_tests",
+            "program": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/test/unit_tests",
             "args": [], 
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output",
+            "cwd": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/test",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

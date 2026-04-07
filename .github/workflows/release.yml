@@ -1,31 +1,29 @@
 ---
 name: "Release"
-
 on:
   push:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
 jobs:
   release:
     name: "Release"
     runs-on: "ubuntu-latest"
-
     steps:
       - uses: actions/checkout@v2
       - name: checkout submodules
         run: git submodule update --init --recursive
       - name: install toolchain
-        run: sudo apt -y install gcc-arm-none-eabi
+        run: sudo apt -y install gcc-arm-none-eabi ninja-build
       - name: check toolchain
-        run: arm-none-eabi-gcc --version
+        run: |
+          arm-none-eabi-gcc --version
+          ninja --version
       - name: build varmint_10X
-        run: mkdir varmint_10X_build && cd varmint_10X_build && cmake .. -DBOARD_TO_BUILD=varmint_10X && make
+        run: mkdir varmint_10X_build && cd varmint_10X_build && cmake -G Ninja .. -DBOARD_TO_BUILD=varmint_10X && ninja
       - name: build varmint_11X
-        run: mkdir varmint_11X_build && cd varmint_11X_build && cmake .. -DBOARD_TO_BUILD=varmint_11X && make
+        run: mkdir varmint_11X_build && cd varmint_11X_build && cmake -G Ninja .. -DBOARD_TO_BUILD=varmint_11X && ninja
       - name: build pixracer pro
-        run: mkdir pixracer_pro_build && cd pixracer_pro_build && cmake .. -DBOARD_TO_BUILD=pixracer_pro && make
-
+        run: mkdir pixracer_pro_build && cd pixracer_pro_build && cmake -G Ninja .. -DBOARD_TO_BUILD=pixracer_pro && ninja
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"

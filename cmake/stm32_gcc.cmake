@@ -23,7 +23,7 @@ set(H7_HW_FLAGS
 # Architecture Specific Flags (The "Hardware" description)
 add_compile_options(
     ${H7_HW_FLAGS}
-    -Wall                # All warnings
+ #   -Wall                # All warnings
  #   -g3                  # Max debug symbols for J-Link (find in CMakePresets.json)
  #   -O3                  # High optimization for flight logic (find in CMakePresets.json)
     -fstack-usage        # Generate .su files for RAM auditing
