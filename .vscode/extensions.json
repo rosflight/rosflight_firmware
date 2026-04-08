@@ -4,7 +4,6 @@
     "ms-vscode.cmake-tools",
     "marus25.cortex-debug",
     "ms-vscode.cpptools-themes",
-    "thecreativedodo.usbip-connect",
-    "stmicroelectronics.stm32-vscode-extension"
+    "thecreativedodo.usbip-connect"
   ]
 }
