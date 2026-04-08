@@ -5,8 +5,6 @@
     "marus25.cortex-debug",
     "ms-vscode.cpptools-themes",
     "thecreativedodo.usbip-connect",
-    "stmicroelectronics.stm32cube-ide-build-analyzer",
-    "stmicroelectronics.stm32cube-ide-build-cmake",
-    "stmicroelectronics.stm32cube-ide-core"
+    "stmicroelectronics.stm32-vscode-extension"
   ]
 }
