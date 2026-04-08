@@ -22,25 +22,26 @@ set(H7_HW_FLAGS
 
 # Architecture Specific Flags (The "Hardware" description)
 add_compile_options(
-    ${H7_HW_FLAGS}
+    "${H7_HW_FLAGS}"
  #   -Wall                # All warnings
  #   -g3                  # Max debug symbols for J-Link (find in CMakePresets.json)
  #   -O3                  # High optimization for flight logic (find in CMakePresets.json)
-    -fstack-usage        # Generate .su files for RAM auditing
-    -ffunction-sections  # For linker garbage collection
-    -fdata-sections      # For linker garbage collection
+    # -fstack-usage        # Generate .su files for RAM auditing
+    # -ffunction-sections  # For linker garbage collection
+    # -fdata-sections      # For linker garbage collection
     # Hardware Facts
-    -mcpu=cortex-m7 
-    -mthumb 
-    -mfpu=fpv5-d16 
-    -mfloat-abi=hard
+    # -mcpu=cortex-m7 
+    # -mthumb 
+    # -mfpu=fpv5-d16 
+    # -mfloat-abi=hard
     # Code Quality and Safety
     -Wall
     -ffunction-sections 
     -fdata-sections
     -fstack-usage
+    # -fcyclomatic-complexity
     # System Integration
-    --specs=nosys.specs
+    --specs=nano.specs
     # Logic for STM32Cube's C-style comments in .s files
     "$<$<COMPILE_LANGUAGE:ASM>:-xassembler-with-cpp>"
     # C++ Specific: Disable bloat for embedded
@@ -50,9 +51,9 @@ add_compile_options(
 )
 
 add_link_options(
-    ${H7_HW_FLAGS}
+    "${H7_HW_FLAGS}"
 #   "-T${LINKER_SCRIPT}" # should be here somehow, but moved to board/varmint_h7/common/CMakeLists.txt
-#   "-Wl,-Map=${PROJECT_BINARY_DIR}/${TARGET_NAME}.map" # should be here somehow, but moved to board/varmint_h7/common/CMakeLists.txt
+#   "-Wl,-Map=${PROJECT_BINARY_DIR}/output/${TARGET_NAME}.map" # should be here somehow, but moved to board/varmint_h7/common/CMakeLists.txt
     -static
     "-Wl,--gc-sections"          
     -Wl,--print-memory-usage

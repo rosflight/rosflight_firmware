@@ -55,8 +55,9 @@ set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/../common/STM32H7LinkerScript.ld)
 
 target_link_options(${TARGET_NAME}.elf PRIVATE
     "-T${LINKER_SCRIPT}"
-    "-Wl,-Map=${PROJECT_BINARY_DIR}/${TARGET_NAME}.map"
+    "-Wl,-Map=${CMAKE_BINARY_DIR}/${TARGET_NAME}.elf.map,--cref"
 )
+#${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/
 
 target_compile_definitions(${TARGET_NAME}.elf PUBLIC
     GIT_VERSION_HASH=0x${GIT_VERSION_HASH}
