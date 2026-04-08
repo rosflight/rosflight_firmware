@@ -1,21 +1,26 @@
 ### project settings ###
 
 # Building the projects:
-# mkdir varmint_build      && cd varmint_build      && cmake .. -DBOARD_TO_BUILD=varmint      && make -j
-# mkdir pixracer_pro_build && cd pixracer_pro_build && cmake .. -DBOARD_TO_BUILD=pixracer_pro && make -j
-#
-# alternate for make -j above is cmake --build . -j (note only one .)
-# make -j OR cmake --build . -j
-# to clean:
-# make clean -j  OR  make --build . --target clean -j
-#
-# unit test:
-# build:
-# mkdir test_build         && cd test_build         && cmake .. -DBOARD_TO_BUILD=test -DCMAKE_BUILD_TYPE=Release && make -j
-# test:
-# ./test/unit_tests
+# Toolchains for boards and uint tests 
+#   sudo apt install -y build-essential cmake gcc-arm-none-eabi ninja-build libgtest-dev
+# also for gtest: 
+#   cd /usr/src/gtest
+#   sudo cmake -G Ninja CMakeLists.txt
+#   sudo ninja
+#   sudo cp ./lib/libgtest*.a /usr/lib
 
+# Build Boards:
+# cmake --preset varmint-10X-release
+# cmake --build build/varmint-10X-release
+# cmake --preset varmint-11X-release
+# cmake --build build/varmint-11X-release
+# cmake --preset pixracer-pro-release
+# cmake --build build/pixracer-pro-release
 
+# Build and run Unit Tests:
+# cmake --preset test-release
+# cmake --build build/test-release
+# ./build/test-release/test/unit_tests
 
 cmake_minimum_required(VERSION 3.8)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
