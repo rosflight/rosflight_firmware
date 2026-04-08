@@ -16,6 +16,8 @@ function print_result() {
   echo ""
 }
 
+ORIGINAL_DIR="$PWD"
+
 BASENAME=`basename "$PWD"`
 
 if [ $BASENAME == "scripts" ]; then
@@ -56,3 +58,5 @@ else
 fi
 
 exit $EXIT_CODE
+
+cd "$ORIGINAL_DIR"
