@@ -1,6 +1,4 @@
-# test:
-# cd pixracer_pro && mkdir build && cd build && cmake .. && make -j
-# cd varmint_10X && mkdir build && cd build && cmake .. && make -j
+# test: see root CMakeLists.txt for magic words.
 
 ### project settings ###
 

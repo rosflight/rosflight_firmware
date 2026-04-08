@@ -1,7 +1,6 @@
 ### project settings ###
 
-# Building the projects:
-# Toolchains for boards and uint tests 
+# Tools for building the projects and unit tests
 #   sudo apt install -y build-essential cmake gcc-arm-none-eabi ninja-build libgtest-dev
 # also for gtest: 
 #   cd /usr/src/gtest
