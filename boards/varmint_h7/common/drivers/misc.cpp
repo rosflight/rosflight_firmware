@@ -48,6 +48,43 @@
 
 extern bool verbose;
 
+#if 1
+extern "C" int _getentropy(void *ptr, size_t len) {
+    // For now, return -1 to indicate not implemented, 
+    // or 0 if you don't care about the randomness source yet.
+    return -1; 
+}
+#else
+#include "stm32h7xx_hal.h"
+#include <errno.h>
+#include <stddef.h>
+
+extern RNG_HandleTypeDef hrng; // Assumes your RNG is initialized in main.c/Varmint_Init
+
+extern "C" int _getentropy(void *ptr, size_t len) {
+    uint32_t random_val;
+    uint8_t *dest = (uint8_t *)ptr;
+
+    while (len > 0) {
+        // Generate a 32-bit hardware random number
+        if (HAL_RNG_GenerateRandomNumber(&hrng, &random_val) != HAL_OK) {
+            errno = EIO;
+            return -1;
+        }
+
+        // Copy bytes to the destination buffer
+        size_t to_copy = (len < 4) ? len : 4;
+        for (size_t i = 0; i < to_copy; i++) {
+            *dest++ = (uint8_t)(random_val >> (i * 8));
+        }
+        
+        len -= to_copy;
+    }
+
+    return 0;
+}
+#endif
+
 extern "C" {
 int __io_putchar(int ch)
 {

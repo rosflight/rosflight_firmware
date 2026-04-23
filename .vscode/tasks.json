@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "update-active-build-link",
+            "type": "shell",
+            "command": "ln -sfn ${workspaceFolder}/build/${command:cmake.activeConfigurePresetName} ${workspaceFolder}/build/active",
+            "presentation": { "reveal": "silent" }
+        },
+        {
+            "label": "cmake-build",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}",
+            "group": "build",
+            "problemMatcher": "$gcc",
+            "dependsOn": "update-active-build-link"
+        }
+    ]
+}

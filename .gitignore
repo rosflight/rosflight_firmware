@@ -9,7 +9,6 @@
 *.files
 *.orig
 *.user.*
-.vscode/
 *.o
 *.html
 /build/
@@ -33,22 +32,5 @@ CMakeCache.txt
 *.blg
 *.cflags
 *.cxxflags
-
-# STM32Cube
-#.cproject*
-#.mxproject*
-#*.launch
-#.project*
-#.settings/
-#config_*/
-#test_build
-#varmint_build
-#pixracer_pro_build
-#STM32H743IIKX_FLASH.ld
-#STM32H753VIHX_FLASH.ld
-#build/
-#*/Debug/
-#cmake_install.cmake
-#varmint_11x/
-#varmint_11x_test/
-#varmint_12x/
+boards/varmint_h7/pixracer_pro/STM32H743IIKX_FLASH.ld
+boards/varmint_h7/varmint_10X/STM32H753VIHX_FLASH.ld

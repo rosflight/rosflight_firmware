@@ -87,44 +87,45 @@ uint32_t DlhrL20G::init(
   else {
     misc_printf("ERROR\n");
     initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
+    {
+  		uint16_t dT = 30;
+  		HAL_StatusTypeDef stat;
+  		uint8_t w,r[3];
+  
+  		w  = 0x20;
+  		stat = HAL_I2C_Master_Transmit(hi2c_, address_, &w, 1,1000);
+  		time64.dMs(dT);
+  		stat = HAL_I2C_Master_Receive(hi2c_, address_,  r, 3,1000);
+  		misc_printf("DLHRL20G LOT 0x%02X, read3 0x%02X 0x%02X%02X (0x%02X) \n\n", w,r[0],r[1],r[2],stat);
+  		time64.dMs(dT);
+  
+  		// Fix a particular sensor
+  		// if(sensor_status==0x44)
+  		// {
+  		// 	uint8_t ba[3] = { 0x40, 0x22, 0x05}; // << device dependent value
+  		// 	uint8_t bb[3] = { 0x44, 0xA3, 0x07}; // << device dependent value
+  		// 	stat = HAL_I2C_Master_Transmit(hi2c_, address_, ba, 3, 1000);
+  		// 	misc_printf("DLHRL20G FIX 0x%02X, write 0x%02X%02X (0x%02X)\n\n", r[0],r[1],r[2],stat);
+  		// 	time64.dMs(dT);
+  
+  		// 	stat = HAL_I2C_Master_Transmit(hi2c_, address_, bb, 3, 1000);
+  		// 	misc_printf("DLHRL20G FIX 0x%02X, write 0x%02X%02X (0x%02X)\n\n", r[0],r[1],r[2],stat);
+  		// 	time64.dMs(dT);
+  		// }
+  
+  		for(w=0;w<58;w++)
+  		{
+  				stat = HAL_I2C_Master_Transmit(hi2c_, address_, &w, 1,1000);
+  				time64.dMs(dT);
+  				stat = HAL_I2C_Master_Receive(hi2c_, address_,  r, 3,1000);
+  				misc_printf("DLHRL20G REG 0x%02X, read3 0x%02X 0x%02X%02X (0x%02X)\n", w,r[0],r[1],r[2],stat);
+  				time64.dMs(dT);
+  		}
+  
+  	}
   }
 
-  //	{
-  //		uint16_t dT = 30;
-  //		HAL_StatusTypeDef stat;
-  //		uint8_t w,r[3];
-  //
-  //		w  = 0x20;
-  //		stat = HAL_I2C_Master_Transmit(hi2c_, address_, &w, 1,1000);
-  //		time64.dMs(dT);
-  //		stat = HAL_I2C_Master_Receive(hi2c_, address_,  r, 3,1000);
-  //		misc_printf("DLHRL20G LOT 0x%02X, read3 0x%02X 0x%02X%02X (0x%02X) \n\n", w,r[0],r[1],r[2],stat);
-  //		time64.dMs(dT);
-  //
-  //		// Fix a particular sensor
-  //		if(sensor_status==0x44)
-  //		{
-  //			uint8_t ba[3] = { 0x40, 0x22, 0x05}; // << device dependent value
-  //			uint8_t bb[3] = { 0x44, 0xA3, 0x07}; // << device dependent value
-  //			stat = HAL_I2C_Master_Transmit(hi2c_, address_, ba, 3, 1000);
-  //			misc_printf("DLHRL20G FIX 0x%02X, write 0x%02X%02X (0x%02X)\n\n", r[0],r[1],r[2],stat);
-  //			time64.dMs(dT);
-  //
-  //			stat = HAL_I2C_Master_Transmit(hi2c_, address_, bb, 3, 1000);
-  //			misc_printf("DLHRL20G FIX 0x%02X, write 0x%02X%02X (0x%02X)\n\n", r[0],r[1],r[2],stat);
-  //			time64.dMs(dT);
-  //		}
-  //
-  //		for(w=0;w<58;w++)
-  //		{
-  //				stat = HAL_I2C_Master_Transmit(hi2c_, address_, &w, 1,1000);
-  //				time64.dMs(dT);
-  //				stat = HAL_I2C_Master_Receive(hi2c_, address_,  r, 3,1000);
-  //				misc_printf("DLHRL20G REG 0x%02X, read3 0x%02X 0x%02X%02X (0x%02X)\n", w,r[0],r[1],r[2],stat);
-  //				time64.dMs(dT);
-  //		}
-  //
-  //	}
+
 
   return initializationStatus_;
 }

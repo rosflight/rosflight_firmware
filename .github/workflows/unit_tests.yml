@@ -1,34 +1,23 @@
 name: Unit Tests
-
 on: [push]
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: clone
       run: git submodule update --init --recursive
     - name: apt install
-      run: sudo apt-get install -y build-essential cmake libgtest-dev
+      run: sudo apt-get install -y build-essential cmake libgtest-dev ninja-build
     - name: install gtest
       run: |
         cd /usr/src/gtest
-        sudo cmake CMakeLists.txt
-        sudo make
+        sudo cmake -G Ninja CMakeLists.txt
+        sudo ninja
         sudo cp ./lib/libgtest*.a /usr/lib
-    - name: cmake
+    - name: build test suite
       run: |
-        mkdir build
-        cd build
-        cmake .. -DBOARD_TO_BUILD=test -DCMAKE_BUILD_TYPE=Release
-    - name: make
-      run: |
-        cd build
-        make
-    - name: test
-      run: |
-        cd build
-        ./test/unit_tests
+        cmake --preset test-release
+        cmake --build build/test-release
+    - name: run test suite
+      run: ./build/test-release/test/unit_tests
