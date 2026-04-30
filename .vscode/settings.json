@@ -1,0 +1,6 @@
+{
+    "stm32cube.buildDirectory": "${workspaceFolder}/build/active",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build/active"
+    ]
+}
