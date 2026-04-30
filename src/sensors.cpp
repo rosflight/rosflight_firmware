@@ -52,9 +52,7 @@ const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 100.0; // standard
 
 Sensors::Sensors(ROSflight & rosflight)
     : rf_(rosflight)
-{
-  previous_battery_voltage_ = rf_.params_.get_param_float(PARAM_BATT_VOLT_MAX);
-}
+{}
 
 void Sensors::init()
 {
@@ -66,6 +64,8 @@ void Sensors::init()
   init_mag();
 
   this->update_battery_monitor_multipliers();
+  previous_battery_voltage_ = rf_.params_.get_param_float(PARAM_BATT_VOLT_MAX);
+  previous_battery_current_ = 0.0f;
 }
 
 void Sensors::init_imu()
