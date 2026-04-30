@@ -39,17 +39,17 @@
  {
  class testBoard : public Board
  {
-  private:
-    uint16_t rc_values[8] = {1500, 1500, 1000, 1500, 1500, 1500, 1500, 1500};
-    bool new_rc_ = false;
-    uint64_t time_us_ = 0;
-    float acc_[3] = {0, 0, 0};
-    float gyro_[3] = {0, 0, 0};
-    bool new_imu_ = false;
-    BatteryStruct battery_ = {};
-    bool battery_valid_ = false;
-    static constexpr size_t BACKUP_MEMORY_SIZE{1024};
-    uint8_t backup_memory_[BACKUP_MEMORY_SIZE];
+ private:
+   uint16_t rc_values[8] = {1500, 1500, 1000, 1500, 1500, 1500, 1500, 1500};
+   bool new_rc_ = false;
+   uint64_t time_us_ = 0;
+   float acc_[3] = {0, 0, 0};
+   float gyro_[3] = {0, 0, 0};
+   bool new_imu_ = false;
+   BatteryStruct battery_ = {};
+   bool battery_valid_ = false;
+   static constexpr size_t BACKUP_MEMORY_SIZE{1024};
+   uint8_t backup_memory_[BACKUP_MEMORY_SIZE];
  
  public:
    // setup
@@ -124,10 +124,10 @@
    void backup_memory_clear(size_t len) override;
    void backup_memory_clear();
  
-    void set_imu(float * acc, float * gyro, uint64_t time_us);
-    void set_battery(float voltage, float current, float temperature, uint64_t time_us);
-    void set_time(uint64_t time_us);
-    void set_pwm_lost(bool lost);
+   void set_imu(float * acc, float * gyro, uint64_t time_us);
+   void set_battery(float voltage, float current, float temperature, uint64_t time_us);
+   void set_time(uint64_t time_us);
+   void set_pwm_lost(bool lost);
  };
  
  } // namespace rosflight_firmware

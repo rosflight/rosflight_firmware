@@ -139,18 +139,18 @@
    return false;
  }
  
-  bool testBoard::gnss_read(rosflight_firmware::GnssStruct * gnss) { return false; }
-  
-  bool testBoard::battery_read(rosflight_firmware::BatteryStruct * batt)
-  {
-    if (!battery_valid_) {
-      return false;
-    }
-    *batt = battery_;
-    return true;
-  }
-  void testBoard::battery_voltage_set_multiplier(double multiplier) {}
-  void testBoard::battery_current_set_multiplier(double multiplier) {}
+ bool testBoard::gnss_read(rosflight_firmware::GnssStruct * gnss) { return false; }
+ 
+ bool testBoard::battery_read(rosflight_firmware::BatteryStruct * batt)
+ {
+   if (!battery_valid_) {
+     return false;
+   }
+   *batt = battery_;
+   return true;
+ }
+ void testBoard::battery_voltage_set_multiplier(double multiplier) {}
+ void testBoard::battery_current_set_multiplier(double multiplier) {}
  
  // PWM
  // TODO make these deal in normalized (-1 to 1 or 0 to 1) values (not pwm-specific)
