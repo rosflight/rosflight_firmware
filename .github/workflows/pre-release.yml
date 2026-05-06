@@ -9,11 +9,11 @@ jobs:
     name: "Pre Release"
     runs-on: "ubuntu-latest"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: checkout submodules
       run: git submodule update --init --recursive
     - name: install toolchain
-      run: sudo apt -y install gcc-arm-none-eabi ninja-build
+      run: sudo apt-get -y install gcc-arm-none-eabi ninja-build cmake
     - name: check toolchain
       run: |
         arm-none-eabi-gcc --version

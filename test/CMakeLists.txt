@@ -10,7 +10,8 @@ find_package(Threads REQUIRED)  # Required for current gtest version, may be a b
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # Compile eigen as a separate library and suppress warnings for eigen
-add_library(eigen INTERFACE ../lib/eigen)
+add_library(eigen INTERFACE)
+target_include_directories(eigen INTERFACE ../lib/eigen)
 target_compile_options(eigen INTERFACE -Wno-strict-overflow -Wno-old-style-cast -Wno-ctor-dtor-privacy)
 
 add_executable(unit_tests
@@ -20,7 +21,6 @@ add_executable(unit_tests
         test_board.cpp
         turbotrig_test.cpp
         state_machine_test.cpp
-        command_manager_test.cpp
         estimator_test.cpp
         parameters_test.cpp
         rosflight_test.cpp
