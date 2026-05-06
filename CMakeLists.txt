@@ -88,5 +88,9 @@ elseif("${BOARD_TO_BUILD}" STREQUAL "test")
     add_subdirectory(test)
 
 else()
-    message(FATAL_ERROR "No valid board selected! Please select the varmint_10X, varmint_11X, pixracer_pro, or test board with -DBOARD_TO_BUILD=varmint_10X, -DBOARD_TO_BUILD=varmint_11X, -DBOARD_TO_BUILD=pixracer_pro, OR -DBOARD_TO_BUILD=test.")
+    message(FATAL_ERROR "\n"
+        "Usage: cmake --preset <preset-name>\n"
+        "Example: cmake --preset varmint-10X-release\n"
+        "         cmake --build build/varmint-10X-release\n"
+    )
 endif()
