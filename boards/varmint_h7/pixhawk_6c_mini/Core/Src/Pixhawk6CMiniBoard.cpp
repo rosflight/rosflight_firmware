@@ -491,8 +491,16 @@ bool Pixhawk6CMiniBoard::gnss_read(rosflight_firmware::GnssStruct * gnss)
 }
 bool Pixhawk6CMiniBoard::battery_read(rosflight_firmware::BatteryStruct * bat)
 {
-  (void) bat;
-  return false;
+  if (bat == nullptr) { return false; }
+
+  const uint64_t now = clock_micros();
+  bat->header.timestamp = now;
+  bat->header.complete = now;
+  bat->header.status = 0;
+  bat->voltage = 5.0f;
+  bat->current = 0.0f;
+  bat->temperature = 0.0f;
+  return true;
 }
 void Pixhawk6CMiniBoard::battery_voltage_set_multiplier(double multiplier) { (void) multiplier; }
 void Pixhawk6CMiniBoard::battery_current_set_multiplier(double multiplier) { (void) multiplier; }
