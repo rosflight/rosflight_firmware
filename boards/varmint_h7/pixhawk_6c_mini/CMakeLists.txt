@@ -25,6 +25,7 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_cortex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_crc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_crc_ex.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_dma.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_flash.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_flash_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_gpio.c
@@ -36,6 +37,7 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_rcc_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_sd.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_sd_ex.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_spi.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_ll_sdmmc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_ll_usb.c
     ${PIXHAWK_6C_MINI_USB_SOURCES}

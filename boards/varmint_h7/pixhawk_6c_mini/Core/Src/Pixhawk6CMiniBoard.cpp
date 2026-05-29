@@ -22,11 +22,53 @@ constexpr uint32_t SD_TIMEOUT_MS = 1000U;
 constexpr uint64_t VCP_QUEUE_TIMEOUT_US = 5000U;
 constexpr uint64_t BOARD_LOOP_PERIOD_US = 2500U;
 constexpr uint64_t DIFF_PRESSURE_PERIOD_US = 50000U;
+constexpr uint32_t ICM42688_SPI_TIMEOUT_MS = 10U;
+constexpr uint8_t ICM42688_WHO_AM_I_VALUE = 0x47U;
+constexpr uint8_t ICM42688_REG_DEVICE_CONFIG = 0x11U;
+constexpr uint8_t ICM42688_REG_INT_CONFIG = 0x14U;
+constexpr uint8_t ICM42688_REG_TEMP_DATA1 = 0x1DU;
+constexpr uint8_t ICM42688_REG_SIGNAL_PATH_RESET = 0x4BU;
+constexpr uint8_t ICM42688_REG_PWR_MGMT0 = 0x4EU;
+constexpr uint8_t ICM42688_REG_GYRO_CONFIG0 = 0x4FU;
+constexpr uint8_t ICM42688_REG_ACCEL_CONFIG0 = 0x50U;
+constexpr uint8_t ICM42688_REG_INT_SOURCE0 = 0x65U;
+constexpr uint8_t ICM42688_REG_WHO_AM_I = 0x75U;
+constexpr uint8_t ICM42688_READ = 0x80U;
+constexpr uint8_t ICM42688_WRITE = 0x00U;
+constexpr uint8_t ICM42688_BURST_BYTES = 15U;
+constexpr float GRAVITY_MSS = 9.80665f;
+constexpr float ICM42688_ACCEL_SCALE = GRAVITY_MSS / 2048.0f; // +/-16g
+constexpr float ICM42688_GYRO_SCALE = 0.01745329252f / 16.4f; // +/-2000 dps
+constexpr uint32_t SENSOR_ERROR_IMU = 0x0001U;
+
+constexpr float IMU_TO_FMU_ROTATION[9] = {
+  0.0f, -1.0f, 0.0f,
+  -1.0f, 0.0f, 0.0f,
+  0.0f, 0.0f, -1.0f,
+};
 
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 SD_DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
 SD_DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
+DMA_RAM uint8_t icm42688_dma_tx_buf[ICM42688_BURST_BYTES];
+DMA_RAM uint8_t icm42688_dma_rx_buf[ICM42688_BURST_BYTES];
+
+int16_t read_i16_be(const uint8_t * bytes)
+{
+  return static_cast<int16_t>((static_cast<uint16_t>(bytes[0]) << 8) | bytes[1]);
+}
+
+void rotate_imu_to_fmu(float * v)
+{
+  const float x = v[0];
+  const float y = v[1];
+  const float z = v[2];
+
+  v[0] = IMU_TO_FMU_ROTATION[0] * x + IMU_TO_FMU_ROTATION[1] * y + IMU_TO_FMU_ROTATION[2] * z;
+  v[1] = IMU_TO_FMU_ROTATION[3] * x + IMU_TO_FMU_ROTATION[4] * y + IMU_TO_FMU_ROTATION[5] * z;
+  v[2] = IMU_TO_FMU_ROTATION[6] * x + IMU_TO_FMU_ROTATION[7] * y + IMU_TO_FMU_ROTATION[8] * z;
+}
 
 uint64_t pixhawk_clock_micros_raw()
 {
@@ -94,6 +136,149 @@ void pace_board_loop(Vcp & vcp)
   next_loop_time += BOARD_LOOP_PERIOD_US;
   if (next_loop_time < now) { next_loop_time = now + BOARD_LOOP_PERIOD_US; }
 }
+
+class Icm42688
+{
+public:
+  bool init()
+  {
+    initialized_ = false;
+    dma_busy_ = false;
+    new_sample_ = false;
+    init_status_ = SENSOR_ERROR_IMU;
+
+    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
+    HAL_Delay(3);
+
+    write_register(ICM42688_REG_DEVICE_CONFIG, 0x01U);
+    HAL_Delay(2);
+
+    const uint8_t who_am_i = read_register(ICM42688_REG_WHO_AM_I);
+    if (who_am_i != ICM42688_WHO_AM_I_VALUE) {
+      who_am_i_ = who_am_i;
+      return false;
+    }
+
+    write_register(ICM42688_REG_PWR_MGMT0, 0x00U);
+    HAL_Delay(1);
+    write_register(ICM42688_REG_GYRO_CONFIG0, 0x06U);
+    write_register(ICM42688_REG_ACCEL_CONFIG0, 0x06U);
+    write_register(ICM42688_REG_SIGNAL_PATH_RESET, 0x0AU);
+    HAL_Delay(1);
+    write_register(ICM42688_REG_INT_CONFIG, 0x1BU);
+    write_register(ICM42688_REG_INT_SOURCE0, 0x08U);
+    write_register(ICM42688_REG_PWR_MGMT0, 0x0FU);
+    HAL_Delay(50);
+
+    initialized_ = true;
+    init_status_ = 0;
+    return true;
+  }
+
+  void start_dma()
+  {
+    if (!initialized_ || dma_busy_) { return; }
+
+    std::memset(icm42688_dma_tx_buf, 0, ICM42688_BURST_BYTES);
+    icm42688_dma_tx_buf[0] = ICM42688_REG_TEMP_DATA1 | ICM42688_READ;
+
+    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_RESET);
+    if (HAL_SPI_TransmitReceive_DMA(&hspi1, icm42688_dma_tx_buf, icm42688_dma_rx_buf,
+                                    ICM42688_BURST_BYTES) == HAL_OK) {
+      dma_busy_ = true;
+    } else {
+      HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
+    }
+  }
+
+  void finish_dma()
+  {
+    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
+    if (!dma_busy_) { return; }
+    dma_busy_ = false;
+
+    rosflight_firmware::ImuStruct sample = {};
+    const uint64_t now = pixhawk_clock_micros_raw();
+    sample.header.timestamp = now;
+    sample.header.complete = now;
+    sample.header.status = 0;
+
+    const int16_t temp_raw = read_i16_be(&icm42688_dma_rx_buf[1]);
+    const int16_t accel_x = read_i16_be(&icm42688_dma_rx_buf[3]);
+    const int16_t accel_y = read_i16_be(&icm42688_dma_rx_buf[5]);
+    const int16_t accel_z = read_i16_be(&icm42688_dma_rx_buf[7]);
+    const int16_t gyro_x = read_i16_be(&icm42688_dma_rx_buf[9]);
+    const int16_t gyro_y = read_i16_be(&icm42688_dma_rx_buf[11]);
+    const int16_t gyro_z = read_i16_be(&icm42688_dma_rx_buf[13]);
+
+    sample.temperature = (static_cast<float>(temp_raw) / 132.48f) + 25.0f + 273.15f;
+    sample.accel[0] = static_cast<float>(accel_x) * ICM42688_ACCEL_SCALE;
+    sample.accel[1] = static_cast<float>(accel_y) * ICM42688_ACCEL_SCALE;
+    sample.accel[2] = static_cast<float>(accel_z) * ICM42688_ACCEL_SCALE;
+    sample.gyro[0] = static_cast<float>(gyro_x) * ICM42688_GYRO_SCALE;
+    sample.gyro[1] = static_cast<float>(gyro_y) * ICM42688_GYRO_SCALE;
+    sample.gyro[2] = static_cast<float>(gyro_z) * ICM42688_GYRO_SCALE;
+    rotate_imu_to_fmu(sample.accel);
+    rotate_imu_to_fmu(sample.gyro);
+
+    latest_sample_ = sample;
+    new_sample_ = true;
+  }
+
+  void abort_dma()
+  {
+    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
+    dma_busy_ = false;
+  }
+
+  bool read(rosflight_firmware::ImuStruct * imu)
+  {
+    if (!initialized_ || imu == nullptr) { return false; }
+
+    const uint32_t primask = __get_PRIMASK();
+    __disable_irq();
+    const bool have_sample = new_sample_;
+    if (have_sample) {
+      *imu = latest_sample_;
+      new_sample_ = false;
+    }
+    if (!primask) { __enable_irq(); }
+
+    return have_sample;
+  }
+
+  bool init_good() const { return initialized_; }
+  uint32_t init_status() const { return init_status_; }
+  uint8_t who_am_i() const { return who_am_i_; }
+
+private:
+  uint8_t transfer_byte(uint8_t reg, uint8_t value)
+  {
+    uint8_t tx[2] = {reg, value};
+    uint8_t rx[2] = {};
+    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_RESET);
+    const HAL_StatusTypeDef status =
+      HAL_SPI_TransmitReceive(&hspi1, tx, rx, sizeof(tx), ICM42688_SPI_TIMEOUT_MS);
+    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
+    return (status == HAL_OK) ? rx[1] : 0U;
+  }
+
+  uint8_t read_register(uint8_t reg) { return transfer_byte(reg | ICM42688_READ, 0U); }
+  void write_register(uint8_t reg, uint8_t value)
+  {
+    (void) transfer_byte(reg | ICM42688_WRITE, value);
+    for (volatile uint32_t i = 0; i < 2000U; i++) {}
+  }
+
+  volatile bool initialized_ = false;
+  volatile bool dma_busy_ = false;
+  volatile bool new_sample_ = false;
+  uint32_t init_status_ = SENSOR_ERROR_IMU;
+  uint8_t who_am_i_ = 0;
+  rosflight_firmware::ImuStruct latest_sample_ = {};
+};
+
+Icm42688 icm42688;
 } // namespace
 
 Pixhawk6CMiniBoard pixhawk_6c_mini_board;
@@ -169,6 +354,8 @@ void Pixhawk6CMiniBoard::init_board()
   pixhawk_clock_init();
 
   MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_SPI1_Init();
   led0_off();
   led1_off();
   led0_on();
@@ -186,20 +373,23 @@ void Pixhawk6CMiniBoard::board_reset(bool bootloader)
   HAL_NVIC_SystemReset();
 }
 
-void Pixhawk6CMiniBoard::sensors_init(void) {}
-uint16_t Pixhawk6CMiniBoard::sensors_errors_count() { return 0; }
-uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 0; }
+void Pixhawk6CMiniBoard::sensors_init(void) { icm42688.init(); }
+uint16_t Pixhawk6CMiniBoard::sensors_errors_count() { return icm42688.init_good() ? 0 : 1; }
+uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 1; }
 bool Pixhawk6CMiniBoard::sensors_init_message_good(uint16_t i)
 {
-  (void) i;
-  return false;
+  return i == 0 && icm42688.init_good();
 }
 uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size, uint16_t i)
 {
-  (void) message;
-  (void) size;
-  (void) i;
-  return 0;
+  if (message == nullptr || size == 0 || i != 0) { return 0; }
+  if (icm42688.init_good()) {
+    std::snprintf(message, size, "%s", "ICM42688: INIT OK");
+  } else {
+    std::snprintf(message, size, "ICM42688: INIT ERROR 0x%08lX ID 0x%02X",
+                  static_cast<unsigned long>(icm42688.init_status()), icm42688.who_am_i());
+  }
+  return 1;
 }
 
 uint32_t Pixhawk6CMiniBoard::clock_millis()
@@ -253,8 +443,8 @@ void Pixhawk6CMiniBoard::serial_flush() { poll(); }
 
 bool Pixhawk6CMiniBoard::imu_read(rosflight_firmware::ImuStruct * imu)
 {
-  (void) imu;
-  return false;
+  poll();
+  return icm42688.read(imu);
 }
 bool Pixhawk6CMiniBoard::mag_read(rosflight_firmware::MagStruct * mag)
 {
@@ -433,4 +623,19 @@ extern "C" void CDC_TransmitCplt_Callback(uint8_t chan, uint8_t * buffer, uint16
   (void) buffer;
   (void) size;
   if (chan == 0) { pixhawk_6c_mini_board.vcp_.txCdcCallback(); }
+}
+
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t gpio_pin)
+{
+  if (gpio_pin == IMU_ICM42688_DRDY_Pin) { icm42688.start_dma(); }
+}
+
+extern "C" void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)
+{
+  if (hspi == &hspi1) { icm42688.finish_dma(); }
+}
+
+extern "C" void HAL_SPI_ErrorCallback(SPI_HandleTypeDef * hspi)
+{
+  if (hspi == &hspi1) { icm42688.abort_dma(); }
 }
