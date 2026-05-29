@@ -54,6 +54,24 @@
       }
     },
     {
+      "name": "pixhawk-6c-mini-debug",
+      "inherits": "base-hardware-debug",
+      "displayName": "Pixhawk 6C Mini (H743) [Debug]",
+      "description": "Target: Pixhawk 6C Mini LED blink bring-up (Debug)",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "pixhawk_6c_mini"
+      }
+    },
+    {
+      "name": "pixhawk-6c-mini-release",
+      "inherits": "base-hardware-release",
+      "displayName": "Pixhawk 6C Mini (H743) [Release]",
+      "description": "Target: Pixhawk 6C Mini LED blink bring-up (Release)",
+      "cacheVariables": {
+        "BOARD_TO_BUILD": "pixhawk_6c_mini"
+      }
+    },
+    {
       "name": "varmint-10X-debug",
       "inherits": "base-hardware-debug",
       "displayName": "Varmint 10X (H753VI) [Debug]",

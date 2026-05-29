@@ -15,6 +15,8 @@
 # cmake --build build/varmint-11X-release
 # cmake --preset pixracer-pro-release
 # cmake --build build/pixracer-pro-release
+# cmake --preset pixhawk-6c-mini-release
+# cmake --build build/pixhawk-6c-mini-release
 
 # Build and run Unit Tests:
 # cmake --preset test-release
@@ -83,11 +85,16 @@ elseif("${BOARD_TO_BUILD}" STREQUAL "pixracer_pro")
     set(TARGET_NAME "pixracer_pro")
     add_subdirectory(boards/varmint_h7/pixracer_pro ${CMAKE_BINARY_DIR}/output)
 
+elseif("${BOARD_TO_BUILD}" STREQUAL "pixhawk_6c_mini")
+    message("===== Selecting Pixhawk 6C Mini board target. =====")
+    set(TARGET_NAME "pixhawk_6c_mini")
+    add_subdirectory(boards/varmint_h7/pixhawk_6c_mini ${CMAKE_BINARY_DIR}/output)
+
 elseif("${BOARD_TO_BUILD}" STREQUAL "test")
     message("===== Selecting test board target. ======")
     add_subdirectory(test)
 
 else()
-    message(FATAL_ERROR "No valid board selected! Please select the varmint_10X, varmint_11X, pixracer_pro, or test board with -DBOARD_TO_BUILD=varmint_10X, -DBOARD_TO_BUILD=varmint_11X, -DBOARD_TO_BUILD=pixracer_pro, OR -DBOARD_TO_BUILD=test.")
+    message(FATAL_ERROR "No valid board selected! Please select the varmint_10X, varmint_11X, pixracer_pro, pixhawk_6c_mini, or test board with -DBOARD_TO_BUILD=varmint_10X, -DBOARD_TO_BUILD=varmint_11X, -DBOARD_TO_BUILD=pixracer_pro, -DBOARD_TO_BUILD=pixhawk_6c_mini, OR -DBOARD_TO_BUILD=test.")
 
     endif()

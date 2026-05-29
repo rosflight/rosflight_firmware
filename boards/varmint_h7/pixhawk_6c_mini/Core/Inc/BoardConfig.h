@@ -1,0 +1,20 @@
+#ifndef PIXHAWK_6C_MINI_BOARDCONFIG_H
+#define PIXHAWK_6C_MINI_BOARDCONFIG_H
+
+#define _USBD_USE_HS 0
+#define _USBD_USE_CDC_ACM 1
+#define _USBD_CDC_ACM_COUNT 1
+#define _USBD_USE_CDC_RNDIS 0
+#define _USBD_USE_CDC_ECM 0
+#define _USBD_USE_HID_MOUSE 0
+#define _USBD_USE_HID_KEYBOARD 0
+#define _USBD_USE_HID_CUSTOM 0
+#define _USBD_USE_UAC_MIC 0
+#define _USBD_USE_UAC_SPKR 0
+#define _USBD_USE_UVC 0
+#define _USBD_USE_MSC 0
+#define _USBD_USE_DFU 0
+#define _USBD_USE_PRNTR 0
+#define _STM32F1_DEVICE 0
+
+#endif
