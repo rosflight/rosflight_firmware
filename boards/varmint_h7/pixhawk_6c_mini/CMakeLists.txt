@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(Pixhawk_6C_Mini C ASM)
+project(Pixhawk_6C_Mini C CXX ASM)
 
 add_definitions(-DSTM32H743xx -DUSE_HAL_DRIVER)
 
@@ -15,6 +15,7 @@ file(GLOB PIXHAWK_6C_MINI_USB_SOURCES
 
 set(PIXHAWK_6C_MINI_SOURCES
     Core/Src/main.c
+    Core/Src/Pixhawk6CMiniBoard.cpp
     Core/Src/stm32h7xx_it.c
     ${PIXRACER_PRO_DIR}/Core/Src/system_stm32h7xx.c
     ${PIXRACER_PRO_DIR}/Core/Src/syscalls.c
@@ -22,6 +23,8 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${PIXRACER_PRO_DIR}/Core/Startup/startup_stm32h743iikx.s
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_cortex.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_crc.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_crc_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_flash.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_flash_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_gpio.c
@@ -31,11 +34,14 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_pwr_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_rcc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_rcc_ex.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_sd.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_sd_ex.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_ll_sdmmc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_ll_usb.c
     ${PIXHAWK_6C_MINI_USB_SOURCES}
 )
 
-add_executable(${TARGET_NAME}.elf ${PIXHAWK_6C_MINI_SOURCES})
+add_executable(${TARGET_NAME}.elf ${ROSFLIGHT_SOURCES} ${PIXHAWK_6C_MINI_SOURCES})
 
 target_include_directories(${TARGET_NAME}.elf PRIVATE
     Core/Inc
@@ -44,6 +50,7 @@ target_include_directories(${TARGET_NAME}.elf PRIVATE
     ${CMSIS_DIR}/Device/ST/STM32H7xx/Include
     ${CMSIS_DIR}/Include
     ${COMMON_DIR}
+    ${COMMON_DIR}/drivers
     ${COMMON_DIR}/AL94_USB_Composite
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../comms/mavlink
 )

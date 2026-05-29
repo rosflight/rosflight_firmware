@@ -6,12 +6,23 @@ extern "C" {
 #endif
 
 #define HAL_MODULE_ENABLED
+#define HAL_ADC_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
+#define HAL_CRC_MODULE_ENABLED
+#define HAL_DMA_MODULE_ENABLED
+#define HAL_FDCAN_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
+#define HAL_I2C_MODULE_ENABLED
 #define HAL_PCD_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
+#define HAL_RNG_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
+#define HAL_RTC_MODULE_ENABLED
+#define HAL_SD_MODULE_ENABLED
+#define HAL_SPI_MODULE_ENABLED
+#define HAL_TIM_MODULE_ENABLED
+#define HAL_UART_MODULE_ENABLED
 
 #if !defined(HSE_VALUE)
 #define HSE_VALUE (24000000UL)
@@ -48,6 +59,7 @@ extern "C" {
 #define VDD_VALUE (3300UL)
 #define TICK_INT_PRIORITY (0UL)
 #define USE_RTOS 0
+#define USE_SD_TRANSCEIVER 0U
 #define USE_SPI_CRC 0U
 
 #define USE_HAL_ADC_REGISTER_CALLBACKS 0U
@@ -105,8 +117,28 @@ extern "C" {
 #include "stm32h7xx_hal_rcc.h"
 #endif
 
+#ifdef HAL_CRC_MODULE_ENABLED
+#include "stm32h7xx_hal_crc.h"
+#endif
+
+#ifdef HAL_DMA_MODULE_ENABLED
+#include "stm32h7xx_hal_dma.h"
+#endif
+
+#ifdef HAL_ADC_MODULE_ENABLED
+#include "stm32h7xx_hal_adc.h"
+#endif
+
+#ifdef HAL_FDCAN_MODULE_ENABLED
+#include "stm32h7xx_hal_fdcan.h"
+#endif
+
 #ifdef HAL_GPIO_MODULE_ENABLED
 #include "stm32h7xx_hal_gpio.h"
+#endif
+
+#ifdef HAL_I2C_MODULE_ENABLED
+#include "stm32h7xx_hal_i2c.h"
 #endif
 
 #ifdef HAL_CORTEX_MODULE_ENABLED
@@ -119,6 +151,30 @@ extern "C" {
 
 #ifdef HAL_PWR_MODULE_ENABLED
 #include "stm32h7xx_hal_pwr.h"
+#endif
+
+#ifdef HAL_RNG_MODULE_ENABLED
+#include "stm32h7xx_hal_rng.h"
+#endif
+
+#ifdef HAL_RTC_MODULE_ENABLED
+#include "stm32h7xx_hal_rtc.h"
+#endif
+
+#ifdef HAL_SD_MODULE_ENABLED
+#include "stm32h7xx_hal_sd.h"
+#endif
+
+#ifdef HAL_SPI_MODULE_ENABLED
+#include "stm32h7xx_hal_spi.h"
+#endif
+
+#ifdef HAL_TIM_MODULE_ENABLED
+#include "stm32h7xx_hal_tim.h"
+#endif
+
+#ifdef HAL_UART_MODULE_ENABLED
+#include "stm32h7xx_hal_uart.h"
 #endif
 
 #ifdef HAL_PCD_MODULE_ENABLED
