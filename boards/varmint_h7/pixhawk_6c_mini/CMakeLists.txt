@@ -23,6 +23,7 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${PIXRACER_PRO_DIR}/Core/Startup/startup_stm32h743iikx.s
     ${COMMON_DIR}/drivers/Icm42688.cpp
     ${COMMON_DIR}/drivers/Ist8310.cpp
+    ${COMMON_DIR}/drivers/Ms5611.cpp
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc_ex.c

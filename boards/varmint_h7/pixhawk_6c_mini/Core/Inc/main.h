@@ -33,6 +33,8 @@ extern DMA_HandleTypeDef hdma_spi1_tx;
 #define SDMMC2_D0_GPIO_Port GPIOB
 #define SDMMC2_D1_Pin GPIO_PIN_15
 #define SDMMC2_D1_GPIO_Port GPIOB
+#define VDD_3V3_SENSORS_EN_Pin GPIO_PIN_2
+#define VDD_3V3_SENSORS_EN_GPIO_Port GPIOB
 #define SDMMC2_CK_Pin GPIO_PIN_6
 #define SDMMC2_CK_GPIO_Port GPIOD
 #define SDMMC2_CMD_Pin GPIO_PIN_7

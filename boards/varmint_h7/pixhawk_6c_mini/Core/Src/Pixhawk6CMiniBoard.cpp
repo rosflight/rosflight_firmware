@@ -2,6 +2,7 @@
 
 #include "Icm42688.h"
 #include "Ist8310.h"
+#include "Ms5611.h"
 #include "Packets.h"
 #include "main.h"
 #include "usbd_cdc_acm_if.h"
@@ -28,6 +29,7 @@ constexpr uint64_t BATTERY_SAMPLE_PERIOD_US = 100000U;
 constexpr uint32_t MAG_SAMPLE_PERIOD_US = 10000U;
 constexpr uint32_t MAG_TIMEOUT_US = 20000U;
 constexpr uint8_t IST8310_I2C_ADDRESS = 0x0CU;
+constexpr uint8_t BARO_TEMPERATURE_DECIMATION = 10U;
 constexpr uint32_t SENSOR_ERROR_BATTERY = 0x0002U;
 constexpr float BATTERY_VOLTAGE_SCALE = 12.62f;
 constexpr float BATTERY_CURRENT_SCALE = 60.5f;
@@ -225,6 +227,7 @@ private:
 
 Icm42688 icm42688;
 Ist8310 ist8310;
+Ms5611 ms5611;
 BatteryMonitor battery_monitor;
 } // namespace
 
@@ -347,6 +350,15 @@ void Pixhawk6CMiniBoard::sensors_init(void)
   mag_config.conversion_timeout_us = MAG_TIMEOUT_US;
 
   ist8310.init(mag_config);
+
+  Ms5611::Config baro_config = {};
+  baro_config.hi2c = &hi2c4;
+  baro_config.clock_micros = pixhawk_clock_micros_raw;
+  baro_config.delay_ms = HAL_Delay;
+  baro_config.osr = Ms5611::Osr::OSR_4096;
+  baro_config.temperature_decimation = BARO_TEMPERATURE_DECIMATION;
+
+  ms5611.init(baro_config);
   battery_monitor.init();
 }
 uint16_t Pixhawk6CMiniBoard::sensors_errors_count()
@@ -354,15 +366,17 @@ uint16_t Pixhawk6CMiniBoard::sensors_errors_count()
   uint16_t errors = 0;
   if (!icm42688.init_good()) { errors++; }
   if (!ist8310.init_good()) { errors++; }
+  if (!ms5611.init_good()) { errors++; }
   if (!battery_monitor.init_good()) { errors++; }
   return errors;
 }
-uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 3; }
+uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 4; }
 bool Pixhawk6CMiniBoard::sensors_init_message_good(uint16_t i)
 {
   if (i == 0) { return icm42688.init_good(); }
   if (i == 1) { return ist8310.init_good(); }
-  if (i == 2) { return battery_monitor.init_good(); }
+  if (i == 2) { return ms5611.init_good(); }
+  if (i == 3) { return battery_monitor.init_good(); }
   return false;
 }
 uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size, uint16_t i)
@@ -387,6 +401,16 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size,
     return 1;
   }
   if (i == 2) {
+    if (ms5611.init_good()) {
+      std::snprintf(message, size, "MS5611: INIT OK ADDR 0x%02X", ms5611.i2c_address());
+    } else {
+      std::snprintf(message, size, "MS5611: INIT ERROR 0x%08lX ADDR 0x%02X PROM %04X %04X %04X %04X",
+                    static_cast<unsigned long>(ms5611.init_status()), ms5611.i2c_address(),
+                    ms5611.prom_word(0), ms5611.prom_word(1), ms5611.prom_word(2), ms5611.prom_word(3));
+    }
+    return 1;
+  }
+  if (i == 3) {
     if (battery_monitor.init_good()) {
       std::snprintf(message, size, "%s", "ADC1 BATTERY: INIT OK");
     } else {
@@ -459,8 +483,8 @@ bool Pixhawk6CMiniBoard::mag_read(rosflight_firmware::MagStruct * mag)
 }
 bool Pixhawk6CMiniBoard::baro_read(rosflight_firmware::PressureStruct * baro)
 {
-  (void) baro;
-  return false;
+  poll();
+  return ms5611.read(baro);
 }
 
 bool Pixhawk6CMiniBoard::diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure)
@@ -621,6 +645,7 @@ void Pixhawk6CMiniBoard::poll()
 {
   vcp_.poll();
   ist8310.poll();
+  ms5611.poll();
 }
 
 extern "C" void CDC_Receive_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
