@@ -45,7 +45,7 @@ constexpr float IMU_TO_FMU_ROTATION[9] = {
 constexpr float MAG_TO_FMU_ROTATION[9] = {
   1.0f, 0.0f, 0.0f,
   0.0f, 1.0f, 0.0f,
-  0.0f, 0.0f, 1.0f,
+  0.0f, 0.0f, -1.0f,
 };
 
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
