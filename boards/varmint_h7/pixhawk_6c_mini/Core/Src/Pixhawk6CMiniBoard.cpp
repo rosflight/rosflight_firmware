@@ -1,6 +1,7 @@
 #include "Pixhawk6CMiniBoard.h"
 
 #include "Icm42688.h"
+#include "Ist8310.h"
 #include "Packets.h"
 #include "main.h"
 #include "usbd_cdc_acm_if.h"
@@ -24,6 +25,9 @@ constexpr uint64_t VCP_QUEUE_TIMEOUT_US = 5000U;
 constexpr uint64_t BOARD_LOOP_PERIOD_US = 2500U;
 constexpr uint64_t DIFF_PRESSURE_PERIOD_US = 50000U;
 constexpr uint64_t BATTERY_SAMPLE_PERIOD_US = 100000U;
+constexpr uint32_t MAG_SAMPLE_PERIOD_US = 10000U;
+constexpr uint32_t MAG_TIMEOUT_US = 20000U;
+constexpr uint8_t IST8310_I2C_ADDRESS = 0x0CU;
 constexpr uint32_t SENSOR_ERROR_BATTERY = 0x0002U;
 constexpr float BATTERY_VOLTAGE_SCALE = 12.62f;
 constexpr float BATTERY_CURRENT_SCALE = 60.5f;
@@ -34,6 +38,12 @@ constexpr float IMU_TO_FMU_ROTATION[9] = {
   0.0f, -1.0f, 0.0f,
   -1.0f, 0.0f, 0.0f,
   0.0f, 0.0f, -1.0f,
+};
+
+constexpr float MAG_TO_FMU_ROTATION[9] = {
+  1.0f, 0.0f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+  0.0f, 0.0f, 1.0f,
 };
 
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
@@ -214,6 +224,7 @@ private:
 };
 
 Icm42688 icm42688;
+Ist8310 ist8310;
 BatteryMonitor battery_monitor;
 } // namespace
 
@@ -292,6 +303,7 @@ void Pixhawk6CMiniBoard::init_board()
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
+  MX_I2C4_Init();
   MX_SPI1_Init();
   led0_off();
   led1_off();
@@ -324,20 +336,33 @@ void Pixhawk6CMiniBoard::sensors_init(void)
   imu_config.rotation_sensor_to_body = IMU_TO_FMU_ROTATION;
 
   icm42688.init(imu_config);
+
+  Ist8310::Config mag_config = {};
+  mag_config.hi2c = &hi2c4;
+  mag_config.i2c_address = IST8310_I2C_ADDRESS;
+  mag_config.clock_micros = pixhawk_clock_micros_raw;
+  mag_config.delay_ms = HAL_Delay;
+  mag_config.rotation_sensor_to_body = MAG_TO_FMU_ROTATION;
+  mag_config.sample_period_us = MAG_SAMPLE_PERIOD_US;
+  mag_config.conversion_timeout_us = MAG_TIMEOUT_US;
+
+  ist8310.init(mag_config);
   battery_monitor.init();
 }
 uint16_t Pixhawk6CMiniBoard::sensors_errors_count()
 {
   uint16_t errors = 0;
   if (!icm42688.init_good()) { errors++; }
+  if (!ist8310.init_good()) { errors++; }
   if (!battery_monitor.init_good()) { errors++; }
   return errors;
 }
-uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 2; }
+uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 3; }
 bool Pixhawk6CMiniBoard::sensors_init_message_good(uint16_t i)
 {
   if (i == 0) { return icm42688.init_good(); }
-  if (i == 1) { return battery_monitor.init_good(); }
+  if (i == 1) { return ist8310.init_good(); }
+  if (i == 2) { return battery_monitor.init_good(); }
   return false;
 }
 uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size, uint16_t i)
@@ -353,6 +378,15 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size,
     return 1;
   }
   if (i == 1) {
+    if (ist8310.init_good()) {
+      std::snprintf(message, size, "%s", "IST8310: INIT OK");
+    } else {
+      std::snprintf(message, size, "IST8310: INIT ERROR 0x%08lX ID 0x%02X",
+                    static_cast<unsigned long>(ist8310.init_status()), ist8310.who_am_i());
+    }
+    return 1;
+  }
+  if (i == 2) {
     if (battery_monitor.init_good()) {
       std::snprintf(message, size, "%s", "ADC1 BATTERY: INIT OK");
     } else {
@@ -420,8 +454,8 @@ bool Pixhawk6CMiniBoard::imu_read(rosflight_firmware::ImuStruct * imu)
 }
 bool Pixhawk6CMiniBoard::mag_read(rosflight_firmware::MagStruct * mag)
 {
-  (void) mag;
-  return false;
+  poll();
+  return ist8310.read(mag);
 }
 bool Pixhawk6CMiniBoard::baro_read(rosflight_firmware::PressureStruct * baro)
 {
@@ -583,7 +617,11 @@ void Pixhawk6CMiniBoard::backup_memory_write(const void * src, size_t len)
 }
 void Pixhawk6CMiniBoard::backup_memory_clear(size_t len) { (void) len; }
 
-void Pixhawk6CMiniBoard::poll() { vcp_.poll(); }
+void Pixhawk6CMiniBoard::poll()
+{
+  vcp_.poll();
+  ist8310.poll();
+}
 
 extern "C" void CDC_Receive_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
 {

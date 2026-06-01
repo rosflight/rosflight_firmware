@@ -5,6 +5,7 @@ SD_HandleTypeDef hsd2;
 CRC_HandleTypeDef hcrc;
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
+I2C_HandleTypeDef hi2c4;
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
@@ -210,6 +211,29 @@ void MX_ADC1_Init(void)
   }
 }
 
+void MX_I2C4_Init(void)
+{
+  hi2c4.Instance = I2C4;
+  hi2c4.Init.Timing = 0x10C0ECFF;
+  hi2c4.Init.OwnAddress1 = 0;
+  hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c4.Init.OwnAddress2 = 0;
+  hi2c4.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c4.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c4.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+  if (HAL_I2C_Init(&hi2c4) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c4, I2C_ANALOGFILTER_ENABLE) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c4, 0) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
 HAL_StatusTypeDef MX_SDMMC2_SD_Init(void)
 {
   HAL_SD_DeInit(&hsd2);
@@ -302,6 +326,39 @@ void HAL_SD_MspInit(SD_HandleTypeDef * hsd)
     GPIO_InitStruct.Pin = SDMMC2_CK_Pin | SDMMC2_CMD_Pin;
     GPIO_InitStruct.Alternate = GPIO_AF11_SDMMC2;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  }
+}
+
+void HAL_I2C_MspInit(I2C_HandleTypeDef * hi2c)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  if (hi2c->Instance == I2C4) {
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
+    PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+      Error_Handler();
+    }
+
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = MAG_I2C4_SCL_Pin | MAG_I2C4_SDA_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C4;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+    __HAL_RCC_I2C4_CLK_ENABLE();
+  }
+}
+
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef * hi2c)
+{
+  if (hi2c->Instance == I2C4) {
+    __HAL_RCC_I2C4_CLK_DISABLE();
+    HAL_GPIO_DeInit(GPIOD, MAG_I2C4_SCL_Pin | MAG_I2C4_SDA_Pin);
   }
 }
 

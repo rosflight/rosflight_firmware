@@ -22,6 +22,7 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${PIXRACER_PRO_DIR}/Core/Src/sysmem.c
     ${PIXRACER_PRO_DIR}/Core/Startup/startup_stm32h743iikx.s
     ${COMMON_DIR}/drivers/Icm42688.cpp
+    ${COMMON_DIR}/drivers/Ist8310.cpp
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc_ex.c
@@ -32,6 +33,8 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_flash.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_flash_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_gpio.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_i2c.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_i2c_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_pcd.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_pcd_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_pwr.c
