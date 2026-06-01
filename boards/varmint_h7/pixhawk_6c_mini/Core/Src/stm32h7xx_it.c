@@ -1,6 +1,8 @@
 #include "main.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+extern ADC_HandleTypeDef hadc1;
+extern DMA_HandleTypeDef hdma_adc1;
 extern SPI_HandleTypeDef hspi1;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
@@ -51,6 +53,16 @@ void SysTick_Handler(void)
 void OTG_FS_IRQHandler(void)
 {
   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+}
+
+void DMA1_Stream0_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_adc1);
+}
+
+void ADC_IRQHandler(void)
+{
+  HAL_ADC_IRQHandler(&hadc1);
 }
 
 void EXTI9_5_IRQHandler(void)

@@ -3,6 +3,8 @@
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 SD_HandleTypeDef hsd2;
 CRC_HandleTypeDef hcrc;
+ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
@@ -55,10 +57,11 @@ void SystemClock_Config(void)
   }
 
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB | RCC_PERIPHCLK_SDMMC |
-                                             RCC_PERIPHCLK_SPI1;
+                                             RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_ADC;
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
   PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
   PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+  PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_CLKP;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
     Error_Handler();
   }
@@ -102,6 +105,8 @@ void MX_DMA_Init(void)
 {
   __HAL_RCC_DMA1_CLK_ENABLE();
 
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
   HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 1, 0);
@@ -137,6 +142,70 @@ void MX_CRC_Init(void)
   hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
 
   if (HAL_CRC_Init(&hcrc) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
+void MX_ADC1_Init(void)
+{
+  ADC_MultiModeTypeDef multimode = {0};
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV32;
+  hadc1.Init.Resolution = ADC_RESOLUTION_16B;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 4;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_ONESHOT;
+  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc1.Init.LeftBitShift = ADC_LEFTBITSHIFT_NONE;
+  hadc1.Init.OversamplingMode = DISABLE;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK) {
+    Error_Handler();
+  }
+
+  multimode.Mode = ADC_MODE_INDEPENDENT;
+  if (HAL_ADCEx_MultiModeConfigChannel(&hadc1, &multimode) != HAL_OK) {
+    Error_Handler();
+  }
+
+  sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+  sConfig.OffsetSignedSaturation = DISABLE;
+
+  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+    Error_Handler();
+  }
+
+  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+    Error_Handler();
+  }
+
+  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+    Error_Handler();
+  }
+
+  sConfig.Channel = ADC_CHANNEL_VREFINT;
+  sConfig.Rank = ADC_REGULAR_RANK_4;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+    Error_Handler();
+  }
+
+  if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED) != HAL_OK) {
     Error_Handler();
   }
 }
@@ -233,6 +302,55 @@ void HAL_SD_MspInit(SD_HandleTypeDef * hsd)
     GPIO_InitStruct.Pin = SDMMC2_CK_Pin | SDMMC2_CMD_Pin;
     GPIO_InitStruct.Alternate = GPIO_AF11_SDMMC2;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  }
+}
+
+void HAL_ADC_MspInit(ADC_HandleTypeDef * hadc)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  if (hadc->Instance == ADC1) {
+    __HAL_RCC_ADC12_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = FMU_BAT1_I_Pin | FMU_BAT1_V_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(FMU_BAT1_I_GPIO_Port, &GPIO_InitStruct);
+
+    hdma_adc1.Instance = DMA1_Stream0;
+    hdma_adc1.Init.Request = DMA_REQUEST_ADC1;
+    hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_adc1.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+    hdma_adc1.Init.Mode = DMA_NORMAL;
+    hdma_adc1.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    hdma_adc1.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+    hdma_adc1.Init.MemBurst = DMA_MBURST_SINGLE;
+    hdma_adc1.Init.PeriphBurst = DMA_PBURST_SINGLE;
+    if (HAL_DMA_Init(&hdma_adc1) != HAL_OK) {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(hadc, DMA_Handle, hdma_adc1);
+
+    HAL_NVIC_SetPriority(ADC_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ADC_IRQn);
+  }
+}
+
+void HAL_ADC_MspDeInit(ADC_HandleTypeDef * hadc)
+{
+  if (hadc->Instance == ADC1) {
+    __HAL_RCC_ADC12_CLK_DISABLE();
+    HAL_GPIO_DeInit(FMU_BAT1_I_GPIO_Port, FMU_BAT1_I_Pin);
+    HAL_GPIO_DeInit(FMU_BAT1_V_GPIO_Port, FMU_BAT1_V_Pin);
+    HAL_DMA_DeInit(hadc->DMA_Handle);
+    HAL_NVIC_DisableIRQ(ADC_IRQn);
+    HAL_NVIC_DisableIRQ(DMA1_Stream0_IRQn);
   }
 }
 

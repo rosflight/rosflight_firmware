@@ -52,9 +52,7 @@ const float Sensors::DIFF_PRESSURE_MAX_CALIBRATION_VARIANCE = 100.0; // standard
 
 Sensors::Sensors(ROSflight & rosflight)
     : rf_(rosflight)
-{
-  previous_battery_voltage_ = rf_.params_.get_param_float(PARAM_BATT_VOLT_MAX);
-}
+{}
 
 void Sensors::init()
 {
@@ -65,6 +63,13 @@ void Sensors::init()
   init_imu();
   init_mag();
 
+  previous_battery_voltage_ = rf_.params_.get_param_float(PARAM_BATT_VOLT_MAX);
+  previous_battery_current_ = 0.0f;
+  battery_.voltage = previous_battery_voltage_;
+  battery_.current = previous_battery_current_;
+  battery_filter_initialized_ = false;
+  battery_voltage_alpha_ = rf_.params_.get_param_float(PARAM_BATTERY_VOLTAGE_ALPHA);
+  battery_current_alpha_ = rf_.params_.get_param_float(PARAM_BATTERY_CURRENT_ALPHA);
   this->update_battery_monitor_multipliers();
 }
 
@@ -515,6 +520,13 @@ void Sensors::correct_diff_pressure()
 
 void Sensors::lpf_battery()
 {
+  if (!battery_filter_initialized_) {
+    previous_battery_voltage_ = battery_.voltage;
+    previous_battery_current_ = battery_.current;
+    battery_filter_initialized_ = true;
+    return;
+  }
+
   battery_.voltage = battery_.voltage * (1.0 - battery_voltage_alpha_) + previous_battery_voltage_ * battery_voltage_alpha_;
   battery_.current = battery_.current * (1.0 - battery_current_alpha_) + previous_battery_current_ * battery_current_alpha_;
   previous_battery_voltage_ = battery_.voltage;

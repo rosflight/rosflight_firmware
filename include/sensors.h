@@ -157,6 +157,7 @@ private:
   float battery_current_alpha_{0.995};
   float previous_battery_voltage_{0.0};
   float previous_battery_current_{0.0};
+  bool battery_filter_initialized_{false};
 };
 
 } // namespace rosflight_firmware

@@ -1,5 +1,6 @@
 #include "Pixhawk6CMiniBoard.h"
 
+#include "Icm42688.h"
 #include "Packets.h"
 #include "main.h"
 #include "usbd_cdc_acm_if.h"
@@ -22,24 +23,12 @@ constexpr uint32_t SD_TIMEOUT_MS = 1000U;
 constexpr uint64_t VCP_QUEUE_TIMEOUT_US = 5000U;
 constexpr uint64_t BOARD_LOOP_PERIOD_US = 2500U;
 constexpr uint64_t DIFF_PRESSURE_PERIOD_US = 50000U;
-constexpr uint32_t ICM42688_SPI_TIMEOUT_MS = 10U;
-constexpr uint8_t ICM42688_WHO_AM_I_VALUE = 0x47U;
-constexpr uint8_t ICM42688_REG_DEVICE_CONFIG = 0x11U;
-constexpr uint8_t ICM42688_REG_INT_CONFIG = 0x14U;
-constexpr uint8_t ICM42688_REG_TEMP_DATA1 = 0x1DU;
-constexpr uint8_t ICM42688_REG_SIGNAL_PATH_RESET = 0x4BU;
-constexpr uint8_t ICM42688_REG_PWR_MGMT0 = 0x4EU;
-constexpr uint8_t ICM42688_REG_GYRO_CONFIG0 = 0x4FU;
-constexpr uint8_t ICM42688_REG_ACCEL_CONFIG0 = 0x50U;
-constexpr uint8_t ICM42688_REG_INT_SOURCE0 = 0x65U;
-constexpr uint8_t ICM42688_REG_WHO_AM_I = 0x75U;
-constexpr uint8_t ICM42688_READ = 0x80U;
-constexpr uint8_t ICM42688_WRITE = 0x00U;
-constexpr uint8_t ICM42688_BURST_BYTES = 15U;
-constexpr float GRAVITY_MSS = 9.80665f;
-constexpr float ICM42688_ACCEL_SCALE = GRAVITY_MSS / 2048.0f; // +/-16g
-constexpr float ICM42688_GYRO_SCALE = 0.01745329252f / 16.4f; // +/-2000 dps
-constexpr uint32_t SENSOR_ERROR_IMU = 0x0001U;
+constexpr uint64_t BATTERY_SAMPLE_PERIOD_US = 100000U;
+constexpr uint32_t SENSOR_ERROR_BATTERY = 0x0002U;
+constexpr float BATTERY_VOLTAGE_SCALE = 12.62f;
+constexpr float BATTERY_CURRENT_SCALE = 60.5f;
+constexpr float BATTERY_CURRENT_OFFSET = 0.0747f;
+constexpr uint32_t BATTERY_ADC_CHANNELS = 4U;
 
 constexpr float IMU_TO_FMU_ROTATION[9] = {
   0.0f, -1.0f, 0.0f,
@@ -51,24 +40,9 @@ DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)
 uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 SD_DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
 SD_DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
-DMA_RAM uint8_t icm42688_dma_tx_buf[ICM42688_BURST_BYTES];
-DMA_RAM uint8_t icm42688_dma_rx_buf[ICM42688_BURST_BYTES];
-
-int16_t read_i16_be(const uint8_t * bytes)
-{
-  return static_cast<int16_t>((static_cast<uint16_t>(bytes[0]) << 8) | bytes[1]);
-}
-
-void rotate_imu_to_fmu(float * v)
-{
-  const float x = v[0];
-  const float y = v[1];
-  const float z = v[2];
-
-  v[0] = IMU_TO_FMU_ROTATION[0] * x + IMU_TO_FMU_ROTATION[1] * y + IMU_TO_FMU_ROTATION[2] * z;
-  v[1] = IMU_TO_FMU_ROTATION[3] * x + IMU_TO_FMU_ROTATION[4] * y + IMU_TO_FMU_ROTATION[5] * z;
-  v[2] = IMU_TO_FMU_ROTATION[6] * x + IMU_TO_FMU_ROTATION[7] * y + IMU_TO_FMU_ROTATION[8] * z;
-}
+DMA_RAM uint8_t icm42688_dma_tx_buf[Icm42688::BURST_BYTES];
+DMA_RAM uint8_t icm42688_dma_rx_buf[Icm42688::BURST_BYTES];
+DMA_RAM uint32_t battery_adc_buf[BATTERY_ADC_CHANNELS];
 
 uint64_t pixhawk_clock_micros_raw()
 {
@@ -137,110 +111,87 @@ void pace_board_loop(Vcp & vcp)
   if (next_loop_time < now) { next_loop_time = now + BOARD_LOOP_PERIOD_US; }
 }
 
-class Icm42688
+class BatteryMonitor
 {
 public:
   bool init()
   {
     initialized_ = false;
     dma_busy_ = false;
-    new_sample_ = false;
-    init_status_ = SENSOR_ERROR_IMU;
-
-    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
-    HAL_Delay(3);
-
-    write_register(ICM42688_REG_DEVICE_CONFIG, 0x01U);
-    HAL_Delay(2);
-
-    const uint8_t who_am_i = read_register(ICM42688_REG_WHO_AM_I);
-    if (who_am_i != ICM42688_WHO_AM_I_VALUE) {
-      who_am_i_ = who_am_i;
-      return false;
-    }
-
-    write_register(ICM42688_REG_PWR_MGMT0, 0x00U);
-    HAL_Delay(1);
-    write_register(ICM42688_REG_GYRO_CONFIG0, 0x06U);
-    write_register(ICM42688_REG_ACCEL_CONFIG0, 0x06U);
-    write_register(ICM42688_REG_SIGNAL_PATH_RESET, 0x0AU);
-    HAL_Delay(1);
-    write_register(ICM42688_REG_INT_CONFIG, 0x1BU);
-    write_register(ICM42688_REG_INT_SOURCE0, 0x08U);
-    write_register(ICM42688_REG_PWR_MGMT0, 0x0FU);
-    HAL_Delay(50);
+    have_sample_ = false;
+    init_status_ = SENSOR_ERROR_BATTERY;
+    voltage_scale_ = BATTERY_VOLTAGE_SCALE;
+    current_scale_ = BATTERY_CURRENT_SCALE;
+    current_offset_ = BATTERY_CURRENT_OFFSET;
+    next_sample_time_ = 0;
 
     initialized_ = true;
     init_status_ = 0;
     return true;
   }
 
-  void start_dma()
+  void poll()
   {
     if (!initialized_ || dma_busy_) { return; }
 
-    std::memset(icm42688_dma_tx_buf, 0, ICM42688_BURST_BYTES);
-    icm42688_dma_tx_buf[0] = ICM42688_REG_TEMP_DATA1 | ICM42688_READ;
+    const uint64_t now = pixhawk_clock_micros_raw();
+    if (next_sample_time_ != 0U && now < next_sample_time_) { return; }
+    next_sample_time_ = now + BATTERY_SAMPLE_PERIOD_US;
 
-    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_RESET);
-    if (HAL_SPI_TransmitReceive_DMA(&hspi1, icm42688_dma_tx_buf, icm42688_dma_rx_buf,
-                                    ICM42688_BURST_BYTES) == HAL_OK) {
+    if (HAL_ADC_Start_DMA(&hadc1, battery_adc_buf, BATTERY_ADC_CHANNELS) == HAL_OK) {
       dma_busy_ = true;
-    } else {
-      HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
     }
   }
 
   void finish_dma()
   {
-    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
     if (!dma_busy_) { return; }
     dma_busy_ = false;
 
-    rosflight_firmware::ImuStruct sample = {};
+    const uint32_t raw_voltage = battery_adc_buf[0];
+    const uint32_t raw_current = battery_adc_buf[1];
+    const uint32_t raw_temp = battery_adc_buf[2];
+    const uint32_t raw_vref = battery_adc_buf[3];
+
+    if (raw_vref == 0U) { return; }
+
+    const float vdda = (VREFINT_CAL_VREF / 1000.0f) * static_cast<float>(*VREFINT_CAL_ADDR)
+      / static_cast<float>(raw_vref);
+    const float battery_pin_voltage = static_cast<float>(raw_voltage) / 65535.0f * vdda;
+    const float battery_pin_current = static_cast<float>(raw_current) / 65535.0f * vdda;
+    const float raw_temperature = static_cast<float>(raw_temp);
+    const float temperature_c =
+      ((TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP)
+       / (static_cast<float>(*TEMPSENSOR_CAL2_ADDR) - static_cast<float>(*TEMPSENSOR_CAL1_ADDR)))
+      * (raw_temperature - static_cast<float>(*TEMPSENSOR_CAL1_ADDR))
+      + TEMPSENSOR_CAL1_TEMP;
     const uint64_t now = pixhawk_clock_micros_raw();
-    sample.header.timestamp = now;
-    sample.header.complete = now;
-    sample.header.status = 0;
 
-    const int16_t temp_raw = read_i16_be(&icm42688_dma_rx_buf[1]);
-    const int16_t accel_x = read_i16_be(&icm42688_dma_rx_buf[3]);
-    const int16_t accel_y = read_i16_be(&icm42688_dma_rx_buf[5]);
-    const int16_t accel_z = read_i16_be(&icm42688_dma_rx_buf[7]);
-    const int16_t gyro_x = read_i16_be(&icm42688_dma_rx_buf[9]);
-    const int16_t gyro_y = read_i16_be(&icm42688_dma_rx_buf[11]);
-    const int16_t gyro_z = read_i16_be(&icm42688_dma_rx_buf[13]);
-
-    sample.temperature = (static_cast<float>(temp_raw) / 132.48f) + 25.0f + 273.15f;
-    sample.accel[0] = static_cast<float>(accel_x) * ICM42688_ACCEL_SCALE;
-    sample.accel[1] = static_cast<float>(accel_y) * ICM42688_ACCEL_SCALE;
-    sample.accel[2] = static_cast<float>(accel_z) * ICM42688_ACCEL_SCALE;
-    sample.gyro[0] = static_cast<float>(gyro_x) * ICM42688_GYRO_SCALE;
-    sample.gyro[1] = static_cast<float>(gyro_y) * ICM42688_GYRO_SCALE;
-    sample.gyro[2] = static_cast<float>(gyro_z) * ICM42688_GYRO_SCALE;
-    rotate_imu_to_fmu(sample.accel);
-    rotate_imu_to_fmu(sample.gyro);
-
-    latest_sample_ = sample;
-    new_sample_ = true;
+    latest_sample_.header.timestamp = now;
+    latest_sample_.header.complete = now;
+    latest_sample_.header.status = 0;
+    latest_sample_.voltage = battery_pin_voltage * voltage_scale_;
+    latest_sample_.current = (battery_pin_current - current_offset_) * current_scale_;
+    latest_sample_.temperature = temperature_c + 273.15f;
+    have_sample_ = true;
   }
 
   void abort_dma()
   {
-    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
+    (void) HAL_ADC_Stop_DMA(&hadc1);
     dma_busy_ = false;
   }
 
-  bool read(rosflight_firmware::ImuStruct * imu)
+  bool read(rosflight_firmware::BatteryStruct * bat)
   {
-    if (!initialized_ || imu == nullptr) { return false; }
+    if (!initialized_ || bat == nullptr || !have_sample_) { return false; }
 
     const uint32_t primask = __get_PRIMASK();
     __disable_irq();
-    const bool have_sample = new_sample_;
+    const bool have_sample = have_sample_;
     if (have_sample) {
-      *imu = latest_sample_;
-      new_sample_ = false;
+      *bat = latest_sample_;
+      have_sample_ = false;
     }
     if (!primask) { __enable_irq(); }
 
@@ -249,36 +200,21 @@ public:
 
   bool init_good() const { return initialized_; }
   uint32_t init_status() const { return init_status_; }
-  uint8_t who_am_i() const { return who_am_i_; }
 
 private:
-  uint8_t transfer_byte(uint8_t reg, uint8_t value)
-  {
-    uint8_t tx[2] = {reg, value};
-    uint8_t rx[2] = {};
-    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_RESET);
-    const HAL_StatusTypeDef status =
-      HAL_SPI_TransmitReceive(&hspi1, tx, rx, sizeof(tx), ICM42688_SPI_TIMEOUT_MS);
-    HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
-    return (status == HAL_OK) ? rx[1] : 0U;
-  }
-
-  uint8_t read_register(uint8_t reg) { return transfer_byte(reg | ICM42688_READ, 0U); }
-  void write_register(uint8_t reg, uint8_t value)
-  {
-    (void) transfer_byte(reg | ICM42688_WRITE, value);
-    for (volatile uint32_t i = 0; i < 2000U; i++) {}
-  }
-
   volatile bool initialized_ = false;
   volatile bool dma_busy_ = false;
-  volatile bool new_sample_ = false;
-  uint32_t init_status_ = SENSOR_ERROR_IMU;
-  uint8_t who_am_i_ = 0;
-  rosflight_firmware::ImuStruct latest_sample_ = {};
+  volatile bool have_sample_ = false;
+  uint32_t init_status_ = SENSOR_ERROR_BATTERY;
+  uint64_t next_sample_time_ = 0;
+  float voltage_scale_ = BATTERY_VOLTAGE_SCALE;
+  float current_scale_ = BATTERY_CURRENT_SCALE;
+  float current_offset_ = BATTERY_CURRENT_OFFSET;
+  rosflight_firmware::BatteryStruct latest_sample_ = {};
 };
 
 Icm42688 icm42688;
+BatteryMonitor battery_monitor;
 } // namespace
 
 Pixhawk6CMiniBoard pixhawk_6c_mini_board;
@@ -355,6 +291,7 @@ void Pixhawk6CMiniBoard::init_board()
 
   MX_GPIO_Init();
   MX_DMA_Init();
+  MX_ADC1_Init();
   MX_SPI1_Init();
   led0_off();
   led1_off();
@@ -373,23 +310,58 @@ void Pixhawk6CMiniBoard::board_reset(bool bootloader)
   HAL_NVIC_SystemReset();
 }
 
-void Pixhawk6CMiniBoard::sensors_init(void) { icm42688.init(); }
-uint16_t Pixhawk6CMiniBoard::sensors_errors_count() { return icm42688.init_good() ? 0 : 1; }
-uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 1; }
+void Pixhawk6CMiniBoard::sensors_init(void)
+{
+  Icm42688::Config imu_config = {};
+  imu_config.hspi = &hspi1;
+  imu_config.cs_port = IMU_ICM42688_CS_GPIO_Port;
+  imu_config.cs_pin = IMU_ICM42688_CS_Pin;
+  imu_config.dma_tx_buffer = icm42688_dma_tx_buf;
+  imu_config.dma_rx_buffer = icm42688_dma_rx_buf;
+  imu_config.dma_buffer_size = sizeof(icm42688_dma_tx_buf);
+  imu_config.clock_micros = pixhawk_clock_micros_raw;
+  imu_config.delay_ms = HAL_Delay;
+  imu_config.rotation_sensor_to_body = IMU_TO_FMU_ROTATION;
+
+  icm42688.init(imu_config);
+  battery_monitor.init();
+}
+uint16_t Pixhawk6CMiniBoard::sensors_errors_count()
+{
+  uint16_t errors = 0;
+  if (!icm42688.init_good()) { errors++; }
+  if (!battery_monitor.init_good()) { errors++; }
+  return errors;
+}
+uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 2; }
 bool Pixhawk6CMiniBoard::sensors_init_message_good(uint16_t i)
 {
-  return i == 0 && icm42688.init_good();
+  if (i == 0) { return icm42688.init_good(); }
+  if (i == 1) { return battery_monitor.init_good(); }
+  return false;
 }
 uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size, uint16_t i)
 {
-  if (message == nullptr || size == 0 || i != 0) { return 0; }
-  if (icm42688.init_good()) {
-    std::snprintf(message, size, "%s", "ICM42688: INIT OK");
-  } else {
-    std::snprintf(message, size, "ICM42688: INIT ERROR 0x%08lX ID 0x%02X",
-                  static_cast<unsigned long>(icm42688.init_status()), icm42688.who_am_i());
+  if (message == nullptr || size == 0) { return 0; }
+  if (i == 0) {
+    if (icm42688.init_good()) {
+      std::snprintf(message, size, "%s", "ICM42688: INIT OK");
+    } else {
+      std::snprintf(message, size, "ICM42688: INIT ERROR 0x%08lX ID 0x%02X",
+                    static_cast<unsigned long>(icm42688.init_status()), icm42688.who_am_i());
+    }
+    return 1;
   }
-  return 1;
+  if (i == 1) {
+    if (battery_monitor.init_good()) {
+      std::snprintf(message, size, "%s", "ADC1 BATTERY: INIT OK");
+    } else {
+      std::snprintf(message, size, "ADC1 BATTERY: INIT ERROR 0x%08lX",
+                    static_cast<unsigned long>(battery_monitor.init_status()));
+    }
+    return 1;
+  }
+  return 0;
 }
 
 uint32_t Pixhawk6CMiniBoard::clock_millis()
@@ -491,16 +463,8 @@ bool Pixhawk6CMiniBoard::gnss_read(rosflight_firmware::GnssStruct * gnss)
 }
 bool Pixhawk6CMiniBoard::battery_read(rosflight_firmware::BatteryStruct * bat)
 {
-  if (bat == nullptr) { return false; }
-
-  const uint64_t now = clock_micros();
-  bat->header.timestamp = now;
-  bat->header.complete = now;
-  bat->header.status = 0;
-  bat->voltage = 5.0f;
-  bat->current = 0.0f;
-  bat->temperature = 0.0f;
-  return true;
+  battery_monitor.poll();
+  return battery_monitor.read(bat);
 }
 void Pixhawk6CMiniBoard::battery_voltage_set_multiplier(double multiplier) { (void) multiplier; }
 void Pixhawk6CMiniBoard::battery_current_set_multiplier(double multiplier) { (void) multiplier; }
@@ -640,10 +604,20 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t gpio_pin)
 
 extern "C" void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)
 {
-  if (hspi == &hspi1) { icm42688.finish_dma(); }
+  if (icm42688.is_my(hspi)) { icm42688.finish_dma(); }
 }
 
 extern "C" void HAL_SPI_ErrorCallback(SPI_HandleTypeDef * hspi)
 {
-  if (hspi == &hspi1) { icm42688.abort_dma(); }
+  if (icm42688.is_my(hspi)) { icm42688.abort_dma(); }
+}
+
+extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc)
+{
+  if (hadc == &hadc1) { battery_monitor.finish_dma(); }
+}
+
+extern "C" void HAL_ADC_ErrorCallback(ADC_HandleTypeDef * hadc)
+{
+  if (hadc == &hadc1) { battery_monitor.abort_dma(); }
 }
