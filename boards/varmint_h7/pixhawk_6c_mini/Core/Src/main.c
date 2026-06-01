@@ -214,11 +214,11 @@ HAL_StatusTypeDef MX_SDMMC2_SD_Init(void)
 {
   HAL_SD_DeInit(&hsd2);
   hsd2.Instance = SDMMC2;
-  hsd2.Init.ClockEdge = SDMMC_CLOCK_EDGE_FALLING;
+  hsd2.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
   hsd2.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
   hsd2.Init.BusWide = SDMMC_BUS_WIDE_4B;
   hsd2.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd2.Init.ClockDiv = 8;
+  hsd2.Init.ClockDiv = 10;
 
   return HAL_SD_Init(&hsd2);
 }
