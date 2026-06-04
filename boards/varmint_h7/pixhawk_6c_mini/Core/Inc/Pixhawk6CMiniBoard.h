@@ -64,6 +64,7 @@ public:
 private:
   void poll();
   bool sd_ready_ = false;
+  bool pwm_initialized_ = false;
 };
 
 #endif

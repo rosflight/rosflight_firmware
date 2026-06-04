@@ -5,10 +5,15 @@ SD_HandleTypeDef hsd2;
 CRC_HandleTypeDef hcrc;
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
+I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c4;
+UART_HandleTypeDef huart1;
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
+TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim5;
 
 static void LED_Red_Off(void);
 static void LED_Blue_On(void);
@@ -82,6 +87,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(FMU_LED_BLUE_GPIO_Port, FMU_LED_BLUE_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(IMU_ICM42688_CS_GPIO_Port, IMU_ICM42688_CS_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(VDD_3V3_SENSORS_EN_GPIO_Port, VDD_3V3_SENSORS_EN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(N_VDD_5V_PERIPH_EN_GPIO_Port, N_VDD_5V_PERIPH_EN_Pin, GPIO_PIN_RESET);
 
   GPIO_InitStruct.Pin = FMU_LED_RED_Pin | FMU_LED_BLUE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -100,6 +106,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(VDD_3V3_SENSORS_EN_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = N_VDD_5V_PERIPH_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(N_VDD_5V_PERIPH_EN_GPIO_Port, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = IMU_ICM42688_DRDY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -219,6 +231,29 @@ void MX_ADC1_Init(void)
   }
 }
 
+void MX_I2C1_Init(void)
+{
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x10C0ECFF;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
 void MX_I2C4_Init(void)
 {
   hi2c4.Instance = I2C4;
@@ -285,6 +320,34 @@ void MX_SPI1_Init(void)
   }
 }
 
+void MX_USART1_UART_Init(void)
+{
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+
+  if (HAL_UART_Init(&huart1) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
 void HAL_PCD_MspInit(PCD_HandleTypeDef * hpcd)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -342,7 +405,27 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef * hi2c)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  if (hi2c->Instance == I2C4) {
+  if (hi2c->Instance == I2C1) {
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
+    PeriphClkInitStruct.I2c123ClockSelection = RCC_I2C123CLKSOURCE_D2PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+      Error_Handler();
+    }
+
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = GPS1_I2C1_SDA_Pin | GPS1_I2C1_SCL_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    __HAL_RCC_I2C1_CLK_ENABLE();
+
+    HAL_NVIC_SetPriority(I2C1_EV_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+  } else if (hi2c->Instance == I2C4) {
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
     PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_D3PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
@@ -364,7 +447,11 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef * hi2c)
 
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef * hi2c)
 {
-  if (hi2c->Instance == I2C4) {
+  if (hi2c->Instance == I2C1) {
+    __HAL_RCC_I2C1_CLK_DISABLE();
+    HAL_GPIO_DeInit(GPIOB, GPS1_I2C1_SDA_Pin | GPS1_I2C1_SCL_Pin);
+    HAL_NVIC_DisableIRQ(I2C1_EV_IRQn);
+  } else if (hi2c->Instance == I2C4) {
     __HAL_RCC_I2C4_CLK_DISABLE();
     HAL_GPIO_DeInit(GPIOD, MAG_I2C4_SCL_Pin | MAG_I2C4_SDA_Pin);
   }
@@ -467,6 +554,47 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef * hspi)
 
     HAL_NVIC_SetPriority(SPI1_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(SPI1_IRQn);
+  }
+}
+
+void HAL_UART_MspInit(UART_HandleTypeDef * huart)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  if (huart->Instance == USART1) {
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+    PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+      Error_Handler();
+    }
+
+    __HAL_RCC_USART1_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = GPS1_UART_RX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+    HAL_GPIO_Init(GPS1_UART_RX_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPS1_UART_TX_Pin;
+    HAL_GPIO_Init(GPS1_UART_TX_GPIO_Port, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(USART1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
+  }
+}
+
+void HAL_UART_MspDeInit(UART_HandleTypeDef * huart)
+{
+  if (huart->Instance == USART1) {
+    __HAL_RCC_USART1_CLK_DISABLE();
+    HAL_GPIO_DeInit(GPS1_UART_RX_GPIO_Port, GPS1_UART_RX_Pin);
+    HAL_GPIO_DeInit(GPS1_UART_TX_GPIO_Port, GPS1_UART_TX_Pin);
+    HAL_NVIC_DisableIRQ(USART1_IRQn);
   }
 }
 

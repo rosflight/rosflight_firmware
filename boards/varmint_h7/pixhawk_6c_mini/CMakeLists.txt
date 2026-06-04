@@ -16,7 +16,9 @@ file(GLOB PIXHAWK_6C_MINI_USB_SOURCES
 set(PIXHAWK_6C_MINI_SOURCES
     Core/Src/main.c
     Core/Src/Pixhawk6CMiniBoard.cpp
+    Core/Src/stm32h7xx_hal_msp.c
     Core/Src/stm32h7xx_it.c
+    drivers/M9nUbx.cpp
     ${PIXRACER_PRO_DIR}/Core/Src/system_stm32h7xx.c
     ${PIXRACER_PRO_DIR}/Core/Src/syscalls.c
     ${PIXRACER_PRO_DIR}/Core/Src/sysmem.c
@@ -45,6 +47,10 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_sd.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_sd_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_spi.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_tim.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_tim_ex.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_uart.c
+    ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_uart_ex.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_ll_sdmmc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_ll_usb.c
     ${PIXHAWK_6C_MINI_USB_SOURCES}
@@ -54,6 +60,7 @@ add_executable(${TARGET_NAME}.elf ${ROSFLIGHT_SOURCES} ${PIXHAWK_6C_MINI_SOURCES
 
 target_include_directories(${TARGET_NAME}.elf PRIVATE
     Core/Inc
+    drivers
     ${HAL_DRIVER_DIR}/Inc
     ${HAL_DRIVER_DIR}/Inc/Legacy
     ${CMSIS_DIR}/Device/ST/STM32H7xx/Include

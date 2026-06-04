@@ -3,6 +3,8 @@
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_adc1;
+extern I2C_HandleTypeDef hi2c1;
+extern UART_HandleTypeDef huart1;
 extern SPI_HandleTypeDef hspi1;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
@@ -53,6 +55,16 @@ void SysTick_Handler(void)
 void OTG_FS_IRQHandler(void)
 {
   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+}
+
+void I2C1_EV_IRQHandler(void)
+{
+  HAL_I2C_EV_IRQHandler(&hi2c1);
+}
+
+void USART1_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart1);
 }
 
 void DMA1_Stream0_IRQHandler(void)

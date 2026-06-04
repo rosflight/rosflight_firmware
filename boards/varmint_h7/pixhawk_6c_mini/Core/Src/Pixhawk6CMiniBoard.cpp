@@ -1,7 +1,7 @@
 #include "Pixhawk6CMiniBoard.h"
 
 #include "Icm42688.h"
-#include "Ist8310.h"
+#include "M9nUbx.h"
 #include "Ms5611.h"
 #include "Packets.h"
 #include "main.h"
@@ -26,9 +26,10 @@ constexpr uint64_t VCP_QUEUE_TIMEOUT_US = 5000U;
 constexpr uint64_t BOARD_LOOP_PERIOD_US = 2500U;
 constexpr uint64_t DIFF_PRESSURE_PERIOD_US = 50000U;
 constexpr uint64_t BATTERY_SAMPLE_PERIOD_US = 100000U;
-constexpr uint32_t MAG_SAMPLE_PERIOD_US = 10000U;
-constexpr uint32_t MAG_TIMEOUT_US = 20000U;
-constexpr uint8_t IST8310_I2C_ADDRESS = 0x0CU;
+constexpr uint32_t M9N_GNSS_BAUD = 115200U;
+constexpr uint32_t M9N_GNSS_RATE_HZ = 5U;
+constexpr uint64_t M9N_DEBUG_LED_PERIOD_US = 200000U;
+constexpr uint64_t M9N_DEBUG_GNSS_STALE_US = 2000000U;
 constexpr uint8_t BARO_TEMPERATURE_DECIMATION = 10U;
 constexpr uint32_t SENSOR_ERROR_BATTERY = 0x0002U;
 constexpr float BATTERY_VOLTAGE_SCALE = 12.62f;
@@ -42,12 +43,6 @@ constexpr float IMU_TO_FMU_ROTATION[9] = {
   0.0f, 0.0f, -1.0f,
 };
 
-constexpr float MAG_TO_FMU_ROTATION[9] = {
-  1.0f, 0.0f, 0.0f,
-  0.0f, 1.0f, 0.0f,
-  0.0f, 0.0f, -1.0f,
-};
-
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 SD_DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
@@ -55,6 +50,132 @@ SD_DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
 DMA_RAM uint8_t icm42688_dma_tx_buf[Icm42688::BURST_BYTES];
 DMA_RAM uint8_t icm42688_dma_rx_buf[Icm42688::BURST_BYTES];
 DMA_RAM uint32_t battery_adc_buf[BATTERY_ADC_CHANNELS];
+
+constexpr uint32_t PWM_OUTPUT_COUNT = 8U;
+constexpr float PWM_DEFAULT_RATE_HZ = 50.0f;
+constexpr float PWM_MAX_RATE_HZ = 490.0f;
+constexpr uint32_t PWM_SERVO_MIN_US = 1000U;
+constexpr uint32_t PWM_SERVO_MAX_US = 2000U;
+
+struct PwmOutput
+{
+  TIM_HandleTypeDef * htim;
+  TIM_TypeDef * instance;
+  uint32_t channel;
+};
+
+constexpr PwmOutput PWM_OUTPUTS[PWM_OUTPUT_COUNT] = {
+  {&htim1, TIM1, TIM_CHANNEL_1},
+  {&htim1, TIM1, TIM_CHANNEL_2},
+  {&htim1, TIM1, TIM_CHANNEL_3},
+  {&htim1, TIM1, TIM_CHANNEL_4},
+  {&htim4, TIM4, TIM_CHANNEL_3},
+  {&htim4, TIM4, TIM_CHANNEL_4},
+  {&htim5, TIM5, TIM_CHANNEL_1},
+  {&htim5, TIM5, TIM_CHANNEL_2},
+};
+
+uint32_t timer_clock_hz(TIM_TypeDef * instance)
+{
+  if (instance == TIM1) {
+    uint32_t clock_hz = HAL_RCC_GetPCLK2Freq();
+    if ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE2) != RCC_D2CFGR_D2PPRE2_DIV1) { clock_hz *= 2U; }
+    return clock_hz;
+  }
+
+  uint32_t clock_hz = HAL_RCC_GetPCLK1Freq();
+  if ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE1) != RCC_D2CFGR_D2PPRE1_DIV1) { clock_hz *= 2U; }
+  return clock_hz;
+}
+
+uint32_t pwm_rate_to_period(uint32_t rate_hz, uint32_t timer_hz)
+{
+  rate_hz = std::max(rate_hz, static_cast<uint32_t>(1U));
+  rate_hz = std::min(rate_hz, static_cast<uint32_t>(PWM_MAX_RATE_HZ));
+  return (timer_hz / rate_hz) - 1U;
+}
+
+uint32_t pwm_sanitize_rate(float rate_hz)
+{
+  rate_hz = std::clamp(rate_hz, 1.0f, PWM_MAX_RATE_HZ);
+  return static_cast<uint32_t>(rate_hz + 0.5f);
+}
+
+bool pwm_configure_timer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t rate_hz)
+{
+  TIM_MasterConfigTypeDef master_config = {0};
+  TIM_OC_InitTypeDef oc_config = {0};
+  const uint32_t clock_hz = timer_clock_hz(instance);
+
+  htim->Instance = instance;
+  htim->Init.Prescaler = (clock_hz / TIMER_HZ) - 1U;
+  htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim->Init.RepetitionCounter = 0;
+  htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim->Init.Period = pwm_rate_to_period(rate_hz, TIMER_HZ);
+
+  if (HAL_TIM_PWM_Init(htim) != HAL_OK) { return false; }
+
+  master_config.MasterOutputTrigger = TIM_TRGO_RESET;
+  master_config.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+  master_config.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(htim, &master_config) != HAL_OK) { return false; }
+
+  oc_config.OCMode = TIM_OCMODE_PWM1;
+  oc_config.Pulse = 0;
+  oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
+  oc_config.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  oc_config.OCFastMode = TIM_OCFAST_DISABLE;
+  oc_config.OCIdleState = TIM_OCIDLESTATE_RESET;
+  oc_config.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+
+  for (const PwmOutput & output : PWM_OUTPUTS) {
+    if (output.htim != htim) { continue; }
+    if (HAL_TIM_PWM_ConfigChannel(htim, &oc_config, output.channel) != HAL_OK) { return false; }
+  }
+
+  HAL_TIM_MspPostInit(htim);
+
+  for (const PwmOutput & output : PWM_OUTPUTS) {
+    if (output.htim != htim) { continue; }
+    if (HAL_TIM_PWM_Start(htim, output.channel) != HAL_OK) { return false; }
+  }
+
+  return true;
+}
+
+void pwm_stop_all()
+{
+  for (const PwmOutput & output : PWM_OUTPUTS) {
+    (void) HAL_TIM_PWM_Stop(output.htim, output.channel);
+  }
+}
+
+bool pwm_configure_all(const float * rate, uint32_t channels)
+{
+  const float default_rate = PWM_DEFAULT_RATE_HZ;
+  const float rate1 = (rate != nullptr && channels > 0U) ? rate[0] : default_rate;
+  const float rate2 = (rate != nullptr && channels > 4U) ? rate[4] : default_rate;
+  const float rate3 = (rate != nullptr && channels > 6U) ? rate[6] : default_rate;
+
+  pwm_stop_all();
+
+  if (!pwm_configure_timer(&htim1, TIM1, pwm_sanitize_rate(rate1))) { return false; }
+  if (!pwm_configure_timer(&htim4, TIM4, pwm_sanitize_rate(rate2))) { return false; }
+  if (!pwm_configure_timer(&htim5, TIM5, pwm_sanitize_rate(rate3))) { return false; }
+
+  return true;
+}
+
+void pwm_write_output(uint32_t index, float value)
+{
+  const PwmOutput & output = PWM_OUTPUTS[index];
+  value = std::clamp(value, 0.0f, 1.0f);
+  const uint32_t us = static_cast<uint32_t>(value * static_cast<float>(PWM_SERVO_MAX_US - PWM_SERVO_MIN_US)
+                                            + static_cast<float>(PWM_SERVO_MIN_US));
+  __HAL_TIM_SET_COMPARE(output.htim, output.channel, us);
+}
 
 uint64_t pixhawk_clock_micros_raw()
 {
@@ -226,9 +347,41 @@ private:
 };
 
 Icm42688 icm42688;
-Ist8310 ist8310;
+M9nUbx m9n;
 Ms5611 ms5611;
 BatteryMonitor battery_monitor;
+
+void set_red_led(bool on)
+{
+  HAL_GPIO_WritePin(FMU_LED_RED_GPIO_Port, FMU_LED_RED_Pin, on ? GPIO_PIN_RESET : GPIO_PIN_SET);
+}
+
+void update_m9n_debug_led()
+{
+  const uint64_t now = pixhawk_clock_micros_raw();
+  const uint64_t slot = (now / M9N_DEBUG_LED_PERIOD_US) % 10U;
+  uint8_t pulses = 0;
+
+  if ((m9n.gnss_last_byte_us() == 0U || (now - m9n.gnss_last_byte_us()) > M9N_DEBUG_GNSS_STALE_US)
+      && m9n.gnss_uart_error_count() != 0U) {
+    pulses = 5U;
+  } else if (m9n.gnss_last_byte_us() == 0U || (now - m9n.gnss_last_byte_us()) > M9N_DEBUG_GNSS_STALE_US) {
+    pulses = 1U;
+  } else if (m9n.gnss_frame_count() == 0U && m9n.gnss_nmea_sentence_count() == 0U) {
+    pulses = 4U;
+  } else if (m9n.gnss_last_nav_pvt_us() == 0U || (now - m9n.gnss_last_nav_pvt_us()) > M9N_DEBUG_GNSS_STALE_US) {
+    pulses = 2U;
+  } else if (m9n.gnss_fix_type() < 3U) {
+    pulses = 3U;
+  }
+
+  if (pulses == 0U) {
+    set_red_led(false);
+    return;
+  }
+
+  set_red_led((slot < static_cast<uint64_t>(pulses) * 2U) && ((slot % 2U) == 0U));
+}
 } // namespace
 
 Pixhawk6CMiniBoard pixhawk_6c_mini_board;
@@ -304,10 +457,13 @@ void Pixhawk6CMiniBoard::init_board()
   pixhawk_clock_init();
 
   MX_GPIO_Init();
+  HAL_Delay(100);
   MX_DMA_Init();
   MX_ADC1_Init();
+  MX_I2C1_Init();
   MX_I2C4_Init();
   MX_SPI1_Init();
+  MX_USART1_UART_Init();
   led0_off();
   led1_off();
   led0_on();
@@ -340,16 +496,16 @@ void Pixhawk6CMiniBoard::sensors_init(void)
 
   icm42688.init(imu_config);
 
-  Ist8310::Config mag_config = {};
-  mag_config.hi2c = &hi2c4;
-  mag_config.i2c_address = IST8310_I2C_ADDRESS;
-  mag_config.clock_micros = pixhawk_clock_micros_raw;
-  mag_config.delay_ms = HAL_Delay;
-  mag_config.rotation_sensor_to_body = MAG_TO_FMU_ROTATION;
-  mag_config.sample_period_us = MAG_SAMPLE_PERIOD_US;
-  mag_config.conversion_timeout_us = MAG_TIMEOUT_US;
+  M9nUbx::Config m9n_config = {};
+  m9n_config.huart = &huart1;
+  m9n_config.uart_instance = USART1;
+  m9n_config.clock_micros = pixhawk_clock_micros_raw;
+  m9n_config.delay_ms = HAL_Delay;
+  m9n_config.gnss_baud = M9N_GNSS_BAUD;
+  m9n_config.gnss_rate_hz = M9N_GNSS_RATE_HZ;
 
-  ist8310.init(mag_config);
+  HAL_Delay(1000);
+  m9n.init(m9n_config);
 
   Ms5611::Config baro_config = {};
   baro_config.hi2c = &hi2c4;
@@ -365,7 +521,7 @@ uint16_t Pixhawk6CMiniBoard::sensors_errors_count()
 {
   uint16_t errors = 0;
   if (!icm42688.init_good()) { errors++; }
-  if (!ist8310.init_good()) { errors++; }
+  if (!m9n.init_good()) { errors++; }
   if (!ms5611.init_good()) { errors++; }
   if (!battery_monitor.init_good()) { errors++; }
   return errors;
@@ -374,7 +530,7 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 4; }
 bool Pixhawk6CMiniBoard::sensors_init_message_good(uint16_t i)
 {
   if (i == 0) { return icm42688.init_good(); }
-  if (i == 1) { return ist8310.init_good(); }
+  if (i == 1) { return m9n.init_good(); }
   if (i == 2) { return ms5611.init_good(); }
   if (i == 3) { return battery_monitor.init_good(); }
   return false;
@@ -392,11 +548,54 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size,
     return 1;
   }
   if (i == 1) {
-    if (ist8310.init_good()) {
-      std::snprintf(message, size, "%s", "IST8310: INIT OK");
+    const uint64_t now = pixhawk_clock_micros_raw();
+    const unsigned long nmea_age_ms = (m9n.gnss_last_nmea_sentence_us() == 0U) ? 999999UL
+      : static_cast<unsigned long>((now - m9n.gnss_last_nmea_sentence_us()) / 1000ULL);
+    if (m9n.init_good()) {
+      std::snprintf(message, size, "M9N UBX GPS1: INIT OK ST 0x%08lX BAUD %lu RX %lu UBX %lu NAV %lu NMEA %lu/%lu GGA %lu RMC %lu SAMP %lu NAGE %lu SYNC %lu ROV %lu LF %02X/%02X LB %02X ACK %lu NAK %lu ERR %lu",
+                    static_cast<unsigned long>(m9n.init_status()),
+                    static_cast<unsigned long>(m9n.gnss_current_baud()),
+                    static_cast<unsigned long>(m9n.gnss_byte_count()),
+                    static_cast<unsigned long>(m9n.gnss_frame_count()),
+                    static_cast<unsigned long>(m9n.gnss_nav_pvt_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_start_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_sentence_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_gga_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_rmc_count()),
+                    static_cast<unsigned long>(m9n.gnss_sample_count()),
+                    nmea_age_ms,
+                    static_cast<unsigned long>(m9n.gnss_ubx_sync_count()),
+                    static_cast<unsigned long>(m9n.gnss_rx_ring_overflow_count()),
+                    m9n.gnss_last_frame_class(), m9n.gnss_last_frame_id(),
+                    m9n.gnss_last_byte(),
+                    static_cast<unsigned long>(m9n.gnss_ack_count()),
+                    static_cast<unsigned long>(m9n.gnss_nak_count()),
+                    static_cast<unsigned long>(m9n.gnss_uart_error_count()));
     } else {
-      std::snprintf(message, size, "IST8310: INIT ERROR 0x%08lX ID 0x%02X",
-                    static_cast<unsigned long>(ist8310.init_status()), ist8310.who_am_i());
+      std::snprintf(message, size, "M9N UBX GPS1: INIT ERROR 0x%08lX BAUD %lu RX %lu UBX %lu NAV %lu NMEA %lu/%lu GGA %lu RMC %lu SAMP %lu NAGE %lu SYNC %lu ROV %lu CK %lu LF %02X/%02X LB %02X ACK %lu NAK %lu TO %lu LA %02X/%02X LN %02X/%02X ERR %lu E 0x%08lX",
+                    static_cast<unsigned long>(m9n.init_status()),
+                    static_cast<unsigned long>(m9n.gnss_current_baud()),
+                    static_cast<unsigned long>(m9n.gnss_byte_count()),
+                    static_cast<unsigned long>(m9n.gnss_frame_count()),
+                    static_cast<unsigned long>(m9n.gnss_nav_pvt_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_start_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_sentence_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_gga_count()),
+                    static_cast<unsigned long>(m9n.gnss_nmea_rmc_count()),
+                    static_cast<unsigned long>(m9n.gnss_sample_count()),
+                    nmea_age_ms,
+                    static_cast<unsigned long>(m9n.gnss_ubx_sync_count()),
+                    static_cast<unsigned long>(m9n.gnss_rx_ring_overflow_count()),
+                    static_cast<unsigned long>(m9n.gnss_checksum_error_count()),
+                    m9n.gnss_last_frame_class(), m9n.gnss_last_frame_id(),
+                    m9n.gnss_last_byte(),
+                    static_cast<unsigned long>(m9n.gnss_ack_count()),
+                    static_cast<unsigned long>(m9n.gnss_nak_count()),
+                    static_cast<unsigned long>(m9n.gnss_ack_timeout_count()),
+                    m9n.gnss_last_ack_class(), m9n.gnss_last_ack_id(),
+                    m9n.gnss_last_nak_class(), m9n.gnss_last_nak_id(),
+                    static_cast<unsigned long>(m9n.gnss_uart_error_count()),
+                    static_cast<unsigned long>(m9n.gnss_last_uart_error()));
     }
     return 1;
   }
@@ -478,8 +677,9 @@ bool Pixhawk6CMiniBoard::imu_read(rosflight_firmware::ImuStruct * imu)
 }
 bool Pixhawk6CMiniBoard::mag_read(rosflight_firmware::MagStruct * mag)
 {
+  (void) mag;
   poll();
-  return ist8310.read(mag);
+  return false;
 }
 bool Pixhawk6CMiniBoard::baro_read(rosflight_firmware::PressureStruct * baro)
 {
@@ -516,8 +716,8 @@ bool Pixhawk6CMiniBoard::range_read(rosflight_firmware::RangeStruct * range)
 }
 bool Pixhawk6CMiniBoard::gnss_read(rosflight_firmware::GnssStruct * gnss)
 {
-  (void) gnss;
-  return false;
+  poll();
+  return m9n.read_gnss(gnss);
 }
 bool Pixhawk6CMiniBoard::battery_read(rosflight_firmware::BatteryStruct * bat)
 {
@@ -536,14 +736,23 @@ bool Pixhawk6CMiniBoard::rc_read(rosflight_firmware::RcStruct * rc)
 
 void Pixhawk6CMiniBoard::pwm_init(const float * rate, uint32_t channels)
 {
-  (void) rate;
-  (void) channels;
+  pwm_initialized_ = pwm_configure_all(rate, channels);
+  if (!pwm_initialized_) {
+    pwm_stop_all();
+  }
 }
-void Pixhawk6CMiniBoard::pwm_disable() {}
+void Pixhawk6CMiniBoard::pwm_disable()
+{
+  if (!pwm_initialized_) { return; }
+  pwm_stop_all();
+}
 void Pixhawk6CMiniBoard::pwm_write(float * value, uint32_t channels)
 {
-  (void) value;
-  (void) channels;
+  if (!pwm_initialized_) { return; }
+  channels = std::min(channels, PWM_OUTPUT_COUNT);
+  for (uint32_t ch = 0; ch < channels; ch++) {
+    pwm_write_output(ch, value[ch]);
+  }
 }
 
 void Pixhawk6CMiniBoard::memory_init()
@@ -644,8 +853,9 @@ void Pixhawk6CMiniBoard::backup_memory_clear(size_t len) { (void) len; }
 void Pixhawk6CMiniBoard::poll()
 {
   vcp_.poll();
-  ist8310.poll();
+  m9n.poll();
   ms5611.poll();
+  update_m9n_debug_led();
 }
 
 extern "C" void CDC_Receive_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
@@ -673,6 +883,16 @@ extern "C" void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)
 extern "C" void HAL_SPI_ErrorCallback(SPI_HandleTypeDef * hspi)
 {
   if (icm42688.is_my(hspi)) { icm42688.abort_dma(); }
+}
+
+extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart)
+{
+  if (m9n.is_my(huart)) { m9n.handle_uart_rx_complete(); }
+}
+
+extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart)
+{
+  if (m9n.is_my(huart)) { m9n.handle_uart_error(); }
 }
 
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc)
