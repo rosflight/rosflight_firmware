@@ -1,6 +1,7 @@
 #include "M9nUbx.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
@@ -16,6 +17,7 @@ constexpr uint32_t STATUS_GNSS_NO_NAV_PVT = 0x00000008U;
 constexpr uint64_t NAV_PVT_POLL_PERIOD_US = 200000U;
 constexpr uint64_t NAV_PVT_STREAM_STALE_US = 300000U;
 constexpr uint64_t NMEA_ALIVE_SAMPLE_PERIOD_US = 200000U;
+constexpr uint64_t DEBUG_GNSS_STALE_US = 2000000U;
 constexpr uint32_t PASSIVE_BAUD_DETECT_MS = 1500U;
 
 constexpr uint8_t UBX_SYNC1 = 0xB5U;
@@ -201,6 +203,36 @@ bool M9nUbx::read_gnss(rosflight_firmware::GnssStruct * gnss)
   return have_sample;
 }
 
+uint16_t M9nUbx::init_message(char * message, uint16_t size) const
+{
+  if (message == nullptr || size == 0U) { return 0; }
+
+  if (init_good()) {
+    std::snprintf(message, size, "%s", "M9N UBX GPS1: INIT OK");
+  } else {
+    std::snprintf(message, size, "M9N UBX GPS1: INIT ERROR 0x%08lX",
+                  static_cast<unsigned long>(init_status_));
+  }
+
+  return 1;
+}
+
+uint8_t M9nUbx::debug_pulse_count(uint64_t now_us) const
+{
+  const bool stale_bytes = gnss_last_byte_us_ == 0U || (now_us - gnss_last_byte_us_) > DEBUG_GNSS_STALE_US;
+  if (stale_bytes) { return 1U; }
+
+  if (gnss_frame_count_ == 0U && gnss_nmea_sentence_count_ == 0U) { return 4U; }
+
+  const bool stale_nav_pvt = gnss_last_nav_pvt_us_ == 0U
+    || (now_us - gnss_last_nav_pvt_us_) > DEBUG_GNSS_STALE_US;
+  if (stale_nav_pvt) { return 2U; }
+
+  if (gnss_fix_type_ < 3U) { return 3U; }
+
+  return 0U;
+}
+
 void M9nUbx::handle_uart_rx_complete()
 {
   const uint16_t next_head = static_cast<uint16_t>((rx_ring_head_ + 1U) % RX_RING_BYTES);
@@ -271,10 +303,16 @@ bool M9nUbx::configure_gnss()
     38400U, 57600U, 9600U, 115200U, 230400U, 460800U, 921600U,
   };
 
-  if (passive_detect_baud(config_.gnss_baud, PASSIVE_BAUD_DETECT_MS)) { return true; }
+  if (passive_detect_baud(config_.gnss_baud, PASSIVE_BAUD_DETECT_MS)
+      && configure_gnss_at_baud(config_.gnss_baud)) {
+    return true;
+  }
 
   for (uint32_t baud : baud_rates_to_try) {
-    if (baud != config_.gnss_baud && passive_detect_baud(baud, PASSIVE_BAUD_DETECT_MS)) { return true; }
+    if (baud != config_.gnss_baud && passive_detect_baud(baud, PASSIVE_BAUD_DETECT_MS)
+        && configure_gnss_at_baud(baud)) {
+      return true;
+    }
   }
 
   uint32_t live_baud = 0;
@@ -683,9 +721,9 @@ bool M9nUbx::send_cfg_valset_uart_protocol()
   ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1_DATABITS, 0U) && ok;
   ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1_PARITY, 0U) && ok;
   ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1INPROT_UBX, 1U) && ok;
-  ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1INPROT_NMEA, 1U) && ok;
+  ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1INPROT_NMEA, 0U) && ok;
   ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1OUTPROT_UBX, 1U) && ok;
-  ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1OUTPROT_NMEA, 1U) && ok;
+  ok = append_cfg_valset_u8(payload, &length, UBX_CFG_KEY_CFG_UART1OUTPROT_NMEA, 0U) && ok;
   return ok && send_ubx(UBX_CLASS_CFG, UBX_ID_CFG_VALSET, payload, length);
 }
 
@@ -721,8 +759,8 @@ bool M9nUbx::send_cfg_prt(uint32_t baud)
   payload[4] = 0xD0U;
   payload[5] = 0x08U;
   write_u32(&payload[8], baud);
-  payload[12] = 0x03U;
-  payload[14] = 0x03U;
+  payload[12] = 0x01U;
+  payload[14] = 0x01U;
   return send_ubx(UBX_CLASS_CFG, UBX_ID_CFG_PRT, payload, sizeof(payload));
 }
 

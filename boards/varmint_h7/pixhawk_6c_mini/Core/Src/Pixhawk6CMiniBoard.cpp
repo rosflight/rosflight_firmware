@@ -29,7 +29,6 @@ constexpr uint64_t BATTERY_SAMPLE_PERIOD_US = 100000U;
 constexpr uint32_t M9N_GNSS_BAUD = 115200U;
 constexpr uint32_t M9N_GNSS_RATE_HZ = 5U;
 constexpr uint64_t M9N_DEBUG_LED_PERIOD_US = 200000U;
-constexpr uint64_t M9N_DEBUG_GNSS_STALE_US = 2000000U;
 constexpr uint8_t BARO_TEMPERATURE_DECIMATION = 10U;
 constexpr uint32_t SENSOR_ERROR_BATTERY = 0x0002U;
 constexpr float BATTERY_VOLTAGE_SCALE = 12.62f;
@@ -360,20 +359,7 @@ void update_m9n_debug_led()
 {
   const uint64_t now = pixhawk_clock_micros_raw();
   const uint64_t slot = (now / M9N_DEBUG_LED_PERIOD_US) % 10U;
-  uint8_t pulses = 0;
-
-  if ((m9n.gnss_last_byte_us() == 0U || (now - m9n.gnss_last_byte_us()) > M9N_DEBUG_GNSS_STALE_US)
-      && m9n.gnss_uart_error_count() != 0U) {
-    pulses = 5U;
-  } else if (m9n.gnss_last_byte_us() == 0U || (now - m9n.gnss_last_byte_us()) > M9N_DEBUG_GNSS_STALE_US) {
-    pulses = 1U;
-  } else if (m9n.gnss_frame_count() == 0U && m9n.gnss_nmea_sentence_count() == 0U) {
-    pulses = 4U;
-  } else if (m9n.gnss_last_nav_pvt_us() == 0U || (now - m9n.gnss_last_nav_pvt_us()) > M9N_DEBUG_GNSS_STALE_US) {
-    pulses = 2U;
-  } else if (m9n.gnss_fix_type() < 3U) {
-    pulses = 3U;
-  }
+  const uint8_t pulses = m9n.debug_pulse_count(now);
 
   if (pulses == 0U) {
     set_red_led(false);
@@ -548,56 +534,7 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size,
     return 1;
   }
   if (i == 1) {
-    const uint64_t now = pixhawk_clock_micros_raw();
-    const unsigned long nmea_age_ms = (m9n.gnss_last_nmea_sentence_us() == 0U) ? 999999UL
-      : static_cast<unsigned long>((now - m9n.gnss_last_nmea_sentence_us()) / 1000ULL);
-    if (m9n.init_good()) {
-      std::snprintf(message, size, "M9N UBX GPS1: INIT OK ST 0x%08lX BAUD %lu RX %lu UBX %lu NAV %lu NMEA %lu/%lu GGA %lu RMC %lu SAMP %lu NAGE %lu SYNC %lu ROV %lu LF %02X/%02X LB %02X ACK %lu NAK %lu ERR %lu",
-                    static_cast<unsigned long>(m9n.init_status()),
-                    static_cast<unsigned long>(m9n.gnss_current_baud()),
-                    static_cast<unsigned long>(m9n.gnss_byte_count()),
-                    static_cast<unsigned long>(m9n.gnss_frame_count()),
-                    static_cast<unsigned long>(m9n.gnss_nav_pvt_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_start_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_sentence_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_gga_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_rmc_count()),
-                    static_cast<unsigned long>(m9n.gnss_sample_count()),
-                    nmea_age_ms,
-                    static_cast<unsigned long>(m9n.gnss_ubx_sync_count()),
-                    static_cast<unsigned long>(m9n.gnss_rx_ring_overflow_count()),
-                    m9n.gnss_last_frame_class(), m9n.gnss_last_frame_id(),
-                    m9n.gnss_last_byte(),
-                    static_cast<unsigned long>(m9n.gnss_ack_count()),
-                    static_cast<unsigned long>(m9n.gnss_nak_count()),
-                    static_cast<unsigned long>(m9n.gnss_uart_error_count()));
-    } else {
-      std::snprintf(message, size, "M9N UBX GPS1: INIT ERROR 0x%08lX BAUD %lu RX %lu UBX %lu NAV %lu NMEA %lu/%lu GGA %lu RMC %lu SAMP %lu NAGE %lu SYNC %lu ROV %lu CK %lu LF %02X/%02X LB %02X ACK %lu NAK %lu TO %lu LA %02X/%02X LN %02X/%02X ERR %lu E 0x%08lX",
-                    static_cast<unsigned long>(m9n.init_status()),
-                    static_cast<unsigned long>(m9n.gnss_current_baud()),
-                    static_cast<unsigned long>(m9n.gnss_byte_count()),
-                    static_cast<unsigned long>(m9n.gnss_frame_count()),
-                    static_cast<unsigned long>(m9n.gnss_nav_pvt_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_start_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_sentence_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_gga_count()),
-                    static_cast<unsigned long>(m9n.gnss_nmea_rmc_count()),
-                    static_cast<unsigned long>(m9n.gnss_sample_count()),
-                    nmea_age_ms,
-                    static_cast<unsigned long>(m9n.gnss_ubx_sync_count()),
-                    static_cast<unsigned long>(m9n.gnss_rx_ring_overflow_count()),
-                    static_cast<unsigned long>(m9n.gnss_checksum_error_count()),
-                    m9n.gnss_last_frame_class(), m9n.gnss_last_frame_id(),
-                    m9n.gnss_last_byte(),
-                    static_cast<unsigned long>(m9n.gnss_ack_count()),
-                    static_cast<unsigned long>(m9n.gnss_nak_count()),
-                    static_cast<unsigned long>(m9n.gnss_ack_timeout_count()),
-                    m9n.gnss_last_ack_class(), m9n.gnss_last_ack_id(),
-                    m9n.gnss_last_nak_class(), m9n.gnss_last_nak_id(),
-                    static_cast<unsigned long>(m9n.gnss_uart_error_count()),
-                    static_cast<unsigned long>(m9n.gnss_last_uart_error()));
-    }
-    return 1;
+    return m9n.init_message(message, size);
   }
   if (i == 2) {
     if (ms5611.init_good()) {

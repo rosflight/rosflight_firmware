@@ -18,13 +18,13 @@ set(PIXHAWK_6C_MINI_SOURCES
     Core/Src/Pixhawk6CMiniBoard.cpp
     Core/Src/stm32h7xx_hal_msp.c
     Core/Src/stm32h7xx_it.c
-    drivers/M9nUbx.cpp
     ${PIXRACER_PRO_DIR}/Core/Src/system_stm32h7xx.c
     ${PIXRACER_PRO_DIR}/Core/Src/syscalls.c
     ${PIXRACER_PRO_DIR}/Core/Src/sysmem.c
     ${PIXRACER_PRO_DIR}/Core/Startup/startup_stm32h743iikx.s
     ${COMMON_DIR}/drivers/Icm42688.cpp
     ${COMMON_DIR}/drivers/Ist8310.cpp
+    ${COMMON_DIR}/drivers/M9nUbx.cpp
     ${COMMON_DIR}/drivers/Ms5611.cpp
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc.c
