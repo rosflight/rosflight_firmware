@@ -15,7 +15,9 @@ extern DMA_HandleTypeDef hdma_adc1;
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c4;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart7;
 extern SPI_HandleTypeDef hspi1;
+extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern TIM_HandleTypeDef htim1;
@@ -68,6 +70,10 @@ extern TIM_HandleTypeDef htim5;
 #define GPS1_UART_RX_GPIO_Port GPIOA
 #define GPS1_UART_TX_Pin GPIO_PIN_6
 #define GPS1_UART_TX_GPIO_Port GPIOB
+#define TELEM1_UART7_RX_Pin GPIO_PIN_7
+#define TELEM1_UART7_RX_GPIO_Port GPIOE
+#define TELEM1_UART7_TX_Pin GPIO_PIN_8
+#define TELEM1_UART7_TX_GPIO_Port GPIOE
 #define GPS1_I2C1_SDA_Pin GPIO_PIN_7
 #define GPS1_I2C1_SDA_GPIO_Port GPIOB
 #define GPS1_I2C1_SCL_Pin GPIO_PIN_8
@@ -101,6 +107,7 @@ void MX_I2C4_Init(void);
 HAL_StatusTypeDef MX_SDMMC2_SD_Init(void);
 void MX_SPI1_Init(void);
 void MX_USART1_UART_Init(void);
+void MX_UART7_Init(void);
 void MX_USB_OTG_FS_PCD_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef * htim);
 

@@ -26,6 +26,7 @@ set(PIXHAWK_6C_MINI_SOURCES
     ${COMMON_DIR}/drivers/Ist8310.cpp
     ${COMMON_DIR}/drivers/M9nUbx.cpp
     ${COMMON_DIR}/drivers/Ms5611.cpp
+    ${COMMON_DIR}/drivers/SbusUart.cpp
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc.c
     ${HAL_DRIVER_DIR}/Src/stm32h7xx_hal_adc_ex.c

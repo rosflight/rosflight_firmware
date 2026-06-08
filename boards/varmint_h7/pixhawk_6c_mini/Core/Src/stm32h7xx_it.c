@@ -5,9 +5,13 @@ extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_adc1;
 extern I2C_HandleTypeDef hi2c1;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart7;
 extern SPI_HandleTypeDef hspi1;
+extern DMA_HandleTypeDef hdma_uart7_rx;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
+
+void UART_RxIsrCallback(UART_HandleTypeDef * huart);
 
 void NMI_Handler(void)
 {
@@ -67,6 +71,12 @@ void USART1_IRQHandler(void)
   HAL_UART_IRQHandler(&huart1);
 }
 
+void UART7_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart7);
+  UART_RxIsrCallback(&huart7);
+}
+
 void DMA1_Stream0_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&hdma_adc1);
@@ -90,6 +100,11 @@ void DMA1_Stream4_IRQHandler(void)
 void DMA1_Stream5_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&hdma_spi1_tx);
+}
+
+void DMA1_Stream6_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_uart7_rx);
 }
 
 void SPI1_IRQHandler(void)

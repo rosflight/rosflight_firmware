@@ -1,9 +1,11 @@
 #include "Pixhawk6CMiniBoard.h"
 
 #include "Icm42688.h"
+#include "Ist8310.h"
 #include "M9nUbx.h"
 #include "Ms5611.h"
 #include "Packets.h"
+#include "SbusUart.h"
 #include "main.h"
 #include "usbd_cdc_acm_if.h"
 #include "usb_device.h"
@@ -28,7 +30,9 @@ constexpr uint64_t DIFF_PRESSURE_PERIOD_US = 50000U;
 constexpr uint64_t BATTERY_SAMPLE_PERIOD_US = 100000U;
 constexpr uint32_t M9N_GNSS_BAUD = 115200U;
 constexpr uint32_t M9N_GNSS_RATE_HZ = 5U;
-constexpr uint64_t M9N_DEBUG_LED_PERIOD_US = 200000U;
+constexpr uint32_t GPS1_MAG_SAMPLE_PERIOD_US = 10000U;
+constexpr uint32_t SBUS_BAUD = 100000U;
+constexpr uint32_t SBUS_DMA_BUFFER_BYTES = 25U * 4U;
 constexpr uint8_t BARO_TEMPERATURE_DECIMATION = 10U;
 constexpr uint32_t SENSOR_ERROR_BATTERY = 0x0002U;
 constexpr float BATTERY_VOLTAGE_SCALE = 12.62f;
@@ -42,6 +46,14 @@ constexpr float IMU_TO_FMU_ROTATION[9] = {
   0.0f, 0.0f, -1.0f,
 };
 
+constexpr float GPS1_MAG_TO_FMU_ROTATION[9] = {
+  1.0f, 0.0f, 0.0f,
+  0.0f, 1.0f, 0.0f,
+  0.0f, 0.0f, 1.0f,
+};
+
+constexpr uint8_t GPS1_MAG_I2C_ADDRESSES[] = {0x0cU, 0x0dU, 0x0eU, 0x0fU};
+
 DTCM_RAM uint8_t vcp_fifo_tx_buffer[VCP_TX_FIFO_BUFFERS * sizeof(SerialTxPacket)];
 uint8_t vcp_fifo_rx_buffer[VCP_RX_FIFO_BUFFER_BYTES];
 SD_DMA_RAM uint8_t sd_rx_buf[SD_BUFF_SIZE];
@@ -49,6 +61,7 @@ SD_DMA_RAM uint8_t sd_tx_buf[SD_BUFF_SIZE];
 DMA_RAM uint8_t icm42688_dma_tx_buf[Icm42688::BURST_BYTES];
 DMA_RAM uint8_t icm42688_dma_rx_buf[Icm42688::BURST_BYTES];
 DMA_RAM uint32_t battery_adc_buf[BATTERY_ADC_CHANNELS];
+DMA_RAM uint8_t sbus_dma_rx_buf[SBUS_DMA_BUFFER_BYTES];
 
 constexpr uint32_t PWM_OUTPUT_COUNT = 8U;
 constexpr float PWM_DEFAULT_RATE_HZ = 50.0f;
@@ -346,27 +359,29 @@ private:
 };
 
 Icm42688 icm42688;
+Ist8310 gps1_mag;
 M9nUbx m9n;
 Ms5611 ms5611;
+SbusUart sbus;
 BatteryMonitor battery_monitor;
+uint8_t gps1_mag_i2c_address = GPS1_MAG_I2C_ADDRESSES[0];
 
-void set_red_led(bool on)
+bool init_gps1_mag()
 {
-  HAL_GPIO_WritePin(FMU_LED_RED_GPIO_Port, FMU_LED_RED_Pin, on ? GPIO_PIN_RESET : GPIO_PIN_SET);
-}
+  Ist8310::Config mag_config = {};
+  mag_config.hi2c = &hi2c1;
+  mag_config.clock_micros = pixhawk_clock_micros_raw;
+  mag_config.delay_ms = HAL_Delay;
+  mag_config.rotation_sensor_to_body = GPS1_MAG_TO_FMU_ROTATION;
+  mag_config.sample_period_us = GPS1_MAG_SAMPLE_PERIOD_US;
 
-void update_m9n_debug_led()
-{
-  const uint64_t now = pixhawk_clock_micros_raw();
-  const uint64_t slot = (now / M9N_DEBUG_LED_PERIOD_US) % 10U;
-  const uint8_t pulses = m9n.debug_pulse_count(now);
-
-  if (pulses == 0U) {
-    set_red_led(false);
-    return;
+  for (uint8_t address : GPS1_MAG_I2C_ADDRESSES) {
+    mag_config.i2c_address = address;
+    gps1_mag_i2c_address = address;
+    if (gps1_mag.init(mag_config)) { return true; }
   }
 
-  set_red_led((slot < static_cast<uint64_t>(pulses) * 2U) && ((slot % 2U) == 0U));
+  return false;
 }
 } // namespace
 
@@ -492,6 +507,7 @@ void Pixhawk6CMiniBoard::sensors_init(void)
 
   HAL_Delay(1000);
   m9n.init(m9n_config);
+  init_gps1_mag();
 
   Ms5611::Config baro_config = {};
   baro_config.hi2c = &hi2c4;
@@ -508,17 +524,19 @@ uint16_t Pixhawk6CMiniBoard::sensors_errors_count()
   uint16_t errors = 0;
   if (!icm42688.init_good()) { errors++; }
   if (!m9n.init_good()) { errors++; }
+  if (!gps1_mag.init_good()) { errors++; }
   if (!ms5611.init_good()) { errors++; }
   if (!battery_monitor.init_good()) { errors++; }
   return errors;
 }
-uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 4; }
+uint16_t Pixhawk6CMiniBoard::sensors_init_message_count() { return 5; }
 bool Pixhawk6CMiniBoard::sensors_init_message_good(uint16_t i)
 {
   if (i == 0) { return icm42688.init_good(); }
   if (i == 1) { return m9n.init_good(); }
-  if (i == 2) { return ms5611.init_good(); }
-  if (i == 3) { return battery_monitor.init_good(); }
+  if (i == 2) { return gps1_mag.init_good(); }
+  if (i == 3) { return ms5611.init_good(); }
+  if (i == 4) { return battery_monitor.init_good(); }
   return false;
 }
 uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size, uint16_t i)
@@ -537,6 +555,17 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size,
     return m9n.init_message(message, size);
   }
   if (i == 2) {
+    if (gps1_mag.init_good()) {
+      std::snprintf(message, size, "GPS1 IST8310 MAG: INIT OK ADDR 0x%02X",
+                    gps1_mag_i2c_address);
+    } else {
+      std::snprintf(message, size, "GPS1 IST8310 MAG: INIT ERROR 0x%08lX ADDR 0x%02X ID 0x%02X",
+                    static_cast<unsigned long>(gps1_mag.init_status()), gps1_mag_i2c_address,
+                    gps1_mag.who_am_i());
+    }
+    return 1;
+  }
+  if (i == 3) {
     if (ms5611.init_good()) {
       std::snprintf(message, size, "MS5611: INIT OK ADDR 0x%02X", ms5611.i2c_address());
     } else {
@@ -546,7 +575,7 @@ uint16_t Pixhawk6CMiniBoard::sensors_init_message(char * message, uint16_t size,
     }
     return 1;
   }
-  if (i == 3) {
+  if (i == 4) {
     if (battery_monitor.init_good()) {
       std::snprintf(message, size, "%s", "ADC1 BATTERY: INIT OK");
     } else {
@@ -614,9 +643,8 @@ bool Pixhawk6CMiniBoard::imu_read(rosflight_firmware::ImuStruct * imu)
 }
 bool Pixhawk6CMiniBoard::mag_read(rosflight_firmware::MagStruct * mag)
 {
-  (void) mag;
   poll();
-  return false;
+  return gps1_mag.read(mag);
 }
 bool Pixhawk6CMiniBoard::baro_read(rosflight_firmware::PressureStruct * baro)
 {
@@ -664,11 +692,25 @@ bool Pixhawk6CMiniBoard::battery_read(rosflight_firmware::BatteryStruct * bat)
 void Pixhawk6CMiniBoard::battery_voltage_set_multiplier(double multiplier) { (void) multiplier; }
 void Pixhawk6CMiniBoard::battery_current_set_multiplier(double multiplier) { (void) multiplier; }
 
-void Pixhawk6CMiniBoard::rc_init(rc_type_t rc_type) { (void) rc_type; }
+void Pixhawk6CMiniBoard::rc_init(rc_type_t rc_type)
+{
+  (void) rc_type;
+
+  SbusUart::Config sbus_config = {};
+  sbus_config.huart = &huart7;
+  sbus_config.uart_instance = UART7;
+  sbus_config.hdma_uart_rx = &hdma_uart7_rx;
+  sbus_config.clock_micros = pixhawk_clock_micros_raw;
+  sbus_config.dma_rx_buffer = sbus_dma_rx_buf;
+  sbus_config.dma_rx_buffer_size = sizeof(sbus_dma_rx_buf);
+  sbus_config.baud = SBUS_BAUD;
+
+  (void) sbus.init(sbus_config);
+}
 bool Pixhawk6CMiniBoard::rc_read(rosflight_firmware::RcStruct * rc)
 {
-  (void) rc;
-  return false;
+  poll();
+  return sbus.read(rc);
 }
 
 void Pixhawk6CMiniBoard::pwm_init(const float * rate, uint32_t channels)
@@ -791,8 +833,9 @@ void Pixhawk6CMiniBoard::poll()
 {
   vcp_.poll();
   m9n.poll();
+  gps1_mag.poll();
   ms5611.poll();
-  update_m9n_debug_led();
+  sbus.poll();
 }
 
 extern "C" void CDC_Receive_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
@@ -825,11 +868,22 @@ extern "C" void HAL_SPI_ErrorCallback(SPI_HandleTypeDef * hspi)
 extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart)
 {
   if (m9n.is_my(huart)) { m9n.handle_uart_rx_complete(); }
+  if (sbus.is_my(huart)) { sbus.handle_uart_rx_complete(); }
 }
 
 extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart)
 {
   if (m9n.is_my(huart)) { m9n.handle_uart_error(); }
+  if (sbus.is_my(huart)) { sbus.handle_uart_error(); }
+}
+
+extern "C" void UART_RxIsrCallback(UART_HandleTypeDef * huart)
+{
+  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE)) {
+    __HAL_UART_CLEAR_IDLEFLAG(huart);
+    if (huart->hdmarx != nullptr) { ((DMA_Stream_TypeDef *) huart->hdmarx->Instance)->CR &= ~DMA_SxCR_EN; }
+    if (sbus.is_my(huart)) { sbus.handle_uart_rx_complete(); }
+  }
 }
 
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc)
