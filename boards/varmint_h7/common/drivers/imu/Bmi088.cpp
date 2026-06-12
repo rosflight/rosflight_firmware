@@ -40,7 +40,6 @@
 #include "Packets.h"
 #include "Time64.h"
 #include "bmi08_defs.h"
-#include "misc.h"
 
 #define SPI_READ (uint8_t) 0x80
 #define SPI_WRITE (uint8_t) 0x00
@@ -330,13 +329,7 @@ void Bmi088::endDma(void) // DMA complete routine
     data = (int16_t) rx[6] << 8 | (int16_t) rx[5];
     p.gyro[2] = scale_factor * (double) data;
 
-    p.header.complete = time64.Us();
-    p.header.timestamp = drdy_-groupDelay_;
-
-    rotate(p.gyro);
-    rotate(p.accel);
-    write((uint8_t *) &p, sizeof(p));
-
+    finalizePacket(p);
     seqCount_ = 0;
 
   } else {
@@ -376,30 +369,4 @@ void Bmi088::writeRegisterG(uint8_t reg, uint8_t data)
   tx[0] = reg | SPI_WRITE;
   tx[1] = data;
   spiG_.tx(tx, 2, timeoutMs_);
-}
-
-bool Bmi088::display(void)
-{
-  ImuPacket p;
-  char name[] = "Bmi088 (imu)";
-  if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header );
-    misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
-    misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
-    misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");
-    double a = sqrt(p.accel[0]*p.accel[0]+p.accel[1]*p.accel[1]+p.accel[2]*p.accel[2]);
-    misc_f32(0.8, 1.2, a / 9.80665, "|a|", "%6.2f", "g");
-
-    misc_f32(-0.5, 0.5, p.gyro[0] * 57.2958, "p", "%6.2f", "dps");
-    misc_f32(-0.5, 0.5, p.gyro[1] * 57.2958, "q", "%6.2f", "dps");
-    misc_f32(-0.5, 0.5, p.gyro[2] * 57.2958, "r", "%6.2f", "dps");
-    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
-    misc_printf("Count %7.3f s  |", p.dataTime);
-
-    misc_printf("\n");
-    return 1;
-  } else {
-    misc_printf("%s\n", name);
-  }
-  return true;
 }

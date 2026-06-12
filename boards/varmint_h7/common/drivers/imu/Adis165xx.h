@@ -38,15 +38,11 @@
 #ifndef ADIS165XX_H_
 #define ADIS165XX_H_
 
-#include "DoubleBuffer.h"
 #include "BoardConfig.h"
-
+#include "ImuDriver.h"
 #include "Spi.h"
-#include "misc.h"
 
-#define ADIS_OK (0x0000)
-
-class Adis165xx : public Status , public MiscRotatable
+class Adis165xx : public ImuDriver
 {
 public:
   uint32_t init(
@@ -63,28 +59,15 @@ public:
     const double *rotation
   );
 
-  void endDma(void);
-  bool startDma(void);
-  bool display(void);
-  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
+  void endDma(void) override;
+  bool startDma(void) override;
+  using ImuDriver::isMy;
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
   SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
   void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}
-  bool read(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.read(data, size)==DoubleBufferStatus::OK); }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.write(data, size)==DoubleBufferStatus::OK); }
-
-  DoubleBuffer double_buffer_;
-
-  uint16_t sampleRateHz_;
-  uint64_t groupDelay_;
-  // SPI Stuff
   Spi spi_;
-  uint16_t drdyPin_;
-  uint64_t drdy_;
-
-  uint16_t timeoutMs_;
   // ADIS165xx Stuff
   GPIO_TypeDef * resetPort_;
   uint16_t resetPin_;
@@ -92,6 +75,8 @@ private:
   uint32_t htimChannel_;
   void writeRegister(uint8_t address, uint16_t value);
   uint16_t readRegister(uint8_t address);
+
+  double gyro_scale_factor_;
 };
 
 #endif /* ADIS165XX_H_ */

@@ -38,9 +38,6 @@
 #include "Adis165xx.h"
 #include "Packets.h"
 #include "Time64.h"
-#include "misc.h"
-
-//#define ADIS_OK (0x0000)
 
 #define SPI_WRITE 0x80
 #define SPI_READ 0x00
@@ -143,19 +140,67 @@ uint32_t Adis165xx::init(
   HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
   time64.dMs(350); // Data sheet specifies 255ms for power-on startup empirically 300 is required
 
-#define ADIS16500_PROD_ID_ADDR 0x72
-#define ADIS16500_PROD_ID 0x4074
-  uint16_t prod_id = readRegister(ADIS16500_PROD_ID_ADDR);
+#define ADIS165xx_PROD_ID_ADDR 0x72
+#define ADIS16500_PROD_ID 0x4074 // 0x4074 = 16500
+#define ADIS16507_PROD_ID 0x407B // 0x407B = 16507
 
-  misc_printf("ADIS165xx Product ID = 0x%04X (0x4074) - ", prod_id);
 
-  if (prod_id == ADIS16500_PROD_ID) {
+
+
+  uint16_t prod_id = readRegister(ADIS165xx_PROD_ID_ADDR);
+
+  misc_printf("ADIS165xx Product ID = %05u (165xx) - ", prod_id);
+
+  if ( (prod_id == ADIS16500_PROD_ID) || (prod_id == ADIS16507_PROD_ID)) {
     misc_printf("OK\n");
   } else {
     misc_printf("ERROR\n");
     initializationStatus_ |= DRIVER_ID_MISMATCH;
     return initializationStatus_;
   }
+
+  // Check IMU range.
+
+
+
+#define ADIS165xx_RANG_MDL 0x5E
+// [15:4] unused
+// [3:2]
+// 00 125 deg/s
+// 01 500 deg/s
+// 10 reserved
+// 11 2000 deg/s
+// [1:0] reserved value is 11
+
+  uint16_t rang_mdl = (readRegister(ADIS165xx_RANG_MDL)>>2) & 0x3;
+  misc_printf("ADIS165xx Range Mdl  = 0x%04x", rang_mdl);
+
+  double deg2rad = M_PI/180.0;
+
+  //gyro_scale_factor_ = 0.1*deg2rad;
+
+  switch(rang_mdl)
+  {
+    case 0: // ADIS16507-1 125 deg/s variant (not currently approved)
+        misc_printf(" 125 deg/s\n");
+        gyro_scale_factor_ = 0.00625*deg2rad; // rad/s, or use 0.00625 deg/s
+        break;
+    case 1: // ADIS16507-2 500 deg/s variant
+      misc_printf(", ADIS16507-2, 500 deg/s\n");
+      gyro_scale_factor_ = 0.025*deg2rad; // rad/s, 0.025 deg/s
+       break;
+    case 3: // "ADIS16500 or ADIS16507-3, 2000 deg/s
+      misc_printf(", ADIS16500 or ADIS16507-3, 2000 deg/s\n");
+      gyro_scale_factor_ = 0.1*deg2rad; // rad/s, 0.1 deg/s
+      break;
+    default:
+      gyro_scale_factor_ = 0;
+      misc_printf("Not Approved\n");
+      initializationStatus_ |= DRIVER_ID_MISMATCH;
+      return initializationStatus_;
+  }
+
+
 
 #define ADIS16500_FILT_CTRL 0x5C // shift so we can or the data into the first 16 bit packet
   // [15:3] not used
@@ -236,9 +281,9 @@ void Adis165xx::endDma(void) // called when DMA data is ready
       data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
     if (sum == data[10]) {
       p.header.status = (uint16_t) data[1];
-      p.gyro[0] = (double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
-      p.gyro[1] = (double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
-      p.gyro[2] = (double) data[4] * 0.001745329251994;  // rad/s, or use 0.1 deg/s
+      p.gyro[0] = (double) data[2] * gyro_scale_factor_; // rad/s, or use 0.1 deg/s
+      p.gyro[1] = (double) data[3] * gyro_scale_factor_; // rad/s, or use 0.1 deg/s
+      p.gyro[2] = (double) data[4] * gyro_scale_factor_;  // rad/s, or use 0.1 deg/s
       p.accel[0] = (double) data[5] * 0.01225;          // m/s^2
       p.accel[1] = (double) data[6] * 0.01225;          // m/s^2
       p.accel[2] = (double) data[7] * 0.01225;           // m/s^2
@@ -256,9 +301,9 @@ void Adis165xx::endDma(void) // called when DMA data is ready
 
     if (sum == data[16]) {
       p.header.status = (uint16_t) data[1];
-      p.gyro[0] = val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.gyro[1] = val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.gyro[2] = val(rx + 12) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
+      p.gyro[0] = val(rx + 4) * gyro_scale_factor_;     // rad/s, or use 0.1 deg/s
+      p.gyro[1] = val(rx + 8) * gyro_scale_factor_;     // rad/s, or use 0.1 deg/s
+      p.gyro[2] = val(rx + 12) * gyro_scale_factor_;     // rad/s, or use 0.1 deg/s
       p.accel[0] = val(rx + 16) * 0.01225;             // m/s^2
       p.accel[1] = val(rx + 20) * 0.01225;             // m/s^2
       p.accel[2] = val(rx + 24) * 0.01225;              // m/s^2
@@ -268,11 +313,7 @@ void Adis165xx::endDma(void) // called when DMA data is ready
   }
   if (p.header.status == ADIS_OK)
   {
-    p.header.timestamp = drdy_-groupDelay_;
-    rotate(p.gyro);
-    rotate(p.accel);
-    p.header.complete = time64.Us();
-    write((uint8_t *) &p, sizeof(p));
+    finalizePacket(p);
   }
 
 }
@@ -302,31 +343,4 @@ uint16_t Adis165xx::readRegister(uint8_t address)
   spi_.rx(tx, rx, 2, timeoutMs_);
   time64.dUs(ADIS_SPI_PAUSE_US);
   return (uint16_t) rx[1] | (uint16_t) rx[0] << 8;
-}
-
-bool Adis165xx::display(void)
-{
-  ImuPacket p;
-  char name[] = "Adis165xx (imu)";
-  if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header );
-    misc_f32(nan(""), nan(""), p.accel[0] / 9.80665, "ax", "%6.2f", "g");
-    misc_f32(nan(""), nan(""), p.accel[1] / 9.80665, "ay", "%6.2f", "g");
-    misc_f32(nan(""), nan(""), p.accel[2] / 9.80665, "az", "%6.2f", "g");
-    double a = sqrt(p.accel[0]*p.accel[0]+p.accel[1]*p.accel[1]+p.accel[2]*p.accel[2]);
-    misc_f32(0.8, 1.2, a / 9.80665, "|a|", "%6.2f", "g");
-
-    misc_f32(-1, 1, (float) p.gyro[0] * 57.2958, "p", "%6.2f", "dps");
-    misc_f32(-1, 1, (float) p.gyro[1] * 57.2958, "q", "%6.2f", "dps");
-    misc_f32(-1, 1, (float) p.gyro[2] * 57.2958, "r", "%6.2f", "dps");
-    misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
-    misc_printf("Count %7.3f s  |", p.dataTime);
-    misc_x16(ADIS_OK, p.header.status, "Status");
-
-    misc_printf("\n");
-    return 1;
-  } else {
-    misc_printf("%s\n", name);
-  }
-  return true;
 }
