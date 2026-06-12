@@ -44,6 +44,7 @@ include_directories(
 	../common
 	../common/drivers
 	../common/drivers/gps
+	../common/drivers/imu
 	../common/AL94_USB_Composite
 	specific
 )

@@ -41,9 +41,9 @@
 #include "BoardConfig.h"
 
 #include "Adc.h"
-#include "Adis165xx.h"
+#include "imu/Adis165xx.h"
 #include "Auav.h"
-#include "Bmi088.h"
+#include "imu/Bmi088.h"
 #include "DlhrL20G.h"
 #include "Dps310.h"
 #include "gps/GpsDriver.h"
