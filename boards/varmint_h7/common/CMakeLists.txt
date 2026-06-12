@@ -43,8 +43,9 @@ include_directories(
 	Drivers/CMSIS/Include
 	../common
 	../common/drivers
+	../common/drivers/gps
 	../common/AL94_USB_Composite
-	specific 
+	specific
 )
 
 ### build target ###

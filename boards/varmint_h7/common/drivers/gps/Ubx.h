@@ -40,6 +40,7 @@
 
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
+#include "GpsDriver.h"
 #include "Packets.h"
 #include "Status.h"
 
@@ -97,22 +98,13 @@ typedef struct //__attribute__((__packed__))
   uint8_t payload[UBX_MAX_PAYLOAD_BYTES];
 } UbxFrame;
 
-typedef struct //__attribute__((__packed__)) // This matches the Ubx packet, do not modify
-{
-  rosflight_firmware::PacketHeader header; // time of validity, status
-  int64_t unix_seconds; // computed from pvt time values
-  int32_t unix_nanos;
-  uint64_t pps;
-  UbxPvt pvt;
-} UbxPacket;
-
 /**
  * @class Ubx
- * @brief
+ * @brief u-blox GPS receiver driver (supports M8/M9 variants)
  *
  */
 
-class Ubx : public Status
+class Ubx : public Status, public GpsDriver
 {
   /**
      * \brief
@@ -124,36 +116,21 @@ public:
     // Driver initializers
     uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
     // UART initializers
-    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance,
+    DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 
-  bool poll(void);
-  void endDma(void);
-  bool startDma(void);
-  bool display(void);
+  // GpsDriver interface implementation
+  void endDma(void) override;
+  void pps(uint64_t pps_timestamp) override;
+  bool startDma(void) override;
+
+  bool display(void) override { return displayGnss(name_); }
   bool parseByte(uint8_t c, UbxFrame * p);
-  UART_HandleTypeDef * huart(void) { return huart_; }
-
-  bool isMy(uint16_t exti_pin) { return ppsPin_ == exti_pin; }
-  bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
-
-  void pps(uint64_t pps_timestamp);
-
-  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
-  DoubleBuffer double_buffer_;
-  uint16_t sampleRateHz_;
-  UbxPacket ubx_;
-  uint16_t ppsPin_;
-  uint64_t timeout_;
-
+  // Ubx-specific member variables
+  GnssPacket gnss_;
   uint64_t gotPvt_;
-  uint64_t dtimeout_;
-  UART_HandleTypeDef * huart_;
-  DMA_HandleTypeDef * hdmaUartRx_;
-  uint32_t baud_, baud_initial_;
-  uint16_t ppsHz_;
 
   void checksum(uint8_t * buffer);
   void header(uint8_t * buffer, uint8_t cl, uint8_t id, uint16_t length);

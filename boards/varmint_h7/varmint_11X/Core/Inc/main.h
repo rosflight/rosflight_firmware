@@ -229,8 +229,6 @@ void MX_USB_OTG_FS_PCD_Init(void);
 #define J105_3_SYNC_IN_EXTI_IRQn EXTI2_IRQn
 #define BMI088_MISO_Pin GPIO_PIN_6
 #define BMI088_MISO_GPIO_Port GPIOA
-#define TP5_Pin GPIO_PIN_0
-#define TP5_GPIO_Port GPIOB
 #define LED_BLU_Pin GPIO_PIN_8
 #define LED_BLU_GPIO_Port GPIOE
 #define ADIS165XX_RESET_Pin GPIO_PIN_12

@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
- * File     : sandbox.cpp
- * Date     : Sep 28, 2023
+ * File     : GpsDriver.cpp
+ * Date     : Jun 11, 2026
  ******************************************************************************
  *
- * Copyright (c) 2023, AeroVironment, Inc.
+ * Copyright (c) 2026, AeroVironment, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,85 +35,59 @@
  ******************************************************************************
  **/
 
-#include "sandbox.h"
-
+#include "GpsDriver.h"
 #include "BoardConfig.h"
+#include "Packets.h"
+#include "Time64.h"
 #include "misc.h"
-
-#include "Varmint.h"
-extern Varmint varmint;
+#include <ctime>
 
 extern Time64 time64;
 
-extern bool verbose;
-
-#define ROWSIZE 256
-#define ASCII_ESC 27
-
-void verbose_dashes(void)
+bool GpsDriver::poll(void)
 {
-  for (int i = 0; i < ROWSIZE; i++) misc_printf("-");
-  misc_printf("\n");
+  if (time64.Us() > timeout_) {
+    if ((((DMA_Stream_TypeDef *) (huart_->hdmarx)->Instance)->CR & DMA_SxCR_EN) != DMA_SxCR_EN) {
+      __HAL_UART_CLEAR_IDLEFLAG(huart_);
+      __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
+      HAL_UART_Abort(huart_);
+      startDma();
+    }
+  }
+  return 0;
 }
 
-void verbose_equals(void)
+bool GpsDriver::displayGnss(const char * name)
 {
-  for (int i = 0; i < ROWSIZE; i++) misc_printf("=");
-  misc_printf("\n");
-}
+  GnssPacket p;
 
-void sandbox_dashboard(bool clear)
-{
-  verbose = true;
+  if (read((uint8_t *) &p, sizeof(p))) {
+    static double lag = 0;
+    if (p.header.complete > p.header.timestamp) {
+      lag = (lag * 0.99 + 0.01 * (double) (p.header.complete - p.header.timestamp));
+    }
+    struct tm * gmt;
+    time_t seconds = p.unix_seconds;
+    gmt = gmtime(&seconds);
 
-  if (clear) misc_printf("%c[2J", ASCII_ESC);
+    misc_header((char *) name, p.header);
+    misc_printf("| pps %10.6f s | ", (double) p.pps * 1e-6);
 
-  misc_printf("%c[H", ASCII_ESC); // home
+    misc_printf("%02u/%02u/%04u ", gmt->tm_mon + 1, gmt->tm_mday, gmt->tm_year + 1900);
+    misc_printf("%02u:%02u:%02u.%09d | ", gmt->tm_hour, gmt->tm_min, gmt->tm_sec, p.unix_nanos);
 
-  verbose_equals();
-  misc_printf("SANDBOX DASHBOARD PIXRACER_PRO\n");
-  verbose_equals();
+    misc_printf("%14.8f deg %14.8f deg +/- %5.1f m | ", (double) p.lat, (double) p.lon, p.h_acc);
 
-  varmint.imu0_.display();
-  verbose_dashes();
-  varmint.mag_.display();
-  verbose_dashes();
-  varmint.baro_.display();
-  verbose_dashes();
-  varmint.pitot_.display();
-  verbose_dashes();
-  varmint.adc_.display();
-  verbose_dashes();
-  varmint.rc_.display();
-  verbose_dashes();
-  // varmint.gps_->display(); // TODO: cast to specific type if needed
+    misc_printf("%9.3f m msl +/- %8.3f m | ", p.height_msl, p.v_acc);
 
-  verbose_equals();
-}
+    misc_printf("%5.1f %5.1f %5.1f +/- %5.1f m/s | ", p.vel_n, p.vel_e, p.vel_d, p.speed_accy);
 
-void sandbox(void)
-{
-  // Give us time to read the initialization messages
-  time64.dMs(5000);
+    misc_printf("numSV %02u | ", p.num_sat);
+    misc_printf("Fix %02u | ", p.fix_type);
+    misc_printf("dt %6.0lf us\n", lag);
+  } else {
+    misc_printf("%s\n", name);
+  }
 
-  verbose = true;
-
-  //	 Test pwm outputs
-  //
-  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
-  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
-  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
-  //	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
-  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
-  //
-  //	while(1)
-  //	{
-  //	  PROBE1_HI;
-  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
-  //	  PROBE1_LO;
-  //	  time64.dUs(450); ~ 2khs update rate
-  //	}
-
-  uint32_t n = 0;
-  while (1) { sandbox_dashboard((n++) % 100 == 0); }
+  return true;
 }

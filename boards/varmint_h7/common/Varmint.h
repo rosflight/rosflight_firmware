@@ -46,6 +46,10 @@
 #include "Bmi088.h"
 #include "DlhrL20G.h"
 #include "Dps310.h"
+#include "gps/GpsDriver.h"
+#include "gps/GpsNull.h"
+#include "gps/Liv4f.h"
+#include "gps/Ubx.h"
 #include "Iis2mdc.h"
 #include "Ist8308.h"
 #include "Mcp4017.h"
@@ -54,7 +58,6 @@
 #include "Sbus.h"
 #include "Sd.h"
 #include "Telem.h"
-#include "Ubx.h"
 #include "Vcp.h"
 #include "interface/board.h"
 

@@ -178,13 +178,29 @@ void Varmint::init_board(void)
   status_list_[status_len_++] = &mag_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // GPS initialization
+  // GPS initialization - probe candidates
 
-  misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA,
-                          GPS_BAUD);
+  misc_printf("\n\nGPS Probing...\n");
+  Status* gps_status = nullptr;
+  init_status = ubx_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+  if (init_status == DRIVER_OK) {
+    gps_ = &ubx_;
+    gps_status = &ubx_;
+  } else {
+    init_status = liv4f_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+    if (init_status == DRIVER_OK) {
+      gps_ = &liv4f_;
+      gps_status = &liv4f_;
+    } else {
+      gps_ = &gps_null_;
+      gps_status = &gps_null_;
+      misc_printf("WARNING: No GPS detected, using null driver\n");
+      init_status = DRIVER_OK;
+    }
+  }
+
   misc_exit_status(init_status);
-  status_list_[status_len_++] = &gps_;
+  status_list_[status_len_++] = gps_status;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RC/S.Bus initialization
@@ -259,7 +275,7 @@ void Varmint::init_board(void)
   HAL_NVIC_EnableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
   HAL_NVIC_EnableIRQ(GPS_PPS_EXTI_IRQn); // EXTI15_10_IRQn GPS PPD
 
-  __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
+  __HAL_UART_ENABLE_IT(gps_->huart(), UART_IT_IDLE);
   __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);
 
   telem_.rxStart(); // Also enables its interrupts.

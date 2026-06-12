@@ -64,7 +64,11 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // clang-format off
 #define INTERFACE_LIST \
   Sbus rc_;			/* All */ \
-  Ubx gps_;			/* All */ \
+  GpsNull gps_null_;		/* GPS null object */ \
+  Ubx ubx_;			/* GPS candidate */ \
+  Liv4f liv4f_;			/* GPS candidate */ \
+  GpsDriver* gps_ = &gps_null_; /* Active GPS (probed, defaults to null) */ \
+  GpsDriver* gps_candidates_[2] = { &ubx_, &liv4f_ }; \
   Adc adc_;			/* All */ \
   Telem telem_;		/* All */ \
   Vcp vcp_;			/* All */ \
@@ -205,13 +209,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define RC_UART_INSTANCE (USART6)
 #define RC_UART_DMA (&hdma_usart6_rx)
 
-// uBlox
-#define UBX_HZ (10)
-#define UBX_NUM (3) // number of different types of packets
-#define	UBX_BAUD					(115200)
-
-#define GPS_HZ (UBX_HZ)
-#define GPS_BAUD (UBX_BAUD)
+// GPS
+#define GPS_HZ (10)
+#define GPS_BAUD (115200)
 
 #define GPS_PPS_PORT GPS_PPS_GPIO_Port // wire up to MOSI pin on external SPI connector
 #define GPS_PPS_PIN GPS_PPS_Pin  // wire up to MOSI pin on external SPI connector

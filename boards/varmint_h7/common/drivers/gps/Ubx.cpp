@@ -49,12 +49,12 @@ extern Time64 time64;
 #define UBX_DMA_BUFFER_SIZE 16 * 2 // must be multiple of 16
 DMA_RAM uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
 
-DTCM_RAM uint8_t ubx_double_buffer[2 * sizeof(UbxPacket)];
+DTCM_RAM uint8_t ubx_double_buffer[2 * sizeof(GnssPacket)];
 
 void Ubx::pps(uint64_t pps_timestamp)
 {
   static bool first_time = true;
-  if(!first_time) ubx_.pps = pps_timestamp;
+  if(!first_time) gnss_.pps = pps_timestamp;
   first_time = false;
 }
 
@@ -81,7 +81,7 @@ uint32_t Ubx::init(
   baud_initial_ = 9600;
   baud_ = baud;
 
-  ubx_.pps = 0;
+  gnss_.pps = 0;
 
   // gotNav_ = false;
   gotPvt_ = 0;
@@ -216,24 +216,10 @@ uint32_t Ubx::init(
   return initializationStatus_;
 }
 
-bool Ubx::poll(void)
-{
-  // Check if we are timed-out
-  if (time64.Us() > timeout_) {
-    if ((((DMA_Stream_TypeDef *) (huart_->hdmarx)->Instance)->CR & DMA_SxCR_EN) != DMA_SxCR_EN) {
-      __HAL_UART_CLEAR_IDLEFLAG(huart_); // this may be redundant with call to HAL_UART_Abort()
-      __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
-      HAL_UART_Abort(huart_); // flush any leftover crumbs.
-      startDma();
-    }
-  }
-  return 0;
-}
-
 bool Ubx::startDma(void)
 {
-  timeout_ = time64.Us() + dtimeout_; // 1000000 for one second timeout
-  HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, ubx_dma_rxbuf, UBX_DMA_BUFFER_SIZE); // start next read
+  timeout_ = time64.Us() + dtimeout_;
+  HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, ubx_dma_rxbuf, UBX_DMA_BUFFER_SIZE);
   return HAL_OK == hal_status;
 }
 
@@ -248,39 +234,55 @@ void Ubx::endDma(void)
 
     if (found) {
       if ((p.cl == 0x01) && (p.id == 0x07)) {
-        memcpy((uint8_t *) &(ubx_.pvt), p.payload, sizeof(ubx_.pvt));
-        struct tm tm;
-        tm.tm_sec  = ubx_.pvt.sec;
-        tm.tm_min  = ubx_.pvt.min;
-        tm.tm_hour = ubx_.pvt.hour;
-        tm.tm_mday = ubx_.pvt.day;
-        tm.tm_mon  = ubx_.pvt.month - 1;
-        tm.tm_year = ubx_.pvt.year - 1900;
-        ubx_.unix_seconds = mktime(&tm);
-        ubx_.unix_nanos = ubx_.pvt.nano;
+        UbxPvt pvt;
+        memcpy((uint8_t *) &pvt, p.payload, sizeof(pvt));
 
-        if (ubx_.pvt.nano<0)
+        // Convert UbxPvt to GnssPacket
+        struct tm tm;
+        tm.tm_sec  = pvt.sec;
+        tm.tm_min  = pvt.min;
+        tm.tm_hour = pvt.hour;
+        tm.tm_mday = pvt.day;
+        tm.tm_mon  = pvt.month - 1;
+        tm.tm_year = pvt.year - 1900;
+        gnss_.unix_seconds = mktime(&tm);
+        gnss_.unix_nanos = pvt.nano;
+
+        if (pvt.nano<0)
         {
-          ubx_.unix_seconds--;
-          ubx_.unix_nanos += 1000000000;
+          gnss_.unix_seconds--;
+          gnss_.unix_nanos += 1000000000;
         }
 
         gotPvt_ = time64.Us();
-        if ( (ubx_.pps !=0) && (ubx_.pps < gotPvt_) && ((ubx_.pvt.valid & 0x07)== 0x07) && ((ubx_.pvt.flags & 0x01)==0x01) )
+        if ( (gnss_.pps !=0) && (gnss_.pps < gotPvt_) && ((pvt.valid & 0x07)== 0x07) && ((pvt.flags & 0x01)==0x01) )
         {
-           if(ubx_.pvt.nano<0)
+           if(pvt.nano<0)
            {
-             ubx_.header.timestamp  = ubx_.pps - (uint64_t)(-ubx_.pvt.nano/1000);
+             gnss_.header.timestamp  = gnss_.pps - (uint64_t)(-pvt.nano/1000);
            } else {
-             ubx_.header.timestamp  = ubx_.pps + (uint64_t)(ubx_.pvt.nano/1000);
+             gnss_.header.timestamp  = gnss_.pps + (uint64_t)(pvt.nano/1000);
           }
         } else {
-          ubx_.header.timestamp = gotPvt_-22000; //
+          gnss_.header.timestamp = gotPvt_-22000; //
         }
 
-        ubx_.header.complete =  gotPvt_;
+        gnss_.header.complete = gotPvt_;
 
-        write((uint8_t *) &ubx_, sizeof(ubx_));
+        // Convert Ubx-specific units to standard units
+        gnss_.fix_type = pvt.fixType;
+        gnss_.num_sat = pvt.numSV;
+        gnss_.lon = (double)pvt.lon * 1e-7; // 100s of nanodegs to deg
+        gnss_.lat = (double)pvt.lat * 1e-7; // 100s of nanodegs to deg
+        gnss_.height_msl = (float)pvt.hMSL * 1e-3; // mm to m
+        gnss_.vel_n = (float)pvt.velN * 1e-3; // mm/s to m/s
+        gnss_.vel_e = (float)pvt.velE * 1e-3; // mm/s to m/s
+        gnss_.vel_d = (float)pvt.velD * 1e-3; // mm/s to m/s
+        gnss_.h_acc = (float)pvt.hAcc * 1e-3; // mm to m
+        gnss_.v_acc = (float)pvt.vAcc * 1e-3; // mm to m
+        gnss_.speed_accy = (float)pvt.sAcc * 1e-3; // mm/s to m/s
+
+        write((uint8_t *) &gnss_, sizeof(gnss_));
         gotPvt_ = 0;
       }
     }
@@ -520,43 +522,4 @@ uint16_t Ubx::cfgMsg(uint8_t cl, uint8_t id, uint8_t decimation_rate)
   return tx(message, CFG_MSG_LENGTH);
 }
 
-bool Ubx::display(void)
-{
-  UbxPacket p;
-
-  char name_pvt[] = "Ubx (pvt)";
-
-  if (read((uint8_t *) &p, sizeof(p))) {
-
-    static double lag = 0;
-    if(p.header.complete>p.header.timestamp)
-    {
-      lag = (lag*0.99 + 0.01*(double)(p.header.complete-p.header.timestamp));
-    }
-    struct tm *gmt;
-    time_t seconds = p.unix_seconds;
-    gmt = gmtime(&seconds);
-
-    misc_header(name_pvt, p.header );
-    misc_printf("| pps %10.6f s | ", (double)p.pps * 1e-6);
-    misc_printf(" iTOW %10.3f s | ", (double)p.pvt.iTOW/1000);
-
-//    misc_printf("%02u/%02u/%04u ", p.pvt.month, p.pvt.day, p.pvt.year);
-//    misc_printf("%02u:%02u:%02u%+011.9lf | ", p.pvt.hour, p.pvt.min, p.pvt.sec, (double)p.pvt.nano*1e-9);
-
-    misc_printf("%02u/%02u/%04u ", gmt->tm_mon+1, gmt->tm_mday, gmt->tm_year+1900);
-    misc_printf("%02u:%02u:%02u.%09u | ", gmt->tm_hour, gmt->tm_min, gmt->tm_sec,p.unix_nanos);
-
-    misc_printf("%14.8f deg %14.8f deg | ", (double) p.pvt.lat * 1e-7, (double) p.pvt.lon * 1e-7);
-    misc_printf("numSV %02u | ", p.pvt.numSV);
-    misc_printf("Fix %02u | ", p.pvt.fixType);
-    misc_printf("valid 0x%02X | ", p.pvt.valid);
-    misc_printf("flags 0x%02X | ", p.pvt.flags);
-    misc_printf("dt %9.0lf us\n", lag);
-  } else {
-    misc_printf("%s\n", name_pvt);
-  }
-
-  return 1;
-}
 

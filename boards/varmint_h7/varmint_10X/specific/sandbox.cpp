@@ -88,7 +88,7 @@ void sandbox_dashboard(bool clear)
   verbose_dashes();
   varmint.rc_.display();
   verbose_dashes();
-  varmint.gps_.display();
+  // varmint.gps_->display(); // TODO: cast to specific type if needed
 
   verbose_equals();
 }

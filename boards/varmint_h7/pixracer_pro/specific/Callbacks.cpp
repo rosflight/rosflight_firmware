@@ -66,7 +66,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
     varmint.pitot_.poll(poll_counter - 5);
 
     varmint.rc_.poll();              // Restart if dead
-    varmint.gps_.poll();             // Restart if dead
+    varmint.gps_->poll();             // Restart if dead
     varmint.telem_.poll();           // Check for new data packet to tx
     varmint.adc_.poll(poll_counter); // Start dma read
     varmint.vcp_.poll();             // Timeout
@@ -88,7 +88,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
     HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_RESET);
 
   if (varmint.imu0_.isMy(exti_pin)) varmint.imu0_.startDma();
-  if (varmint.gps_.isMy(exti_pin)) { varmint.gps_.pps(time64.Us()); }
+  if (varmint.gps_->isMy(exti_pin)) { varmint.gps_->pps(time64.Us()); }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart)
 {
   if (varmint.rc_.isMy(huart)) varmint.rc_.endDma();
-  if (varmint.gps_.isMy(huart)) varmint.gps_.endDma();
+  if (varmint.gps_->isMy(huart)) varmint.gps_->endDma();
 }
 
 void UART_RxIsrCallback(UART_HandleTypeDef * huart)

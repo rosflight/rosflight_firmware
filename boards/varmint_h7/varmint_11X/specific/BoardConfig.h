@@ -40,8 +40,8 @@
 
 #include <CommonConfig.h>
 
-#define SANDBOX false
-#define BOARD_STATUS_PRINT false
+#define SANDBOX true
+#define BOARD_STATUS_PRINT true
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
 // UART used for printf's
@@ -64,7 +64,11 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // clang-format off
 #define INTERFACE_LIST \
   Sbus rc_;                 /* All */ \
-  Ubx gps_;                 /* All */ \
+  GpsNull gps_null_;        /* GPS null object */ \
+  Ubx ubx_;                 /* GPS candidate */ \
+  Liv4f liv4f_;             /* GPS candidate */ \
+  GpsDriver* gps_ = &gps_null_; /* Active GPS (probed, defaults to null) */ \
+  GpsDriver* gps_candidates_[2] = { &ubx_, &liv4f_ }; \
   Adc adc_;                 /* All */ \
   Telem telem_;             /* All */ \
   Vcp vcp_;                 /* All */ \
@@ -177,7 +181,7 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // Digital Potentiometer used in later versions
 //	#define MCP4017_I2C_ADDRESS 		(0x2F)
 #define MCP4017_I2C (&hi2c1)
-#define SERVO_VOLTAGE (4.8) // Volts
+#define SERVO_VOLTAGE (8.2) // Volts
 
 // I2C EEPROM in 11X
 #define EEPROM_I2C (&hi2c1)
@@ -212,12 +216,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define RC_UART_INSTANCE (USART3)
 #define RC_UART_DMA (&hdma_usart3_rx)
 
-// uBlox
-#define UBX_HZ (10)
-#define UBX_NUM (3) // number of different types of packets
-//#define	UBX_BAUD					(57600)
+// GPS
 
-#define GPS_HZ (UBX_HZ)
+#define GPS_HZ (10)
 #define GPS_BAUD (57600)
 
 #define GPS_PPS_PORT (GPS_1PPS_GPIO_Port)
@@ -285,10 +286,10 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
 
 // Red LED
-// PE7
-#define RED_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET)
-#define RED_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET)
-#define RED_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_7)
+// PB2
+#define RED_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET)
+#define RED_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET)
+#define RED_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2)
 
 // Green LED
 // PE15

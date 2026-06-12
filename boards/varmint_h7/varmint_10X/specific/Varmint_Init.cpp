@@ -182,12 +182,29 @@ void Varmint::init_board(void)
   status_list_[status_len_++] = &mag_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // GPS initialization
+  // GPS initialization - probe candidates
 
-  misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+  misc_printf("\n\nGPS Probing...\n");
+  Status* gps_status = nullptr;
+  init_status = ubx_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+  if (init_status == DRIVER_OK) {
+    gps_ = &ubx_;
+    gps_status = &ubx_;
+  } else {
+    init_status = liv4f_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+    if (init_status == DRIVER_OK) {
+      gps_ = &liv4f_;
+      gps_status = &liv4f_;
+    } else {
+      gps_ = &gps_null_;
+      gps_status = &gps_null_;
+      misc_printf("WARNING: No GPS detected, using null driver\n");
+      init_status = DRIVER_OK;
+    }
+  }
+
   misc_exit_status(init_status);
-  status_list_[status_len_++] = &gps_;
+  status_list_[status_len_++] = gps_status;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RC/S.Bus initialization
@@ -261,7 +278,7 @@ void Varmint::init_board(void)
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);   // ADIS IMU DRDY
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn); // Bosh IMU DRDY
 
-  __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
+  __HAL_UART_ENABLE_IT(gps_->huart(), UART_IT_IDLE);
   __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);
 
   telem_.rxStart(); // Also enables its interrupts.
@@ -273,9 +290,9 @@ void Varmint::init_board(void)
   init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL);
   misc_exit_status(init_status);
 
-  RED_LO;
-  GRN_LO;
-  BLU_LO;
+  RED_HI;
+  GRN_HI;
+  BLU_HI;
 
 #if SANDBOX
   misc_printf("\n\nStarting Sandbox\n");

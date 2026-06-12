@@ -230,7 +230,7 @@ bool Adc::display(void)
 #endif
 
 #ifdef ADC_5V0
-    misc_f32(5.0 / 1.02, 5.0 * 1.02, p.volts[ADC_5V0], "5V0_FC", "%5.1f", "V"); //
+    misc_f32(5.0 / 1.02, 5.2 * 1.02, p.volts[ADC_5V0], "5V0_FC", "%5.1f", "V"); //
 #endif
 #ifdef ADC_5V0_CURRENT
     misc_f32(0.0, 1.0, p.volts[ADC_5V0_CURRENT], "5I0_FC", "%5.1f", "A"); //
@@ -244,7 +244,7 @@ bool Adc::display(void)
 #endif
 
 #ifdef ADC_SERVO_VOLTS
-    misc_f32(8.2 / 1.02, 8.2 * 1.02, p.volts[ADC_SERVO_VOLTS], "ServoV", "%5.1f", "V"); //
+    misc_f32(8.2 / 1.05, 8.2 * 1.05, p.volts[ADC_SERVO_VOLTS], "ServoV", "%5.1f", "V"); //
 #endif
 #ifdef ADC_SERVO_CURRENT
     misc_f32(0.0, 2.0, p.volts[ADC_SERVO_CURRENT], "ServoI", "%5.1f", "A"); //

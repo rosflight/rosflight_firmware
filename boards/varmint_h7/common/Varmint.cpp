@@ -243,24 +243,24 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 // GNSS
 bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 {
-  UbxPacket p;
+  GnssPacket p;
 
-  if (gps_.read((uint8_t *) &p, sizeof(p))) {
+  if (gps_->read((uint8_t *) &p, sizeof(p))) {
     gnss->header = p.header;
     gnss->pps = p.pps;
-    gnss->unix_seconds = p.unix_seconds; // Unix time
+    gnss->unix_seconds = p.unix_seconds;
     gnss->unix_nanos = p.unix_nanos;
-    gnss->fix_type = p.pvt.fixType;
-    gnss->num_sat = p.pvt.numSV;
-    gnss->lon = (double)p.pvt.lon* 1e-7; // Convert 100's of nanodegs into deg (DDS format)
-    gnss->lat = (double)p.pvt.lat* 1e-7; // Convert 100's of nanodegs into deg (DDS format)
-    gnss->height_msl = (float)p.pvt.hMSL* 1e-3; //mm to m
-    gnss->vel_n = (float)p.pvt.velN* 1e-3; // mm/s to m/s
-    gnss->vel_e = (float)p.pvt.velE* 1e-3; // mm/s to m/s
-    gnss->vel_d = (float)p.pvt.velD* 1e-3; // mm/s to m/s
-    gnss->h_acc = (float)p.pvt.hAcc* 1e-3; //mm to m
-    gnss->v_acc = (float)p.pvt.vAcc* 1e-3; //mm to m
-    gnss->speed_accy = (float)p.pvt.sAcc* 1e-3; // mm/s to m/s
+    gnss->fix_type = p.fix_type;
+    gnss->num_sat = p.num_sat;
+    gnss->lon = p.lon;
+    gnss->lat = p.lat;
+    gnss->height_msl = p.height_msl;
+    gnss->vel_n = p.vel_n;
+    gnss->vel_e = p.vel_e;
+    gnss->vel_d = p.vel_d;
+    gnss->h_acc = p.h_acc;
+    gnss->v_acc = p.v_acc;
+    gnss->speed_accy = p.speed_accy;
     return true;
   }
   return false;

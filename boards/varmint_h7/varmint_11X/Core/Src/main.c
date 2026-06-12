@@ -1620,9 +1620,6 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TP4_GPIO_Port, TP4_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, J105_2_SPI4_EXT_CS_Pin|J000_JETSON_DRDY_Pin|LED_GRN_Pin|LED_BLU_Pin
                           |ADIS165XX_RESET_Pin, GPIO_PIN_RESET);
 
@@ -1636,7 +1633,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LED_RED_Pin|J105_2_SPI4_EXT_CLK_Pin|TP5_Pin|J105_3_SYNC_OUT_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LED_RED_Pin|J105_2_SPI4_EXT_CLK_Pin|J105_3_SYNC_OUT_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, GPIO_PIN_SET);
@@ -1658,9 +1655,8 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : TP4_Pin */
   GPIO_InitStruct.Pin = TP4_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(TP4_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : J105_2_SPI4_EXT_CS_Pin DPS310_CSn_Pin J000_JETSON_DRDY_Pin LED_GRN_Pin
@@ -1685,11 +1681,11 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(J105_2_SPI4_EXT_RST_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IIS2MDC_DRDY_Pin J105_2_DRDY_Pin PITOT_DRDY_Pin */
-  GPIO_InitStruct.Pin = IIS2MDC_DRDY_Pin|J105_2_DRDY_Pin|PITOT_DRDY_Pin;
+  /*Configure GPIO pin : IIS2MDC_DRDY_Pin */
+  GPIO_InitStruct.Pin = IIS2MDC_DRDY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(IIS2MDC_DRDY_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : J103_AUX_UART6_RX_Pin */
   GPIO_InitStruct.Pin = J103_AUX_UART6_RX_Pin;
@@ -1706,14 +1702,18 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BMI088_ACCEL_CSn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED_RED_Pin J105_2_SPI4_EXT_CLK_Pin TP5_Pin J105_3_SYNC_OUT_Pin
-                           IIS2MDC_CSn_Pin */
-  GPIO_InitStruct.Pin = LED_RED_Pin|J105_2_SPI4_EXT_CLK_Pin|TP5_Pin|J105_3_SYNC_OUT_Pin
-                          |IIS2MDC_CSn_Pin;
+  /*Configure GPIO pins : LED_RED_Pin J105_2_SPI4_EXT_CLK_Pin J105_3_SYNC_OUT_Pin IIS2MDC_CSn_Pin */
+  GPIO_InitStruct.Pin = LED_RED_Pin|J105_2_SPI4_EXT_CLK_Pin|J105_3_SYNC_OUT_Pin|IIS2MDC_CSn_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : J105_2_DRDY_Pin PITOT_DRDY_Pin */
+  GPIO_InitStruct.Pin = J105_2_DRDY_Pin|PITOT_DRDY_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DPS310_DRDY_Pin */
   GPIO_InitStruct.Pin = DPS310_DRDY_Pin;

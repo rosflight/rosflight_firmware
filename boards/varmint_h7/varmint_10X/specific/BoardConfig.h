@@ -64,7 +64,11 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // clang-format off
 #define INTERFACE_LIST  \
   Sbus rc_;                 /* All */                \
-  Ubx gps_;                 /* All */                \
+  GpsNull gps_null_;        /* GPS null object */    \
+  Ubx ubx_;                 /* GPS candidate */      \
+  Liv4f liv4f_;             /* GPS candidate */      \
+  GpsDriver* gps_ = &gps_null_; /* Active GPS (probed, defaults to null) */ \
+  GpsDriver* gps_candidates_[2] = { &ubx_, &liv4f_ }; \
   Adc adc_;                 /* All */                \
   Telem telem_;             /* All */                \
   Vcp vcp_;                 /* All */                \
@@ -212,13 +216,10 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define RC_UART_INSTANCE (USART3)
 #define RC_UART_DMA (&hdma_usart3_rx)
 
-// uBlox
-#define UBX_HZ (10)
-#define UBX_NUM (3) // number of different types of packets
-#define	UBX_BAUD (115200)
+// GPS
 
-#define GPS_HZ (UBX_HZ)
-#define GPS_BAUD (UBX_BAUD)
+#define GPS_HZ (10)
+#define GPS_BAUD (115200)
 
 #define GPS_PPS_PORT (GPS_1PPS_GPIO_Port)
 #define GPS_PPS_PIN (GPS_1PPS_Pin)
@@ -290,6 +291,8 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define RED_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET)
 #define RED_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET)
 #define RED_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_7)
+
+
 
 // Green LED
 // PE15
