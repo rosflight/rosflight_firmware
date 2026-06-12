@@ -216,7 +216,7 @@ bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 void Varmint::rc_init(rc_type_t rc_type) { (void) rc_type; };
 bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
 {
-  return rc_->read((uint8_t *) rc_struct, sizeof(rosflight_firmware::RcStruct));
+  return rc_.read((uint8_t *) rc_struct, sizeof(rosflight_firmware::RcStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
