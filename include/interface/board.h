@@ -36,8 +36,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "board.h"
-
 namespace rosflight_firmware
 {
 
@@ -59,9 +57,10 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((__packed__))
 {
   PacketHeader header;
-  float accel[3];    // rad/s
-  float gyro[3];     // rad/s
-  float temperature; // K
+  double accel[3];    // rad/s
+  double gyro[3];     // rad/s
+  double temperature; // K
+  double dataTime;     // s
 } ImuStruct;
 
 typedef struct //__attribute__((__packed__))
@@ -95,8 +94,8 @@ typedef struct //__attribute__((__packed__))
 typedef struct //__attribute__((packed))
 {
   PacketHeader header; //
-  float flux[3];       // T, magnetic flux density
-  float temperature;   // K
+  double flux[3];       // T, magnetic flux density
+  double temperature;   // K
 } MagStruct;
 
 enum class GNSSFixType // quality from GGA
@@ -142,8 +141,7 @@ typedef struct
   bool battery;
 } got_flags;
 
-// 16 analog + 8 digital MUST BE > 14 (Mavlink message size is hardware to 14)
-#define RC_STRUCT_CHANNELS 24
+#define RC_STRUCT_CHANNELS 24 // must be 24 for 16 analog and 8 digital channels.
 typedef struct //__attribute__((packed))
 {
   PacketHeader header;

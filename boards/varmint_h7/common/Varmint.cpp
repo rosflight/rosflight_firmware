@@ -147,63 +147,28 @@ uint16_t Varmint::sensors_init_message(char * message, uint16_t size, uint16_t i
 // IMU
 bool Varmint::imu_read(rosflight_firmware::ImuStruct * imu)
 {
-  ImuPacket p;
-  if (imu0_.read((uint8_t *) &p, sizeof(p))) {
-    imu->header = p.header;
-    imu->accel[0] = p.accel[0];
-    imu->accel[1] = p.accel[1];
-    imu->accel[2] = p.accel[2];
-    imu->gyro[0] = p.gyro[0];
-    imu->gyro[1] = p.gyro[1];
-    imu->gyro[2] = p.gyro[2];
-    imu->temperature = p.temperature;
-    return true;
-  }
-  return false;
+  return imu0_.read((uint8_t *) imu, sizeof(rosflight_firmware::ImuStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // MAG
 bool Varmint::mag_read(rosflight_firmware::MagStruct * mag)
 {
-  MagPacket p;
-  if (mag_.read((uint8_t *) &p, sizeof(p))) {
-    mag->header = p.header;
-    mag->flux[0] = p.flux[0];
-    mag->flux[1] = p.flux[1];
-    mag->flux[2] = p.flux[2];
-    mag->temperature = p.temperature;
-    return true;
-  }
-  return false;
+  return mag_.read((uint8_t *) mag, sizeof(rosflight_firmware::MagStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Baro
 bool Varmint::baro_read(rosflight_firmware::PressureStruct * baro)
 {
-  PressurePacket p;
-  if (baro_.read((uint8_t *) &p, sizeof(p))) {
-    baro->header = p.header;
-    baro->pressure = p.pressure;
-    baro->temperature = p.temperature;
-    return true;
-  }
-  return false;
+  return baro_.read((uint8_t *) baro, sizeof(rosflight_firmware::PressureStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Pitot
 bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure)
 {
-  PressurePacket p;
-  if (pitot_.read((uint8_t *) &p, sizeof(p))) {
-    diff_pressure->header = p.header;
-    diff_pressure->pressure = p.pressure;
-    diff_pressure->temperature = p.temperature;
-    return true;
-  }
-  return false;
+  return pitot_.read((uint8_t *) diff_pressure, sizeof(rosflight_firmware::PressureStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,27 +208,7 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 // GNSS
 bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 {
-  GnssPacket p;
-
-  if (gps_->read((uint8_t *) &p, sizeof(p))) {
-    gnss->header = p.header;
-    gnss->pps = p.pps;
-    gnss->unix_seconds = p.unix_seconds;
-    gnss->unix_nanos = p.unix_nanos;
-    gnss->fix_type = p.fix_type;
-    gnss->num_sat = p.num_sat;
-    gnss->lon = p.lon;
-    gnss->lat = p.lat;
-    gnss->height_msl = p.height_msl;
-    gnss->vel_n = p.vel_n;
-    gnss->vel_e = p.vel_e;
-    gnss->vel_d = p.vel_d;
-    gnss->h_acc = p.h_acc;
-    gnss->v_acc = p.v_acc;
-    gnss->speed_accy = p.speed_accy;
-    return true;
-  }
-  return false;
+  return gps_->read((uint8_t *) gnss, sizeof(rosflight_firmware::GnssStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,17 +216,7 @@ bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 void Varmint::rc_init(rc_type_t rc_type) { (void) rc_type; };
 bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
 {
-  RcPacket p;
-
-  if (rc_.read((uint8_t *) &p, sizeof(p))) {
-    rc_struct->header = p.header;
-    uint16_t len = RC_STRUCT_CHANNELS < RC_PACKET_CHANNELS ? RC_STRUCT_CHANNELS : RC_PACKET_CHANNELS;
-    for (uint16_t i = 0; i < len; i++) { rc_struct->chan[i] = p.chan[i]; }
-    rc_struct->frameLost = p.frameLost;
-    rc_struct->failsafeActivated = p.failsafeActivated;
-    return true;
-  }
-  return false;
+  return rc_->read((uint8_t *) rc_struct, sizeof(rosflight_firmware::RcStruct));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
