@@ -49,6 +49,17 @@
    new_imu_ = true;
  }
  
+ void testBoard::set_battery(float voltage, float current, float temperature, uint64_t time_us)
+ {
+   battery_.voltage = voltage;
+   battery_.current = current;
+   battery_.temperature = temperature;
+   battery_.header.timestamp = time_us;
+   battery_.header.complete = time_us;
+   battery_.header.status = 0;
+   battery_valid_ = true;
+ }
+ 
  // setup
  void testBoard::init_board() { backup_memory_clear(); }
  void testBoard::board_reset(bool bootloader) {}
@@ -132,8 +143,11 @@
  
  bool testBoard::battery_read(rosflight_firmware::BatteryStruct * batt)
  {
-   (void) batt;
-   return false;
+   if (!battery_valid_) {
+     return false;
+   }
+   *batt = battery_;
+   return true;
  }
  void testBoard::battery_voltage_set_multiplier(double multiplier) {}
  void testBoard::battery_current_set_multiplier(double multiplier) {}
