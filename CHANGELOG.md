@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/rosflight/rosflight_firmware/compare/v2.0.1...v2.0.2) (2026-06-12)
+
+
+### Bug Fixes
+
+* Initialize battery LPF state after params load ([#489](https://github.com/rosflight/rosflight_firmware/issues/489)) ([c3a233b](https://github.com/rosflight/rosflight_firmware/commit/c3a233b8188d4c174b4d838ad886ff09b297a5ee))
+
 ## [2.0.1](https://github.com/rosflight/rosflight_firmware/compare/v2.0.0...v2.0.1) (2026-03-11)
 
 
