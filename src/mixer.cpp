@@ -33,6 +33,7 @@
 
 #include "rosflight.h"
 
+#include <cmath>
 #include <cstdint>
 #include <limits>
 
@@ -270,13 +271,16 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> mixer_matrix_pinv =
     svd.solve(Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS>::Identity());
 
+  constexpr float kMixerZeroThreshold = 1.0e-6f;
+
   mixer_t inverted_mixer;
   // Fill in the mixing matrix from the inverted matrix above
   for (int i = 0; i < NUM_MIXER_OUTPUTS; i++) {
     inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
     inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
     for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
-      inverted_mixer.u[j][i] = mixer_matrix_pinv(i, j);
+      float value = mixer_matrix_pinv(i, j);
+      inverted_mixer.u[j][i] = (std::abs(value) < kMixerZeroThreshold) ? 0.0f : value;
     }
   }
   return inverted_mixer;
