@@ -35,8 +35,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "board.h"
-
 namespace rosflight_firmware
 {
 
