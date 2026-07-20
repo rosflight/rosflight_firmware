@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20...3.28)
 project(rosflight_tests)
 
 add_definitions(-DGIT_VERSION_HASH=0x${GIT_VERSION_HASH})
