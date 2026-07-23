@@ -87,7 +87,7 @@ void CommandManager::init_failsafe()
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
-          "Invalid RC F axis. Defaulting to z-axis.");
+                            "Invalid RC F axis. Defaulting to z-axis.");
       multirotor_failsafe_command_.u[2].value = failsafe_thr_param;
       break;
   }
@@ -111,10 +111,10 @@ void CommandManager::interpret_rc(void)
   rc_command_.u[1].value = 0.0;
   rc_command_.u[2].value = 0.0;
   switch (static_cast<rc_f_axis_t>(RF_.params_.get_param_int(PARAM_RC_F_AXIS))) {
-    case X_AXIS:   // RC F = X axis
+    case X_AXIS: // RC F = X axis
       rc_command_.u[0].value = RF_.rc_.stick(RC::STICK_F);
       break;
-    case Y_AXIS:   // RC F = Y axis
+    case Y_AXIS: // RC F = Y axis
       rc_command_.u[1].value = RF_.rc_.stick(RC::STICK_F);
       break;
     case Z_AXIS:
@@ -122,7 +122,7 @@ void CommandManager::interpret_rc(void)
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
-          "Invalid RC F axis. Defaulting to z-axis.");
+                            "Invalid RC F axis. Defaulting to z-axis.");
       rc_command_.u[2].value = RF_.rc_.stick(RC::STICK_F);
       break;
   }
@@ -195,10 +195,12 @@ uint16_t CommandManager::determine_override_status()
   // Check if the override switch exists and is triggered, or if the sticks have deviated enough to
   // trigger an override
   uint16_t rc_override{0};
-  if (RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE)) {
+  if (RF_.rc_.switch_mapped(RC::SWITCH_ATT_OVERRIDE)
+      && RF_.rc_.switch_on(RC::SWITCH_ATT_OVERRIDE)) {
     rc_override |= OVERRIDE_ATT_SWITCH;
   }
-  if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE) && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE)) {
+  if (RF_.rc_.switch_mapped(RC::SWITCH_THROTTLE_OVERRIDE)
+      && RF_.rc_.switch_on(RC::SWITCH_THROTTLE_OVERRIDE)) {
     rc_override |= OVERRIDE_THR_SWITCH;
   }
 
@@ -213,9 +215,7 @@ uint16_t CommandManager::determine_override_status()
 uint16_t CommandManager::check_if_attitude_channel_is_overridden_by_rc(MuxChannel channel)
 {
   uint16_t rc_overrides{0};
-  if (stick_deviated(channel)) {
-    rc_overrides |= channel_override_[channel].stick_override_reason;
-  }
+  if (stick_deviated(channel)) { rc_overrides |= channel_override_[channel].stick_override_reason; }
   if (!(muxes_[channel].onboard->active)) {
     rc_overrides |= channel_override_[channel].offboard_inactive_override_reason;
   }
@@ -238,15 +238,13 @@ uint16_t CommandManager::check_if_throttle_channel_is_overridden_by_rc()
       break;
     default:
       RF_.comm_manager_.log(CommLinkInterface::LogSeverity::LOG_WARNING,
-          "Invalid RC F axis. Defaulting to z-axis.");
+                            "Invalid RC F axis. Defaulting to z-axis.");
       selected_channel = MUX_FZ;
       break;
   }
 
   uint16_t rc_overrides{0};
-  if (!(muxes_[selected_channel].onboard->active)) {
-    rc_overrides |= OVERRIDE_OFFBOARD_T_INACTIVE;
-  }
+  if (!(muxes_[selected_channel].onboard->active)) { rc_overrides |= OVERRIDE_OFFBOARD_T_INACTIVE; }
   if (RF_.params_.get_param_int(PARAM_RC_OVERRIDE_TAKE_MIN_THROTTLE)) {
     if (muxes_[selected_channel].rc->value < muxes_[selected_channel].onboard->value) {
       rc_overrides |= OVERRIDE_T;
@@ -266,11 +264,12 @@ void CommandManager::do_muxing(uint16_t rc_override)
   }
 }
 
-void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override )
+void CommandManager::do_channel_muxing(MuxChannel channel, uint16_t rc_override)
 {
   bool override_this_channel = (rc_override & channel_override_[channel].override_mask);
   // set the combined channel output depending on whether RC is overriding for this channel or not
-  *muxes_[channel].combined = override_this_channel ? *muxes_[channel].rc : *muxes_[channel].onboard;
+  *muxes_[channel].combined =
+    override_this_channel ? *muxes_[channel].rc : *muxes_[channel].onboard;
 }
 
 uint16_t CommandManager::get_rc_override() const { return rc_override_; }
@@ -316,9 +315,7 @@ bool CommandManager::run()
     if (RF_.board_.clock_millis()
         > offboard_command_.stamp_ms + RF_.params_.get_param_int(PARAM_OFFBOARD_TIMEOUT)) {
       // If it has been longer than 100 ms, then disable the offboard control
-      for (int i=0; i<Mixer::NUM_MIXER_OUTPUTS; ++i) {
-        offboard_command_.u[i].active = false;
-      }
+      for (int i = 0; i < Mixer::NUM_MIXER_OUTPUTS; ++i) { offboard_command_.u[i].active = false; }
     }
 
     // Perform muxing

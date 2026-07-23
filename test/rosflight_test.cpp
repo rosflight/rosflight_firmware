@@ -1,10 +1,9 @@
 #include "common.h"
 #include "mavlink.h"
-#include "test_board.h"
 #include "state_manager.h"
+#include "test_board.h"
 
 #include "rosflight.h"
-
 
 using namespace rosflight_firmware;
 
@@ -16,8 +15,8 @@ public:
   ROSflight rf;
 
   ROSflightTest()
-    : mavlink(board)
-    , rf(board, mavlink)
+      : mavlink(board)
+      , rf(board, mavlink)
   {}
 
   void SetUp() override

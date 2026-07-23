@@ -79,8 +79,8 @@ public:
   void send_range(uint8_t system_id,
                   /* TODO enum type*/ uint8_t type, float range, float max_range,
                   float min_range) override;
-  void send_status(uint8_t system_id, bool armed, bool failsafe, uint16_t rc_override, bool offboard,
-                   uint8_t error_code, uint8_t control_mode, int16_t num_errors,
+  void send_status(uint8_t system_id, bool armed, bool failsafe, uint16_t rc_override,
+                   bool offboard, uint8_t error_code, uint8_t control_mode, int16_t num_errors,
                    int16_t loop_time_us) override;
   void send_timesync(uint8_t system_id, int64_t tc1, int64_t ts1) override;
   void send_version(uint8_t system_id, const char * const version) override;

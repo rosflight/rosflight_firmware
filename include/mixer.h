@@ -32,9 +32,9 @@
 #ifndef ROSFLIGHT_FIRMWARE_MIXER_H
 #define ROSFLIGHT_FIRMWARE_MIXER_H
 
-#include "param_listener.h"
-#include "controller.h"
 #include "command_manager.h"
+#include "controller.h"
+#include "param_listener.h"
 
 #include <eigen/Eigen/Dense>
 #include <eigen/Eigen/SVD>
@@ -72,9 +72,9 @@ public:
   typedef enum
   {
     AUX, // None
-    S,    // Servo
-    M,    // Motor
-    G     // GPIO
+    S,   // Servo
+    M,   // Motor
+    G    // GPIO
   } output_type_t;
 
   typedef struct
@@ -84,11 +84,11 @@ public:
     float u[NUM_MIXER_OUTPUTS][NUM_MIXER_OUTPUTS];
   } mixer_t;
 
-  typedef struct 
+  typedef struct
   {
     output_type_t (*output_type)[NUM_MIXER_OUTPUTS];
     float (*default_pwm_rate)[NUM_MIXER_OUTPUTS];
-    float *u[NUM_MIXER_OUTPUTS];
+    float * u[NUM_MIXER_OUTPUTS];
   } mixer_selection_t;
 
   typedef struct
@@ -112,7 +112,7 @@ private:
 
   void load_primary_mixer_values();
   void load_secondary_mixer_values();
-  mixer_t invert_mixer(const mixer_t* mixer_to_invert);
+  mixer_t invert_mixer(const mixer_t * mixer_to_invert);
   float mix_multirotor_with_motor_parameters(Controller::Output commands);
   float mix_multirotor_without_motor_parameters(Controller::Output commands);
   void select_primary_or_secondary_mixer();
@@ -334,7 +334,7 @@ public:
   void set_new_aux_command(aux_command_t new_aux_command);
   inline const float * get_outputs() const { return raw_outputs_; }
   float * raw_outputs() { return raw_outputs_; } // board pwm write does not expect a const value.
- 
+
   void calculate_mixer_values();
   void mix_multirotor();
   void mix_fixedwing();

@@ -151,18 +151,8 @@ void Mavlink::send_gnss(uint8_t system_id, GnssStruct * data)
     system_id, compid_, &msg,
     data->unix_seconds, // Unix time in seconds
     data->unix_nanos,   // Unix nanoseconds
-    data->fix_type,
-    data->num_sat,
-    data->lat,
-    data->lon,
-    data->height_msl,
-    data->vel_n,
-    data->vel_e,
-    data->vel_d,
-    data->h_acc,
-    data->v_acc,
-    data->speed_accy,
-    data->header.timestamp);
+    data->fix_type, data->num_sat, data->lat, data->lon, data->height_msl, data->vel_n, data->vel_e,
+    data->vel_d, data->h_acc, data->v_acc, data->speed_accy, data->header.timestamp);
   send_message(msg);
 }
 
@@ -465,10 +455,7 @@ void Mavlink::handle_msg_offboard_control(const mavlink_message_t * const msg)
       return;
   }
 
-  for (std::size_t i=0; i<std::size(ctrl.u); ++i)
-  {
-    control.u[i].value = ctrl.u[i];
-  }
+  for (std::size_t i = 0; i < std::size(ctrl.u); ++i) { control.u[i].value = ctrl.u[i]; }
 
   control.u[0].valid = !(ctrl.ignore & IGNORE_VALUE0);
   control.u[1].valid = !(ctrl.ignore & IGNORE_VALUE1);
