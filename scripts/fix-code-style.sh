@@ -3,9 +3,9 @@
 SCRIPT=$(readlink -f $0)
 echo $SCRIPT
 SCRIPTPATH=`dirname $SCRIPT`
-echo #SCRIPTPATH
+# echo $SCRIPTPATH
 cd $SCRIPTPATH/..
 
 find . -iname "*.h" -o -iname "*.hpp" -o -iname "*.cpp" -o -iname "*.c" \
-| grep -Ev "^(./comms/mavlink/v1.0|./.git|./lib/eigen|./build|./CMakeFiles|.*/Core/|.*/Drivers/|.*/AL94_USB_Composite/)" \
+| grep -Ev "^(./comms/mavlink/v1.0|./.git|./lib/eigen|./build|./CMakeFiles|.*/boards/)" \
 | xargs clang-format -i --verbose -style=file
