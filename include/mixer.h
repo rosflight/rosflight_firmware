@@ -36,9 +36,6 @@
 #include "controller.h"
 #include "param_listener.h"
 
-#include <eigen/Eigen/Dense>
-#include <eigen/Eigen/SVD>
-
 #include <cstdint>
 
 namespace rosflight_firmware
