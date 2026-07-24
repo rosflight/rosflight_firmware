@@ -24,7 +24,6 @@
 # ./build/test-release/test/unit_tests
 
 cmake_minimum_required(VERSION 3.20...3.28)
-set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 project(rosflight_firmware C CXX ASM)
 
 if(NOT CMAKE_BUILD_TYPE)
