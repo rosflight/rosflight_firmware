@@ -1,72 +1,51 @@
+# This is not a top-level project. It is called from <board>/CMakeLists.txt
 # test: see root CMakeLists.txt for magic words.
 
-### project settings ###
-
-cmake_minimum_required(VERSION 3.20...3.28)
-
-if(NOT DEFINED TARGET_NAME)
-    set(TARGET_NAME "varmint_h7")
-endif()
-
-project(${TARGET_NAME} C CXX ASM)
-
-### Pre-processor ###
-add_definitions(-DDEBUG -DUSE_HAL_DRIVER)
+set(board_source_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+set(common_source_dir "${board_source_dir}/../common")
 
 ### source files ###
-# Add test directory if being compiled without rosflight_firmware. Normally ROSFLIGHT_SOURCES is
-#  provided by the CMakeLists.txt file in the root of the firmware repo and has the source files
-#  for the firmware.
-if(NOT DEFINED ROSFLIGHT_SOURCES)
-    include_directories(
-		../test 
-		../test/interface
-	)
-    set(ROSFLIGHT_SOURCES "../test/main.cpp")
-endif()
-	
-file(GLOB_RECURSE VARMINT_SOURCES
-	"Core/Src/*.c"
-	"Core/Startup/*.s"
-	"Drivers/*.c"
-	"../common/*.cpp"
-	"../common/drivers/*.cpp"
-	"../common/AL94_USB_Composite/*.c"
-	"specific/*.cpp"
-)
-
-include_directories(
-	Core/Inc
-	Drivers/STM32H7xx_HAL_Driver/Inc
-	Drivers/STM32H7xx_HAL_Driver/Inc/Legacy
-	Drivers/CMSIS/Device/ST/STM32H7xx/Include
-	Drivers/CMSIS/Include
-	../common
-	../common/drivers
-	../common/AL94_USB_Composite
-	specific 
+file(GLOB_RECURSE board_sources
+  "${board_source_dir}/Core/Src/*.c"
+  "${board_source_dir}/Core/Startup/*.s"
+  "${board_source_dir}/Drivers/*.c"
+  "${board_source_dir}/specific/*.cpp"
+  "${common_source_dir}//*.cpp"
+  "${common_source_dir}/drivers/*.cpp"
+  "${common_source_dir}/AL94_USB_Composite/*.c"
 )
 
 ### build target ###
-add_executable(${TARGET_NAME}.elf ${ROSFLIGHT_SOURCES} ${VARMINT_SOURCES})
-set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/../common/STM32H7LinkerScript.ld)
+add_executable(${TARGET_NAME}.elf ${board_sources})
+target_compile_definitions(${TARGET_NAME}.elf PRIVATE DEBUG USE_HAL_DRIVER)
+target_include_directories(${TARGET_NAME}.elf PRIVATE
+  ${board_source_dir}/Core/Inc
+  ${board_source_dir}/Drivers/STM32H7xx_HAL_Driver/Inc
+  ${board_source_dir}/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy
+  ${board_source_dir}/Drivers/CMSIS/Device/ST/STM32H7xx/Include
+  ${board_source_dir}/Drivers/CMSIS/Include
+  ${board_source_dir}/specific
+  ${common_source_dir}
+  ${common_source_dir}/drivers
+  ${common_source_dir}/AL94_USB_Composite
+)
+target_link_libraries(${TARGET_NAME}.elf PRIVATE
+  rosflight_firmware::rosflight_firmware
+)
 
+set(linker_script ${common_source_dir}/STM32H7LinkerScript.ld)
 target_link_options(${TARGET_NAME}.elf PRIVATE
-    "-T${LINKER_SCRIPT}"
-    "-Wl,-Map=${CMAKE_BINARY_DIR}/${TARGET_NAME}.elf.map,--cref"
+  "-T${linker_script}"
+  "-Wl,-Map=${CMAKE_BINARY_DIR}/${TARGET_NAME}.elf.map,--cref"
 )
 #${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/output/
 
-target_compile_definitions(${TARGET_NAME}.elf PUBLIC
-    GIT_VERSION_HASH=0x${GIT_VERSION_HASH}
-    GIT_VERSION_STRING=\"${GIT_VERSION_STRING}\"
-)
-
-set(HEX_FILE ${PROJECT_BINARY_DIR}/${TARGET_NAME}.hex)
-set(BIN_FILE ${PROJECT_BINARY_DIR}/${TARGET_NAME}.bin)
+set(hex_file ${PROJECT_BINARY_DIR}/${TARGET_NAME}.hex)
+set(bin_file ${PROJECT_BINARY_DIR}/${TARGET_NAME}.bin)
 
 add_custom_command(TARGET ${TARGET_NAME}.elf POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${TARGET_NAME}.elf> ${HEX_FILE}
-    COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${TARGET_NAME}.elf> ${BIN_FILE}
-	COMMENT "Building Artifacts: ${HEX_FILE} and ${BIN_FILE}"
+  COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${TARGET_NAME}.elf> ${hex_file}
+  COMMAND
+    ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${TARGET_NAME}.elf> ${bin_file}
+  COMMENT "Building Artifacts: ${hex_file} and ${bin_file}"
 )
