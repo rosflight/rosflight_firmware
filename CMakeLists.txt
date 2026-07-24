@@ -107,9 +107,9 @@ set(supported_boards
 )
 set_property(CACHE BOARD_TO_BUILD PROPERTY STRINGS ${supported_boards})
 
-set(BOARD_DIR_varmint_10X "boards/varmint_h7/varmint_10X")
-set(BOARD_DIR_varmint_11X "boards/varmint_h7/varmint_11X")
-set(BOARD_DIR_pixracer_pro "boards/varmint_h7/pixracer_pro")
+set(BOARD_DIR_varmint_10X "boards/stm32_h7/varmint_10X")
+set(BOARD_DIR_varmint_11X "boards/stm32_h7/varmint_11X")
+set(BOARD_DIR_pixracer_pro "boards/stm32_h7/pixracer_pro")
 
 ### select boards to compile ###
 if("${BOARD_TO_BUILD}" STREQUAL "test")
