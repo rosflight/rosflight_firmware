@@ -5,9 +5,9 @@ function(add_stm32_h7_board board_name mcu_definition)
   set(board_source_dir "${CMAKE_CURRENT_SOURCE_DIR}")
   set(common_source_dir "${CMAKE_CURRENT_FUNCTION_LIST_DIR}")
 
-  if(NOT TARGET rosflight_firmware::rosflight_firmware)
+  if(NOT TARGET rosflight_firmware::firmware_main)
     message(FATAL_ERROR "add_stm32_h7_board() "
-      "requires rosflight_firmware::rosflight_firmware to be defined first"
+      "requires rosflight_firmware::firmware_main to be defined first"
     )
   endif()
 
@@ -42,7 +42,7 @@ function(add_stm32_h7_board board_name mcu_definition)
     ${common_source_dir}/AL94_USB_Composite
   )
   target_link_libraries(${board_name}.elf PRIVATE
-    rosflight_firmware::rosflight_firmware
+    rosflight_firmware::firmware_main
   )
 
   set(linker_script "${common_source_dir}/STM32H7LinkerScript.ld")

@@ -24,7 +24,12 @@
 # ./build/test-release/test/unit_tests
 
 cmake_minimum_required(VERSION 3.20...3.28)
-project(rosflight_firmware C CXX ASM)
+
+set(rosflight_firmware_is_top_level FALSE)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(rosflight_firmware_is_top_level TRUE)
+  project(rosflight_firmware C CXX ASM)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
@@ -55,7 +60,7 @@ endif()
 add_library(eigen_local INTERFACE)
 add_library(rosflight_firmware::eigen_local ALIAS eigen_local)
 target_compile_features(eigen_local INTERFACE cxx_std_17)
-# Marking as SYSTEM library suppresses warnings from Eigen
+# Marking as SYSTEM include suppresses warnings from Eigen
 target_include_directories(eigen_local SYSTEM INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/lib
 )
@@ -70,7 +75,6 @@ add_library(rosflight_firmware
   ${CMAKE_CURRENT_SOURCE_DIR}/src/command_manager.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/controller.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/estimator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/mixer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/param.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/rc.cpp
@@ -95,6 +99,21 @@ target_link_libraries(rosflight_firmware
   PRIVATE rosflight_firmware::eigen_local
   PUBLIC rosflight_firmware::turbomath
 )
+
+# Create OBJECT library that separates out `int main()` to be included in the
+# final <board_name>.elf target
+add_library(rosflight_firmware_main OBJECT
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+)
+add_library(rosflight_firmware::firmware_main ALIAS rosflight_firmware_main)
+target_link_libraries(rosflight_firmware_main PUBLIC
+  rosflight_firmware::rosflight_firmware
+)
+
+# Don't configure a board for SIL case (when included from rosflight_sim)
+if(NOT rosflight_firmware_is_top_level)
+  return()
+endif()
 
 ### Create registry of boards with directory location for each
 set(BOARD_TO_BUILD "" CACHE STRING "Select the board to build")
