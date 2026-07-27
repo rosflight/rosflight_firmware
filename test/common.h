@@ -4,9 +4,9 @@
 
 #include <turbomath/turbomath.h>
 
-#include <eigen/Eigen/Core>
-#include <eigen/Eigen/Dense>
-#include <eigen/Eigen/Geometry>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <gtest/gtest.h>
 
 #include <cstdint>

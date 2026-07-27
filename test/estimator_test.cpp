@@ -4,7 +4,7 @@
 
 #include "rosflight.h"
 
-#include <eigen/unsupported/Eigen/MatrixFunctions>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include <cmath>
 #include <fstream>

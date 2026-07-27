@@ -57,12 +57,19 @@ endif()
 
 ### rosflight_firmware libraries ###
 
+include(FetchContent)
+set(eigen_find_version 5.0.1)
+FetchContent_Declare(eigen_extern
+  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+  GIT_TAG ${eigen_find_version}
+)
+FetchContent_MakeAvailable(eigen_extern)
 add_library(eigen_local INTERFACE)
 add_library(rosflight_firmware::eigen_local ALIAS eigen_local)
 target_compile_features(eigen_local INTERFACE cxx_std_17)
 # Marking as SYSTEM include suppresses warnings from Eigen
 target_include_directories(eigen_local SYSTEM INTERFACE
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib
+  ${eigen_extern_SOURCE_DIR}
 )
 
 add_library(turbomath lib/turbomath/turbomath.cpp)

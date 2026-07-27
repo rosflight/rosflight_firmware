@@ -33,8 +33,10 @@
 
 #include "rosflight.h"
 
-#include <eigen/Eigen/Dense>
-#include <eigen/Eigen/SVD>
+// #include <eigen/Eigen/Dense>
+// #include <eigen/Eigen/SVD>
+#include <Eigen/Dense>
+#include <Eigen/SVD>
 
 #include <cmath>
 #include <cstdint>
