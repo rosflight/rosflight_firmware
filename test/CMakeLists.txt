@@ -1,6 +1,6 @@
 # This is not a top-level project.
 # It is called from rosflight_firmware/CMakeLists.txt, which defines the
-# rosflight_firmware::rosflight_firmware library that is linked to the tests.
+# rosflight_firmware libraries that are linked to the tests.
 
 # Locate GTest
 find_package(GTest REQUIRED)
