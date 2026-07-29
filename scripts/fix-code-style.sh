@@ -22,3 +22,9 @@ find . \
   \) -prune \
   -o \( -iname "*.h" -o -iname "*.hpp" -o -iname "*.cpp" -o -iname "*.c" \) -print \
   | xargs clang-format -i --verbose -style=file
+
+# organize python imports
+find ./scripts -iname "*.py" | xargs -r ruff check --select I --fix
+
+# format python code
+find ./scripts -iname "*.py" | xargs -r ruff format
