@@ -70,6 +70,13 @@ add_library(rosflight_firmware::turbomath ALIAS turbomath)
 target_compile_features(turbomath PUBLIC cxx_std_17)
 target_include_directories(turbomath PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
+add_library(firmware_version INTERFACE)
+add_library(rosflight_firmware::version ALIAS firmware_version)
+target_compile_definitions(firmware_version INTERFACE
+  GIT_VERSION_HASH=0x${GIT_VERSION_HASH}
+  GIT_VERSION_STRING="${GIT_VERSION_STRING}"
+)
+
 add_library(mavlink_headers INTERFACE)
 add_library(rosflight_firmware::mavlink_headers ALIAS mavlink_headers)
 target_include_directories(mavlink_headers INTERFACE
@@ -91,10 +98,6 @@ add_library(rosflight_firmware
 )
 add_library(rosflight_firmware::rosflight_firmware ALIAS rosflight_firmware)
 target_compile_features(rosflight_firmware PUBLIC cxx_std_17)
-target_compile_definitions(rosflight_firmware PUBLIC
-  GIT_VERSION_HASH=0x${GIT_VERSION_HASH}
-  GIT_VERSION_STRING="${GIT_VERSION_STRING}"
-)
 target_include_directories(rosflight_firmware PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/include/interface
@@ -103,6 +106,7 @@ target_include_directories(rosflight_firmware PUBLIC
 target_link_libraries(rosflight_firmware
   PUBLIC
     rosflight_firmware::mavlink_headers
+    rosflight_firmware::version
     rosflight_firmware::turbomath
   PRIVATE
     rosflight_firmware::eigen_local
