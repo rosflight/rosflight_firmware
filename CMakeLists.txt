@@ -70,6 +70,12 @@ add_library(rosflight_firmware::turbomath ALIAS turbomath)
 target_compile_features(turbomath PUBLIC cxx_std_17)
 target_include_directories(turbomath PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
+add_library(mavlink_headers INTERFACE)
+add_library(rosflight_firmware::mavlink_headers ALIAS mavlink_headers)
+target_include_directories(mavlink_headers INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink/v1.0
+)
+
 add_library(rosflight_firmware
   ${CMAKE_CURRENT_SOURCE_DIR}/src/comm_manager.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/command_manager.cpp
@@ -93,11 +99,13 @@ target_include_directories(rosflight_firmware PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/include/interface
   ${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink
-  ${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink/v1.0
 )
 target_link_libraries(rosflight_firmware
-  PRIVATE rosflight_firmware::eigen_local
-  PUBLIC rosflight_firmware::turbomath
+  PUBLIC
+    rosflight_firmware::mavlink_headers
+    rosflight_firmware::turbomath
+  PRIVATE
+    rosflight_firmware::eigen_local
 )
 
 # Create OBJECT library that separates out `int main()` to be included in the
