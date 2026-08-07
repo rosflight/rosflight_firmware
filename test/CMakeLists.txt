@@ -5,6 +5,9 @@
 # Locate GTest
 find_package(GTest REQUIRED)
 
+set_property(SOURCE test_board.cpp APPEND PROPERTY COMPILE_OPTIONS
+  "$<$<CXX_COMPILER_ID:GNU>:-Wno-unused-parameter>"
+)
 add_executable(unit_tests
   common.cpp
   test_board.cpp

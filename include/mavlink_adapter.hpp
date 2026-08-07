@@ -32,15 +32,7 @@
 #ifndef ROSFLIGHT_FIRMWARE_MAVLINK_ADAPTER_HPP
 #define ROSFLIGHT_FIRMWARE_MAVLINK_ADAPTER_HPP
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wcast-align"
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 #include "rosflight/mavlink.h"
-#pragma GCC diagnostic pop
 
 #include "comm_link.h"
 

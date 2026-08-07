@@ -79,7 +79,8 @@ target_compile_definitions(firmware_version INTERFACE
 
 add_library(mavlink_headers INTERFACE)
 add_library(rosflight_firmware::mavlink_headers ALIAS mavlink_headers)
-target_include_directories(mavlink_headers INTERFACE
+# Marking as SYSTEM include suppresses warnings from generated mavlink headers
+target_include_directories(mavlink_headers SYSTEM INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink/v1.0
 )
 
