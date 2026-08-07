@@ -94,14 +94,13 @@ add_library(rosflight_firmware
   ${CMAKE_CURRENT_SOURCE_DIR}/src/rosflight.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/sensors.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/state_manager.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink/mavlink.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/mavlink_adapter.cpp
 )
 add_library(rosflight_firmware::rosflight_firmware ALIAS rosflight_firmware)
 target_compile_features(rosflight_firmware PUBLIC cxx_std_17)
 target_include_directories(rosflight_firmware PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/include/interface
-  ${CMAKE_CURRENT_SOURCE_DIR}/comms/mavlink
 )
 target_link_libraries(rosflight_firmware
   PUBLIC

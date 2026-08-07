@@ -1,4 +1,4 @@
-#include "mavlink.h"
+#include "mavlink_adapter.hpp"
 #include "rosflight.h"
 #include "test_board.h"
 
@@ -9,8 +9,8 @@ using namespace rosflight_firmware;
 TEST(Sensors, BatteryFilterStartsFromMaxVoltage)
 {
   testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  MavlinkAdapter mavlink_adapter(board);
+  ROSflight rf(board, mavlink_adapter);
 
   rf.init();
 

@@ -1,5 +1,5 @@
 #include "common.h"
-#include "mavlink.h"
+#include "mavlink_adapter.hpp"
 #include "test_board.h"
 
 #include "rosflight.h"
@@ -18,7 +18,7 @@ class EstimatorTest : public ::testing::Test
 {
 public:
   testBoard board;
-  Mavlink mavlink;
+  MavlinkAdapter mavlink_adapter;
   ROSflight rf;
 
   std::ofstream file_;
@@ -38,8 +38,8 @@ public:
   int ext_att_count_;
 
   EstimatorTest()
-      : mavlink(board)
-      , rf(board, mavlink)
+      : mavlink_adapter(board)
+      , rf(board, mavlink_adapter)
   {}
 
   void SetUp() override

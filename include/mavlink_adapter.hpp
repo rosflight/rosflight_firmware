@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSFLIGHT_FIRMWARE_MAVLINK_H
-#define ROSFLIGHT_FIRMWARE_MAVLINK_H
+#ifndef ROSFLIGHT_FIRMWARE_MAVLINK_ADAPTER_HPP
+#define ROSFLIGHT_FIRMWARE_MAVLINK_ADAPTER_HPP
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -39,7 +39,7 @@
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
-#include "v1.0/rosflight/mavlink.h"
+#include "rosflight/mavlink.h"
 #pragma GCC diagnostic pop
 
 #include "comm_link.h"
@@ -50,10 +50,10 @@ namespace rosflight_firmware
 {
 class Board;
 
-class Mavlink : public CommLinkInterface
+class MavlinkAdapter : public CommLinkInterface
 {
 public:
-  Mavlink(Board & board);
+  MavlinkAdapter(Board & board);
   void init(uint32_t baud_rate, uint32_t dev) override;
   void receive() override;
 
@@ -116,4 +116,4 @@ private:
 
 } // namespace rosflight_firmware
 
-#endif // ROSFLIGHT_FIRMWARE_MAVLINK_H
+#endif // ROSFLIGHT_FIRMWARE_MAVLINK_ADAPTER_HPP

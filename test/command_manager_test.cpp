@@ -1,5 +1,5 @@
 #include "common.h"
-#include "mavlink.h"
+#include "mavlink_adapter.hpp"
 #include "test_board.h"
 
 #include "rosflight.h"
@@ -25,7 +25,7 @@ class CommandManagerTest : public ::testing::Test
 {
 public:
   testBoard board;
-  Mavlink mavlink;
+  MavlinkAdapter mavlink_adapter;
   ROSflight rf;
   float last_set_rc = 0;
   bool rc_lost = false;
@@ -53,8 +53,8 @@ public:
     | CommandManager::OVERRIDE_OFFBOARD_T_INACTIVE;
 
   CommandManagerTest()
-      : mavlink(board)
-      , rf(board, mavlink)
+      : mavlink_adapter(board)
+      , rf(board, mavlink_adapter)
   {}
 
   void SetUp() override
