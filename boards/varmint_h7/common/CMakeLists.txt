@@ -2,7 +2,7 @@
 
 ### project settings ###
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20...3.28)
 
 if(NOT DEFINED TARGET_NAME)
     set(TARGET_NAME "varmint_h7")

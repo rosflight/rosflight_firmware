@@ -37,7 +37,6 @@
 
 #include "turbomath/turbomath.h"
 
-#include <cstdbool>
 #include <cstdint>
 #include <cstring>
 

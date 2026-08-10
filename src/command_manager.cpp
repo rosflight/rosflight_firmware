@@ -33,7 +33,6 @@
 
 #include "rosflight.h"
 
-#include <cstdbool>
 #include <cstdlib>
 
 namespace rosflight_firmware
