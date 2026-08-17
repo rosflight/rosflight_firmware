@@ -36,10 +36,6 @@
 #include "controller.h"
 #include "command_manager.h"
 
-#include <eigen/Eigen/Dense>
-#include <eigen/Eigen/SVD>
-
-#include <cstdbool>
 #include <cstdint>
 
 namespace rosflight_firmware

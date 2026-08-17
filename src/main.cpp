@@ -35,7 +35,7 @@
  ******************************************************************************
  **/
 
-#include <mavlink.h>
+#include <mavlink_adapter.hpp>
 #include <rosflight.h>
 
 #ifndef BUILD_TEST_BOARD // Skip main function for gtest
@@ -58,8 +58,8 @@ int main(void)
 {
   // Rosflight base code
   board.init_board();
-  rosflight_firmware::Mavlink mavlink(board);
-  rosflight_firmware::ROSflight firmware(board, mavlink);
+  rosflight_firmware::MavlinkAdapter mavlink_adapter(board);
+  rosflight_firmware::ROSflight firmware(board, mavlink_adapter);
 
   firmware.init();
 

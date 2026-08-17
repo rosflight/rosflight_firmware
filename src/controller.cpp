@@ -36,7 +36,6 @@
 #include "mixer.h"
 #include "rosflight.h"
 
-#include <cstdbool>
 #include <cstdint>
 
 namespace rosflight_firmware

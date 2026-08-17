@@ -33,7 +33,12 @@
 
 #include "rosflight.h"
 
+#include <eigen/Eigen/Dense>
+#include <eigen/Eigen/SVD>
+
+#include <cmath>
 #include <cstdint>
+#include <limits>
 
 namespace rosflight_firmware
 {
@@ -260,21 +265,16 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
     }
   }
 
-  // Calculate the pseudoinverse of the mixing matrix using the SVD
+  // Calculate the pseudoinverse of the mixing matrix using the SVD.
   Eigen::JacobiSVD<Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS>> svd(
     mixer_matrix,
     Eigen::FullPivHouseholderQRPreconditioner | Eigen::ComputeFullU | Eigen::ComputeFullV);
-  Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> Sig;
-  Sig.setZero();
 
-  // Avoid dividing by zero in the Sigma matrix
-  for (int i=0; i<NUM_MIXER_OUTPUTS; ++i) {
-    if (svd.singularValues()[i] != 0.0) { Sig(i, i) = 1.0 / svd.singularValues()[i]; }
-  }
-
-  // Pseudoinverse of the mixing matrix
+  svd.setThreshold(10 * std::numeric_limits<float>::epsilon());
   Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS> mixer_matrix_pinv =
-    svd.matrixV() * Sig * svd.matrixU().transpose();
+    svd.solve(Eigen::Matrix<float, NUM_MIXER_OUTPUTS, NUM_MIXER_OUTPUTS>::Identity());
+
+  constexpr float kMixerZeroThreshold = 1.0e-6f;
 
   mixer_t inverted_mixer;
   // Fill in the mixing matrix from the inverted matrix above
@@ -282,7 +282,8 @@ Mixer::mixer_t Mixer::invert_mixer(const mixer_t* mixer_to_invert)
     inverted_mixer.output_type[i] = mixer_to_invert->output_type[i];
     inverted_mixer.default_pwm_rate[i] = mixer_to_invert->default_pwm_rate[i];
     for (int j = 0; j < NUM_MIXER_OUTPUTS; j++) {
-      inverted_mixer.u[j][i] = mixer_matrix_pinv(i, j);
+      float value = mixer_matrix_pinv(i, j);
+      inverted_mixer.u[j][i] = (std::abs(value) < kMixerZeroThreshold) ? 0.0f : value;
     }
   }
   return inverted_mixer;
