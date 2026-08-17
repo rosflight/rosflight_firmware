@@ -4,4 +4,4 @@
 # add_stm32_h7_board.
 
 include("${CMAKE_CURRENT_LIST_DIR}/../common/stm32_h7_board.cmake")
-add_stm32_h7_board(varmint_11X STM32H753xx)
+add_stm32_h7_board(varmint_11X H753)

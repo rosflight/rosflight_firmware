@@ -34,3 +34,5 @@ CMakeCache.txt
 *.cxxflags
 boards/varmint_h7/pixracer_pro/STM32H743IIKX_FLASH.ld
 boards/varmint_h7/varmint_10X/STM32H753VIHX_FLASH.ld
+
+/plans/

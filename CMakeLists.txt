@@ -160,10 +160,19 @@ elseif(DEFINED BOARD_DIR_${BOARD_TO_BUILD})
   endif()
 
 else()
-  list(JOIN supported_boards ", " supported_boards_message)
-  message(FATAL_ERROR "No valid board selected!\n"
-    "Received: '${BOARD_TO_BUILD}'\n"
-    "Valid options: ${supported_boards_message}\n"
-    "Select board with -DBOARD_TO_BUILD=<board_selection>"
+  set(supported_board_presets)
+  foreach(board IN LISTS supported_boards)
+    string(REPLACE "_" "-" board_preset_name "${board}")
+    list(APPEND supported_board_presets "${board_preset_name}")
+  endforeach()
+
+  list(JOIN supported_board_presets ", " supported_presets_message)
+  message(FATAL_ERROR "No valid board selected! Received: '${BOARD_TO_BUILD}'\n"
+    "Valid preset board names: ${supported_presets_message}\n"
+    "Select board by using a CMake preset (mode can be 'debug' or 'release'):\n"
+    "    cmake --preset <board-selection>-<mode>\n"
+    "Example:\n"
+    "    cmake --preset pixracer-pro-release\n"
+    "    cmake --build build/pixracer-pro-release"
   )
 endif()

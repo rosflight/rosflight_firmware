@@ -60,3 +60,4 @@ fi
 exit $EXIT_CODE
 
 cd "$ORIGINAL_DIR"
+rm -rf build

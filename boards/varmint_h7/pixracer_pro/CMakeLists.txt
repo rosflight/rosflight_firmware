@@ -4,4 +4,4 @@
 # add_stm32_h7_board.
 
 include("${CMAKE_CURRENT_LIST_DIR}/../common/stm32_h7_board.cmake")
-add_stm32_h7_board(pixracer_pro STM32H743xx)
+add_stm32_h7_board(pixracer_pro H743)
