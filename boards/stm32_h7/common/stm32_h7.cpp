@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : Varmint.cpp
+ * File     : stm32_h7.cpp
  * Date     : Sep 27, 2023
  ******************************************************************************
  *
@@ -34,31 +34,31 @@
  *
  ******************************************************************************
  **/
-#include "Varmint.h"
+#include "stm32_h7.hpp"
 
 #include "Time64.h"
 
 #include <ctime>
 
-Varmint varmint;
-rosflight_firmware::Board & board = varmint;
+STM32H7Board stm32_h7_board;
+rosflight_firmware::Board & board = stm32_h7_board;
 
 extern Time64 time64;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
-// Rosflight HAL for Varmint Board
+// Rosflight HAL for STM32H7 Board
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // board init
 
-// Note: void Varmint::init_board(void) is in VarmintInit.cpp
+// Note: void STM32H7::init_board(void) is in STM32H7_Init.cpp
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // board reset
-void Varmint::board_reset(bool bootloader)
+void STM32H7Board::board_reset(bool bootloader)
 {
   pwm_disable();
   //	HAL_NVIC_SystemReset();
@@ -66,19 +66,19 @@ void Varmint::board_reset(bool bootloader)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // us clock
-uint32_t Varmint::clock_millis() { return (time64.Us() ) / 1000; }
-uint64_t Varmint::clock_micros() { return (time64.Us() ); }
-void Varmint::clock_delay(uint32_t ms) { time64.dMs(ms); }
+uint32_t STM32H7Board::clock_millis() { return (time64.Us()) / 1000; }
+uint64_t STM32H7Board::clock_micros() { return (time64.Us()); }
+void STM32H7Board::clock_delay(uint32_t ms) { time64.dMs(ms); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // serial comms to the Companion computer
-void Varmint::serial_init(uint32_t baud_rate, uint32_t dev)
+void STM32H7Board::serial_init(uint32_t baud_rate, uint32_t dev)
 {
   serial_device_ = USE_TELEM; // dev; // 1 = telem uart, otherwise = VCP
   if (serial_device_ == 1) telem_.reset_baud(baud_rate);
 }
 
-void Varmint::serial_write(const uint8_t * src, size_t len, uint8_t qos)
+void STM32H7Board::serial_write(const uint8_t * src, size_t len, uint8_t qos)
 {
   SerialTxPacket p;
   p.header.timestamp = time64.Us();
@@ -92,13 +92,13 @@ void Varmint::serial_write(const uint8_t * src, size_t len, uint8_t qos)
   else vcp_.writePacket(&p);
 }
 
-uint16_t Varmint::serial_bytes_available(void)
+uint16_t STM32H7Board::serial_bytes_available(void)
 {
   if (serial_device_ == 1) return telem_.byteCount();
   else return vcp_.byteCount();
 }
 
-uint8_t Varmint::serial_read(void)
+uint8_t STM32H7Board::serial_read(void)
 {
   uint8_t c = 0;
   if (serial_device_ == 1) telem_.readByte(&c);
@@ -106,7 +106,7 @@ uint8_t Varmint::serial_read(void)
   return c;
 }
 
-void Varmint::serial_flush(void)
+void STM32H7Board::serial_flush(void)
 {
   // do nothing
 }
@@ -117,35 +117,36 @@ void Varmint::serial_flush(void)
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Varmint::sensors_init()
+void STM32H7Board::sensors_init()
 {
   sensor_errors_ = 0;
-  for (uint32_t i = 0; i < varmint.status_len(); i++) {
-    if (varmint.status(i)->status() != DRIVER_OK) sensor_errors_++;
+  for (uint32_t i = 0; i < stm32_h7_board.status_len(); i++) {
+    if (stm32_h7_board.status(i)->status() != DRIVER_OK) sensor_errors_++;
   }
 }
-uint16_t Varmint::sensors_errors_count() { return sensor_errors_; }
+uint16_t STM32H7Board::sensors_errors_count() { return sensor_errors_; }
 
-uint16_t Varmint::sensors_init_message_count() { return varmint.status_len(); }
+uint16_t STM32H7Board::sensors_init_message_count() { return stm32_h7_board.status_len(); }
 
-bool Varmint::sensors_init_message_good(uint16_t i) { return varmint.status(i)->initGood(); }
+bool STM32H7Board::sensors_init_message_good(uint16_t i)
+{ return stm32_h7_board.status(i)->initGood(); }
 
-uint16_t Varmint::sensors_init_message(char * message, uint16_t size, uint16_t i)
+uint16_t STM32H7Board::sensors_init_message(char * message, uint16_t size, uint16_t i)
 {
-  if (i > varmint.status_len()) return 0;
+  if (i > stm32_h7_board.status_len()) return 0;
 
-  uint32_t status = varmint.status(i)->status();
+  uint32_t status = stm32_h7_board.status(i)->status();
   if (status == DRIVER_OK) {
-    snprintf(message, size, "%s: INIT OK", varmint.status(i)->name());
+    snprintf(message, size, "%s: INIT OK", stm32_h7_board.status(i)->name());
   } else { //PTT TODO: we can add better messages later
-    snprintf(message, size, "%s: INIT ERROR 0x%08lX", varmint.status(i)->name(), status);
+    snprintf(message, size, "%s: INIT ERROR 0x%08lX", stm32_h7_board.status(i)->name(), status);
   }
   return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // IMU
-bool Varmint::imu_read(rosflight_firmware::ImuStruct * imu)
+bool STM32H7Board::imu_read(rosflight_firmware::ImuStruct * imu)
 {
   ImuPacket p;
   if (imu0_.read((uint8_t *) &p, sizeof(p))) {
@@ -164,7 +165,7 @@ bool Varmint::imu_read(rosflight_firmware::ImuStruct * imu)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // MAG
-bool Varmint::mag_read(rosflight_firmware::MagStruct * mag)
+bool STM32H7Board::mag_read(rosflight_firmware::MagStruct * mag)
 {
   MagPacket p;
   if (mag_.read((uint8_t *) &p, sizeof(p))) {
@@ -180,7 +181,7 @@ bool Varmint::mag_read(rosflight_firmware::MagStruct * mag)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Baro
-bool Varmint::baro_read(rosflight_firmware::PressureStruct * baro)
+bool STM32H7Board::baro_read(rosflight_firmware::PressureStruct * baro)
 {
   PressurePacket p;
   if (baro_.read((uint8_t *) &p, sizeof(p))) {
@@ -194,7 +195,7 @@ bool Varmint::baro_read(rosflight_firmware::PressureStruct * baro)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Pitot
-bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure)
+bool STM32H7Board::diff_pressure_read(rosflight_firmware::PressureStruct * diff_pressure)
 {
   PressurePacket p;
   if (pitot_.read((uint8_t *) &p, sizeof(p))) {
@@ -208,7 +209,7 @@ bool Varmint::diff_pressure_read(rosflight_firmware::PressureStruct * diff_press
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Sonar
-bool Varmint::range_read(rosflight_firmware::RangeStruct * range)
+bool STM32H7Board::range_read(rosflight_firmware::RangeStruct * range)
 {
   (void) range; // unused
   return false;
@@ -216,7 +217,7 @@ bool Varmint::range_read(rosflight_firmware::RangeStruct * range)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Battery
-bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
+bool STM32H7Board::battery_read(rosflight_firmware::BatteryStruct * batt)
 {
   AdcPacket p;
   if (adc_.read((uint8_t *) &p, sizeof(p))) {
@@ -228,12 +229,12 @@ bool Varmint::battery_read(rosflight_firmware::BatteryStruct * batt)
   }
   return false;
 }
-void Varmint::battery_voltage_set_multiplier(double multiplier)
+void STM32H7Board::battery_voltage_set_multiplier(double multiplier)
 {
   if (multiplier == 0) return;
   adc_.setScaleFactor(ADC_BATTERY_VOLTS, multiplier);
 }
-void Varmint::battery_current_set_multiplier(double multiplier)
+void STM32H7Board::battery_current_set_multiplier(double multiplier)
 {
   if (multiplier == 0) return;
   adc_.setScaleFactor(ADC_BATTERY_CURRENT, multiplier);
@@ -241,7 +242,7 @@ void Varmint::battery_current_set_multiplier(double multiplier)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // GNSS
-bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
+bool STM32H7Board::gnss_read(rosflight_firmware::GnssStruct * gnss)
 {
   UbxPacket p;
 
@@ -252,15 +253,15 @@ bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
     gnss->unix_nanos = p.unix_nanos;
     gnss->fix_type = p.pvt.fixType;
     gnss->num_sat = p.pvt.numSV;
-    gnss->lon = (double)p.pvt.lon* 1e-7; // Convert 100's of nanodegs into deg (DDS format)
-    gnss->lat = (double)p.pvt.lat* 1e-7; // Convert 100's of nanodegs into deg (DDS format)
-    gnss->height_msl = (float)p.pvt.hMSL* 1e-3; //mm to m
-    gnss->vel_n = (float)p.pvt.velN* 1e-3; // mm/s to m/s
-    gnss->vel_e = (float)p.pvt.velE* 1e-3; // mm/s to m/s
-    gnss->vel_d = (float)p.pvt.velD* 1e-3; // mm/s to m/s
-    gnss->h_acc = (float)p.pvt.hAcc* 1e-3; //mm to m
-    gnss->v_acc = (float)p.pvt.vAcc* 1e-3; //mm to m
-    gnss->speed_accy = (float)p.pvt.sAcc* 1e-3; // mm/s to m/s
+    gnss->lon = (double) p.pvt.lon * 1e-7;        // Convert 100's of nanodegs into deg (DDS format)
+    gnss->lat = (double) p.pvt.lat * 1e-7;        // Convert 100's of nanodegs into deg (DDS format)
+    gnss->height_msl = (float) p.pvt.hMSL * 1e-3; //mm to m
+    gnss->vel_n = (float) p.pvt.velN * 1e-3;      // mm/s to m/s
+    gnss->vel_e = (float) p.pvt.velE * 1e-3;      // mm/s to m/s
+    gnss->vel_d = (float) p.pvt.velD * 1e-3;      // mm/s to m/s
+    gnss->h_acc = (float) p.pvt.hAcc * 1e-3;      //mm to m
+    gnss->v_acc = (float) p.pvt.vAcc * 1e-3;      //mm to m
+    gnss->speed_accy = (float) p.pvt.sAcc * 1e-3; // mm/s to m/s
     return true;
   }
   return false;
@@ -268,14 +269,15 @@ bool Varmint::gnss_read(rosflight_firmware::GnssStruct * gnss)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // RC
-void Varmint::rc_init(rc_type_t rc_type) { (void) rc_type; };
-bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
+void STM32H7Board::rc_init(rc_type_t rc_type) { (void) rc_type; };
+bool STM32H7Board::rc_read(rosflight_firmware::RcStruct * rc_struct)
 {
   RcPacket p;
 
   if (rc_.read((uint8_t *) &p, sizeof(p))) {
     rc_struct->header = p.header;
-    uint16_t len = RC_STRUCT_CHANNELS < RC_PACKET_CHANNELS ? RC_STRUCT_CHANNELS : RC_PACKET_CHANNELS;
+    uint16_t len =
+      RC_STRUCT_CHANNELS < RC_PACKET_CHANNELS ? RC_STRUCT_CHANNELS : RC_PACKET_CHANNELS;
     for (uint16_t i = 0; i < len; i++) { rc_struct->chan[i] = p.chan[i]; }
     rc_struct->frameLost = p.frameLost;
     rc_struct->failsafeActivated = p.failsafeActivated;
@@ -287,22 +289,23 @@ bool Varmint::rc_read(rosflight_firmware::RcStruct * rc_struct)
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // PWM
 
-void Varmint::pwm_init(const float * rate, uint32_t channels) { pwm_.updateConfig(rate, channels); }
-void Varmint::pwm_disable(void)
+void STM32H7Board::pwm_init(const float * rate, uint32_t channels)
+{ pwm_.updateConfig(rate, channels); }
+void STM32H7Board::pwm_disable(void)
 {
   for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.disable(ch);
 }
-void Varmint::pwm_write(float * value, uint32_t channels) { pwm_.write(value, channels); }
+void STM32H7Board::pwm_write(float * value, uint32_t channels) { pwm_.write(value, channels); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // LEDs
-void Varmint::led0_on() { RED_HI; }
-void Varmint::led0_off() { RED_LO; }
-void Varmint::led0_toggle() { RED_TOG; }
+void STM32H7Board::led0_on() { RED_HI; }
+void STM32H7Board::led0_off() { RED_LO; }
+void STM32H7Board::led0_toggle() { RED_TOG; }
 
-void Varmint::led1_on() { BLU_HI; }
-void Varmint::led1_off() { BLU_LO; }
-void Varmint::led1_toggle() { BLU_TOG; }
+void STM32H7Board::led1_on() { BLU_HI; }
+void STM32H7Board::led1_off() { BLU_LO; }
+void STM32H7Board::led1_toggle() { BLU_TOG; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Backup Data (Register and SRAM)
@@ -313,8 +316,8 @@ void Varmint::led1_toggle() { BLU_TOG; }
 
 #define D3_BKPSRAM_BASE_LEN (4096U)
 #define D3_SRAM_BASE_LEN (65536U)
-void Varmint::backup_memory_init() {}
-bool Varmint::backup_memory_read(void * dest, size_t len)
+void STM32H7Board::backup_memory_init() {}
+bool STM32H7Board::backup_memory_read(void * dest, size_t len)
 {
   //	if(len > D3_BKPSRAM_BASE_LEN) len = D3_BKPSRAM_BASE_LEN;
   //	HAL_PWR_EnableBkUpAccess();
@@ -322,24 +325,25 @@ bool Varmint::backup_memory_read(void * dest, size_t len)
   //	HAL_PWR_DisableBkUpAccess();
   return true;
 }
-void Varmint::backup_memory_write(const void * src, size_t len)
+void STM32H7Board::backup_memory_write(const void * src, size_t len)
 {
   //	if(len > D3_BKPSRAM_BASE_LEN) len = D3_BKPSRAM_BASE_LEN;
   //	HAL_PWR_EnableBkUpAccess();
   //	memcpy((void*)D3_BKPSRAM_BASE, src, len);
   //	HAL_PWR_DisableBkUpAccess();
 }
-void Varmint::backup_memory_clear(size_t len)
+void STM32H7Board::backup_memory_clear(size_t len)
 {
   //	HAL_PWR_EnableBkUpAccess();
   //	memset((void*)D3_BKPSRAM_BASE, 0, D3_BKPSRAM_BASE_LEN);
   //	HAL_PWR_DisableBkUpAccess();
 }
 
-void Varmint::memory_init() {} // do nothing
+void STM32H7Board::memory_init() {} // do nothing
 
-bool Varmint::memory_read(void * dest, size_t len) { return sd_.read((uint8_t *) dest, len); }
-bool Varmint::memory_write(const void * src, size_t len) { return sd_.write((uint8_t *) src, len); }
+bool STM32H7Board::memory_read(void * dest, size_t len) { return sd_.read((uint8_t *) dest, len); }
+bool STM32H7Board::memory_write(const void * src, size_t len)
+{ return sd_.write((uint8_t *) src, len); }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Helper functions (not part of parent class)

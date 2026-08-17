@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : Varmint.h
+ * File     : stm32_h7.h
  * Date     : Sep 27, 2023
  ******************************************************************************
  *
@@ -35,8 +35,8 @@
  ******************************************************************************
  **/
 
-#ifndef VARMINT_H_
-#define VARMINT_H_
+#ifndef STM32_H7_HPP_
+#define STM32_H7_HPP_
 
 #include "BoardConfig.h"
 
@@ -62,7 +62,7 @@
  *
  */
 
-class Varmint : public rosflight_firmware::Board
+class STM32H7Board : public rosflight_firmware::Board
 {
   /**
      * \brief
@@ -78,7 +78,7 @@ private:
   RcPacket rcPacket_;
 
 public:
-  Varmint(){};
+  STM32H7Board() {};
 
   INTERFACE_LIST
 
@@ -160,4 +160,4 @@ public:
   void backup_memory_clear(size_t len) override;
 };
 
-#endif /* VARMINT_H_ */
+#endif /* STM32_H7_HPP_ */

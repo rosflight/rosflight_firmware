@@ -40,8 +40,8 @@
 #include "BoardConfig.h"
 #include "misc.h"
 
-#include "Varmint.h"
-extern Varmint varmint;
+#include "stm32_h7.hpp"
+extern STM32H7Board stm32_h7_board;
 
 extern Time64 time64;
 
@@ -74,19 +74,19 @@ void sandbox_dashboard(bool clear)
   misc_printf("SANDBOX DASHBOARD PIXRACER_PRO\n");
   verbose_equals();
 
-  varmint.imu0_.display();
+  stm32_h7_board.imu0_.display();
   verbose_dashes();
-  varmint.mag_.display();
+  stm32_h7_board.mag_.display();
   verbose_dashes();
-  varmint.baro_.display();
+  stm32_h7_board.baro_.display();
   verbose_dashes();
-  varmint.pitot_.display();
+  stm32_h7_board.pitot_.display();
   verbose_dashes();
-  varmint.adc_.display();
+  stm32_h7_board.adc_.display();
   verbose_dashes();
-  varmint.rc_.display();
+  stm32_h7_board.rc_.display();
   verbose_dashes();
-  varmint.gps_.display();
+  stm32_h7_board.gps_.display();
 
   verbose_equals();
 }

@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : VarmintInit.cpp
+ * File     : STM32H7_Init.cpp
  * Date     : June 3, 2024
  ******************************************************************************
  *
@@ -34,7 +34,7 @@
  *
  ******************************************************************************
  **/
-#include "Varmint.h"
+#include "stm32_h7.hpp"
 
 #include "BoardConfig.h"
 #include "Spi.h"
@@ -59,7 +59,7 @@ Time64 time64;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
-// Varmint Board
+// STM32H7 Board
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ Time64 time64;
  *
  */
 
-void Varmint::init_board(void)
+void STM32H7Board::init_board(void)
 {
   uint32_t init_status;
 
@@ -86,36 +86,44 @@ void Varmint::init_board(void)
   MX_DMA_Init();
   MX_BDMA_Init();
   MX_I2C1_Init();
-  MX_I2C2_Init();
+  //	MX_SDMMC1_SD_Init(); // initialized elsewhere
   MX_SPI1_Init();
   MX_SPI2_Init();
-  MX_SPI3_Init();
-  MX_SPI4_Init();
-  //  MX_TIM1_Init();					// PWM, initialized elsewhere
-  //  MX_TIM3_Init();					// PWM, initialized elsewhere
-  //  MX_TIM4_Init();					// PWM, initialized elsewhere
-  //  MX_TIM5_Init(); 				// Time64, initialized elsewhere
-  //  MX_TIM7_Init(); 				// Poll, initialized elsewhere
-  //  MX_TIM8_Init(); 				// Time64, initialized elsewhere
-  //  MX_TIM12_Init();  			// ADIS16500 Ext Clock, initialized elsewhere
-  //  MX_USART1_UART_Init();	// uBlox, initialized elsewhere
-  MX_USART2_UART_Init(); // Telem and Debug
-  //  MX_USART3_UART_Init();  // S.Bus, initialized elsewhere
-  //  MX_ADC1_Init();					// initialized elsewhere
-  //  MX_ADC3_Init();					// initialized elsewhere
-  // MX_USB_DEVICE_Init(); // initialized elsewhere
-  MX_FDCAN1_Init(); // not used
-  //  MX_SDMMC1_SD_Init();		// initialized elsewhere
-  MX_RTC_Init(); // not used
+  MX_SPI5_Init();
+  //  MX_SPI6_Init(); // NOt using
+
+  //	MX_TIM1_Init();  // PWM, initialized elsewhere
+  //	MX_TIM2_Init();	 // PWM (Buzzer) not used as such
+  //	MX_TIM3_Init();  // RC PPM input, not used as such
+  //	MX_TIM4_Init();  // PWM, initialized elsewhere
+  //	MX_TIM8_Init();  // PWM, initialized elsewhere
+  //  MX_TIM7_Init();  // Poll, initialized elsewhere
+  //	MX_TIM5_Init();  // Time64, initialized elsewhere
+  //	MX_TIM15_Init(); // Time64, initialized elsewhere
+
+  //	MX_UART4_Init(); // GPS, initialized elsewhere
+  //	MX_UART7_Init(); // Serial 5&6 connector, not used
+  //	MX_UART8_Init(); // Telem "FRSKY" connector
+  //	MX_USART1_UART_Init(); // Serial 5&6 connector, not used
+  MX_USART2_UART_Init(); // Telem/Serial 1
+  //	MX_USART3_UART_Init(); // Serial 2 connector, not used
+  //	MX_USART6_UART_Init(); // RC UART, initialized elsewhere
+
+  //	MX_ADC3_Init(); // initialized elsewhere
+  //	MX_ADC1_Init(); // initialized elsewhere
+
+  MX_FDCAN1_Init(); // not used yet
+  MX_FDCAN2_Init(); // not used yet
+
   MX_CRC_Init(); // Used for SD Card data checksum
   MX_RNG_Init(); // not used
+  MX_RTC_Init(); // not used
 
 #if _USBD_USE_HS // USB HS (480MB/s
   MX_USB_OTG_HS_PCD_Init();
 #else // USB FS (48 MB/s)
   MX_USB_OTG_FS_PCD_Init();
 #endif
-
   MX_USB_DEVICE_Init();
 
   status_len_ = 0;
@@ -123,6 +131,8 @@ void Varmint::init_board(void)
   //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
   //misc_printf("\nStarted Timestamp Timer\n");
   init_status = time64.init(HTIM_LOW, HTIM_LOW_INSTANCE, HTIM_HIGH, HTIM_HIGH_INSTANCE);
+
+  // misc_printf uses the timer, so can't be used before it's initialized.
 
 #define ASCII_ESC 27
   misc_printf("\n\n%c[H", ASCII_ESC); // home
@@ -135,49 +145,35 @@ void Varmint::init_board(void)
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
 
-  misc_printf("\n\nADIS165xx (imu0) Initialization\n");
-  init_status = imu0_.init(ADIS165XX_HZ, ADIS165XX_DRDY_GPIO_Port, ADIS165XX_DRDY_Pin, // Driver
-                           ADIS165XX_SPI, ADIS165XX_CSn_GPIO_Port, ADIS165XX_CSn_Pin,  // SPI
-                           ADIS165XX_RESET_GPIO_Port, ADIS165XX_RESET_Pin,             // Reset Pin
-                           ADIS165XX_HTIM, ADIS165XX_TIM_INSTANCE, ADIS165XX_TIM_CHANNEL,
-                           ADIS165XX_TIM_PERIOD_US, // ADIS external clock
-                           ADIS165XX_ROTATION // rotation into board coordinate system.
-  );
-  misc_exit_status(init_status);
-  status_list_[status_len_++] = &imu0_;
+  HAL_NVIC_DisableIRQ(BMI088_INT4_GYRO_EXTI_IRQn);  // EXTI4_IRQn Gyro DRDY Feedback
+  HAL_NVIC_DisableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
   init_status =
-    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
-               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G,
-               BMI088_ROTATION);
+    imu0_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI,
+               BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port,
+               BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G, BMI088_ROTATION);
   misc_exit_status(init_status);
-  status_list_[status_len_++] = &imu1_;
+  status_list_[status_len_++] = &imu0_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
 
-  misc_printf("\n\nDLHRL20G (pitot) Initialization\n");                // I2C must already be initialized
-  init_status = pitot_.init(PITOT_HZ, PITOT_DRDY_PORT, PITOT_DRDY_PIN, // Driver
-                            PITOT_I2C, PITOT_I2C_ADDRESS);             // I2C
+  misc_printf("\n\nMS4525 (Pitot) Initialization\n"); // I2C must already be initialized
+  init_status = pitot_.init(PITOT_HZ, PITOT_I2C, PITOT_I2C_ADDRESS);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
-  init_status = baro_.init(DPS310_HZ, DPS310_DRDY_GPIO_Port, DPS310_DRDY_Pin, // Driver
-                           DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin   // SPI
-  );
+  init_status = baro_.init(DPS310_HZ, DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
 
-  misc_printf("\n\nIIS2MDC (mag) Initialization\n");
-  init_status = mag_.init(IIS2MDC_HZ, IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // Driver
-                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,   // SPI
-                          IIS2MDC_ROTATION
-  );
+  misc_printf("\n\nIST3808 (mag) Initialization\n");
+  init_status = mag_.init(IST3808_HZ, IST3808_I2C, IST3808_I2C_ADDRESS, IST3808_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
 
@@ -185,7 +181,8 @@ void Varmint::init_board(void)
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE,
+                          GPS_UART_DMA, GPS_BAUD);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
 
@@ -201,8 +198,8 @@ void Varmint::init_board(void)
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status =
-    adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL, ADC_ADC_INSTANCE_INTERNAL);
+  init_status = adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL,
+                          ADC_ADC_INSTANCE_INTERNAL);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
 
@@ -224,6 +221,7 @@ void Varmint::init_board(void)
 
   misc_printf("\n\nPWM (PWM) Initialization\n");
   init_status = pwm_.init();
+
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pwm_;
 
@@ -257,9 +255,9 @@ void Varmint::init_board(void)
 
   misc_printf("\n\nSet-up EXTI IRQ's\n");
 
-  HAL_NVIC_EnableIRQ(EXTI3_IRQn);     // uBlox GPS PPS
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);   // ADIS IMU DRDY
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn); // Bosh IMU DRDY
+  HAL_NVIC_EnableIRQ(BMI088_INT4_GYRO_EXTI_IRQn);  // EXTI4_IRQn Gyro DRDY Feedback
+  HAL_NVIC_EnableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
+  HAL_NVIC_EnableIRQ(GPS_PPS_EXTI_IRQn);           // EXTI15_10_IRQn GPS PPD
 
   __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
   __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);
