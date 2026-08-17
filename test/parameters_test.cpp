@@ -1,4 +1,4 @@
-#include "mavlink.h"
+#include "mavlink_adapter.hpp"
 #include "test_board.h"
 
 #include "rosflight.h"
@@ -13,8 +13,8 @@ using namespace rosflight_firmware;
 TEST(Parameters, DefaultParameters)
 {
   testBoard board;
-  Mavlink mavlink(board);
-  ROSflight rf(board, mavlink);
+  MavlinkAdapter mavlink_adapter(board);
+  ROSflight rf(board, mavlink_adapter);
 
   rf.init();
 

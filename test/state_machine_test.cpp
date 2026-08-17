@@ -1,5 +1,5 @@
 #include "common.h"
-#include "mavlink.h"
+#include "mavlink_adapter.hpp"
 #include "state_manager.h"
 #include "test_board.h"
 
@@ -11,12 +11,12 @@ class StateMachineTest : public ::testing::Test
 {
 public:
   testBoard board;
-  Mavlink mavlink;
+  MavlinkAdapter mavlink_adapter;
   ROSflight rf;
 
   StateMachineTest()
-      : mavlink(board)
-      , rf(board, mavlink)
+      : mavlink_adapter(board)
+      , rf(board, mavlink_adapter)
   {}
 
   void SetUp() override

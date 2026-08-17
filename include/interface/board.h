@@ -32,11 +32,8 @@
 #ifndef ROSFLIGHT_FIRMWARE_BOARD_H
 #define ROSFLIGHT_FIRMWARE_BOARD_H
 
-#include <cstdbool>
 #include <cstddef>
 #include <cstdint>
-
-#include "board.h"
 
 namespace rosflight_firmware
 {

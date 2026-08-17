@@ -1,0 +1,6 @@
+lib/eigen/
+boards/varmint_h7/varmint_10X/Drivers/
+boards/varmint_h7/varmint_11X/Drivers/
+boards/varmint_h7/pixracer_pro/Drivers/
+comms/mavlink/v1.0/
+boards/varmint_h7/common/AL94_USB_Composite/

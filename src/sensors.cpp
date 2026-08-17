@@ -39,7 +39,6 @@
 #include "turbomath/turbomath.h"
 
 #include <cmath>
-#include <cstdbool>
 #include <cstdint>
 
 namespace rosflight_firmware
