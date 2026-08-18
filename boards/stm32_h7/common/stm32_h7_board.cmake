@@ -42,11 +42,11 @@ function(add_stm32_h7_board board_name board_chip)
   # Board-specific startup file (chip-dependent)
   if(board_chip STREQUAL "H753")
     set(startup_file
-      "${common_source_dir}/Core/Startup/startup_stm32h753vihx.s"
+      "${board_source_dir}/Core/Startup/startup_stm32h753vihx.s"
     )
   else()
     set(startup_file
-      "${common_source_dir}/Core/Startup/startup_stm32h743iikx.s"
+      "${board_source_dir}/Core/Startup/startup_stm32h743iikx.s"
     )
   endif()
 
