@@ -59,7 +59,7 @@ extern "C" int _getentropy(void *ptr, size_t len) {
 #include <errno.h>
 #include <stddef.h>
 
-extern RNG_HandleTypeDef hrng; // Assumes your RNG is initialized in main.c/Varmint_Init
+extern RNG_HandleTypeDef hrng; // Assumes your RNG is initialized in main.c/STM32H7_Init
 
 extern "C" int _getentropy(void *ptr, size_t len) {
     uint32_t random_val;

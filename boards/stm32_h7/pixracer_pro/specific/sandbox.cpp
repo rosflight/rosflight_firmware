@@ -1,7 +1,7 @@
 /**
  ******************************************************************************
- * File     : VarmintService.h
- * Date     : Sep 27, 2023
+ * File     : sandbox.cpp
+ * Date     : Sep 28, 2023
  ******************************************************************************
  *
  * Copyright (c) 2023, AeroVironment, Inc.
@@ -35,23 +35,85 @@
  ******************************************************************************
  **/
 
-#ifndef USERCALLBACKS_H_
-#define USERCALLBACKS_H_
+#include "sandbox.h"
 
-#include "main.h"
+#include "BoardConfig.h"
+#include "misc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "stm32_h7.hpp"
+extern STM32H7Board stm32_h7_board;
 
-void CDC_Receive_Callback(uint8_t chan, uint8_t * buffer, uint16_t size);
-void CDC_TransmitCplt_Callback(uint8_t chan, uint8_t * buffer, uint16_t size);
+extern Time64 time64;
 
-//   void UART_RxIdleCallback (UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma_usart_rx);
-void UART_RxIsrCallback(UART_HandleTypeDef * huart);
+extern bool verbose;
 
-#ifdef __cplusplus
+#define ROWSIZE 256
+#define ASCII_ESC 27
+
+void verbose_dashes(void)
+{
+  for (int i = 0; i < ROWSIZE; i++) misc_printf("-");
+  misc_printf("\n");
 }
-#endif
 
-#endif /* USERCALLBACKS_H_ */
+void verbose_equals(void)
+{
+  for (int i = 0; i < ROWSIZE; i++) misc_printf("=");
+  misc_printf("\n");
+}
+
+void sandbox_dashboard(bool clear)
+{
+  verbose = true;
+
+  if (clear) misc_printf("%c[2J", ASCII_ESC);
+
+  misc_printf("%c[H", ASCII_ESC); // home
+
+  verbose_equals();
+  misc_printf("SANDBOX DASHBOARD PIXRACER_PRO\n");
+  verbose_equals();
+
+  stm32_h7_board.imu0_.display();
+  verbose_dashes();
+  stm32_h7_board.mag_.display();
+  verbose_dashes();
+  stm32_h7_board.baro_.display();
+  verbose_dashes();
+  stm32_h7_board.pitot_.display();
+  verbose_dashes();
+  stm32_h7_board.adc_.display();
+  verbose_dashes();
+  stm32_h7_board.rc_.display();
+  verbose_dashes();
+  stm32_h7_board.gps_.display();
+
+  verbose_equals();
+}
+
+void sandbox(void)
+{
+  // Give us time to read the initialization messages
+  time64.dMs(5000);
+
+  verbose = true;
+
+  //	 Test pwm outputs
+  //
+  //	float rates[PWM_CHANNELS] = {3e5,3e5,3e5,3e5,50,50,490,490};
+  //	//float rates[PWM_CHANNELS] = {50,50,50,50,50,50,50,50};
+  //	varmint.pwm_.updateConfig(rates, PWM_CHANNELS);
+  //	float outputs[PWM_CHANNELS] = { 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
+  //	varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //
+  //	while(1)
+  //	{
+  //	  PROBE1_HI;
+  //	  varmint.pwm_.write(outputs, PWM_CHANNELS);
+  //	  PROBE1_LO;
+  //	  time64.dUs(450); ~ 2khs update rate
+  //	}
+
+  uint32_t n = 0;
+  while (1) { sandbox_dashboard((n++) % 100 == 0); }
+}

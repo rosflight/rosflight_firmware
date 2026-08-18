@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * File     : VarmintInit.cpp
+ * File     : STM32H7_Init.cpp
  * Date     : June 3, 2024
  ******************************************************************************
  *
@@ -34,7 +34,7 @@
  *
  ******************************************************************************
  **/
-#include <Varmint.h>
+#include <stm32_h7.hpp>
 
 #include <BoardConfig.h>
 #include <Spi.h>
@@ -59,7 +59,7 @@ Time64 time64;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
-// Varmint Board
+// STM32H7 Board
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ Time64 time64;
  *
  */
 
-void Varmint::init_board(void)
+void STM32H7Board::init_board(void)
 {
   uint32_t init_status;
 
@@ -145,23 +145,22 @@ void Varmint::init_board(void)
                            ADIS165XX_RESET_GPIO_Port, ADIS165XX_RESET_Pin,             // Reset Pin
                            ADIS165XX_HTIM, ADIS165XX_TIM_INSTANCE, ADIS165XX_TIM_CHANNEL,
                            ADIS165XX_TIM_PERIOD_US, // ADIS external clock
-                           ADIS165XX_ROTATION
-  );
+                           ADIS165XX_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
   init_status =
-    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI, BMI088_ACCEL_CSn_GPIO_Port,
-               BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G,
-               BMI088_ROTATION);
+    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI,
+               BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port,
+               BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G, BMI088_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu1_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
 
-  misc_printf("\n\nDLHRL20G (pitot) Initialization\n");                // I2C must already be initialized
+  misc_printf("\n\nDLHRL20G (pitot) Initialization\n"); // I2C must already be initialized
   init_status = pitot_.init(PITOT_HZ, PITOT_DRDY_PORT, PITOT_DRDY_PIN, // Driver
                             PITOT_I2C, PITOT_I2C_ADDRESS               // I2C
   );
@@ -180,9 +179,8 @@ void Varmint::init_board(void)
 
   misc_printf("\n\nIIS2MDC (mag) Initialization\n");
   init_status = mag_.init(IIS2MDC_HZ, IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // Driver
-                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,   // SPI
-                          IIS2MDC_ROTATION
-  );
+                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,  // SPI
+                          IIS2MDC_ROTATION);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
 
@@ -190,7 +188,8 @@ void Varmint::init_board(void)
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE, GPS_UART_DMA, GPS_BAUD);
+  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE,
+                          GPS_UART_DMA, GPS_BAUD);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
 
@@ -206,8 +205,8 @@ void Varmint::init_board(void)
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status =
-    adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL, ADC_ADC_INSTANCE_INTERNAL);
+  init_status = adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL,
+                          ADC_ADC_INSTANCE_INTERNAL);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
 
