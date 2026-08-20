@@ -38,10 +38,10 @@
 #ifndef PWM_H_
 #define PWM_H_
 
-#include "BoardConfig.h"
+#include "CommonConfig.h"
 #include "Status.h"
 
-#define PWM_DMA_BUFFER_LEN 96
+#include <cstring>
 
 #define PWM_CHAN_IGNORE (0xFFFFFFFF)
 
@@ -74,26 +74,34 @@ typedef struct // __attribute__((__packed__))
 class Pwm : public Status
 {
 public:
-  uint32_t init(void);
+  static constexpr uint32_t MAX_PWM_CHANNELS = 10;
+  static constexpr uint32_t MAX_PWM_TIMER_BLOCKS = 3;
+  static constexpr uint32_t MAX_PWM_DMA_BUFFER_LEN = 96;
+
+  uint32_t init(uint32_t channel_count, uint32_t timer_block_count,
+                const PwmBlockStructure * init_blocks);
   void updateConfig(const float * rate, uint32_t channels);
+
+  uint32_t channel_count() const { return channel_count_; }
+  bool valid_channel(uint32_t chan) const { return chan < channel_count_; }
 
   void enable(uint32_t chan)
   {
-    if (chan < PWM_CHANNELS) {
+    if (valid_channel(chan)) {
       TIM_HandleTypeDef * htim = htim_[chan];
       if (htim != nullptr) HAL_TIM_PWM_Start(htim, chan_[chan]);
     }
   }
   void disable(uint32_t chan)
   {
-    if (chan < PWM_CHANNELS) {
+    if (valid_channel(chan)) {
       TIM_HandleTypeDef * htim = htim_[chan];
       if (htim != nullptr) HAL_TIM_PWM_Stop(htim, chan_[chan]);
     }
   }
   void writeUs(uint32_t chan, uint32_t us)
   {
-    if (chan < PWM_CHANNELS) {
+    if (valid_channel(chan)) {
       TIM_HandleTypeDef * htim = htim_[chan];
       if (htim != nullptr) {
         us = (us < PWM_SERVO_MIN) ? PWM_SERVO_MIN : us;
@@ -104,7 +112,7 @@ public:
   }
   void write(uint32_t chan, float val)
   {
-    if (chan < PWM_CHANNELS) {
+    if (valid_channel(chan)) {
       val = (val < 0) ? 0 : val;
       val = (val > 1) ? 1 : val;
       uint32_t us = val * (float) (PWM_SERVO_MAX - PWM_SERVO_MIN) + PWM_SERVO_MIN;
@@ -114,15 +122,15 @@ public:
 
   void write(float * output, uint32_t channels)
   {
-    channels = (channels < PWM_CHANNELS) ? channels : PWM_CHANNELS;
+    channels = (channels < channel_count_) ? channels : channel_count_;
 
-    for (uint32_t bk = 0; bk < PWM_TIMER_BLOCKS; bk++) {
+    for (uint32_t bk = 0; bk < timer_block_count_; bk++) {
       TIM_HandleTypeDef * htim = block_[bk].htim;
 
       if (block_[bk].type == PWM_STANDARD) {
         for (uint32_t ch = 0; ch < 4; ch++) {
           uint32_t output_index = block_[bk].chan[ch];
-          if (output_index < PWM_CHANNELS) {
+          if (output_index < channels) {
             float val = output[output_index];
 
             val = (val < 0) ? 0 : val;
@@ -141,7 +149,7 @@ public:
         // memset(dmaBuf_[bk],0, NWORDS*sizeof(uint32_t));
         for (uint32_t ch = 0; ch < 4; ch++) {
           uint32_t output_index = block_[bk].chan[ch];
-          if (output_index < PWM_CHANNELS) {
+          if (output_index < channels) {
             float val = output[output_index];
             val = (val < 0) ? 0 : val;
             val = (val > 1) ? 1 : val;
@@ -180,9 +188,9 @@ public:
   // Note this sets the rate for all members of the block.
   void setRate(uint32_t chan, float rate)
   {
-    if (chan < PWM_CHANNELS) {
+    if (valid_channel(chan)) {
       uint32_t block_index = blockIndex_[chan];
-      if (block_index < PWM_TIMER_BLOCKS) {
+      if (block_index < timer_block_count_) {
         PwmBlockStructure & block = block_[block_index];
 
         if ((rate >= 0.0) && (rate <= 490.0)) {
@@ -203,11 +211,15 @@ public:
   }
 
 private:
-  PwmBlockStructure * block_;
-  TIM_HandleTypeDef * htim_[PWM_CHANNELS];
-  uint32_t chan_[PWM_CHANNELS];
-  uint32_t (*dmaBuf_)[PWM_DMA_BUFFER_LEN];
-  uint32_t blockIndex_[PWM_CHANNELS];
+  uint32_t channel_count_ = 0;
+  uint32_t timer_block_count_ = 0;
+
+  PwmBlockStructure * block_ = nullptr;
+  TIM_HandleTypeDef * htim_[MAX_PWM_CHANNELS] = {};
+  uint32_t chan_[MAX_PWM_CHANNELS] = {};
+  uint32_t (*dmaBuf_)[MAX_PWM_DMA_BUFFER_LEN] = nullptr;
+  uint32_t blockIndex_[MAX_PWM_CHANNELS] = {};
 };
 
 #endif /* PWM_H_ */
+

@@ -76,60 +76,12 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   /**/
 // clang-format on
 
-// 48-bit us counter.
-// Prefer to have the 32-bit counter on the low order bytes:
-#define HTIM_LOW (&htim5) // 32-bit counter
-#define HTIM_LOW_INSTANCE (TIM5)
-#define HTIM_HIGH (&htim8) // 16-bit overflow counter
-#define HTIM_HIGH_INSTANCE (TIM8)
-
 #define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
 #define POLL_TIM_CHANNEL TIM_CHANNEL_1
 #define POLL_HTIM_INSTANCE (TIM7)
 #define POLLING_PERIOD_US (100)                       // 100us, 10kHz
 #define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Pwm's
-
-
-// Keep this in case we want DSHOT
-//typedef enum : uint8_t
-//{
-//	PWM_STANDARD,
-//	PWM_DSHOT
-//} pwm_type;
-//#define PWM_SERVO_MIN 	  	(1000)
-//#define PWM_SERVO_MAX 	  	(2000)
-//
-//#define DSHOT_ESC_MIN		(48)
-//#define DSHOT_ESC_MAX		(2047)
-//
-//#define PWM_DSHOT_RATE_HZ 	(300000.0) // baud rate
-//#define PWM_MKS_RATE_HZ 	(333.0)
-//#define PWM_STD_RATE_HZ 	(50.0)
-
-#define PWM_CHANNELS (10) // Number of PWM output channels on the board
-#define PWM_TIMER_BLOCKS (3)
-
-// Arrays are the mapping of CH1-4 to the 10 PWM Channels Index
-// clang-format off
-#define PWM_INIT_DEFINE \
-{ \
-  {(&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, {0, 1, 2, 3}},      \
-  {(&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, {6, 5, 4, 7}},      \
-  {(&htim3), PWM_STANDARD, PWM_STD_RATE_HZ, { 8, 9, 255, 255 }} \
-}
-// clang-format on
-
-// Channel order based on hardware pinout naming
-//	TIMER 1 TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4,
-//	TIMER 4 TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_4,
-//	TIMER 3 TIM_CHANNEL_1, TIM_CHANNEL_2
-
-// I2C EEPROM in 11X
-//#define EEPROM_I2C (&hi2c1)
-//#define EEPROM_I2C_ADDRESS (0x50)
 
 // Onboard ADC's
 

@@ -122,7 +122,10 @@ void STM32H7Board::init_board(void)
 
   //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
   //misc_printf("\nStarted Timestamp Timer\n");
-  init_status = time64.init(HTIM_LOW, HTIM_LOW_INSTANCE, HTIM_HIGH, HTIM_HIGH_INSTANCE);
+  init_status = time64.init(
+    &htim5, TIM5, // 32-bit counter
+    &htim8, TIM8 // 16-bit overflow counter
+  );
 
 #define ASCII_ESC 27
   misc_printf("\n\n%c[H", ASCII_ESC); // home
@@ -281,7 +284,21 @@ void STM32H7Board::init_board(void)
   // PWM initialization
 
   misc_printf("\n\nPWM (PWM) Initialization\n");
-  init_status = pwm_.init();
+  // Channel order based on hardware pinout naming
+//	TIMER 1 TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4,
+//	TIMER 4 TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_4,
+//	TIMER 3 TIM_CHANNEL_1, TIM_CHANNEL_2
+  static const PwmBlockStructure board_pwm_init[] = 
+  { \
+    {(&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, {0, 1, 2, 3}}, \
+    {(&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, {6, 5, 4, 7}}, \
+    {(&htim3), PWM_STANDARD, PWM_STD_RATE_HZ, { 8, 9, 255, 255 }} \
+  };
+  init_status = pwm_.init(
+    10, // Number of PWM output channels on the board
+    3, // Number of Timer blocks
+    board_pwm_init
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pwm_;
 
@@ -343,3 +360,4 @@ void STM32H7Board::init_board(void)
 #endif
   // clang-format on
 }
+

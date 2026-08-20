@@ -36,24 +36,39 @@
  **/
 
 #include "Pwm.h"
-#include "BoardConfig.h"
 
+#include <cstring>
 #include <stdio.h>
 
+// Keep this for if we activate DSHOT
+
 // Notes on DSHOT
-// DSHOT  Bitrate	T1H      T0H    Bit(µs)	Frame (µs)
-//  150	  150kbit/s	5.00	2.50	6.67	106.72
-//  300	  300kbit/s	2.50	1.25	3.33	53.28 < we use this
-//  600	  600kbit/s	1.25	0.625	1.67	26.72
-// 1200	 1200kbit/s	0.625	0.313	0.83	13.28
+// DSHOT  Bitrate   T1H      T0H    Bit(us)  Frame (us)
+//  150   150kbit/s 5.00     2.50   6.67      106.72
+//  300   300kbit/s 2.50     1.25   3.33      53.28 < we use this
+//  600   600kbit/s 1.25     0.625  1.67      26.72
+// 1200  1200kbit/s 0.625    0.313  0.83      13.28
 
-DATA_RAM PwmBlockStructure pwm_init[PWM_TIMER_BLOCKS] = PWM_INIT_DEFINE;
+//#define DSHOT_ESC_MIN		(48)
+//#define DSHOT_ESC_MAX		(2047)
+//
+//#define PWM_DSHOT_RATE_HZ 	(300000.0) // baud rate
+//#define PWM_MKS_RATE_HZ 	(333.0)
+//#define PWM_STD_RATE_HZ 	(50.0)
+//typedef enum : uint8_t
+//{
+//	PWM_STANDARD,
+//	PWM_DSHOT
+//} pwm_type;
 
-DMA_RAM uint32_t pwm_dma_buf[PWM_TIMER_BLOCKS][PWM_DMA_BUFFER_LEN];
+
+DATA_RAM PwmBlockStructure pwm_init[Pwm::MAX_PWM_TIMER_BLOCKS] = {};
+
+DMA_RAM uint32_t pwm_dma_buf[Pwm::MAX_PWM_TIMER_BLOCKS][Pwm::MAX_PWM_DMA_BUFFER_LEN] = {};
 
 void Pwm::updateConfig(const float * rate, uint32_t channels)
 {
-  channels = (channels < PWM_CHANNELS) ? channels : PWM_CHANNELS;
+  channels = (channels < channel_count_) ? channels : channel_count_;
 
   for (uint32_t ch = 0; ch < channels; ch++) HAL_TIM_PWM_Stop(htim_[ch], chan_[ch]);
 
@@ -62,26 +77,41 @@ void Pwm::updateConfig(const float * rate, uint32_t channels)
   for (uint32_t ch = 0; ch < channels; ch++) HAL_TIM_PWM_Start(htim_[ch], chan_[ch]);
 }
 
-uint32_t Pwm::init(void)
+uint32_t Pwm::init(uint32_t channel_count, uint32_t timer_block_count,
+                   const PwmBlockStructure * init_blocks)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Pwm");
   initializationStatus_ = DRIVER_OK;
+
+  if (init_blocks == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
+
+  channel_count_ = (channel_count < MAX_PWM_CHANNELS) ? channel_count : MAX_PWM_CHANNELS;
+  timer_block_count_ =
+    (timer_block_count < MAX_PWM_TIMER_BLOCKS) ? timer_block_count : MAX_PWM_TIMER_BLOCKS;
+
+  memset(pwm_init, 0, sizeof(pwm_init));
+  memset(pwm_dma_buf, 0, sizeof(pwm_dma_buf));
+
+  for (uint32_t bk = 0; bk < timer_block_count_; bk++) { pwm_init[bk] = init_blocks[bk]; }
 
   block_ = pwm_init;
   dmaBuf_ = pwm_dma_buf;
 
   // Clear lookup table
-  for (uint32_t output_index = 0; output_index < PWM_CHANNELS; output_index++) {
+  for (uint32_t output_index = 0; output_index < MAX_PWM_CHANNELS; output_index++) {
     htim_[output_index] = nullptr;
     chan_[output_index] = PWM_CHAN_IGNORE;
     blockIndex_[output_index] = (uint32_t) (-1);
   }
 
   // Fill-in lookup tables
-  for (uint32_t bk = 0; bk < PWM_TIMER_BLOCKS; bk++) {
+  for (uint32_t bk = 0; bk < timer_block_count_; bk++) {
     for (uint32_t ch = 0; ch < 4; ch++) {
       uint32_t output_index = block_[bk].chan[ch];
-      if (output_index < PWM_CHANNELS) {
+      if (output_index < channel_count_) {
         blockIndex_[output_index] = bk;
         htim_[output_index] = block_[bk].htim;
         chan_[output_index] = (uint32_t) ch << 2; // Note: TIM_CHANNEL_x = (x-1)*4; up to x==4
@@ -89,7 +119,7 @@ uint32_t Pwm::init(void)
     }
   }
 
-  for (uint32_t bk = 0; bk < PWM_TIMER_BLOCKS; bk++) {
+  for (uint32_t bk = 0; bk < timer_block_count_; bk++) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -140,7 +170,7 @@ uint32_t Pwm::init(void)
     sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
 
     for (uint32_t ch = 0; ch < 4; ch++) {
-      if (block_[bk].chan[ch] < PWM_CHANNELS) {
+      if (block_[bk].chan[ch] < channel_count_) {
         sConfigOC.Pulse = 0; // default to flat line output
         if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, (uint32_t) ch * 4) != HAL_OK) {
           initializationStatus_ |= DRIVER_HAL_ERROR;
@@ -172,3 +202,4 @@ uint32_t Pwm::init(void)
 
   return initializationStatus_;
 }
+

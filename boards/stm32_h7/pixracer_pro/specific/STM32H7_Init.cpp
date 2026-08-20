@@ -276,8 +276,8 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nAdc (adc) Initialization\n");
   init_status = adc_.init(
     10, // Sample Rate, Hz
-	&hadc1, ADC1, // "External" ADC
-	&hadc3, ADC3  // "Internal" ADC
+	  &hadc1, ADC1, // "External" ADC
+	  &hadc3, ADC3  // "Internal" ADC
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
@@ -309,7 +309,21 @@ void STM32H7Board::init_board(void)
   // PWM initialization
 
   misc_printf("\n\nPWM (PWM) Initialization\n");
-  init_status = pwm_.init();
+// Channel order based on hardware pinout naming
+//	TIMER 1 TIM_CHANNEL_4, TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1
+//	TIMER 4 TIM_CHANNEL_2, TIM_CHANNEL_3
+//	TIMER 8 TIM_CHANNEL_1, TIM_CHANNEL_2
+  static const PwmBlockStructure board_pwm_init[] = 
+  { \
+    { (&htim1), PWM_STANDARD, PWM_STD_RATE_HZ, { 3,   2,  1,   0}}, \
+    { (&htim4), PWM_STANDARD, PWM_STD_RATE_HZ, { 255, 4,  5, 255}}, \
+    { (&htim8), PWM_STANDARD, PWM_STD_RATE_HZ, { 6,  7, 255, 255}}  \
+  };
+  init_status = pwm_.init(
+    8, // Number of Channels
+    3, // Numberf of timer blocks
+    board_pwm_init
+  );
 
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pwm_;
@@ -372,3 +386,4 @@ void STM32H7Board::init_board(void)
 #endif
 // clang-format on
 }
+

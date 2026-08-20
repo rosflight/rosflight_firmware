@@ -538,7 +538,7 @@ void STM32H7Board::pwm_init(const float * rate, uint32_t channels)
 { pwm_.updateConfig(rate, channels); }
 void STM32H7Board::pwm_disable(void)
 {
-  for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.disable(ch);
+  for (uint32_t ch = 0; ch < pwm_.channel_count(); ch++) pwm_.disable(ch);
 }
 void STM32H7Board::pwm_write(float * value, uint32_t channels) { pwm_.write(value, channels); }
 
@@ -592,3 +592,4 @@ bool STM32H7Board::memory_write(const void * src, size_t len)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Helper functions (not part of parent class)
+
