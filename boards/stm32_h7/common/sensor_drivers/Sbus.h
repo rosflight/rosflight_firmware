@@ -41,6 +41,8 @@
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
+class STM32H7Board;
+
 /*
  *
  */
@@ -58,8 +60,9 @@ public:
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud);
 
-  bool poll(void);
-  void endDma(void);
+  bool poll(uint64_t poll_offset);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void uartRxCpltCallback(void);
   bool startDma(void);
   bool display(void);
   bool lol(void) { return lol_; }

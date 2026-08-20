@@ -36,6 +36,7 @@
  **/
 
 #include "Ubx.h"
+#include "stm32_h7.hpp"
 
 #include "Time64.h"
 
@@ -51,10 +52,15 @@ DMA_RAM uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
 
 DTCM_RAM uint8_t ubx_double_buffer[2 * sizeof(UbxPacket)];
 
-void Ubx::pps(uint64_t pps_timestamp)
+void Ubx::extiCallback(void)
+{
+  pps();
+}
+
+void Ubx::pps(void)
 {
   static bool first_time = true;
-  if(!first_time) ubx_.pps = pps_timestamp;
+  if (!first_time) ubx_.pps = time64.Us();
   first_time = false;
 }
 
@@ -216,8 +222,9 @@ uint32_t Ubx::init(
   return initializationStatus_;
 }
 
-bool Ubx::poll(void)
+bool Ubx::poll(uint64_t poll_offset)
 {
+  (void) poll_offset;
   // Check if we are timed-out
   if (time64.Us() > timeout_) {
     if ((((DMA_Stream_TypeDef *) (huart_->hdmarx)->Instance)->CR & DMA_SxCR_EN) != DMA_SxCR_EN) {
@@ -237,7 +244,7 @@ bool Ubx::startDma(void)
   return HAL_OK == hal_status;
 }
 
-void Ubx::endDma(void)
+void Ubx::uartRxCpltCallback(void)
 {
   uint16_t bytes_in_dma_buffer = misc_bytes_in_dma(hdmaUartRx_, UBX_DMA_BUFFER_SIZE);
 
@@ -560,3 +567,9 @@ bool Ubx::display(void)
   return 1;
 }
 
+void Ubx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_exti_client(this);
+  board.register_uart_rxcplt_client(this);
+}

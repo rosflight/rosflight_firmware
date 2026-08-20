@@ -46,6 +46,8 @@
 #include "misc.h"
 #include "Polling.h"
 
+class STM32H7Board;
+
 class Ist8308 : public Status, public MiscRotatable
 {
 
@@ -58,7 +60,8 @@ public:
     const double *rotation);
 
   bool poll(uint64_t poll_counter);
-  void endDma(void);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void i2cMasterRxCpltCallback(void);
   bool display(void);
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }

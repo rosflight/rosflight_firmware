@@ -36,6 +36,7 @@
  **/
 
 #include "Bmi088.h"
+#include "stm32_h7.hpp"
 #include "Bmi088_config.h"
 #include "Packets.h"
 #include "Time64.h"
@@ -259,8 +260,9 @@ uint32_t Bmi088::init(
   return initializationStatus_;
 }
 
-bool Bmi088::startDma(void) // DRDY ISR routine
+void Bmi088::extiCallback(void)
 {
+  // Start DMA Read
   drdy_ = time64.Us();
 
   HAL_StatusTypeDef hal_status = spiA_.startDma(BMI_ACCEL_CMD, BMI_ACCEL_BYTES);
@@ -269,10 +271,10 @@ bool Bmi088::startDma(void) // DRDY ISR routine
   } else {
     seqCount_ = 0;
   }
-  return hal_status == HAL_OK;
+  (void) hal_status;
 }
 
-void Bmi088::endDma(void) // DMA complete routine
+void Bmi088::spiTxRxCpltCallback(void) // DMA complete routine
 {
   static ImuPacket p;
   double scale_factor;
@@ -402,4 +404,11 @@ bool Bmi088::display(void)
     misc_printf("%s\n", name);
   }
   return true;
+}
+
+void Bmi088::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  (void) poll_phase_offset;
+  board.register_exti_client(this);
+  board.register_spi_client(this);
 }

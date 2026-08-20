@@ -41,6 +41,8 @@
 #include "BoardConfig.h"
 #include "Status.h"
 
+class STM32H7Board;
+
 /*
  *
  */
@@ -56,8 +58,9 @@ public:
   bool read(uint8_t * dest, size_t len);
   bool write(uint8_t * src, size_t len);
   bool isMy(SD_HandleTypeDef * hsd) { return hsd == hsd_; }
-  void endTxDma(SD_HandleTypeDef * hsd) { txComplete_ = true; }
-  void endRxDma(SD_HandleTypeDef * hsd) { rxComplete_ = true; }
+  void register_callbacks(STM32H7Board & board);
+  void sdTxCpltCallback(void) { txComplete_ = true; }
+  void sdRxCpltCallback(void) { rxComplete_ = true; }
   uint8_t waitForReady(void);
 
 private:

@@ -45,6 +45,8 @@
 #include  "Polling.h"
 
 #define MS4525_I2C_ADDRESS (0x28)
+
+class STM32H7Board;
 /*
  *
  */
@@ -64,8 +66,9 @@ public:
     uint16_t i2c_address      // Chip select Port
   );
   bool poll(uint64_t poll_counter);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void endDma(void);
+  void i2cMasterRxCpltCallback(void);
   bool display(void);
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }

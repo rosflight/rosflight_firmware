@@ -36,6 +36,7 @@
  **/
 
 #include "Adis165xx.h"
+#include "stm32_h7.hpp"
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
@@ -212,16 +213,17 @@ inline double val(uint8_t * x)
     / ((double) (1 << 16));
 }
 
-bool Adis165xx::startDma(void) // called to start dma read
+void Adis165xx::extiCallback(void)
 {
+  // Start DMA Read
   HAL_StatusTypeDef hal_Status = HAL_OK;
   drdy_ = time64.Us();
   if (sampleRateHz_ == 2000) hal_Status = spi_.startDma(BURST_READ, ADIS_BUFFBYTES16);
   else hal_Status = spi_.startDma(BURST_READ, ADIS_BUFFBYTES32);
-  return hal_Status == HAL_OK;
+  (void) hal_Status;
 }
 
-void Adis165xx::endDma(void) // called when DMA data is ready
+void Adis165xx::spiTxRxCpltCallback(void) // called when DMA data is ready
 {
   uint8_t * rx = spi_.endDma();
   ImuPacket p = {0};
@@ -329,4 +331,11 @@ bool Adis165xx::display(void)
     misc_printf("%s\n", name);
   }
   return true;
+}
+
+void Adis165xx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  (void) poll_phase_offset;
+  board.register_exti_client(this);
+  board.register_spi_client(this);
 }

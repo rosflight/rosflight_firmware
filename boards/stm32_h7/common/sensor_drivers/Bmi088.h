@@ -42,6 +42,8 @@
 #include "Spi.h"
 #include "misc.h"
 
+class STM32H7Board;
+
 /*
  *
  */
@@ -67,9 +69,10 @@ public:
     uint8_t range_g,  // // 0,1,2,3 --> 3,6,12,24g
     const double *rotation
   );
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void endDma(void);
-  bool startDma(void);
+  void spiTxRxCpltCallback(void);
+  void extiCallback(void);
   bool display(void);
 
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }

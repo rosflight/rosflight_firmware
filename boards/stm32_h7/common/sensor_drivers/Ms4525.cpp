@@ -35,6 +35,7 @@
  ******************************************************************************
  **/
 #include "Ms4525.h"
+#include "stm32_h7.hpp"
 #include "Time64.h"
 #include "misc.h"
 
@@ -107,7 +108,7 @@ bool Ms4525::poll(uint64_t poll_counter)
   return false;
 }
 
-void Ms4525::endDma(void)
+void Ms4525::i2cMasterRxCpltCallback(void)
 {
   static float pressure_filtered = 0;
 
@@ -163,4 +164,10 @@ bool Ms4525::display(void)
     misc_printf("%s\n", name);
   }
   return true;
+}
+
+void Ms4525::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_i2c_client(this);
 }

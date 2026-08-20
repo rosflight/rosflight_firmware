@@ -52,6 +52,9 @@ enum DmaItType
   IDLE
 };
 
+
+class STM32H7Board;
+
 /**
  * @class Telem
  * @brief
@@ -74,8 +77,9 @@ public:
     //,void (*RxISR) (UART_HandleTypeDef *huart)
   );
   uint32_t reset_baud(uint32_t baud);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void poll(void);
+  void poll(uint64_t poll_offset);
   bool display(void) { return 0; }
   uint16_t byteCount(void) { return rxFifo_.byteCount(); }
   bool readByte(uint8_t * data) { return rxFifo_.read(data); }
@@ -86,7 +90,8 @@ public:
   UART_HandleTypeDef * huart(void) { return huart_; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
   bool rxStart(void);
-  void rxIsrCallback(UART_HandleTypeDef * huart);
+  void uartRxIsrCallback(void);
+  void uartTxCpltCallback(void);
   bool txStart(void);
 
 private:
@@ -103,5 +108,6 @@ private:
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
 };
+
 
 #endif /* TELEM_H_ */

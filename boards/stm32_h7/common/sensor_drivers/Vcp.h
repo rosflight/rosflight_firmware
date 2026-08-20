@@ -43,6 +43,8 @@
 #include "PacketFifo.h"
 #include "Packets.h"
 
+class STM32H7Board;
+
 /**
  * @class Vcp
  * @brief
@@ -53,15 +55,17 @@ class Vcp : public Status
 {
 public:
   uint32_t init(uint16_t sample_rate_hz);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void poll(void);
+  void poll(uint64_t poll_offset);
   bool display(void) { return false; }
 
   uint16_t writePacket(SerialTxPacket * p);
-  void txCdcCallback(void);
+  bool isMy(uint8_t chan) { return channel_ == chan; }
+  void cdcTransmitCpltCallback(void);
   void txStart(void);
 
-  void rxCdcCallback(uint8_t * buffer, uint16_t size) { rxFifo_.writeBlock(buffer, size); }
+  void cdcReceiveCallback(uint8_t * buffer, uint16_t size) { rxFifo_.writeBlock(buffer, size); }
   uint16_t byteCount(void) { return rxFifo_.byteCount(); }
   bool readByte(uint8_t * data) { return rxFifo_.read(data); }
 
@@ -75,5 +79,6 @@ private:
   uint16_t retry_;
 
   ByteFifo rxFifo_;
+  uint8_t channel_ = 0;
 };
 #endif /* VCP_H_ */

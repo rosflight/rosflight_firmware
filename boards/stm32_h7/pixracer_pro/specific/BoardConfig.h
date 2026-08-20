@@ -52,8 +52,6 @@
 // See CommonConfig.h for more #defines
 
 #define VCP_Transmit(buffer, length) CDC_Transmit(0, buffer, length)
-//#define VCP_Transmit(buffer, length) CDC_Transmit_FS(buffer, length)
-//#define VCP_Transmit(buffer, length) CDC_Transmit_HS(buffer, length)
 
 #define _USBD_USE_HS false
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
@@ -71,13 +69,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   Pwm pwm_;			/* All */ \
   Sd sd_; 			/* All */ \
   Dps310 baro_;		/* All */ \
-/*Adis165xx imu0_; */ /* Varmint 10-12X */ \
-/*Bmi088 imu1_; 	 */	/* Varmint 10-12X */\
-/*Iis2mdc mag_;	 */ /* Varmint 10-12X */ \
-/*DlhrL20G pitot_; */	/* Varmint 10-11X */\
-/*Mcp4017 servoV_; */ /* Varmint 11-12X */ \
-/*Auav pitot_;	 */ /* Varmint 12X */ \
-/*Auav baro2_;	 */ /* Varmint 12X */ \
   Bmi088 imu0_; 		/* PixRacer Pro */\
   Ms4525 pitot_;   	/* PixRacer Pro */ \
   Ist8308 mag_;	 	/* PixRacer Pro */ \
@@ -99,24 +90,22 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Pwm's
-//#define PWM_SERVO_MIN 	  	(1000)
-//#define PWM_SERVO_MAX 	  	(2000)
-//
+
+// Keep this for if we activate DSHOT
 //#define DSHOT_ESC_MIN		(48)
 //#define DSHOT_ESC_MAX		(2047)
 //
 //#define PWM_DSHOT_RATE_HZ 	(300000.0) // baud rate
 //#define PWM_MKS_RATE_HZ 	(333.0)
 //#define PWM_STD_RATE_HZ 	(50.0)
-
-#define PWM_CHANNELS (8) // Number of PWM output channels on the board
-#define PWM_TIMER_BLOCKS 3
-
 //typedef enum : uint8_t
 //{
 //	PWM_STANDARD,
 //	PWM_DSHOT
 //} pwm_type;
+
+#define PWM_CHANNELS (8) // Number of PWM output channels on the board
+#define PWM_TIMER_BLOCKS 3
 
 // Arrays are the mapping of CH1-4 to the 10 PWM Channels Index
 // clang-format off
@@ -132,114 +121,9 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 //	TIMER 4 TIM_CHANNEL_2, TIM_CHANNEL_3
 //	TIMER 8 TIM_CHANNEL_1, TIM_CHANNEL_2
 
-// BMI088 IMU
-
-#define BMI088_SPI (&hspi5)
-#define BMI088_ACCEL_DRDY_GPIO_Port BMI088_INT1_ACCEL_GPIO_Port
-#define BMI088_ACCEL_DRDY_Pin BMI088_INT1_ACCEL_Pin
-#define BMI088_ACCEL_CSn_GPIO_Port BMI088_ACCEL_CS_GPIO_Port
-#define BMI088_ACCEL_CSn_Pin BMI088_ACCEL_CS_Pin
-#define BMI088_GYRO_CSn_GPIO_Port BMI088_GYRO_CS_GPIO_Port
-#define BMI088_GYRO_CSn_Pin BMI088_GYRO_CS_Pin
-#define BMI088_HZ (EPOCH_HZ) // 400, 1000, 2000 are the only options
-#define BMI088_RANGE_A (3)   // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
-#define BMI088_RANGE_G (2)   // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
-#define BMI088_ROTATION (const double[]){ -1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
-
-// ADIS IMU
-#define ADIS165XX_HZ (EPOCH_HZ)
-#define ADIS165XX_ROTATION (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0}
-
-// DLHR Pitot is on i2c1
-#define DLHRL20G_HZ (100)
-
-// MS4525D Pitot
-#define MS4525_HZ (100)
-#define PITOT_HZ (MS4525_HZ)
-#define PITOT_I2C (&hi2c1)
-#define PITOT_I2C_ADDRESS (MS4525_I2C_ADDRESS)
-
-// AUAV is both baro (absolute) and differtial (Pitot)
-#define AUAV_SPI (&hspi4)
-#define AUAV_HZ (100)
-// Absolute (Baro)
-#define AUAV_BARO_HZ (AUAV_HZ) // real value is lower
-
-// Differential (Pitot)
-#define AUAV_PITOT_HZ (AUAV_HZ) // real value is lower
-
-// Digital Potentiometer used in later versions
-//	#define MCP4017_I2C_ADDRESS 		(0x2F)
-#define MCP4017_I2C (&hi2c1)
-#define SERVO_VOLTAGE (4.8) // Volts
-
-// I2C EEPROM in 11X
-#define EEPROM_I2C (&hi2c1)
-#define EEPROM_I2C_ADDRESS (0x50)
-
-#define DPS310_SPI (&hspi2)
-#define DPS310_3_WIRE (false)
-
-// Baro is DPS310
-#define DPS310_HZ (50) // up to 50 Hz.
-
-// Mag is IIS2MDC
-// HZ no faster than 100Hz. 10, 20, 50, 100 are the only options for continuous mode
-#define IIS2MDC_HZ (100)
-#define IIS2MDC_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
-
-// Mag IST8308 (pixracer Pro)
-// HZ no faster than 100Hz
-#define IST3808_HZ (100)
-#define IST3808_I2C (&hi2c1)
-#define IST3808_I2C_ADDRESS (0X0C)
-#define IST3808_ROTATION (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0} // for mag, z coordinate is already adjusted for right hand rule.
-
-// SBus is on UART3 for Varmints, UART6 for PixRacer Pro
-#define SBUS_HZ (112) // 1000/9ms = 111.1Hz, 112 is rounds up
-#define SBUS_BAUD (100000)
-//
-#define RC_HZ (SBUS_HZ)
-#define RC_BAUD (SBUS_BAUD)
-#define RC_UART (&huart6)
-#define RC_UART_INSTANCE (USART6)
-#define RC_UART_DMA (&hdma_usart6_rx)
-
-// uBlox
-#define UBX_HZ (10)
-#define UBX_NUM (3) // number of different types of packets
-#define	UBX_BAUD					(115200)
-
-#define GPS_HZ (UBX_HZ)
-#define GPS_BAUD (UBX_BAUD)
-
-#define GPS_PPS_PORT GPS_PPS_GPIO_Port // wire up to MOSI pin on external SPI connector
-#define GPS_PPS_PIN GPS_PPS_Pin  // wire up to MOSI pin on external SPI connector
-#define GPS_UART (&huart4)
-#define GPS_UART_INSTANCE (UART4)
-#define GPS_UART_DMA (&hdma_uart4_rx)
-
-// Telemetry UART2 & VCP
-// Serial
-#define SERIAL_HZ (EPOCH_HZ) // Loop time is driven by IMU period.
-#define SERIAL_QOS_FIFOS (3)
-#define SERIAL_RX_FIFO_BUFFER_BYTES (4096)
-#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS)
-
-// Telem (USART2)
-#define TELEM_HZ (SERIAL_HZ)
-#define TELEM_BAUD (921600) //(57600)
-#define TELEM_UART (&huart2)
-#define TELEM_UART_INSTANCE (USART2)
-#define TELEM_UART_DMA (0) //(&hdma_usart2_rx)
-// VCP
-#define VCP_HZ (SERIAL_HZ)
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // Onboard ADC's
-#define ADC_HZ (10) // Maximum is 500 Hz.
 
-#define ADC_ADC_EXTERNAL (&hadc1)
-#define ADC_ADC_INSTANCE_EXTERNAL (ADC1)
 #define ADC_EXT_DMA_RAM DMA_RAM
 #define ADC_CHANNELS_EXT (4)
 
@@ -247,9 +131,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define ADC_BATTERY_VOLTS (1)   // INP 14
 #define ADC_BATTERY_CURRENT (2) // INP 15
 #define ADC_5V0 (3)             // INP 18
-
-#define ADC_ADC_INTERNAL (&hadc3)
-#define ADC_ADC_INSTANCE_INTERNAL (ADC3)
 
 #define ADC_INT_DMA_RAM BDMA_RAM // NOTE! ADC3 using BDMA so this needs to be in SRAM4
 #define ADC_CHANNELS_INT (3)
@@ -291,36 +172,19 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define BLU_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3)
 
 // Probes
-#if 1
-// Probe PIN PG9
-#define PROBE1_HI HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_SET)
-#define PROBE1_LO HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_RESET)
-#define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
+#if 0
+  #define PROBE1_HI HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_SET)
+  #define PROBE1_LO HAL_GPIO_WritePin(PROBE1_GPIO_Port, PROBE1_Pin, GPIO_PIN_RESET)
+  #define PROBE1_TOG HAL_GPIO_TogglePin(PROBE1_GPIO_Port, PROBE1_Pin)
 
-#define PROBE2_HI HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_SET)
-#define PROBE2_LO HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_RESET)
-#define PROBE2_TOG HAL_GPIO_TogglePin(PROBE2_GPIO_Port, PROBE2_Pin)
+  #define PROBE2_HI HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_SET)
+  #define PROBE2_LO HAL_GPIO_WritePin(PROBE2_GPIO_Port, PROBE2_Pin, GPIO_PIN_RESET)
+  #define PROBE2_TOG HAL_GPIO_TogglePin(PROBE2_GPIO_Port, PROBE2_Pin)
 
-#define PROBE3_HI HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_SET)
-#define PROBE3_LO HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_RESET)
-#define PROBE3_TOG HAL_GPIO_TogglePin(PROBE3_GPIO_Port, PROBE3_Pin)
+  #define PROBE3_HI HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_SET)
+  #define PROBE3_LO HAL_GPIO_WritePin(PROBE3_GPIO_Port, PROBE3_Pin, GPIO_PIN_RESET)
+  #define PROBE3_TOG HAL_GPIO_TogglePin(PROBE3_GPIO_Port, PROBE3_Pin)
 
-#else
-#define PROBE1_HI
-#define PROBE1_LO
-#define PROBE1_TOG
-
-#define PROBE2_HI
-#define PROBE2_LO
-#define PROBE2_TOG
-
-#define PROBE3_HI
-#define PROBE3_LO
-#define PROBE3_TOG
-
-#define PROBE4_HI
-#define PROBE4_LO
-#define PROBE4_TOG
 #endif
 
 #endif /* BOARDCONFIG_H_ */

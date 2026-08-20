@@ -36,6 +36,7 @@
  **/
 
 #include "Iis2mdc.h"
+#include "stm32_h7.hpp"
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
@@ -212,7 +213,7 @@ bool Iis2mdc::poll(uint64_t poll_counter)
   return false;
 }
 
-void Iis2mdc::endDma(void)
+void Iis2mdc::spiTxRxCpltCallback(void)
 {
   uint8_t * rx = spi_.endDma();
   static MagPacket p;
@@ -294,4 +295,10 @@ uint8_t Iis2mdc::readRegister(uint8_t address)
   tx[1] = 0;
   HAL_StatusTypeDef hal_status = spi_.rx(tx, rx, 2, 100);
   return rx[1] | hal_status;
+}
+
+void Iis2mdc::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_spi_client(this);
 }

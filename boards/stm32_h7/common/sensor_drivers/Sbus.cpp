@@ -36,6 +36,7 @@
  **/
 
 #include "Sbus.h"
+#include "stm32_h7.hpp"
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
@@ -132,8 +133,9 @@ uint32_t Sbus::init(
   return initializationStatus_;
 }
 
-bool Sbus::poll(void)
+bool Sbus::poll(uint64_t poll_offset)
 {
+  (void) poll_offset;
   // Check if we are timed-out
   if (time64.Us() > timeout_) {
     if ((((DMA_Stream_TypeDef *) (hdmaUartRx_)->Instance)->CR & DMA_SxCR_EN) != DMA_SxCR_EN) {
@@ -154,7 +156,7 @@ bool Sbus::startDma(void)
   return HAL_OK == hal_status;
 }
 
-void Sbus::endDma(void)
+void Sbus::uartRxCpltCallback(void)
 {
 //  drdy_ = time64.Us();
 
@@ -245,4 +247,10 @@ bool Sbus::display(void)
     misc_printf("%s\n", name);
   }
   return 0;
+}
+
+void Sbus::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_uart_rxcplt_client(this);
 }

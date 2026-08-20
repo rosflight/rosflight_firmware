@@ -135,93 +135,150 @@ void STM32H7Board::init_board(void)
   misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
   status_list_[status_len_++] = &time64;
+  clear_poll_clients();
+  clear_exti_clients();
+  clear_spi_clients();
+  clear_i2c_clients();
+  clear_adc_clients();
+  clear_cdc_clients();
+  clear_sd_clients();
+  clear_uart_rxcplt_clients();
+  clear_uart_rxisr_clients();
+  clear_uart_txcplt_clients();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
 
   misc_printf("\n\nADIS165xx (imu0) Initialization\n");
-  init_status = imu0_.init(ADIS165XX_HZ, ADIS165XX_DRDY_GPIO_Port, ADIS165XX_DRDY_Pin, // Driver
-                           ADIS165XX_SPI, ADIS165XX_CSn_GPIO_Port, ADIS165XX_CSn_Pin,  // SPI
-                           ADIS165XX_RESET_GPIO_Port, ADIS165XX_RESET_Pin,             // Reset Pin
-                           ADIS165XX_HTIM, ADIS165XX_TIM_INSTANCE, ADIS165XX_TIM_CHANNEL,
-                           ADIS165XX_TIM_PERIOD_US, // ADIS external clock
-                           ADIS165XX_ROTATION);
+  init_status = imu0_.init(
+    400, // sample rate, Hz
+    ADIS165XX_DRDY_GPIO_Port, ADIS165XX_DRDY_Pin, // DRDY Port
+    &hspi4, ADIS165XX_CSn_GPIO_Port, ADIS165XX_CSn_Pin,     // SPI
+    ADIS165XX_RESET_GPIO_Port, ADIS165XX_RESET_Pin,         // Reset Pin
+    &htim12, TIM12, TIM_CHANNEL_1, 500, // Timer, 500us period
+    (const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0} // rotation into board coordinate system.
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
+  if (init_status == DRIVER_OK) { imu0_.register_callbacks(*this); }
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
-  init_status =
-    imu1_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI,
-               BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port,
-               BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G, BMI088_ROTATION);
+  init_status = imu1_.init(
+    400, // Sample Rat, Hz, 400, 1000, 2000 are the only options
+	BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, // DRDY
+	&hspi1, // SPI
+    BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, // Accel Chip Select
+	BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin,   // Gyro Chip Select
+	3, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
+	2, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+	(const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0} // Rotation
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu1_;
+  if (init_status == DRIVER_OK) { imu1_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
 
   misc_printf("\n\nDLHRL20G (pitot) Initialization\n"); // I2C must already be initialized
-  init_status = pitot_.init(PITOT_HZ, PITOT_DRDY_PORT, PITOT_DRDY_PIN, // Driver
-                            PITOT_I2C, PITOT_I2C_ADDRESS               // I2C
+  init_status = pitot_.init(
+    100, // Sample Rate, Hz
+	PITOT_DRDY_GPIO_Port, PITOT_DRDY_Pin, // Driver
+	&hi2c1, DLHRL20G_I2C_ADDRESS // I2C
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
+  if (init_status == DRIVER_OK) { pitot_.register_callbacks(*this); }
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
-  init_status = baro_.init(DPS310_HZ, DPS310_DRDY_GPIO_Port, DPS310_DRDY_Pin, // Driver
-                           DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin   // SPI
+  init_status = baro_.init(
+    50, // Sample Rate, Hz, up to 50 Hz.
+	DPS310_DRDY_GPIO_Port, DPS310_DRDY_Pin, // DRDY
+	&hspi2, // SPI
+	DPS310_CSn_GPIO_Port, DPS310_CSn_Pin   // Chip Select
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
+  if (init_status == DRIVER_OK) { baro_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
 
   misc_printf("\n\nIIS2MDC (mag) Initialization\n");
-  init_status = mag_.init(IIS2MDC_HZ, IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // Driver
-                          IIS2MDC_SPI, IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,  // SPI
-                          IIS2MDC_ROTATION);
+  init_status = mag_.init(
+    100, // Sample Rate, Hz.
+	IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // Driver
+	&hspi2, // SPI
+	IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,  // SPI
+	(const double[]){-1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, -1.0}
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
+ if (init_status == DRIVER_OK) { mag_.register_callbacks(*this, 1); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE,
-                          GPS_UART_DMA, GPS_BAUD);
+  init_status = gps_.init(
+    10, // Sample Rate, Hz
+	GPS_1PPS_GPIO_Port, GPS_1PPS_Pin, // PPS EXTI
+	&huart1, USART1,
+	&hdma_usart1_rx, // UART DMA
+	115200 // Baud
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
+  if (init_status == DRIVER_OK) { gps_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RC/S.Bus initialization
 
   misc_printf("\n\nS.Bus (rc) Initialization\n");
-  init_status = rc_.init(RC_HZ, RC_UART, RC_UART_INSTANCE, RC_UART_DMA, RC_BAUD);
+  init_status = rc_.init(
+    112,  // Frame Rate, 1000/9ms = 111.1Hz, 112 is rounded up
+	&huart3, USART3, // UART
+	&hdma_usart3_rx, // UART DMA
+	100000 // Baud,
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &rc_;
+  if (init_status == DRIVER_OK) { rc_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status = adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL,
-                          ADC_ADC_INSTANCE_INTERNAL);
+  init_status = adc_.init(
+    10, // Sample Rate, Hz
+	&hadc1, ADC1, // "External"
+	&hadc3, ADC3 // "Internal" has the on chip sensors
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
+  if (init_status == DRIVER_OK) { adc_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // COM initialization
 
   misc_printf("\n\nVcp (vcp) Initialization\n");
-  init_status = vcp_.init(VCP_HZ);
+  init_status = vcp_.init(
+    EPOCH_HZ // Highest Sensor Sample Rate
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &vcp_;
+ if (init_status == DRIVER_OK) { vcp_.register_callbacks(*this); }
 
   misc_printf("\n\nTelem (telem) Initialization\n");
-  init_status = telem_.init(TELEM_HZ, TELEM_UART, TELEM_UART_INSTANCE, TELEM_UART_DMA, TELEM_BAUD);
+  init_status = telem_.init(
+    EPOCH_HZ, // Highest Sensor Sample Rate
+	&huart2, USART2,
+	0, // (&hdma_usart2_rx), 0 = no dma, using isr
+	921600
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &telem_;
+  if (init_status == DRIVER_OK) { telem_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // PWM initialization
@@ -232,20 +289,24 @@ void STM32H7Board::init_board(void)
   status_list_[status_len_++] = &pwm_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Servo Power Supply initialization
-
-  // Initialize the Digital Potentiometer to 8.16V, I2C must already be initialized
-  misc_printf("\n\nServo Voltage Initialization\n");
-  init_status = servoV_.init(MCP4017_I2C, MCP4017_I2C_ADDRESS, SERVO_VOLTAGE);
-  misc_exit_status(init_status);
-  status_list_[status_len_++] = &servoV_;
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // uSD Card initialization
   misc_printf("\n\nSDMMC Initialization\n");
-  init_status = sd_.init(SD_HSD, SD_HSD_INSTANCE);
+  init_status = sd_.init(&hsd1, SDMMC1);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &sd_;
+  if (init_status == DRIVER_OK) { sd_.register_callbacks(*this); }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Servo Power Supply initialization
+
+  misc_printf("\n\nServo Voltage Initialization\n");
+  init_status = servoV_.init(
+    &hi2c1, //I2C
+    MCP4017_I2C_ADDRESS, //
+    4.8 // Servo voltage, V
+  );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &servoV_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Review Status List

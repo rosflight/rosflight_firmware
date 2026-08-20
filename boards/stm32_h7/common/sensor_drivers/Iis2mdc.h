@@ -47,6 +47,8 @@
 
 #define IIS2MDC_OK (0x0F)
 
+class STM32H7Board;
+
 /*
  *
  */
@@ -69,7 +71,8 @@ public:
   );
   // bool poll(void);
   bool poll(uint64_t poll_counter);
-  void endDma(void);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void spiTxRxCpltCallback(void);
 
   bool display(void);
 

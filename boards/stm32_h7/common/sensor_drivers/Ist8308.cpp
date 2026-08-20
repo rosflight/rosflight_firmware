@@ -36,6 +36,7 @@
  **/
 
 #include "Ist8308.h"
+#include "stm32_h7.hpp"
 #include "Time64.h"
 #include "misc.h"
 
@@ -223,7 +224,7 @@ bool Ist8308::poll(uint64_t poll_counter)
   return dmaRunning_;
 }
 
-void Ist8308::endDma(void)
+void Ist8308::i2cMasterRxCpltCallback(void)
 {
   //	if(i2cState_ == IST8308_CMD) {} // do nothing
   //	if(i2cState_ == IST8308_TX) {}  // do nothing
@@ -272,4 +273,10 @@ bool Ist8308::display()
   }
 
   return 0;
+}
+
+void Ist8308::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_i2c_client(this);
 }

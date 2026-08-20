@@ -38,6 +38,7 @@
 #include "BoardConfig.h"
 
 #include "Adc.h"
+#include "stm32_h7.hpp"
 
 #include "Packets.h"
 #include "Time64.h"
@@ -147,7 +148,7 @@ uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, Ad
 
 bool Adc::poll(uint64_t poll_counter)
 {
-  uint32_t poll_offset = (uint32_t) (poll_counter % (POLLING_FREQ_HZ / ADC_HZ));
+  uint32_t poll_offset = (uint32_t) (poll_counter % (POLLING_FREQ_HZ / sampleRateHz_));
 
   if (poll_offset == 0) // launch a read
   {
@@ -160,7 +161,7 @@ bool Adc::poll(uint64_t poll_counter)
   return false;
 }
 
-void Adc::endDma(ADC_HandleTypeDef * hadc)
+void Adc::adcConvCpltCallback(ADC_HandleTypeDef * hadc)
 {
   static bool int_read = 0, ext_read = 0;
 
@@ -303,4 +304,10 @@ bool Adc::display(void)
 void Adc::setScaleFactor(uint16_t n, float scale_factor)
 {
   if (n < ADC_CHANNELS_EXT + ADC_CHANNELS_INT) cfg_[n].scaleFactor = scale_factor;
+}
+
+void Adc::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_adc_client(this);
 }

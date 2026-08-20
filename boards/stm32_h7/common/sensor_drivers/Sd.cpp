@@ -36,6 +36,7 @@
  **/
 
 #include "Sd.h"
+#include "stm32_h7.hpp"
 #include "Time64.h"
 #include "misc.h"
 
@@ -144,4 +145,9 @@ bool Sd::write(uint8_t * src, size_t len)
   while ( !txComplete_ && (timeout > time64.Us())) {} // wait for DMA to complete
 
   return txComplete_;
+}
+
+void Sd::register_callbacks(STM32H7Board & board)
+{
+  board.register_sd_client(this);
 }

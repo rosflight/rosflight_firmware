@@ -71,7 +71,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 #define EPOCH_HZ (400)
-#define EPOCH_US (1000000 / EPOCH_HZ)
 
 #define FIFO_MIN_BUFFERS 2 // Defaults to double buffered with really slow data.
 
@@ -79,8 +78,8 @@
 #define SPI_DMA_MAX_BUFFER_SIZE 64
 
 // SDMMC
-#define SD_HSD (&hsd1)
-#define SD_HSD_INSTANCE (SDMMC1)
+//#define SD_HSD (&hsd1)
+//#define SD_HSD_INSTANCE (SDMMC1)
 
 #define DRIVER_OK (0x00000000)
 #define DRIVER_NOT_INITIALIZED (0x00000001)

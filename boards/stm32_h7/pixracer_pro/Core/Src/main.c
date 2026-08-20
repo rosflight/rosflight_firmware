@@ -1544,7 +1544,7 @@ void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
-#define UART2_BAUD        				(TELEM_BAUD)
+#define UART2_BAUD        				(921600)
   /* USER CODE END USART2_Init 0 */
 
   /* USER CODE BEGIN USART2_Init 1 */

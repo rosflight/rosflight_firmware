@@ -36,6 +36,7 @@
  **/
 
 #include "Telem.h"
+#include "stm32_h7.hpp"
 #include "Time64.h"
 #include "misc.h"
 
@@ -45,6 +46,9 @@
 #include "Packets.h"
 
 extern Time64 time64;
+
+#define SERIAL_QOS_FIFOS (3)
+#define SERIAL_TX_FIFO_BUFFERS (PACKET_FIFO_MAX_BUFFERS) //4096???
 
 //#define TELEM_RX_BUFFER_SIZE (4096-32) // Use a multiple of 32!
 //DTCM_RAM uint8_t telem_fifo_rx_buffer[TELEM_RX_BUFFER_SIZE];
@@ -138,8 +142,9 @@ uint32_t Telem::reset_baud(uint32_t baud)
   return DRIVER_OK;
 }
 
-void Telem::poll(void)
+void Telem::poll(uint64_t poll_offset)
 {
+  (void) poll_offset;
   // TX
   if (txIdle_) { txStart(); }
 }
@@ -152,11 +157,11 @@ bool Telem::rxStart(void) // RX DMA
   return true;
 }
 
-void Telem::rxIsrCallback(UART_HandleTypeDef * huart)
+void Telem::uartRxIsrCallback(void)
 {
-  if (huart->Instance->ISR & UART_FLAG_RXNE) {
-    ATOMIC_SET_BIT(huart->Instance->CR1, USART_CR1_RXNEIE_RXFNEIE);
-    rxFifo_.write(huart->Instance->RDR);
+  if (huart_->Instance->ISR & UART_FLAG_RXNE) {
+    ATOMIC_SET_BIT(huart_->Instance->CR1, USART_CR1_RXNEIE_RXFNEIE);
+    rxFifo_.write(huart_->Instance->RDR);
   }
 }
 
@@ -191,6 +196,11 @@ bool Telem::newPacket(SerialTxPacket * p)
   }
 }
 
+void Telem::uartTxCpltCallback(void)
+{
+  txStart();
+}
+
 bool Telem::txStart(void) // Transmit complete callback.
 {
   txIdle_ = false;
@@ -203,4 +213,11 @@ bool Telem::txStart(void) // Transmit complete callback.
     txIdle_ = true;
   }
   return !txIdle_;
+}
+
+void Telem::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_uart_rxisr_client(this);
+  board.register_uart_txcplt_client(this);
 }

@@ -36,7 +36,6 @@
  **/
 #include "stm32_h7.hpp"
 
-#include "BoardConfig.h"
 #include "Spi.h"
 #include "Time64.h"
 #include "misc.h"
@@ -57,6 +56,34 @@ bool verbose = BOARD_STATUS_PRINT;
 
 Time64 time64;
 
+namespace
+{
+class Bmi088GyroBridgeSet
+{
+public:
+  bool isMy(uint16_t exti_pin) { return exti_pin == BMI088_INT4_GYRO_Pin; }
+
+  void extiCallback()
+  {
+    HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_SET);
+  }
+};
+
+class Bmi088AccelBridgeClear
+{
+public:
+  bool isMy(uint16_t exti_pin) { return exti_pin == BMI088_INT1_ACCEL_Pin; }
+
+  void extiCallback()
+  {
+    HAL_GPIO_WritePin(BMI088_INT2_ACCEL_GPIO_Port, BMI088_INT2_ACCEL_Pin, GPIO_PIN_RESET);
+  }
+};
+
+Bmi088GyroBridgeSet bmi088_gyro_bridge_set;
+Bmi088AccelBridgeClear bmi088_accel_bridge_clear;
+} // namespace
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //
 // STM32H7 Board
@@ -71,6 +98,8 @@ Time64 time64;
 
 void STM32H7Board::init_board(void)
 {
+// clang-format off
+
   uint32_t init_status;
 
   //MPU_Config();
@@ -141,6 +170,16 @@ void STM32H7Board::init_board(void)
   misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
   status_list_[status_len_++] = &time64;
+  clear_poll_clients();
+  clear_exti_clients();
+  clear_spi_clients();
+  clear_i2c_clients();
+  clear_adc_clients();
+  clear_cdc_clients();
+  clear_sd_clients();
+  clear_uart_rxcplt_clients();
+  clear_uart_rxisr_clients();
+  clear_uart_txcplt_clients();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
@@ -149,72 +188,122 @@ void STM32H7Board::init_board(void)
   HAL_NVIC_DisableIRQ(BMI088_INT1_ACCEL_EXTI_IRQn); // EXTI1_IRQn ACCEL DRDY
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
-  init_status =
-    imu0_.init(BMI088_HZ, BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, BMI088_SPI,
-               BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, BMI088_GYRO_CSn_GPIO_Port,
-               BMI088_GYRO_CSn_Pin, BMI088_RANGE_A, BMI088_RANGE_G, BMI088_ROTATION);
+  init_status = imu0_.init(
+    400, // BMI088_HZ,
+    BMI088_INT1_ACCEL_GPIO_Port, BMI088_INT1_ACCEL_Pin, // DRDY for Accel
+    &hspi5,	// SPI
+    BMI088_ACCEL_CS_GPIO_Port, BMI088_ACCEL_CS_Pin,// Accel Chip Select pin
+    BMI088_GYRO_CS_GPIO_Port, BMI088_GYRO_CS_Pin,  // Gyro Chip Select pin
+    3, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
+    2, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
+    (const double[]){ -1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0} //BMI088_ROTATION
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
+  if (init_status == DRIVER_OK) { register_exti_client(&bmi088_gyro_bridge_set); }
+  if (init_status == DRIVER_OK) { register_exti_client(&bmi088_accel_bridge_clear); }
+  if (init_status == DRIVER_OK) { imu0_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
 
   misc_printf("\n\nMS4525 (Pitot) Initialization\n"); // I2C must already be initialized
-  init_status = pitot_.init(PITOT_HZ, PITOT_I2C, PITOT_I2C_ADDRESS);
+  init_status = pitot_.init(
+    100, // Hz, rate
+	&hi2c1,
+	MS4525_I2C_ADDRESS
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
+  if (init_status == DRIVER_OK) { pitot_.register_callbacks(*this, -5); }
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
-  init_status = baro_.init(DPS310_HZ, DPS310_SPI, DPS310_CSn_GPIO_Port, DPS310_CSn_Pin);
+  init_status = baro_.init(
+    50, // Sample Rate Hz
+	&hspi2,
+    DPS310_CSn_GPIO_Port, DPS310_CSn_Pin // Chip Select
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
+  if (init_status == DRIVER_OK) { baro_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
 
   misc_printf("\n\nIST3808 (mag) Initialization\n");
-  init_status = mag_.init(IST3808_HZ, IST3808_I2C, IST3808_I2C_ADDRESS, IST3808_ROTATION);
+  init_status = mag_.init(
+    100, // Sample Rate (Hz)
+    &hi2c1, // I2C1
+    0X0C, // I2C Address
+    (const double[]){1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, 1.0}
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
+  if (init_status == DRIVER_OK) { mag_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GPS initialization
 
   misc_printf("\n\nUbx (gps) Initialization\n");
-  init_status = gps_.init(GPS_HZ, GPS_PPS_PORT, GPS_PPS_PIN, GPS_UART, GPS_UART_INSTANCE,
-                          GPS_UART_DMA, GPS_BAUD);
+  init_status = gps_.init(
+    10, // Sample Rate, Hz
+	GPS_PPS_GPIO_Port, GPS_PPS_Pin, // PPS Pin
+	&huart4, UART4, // UART
+	&hdma_uart4_rx, // UART DMA
+	115200 // BAUD
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
+  if (init_status == DRIVER_OK) { gps_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RC/S.Bus initialization
 
   misc_printf("\n\nS.Bus (rc) Initialization\n");
-  init_status = rc_.init(RC_HZ, RC_UART, RC_UART_INSTANCE, RC_UART_DMA, RC_BAUD);
+  init_status = rc_.init(
+	112, // Frame Rate (approximate 1000/9ms = 111.1Hz, 112 is rounded up)
+	&huart6, USART6,
+	&hdma_usart6_rx,
+	100000
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &rc_;
+  if (init_status == DRIVER_OK) { rc_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
-  init_status = adc_.init(ADC_HZ, ADC_ADC_EXTERNAL, ADC_ADC_INSTANCE_EXTERNAL, ADC_ADC_INTERNAL,
-                          ADC_ADC_INSTANCE_INTERNAL);
+  init_status = adc_.init(
+    10, // Sample Rate, Hz
+	&hadc1, ADC1, // "External" ADC
+	&hadc3, ADC3  // "Internal" ADC
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
+  if (init_status == DRIVER_OK) { adc_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // COM initialization
 
   misc_printf("\n\nVcp (vcp) Initialization\n");
-  init_status = vcp_.init(VCP_HZ);
+  init_status = vcp_.init(
+    EPOCH_HZ // Highest Sensor Sample Rate
+  );  
   misc_exit_status(init_status);
   status_list_[status_len_++] = &vcp_;
+  if (init_status == DRIVER_OK) { vcp_.register_callbacks(*this); }
 
   misc_printf("\n\nTelem (telem) Initialization\n");
-  init_status = telem_.init(TELEM_HZ, TELEM_UART, TELEM_UART_INSTANCE, TELEM_UART_DMA, TELEM_BAUD);
+  init_status = telem_.init(
+    EPOCH_HZ, // Highest Sensor Sample Rate
+	  &huart2, USART2,
+	  0, // &hdma_usart2_rx, 0 = none, we are using ISR
+	  921600
+  );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &telem_;
+  if (init_status == DRIVER_OK) { telem_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // PWM initialization
@@ -226,14 +315,12 @@ void STM32H7Board::init_board(void)
   status_list_[status_len_++] = &pwm_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Servo Power Supply initialization
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // uSD Card initialization
   misc_printf("\n\nSDMMC Initialization\n");
-  init_status = sd_.init(SD_HSD, SD_HSD_INSTANCE);
+  init_status = sd_.init(&hsd1, SDMMC1);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &sd_;
+  if (init_status == DRIVER_OK) { sd_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Review Status List
@@ -268,6 +355,7 @@ void STM32H7Board::init_board(void)
   // High Rate Timer initialization
 
   misc_printf("\n\nPolling Timer Initialization\n");
+
   init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL);
   misc_exit_status(init_status);
 
@@ -282,4 +370,5 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nStarting Rosflight\n");
   verbose = false;
 #endif
+// clang-format on
 }

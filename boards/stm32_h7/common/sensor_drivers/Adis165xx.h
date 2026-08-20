@@ -46,6 +46,8 @@
 
 #define ADIS_OK (0x0000)
 
+class STM32H7Board;
+
 class Adis165xx : public Status , public MiscRotatable
 {
 public:
@@ -62,9 +64,10 @@ public:
     TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
     const double *rotation
   );
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void endDma(void);
-  bool startDma(void);
+  void spiTxRxCpltCallback(void);
+  void extiCallback(void);
   bool display(void);
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }

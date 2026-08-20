@@ -35,6 +35,7 @@
  ******************************************************************************
  **/
 #include "DlhrL20G.h"
+#include "stm32_h7.hpp"
 #include "Time64.h"
 #include "misc.h"
 
@@ -132,7 +133,7 @@ uint32_t DlhrL20G::init(
 
 bool DlhrL20G::poll(uint64_t poll_counter)
 {
-  uint16_t poll_offset = (uint16_t) (poll_counter % (POLLING_FREQ_HZ / PITOT_HZ));
+  uint16_t poll_offset = (uint16_t) (poll_counter % (POLLING_FREQ_HZ / sampleRateHz_));
 
   bool status = false;
   static bool previous_drdy = 0;
@@ -153,7 +154,7 @@ bool DlhrL20G::poll(uint64_t poll_counter)
   return status;
 }
 
-void DlhrL20G::endDma(void)
+void DlhrL20G::i2cMasterRxCpltCallback(void)
 {
   PressurePacket p;
   p.header.status = dlhr_i2c_dma_buf[0];
@@ -190,4 +191,10 @@ bool DlhrL20G::display(void)
     misc_printf("%s\n", name);
   }
   return true;
+}
+
+void DlhrL20G::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_i2c_client(this);
 }

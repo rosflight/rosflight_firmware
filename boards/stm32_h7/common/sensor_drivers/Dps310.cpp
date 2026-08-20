@@ -36,6 +36,7 @@
  **/
 
 #include "Dps310.h"
+#include "stm32_h7.hpp"
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
@@ -353,7 +354,7 @@ bool Dps310::poll(uint64_t poll_counter)
   return false;
 }
 
-void Dps310::endDma(void)
+void Dps310::spiTxRxCpltCallback(void)
 {
   uint8_t * rx = spi_.endDma();
   static double Traw;
@@ -404,4 +405,10 @@ bool Dps310::display(void)
     misc_printf("%s\n", name_);
   }
   return 0;
+}
+
+void Dps310::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_spi_client(this);
 }

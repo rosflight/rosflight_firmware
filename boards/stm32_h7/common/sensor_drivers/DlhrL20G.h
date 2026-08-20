@@ -47,6 +47,8 @@
 #define DLHRL20G_OK (0x40)
 
 #define DLHRL20G_I2C_ADDRESS (0x29)
+
+class STM32H7Board;
 /*
  *
  */
@@ -64,8 +66,9 @@ public:
     uint16_t drdy_pin,                                 // Reset GPIO Pin
     I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
   );
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool poll(uint64_t poll_offset);
-  void endDma(void);
+  void i2cMasterRxCpltCallback(void);
   bool display(void);
   // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
   bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }

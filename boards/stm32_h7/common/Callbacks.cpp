@@ -35,18 +35,17 @@
  *
  ******************************************************************************
  **/
-#include "stm32h753xx.h"
-#include <stm32_h7.hpp>
+#include "stm32_h7.hpp"
 extern STM32H7Board stm32_h7_board;
 
-#include <Time64.h>
+#include "Time64.h"
 extern Time64 time64;
 
-#include <Callbacks.h>
+#include "Callbacks.h"
 
-#include <BoardConfig.h>
+#include "BoardConfig.h"
 
-#include <Polling.h>
+#include "Polling.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // High Rate (10kHz) Periodic Timer Interrupt Routine for Polling
@@ -55,20 +54,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
   if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
   {
+
     static uint64_t poll_counter = 0;
     poll_counter++;
-    // Baro and Mag share SPI, offset mag by one count to avoid conflicts.
-    stm32_h7_board.baro_.poll(poll_counter);
-    stm32_h7_board.mag_.poll(poll_counter + 1); // Checks for data ready and start dma read
-
-    stm32_h7_board.pitot_.poll(
-      poll_counter); // Periodic start, check for data ready, and start dma read
-
-    stm32_h7_board.rc_.poll();              // Restart if dead
-    stm32_h7_board.gps_.poll();             // Restart if dead
-    stm32_h7_board.telem_.poll();           // Check for new data packet to tx
-    stm32_h7_board.adc_.poll(poll_counter); // Start dma read
-    stm32_h7_board.vcp_.poll();             // Timeout
+    stm32_h7_board.dispatch_poll(poll_counter);
 
     if (0 == poll_counter % (POLLING_FREQ_HZ / 2)) GRN_TOG; // Blink Green LED at 1 Hz.
   }
@@ -79,9 +68,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 {
-  if (stm32_h7_board.imu0_.isMy(exti_pin)) { stm32_h7_board.imu0_.startDma(); }
-  if (stm32_h7_board.imu1_.isMy(exti_pin)) { stm32_h7_board.imu1_.startDma(); }
-  if (stm32_h7_board.gps_.isMy(exti_pin)) { stm32_h7_board.gps_.pps(time64.Us()); }
+  stm32_h7_board.dispatch_exti(exti_pin);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -95,18 +82,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 void HAL_SPI_TxRxCpltCallback(
   SPI_HandleTypeDef * hspi) // All spi dma rx interrupts are handled here.
 {
-  // do not use 'else if' since some of these share SPI
-  if (stm32_h7_board.imu0_.isMy(hspi)) { stm32_h7_board.imu0_.endDma(); }
-  if (stm32_h7_board.imu1_.isMy(hspi)) { stm32_h7_board.imu1_.endDma(); }
-  if (stm32_h7_board.mag_.isMy(hspi)) { stm32_h7_board.mag_.endDma(); }
-  if (stm32_h7_board.baro_.isMy(hspi)) { stm32_h7_board.baro_.endDma(); }
+  stm32_h7_board.dispatch_spi(hspi);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 // I2C Rx complete callback
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
-  if (stm32_h7_board.pitot_.isMy(hi2c)) stm32_h7_board.pitot_.endDma();
+  stm32_h7_board.dispatch_i2c(hi2c);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -114,8 +97,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 //
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart)
 {
-  if (stm32_h7_board.rc_.isMy(huart)) stm32_h7_board.rc_.endDma();
-  if (stm32_h7_board.gps_.isMy(huart)) stm32_h7_board.gps_.endDma();
+  stm32_h7_board.dispatch_uart_rxcplt(huart);
 }
 
 void UART_RxIsrCallback(UART_HandleTypeDef * huart)
@@ -125,13 +107,13 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart)
     __HAL_UART_CLEAR_IDLEFLAG(huart);
     if (huart->hdmarx != 0) ((DMA_Stream_TypeDef *) (huart->hdmarx)->Instance)->CR &= ~DMA_SxCR_EN;
   } else {
-    if (stm32_h7_board.telem_.isMy(huart)) { stm32_h7_board.telem_.rxIsrCallback(huart); }
+    stm32_h7_board.dispatch_uart_rxisr(huart);
   }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart)
 {
-  if (stm32_h7_board.telem_.isMy(huart)) stm32_h7_board.telem_.txStart();
+  stm32_h7_board.dispatch_uart_txcplt(huart);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +121,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc)
 {
-  if (stm32_h7_board.adc_.isMy(hadc)) stm32_h7_board.adc_.endDma(hadc);
+  stm32_h7_board.dispatch_adc(hadc);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -147,22 +129,43 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef * hadc)
 
 void CDC_Receive_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
 {
-  if (chan == 0) stm32_h7_board.vcp_.rxCdcCallback(buffer, size);
+  stm32_h7_board.dispatch_cdc_receive(chan, buffer, size);
 }
 
 void CDC_TransmitCplt_Callback(uint8_t chan, uint8_t * buffer, uint16_t size)
 {
-  if (chan == 0) stm32_h7_board.vcp_.txCdcCallback();
+  stm32_h7_board.dispatch_cdc_transmit_cplt(chan);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // SD card
 void HAL_SD_TxCpltCallback(SD_HandleTypeDef * hsd)
 {
-  if (stm32_h7_board.sd_.isMy(hsd)) { stm32_h7_board.sd_.endTxDma(hsd); }
+  stm32_h7_board.dispatch_sd_txcplt(hsd);
 }
+
+//// This function is called if there is an error during the transmission
+//void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
+//{
+//    // Handle error
+//  if (varmint.sd_.isMy(hsd)) { varmint.sd_.errorDma(hsd,0); }
+//}
+//
+//// optional: This function is invoked when the SD card is not ready for I/O operation
+//void HAL_SD_CardErrorCallback(SD_HandleTypeDef *hsd)
+//{
+//    // Handle SD card-specific error
+//  if (varmint.sd_.isMy(hsd)) { varmint.sd_.errorDma(hsd,1); }
+//}
+//
+//// optional: This function is invoked when the SD card has been disconnected or reconnected
+//void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
+//{
+//    // Transmission has been aborted
+//  if (varmint.sd_.isMy(hsd)) { varmint.sd_.errorDma(hsd,2); }
+//}
 
 void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
 {
-  if (stm32_h7_board.sd_.isMy(hsd)) { stm32_h7_board.sd_.endRxDma(hsd); }
+  stm32_h7_board.dispatch_sd_rxcplt(hsd);
 }

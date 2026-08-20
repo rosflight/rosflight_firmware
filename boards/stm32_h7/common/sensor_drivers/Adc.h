@@ -41,6 +41,8 @@
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
+class STM32H7Board;
+
 
 typedef struct __attribute__((__packed__))
 {
@@ -61,9 +63,9 @@ public:
                 ADC_HandleTypeDef * hadc_int,
                 ADC_TypeDef * adc_instance_int // This ADC has the calibration values
   );
-  bool poll(void) { return false; };
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool poll(uint64_t poll_offset);
-  void endDma(ADC_HandleTypeDef * hadc);
+  void adcConvCpltCallback(ADC_HandleTypeDef * hadc);
 
   bool display(void);
   bool isMy(ADC_HandleTypeDef * hadc) { return (hadcExt_ == hadc) || (hadcInt_ == hadc); }

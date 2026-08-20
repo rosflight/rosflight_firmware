@@ -43,6 +43,8 @@
 #include "Packets.h"
 #include "Status.h"
 
+class STM32H7Board;
+
 // Class 0x01, ID 0x07
 typedef struct __attribute__((__packed__)) // This matches the Ubx packet, do not modify
 {
@@ -126,8 +128,9 @@ public:
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 
-  bool poll(void);
-  void endDma(void);
+  bool poll(uint64_t poll_offset);
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void uartRxCpltCallback(void);
   bool startDma(void);
   bool display(void);
   bool parseByte(uint8_t c, UbxFrame * p);
@@ -136,7 +139,8 @@ public:
   bool isMy(uint16_t exti_pin) { return ppsPin_ == exti_pin; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
 
-  void pps(uint64_t pps_timestamp);
+  void extiCallback(void);
+  void pps(void);
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 

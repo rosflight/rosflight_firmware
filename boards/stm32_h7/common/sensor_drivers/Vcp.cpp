@@ -36,6 +36,7 @@
  **/
 
 #include "Vcp.h"
+#include "stm32_h7.hpp"
 #include "BoardConfig.h"
 #include "Packets.h"
 
@@ -101,8 +102,9 @@ uint16_t Vcp::writePacket(SerialTxPacket * p_new) { return txFifo_.write((uint8_
  * @brief This (Polling loop) needs to be run at the same interrupt level as the CDC Tx Complete Callback.
  *
  */
-void Vcp::poll(void)
+void Vcp::poll(uint64_t poll_offset)
 {
+  (void) poll_offset;
   //	// TX
   if ((txFifo_.packetCountMax() > 0) && ((time64.Us() > txTimeout_))) txStart();
 }
@@ -111,7 +113,7 @@ void Vcp::poll(void)
  * @brief This CDC Tx Complete Callback needs to be at the same interrupt level as the polling loop.
  *
  */
-void Vcp::txCdcCallback(void) { txStart(); }
+void Vcp::cdcTransmitCpltCallback(void) { txStart(); }
 
 void Vcp::txStart()
 {
@@ -144,4 +146,10 @@ void Vcp::txStart()
       retry_ = 0;
     }
   }
+}
+
+void Vcp::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  board.register_poll_client(this, poll_phase_offset);
+  board.register_cdc_client(this);
 }
