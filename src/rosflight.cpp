@@ -109,7 +109,7 @@ void ROSflight::run()
   /*********************/
   /***  Control Loop ***/
   /*********************/
- 
+
   got_flags got = sensors_.run(); // IMU, GNSS, Baro, Mag, Pitot, SONAR, Battery
 
   if (got.imu && check_time_going_forwards()) { // dt_ is computed by check_time_going_forwards

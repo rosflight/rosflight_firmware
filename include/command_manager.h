@@ -67,7 +67,7 @@ typedef enum
 typedef struct
 {
   uint32_t stamp_ms;
-  control_channel_t u[10];  // Control channels, interpreted according to mode/mixer
+  control_channel_t u[10]; // Control channels, interpreted according to mode/mixer
 } control_t;
 
 class CommandManager : public ParamListenerInterface
@@ -87,10 +87,14 @@ public:
     OVERRIDE_OFFBOARD_Z_INACTIVE = 0x100,
     OVERRIDE_OFFBOARD_T_INACTIVE = 0x200,
   };
-  static constexpr uint16_t X_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_X | OVERRIDE_OFFBOARD_X_INACTIVE};
-  static constexpr uint16_t Y_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Y | OVERRIDE_OFFBOARD_Y_INACTIVE};
-  static constexpr uint16_t Z_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Z | OVERRIDE_OFFBOARD_Z_INACTIVE};
-  static constexpr uint16_t T_OVERRIDDEN{OVERRIDE_THR_SWITCH | OVERRIDE_T | OVERRIDE_OFFBOARD_T_INACTIVE};
+  static constexpr uint16_t X_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_X
+                                         | OVERRIDE_OFFBOARD_X_INACTIVE};
+  static constexpr uint16_t Y_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Y
+                                         | OVERRIDE_OFFBOARD_Y_INACTIVE};
+  static constexpr uint16_t Z_OVERRIDDEN{OVERRIDE_ATT_SWITCH | OVERRIDE_Z
+                                         | OVERRIDE_OFFBOARD_Z_INACTIVE};
+  static constexpr uint16_t T_OVERRIDDEN{OVERRIDE_THR_SWITCH | OVERRIDE_T
+                                         | OVERRIDE_OFFBOARD_T_INACTIVE};
   static constexpr uint16_t ATTITUDE_OVERRIDDEN{X_OVERRIDDEN | Y_OVERRIDDEN | Z_OVERRIDDEN};
 
 private:
@@ -101,17 +105,16 @@ private:
     control_channel_t * combined;
   } mux_t;
 
-  mux_t muxes_[10] = {
-                    {&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},
-                    {&rc_command_.u[1], &offboard_command_.u[1], &combined_command_.u[1]},
-                    {&rc_command_.u[2], &offboard_command_.u[2], &combined_command_.u[2]},
-                    {&rc_command_.u[3], &offboard_command_.u[3], &combined_command_.u[3]},
-                    {&rc_command_.u[4], &offboard_command_.u[4], &combined_command_.u[4]},
-                    {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]},
-                    {&rc_command_.u[6], &offboard_command_.u[6], &combined_command_.u[6]},
-                    {&rc_command_.u[7], &offboard_command_.u[7], &combined_command_.u[7]},
-                    {&rc_command_.u[8], &offboard_command_.u[8], &combined_command_.u[8]},
-                    {&rc_command_.u[9], &offboard_command_.u[9], &combined_command_.u[9]}};
+  mux_t muxes_[10] = {{&rc_command_.u[0], &offboard_command_.u[0], &combined_command_.u[0]},
+                      {&rc_command_.u[1], &offboard_command_.u[1], &combined_command_.u[1]},
+                      {&rc_command_.u[2], &offboard_command_.u[2], &combined_command_.u[2]},
+                      {&rc_command_.u[3], &offboard_command_.u[3], &combined_command_.u[3]},
+                      {&rc_command_.u[4], &offboard_command_.u[4], &combined_command_.u[4]},
+                      {&rc_command_.u[5], &offboard_command_.u[5], &combined_command_.u[5]},
+                      {&rc_command_.u[6], &offboard_command_.u[6], &combined_command_.u[6]},
+                      {&rc_command_.u[7], &offboard_command_.u[7], &combined_command_.u[7]},
+                      {&rc_command_.u[8], &offboard_command_.u[8], &combined_command_.u[8]},
+                      {&rc_command_.u[9], &offboard_command_.u[9], &combined_command_.u[9]}};
 
   // clang-format off
   control_t rc_command_ = {0,
@@ -199,14 +202,13 @@ private:
   } channel_override_t;
 
   channel_override_t channel_override_[6] = {
-      {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
-      {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
-      {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE,
-        T_OVERRIDDEN}, // Note that throttle overriding works a bit differently
-      {RC::STICK_X, 0, OVERRIDE_X, OVERRIDE_OFFBOARD_X_INACTIVE, X_OVERRIDDEN},
-      {RC::STICK_Y, 0, OVERRIDE_Y, OVERRIDE_OFFBOARD_Y_INACTIVE, Y_OVERRIDDEN},
-      {RC::STICK_Z, 0, OVERRIDE_Z, OVERRIDE_OFFBOARD_Z_INACTIVE, Z_OVERRIDDEN}
-  };
+    {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
+    {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE, T_OVERRIDDEN},
+    {RC::STICK_F, 0, OVERRIDE_T, OVERRIDE_OFFBOARD_T_INACTIVE,
+     T_OVERRIDDEN}, // Note that throttle overriding works a bit differently
+    {RC::STICK_X, 0, OVERRIDE_X, OVERRIDE_OFFBOARD_X_INACTIVE, X_OVERRIDDEN},
+    {RC::STICK_Y, 0, OVERRIDE_Y, OVERRIDE_OFFBOARD_Y_INACTIVE, Y_OVERRIDDEN},
+    {RC::STICK_Z, 0, OVERRIDE_Z, OVERRIDE_OFFBOARD_Z_INACTIVE, Z_OVERRIDDEN}};
 
   ROSflight & RF_;
 
@@ -261,7 +263,6 @@ public:
   void override_combined_command_with_rc();
   inline const control_t & combined_control() const { return combined_command_; }
   inline const control_t & rc_control() const { return rc_command_; }
-
 };
 
 } // namespace rosflight_firmware

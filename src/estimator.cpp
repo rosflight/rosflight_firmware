@@ -108,9 +108,12 @@ void Estimator::run_LPF()
 
   float alpha_gyro_xy = RF_.params_.get_param_float(PARAM_GYRO_XY_ALPHA);
   float alpha_gyro_z = RF_.params_.get_param_float(PARAM_GYRO_Z_ALPHA);
-  gyro_LPF_.x = (1.0f - alpha_gyro_xy) * RF_.sensors_.get_imu()->gyro[0] + alpha_gyro_xy * gyro_LPF_.x;
-  gyro_LPF_.y = (1.0f - alpha_gyro_xy) * RF_.sensors_.get_imu()->gyro[1] + alpha_gyro_xy * gyro_LPF_.y;
-  gyro_LPF_.z = (1.0f - alpha_gyro_z)  * RF_.sensors_.get_imu()->gyro[2] + alpha_gyro_z * gyro_LPF_.z;
+  gyro_LPF_.x =
+    (1.0f - alpha_gyro_xy) * RF_.sensors_.get_imu()->gyro[0] + alpha_gyro_xy * gyro_LPF_.x;
+  gyro_LPF_.y =
+    (1.0f - alpha_gyro_xy) * RF_.sensors_.get_imu()->gyro[1] + alpha_gyro_xy * gyro_LPF_.y;
+  gyro_LPF_.z =
+    (1.0f - alpha_gyro_z) * RF_.sensors_.get_imu()->gyro[2] + alpha_gyro_z * gyro_LPF_.z;
 }
 
 void Estimator::set_external_attitude_update(const turbomath::Quaternion & q)

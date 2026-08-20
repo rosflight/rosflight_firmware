@@ -129,7 +129,9 @@ uint16_t STM32H7Board::sensors_errors_count() { return sensor_errors_; }
 uint16_t STM32H7Board::sensors_init_message_count() { return stm32_h7_board.status_len(); }
 
 bool STM32H7Board::sensors_init_message_good(uint16_t i)
-{ return stm32_h7_board.status(i)->initGood(); }
+{
+  return stm32_h7_board.status(i)->initGood();
+}
 
 uint16_t STM32H7Board::sensors_init_message(char * message, uint16_t size, uint16_t i)
 {
@@ -290,7 +292,9 @@ bool STM32H7Board::rc_read(rosflight_firmware::RcStruct * rc_struct)
 // PWM
 
 void STM32H7Board::pwm_init(const float * rate, uint32_t channels)
-{ pwm_.updateConfig(rate, channels); }
+{
+  pwm_.updateConfig(rate, channels);
+}
 void STM32H7Board::pwm_disable(void)
 {
   for (int ch = 0; ch < PWM_CHANNELS; ch++) pwm_.disable(ch);
@@ -343,7 +347,9 @@ void STM32H7Board::memory_init() {} // do nothing
 
 bool STM32H7Board::memory_read(void * dest, size_t len) { return sd_.read((uint8_t *) dest, len); }
 bool STM32H7Board::memory_write(const void * src, size_t len)
-{ return sd_.write((uint8_t *) src, len); }
+{
+  return sd_.write((uint8_t *) src, len);
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Helper functions (not part of parent class)
