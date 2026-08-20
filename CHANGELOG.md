@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0](https://github.com/rosflight/rosflight_firmware/compare/v2.0.1...v2.1.0) (2026-08-20)
+
+
+### Features
+
+* **format:** format Python files with ruff ([f6b8903](https://github.com/rosflight/rosflight_firmware/commit/f6b8903538432e9c962d8ebb45b1fc06fa9c3515))
+
+
+### Bug Fixes
+
+* **format:** update excluded files to match current structure ([5d92887](https://github.com/rosflight/rosflight_firmware/commit/5d928874e643a5dde29f8d85bbe7ec671e7a4050))
+* Initialize battery LPF state after params load ([#489](https://github.com/rosflight/rosflight_firmware/issues/489)) ([c3a233b](https://github.com/rosflight/rosflight_firmware/commit/c3a233b8188d4c174b4d838ad886ff09b297a5ee))
+* remove exact equality comparison in favor of svd.solve ([#492](https://github.com/rosflight/rosflight_firmware/issues/492)) ([a46527b](https://github.com/rosflight/rosflight_firmware/commit/a46527bd8e49d00a072c7efd7af9dd543910d831))
+* remove recursive include of own file ([1a4f446](https://github.com/rosflight/rosflight_firmware/commit/1a4f446ed1cf7c239f0914aecdf16a8e844cfd75))
+
 ## [2.0.1](https://github.com/rosflight/rosflight_firmware/compare/v2.0.0...v2.0.1) (2026-03-11)
 
 
