@@ -49,11 +49,11 @@ uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_
   htim->Init.CounterMode = TIM_COUNTERMODE_UP;
   htim->Init.Period = POLLING_PERIOD_US - 1;
   htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim7) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIM_Base_Init(htim) != HAL_OK) return DRIVER_HAL_ERROR;
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
 
   HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
   HAL_TIM_Base_Start_IT(htim);
