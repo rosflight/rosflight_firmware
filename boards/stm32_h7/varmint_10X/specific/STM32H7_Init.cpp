@@ -161,10 +161,10 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
   init_status = imu1_.init(
     400, // Sample Rat, Hz, 400, 1000, 2000 are the only options
-	BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, // DRDY
-	&hspi1, // SPI
+	  BMI088_ACCEL_DRDY_GPIO_Port, BMI088_ACCEL_DRDY_Pin, // DRDY
+	  &hspi1, // SPI
     BMI088_ACCEL_CSn_GPIO_Port, BMI088_ACCEL_CSn_Pin, // Accel Chip Select
-	BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin,   // Gyro Chip Select
+	  BMI088_GYRO_CSn_GPIO_Port, BMI088_GYRO_CSn_Pin,   // Gyro Chip Select
 	3, // 0,1,2,3 --> 3,6,12,24g for BMI088; 2 4 8 16g for BMI 085
 	2, // 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
 	(const double[]){-1.0, 0.0, 0.0,   0.0, -1.0, 0.0,    0.0, 0.0, 1.0} // Rotation
@@ -179,8 +179,8 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nDLHRL20G (pitot) Initialization\n"); // I2C must already be initialized
   init_status = pitot_.init(
     100, // Sample Rate, Hz
-	PITOT_DRDY_GPIO_Port, PITOT_DRDY_Pin, // Driver
-	&hi2c1, DLHRL20G_I2C_ADDRESS // I2C
+	  PITOT_DRDY_GPIO_Port, PITOT_DRDY_Pin, // Driver
+	  &hi2c1, DLHRL20G_I2C_ADDRESS // I2C
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
@@ -189,9 +189,9 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nDPS310 (baro) Initialization\n");
   init_status = baro_.init(
     50, // Sample Rate, Hz
-	DPS310_DRDY_GPIO_Port, DPS310_DRDY_Pin, // Driver
-	&hspi3, // SPI
-	DPS310_CSn_GPIO_Port, DPS310_CSn_Pin   // Chip Select
+	  DPS310_DRDY_GPIO_Port, DPS310_DRDY_Pin, // Driver
+	  &hspi3, // SPI
+	  DPS310_CSn_GPIO_Port, DPS310_CSn_Pin   // Chip Select
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
@@ -203,10 +203,10 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nIIS2MDC (mag) Initialization\n");
   init_status = mag_.init(
     100, // Sample Rate, Hz
-	IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // DRDY
-	&hspi2, // SPI
-	IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,  // Chip Select
-	(const double[]){-1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, -1.0}
+	  IIS2MDC_DRDY_GPIO_Port, IIS2MDC_DRDY_Pin, // DRDY
+	  &hspi2, // SPI
+	  IIS2MDC_CSn_GPIO_Port, IIS2MDC_CSn_Pin,  // Chip Select
+	  (const double[]){-1.0, 0.0, 0.0,   0.0, 1.0, 0.0,    0.0, 0.0, -1.0}
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
@@ -218,10 +218,10 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nUbx (gps) Initialization\n");
   init_status = gps_.init(
     10, // Sample Rate, Hz
-	GPS_1PPS_GPIO_Port, GPS_1PPS_Pin, // PPS EXTI
-	&huart1, USART1,
-	&hdma_usart1_rx, // UART DMA
-	115200 // Baud
+	  GPS_1PPS_GPIO_Port, GPS_1PPS_Pin, // PPS EXTI
+	  &huart1, USART1,
+	  &hdma_usart1_rx, // UART DMA
+	  115200 // Baud
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
@@ -234,9 +234,9 @@ void STM32H7Board::init_board(void)
   // SBus is on UART3 for Varmints, UART6 for PixRacer Pro
   init_status = rc_.init(
     112,  // Frame Rate, 1000/9ms = 111.1Hz, 112 is rounded up
-	&huart3, USART3, // UART
-	&hdma_usart3_rx, // UART DMA
-	100000 // Baud,
+	  &huart3, USART3, // UART
+	  &hdma_usart3_rx, // UART DMA
+	  100000 // Baud,
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &rc_;
@@ -300,9 +300,9 @@ void STM32H7Board::init_board(void)
   };
   init_status = adc_.init(
     10, // Sample Rate, Hz
-	&hadc1, ADC1, // "External"
-	&hadc3, ADC3, // "Internal" has the on chip sensors
-	&board_adc_init
+	  &hadc1, ADC1, // "External"
+	  &hadc3, ADC3, // "Internal" has the on chip sensors
+	  &board_adc_init
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
@@ -322,9 +322,9 @@ void STM32H7Board::init_board(void)
   misc_printf("\n\nTelem (telem) Initialization\n");
   init_status = telem_.init(
     EPOCH_HZ, // Highest Sensor Sample Rate
-	 &huart2, USART2,
-	 0, // (&hdma_usart2_rx), 0 = no dma, using isr
-	 921600
+	  &huart2, USART2,
+	  0, // (&hdma_usart2_rx), 0 = no dma, using isr
+	  921600
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &telem_;
@@ -334,7 +334,7 @@ void STM32H7Board::init_board(void)
   // PWM initialization
 
   misc_printf("\n\nPWM (PWM) Initialization\n");
-  // Channel order based on hardware pinout naming
+// Channel order based on hardware pinout naming
 //	TIMER 1 TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4,
 //	TIMER 4 TIM_CHANNEL_3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_4,
 //	TIMER 3 TIM_CHANNEL_1, TIM_CHANNEL_2
