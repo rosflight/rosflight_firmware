@@ -42,8 +42,12 @@
 
 uint32_t PollingTimer::init(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period_us)
 {
-  if (polling_period_us == 0U) return DRIVER_HAL_ERROR;
+  initializationStatus_ = DRIVER_OK;
 
+  if (polling_period_us == 0U) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
   instance_ = instance;
   polling_period_us_ = polling_period_us;
   TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -53,15 +57,21 @@ uint32_t PollingTimer::init(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, ui
   htim->Init.CounterMode = TIM_COUNTERMODE_UP;
   htim->Init.Period = polling_period_us_ - 1;
   htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(htim) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIM_Base_Init(htim) != HAL_OK) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return initializationStatus_;
+  }
 
   HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
   HAL_TIM_Base_Start_IT(htim);
-  return DRIVER_OK;
+  return initializationStatus_;
 }
 
 bool PollingTimer::is_my(TIM_HandleTypeDef * htim) const

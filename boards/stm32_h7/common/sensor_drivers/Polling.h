@@ -41,7 +41,9 @@
 
 #include "stm32h7xx_hal.h"
 
-class PollingTimer
+#include "Status.h"
+
+class PollingTimer : public Status
 {
 public:
   uint32_t init(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period_us);
