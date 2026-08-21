@@ -75,13 +75,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   /**/
 // clang-format on
 
-// 48-bit us counter.
-// Prefer to have the 32-bit counter on the low order bytes:
-#define HTIM_LOW (&htim5) // 32-bit counter
-#define HTIM_LOW_INSTANCE (TIM5)
-#define HTIM_HIGH (&htim12) // 16-bit overflow counter
-#define HTIM_HIGH_INSTANCE (TIM12)
-
 #define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
 #define POLL_TIM_CHANNEL TIM_CHANNEL_1
 #define POLL_HTIM_INSTANCE (TIM7)

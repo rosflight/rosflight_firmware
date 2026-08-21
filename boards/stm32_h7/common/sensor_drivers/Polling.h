@@ -42,7 +42,8 @@
 #include "stm32h7xx_hal.h"
 
 typedef uint16_t PollingState;
+uint32_t PollingPeriod;
 
-uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel);
+uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period_us );
 
 #endif /* DRIVERS_POLLING_H_ */

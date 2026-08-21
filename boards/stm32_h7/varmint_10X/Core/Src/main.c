@@ -1211,8 +1211,6 @@ void MX_TIM7_Init(void)
 {
 
   /* USER CODE BEGIN TIM7_Init 0 */
-//#define POLLING_PERIOD_US         (100) // 100us, 10kHz
-//#define POLLING_FREQ_HZ          	(1000000/POLLING_PERIOD_US) // 10000 Hz
   /* USER CODE END TIM7_Init 0 */
 
   TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -1223,7 +1221,7 @@ void MX_TIM7_Init(void)
   htim7.Instance = TIM7;
   htim7.Init.Prescaler = 199;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = (POLLING_PERIOD_US);
+  htim7.Init.Period = (100);
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {

@@ -47,12 +47,15 @@ extern Time64 time64;
 
 #include "Polling.h"
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // High Rate (10kHz) Periodic Timer Interrupt Routine for Polling
 //
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 {
-  if (htim->Instance == POLL_HTIM_INSTANCE) // Filter out other timer interrupts.
+  extern TIM_TypeDef *poll_htim_instance;
+  if (htim->Instance == poll_htim_instance) // Filter out other timer interrupts.
   {
 
     static uint64_t poll_counter = 0;

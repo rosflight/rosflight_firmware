@@ -76,12 +76,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
   /**/
 // clang-format on
 
-#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
-#define POLL_TIM_CHANNEL TIM_CHANNEL_1
-#define POLL_HTIM_INSTANCE (TIM7)
-#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
-#define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
-
 // Red LED
 // PE7
 #define RED_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET)

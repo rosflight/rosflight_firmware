@@ -159,7 +159,10 @@ void STM32H7Board::init_board(void)
 
   //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
   //misc_printf("\nStarted Timestamp Timer\n");
-  init_status = time64.init(HTIM_LOW, HTIM_LOW_INSTANCE, HTIM_HIGH, HTIM_HIGH_INSTANCE);
+  init_status = time64.init(
+    &htim5, TIM5, // 32-bit counter
+    &htim12, TIM12 // 16-bit overflow counter
+  );
 
   // misc_printf uses the timer, so can't be used before it's initialized.
 
@@ -415,8 +418,14 @@ void STM32H7Board::init_board(void)
   // High Rate Timer initialization
 
   misc_printf("\n\nPolling Timer Initialization\n");
+#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
+#define POLL_TIM_CHANNEL TIM_CHANNEL_1
+#define POLL_HTIM_INSTANCE (TIM7)
+#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
+#define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
 
-  init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL);
+  misc_printf("\n\nPolling Timer Initialization\n");
+  init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL, POLLING_PERIOD_US);
   misc_exit_status(init_status);
 
   RED_LO;

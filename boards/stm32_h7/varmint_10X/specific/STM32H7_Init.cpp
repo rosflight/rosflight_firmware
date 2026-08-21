@@ -395,8 +395,14 @@ static const char* adc_names[2*ADC_CHANNELS] = {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // High Rate Timer initialization
 
+#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
+#define POLL_TIM_CHANNEL TIM_CHANNEL_1
+#define POLL_HTIM_INSTANCE (TIM7)
+#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
+#define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
+
   misc_printf("\n\nPolling Timer Initialization\n");
-  init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL);
+  init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL, POLLING_PERIOD_US);
   misc_exit_status(init_status);
 
   RED_LO;

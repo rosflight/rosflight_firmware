@@ -40,14 +40,19 @@
 #include "BoardConfig.h"
 #include "stdint.h"
 
-uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel)
+TIM_TypeDef *poll_htim_instance;
+uint32_t polling_period_us;
+
+uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period)
 {
+  poll_htim_instance = instance;
+  polling_period_us = polling_period;
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   htim->Instance = instance;
   htim->Init.Prescaler = 199;
   htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim->Init.Period = POLLING_PERIOD_US - 1;
+  htim->Init.Period = polling_period_us - 1;
   htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(htim) != HAL_OK) return DRIVER_HAL_ERROR;
 
