@@ -157,22 +157,25 @@ void STM32H7Board::init_board(void)
 
   status_len_ = 0;
 
-  //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
-  //misc_printf("\nStarted Timestamp Timer\n");
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Timestamp Timers 1us rolls over in 8.9 years.
+
   init_status = time64.init(
     &htim5, TIM5, // 32-bit counter
     &htim12, TIM12 // 16-bit overflow counter
   );
-
-  // misc_printf uses the timer, so can't be used before it's initialized.
-
-#define ASCII_ESC 27
+  
+  #define ASCII_ESC 27
   misc_printf("\n\n%c[H", ASCII_ESC); // home
   misc_printf("%c[2J", ASCII_ESC);    // clear screen
 
   misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
   status_list_[status_len_++] = &time64;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Callbacks initialization
+
   callbacks().clear_all();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -364,12 +367,12 @@ void STM32H7Board::init_board(void)
     3, // Numberf of timer blocks
     board_pwm_init
   );
-
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pwm_;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // uSD Card initialization
+
   misc_printf("\n\nSDMMC Initialization\n");
   init_status = sd_.init(&hsd1, SDMMC1);
   misc_exit_status(init_status);
@@ -377,21 +380,17 @@ void STM32H7Board::init_board(void)
   if (init_status == DRIVER_OK) { sd_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Review Status List
+  // High Rate Polling Timer initialization
 
-  misc_printf("\n\nStatus List:\n");
-  for (uint32_t i = 0; i < status_len_; i++) {
-    //status_list_[i]->print();
-    if (status_list_[i]->initGood()) {
-      misc_printf("\033[0;42m");
-    } else {
-      misc_printf("\033[0;41m");
-    }
-    misc_printf("%-16s Status: 0x%08X", status_list_[i]->name(), status_list_[i]->status());
-    misc_printf("\033[0m\n");
-  }
+  misc_printf("\n\nPolling Timer Initialization\n");
+  init_status = polling_timer_.init(
+    &htim7, TIM7, TIM_CHANNEL_1, // POLL Timer,
+    100 // Poll Period, us. (10kHz)
+  );
+  misc_exit_status(init_status);
+  status_list_[status_len_++] = &polling_timer_;
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt initializations
 
   misc_printf("\n\nSet-up EXTI IRQ's\n");
@@ -405,24 +404,25 @@ void STM32H7Board::init_board(void)
 
   telem_.rxStart(); // Also enables its interrupts.
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // High Rate Timer initialization
-
-  misc_printf("\n\nPolling Timer Initialization\n");
-#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
-#define POLL_TIM_CHANNEL TIM_CHANNEL_1
-#define POLL_HTIM_INSTANCE (TIM7)
-#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
-
-  misc_printf("\n\nPolling Timer Initialization\n");
-  init_status = polling_timer().init(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL, POLLING_PERIOD_US);
-  misc_exit_status(init_status);
-
   RED_LO;
   GRN_LO;
   BLU_LO;
 
 #if SANDBOX
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Review Status List
+
+  // misc_printf("\n\nStatus List:\n");
+  // for (uint32_t i = 0; i < status_len_; i++) {
+  //   //status_list_[i]->print();
+  //   if (status_list_[i]->initGood()) {
+  //     misc_printf("\033[0;42m");
+  //   } else {
+  //     misc_printf("\033[0;41m");
+  //   }
+  //   misc_printf("%-16s Status: 0x%08X", status_list_[i]->name(), status_list_[i]->status());
+  //   misc_printf("\033[0m\n");
+  // } 
   misc_printf("\n\nStarting Sandbox\n");
   sandbox();
 #else

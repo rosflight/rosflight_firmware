@@ -71,6 +71,7 @@ Time64 time64;
 void STM32H7Board::init_board(void)
 {
 // clang-format off
+
   uint32_t init_status;
 
   //MPU_Config();
@@ -120,22 +121,27 @@ void STM32H7Board::init_board(void)
 
   status_len_ = 0;
 
-  //// Startup Chained Timestamp Timers 1us rolls over in 8.9 years.
-  //misc_printf("\nStarted Timestamp Timer\n");
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Timestamp Timers 1us rolls over in 8.9 years.
+
   init_status = time64.init(
     &htim5, TIM5, // 32-bit counter
     &htim8, TIM8 // 16-bit overflow counter
   );
-
-#define ASCII_ESC 27
+  
+  #define ASCII_ESC 27
   misc_printf("\n\n%c[H", ASCII_ESC); // home
   misc_printf("%c[2J", ASCII_ESC);    // clear screen
 
   misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
   status_list_[status_len_++] = &time64;
-  callbacks().clear_all();
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Callbacks initialization
+
+  callbacks().clear_all();
+  
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
 
@@ -240,44 +246,45 @@ void STM32H7Board::init_board(void)
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
-#define ADC_CHANNELS_EXT (6)
-#define ADC_BATTERY_VOLTS (0)   // INP 16
-#define ADC_BATTERY_CURRENT (1) // INP 11
-#define ADC_12V (2)             // INP 8
-#define ADC_5V0 (3)             // INP 10
-#define ADC_SERVO_VOLTS (4)     // INP 7
-#define ADC_CC_3V3 (5)          // INP 4
 
-#define ADC_CHANNELS_INT (3)
-#define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
-#define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
-#define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
+  #define ADC_CHANNELS_EXT (6)
+  #define ADC_BATTERY_VOLTS (0)   // INP 16
+  #define ADC_BATTERY_CURRENT (1) // INP 11
+  #define ADC_12V (2)             // INP 8
+  #define ADC_5V0 (3)             // INP 10
+  #define ADC_SERVO_VOLTS (4)     // INP 7
+  #define ADC_CC_3V3 (5)          // INP 4
 
-#define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
+  #define ADC_CHANNELS_INT (3)
+  #define ADC_STM_TEMPERATURE (6) // INP 18 (Internal)
+  #define ADC_STM_VBAT (7)        // INP 17 (Internal)
+  #define ADC_STM_VREFINT (8)     // INP 19 (Internal)
 
-static const AdcChannelCfg board_adc_cfg[ADC_CHANNELS] = {
-	{ADC_REGULAR_RANK_1, ADC_CHANNEL_16, 11.215, 0.0},
-	{ADC_REGULAR_RANK_2, ADC_CHANNEL_11, 10.000, 0.0},
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_8, 4.010, 0.0},
-  {ADC_REGULAR_RANK_4, ADC_CHANNEL_10, 1.680, 0.0},
-  {ADC_REGULAR_RANK_5, ADC_CHANNEL_7, 2.690, 0.0},
-	{ADC_REGULAR_RANK_6, ADC_CHANNEL_4, 1.100, 0.0},
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0},
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.000, 0.0},
-};
-// Names that go with the channels
-static const char* adc_names[2*ADC_CHANNELS] = {
-  "V_BATT", "V",
-	"I_BATT", "A",
-  "12V", "V",
-  "5V0", "V",
-  "V_SERVO", "V",
-  "CC_3V3", "V",
-  "TEMP", "C",
-  "V_RTC", "V",
-  "V_REF", "V",
-};
+  #define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
+
+  static const AdcChannelCfg board_adc_cfg[ADC_CHANNELS] = {
+	  {ADC_REGULAR_RANK_1, ADC_CHANNEL_16, 11.215, 0.0},
+	  {ADC_REGULAR_RANK_2, ADC_CHANNEL_11, 10.000, 0.0},
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_8, 4.010, 0.0},
+    {ADC_REGULAR_RANK_4, ADC_CHANNEL_10, 1.680, 0.0},
+    {ADC_REGULAR_RANK_5, ADC_CHANNEL_7, 2.690, 0.0},
+	  {ADC_REGULAR_RANK_6, ADC_CHANNEL_4, 1.100, 0.0},
+    {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0},
+    {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.000, 0.0},
+  };
+  // Names that go with the channels
+  static const char* adc_names[2*ADC_CHANNELS] = {
+    "V_BATT", "V",
+	  "I_BATT", "A",
+    "12V", "V",
+    "5V0", "V",
+    "V_SERVO", "V",
+    "CC_3V3", "V",
+    "TEMP", "C",
+    "V_RTC", "V",
+    "V_REF", "V",   
+  };
 
   static const AdcStructure board_adc_init = {
     ADC_CHANNELS_EXT, 
@@ -315,9 +322,9 @@ static const char* adc_names[2*ADC_CHANNELS] = {
   misc_printf("\n\nTelem (telem) Initialization\n");
   init_status = telem_.init(
     EPOCH_HZ, // Highest Sensor Sample Rate
-	  &huart2, USART2,
-	  0, // (&hdma_usart2_rx), 0 = no dma, using isr
-	  921600
+	 &huart2, USART2,
+	 0, // (&hdma_usart2_rx), 0 = no dma, using isr
+	 921600
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &telem_;
@@ -355,21 +362,6 @@ static const char* adc_names[2*ADC_CHANNELS] = {
   if (init_status == DRIVER_OK) { sd_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Review Status List
-
-  misc_printf("\n\nStatus List:\n");
-  for (uint32_t i = 0; i < status_len_; i++) {
-    //status_list_[i]->print();
-    if (status_list_[i]->initGood()) {
-      misc_printf("\033[0;42m");
-    } else {
-      misc_printf("\033[0;41m");
-    }
-    misc_printf("%-16s Status: 0x%08X", status_list_[i]->name(), status_list_[i]->status());
-    misc_printf("\033[0m\n");
-  }
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt initializations
 
   misc_printf("\n\nSet-up EXTI IRQ's\n");
@@ -386,21 +378,31 @@ static const char* adc_names[2*ADC_CHANNELS] = {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // High Rate Timer initialization
 
-#define POLL_HTIM (&htim7) // High rate periodic interrupt timer (PITR)
-#define POLL_TIM_CHANNEL TIM_CHANNEL_1
-#define POLL_HTIM_INSTANCE (TIM7)
-#define POLLING_PERIOD_US (100)                       // 100us, 10kHz
-
   misc_printf("\n\nPolling Timer Initialization\n");
-  init_status = polling_timer().init(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL, POLLING_PERIOD_US);
+  init_status = polling_timer_.init(
+    &htim7, TIM7, TIM_CHANNEL_1, // POLL Timer,
+    100 // Poll Period, us. (10kHz)
+  );
   misc_exit_status(init_status);
+  status_list_[status_len_++] = &polling_timer_;
 
   RED_LO;
   GRN_LO;
   BLU_LO;
 
 #if SANDBOX
-  misc_printf("\n\nStarting Sandbox\n");
+  // misc_printf("\n\nStatus List:\n");
+  // for (uint32_t i = 0; i < status_len_; i++) {
+  //   //status_list_[i]->print();
+  //   if (status_list_[i]->initGood()) {
+  //     misc_printf("\033[0;42m");
+  //   } else {
+  //     misc_printf("\033[0;41m");
+  //   }
+  //   misc_printf("%-16s Status: 0x%08X", status_list_[i]->name(), status_list_[i]->status());
+  //   misc_printf("\033[0m\n");
+  // }  
+    misc_printf("\n\nStarting Sandbox\n");
   sandbox();
 #else
   misc_printf("\n\nStarting Rosflight\n");
