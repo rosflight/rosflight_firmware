@@ -78,10 +78,10 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 // clang-format on
 
 // Red LED
-// PE7
-#define RED_HI HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET)
-#define RED_LO HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET)
-#define RED_TOG HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_7)
+// PB2
+#define RED_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET)
+#define RED_LO HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET)
+#define RED_TOG HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2)
 
 // Green LED
 // PE15
