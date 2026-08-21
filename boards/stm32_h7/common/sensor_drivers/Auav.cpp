@@ -37,6 +37,7 @@
 #include "Auav.h"
 #include "Packets.h"
 #include "Polling.h"
+#include "stm32_h7.hpp"
 #include "Time64.h"
 #include "misc.h"
 
@@ -254,7 +255,8 @@ int32_t Auav::readCfg(uint8_t address, Spi * spi)
 
 bool Auav::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  uint16_t poll_state;
+  if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
 
   if (poll_state == 0) // Start Baro Read
   {

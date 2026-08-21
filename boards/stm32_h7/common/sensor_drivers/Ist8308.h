@@ -76,7 +76,7 @@ private:
   bool dmaRunning_;
 
   I2C_HandleTypeDef * hi2c_;
-  PollingState i2cState_;
+  uint16_t i2cState_;
   uint16_t address_;
   uint8_t cmdByte_;
   double dtMs_;

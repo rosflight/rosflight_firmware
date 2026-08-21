@@ -97,7 +97,8 @@ uint32_t Ms4525::init(
 
 bool Ms4525::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  uint16_t poll_state;
+  if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
   if ((poll_state == MS4525_CMDRXSTART) || (poll_state == MS4525_CMDRX1) || (poll_state == MS4525_CMDRX2)
       || (poll_state == MS4525_CMDRX3) || (poll_state == MS4525_CMDRX4) || (poll_state == MS4525_CMDRXSEND)) {
     drdy_ = time64.Us();
@@ -168,6 +169,6 @@ bool Ms4525::display(void)
 
 void Ms4525::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_i2c_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_i2c_client(this);
 }

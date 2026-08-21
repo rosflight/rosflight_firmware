@@ -102,7 +102,7 @@ private:
   uint16_t sampleRateHz_;
   // SPI Stuff
   Spi spi_;
-  PollingState spiState_;
+  uint16_t spiState_;
   uint16_t drdyPin_;
   bool dmaRunning_;
 

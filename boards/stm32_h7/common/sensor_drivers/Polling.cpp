@@ -40,19 +40,18 @@
 #include "BoardConfig.h"
 #include "stdint.h"
 
-TIM_TypeDef *poll_htim_instance;
-uint32_t polling_period_us;
-
-uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period)
+uint32_t PollingTimer::init(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period_us)
 {
-  poll_htim_instance = instance;
-  polling_period_us = polling_period;
+  if (polling_period_us == 0U) return DRIVER_HAL_ERROR;
+
+  instance_ = instance;
+  polling_period_us_ = polling_period_us;
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  htim->Instance = instance;
+  htim->Instance = instance_;
   htim->Init.Prescaler = 199;
   htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim->Init.Period = polling_period_us - 1;
+  htim->Init.Period = polling_period_us_ - 1;
   htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(htim) != HAL_OK) return DRIVER_HAL_ERROR;
 
@@ -63,4 +62,20 @@ uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_
   HAL_TIM_PWM_Start(htim, channel); // (10kHz) to service polling routines
   HAL_TIM_Base_Start_IT(htim);
   return DRIVER_OK;
+}
+
+bool PollingTimer::is_my(TIM_HandleTypeDef * htim) const
+{
+  return (instance_ != nullptr) && (htim->Instance == instance_);
+}
+
+bool PollingTimer::polling_state(uint64_t poll_counter, uint32_t rollover_us, uint16_t & state) const
+{
+  if (polling_period_us_ == 0U) return false;
+
+  const uint32_t rollover_counts = rollover_us / polling_period_us_;
+  if (rollover_counts == 0U) return false;
+
+  state = (uint16_t) (poll_counter % rollover_counts);
+  return true;
 }

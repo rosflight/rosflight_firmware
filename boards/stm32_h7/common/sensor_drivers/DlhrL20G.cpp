@@ -133,7 +133,10 @@ uint32_t DlhrL20G::init(
 
 bool DlhrL20G::poll(uint64_t poll_counter)
 {
-  uint16_t poll_offset = (uint16_t) (poll_counter % (POLLING_FREQ_HZ / sampleRateHz_));
+  const uint32_t polling_freq_hz = stm32_h7_board.polling_timer().frequency_hz();
+  if (polling_freq_hz == 0U) return false;
+
+  uint16_t poll_offset = (uint16_t) (poll_counter % (polling_freq_hz / sampleRateHz_));
 
   bool status = false;
   static bool previous_drdy = 0;
@@ -195,6 +198,6 @@ bool DlhrL20G::display(void)
 
 void DlhrL20G::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_i2c_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_i2c_client(this);
 }

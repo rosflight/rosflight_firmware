@@ -200,7 +200,8 @@ uint32_t Ist8308::init(
 
 bool Ist8308::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  uint16_t poll_state;
+  if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
   if (poll_state == IST8308_CMD) {
 //    drdy_ = time64.Us();
     ist8308_i2c_dma_buf[0] = CNTL2_REG;
@@ -277,6 +278,6 @@ bool Ist8308::display()
 
 void Ist8308::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_i2c_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_i2c_client(this);
 }

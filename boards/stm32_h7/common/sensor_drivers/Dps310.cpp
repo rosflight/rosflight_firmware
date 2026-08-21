@@ -310,7 +310,8 @@ uint8_t Dps310::readRegister(uint8_t address)
 
 bool Dps310::poll(uint64_t poll_counter)
 {
-  PollingState poll_state = (PollingState) (poll_counter % (ROLLOVER / POLLING_PERIOD_US));
+  uint16_t poll_state;
+  if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
 
   // Start P measurement sequence
   if (poll_state == DPS310_CMD_P) // Command Pressure Read
@@ -409,6 +410,6 @@ bool Dps310::display(void)
 
 void Dps310::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_spi_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_spi_client(this);
 }

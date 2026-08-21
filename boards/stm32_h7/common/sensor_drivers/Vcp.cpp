@@ -150,6 +150,6 @@ void Vcp::txStart()
 
 void Vcp::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_cdc_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_cdc_client(this);
 }

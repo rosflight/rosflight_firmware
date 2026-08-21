@@ -569,7 +569,7 @@ bool Ubx::display(void)
 
 void Ubx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_exti_client(this);
-  board.register_uart_rxcplt_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_exti_client(this);
+  board.callbacks().register_uart_rxcplt_client(this);
 }

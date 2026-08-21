@@ -192,7 +192,10 @@ uint32_t Adc::configAdc(ADC_HandleTypeDef * hadc, ADC_TypeDef * adc_instance, co
 
 bool Adc::poll(uint64_t poll_counter)
 {
-  uint32_t poll_offset = (uint32_t) (poll_counter % (POLLING_FREQ_HZ / sampleRateHz_));
+  const uint32_t polling_freq_hz = stm32_h7_board.polling_timer().frequency_hz();
+  if (polling_freq_hz == 0U) return false;
+
+  uint32_t poll_offset = (uint32_t) (poll_counter % (polling_freq_hz / sampleRateHz_));
 
   if (poll_offset == 0) // launch a read
   {
@@ -292,6 +295,6 @@ void Adc::setScaleFactor(uint16_t n, float scale_factor)
 
 void Adc::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.register_poll_client(this, poll_phase_offset);
-  board.register_adc_client(this);
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_adc_client(this);
 }

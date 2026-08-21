@@ -1,4 +1,4 @@
-/**
+﻿/**
  ******************************************************************************
  * File     : stm32_h7.h
  * Date     : Sep 27, 2023
@@ -39,6 +39,7 @@
 #define STM32_H7_HPP_
 
 #include "BoardConfig.h"
+#include "Callbacks.h"
 
 #include "Adc.h"
 #include "Adis165xx.h"
@@ -50,6 +51,7 @@
 #include "Ist8308.h"
 #include "Mcp4017.h"
 #include "Ms4525.h"
+#include "Polling.h"
 #include "Pwm.h"
 #include "Sbus.h"
 #include "Sd.h"
@@ -70,240 +72,14 @@ class STM32H7Board : public rosflight_firmware::Board
      *
      */
 private:
-  static constexpr uint32_t POLL_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t EXTI_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t SPI_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t I2C_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t ADC_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t CDC_CLIENTS_MAX_LEN = 4;
-  static constexpr uint32_t SD_CLIENTS_MAX_LEN = 4;
-  static constexpr uint32_t UART_RXCPLT_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t UART_RXISR_CLIENTS_MAX_LEN = 16;
-  static constexpr uint32_t UART_TXCPLT_CLIENTS_MAX_LEN = 16;
-
-  struct PollClient
-  {
-    void (*callback)(void * context, uint64_t poll_counter);
-    void * context;
-    int32_t phase_offset;
-  };
-
-  struct ExtiClient
-  {
-    bool (*matches)(void * context, uint16_t exti_pin);
-    void (*callback)(void * context);
-    void * context;
-  };
-
-  struct SpiClient
-  {
-    bool (*matches)(void * context, SPI_HandleTypeDef * hspi);
-    void (*callback)(void * context);
-    void * context;
-  };
-
-  struct I2cClient
-  {
-    bool (*matches)(void * context, I2C_HandleTypeDef * hi2c);
-    void (*callback)(void * context);
-    void * context;
-  };
-
-  struct AdcClient
-  {
-    bool (*matches)(void * context, ADC_HandleTypeDef * hadc);
-    void (*callback)(void * context, ADC_HandleTypeDef * hadc);
-    void * context;
-  };
-
-  struct UartClient
-  {
-    bool (*matches)(void * context, UART_HandleTypeDef * huart);
-    void (*callback)(void * context);
-    void * context;
-  };
-
-  struct CdcClient
-  {
-    bool (*matches)(void * context, uint8_t chan);
-    void (*receive_callback)(void * context, uint8_t * buffer, uint16_t size);
-    void (*transmit_cplt_callback)(void * context);
-    void * context;
-  };
-
-
-  struct SdClient
-  {
-    bool (*matches)(void * context, SD_HandleTypeDef * hsd);
-    void (*txcplt_callback)(void * context);
-    void (*rxcplt_callback)(void * context);
-    void * context;
-  };
   uint32_t serial_device_;
   uint32_t sensor_errors_ = 0;
   uint32_t status_len_ = 0;
-  uint32_t poll_client_len_ = 0;
-  uint32_t exti_client_len_ = 0;
-  uint32_t spi_client_len_ = 0;
-  uint32_t i2c_client_len_ = 0;
-  uint32_t adc_client_len_ = 0;
-  uint32_t cdc_client_len_ = 0;
-  uint32_t sd_client_len_ = 0;
-  uint32_t uart_rxcplt_client_len_ = 0;
-  uint32_t uart_rxisr_client_len_ = 0;
-  uint32_t uart_txcplt_client_len_ = 0;
   Status * status_list_[STATUS_LIST_MAX_LEN];
-  PollClient poll_clients_[POLL_CLIENTS_MAX_LEN] = {};
-  ExtiClient exti_clients_[EXTI_CLIENTS_MAX_LEN] = {};
-  SpiClient spi_clients_[SPI_CLIENTS_MAX_LEN] = {};
-  I2cClient i2c_clients_[I2C_CLIENTS_MAX_LEN] = {};
-  AdcClient adc_clients_[ADC_CLIENTS_MAX_LEN] = {};
-  CdcClient cdc_clients_[CDC_CLIENTS_MAX_LEN] = {};
-  SdClient sd_clients_[SD_CLIENTS_MAX_LEN] = {};
-  UartClient uart_rxcplt_clients_[UART_RXCPLT_CLIENTS_MAX_LEN] = {};
-  UartClient uart_rxisr_clients_[UART_RXISR_CLIENTS_MAX_LEN] = {};
-  UartClient uart_txcplt_clients_[UART_TXCPLT_CLIENTS_MAX_LEN] = {};
+  STM32H7Callbacks callbacks_;
+  PollingTimer polling_timer_;
 
   RcPacket rcPacket_;
-
-  template<typename T>
-  static void poll_client_callback(void * context, uint64_t poll_counter)
-  {
-    static_cast<T *>(context)->poll(poll_counter);
-  }
-
-  template<typename T>
-  static bool exti_client_matches(void * context, uint16_t exti_pin)
-  {
-    return static_cast<T *>(context)->isMy(exti_pin);
-  }
-
-  template<typename T>
-  static void exti_client_callback(void * context)
-  {
-    static_cast<T *>(context)->extiCallback();
-  }
-
-  template<typename T>
-  static bool spi_client_matches(void * context, SPI_HandleTypeDef * hspi)
-  {
-    return static_cast<T *>(context)->isMy(hspi);
-  }
-
-  template<typename T>
-  static void spi_client_callback(void * context)
-  {
-    static_cast<T *>(context)->spiTxRxCpltCallback();
-  }
-
-  template<typename T>
-  static bool i2c_client_matches(void * context, I2C_HandleTypeDef * hi2c)
-  {
-    return static_cast<T *>(context)->isMy(hi2c);
-  }
-
-  template<typename T>
-  static void i2c_client_callback(void * context)
-  {
-    static_cast<T *>(context)->i2cMasterRxCpltCallback();
-  }
-
-  template<typename T>
-  static bool adc_client_matches(void * context, ADC_HandleTypeDef * hadc)
-  {
-    return static_cast<T *>(context)->isMy(hadc);
-  }
-
-  template<typename T>
-  static void adc_client_callback(void * context, ADC_HandleTypeDef * hadc)
-  {
-    static_cast<T *>(context)->adcConvCpltCallback(hadc);
-  }
-
-  template<typename T>
-  static bool cdc_client_matches(void * context, uint8_t chan)
-  {
-    return static_cast<T *>(context)->isMy(chan);
-  }
-
-  template<typename T>
-  static void cdc_receive_client_callback(void * context, uint8_t * buffer, uint16_t size)
-  {
-    static_cast<T *>(context)->cdcReceiveCallback(buffer, size);
-  }
-
-  template<typename T>
-  static void cdc_transmit_cplt_client_callback(void * context)
-  {
-    static_cast<T *>(context)->cdcTransmitCpltCallback();
-  }
-
-  template<typename T>
-  static bool sd_client_matches(void * context, SD_HandleTypeDef * hsd)
-  {
-    return static_cast<T *>(context)->isMy(hsd);
-  }
-
-  template<typename T>
-  static void sd_txcplt_client_callback(void * context)
-  {
-    static_cast<T *>(context)->sdTxCpltCallback();
-  }
-
-  template<typename T>
-  static void sd_rxcplt_client_callback(void * context)
-  {
-    static_cast<T *>(context)->sdRxCpltCallback();
-  }
-
-  template<typename T>
-  static bool uart_client_matches(void * context, UART_HandleTypeDef * huart)
-  {
-    return static_cast<T *>(context)->isMy(huart);
-  }
-
-  template<typename T>
-  static void uart_rxcplt_client_callback(void * context)
-  {
-    static_cast<T *>(context)->uartRxCpltCallback();
-  }
-
-  template<typename T>
-  static void uart_rxisr_client_callback(void * context)
-  {
-    static_cast<T *>(context)->uartRxIsrCallback();
-  }
-
-  template<typename T>
-  static void uart_txcplt_client_callback(void * context)
-  {
-    static_cast<T *>(context)->uartTxCpltCallback();
-  }
-
-  void register_poll_client(
-    void * context, void (*callback)(void * context, uint64_t poll_counter), int32_t phase_offset);
-  void register_exti_client(
-    void * context, bool (*matches)(void * context, uint16_t exti_pin), void (*callback)(void * context));
-  void register_spi_client(
-    void * context, bool (*matches)(void * context, SPI_HandleTypeDef * hspi), void (*callback)(void * context));
-  void register_i2c_client(
-    void * context, bool (*matches)(void * context, I2C_HandleTypeDef * hi2c), void (*callback)(void * context));
-  void register_adc_client(
-    void * context, bool (*matches)(void * context, ADC_HandleTypeDef * hadc),
-    void (*callback)(void * context, ADC_HandleTypeDef * hadc));
-  void register_cdc_client(
-    void * context, bool (*matches)(void * context, uint8_t chan),
-    void (*receive_callback)(void * context, uint8_t * buffer, uint16_t size),
-    void (*transmit_cplt_callback)(void * context));
-  void register_sd_client(
-    void * context, bool (*matches)(void * context, SD_HandleTypeDef * hsd), void (*txcplt_callback)(void * context),
-    void (*rxcplt_callback)(void * context));
-  void register_uart_rxcplt_client(
-    void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
-  void register_uart_rxisr_client(
-    void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
-  void register_uart_txcplt_client(
-    void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
 
 public:
   STM32H7Board() {};
@@ -312,91 +88,10 @@ public:
 
   Status * status(uint32_t n) { return status_list_[n]; }
   uint32_t status_len(void) { return status_len_; }
-  void clear_poll_clients();
-  void clear_exti_clients();
-  void clear_spi_clients();
-  void clear_i2c_clients();
-  void clear_adc_clients();
-  void clear_cdc_clients();
-  void clear_sd_clients();
-  void clear_uart_rxcplt_clients();
-  void clear_uart_rxisr_clients();
-  void clear_uart_txcplt_clients();
-
-  template<typename T>
-  void register_poll_client(T * driver, int32_t phase_offset = 0)
-  {
-    register_poll_client(static_cast<void *>(driver), &poll_client_callback<T>, phase_offset);
-  }
-
-  template<typename T>
-  void register_exti_client(T * driver)
-  {
-    register_exti_client(static_cast<void *>(driver), &exti_client_matches<T>, &exti_client_callback<T>);
-  }
-
-  template<typename T>
-  void register_spi_client(T * driver)
-  {
-    register_spi_client(static_cast<void *>(driver), &spi_client_matches<T>, &spi_client_callback<T>);
-  }
-
-  template<typename T>
-  void register_i2c_client(T * driver)
-  {
-    register_i2c_client(static_cast<void *>(driver), &i2c_client_matches<T>, &i2c_client_callback<T>);
-  }
-
-  template<typename T>
-  void register_adc_client(T * driver)
-  {
-    register_adc_client(static_cast<void *>(driver), &adc_client_matches<T>, &adc_client_callback<T>);
-  }
-
-  template<typename T>
-  void register_cdc_client(T * driver)
-  {
-    register_cdc_client(static_cast<void *>(driver), &cdc_client_matches<T>, &cdc_receive_client_callback<T>,
-                        &cdc_transmit_cplt_client_callback<T>);
-  }
-
-
-  template<typename T>
-  void register_sd_client(T * driver)
-  {
-    register_sd_client(static_cast<void *>(driver), &sd_client_matches<T>, &sd_txcplt_client_callback<T>,
-                       &sd_rxcplt_client_callback<T>);
-  }
-  template<typename T>
-  void register_uart_rxcplt_client(T * driver)
-  {
-    register_uart_rxcplt_client(static_cast<void *>(driver), &uart_client_matches<T>, &uart_rxcplt_client_callback<T>);
-  }
-
-  template<typename T>
-  void register_uart_rxisr_client(T * driver)
-  {
-    register_uart_rxisr_client(static_cast<void *>(driver), &uart_client_matches<T>, &uart_rxisr_client_callback<T>);
-  }
-
-  template<typename T>
-  void register_uart_txcplt_client(T * driver)
-  {
-    register_uart_txcplt_client(static_cast<void *>(driver), &uart_client_matches<T>, &uart_txcplt_client_callback<T>);
-  }
-
-  void dispatch_poll(uint64_t poll_counter);
-  void dispatch_exti(uint16_t exti_pin);
-  void dispatch_spi(SPI_HandleTypeDef * hspi);
-  void dispatch_i2c(I2C_HandleTypeDef * hi2c);
-  void dispatch_adc(ADC_HandleTypeDef * hadc);
-  void dispatch_cdc_receive(uint8_t chan, uint8_t * buffer, uint16_t size);
-  void dispatch_cdc_transmit_cplt(uint8_t chan);
-  void dispatch_sd_txcplt(SD_HandleTypeDef * hsd);
-  void dispatch_sd_rxcplt(SD_HandleTypeDef * hsd);
-  void dispatch_uart_rxcplt(UART_HandleTypeDef * huart);
-  void dispatch_uart_rxisr(UART_HandleTypeDef * huart);
-  void dispatch_uart_txcplt(UART_HandleTypeDef * huart);
+  STM32H7Callbacks & callbacks() { return callbacks_; }
+  const STM32H7Callbacks & callbacks() const { return callbacks_; }
+  PollingTimer & polling_timer() { return polling_timer_; }
+  const PollingTimer & polling_timer() const { return polling_timer_; }
   ////////////////////////////////////////////////////////////////////////////////
   // Required ROSflight Board HAL functions:
 
@@ -471,5 +166,7 @@ public:
   void backup_memory_write(const void * src, size_t len) override;
   void backup_memory_clear(size_t len) override;
 };
+
+extern STM32H7Board stm32_h7_board;
 
 #endif /* STM32_H7_HPP_ */

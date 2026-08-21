@@ -1,4 +1,4 @@
-/**
+﻿/**
  ******************************************************************************
  * File     : STM32H7_Init.cpp
  * Date     : June 3, 2024
@@ -173,16 +173,7 @@ void STM32H7Board::init_board(void)
   misc_printf("\nTime64 Startup\n");
   misc_exit_status(init_status);
   status_list_[status_len_++] = &time64;
-  clear_poll_clients();
-  clear_exti_clients();
-  clear_spi_clients();
-  clear_i2c_clients();
-  clear_adc_clients();
-  clear_cdc_clients();
-  clear_sd_clients();
-  clear_uart_rxcplt_clients();
-  clear_uart_rxisr_clients();
-  clear_uart_txcplt_clients();
+  callbacks().clear_all();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
@@ -203,8 +194,8 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
-  if (init_status == DRIVER_OK) { register_exti_client(&bmi088_gyro_bridge_set); }
-  if (init_status == DRIVER_OK) { register_exti_client(&bmi088_accel_bridge_clear); }
+  if (init_status == DRIVER_OK) { callbacks().register_exti_client(&bmi088_gyro_bridge_set); }
+  if (init_status == DRIVER_OK) { callbacks().register_exti_client(&bmi088_accel_bridge_clear); }
   if (init_status == DRIVER_OK) { imu0_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -422,10 +413,9 @@ void STM32H7Board::init_board(void)
 #define POLL_TIM_CHANNEL TIM_CHANNEL_1
 #define POLL_HTIM_INSTANCE (TIM7)
 #define POLLING_PERIOD_US (100)                       // 100us, 10kHz
-#define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
 
   misc_printf("\n\nPolling Timer Initialization\n");
-  init_status = InitPollTimer(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL, POLLING_PERIOD_US);
+  init_status = polling_timer().init(POLL_HTIM, POLL_HTIM_INSTANCE, POLL_TIM_CHANNEL, POLLING_PERIOD_US);
   misc_exit_status(init_status);
 
   RED_LO;

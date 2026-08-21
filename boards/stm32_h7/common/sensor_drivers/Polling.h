@@ -41,9 +41,18 @@
 
 #include "stm32h7xx_hal.h"
 
-typedef uint16_t PollingState;
-uint32_t PollingPeriod;
+class PollingTimer
+{
+public:
+  uint32_t init(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period_us);
+  bool is_my(TIM_HandleTypeDef * htim) const;
+  bool polling_state(uint64_t poll_counter, uint32_t rollover_us, uint16_t & state) const;
+  uint32_t period_us() const { return polling_period_us_; }
+  uint32_t frequency_hz() const { return (polling_period_us_ == 0U) ? 0U : (1000000U / polling_period_us_); }
 
-uint32_t InitPollTimer(TIM_HandleTypeDef * htim, TIM_TypeDef * instance, uint32_t channel, uint32_t polling_period_us );
+private:
+  TIM_TypeDef * instance_ = nullptr;
+  uint32_t polling_period_us_ = 0;
+};
 
 #endif /* DRIVERS_POLLING_H_ */

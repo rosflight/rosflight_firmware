@@ -80,7 +80,7 @@ private:
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   I2C_HandleTypeDef * hi2c_;
-  PollingState i2cState_;
+  uint16_t i2cState_;
   uint16_t address_;
   double dtMs_;
   uint64_t drdy_;

@@ -149,5 +149,5 @@ bool Sd::write(uint8_t * src, size_t len)
 
 void Sd::register_callbacks(STM32H7Board & board)
 {
-  board.register_sd_client(this);
+  board.callbacks().register_sd_client(this);
 }
