@@ -88,40 +88,6 @@ extern PCD_HandleTypeDef hpcd_USB_OTG_FS; // USB FS (48 MB/s)
 #define POLLING_PERIOD_US (100)                       // 100us, 10kHz
 #define POLLING_FREQ_HZ (1000000 / POLLING_PERIOD_US) // 10000 Hz
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Onboard ADC's
-
-#define ADC_EXT_DMA_RAM DMA_RAM
-#define ADC_CHANNELS_EXT (4)
-
-#define ADC_RSSI_V (0)          // INP 11
-#define ADC_BATTERY_VOLTS (1)   // INP 14
-#define ADC_BATTERY_CURRENT (2) // INP 15
-#define ADC_5V0 (3)             // INP 18
-
-#define ADC_INT_DMA_RAM BDMA_RAM // NOTE! ADC3 using BDMA so this needs to be in SRAM4
-#define ADC_CHANNELS_INT (3)
-
-#define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
-#define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
-#define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
-
-// NOTE! This lets us put all the config in one file
-// clang-format off
-#define ADC_CFG_CHANS_DEFINE \
-{ \
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},         /* ADC_RSSI_V */ \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 12.62, 0.0},         /* ADC_BATTERY_VOLTS */ \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 60.5, 0.0747},         /* ADC_BATTERY_CURRENT */ \
-  {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},         /* ADC_5V0 */ \
-  {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0}, /* ADC_STM_TEMPERATURE */ \
-  {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},       /* ADC_STM_VBAT */ \
-  {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.0,0.0}        /* ADC_STM_VREFINT */ \
-}
-// clang-format on
-
-#define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
-
 // Red LED
 // PB11
 #define RED_HI HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET)

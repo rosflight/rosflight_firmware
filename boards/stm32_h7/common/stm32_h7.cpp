@@ -467,8 +467,8 @@ bool STM32H7Board::battery_read(rosflight_firmware::BatteryStruct * batt)
   AdcPacket p;
   if (adc_.read((uint8_t *) &p, sizeof(p))) {
     batt->header = p.header;
-    batt->current = p.volts[ADC_BATTERY_CURRENT];
-    batt->voltage = p.volts[ADC_BATTERY_VOLTS];
+    batt->current = p.battery_current;
+    batt->voltage = p.battery_voltage;
     batt->temperature = p.temperature;
     return true;
   }
@@ -477,12 +477,12 @@ bool STM32H7Board::battery_read(rosflight_firmware::BatteryStruct * batt)
 void STM32H7Board::battery_voltage_set_multiplier(double multiplier)
 {
   if (multiplier == 0) return;
-  adc_.setScaleFactor(ADC_BATTERY_VOLTS, multiplier);
+  adc_.setScaleFactor(adc_.battery_voltage_index(), multiplier);
 }
 void STM32H7Board::battery_current_set_multiplier(double multiplier)
 {
   if (multiplier == 0) return;
-  adc_.setScaleFactor(ADC_BATTERY_CURRENT, multiplier);
+  adc_.setScaleFactor(adc_.battery_current_index(), multiplier);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

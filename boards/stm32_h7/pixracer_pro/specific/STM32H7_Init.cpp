@@ -274,10 +274,56 @@ void STM32H7Board::init_board(void)
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
+  #define ADC_CHANNELS_EXT (4)
+  #define ADC_RSSI_V (0)          // INP 11
+  #define ADC_BATTERY_VOLTS (1)   // INP 14
+  #define ADC_BATTERY_CURRENT (2) // INP 15
+  #define ADC_5V0 (3)             // INP 18
+
+  #define ADC_CHANNELS_INT (3)
+  #define ADC_STM_TEMPERATURE (0 + ADC_CHANNELS_EXT) // INP 18 (Internal)
+  #define ADC_STM_VBAT (1 + ADC_CHANNELS_EXT)        // INP 17 (Internal)
+  #define ADC_STM_VREFINT (2 + ADC_CHANNELS_EXT)     // INP 19 (Internal)
+  
+  #define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
+
+  static const AdcChannelCfg board_adc_cfg[ADC_CHANNELS] = {
+    {ADC_REGULAR_RANK_1, ADC_CHANNEL_11, 1.000, 0.0},
+    {ADC_REGULAR_RANK_2, ADC_CHANNEL_14, 12.62, 0.0},
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_15, 60.5, 0.0747},
+    {ADC_REGULAR_RANK_4, ADC_CHANNEL_18, 2.000, 0.0},
+    {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0},
+    {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.0, 0.0},
+  };
+
+  static const char* adc_names[2*ADC_CHANNELS] = {
+    "V_RSSI", "V",
+    "V_BATT", "V",
+    "I_BATT", "A",
+    "5V0", "V",
+    "TEMP", "C",
+    "V_RTC", "V",
+    "V_REF", "V",
+  };
+
+  static const AdcStructure board_adc_init = {
+    ADC_CHANNELS_EXT, 
+    ADC_CHANNELS_INT, 
+    ADC_BATTERY_VOLTS, 
+    ADC_BATTERY_CURRENT, 
+    ADC_STM_TEMPERATURE, 
+    ADC_STM_VBAT, 
+    ADC_STM_VREFINT, 
+    -1, 
+    board_adc_cfg,
+    adc_names
+  };
   init_status = adc_.init(
     10, // Sample Rate, Hz
-	  &hadc1, ADC1, // "External" ADC
-	  &hadc3, ADC3  // "Internal" ADC
+	&hadc1, ADC1, // "External"
+	&hadc3, ADC3, // "Internal" has the on chip sensors
+	&board_adc_init
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;

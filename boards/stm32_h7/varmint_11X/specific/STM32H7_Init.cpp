@@ -252,10 +252,63 @@ void STM32H7Board::init_board(void)
   // ADC initialization
 
   misc_printf("\n\nAdc (adc) Initialization\n");
+
+  #define ADC_CHANNELS_EXT (6)
+  #define ADC_BATTERY_VOLTS (0)   // INP 16
+  #define ADC_BATTERY_CURRENT (1) // INP 11
+  #define ADC_12V (2)             // INP 8
+  #define ADC_5V0 (3)             // INP 10
+  #define ADC_SERVO_VOLTS (4)     // INP 7
+  #define ADC_CC_3V3 (5)          // INP 4
+
+  #define ADC_CHANNELS_INT (3)
+  #define ADC_STM_TEMPERATURE (6) // INP 18 (Internal)
+  #define ADC_STM_VBAT (7)        // INP 17 (Internal)
+  #define ADC_STM_VREFINT (8)     // INP 19 (Internal)
+
+  #define ADC_CHANNELS (ADC_CHANNELS_EXT + ADC_CHANNELS_INT)
+
+  static const AdcChannelCfg board_adc_cfg[ADC_CHANNELS] = {
+	  {ADC_REGULAR_RANK_1, ADC_CHANNEL_16, 11.215, 0.0},
+	  {ADC_REGULAR_RANK_2, ADC_CHANNEL_11, 10.000, 0.0},
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_8, 4.010, 0.0},
+    {ADC_REGULAR_RANK_4, ADC_CHANNEL_10, 1.680, 0.0},
+    {ADC_REGULAR_RANK_5, ADC_CHANNEL_7, 2.690, 0.0},
+	  {ADC_REGULAR_RANK_6, ADC_CHANNEL_4, 1.100, 0.0},
+    {ADC_REGULAR_RANK_1, ADC_CHANNEL_TEMPSENSOR, 1.000, 0.0},
+    {ADC_REGULAR_RANK_2, ADC_CHANNEL_VBAT, 4.000, 0.0},
+    {ADC_REGULAR_RANK_3, ADC_CHANNEL_VREFINT, 1.000, 0.0},
+  };
+  // Names that go with the channels
+  static const char* adc_names[2*ADC_CHANNELS] = {
+    "V_BATT", "V",
+	  "I_BATT", "A",
+    "12V", "V",
+    "5V0", "V",
+    "V_SERVO", "V",
+    "CC_3V3", "V",
+    "TEMP", "C",
+    "V_RTC", "V",
+    "V_REF", "V",   
+  };
+
+  static const AdcStructure board_adc_init = {
+    ADC_CHANNELS_EXT, 
+    ADC_CHANNELS_INT, 
+    ADC_BATTERY_VOLTS, 
+    ADC_BATTERY_CURRENT, 
+    ADC_STM_TEMPERATURE, 
+    ADC_STM_VBAT, 
+    ADC_STM_VREFINT, 
+    -1, 
+    board_adc_cfg,
+    adc_names
+  };
   init_status = adc_.init(
     10, // Sample Rate, Hz
-	&hadc1, ADC1, // "External"
-	&hadc3, ADC3 // "Internal" has the on chip sensors
+	  &hadc1, ADC1, // "External"
+	  &hadc3, ADC3, // "Internal" has the on chip sensors
+	  &board_adc_init
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
