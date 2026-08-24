@@ -314,7 +314,7 @@ void STM32H7Board::led1_toggle() { BLU_TOG; }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Backup Data (Register and SRAM)
 // https://stackoverflow.com/questions/20667754/how-to-use-backup-sram-as-eeprom-in-stm32f4
-// from \Drivers\CMSIS\Device\ST\STM32H7xx\Include\stm32h753xx.h(2141)
+// from \../common/stm32_drivers\CMSIS\Device\ST\STM32H7xx\Include\stm32h753xx.h(2141)
 //#define D3_BKPSRAM_BASE           (0x38800000UL) /*!< Base address of : Backup SRAM(4 KB) over AXI->AHB Bridge */
 //#define D3_SRAM_BASE              (0x38000000UL) /*!< Base address of : Backup SRAM(64 KB) over AXI->AHB Bridge
 
