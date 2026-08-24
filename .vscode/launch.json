@@ -12,7 +12,7 @@
             "interface": "swd",
             "runToEntryPoint": "main",
             "preLaunchTask": "cmake-build",
-            "svdFile": "${workspaceFolder}/../common/stm32_drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H743.svd"
+            "svdFile": "${workspaceFolder}/../common/stm32_drivers/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H743.svd"
         },
         {
             "name": "Debug - Varmint 10X",
@@ -25,7 +25,7 @@
             "interface": "swd",
             "runToEntryPoint": "main",
             "preLaunchTask": "cmake-build",
-            "svdFile": "${workspaceFolder}/../common/stm32_drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd"
+            "svdFile": "${workspaceFolder}/../common/stm32_drivers/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd"
         },
         {
             "name": "Debug - Varmint 11X",
@@ -38,7 +38,7 @@
             "interface": "swd",
             "runToEntryPoint": "main",
             "preLaunchTask": "cmake-build",
-            "svdFile": "${workspaceFolder}/../common/stm32_drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd",
+            "svdFile": "${workspaceFolder}/../common/stm32_drivers/Drivers/CMSIS/Device/ST/STM32H7xx/SVD/STM32H753.svd",
             "showDevDebugOutput": "raw"
         },
         {
