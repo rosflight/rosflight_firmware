@@ -1,6 +1,6 @@
 lib/eigen/
-boards/varmint_h7/varmint_10X/../common/stm32_drivers/
-boards/varmint_h7/varmint_11X/../common/stm32_drivers/
-boards/varmint_h7/pixracer_pro/../common/stm32_drivers/
+boards/varmint_h7/varmint_10X/Drivers/
+boards/varmint_h7/varmint_11X/Drivers/
+boards/varmint_h7/pixracer_pro/drivers/
 comms/mavlink/v1.0/
 boards/varmint_h7/common/AL94_USB_Composite/
