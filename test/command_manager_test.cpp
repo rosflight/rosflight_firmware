@@ -33,23 +33,20 @@ public:
   float max_roll, max_pitch, max_yawrate;
 
   control_t offboard_command = {20000,
-                               {{true, THROTTLE, OFFBOARD_FX},
-                                {true, THROTTLE, OFFBOARD_FY},
-                                {true, THROTTLE, OFFBOARD_FZ},
-                                {true, ANGLE, OFFBOARD_QX},
-                                {true, ANGLE, OFFBOARD_QY},
-                                {true, RATE, OFFBOARD_QZ},
-                                {true, THROTTLE, 0.0},
-                                {true, THROTTLE, 0.0},
-                                {true, THROTTLE, 0.0},
-                                {true, THROTTLE, 0.0}}};
+                                {{true, THROTTLE, OFFBOARD_FX},
+                                 {true, THROTTLE, OFFBOARD_FY},
+                                 {true, THROTTLE, OFFBOARD_FZ},
+                                 {true, ANGLE, OFFBOARD_QX},
+                                 {true, ANGLE, OFFBOARD_QY},
+                                 {true, RATE, OFFBOARD_QZ},
+                                 {true, THROTTLE, 0.0},
+                                 {true, THROTTLE, 0.0},
+                                 {true, THROTTLE, 0.0},
+                                 {true, THROTTLE, 0.0}}};
 
-  uint16_t default_rc_override = CommandManager::OVERRIDE_X
-    | CommandManager::OVERRIDE_Y
-    | CommandManager::OVERRIDE_Z
-    | CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE
-    | CommandManager::OVERRIDE_OFFBOARD_Y_INACTIVE
-    | CommandManager::OVERRIDE_OFFBOARD_Z_INACTIVE
+  uint16_t default_rc_override = CommandManager::OVERRIDE_X | CommandManager::OVERRIDE_Y
+    | CommandManager::OVERRIDE_Z | CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE
+    | CommandManager::OVERRIDE_OFFBOARD_Y_INACTIVE | CommandManager::OVERRIDE_OFFBOARD_Z_INACTIVE
     | CommandManager::OVERRIDE_OFFBOARD_T_INACTIVE;
 
   CommandManagerTest()
@@ -389,9 +386,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxRollDeviation)
   EXPECT_CLOSE(output.u[1].value, 0.0);
   EXPECT_CLOSE(output.u[2].value, 0.0);
 
-  uint16_t correct_rc_override =
-    CommandManager::OVERRIDE_T
-    | CommandManager::OVERRIDE_X;
+  uint16_t correct_rc_override = CommandManager::OVERRIDE_T | CommandManager::OVERRIDE_X;
   EXPECT_EQ(rf.command_manager_.get_rc_override(), correct_rc_override);
 }
 
@@ -411,9 +406,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxPitchDeviation)
   EXPECT_CLOSE(output.u[1].value, 0.0);
   EXPECT_CLOSE(output.u[2].value, 0.0);
 
-  uint16_t correct_rc_override =
-    CommandManager::OVERRIDE_T
-    | CommandManager::OVERRIDE_Y;
+  uint16_t correct_rc_override = CommandManager::OVERRIDE_T | CommandManager::OVERRIDE_Y;
   EXPECT_EQ(rf.command_manager_.get_rc_override(), correct_rc_override);
 }
 
@@ -433,9 +426,7 @@ TEST_F(CommandManagerTest, OffboardCommandMuxYawrateDeviation)
   EXPECT_CLOSE(output.u[1].value, 0.0);
   EXPECT_CLOSE(output.u[2].value, 0.0);
 
-  uint16_t correct_rc_override =
-    CommandManager::OVERRIDE_T
-    | CommandManager::OVERRIDE_Z;
+  uint16_t correct_rc_override = CommandManager::OVERRIDE_T | CommandManager::OVERRIDE_Z;
   EXPECT_EQ(rf.command_manager_.get_rc_override(), correct_rc_override);
 }
 
@@ -482,7 +473,8 @@ TEST_F(CommandManagerTest, StaleOffboardCommand)
 
   control_t output = rf.command_manager_.combined_control();
   EXPECT_CLOSE(output.u[3].value, 0.0);
-  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE, 0);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE,
+            0);
 }
 
 TEST_F(CommandManagerTest, PartialMux)
@@ -499,7 +491,8 @@ TEST_F(CommandManagerTest, PartialMux)
   EXPECT_CLOSE(output.u[0].value, 0.0);
   EXPECT_CLOSE(output.u[1].value, 0.0);
   EXPECT_CLOSE(output.u[2].value, 0.0);
-  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE, 0);
+  EXPECT_NE(rf.command_manager_.get_rc_override() & CommandManager::OVERRIDE_OFFBOARD_X_INACTIVE,
+            0);
 }
 
 TEST_F(CommandManagerTest, MixedTypes)
@@ -533,9 +526,7 @@ TEST_F(CommandManagerTest, RCOverrideGivenBothOvrdSwitchesOn)
   uint16_t override = rf.command_manager_.get_rc_override();
 
   uint16_t correct_override =
-    CommandManager::OVERRIDE_ATT_SWITCH
-    | CommandManager::OVERRIDE_THR_SWITCH
-    | default_rc_override;
+    CommandManager::OVERRIDE_ATT_SWITCH | CommandManager::OVERRIDE_THR_SWITCH | default_rc_override;
   EXPECT_EQ(override, correct_override);
 }
 
@@ -549,9 +540,7 @@ TEST_F(CommandManagerTest, RCOverrideOnlyThrOvrdSwitchOn)
 
   uint16_t override = rf.command_manager_.get_rc_override();
 
-  uint16_t correct_override =
-    CommandManager::OVERRIDE_THR_SWITCH
-    | default_rc_override;
+  uint16_t correct_override = CommandManager::OVERRIDE_THR_SWITCH | default_rc_override;
   EXPECT_EQ(override, correct_override);
 }
 
@@ -565,8 +554,6 @@ TEST_F(CommandManagerTest, RCOverrideOnlyAttOvrdSwitchOn)
 
   uint16_t override = rf.command_manager_.get_rc_override();
 
-  uint16_t correct_override =
-    CommandManager::OVERRIDE_ATT_SWITCH
-    | default_rc_override;
+  uint16_t correct_override = CommandManager::OVERRIDE_ATT_SWITCH | default_rc_override;
   EXPECT_EQ(override, correct_override);
 }

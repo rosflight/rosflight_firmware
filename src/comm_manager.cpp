@@ -226,7 +226,7 @@ void CommManager::timesync_callback(int64_t tc1, int64_t ts1)
 {
   if (tc1 == 0) {
     // check that this is a request, not a response
-    tc1 = RF_.board_.clock_micros()*1000L;
+    tc1 = RF_.board_.clock_micros() * 1000L;
     comm_link_.send_timesync(sysid_, tc1, ts1);
   }
 }
@@ -235,17 +235,15 @@ void CommManager::offboard_control_callback(const CommLinkInterface::OffboardCon
 {
   // put values and flags into a new command struct
   control_t new_offboard_command;
-  for (std::size_t i=0; i<std::size(control.u); ++i)
-  {
+  for (std::size_t i = 0; i < std::size(control.u); ++i) {
     new_offboard_command.u[i].value = control.u[i].value;
     new_offboard_command.u[i].active = control.u[i].valid;
-
   }
 
   // translate modes into standard message
   switch (control.mode) {
     case CommLinkInterface::OffboardControl::Mode::PASS_THROUGH:
-      for (std::size_t i=0; i<std::size(control.u); ++i) {
+      for (std::size_t i = 0; i < std::size(control.u); ++i) {
         new_offboard_command.u[i].type = PASSTHROUGH;
       }
       break;
@@ -398,11 +396,11 @@ void CommManager::send_output_raw(void)
 
 void CommManager::send_rc_raw(void)
 {
-  rosflight_firmware::RcStruct * rc_struct =RF_.rc_.get_rc();
+  rosflight_firmware::RcStruct * rc_struct = RF_.rc_.get_rc();
 
-  size_t n = (sizeof(rc_struct->chan)<8) ? sizeof(rc_struct->chan):8;
+  size_t n = (sizeof(rc_struct->chan) < 8) ? sizeof(rc_struct->chan) : 8;
   uint16_t channels[8];
-  for(size_t i=0;i<n;i++) channels[i] = rc_struct->chan[i]*1000.0 + 1000;
+  for (size_t i = 0; i < n; i++) channels[i] = rc_struct->chan[i] * 1000.0 + 1000;
   comm_link_.send_rc_raw(sysid_, RF_.board_.clock_millis(), channels);
 }
 
@@ -416,7 +414,7 @@ void CommManager::send_diff_pressure(void)
 void CommManager::send_baro(void)
 {
   comm_link_.send_baro(sysid_, RF_.sensors_.get_baro()->altitude, RF_.sensors_.get_baro()->pressure,
-      RF_.sensors_.get_baro()->temperature);
+                       RF_.sensors_.get_baro()->temperature);
 }
 
 void CommManager::send_range(void)
@@ -428,9 +426,9 @@ void CommManager::send_range(void)
 
 void CommManager::send_mag(void)
 {
-  turbomath::Vector flux ( RF_.sensors_.get_mag()->flux[0], RF_.sensors_.get_mag()->flux[1], RF_.sensors_.get_mag()->flux[2]);
-  comm_link_.send_mag(sysid_, flux );
-
+  turbomath::Vector flux(RF_.sensors_.get_mag()->flux[0], RF_.sensors_.get_mag()->flux[1],
+                         RF_.sensors_.get_mag()->flux[2]);
+  comm_link_.send_mag(sysid_, flux);
 }
 void CommManager::send_battery_status(void)
 {
@@ -448,10 +446,7 @@ void CommManager::send_backup_data(const StateManager::BackupData & backup_data)
   }
 }
 
-void CommManager::send_gnss(void)
-{
-  comm_link_.send_gnss(sysid_, RF_.sensors_.get_gnss());
-}
+void CommManager::send_gnss(void) { comm_link_.send_gnss(sysid_, RF_.sensors_.get_gnss()); }
 
 void CommManager::send_1hz_heartbeat(void)
 {
@@ -507,7 +502,6 @@ void CommManager::stream(got_flags got)
   send_next_param();
 
   send_buffered_log_messages();
-
 }
 
 void CommManager::send_next_param(void)

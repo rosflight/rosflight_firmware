@@ -29,7 +29,7 @@ function(add_stm32_h7_board board_name board_chip)
 
   # Common STM32 HAL drivers (consolidated)
   file(GLOB_RECURSE common_hal_sources CONFIGURE_DEPENDS
-    "${common_source_dir}/stm32_drivers/STM32H7xx_HAL_Driver/Src/*.c"
+    "${common_source_dir}/stm32_drivers/Drivers/STM32H7xx_HAL_Driver/Src/*.c"
   )
 
   # Common system files (consolidated)
@@ -85,10 +85,10 @@ function(add_stm32_h7_board board_name board_chip)
     "${board_source_dir}/Core/Inc"
     "${board_source_dir}/specific"
     "${common_source_dir}"
-    "${common_source_dir}/stm32_drivers/STM32H7xx_HAL_Driver/Inc"
-    "${common_source_dir}/stm32_drivers/STM32H7xx_HAL_Driver/Inc/Legacy"
-    "${common_source_dir}/stm32_drivers/CMSIS/Device/ST/STM32H7xx/Include"
-    "${common_source_dir}/stm32_drivers/CMSIS/Include"
+    "${common_source_dir}/stm32_drivers/Drivers/STM32H7xx_HAL_Driver/Inc"
+    "${common_source_dir}/stm32_drivers/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy"
+    "${common_source_dir}/stm32_drivers/Drivers/CMSIS/Device/ST/STM32H7xx/Include"
+    "${common_source_dir}/stm32_drivers/Drivers/CMSIS/Include"
     "${common_source_dir}/sensor_drivers"
     "${common_source_dir}/AL94_USB_Composite"
   )

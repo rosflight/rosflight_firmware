@@ -183,9 +183,9 @@ got_flags Sensors::run()
 
   // BAROMETER:
   if ((got.baro = rf_.board_.baro_read(&baro_))) {
-     correct_baro(); 
-     rho_ = 1.225 * pow(baro_.pressure / 101325.0, 0.809736894596450);
-    }
+    correct_baro();
+    rho_ = 1.225 * pow(baro_.pressure / 101325.0, 0.809736894596450);
+  }
 
   // MAGNETOMETER:
   if ((got.mag = rf_.board_.mag_read(&mag_))) {
@@ -202,9 +202,7 @@ got_flags Sensors::run()
   got.range = rf_.board_.range_read(&range_);
 
   // BATTERY_MONITOR:
-  if ((got.battery = rf_.board_.battery_read(&battery_))) {
-    lpf_battery();
-  }
+  if ((got.battery = rf_.board_.battery_read(&battery_))) { lpf_battery(); }
 
   return got;
 }
@@ -252,7 +250,7 @@ bool Sensors::start_diff_pressure_calibration()
 bool Sensors::gyro_calibration_complete(void) { return !calibrating_gyro_flag_; }
 
 void Sensors::get_filtered_IMU(turbomath::Vector & accel, turbomath::Vector & gyro,
-  uint64_t & stamp_us)
+                               uint64_t & stamp_us)
 {
   accel.x = imu_.accel[0];
   accel.y = imu_.accel[1];
@@ -514,8 +512,10 @@ void Sensors::correct_diff_pressure()
 
 void Sensors::lpf_battery()
 {
-  battery_.voltage = battery_.voltage * (1.0 - battery_voltage_alpha_) + previous_battery_voltage_ * battery_voltage_alpha_;
-  battery_.current = battery_.current * (1.0 - battery_current_alpha_) + previous_battery_current_ * battery_current_alpha_;
+  battery_.voltage = battery_.voltage * (1.0 - battery_voltage_alpha_)
+    + previous_battery_voltage_ * battery_voltage_alpha_;
+  battery_.current = battery_.current * (1.0 - battery_current_alpha_)
+    + previous_battery_current_ * battery_current_alpha_;
   previous_battery_voltage_ = battery_.voltage;
   previous_battery_current_ = battery_.current;
 }
@@ -527,7 +527,5 @@ void Sensors::update_battery_monitor_multipliers()
   this->rf_.board_.battery_voltage_set_multiplier(voltage_multiplier);
   this->rf_.board_.battery_current_set_multiplier(current_multiplier);
 }
-
-
 
 } // namespace rosflight_firmware

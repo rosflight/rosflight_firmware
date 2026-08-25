@@ -68,7 +68,8 @@ void Controller::init()
               RF_.params_.get_param_float(PARAM_PID_PITCH_ANGLE_D), max_torque, min_torque, tau);
   pitch_rate_.init(RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_P),
                    RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_I),
-                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max_torque, min_torque, tau);
+                   RF_.params_.get_param_float(PARAM_PID_PITCH_RATE_D), max_torque, min_torque,
+                   tau);
   yaw_rate_.init(RF_.params_.get_param_float(PARAM_PID_YAW_RATE_P),
                  RF_.params_.get_param_float(PARAM_PID_YAW_RATE_I),
                  RF_.params_.get_param_float(PARAM_PID_YAW_RATE_D), max_torque, min_torque, tau);
@@ -103,17 +104,18 @@ void Controller::calculate_max_thrust()
   max_thrust_ = rho * pow(D, 4.0) * CT * pow(omega, 2.0) / (4 * pow(M_PI, 2.0)) * num_motors;
 }
 
-bool Controller::is_throttle_high(float threshold) {
-  return  RF_.command_manager_.combined_control().u[0].value > threshold ||
-          RF_.command_manager_.combined_control().u[1].value > threshold ||
-          RF_.command_manager_.combined_control().u[2].value > threshold;
+bool Controller::is_throttle_high(float threshold)
+{
+  return RF_.command_manager_.combined_control().u[0].value > threshold
+    || RF_.command_manager_.combined_control().u[1].value > threshold
+    || RF_.command_manager_.combined_control().u[2].value > threshold;
 }
 
 void Controller::run(const float dt)
 {
   // Check if integrators should be updated
-  bool update_integrators = (RF_.state_manager_.state().armed)
-    && is_throttle_high(0.1f) && dt < 0.01;
+  bool update_integrators =
+    (RF_.state_manager_.state().armed) && is_throttle_high(0.1f) && dt < 0.01;
 
   // Run the PID loops
   Controller::Output pid_output = run_pid_loops(
@@ -129,7 +131,7 @@ void Controller::run(const float dt)
   output_.u[2] = pid_output.u[2];
 
   // Propagate remaining command channels as passthrough
-  for (int i=6; i<Mixer::NUM_MIXER_OUTPUTS; ++i) {
+  for (int i = 6; i < Mixer::NUM_MIXER_OUTPUTS; ++i) {
     output_.u[i] = RF_.command_manager_.combined_control().u[i].value;
   }
 }
@@ -237,7 +239,8 @@ Controller::Output Controller::run_pid_loops(const float dt, const Estimator::St
 
   // PITCH
   if (command.u[4].type == RATE) {
-    out.u[4] = pitch_rate_.run(dt, state.angular_velocity.y, command.u[4].value, update_integrators);
+    out.u[4] =
+      pitch_rate_.run(dt, state.angular_velocity.y, command.u[4].value, update_integrators);
   } else if (command.u[4].type == ANGLE) {
     out.u[4] =
       pitch_.run(dt, state.pitch, command.u[4].value, update_integrators, state.angular_velocity.y);
@@ -254,13 +257,11 @@ Controller::Output Controller::run_pid_loops(const float dt, const Estimator::St
 
   // Fx
   if (command.u[0].type == THROTTLE) {
-    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
     // during aggressive maneuvers.
     out.u[0] = command.u[0].value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
-    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
-      out.u[0] *= max_thrust_;
-    }
+    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) { out.u[0] *= max_thrust_; }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
     out.u[0] = command.u[0].value;
@@ -268,13 +269,11 @@ Controller::Output Controller::run_pid_loops(const float dt, const Estimator::St
 
   // Fy
   if (command.u[1].type == THROTTLE) {
-    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
     // during aggressive maneuvers.
     out.u[1] = command.u[1].value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
-    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
-      out.u[1] *= max_thrust_;
-    }
+    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) { out.u[1] *= max_thrust_; }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
     out.u[1] = command.u[1].value;
@@ -282,16 +281,14 @@ Controller::Output Controller::run_pid_loops(const float dt, const Estimator::St
 
   // Fz
   if (command.u[2].type == THROTTLE) {
-    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability 
+    // Scales the saturation limit by RC_MAX_THROTTLE to maintain controllability
     // during aggressive maneuvers.
     // Also note the negative sign. Since the mixer assumes the inputs are in the NED
     // frame, a throttle command corresponds to a thrust command in the negative direction.
     // Note that this also assumes that a high throttle means fly "up" (negative down)
     out.u[2] = -command.u[2].value * RF_.params_.get_param_float(PARAM_RC_MAX_THROTTLE);
 
-    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) {
-      out.u[2] *= max_thrust_;
-    }
+    if (RF_.params_.get_param_int(PARAM_USE_MOTOR_PARAMETERS)) { out.u[2] *= max_thrust_; }
   } else {
     // If it is not a throttle setting then pass directly to the mixer.
     out.u[2] = command.u[2].value;

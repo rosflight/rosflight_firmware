@@ -51,7 +51,9 @@ public:
   struct Output
   {
     float u[10];
-    Output() : u{0,0,0,0,0,0,0,0,0,0} {}
+    Output()
+        : u{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    {}
   };
 
   Controller(ROSflight & rf);
