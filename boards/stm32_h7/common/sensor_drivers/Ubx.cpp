@@ -42,7 +42,10 @@
 
 #include "Packets.h"
 #include "misc.h"
+
 #include <ctime>
+#include <cstring>
+
 extern Time64 time64;
 
 #define SET(buf, data, type) *((type *) (buf)) = data
@@ -52,34 +55,19 @@ DMA_RAM uint8_t ubx_dma_rxbuf[UBX_DMA_BUFFER_SIZE];
 
 DTCM_RAM uint8_t ubx_double_buffer[2 * sizeof(UbxPacket)];
 
-void Ubx::extiCallback(void)
-{
-  pps();
-}
-
-void Ubx::pps(void)
-{
-  static bool first_time = true;
-  if (!first_time) ubx_.pps = time64.Us();
-  first_time = false;
-}
-
-
 uint32_t Ubx::init(
   // Driver initializers
   uint16_t sample_rate_hz, GPIO_TypeDef * pps_port, uint16_t pps_pin,
   // UART initializers
   UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
+  (void) pps_port;
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ubx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  ppsPin_ = pps_pin;
+  pps_signal_.init(pps_pin);
   ppsHz_ = 1; // To match top of second.
-
-  dtimeout_ = 1000000; // 1 seconds
-  timeout_ = 0;
 
   huart_ = huart;
   hdmaUartRx_ = hdma_uart_rx; // huart->hdmarx;
@@ -88,8 +76,6 @@ uint32_t Ubx::init(
   baud_ = baud;
 
   ubx_.pps = 0;
-
-  // gotNav_ = false;
   gotPvt_ = 0;
 
   // USART initialization
@@ -170,9 +156,6 @@ uint32_t Ubx::init(
       misc_printf("retry %u\n",retry+1);
    }
 
-
-
-
   if (ubx_baud != baud_) {
     initializationStatus_ |= UBX_FAIL_BAUD_CHANGE;
     return initializationStatus_;
@@ -214,7 +197,7 @@ uint32_t Ubx::init(
   error |= (uint16_t) cfgRate(sampleRateHz_); // Nav rate 0x06 0x08
   error |= (uint16_t) cfgTp5(ppsHz_);  // PPS rate 0x06 0x31
   error |= (uint16_t) cfgNav5();              // airplane mode 0x06 0x24
-
+  (void) error;
 
   __HAL_UART_CLEAR_IDLEFLAG(huart_);
   __HAL_UART_DISABLE_IT(huart_, UART_IT_IDLE);
@@ -222,35 +205,49 @@ uint32_t Ubx::init(
   return initializationStatus_;
 }
 
-bool Ubx::poll(uint64_t poll_offset)
-{
-  (void) poll_offset;
-  // Check if we are timed-out
-  if (time64.Us() > timeout_) {
-    if ((((DMA_Stream_TypeDef *) (huart_->hdmarx)->Instance)->CR & DMA_SxCR_EN) != DMA_SxCR_EN) {
-      __HAL_UART_CLEAR_IDLEFLAG(huart_); // this may be redundant with call to HAL_UART_Abort()
-      __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
-      HAL_UART_Abort(huart_); // flush any leftover crumbs.
-      startDma();
-    }
-  }
-  return 0;
-}
-
 bool Ubx::startDma(void)
 {
-  timeout_ = time64.Us() + dtimeout_; // 1000000 for one second timeout
+  __HAL_UART_CLEAR_IDLEFLAG(huart_);
+  __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
   HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, ubx_dma_rxbuf, UBX_DMA_BUFFER_SIZE); // start next read
   return HAL_OK == hal_status;
 }
 
+bool Ubx::restartDma(void)
+{
+  __HAL_UART_CLEAR_IDLEFLAG(huart_); // this may be redundant with call to HAL_UART_Abort()
+  __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
+  HAL_UART_Abort(huart_); // flush any leftover crumbs.
+  return startDma();
+}
+
 void Ubx::uartRxCpltCallback(void)
+{
+  uart_signal_.trigger();
+}
+
+void Ubx::uartRxIsrCallback(void)
+{
+  uart_signal_.trigger();
+}
+
+AsyncTask<void> Ubx::ppsRun()
+{
+  bool first_time = true;
+
+  while (true) {
+    co_await pps_signal_.wait_for_trigger();
+
+    if (!first_time) ubx_.pps = pps_signal_.timestamp_us();
+    first_time = false;
+  }
+}
+
+void Ubx::processDmaBuffer(UbxFrame & p)
 {
   uint16_t bytes_in_dma_buffer = misc_bytes_in_dma(hdmaUartRx_, UBX_DMA_BUFFER_SIZE);
 
-  static UbxFrame p;
-
-  for (int i = 0; i < bytes_in_dma_buffer; i++) {
+  for (uint16_t i = 0; i < bytes_in_dma_buffer; i++) {
     bool found = parseByte(ubx_dma_rxbuf[i], &p);
 
     if (found) {
@@ -266,34 +263,53 @@ void Ubx::uartRxCpltCallback(void)
         ubx_.unix_seconds = mktime(&tm);
         ubx_.unix_nanos = ubx_.pvt.nano;
 
-        if (ubx_.pvt.nano<0)
+        if (ubx_.pvt.nano < 0)
         {
           ubx_.unix_seconds--;
           ubx_.unix_nanos += 1000000000;
         }
 
         gotPvt_ = time64.Us();
-        if ( (ubx_.pps !=0) && (ubx_.pps < gotPvt_) && ((ubx_.pvt.valid & 0x07)== 0x07) && ((ubx_.pvt.flags & 0x01)==0x01) )
+        if ((ubx_.pps != 0) && (ubx_.pps < gotPvt_) && ((ubx_.pvt.valid & 0x07) == 0x07)
+            && ((ubx_.pvt.flags & 0x01) == 0x01))
         {
-           if(ubx_.pvt.nano<0)
-           {
-             ubx_.header.timestamp  = ubx_.pps - (uint64_t)(-ubx_.pvt.nano/1000);
-           } else {
-             ubx_.header.timestamp  = ubx_.pps + (uint64_t)(ubx_.pvt.nano/1000);
+          if (ubx_.pvt.nano < 0)
+          {
+            ubx_.header.timestamp = ubx_.pps - (uint64_t) (-ubx_.pvt.nano / 1000);
+          } else {
+            ubx_.header.timestamp = ubx_.pps + (uint64_t) (ubx_.pvt.nano / 1000);
           }
         } else {
-          ubx_.header.timestamp = gotPvt_-22000; //
+          ubx_.header.timestamp = gotPvt_ - 22000;
         }
 
-        ubx_.header.complete =  gotPvt_;
+        ubx_.header.complete = gotPvt_;
 
         write((uint8_t *) &ubx_, sizeof(ubx_));
         gotPvt_ = 0;
       }
     }
   }
+}
 
-  startDma(); // restart the DMA
+AsyncTask<void> Ubx::ubxRun()
+{
+  UbxFrame frame = {};
+
+  if (!startDma()) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    co_return;
+  }
+
+  while (true) {
+    co_await uart_signal_.wait_for_trigger();
+    processDmaBuffer(frame);
+
+    if (!restartDma()) {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      co_return;
+    }
+  }
 }
 
 bool Ubx::parseByte(uint8_t c, UbxFrame * p)
@@ -362,8 +378,6 @@ bool Ubx::parseByte(uint8_t c, UbxFrame * p)
   }
   return false;
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Packet Stuff
@@ -569,7 +583,10 @@ bool Ubx::display(void)
 
 void Ubx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.callbacks().register_poll_client(this, poll_phase_offset);
-  board.callbacks().register_exti_client(this);
+  (void) poll_phase_offset;
+  board.callbacks().register_exti_signal(&pps_signal_);
   board.callbacks().register_uart_rxcplt_client(this);
+  board.callbacks().register_uart_rxisr_client(this);
+  pps_task_ = ppsRun();
+  ubx_task_ = ubxRun();
 }

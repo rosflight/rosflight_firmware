@@ -401,9 +401,9 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart)
   {
     __HAL_UART_CLEAR_IDLEFLAG(huart);
     if (huart->hdmarx != 0) ((DMA_Stream_TypeDef *) (huart->hdmarx)->Instance)->CR &= ~DMA_SxCR_EN;
-  } else {
-    stm32_h7_board.callbacks().dispatch_uart_rxisr(huart);
   }
+
+  stm32_h7_board.callbacks().dispatch_uart_rxisr(huart);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef * huart)
@@ -466,6 +466,4 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
 {
   stm32_h7_board.callbacks().dispatch_sd_rxcplt(hsd);
 }
-
-
 

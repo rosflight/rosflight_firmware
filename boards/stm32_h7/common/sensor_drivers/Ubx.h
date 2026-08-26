@@ -38,6 +38,7 @@
 #ifndef UBX_H_
 #define UBX_H_
 
+#include "Async.h"
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
 #include "Packets.h"
@@ -128,36 +129,38 @@ public:
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 
-  bool poll(uint64_t poll_offset);
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
   void uartRxCpltCallback(void);
-  bool startDma(void);
+  void uartRxIsrCallback(void);
   bool display(void);
   bool parseByte(uint8_t c, UbxFrame * p);
   UART_HandleTypeDef * huart(void) { return huart_; }
 
-  bool isMy(uint16_t exti_pin) { return ppsPin_ == exti_pin; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
-
-  void extiCallback(void);
-  void pps(void);
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
+  AsyncTask<void> ppsRun();
+  AsyncTask<void> ubxRun();
+  bool startDma(void);
+  bool restartDma(void);
+  void processDmaBuffer(UbxFrame & frame);
   bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   UbxPacket ubx_;
-  uint16_t ppsPin_;
-  uint64_t timeout_;
 
   uint64_t gotPvt_;
-  uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
   uint32_t baud_, baud_initial_;
   uint16_t ppsHz_;
+
+  ExtiSignal pps_signal_;
+  AcquisitionSignal uart_signal_;
+  AsyncTask<void> pps_task_;
+  AsyncTask<void> ubx_task_;
 
   void checksum(uint8_t * buffer);
   void header(uint8_t * buffer, uint8_t cl, uint8_t id, uint16_t length);
