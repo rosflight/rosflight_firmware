@@ -149,6 +149,9 @@ void STM32H7Board::init_board(void)
   callbacks().register_spi_client(&spi_bus_hspi2());
   spi_bus_hspi4().init(&hspi4);
   callbacks().register_spi_client(&spi_bus_hspi4());
+  i2c_bus_hi2c1().init(&hi2c1);
+  callbacks().register_i2c_client(&i2c_bus_hi2c1());
+  callbacks().register_i2c_txcplt_client(&i2c_bus_hi2c1());
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
@@ -194,6 +197,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
+  if (init_status == DRIVER_OK) { pitot_.attach_bus(i2c_bus_hi2c1()); }
   if (init_status == DRIVER_OK) { pitot_.register_callbacks(*this); }
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
@@ -222,7 +226,7 @@ void STM32H7Board::init_board(void)
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
   if (init_status == DRIVER_OK) { mag_.attach_bus(spi_bus_hspi2()); }
-  if (init_status == DRIVER_OK) { mag_.register_callbacks(*this, 1); }
+  if (init_status == DRIVER_OK) { mag_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GPS initialization
@@ -435,6 +439,7 @@ void STM32H7Board::init_board(void)
   verbose = false;
 #endif
 }
+
 
 
 

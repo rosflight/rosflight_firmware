@@ -355,7 +355,7 @@ void HAL_SPI_TxRxCpltCallback(
   stm32_h7_board.callbacks().dispatch_spi(hspi);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
-// I2C Rx complete callback
+// I2C Tx/Rx complete callback
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef * hi2c)
 {

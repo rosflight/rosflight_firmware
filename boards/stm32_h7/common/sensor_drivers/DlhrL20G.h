@@ -38,9 +38,10 @@
 #ifndef DLHRL20G_H_
 #define DLHRL20G_H_
 
-#include "DoubleBuffer.h"
+#include "Async.h"
 #include "BoardConfig.h"
-
+#include "DoubleBuffer.h"
+#include "I2cBus.h"
 #include "Packets.h"
 #include "Time64.h"
 
@@ -66,26 +67,26 @@ public:
     uint16_t drdy_pin,                                 // Reset GPIO Pin
     I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
   );
+  void attach_bus(I2cBus & bus) { async_bus_ = &bus; }
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool poll(uint64_t poll_offset);
-  void i2cMasterRxCpltCallback(void);
   bool display(void);
-  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
-  bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
-  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size) == DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  AsyncTask<void> run();
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size) == DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
-  I2C_HandleTypeDef * hi2c_;
   uint16_t address_;
   uint8_t cmdByte_;
-  double dtMs_;
   GPIO_TypeDef * drdyPort_;
   uint16_t drdyPin_;
   uint64_t drdy_;
   uint16_t sampleRateHz_;
+  I2cBus * async_bus_ = nullptr;
+  AcquisitionSignal poll_signal_;
+  AsyncTask<void> task_;
 };
 
 #endif /* DLHRL20G_H_ */
