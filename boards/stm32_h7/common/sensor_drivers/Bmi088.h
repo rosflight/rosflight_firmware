@@ -38,8 +38,9 @@
 #ifndef BMI088_H_
 #define BMI088_H_
 
+#include "Async.h"
 #include "DoubleBuffer.h"
-#include "Spi.h"
+#include "SpiBus.h"
 #include "misc.h"
 
 class STM32H7Board;
@@ -69,40 +70,35 @@ public:
     uint8_t range_g,  // // 0,1,2,3 --> 3,6,12,24g
     const double *rotation
   );
+  void attach_bus(SpiBus & bus) { async_bus_ = &bus; }
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void spiTxRxCpltCallback(void);
   void extiCallback(void);
   bool display(void);
 
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
-  bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spiA_.hspi(); }
-  SPI_HandleTypeDef * hspi(void) { return spiA_.hspi(); }
 
-  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size) == DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  AsyncTask<void> run();
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size) == DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   uint64_t groupDelay_;
-  // SPI Stuff
-  Spi spiA_;
-  Spi spiG_;
   uint16_t drdyPin_;
   uint64_t drdy_;
 
-  uint16_t timeoutMs_;
-  uint16_t seqCount_;
   // BMI088 Stuff
   uint8_t rangeA_, rangeG_;
   uint16_t syncCfgMode_;
   double accelRange_;
 
-  void writeRegisterA(uint8_t address, uint8_t value);
-  uint8_t readRegisterA(uint8_t address);
-  void writeRegisterG(uint8_t address, uint8_t value);
-  uint8_t readRegisterG(uint8_t address);
+  SpiBus * async_bus_ = nullptr;
+  SpiBus::Device async_device_accel_ = {};
+  SpiBus::Device async_device_gyro_ = {};
+  AcquisitionSignal exti_signal_;
+  AsyncTask<void> task_;
 };
 
 #endif /* BMI088_H_ */

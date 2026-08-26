@@ -80,9 +80,11 @@ private:
   Status * status_list_[STATUS_LIST_MAX_LEN];
   STM32H7Callbacks callbacks_;
   PollingTimer polling_timer_;
+  SpiBus spi_bus_hspi1_;
   SpiBus spi_bus_hspi2_;
   SpiBus spi_bus_hspi3_;
   SpiBus spi_bus_hspi4_;
+  SpiBus spi_bus_hspi5_;
   I2cBus i2c_bus_hi2c1_;
 
   RcPacket rcPacket_;
@@ -97,14 +99,18 @@ public:
   STM32H7Callbacks & callbacks() { return callbacks_; }
   const STM32H7Callbacks & callbacks() const { return callbacks_; }
   PollingTimer & polling_timer() { return polling_timer_; }
+  SpiBus & spi_bus_hspi1() { return spi_bus_hspi1_; }
   SpiBus & spi_bus_hspi2() { return spi_bus_hspi2_; }
   SpiBus & spi_bus_hspi3() { return spi_bus_hspi3_; }
   SpiBus & spi_bus_hspi4() { return spi_bus_hspi4_; }
+  SpiBus & spi_bus_hspi5() { return spi_bus_hspi5_; }
   I2cBus & i2c_bus_hi2c1() { return i2c_bus_hi2c1_; }
   const PollingTimer & polling_timer() const { return polling_timer_; }
+  const SpiBus & spi_bus_hspi1() const { return spi_bus_hspi1_; }
   const SpiBus & spi_bus_hspi2() const { return spi_bus_hspi2_; }
   const SpiBus & spi_bus_hspi3() const { return spi_bus_hspi3_; }
   const SpiBus & spi_bus_hspi4() const { return spi_bus_hspi4_; }
+  const SpiBus & spi_bus_hspi5() const { return spi_bus_hspi5_; }
   const I2cBus & i2c_bus_hi2c1() const { return i2c_bus_hi2c1_; }
   ////////////////////////////////////////////////////////////////////////////////
   // Required ROSflight Board HAL functions:
@@ -184,5 +190,6 @@ public:
 extern STM32H7Board stm32_h7_board;
 
 #endif /* STM32_H7_HPP_ */
+
 
 

@@ -36,12 +36,16 @@
  **/
 
 #include "Bmi088.h"
-#include "stm32_h7.hpp"
+
 #include "Bmi088_config.h"
 #include "Packets.h"
+#include "Spi.h"
 #include "Time64.h"
 #include "bmi08_defs.h"
 #include "misc.h"
+#include "stm32_h7.hpp"
+
+#include <cstring>
 
 #define SPI_READ (uint8_t) 0x80
 #define SPI_WRITE (uint8_t) 0x00
@@ -56,9 +60,6 @@
 #define BMI_GYRO_CMD (0x02 | SPI_READ)
 
 extern Time64 time64;
-
-DMA_RAM uint8_t bmi088_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DMA_RAM uint8_t bmi088_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
 
 DTCM_RAM uint8_t bmi088_double_buffer[2 * sizeof(ImuPacket)];
 
@@ -77,23 +78,33 @@ uint32_t Bmi088::init(
   const double *rotation
 )
 {
-  memcpy(rotation_,rotation, sizeof(double)*9);
+  (void) drdy_port;
+  memcpy(rotation_, rotation, sizeof(double) * 9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Bmi088");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
   drdyPin_ = drdy_pin;
-
-  spiA_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_port_a, cs_pin_a);
-  spiG_.init(hspi, bmi088_dma_txbuf, bmi088_dma_rxbuf, cs_port_g, cs_pin_g);
-
-  seqCount_ = 0;
-  timeoutMs_ = 1000;
   rangeA_ = range_a;
   rangeG_ = range_g;
+  drdy_ = 0;
 
-  double_buffer_.init( bmi088_double_buffer, sizeof(bmi088_double_buffer) );
+  async_device_accel_.cs_port = cs_port_a;
+  async_device_accel_.cs_pin = cs_pin_a;
+  async_device_gyro_.cs_port = cs_port_g;
+  async_device_gyro_.cs_pin = cs_pin_g;
 
+  uint8_t init_txbuf_a[2] = {};
+  uint8_t init_rxbuf_a[2] = {};
+  uint8_t init_txbuf_g[2] = {};
+  uint8_t init_rxbuf_g[2] = {};
+  Spi init_spi_a;
+  Spi init_spi_g;
+  init_spi_a.init(hspi, init_txbuf_a, init_rxbuf_a, cs_port_a, cs_pin_a);
+  init_spi_g.init(hspi, init_txbuf_g, init_rxbuf_g, cs_port_g, cs_pin_g);
+
+  const uint16_t timeout_ms = 1000;
+  double_buffer_.init(bmi088_double_buffer, sizeof(bmi088_double_buffer));
 
   if (sampleRateHz_ <= 400) {
     sampleRateHz_ = 400;
@@ -113,20 +124,50 @@ uint32_t Bmi088::init(
     groupDelay_ = 7000;
   }
 
+  const auto read_register_a = [&](uint8_t reg) {
+    uint8_t tx[3] = {0};
+    tx[0] = reg | SPI_READ;
+    uint8_t rx[3] = {0};
+    init_spi_a.rx(tx, rx, 3, timeout_ms); // Ignore status
+    return rx[2];
+  };
+
+  const auto read_register_g = [&](uint8_t reg) {
+    uint8_t tx[2] = {0, 0};
+    tx[0] = reg | SPI_READ;
+    uint8_t rx[2] = {0};
+    init_spi_g.rx(tx, rx, 2, timeout_ms); // Ignore status
+    return rx[1];
+  };
+
+  const auto write_register_a = [&](uint8_t reg, uint8_t data) {
+    uint8_t tx[2];
+    tx[0] = reg | SPI_WRITE;
+    tx[1] = data;
+    init_spi_a.tx(tx, 2, timeout_ms);
+  };
+
+  const auto write_register_g = [&](uint8_t reg, uint8_t data) {
+    uint8_t tx[2];
+    tx[0] = reg | SPI_WRITE;
+    tx[1] = data;
+    init_spi_g.tx(tx, 2, timeout_ms);
+  };
+
   time64.dMs(50); // Some time to ensure power-on completed.
 
-  HAL_GPIO_WritePin(spiG_.port_, spiG_.pin_, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(spiA_.port_, spiA_.pin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(init_spi_g.port_, init_spi_g.pin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(init_spi_a.port_, init_spi_a.pin_, GPIO_PIN_SET);
   time64.dUs(100);
 
   // Lock into SPI Mode
-  HAL_GPIO_WritePin(spiA_.port_, spiA_.pin_, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(init_spi_a.port_, init_spi_a.pin_, GPIO_PIN_RESET);
   time64.dUs(25);
-  HAL_GPIO_WritePin(spiA_.port_, spiA_.pin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(init_spi_a.port_, init_spi_a.pin_, GPIO_PIN_SET);
   time64.dUs(4);
 
   // Check Accel ID  (0x80)
-  uint8_t accel_id = readRegisterA(BMI08_REG_ACCEL_CHIP_ID);
+  uint8_t accel_id = read_register_a(BMI08_REG_ACCEL_CHIP_ID);
   misc_printf("BMI088 Accel ID = 0x%02X (0x1E/0x1F) - ", accel_id);
   if (accel_id == 0x1E) {
     misc_printf("OK - BMI088\n");
@@ -143,7 +184,7 @@ uint32_t Bmi088::init(
   }
 
   // Check Gyro ID  (0x80)
-  uint8_t gyro_id = readRegisterG(BMI08_REG_GYRO_CHIP_ID);
+  uint8_t gyro_id = read_register_g(BMI08_REG_GYRO_CHIP_ID);
   misc_printf("BMI088 Gyro  ID = 0x%02X (0x0F) - ", gyro_id);
   if (gyro_id == 0x0F) misc_printf("OK\n");
   else {
@@ -152,55 +193,55 @@ uint32_t Bmi088::init(
   }
 
   // Accel Soft Reset (0x7E, 0xB6)
-  writeRegisterA(BMI08_REG_ACCEL_SOFTRESET, 0xB6);
+  write_register_a(BMI08_REG_ACCEL_SOFTRESET, 0xB6);
   time64.dUs(1000); // required
 
   // Lock into SPI Mode (again after rest)
-  HAL_GPIO_WritePin(spiA_.port_, spiA_.pin_, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(init_spi_a.port_, init_spi_a.pin_, GPIO_PIN_RESET);
   time64.dUs(25);
-  HAL_GPIO_WritePin(spiA_.port_, spiA_.pin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(init_spi_a.port_, init_spi_a.pin_, GPIO_PIN_SET);
 
   // Why is this here in the Bosh examples?
   // time64.dUs(4900);
 
   // Activate Accel (0x7C,0x00)
-  writeRegisterA(BMI08_REG_ACCEL_PWR_CONF, 0x00); // 0x00 active, 0x03 suspend.
-  time64.dUs(450);                                // do we need this delay??
+  write_register_a(BMI08_REG_ACCEL_PWR_CONF, 0x00); // 0x00 active, 0x03 suspend.
+  time64.dUs(450);                                  // do we need this delay??
 
   // Disable "Config Loading" (0x59, 0x00)
-  writeRegisterA(BMI08_REG_ACCEL_INIT_CTRL, 0X00);
+  write_register_a(BMI08_REG_ACCEL_INIT_CTRL, 0X00);
 
 #define BLOCK_SIZE 32
   for (uint8_t block = 0; block < 0xC0; block++) {
-    writeRegisterA(BMI08_REG_ACCEL_RESERVED_5B, 0X00);  // (0x5B)
-    writeRegisterA(BMI08_REG_ACCEL_RESERVED_5C, block); // (0x5C)
+    write_register_a(BMI08_REG_ACCEL_RESERVED_5B, 0X00);  // (0x5B)
+    write_register_a(BMI08_REG_ACCEL_RESERVED_5C, block); // (0x5C)
 
     uint8_t tx[BLOCK_SIZE + 1];
     tx[0] = BMI08_REG_ACCEL_FEATURE_CFG | SPI_WRITE; // (0x5E, data)
     memcpy(tx + 1, bmi_config + block * BLOCK_SIZE, BLOCK_SIZE);
-    spiA_.tx(tx, sizeof(tx), 1000);
+    init_spi_a.tx(tx, sizeof(tx), timeout_ms);
   }
   // Re-enable "Config Loading"
-  writeRegisterA(BMI08_REG_ACCEL_INIT_CTRL, 0X01); // (0x59, 0x01)
+  write_register_a(BMI08_REG_ACCEL_INIT_CTRL, 0X01); // (0x59, 0x01)
   time64.dUs(150000);
 
   // Unknown status read (0xAA)
-  //		uint8_t stat_a = readRegisterA(BMI08_REG_ACCEL_INTERNAL_STAT);
-  readRegisterA(BMI08_REG_ACCEL_INTERNAL_STAT);
+  //  uint8_t stat_a = readRegisterA(BMI08_REG_ACCEL_INTERNAL_STAT);
+  read_register_a(BMI08_REG_ACCEL_INTERNAL_STAT);
   // check something here??
 
   // Activate Accel, again (0x7C,0x00)
-  writeRegisterA(BMI08_REG_ACCEL_PWR_CONF, 0X00);
+  write_register_a(BMI08_REG_ACCEL_PWR_CONF, 0X00);
   // time64.dUs(5000); // could this be 450us like above???
   time64.dUs(450); // do we need this delay??
 
   // Accelerometer ON (0x7D,0x04)
-  writeRegisterA(BMI08_REG_ACCEL_PWR_CTRL, 0X04);
+  write_register_a(BMI08_REG_ACCEL_PWR_CTRL, 0X04);
   time64.dUs(100);
 
   // Read/Write Low Power Mode
-  readRegisterG(BMI08_REG_GYRO_LPM1);        // (0x91)
-  writeRegisterG(BMI08_REG_GYRO_LPM1, 0x00); // (0x11,0x00) Set normal mode
+  read_register_g(BMI08_REG_GYRO_LPM1);        // (0x91)
+  write_register_g(BMI08_REG_GYRO_LPM1, 0x00); // (0x11,0x00) Set normal mode
   time64.dMs(30);
 
   // Read/Write Gyro Bandwidth
@@ -209,13 +250,13 @@ uint32_t Bmi088::init(
   else if (sampleRateHz_ >= 1000) GyroBW = BMI08_GYRO_BW_116_ODR_1000_HZ;
   else GyroBW = BMI08_GYRO_BW_47_ODR_400_HZ;
 
-  readRegisterG(BMI08_REG_GYRO_BANDWIDTH);          //(0x90)
-  writeRegisterG(BMI08_REG_GYRO_BANDWIDTH, GyroBW); // 0x10,0x83)
+  read_register_g(BMI08_REG_GYRO_BANDWIDTH);          //(0x90)
+  write_register_g(BMI08_REG_GYRO_BANDWIDTH, GyroBW); // 0x10,0x83)
 
   // Read/Write Gyro Range
-  readRegisterG(BMI08_REG_GYRO_RANGE);           //(0x8F)
-  writeRegisterG(BMI08_REG_GYRO_RANGE, rangeG_); // (0x0F,0x02)
-  time64.dUs(10000);                             // do we need this delay??
+  read_register_g(BMI08_REG_GYRO_RANGE);           //(0x8F)
+  write_register_g(BMI08_REG_GYRO_RANGE, rangeG_); // (0x0F,0x02)
+  time64.dUs(10000);                               // do we need this delay??
 
   // Read/Write BMI08_REG_ACCEL_FEATURE_CFG 7+1 bytes
   // This is undocumented, mimic Bosh code
@@ -223,66 +264,70 @@ uint32_t Bmi088::init(
     uint8_t tx[8] = {0};
     uint8_t sync_cfg[8] = {0};
     tx[0] = BMI08_REG_ACCEL_FEATURE_CFG | SPI_READ; // (0xDE)
-    spiA_.rx(tx, sync_cfg, 8, 1000);
+    init_spi_a.rx(tx, sync_cfg, 8, timeout_ms);
     sync_cfg[1] = BMI08_REG_ACCEL_FEATURE_CFG | SPI_WRITE; // (0x5E)
     uint16_t reg_data = (syncCfgMode_ & BMI08_ACCEL_DATA_SYNC_MODE_MASK);
     sync_cfg[6] = reg_data & 0xFF; // low byte
     sync_cfg[7] = reg_data >> 8;   // high byte
-    spiA_.tx(sync_cfg + 1, 7, 1000);
+    init_spi_a.tx(sync_cfg + 1, 7, timeout_ms);
   }
   time64.dUs(100000); // delay of 100ms for data sync to take effect.
 
-  readRegisterA(BMI08_REG_ACCEL_INT2_IO_CONF); //(0xD4)
-  writeRegisterA(BMI08_REG_ACCEL_INT2_IO_CONF,
-                 0x13);                           //(0x54, 0x13) Int2 as input, active high, reserved[0] = 1
-  writeRegisterA(BMI08_REG_ACCEL_INT1_MAP, 0x01); // (0x56,0x01) undocumented.
+  read_register_a(BMI08_REG_ACCEL_INT2_IO_CONF); //(0xD4)
+  write_register_a(BMI08_REG_ACCEL_INT2_IO_CONF,
+                   0x13);                           //(0x54, 0x13) Int2 as input, active high, reserved[0] = 1
+  write_register_a(BMI08_REG_ACCEL_INT1_MAP, 0x01); // (0x56,0x01) undocumented.
 
-  readRegisterA(BMI08_REG_ACCEL_INT1_IO_CONF);        // (0xD3)
-  writeRegisterA(BMI08_REG_ACCEL_INT1_IO_CONF, 0x0A); // (0x53,0x0A) Int1 as output, active high
+  read_register_a(BMI08_REG_ACCEL_INT1_IO_CONF);        // (0xD3)
+  write_register_a(BMI08_REG_ACCEL_INT1_IO_CONF, 0x0A); // (0x53,0x0A) Int1 as output, active high
 
-  //	readRegisterA(BMI08_REG_ACCEL_CONF); 		// (0x40)
-  //	writeRegisterA(BMI08_REG_ACCEL_CONF, rangeA_);// (0x40,0x0A) Int1 as output, active high
+  //  readRegisterA(BMI08_REG_ACCEL_CONF);     // (0x40)
+  //  writeRegisterA(BMI08_REG_ACCEL_CONF, rangeA_);// (0x40,0x0A) Int1 as output, active high
 
-  readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP); // (0x18)
-  writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP,
-                 0x81);                                   //(0x18,0x80) 0x81 to map drdy to both int3 and int4
-  readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF);        // (0x16)
-  writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF, 0x05); //(0x16,0x05)
-  writeRegisterG(BMI08_REG_GYRO_INT_CTRL, 0x80);          //(0x15,0x80) Enable drdy interrupt on new data
+  read_register_g(BMI08_REG_GYRO_INT3_INT4_IO_MAP); // (0x18)
+  write_register_g(BMI08_REG_GYRO_INT3_INT4_IO_MAP,
+                   0x81);                                   //(0x18,0x80) 0x81 to map drdy to both int3 and int4
+  read_register_g(BMI08_REG_GYRO_INT3_INT4_IO_CONF);        // (0x16)
+  write_register_g(BMI08_REG_GYRO_INT3_INT4_IO_CONF, 0x05); //(0x16,0x05)
+  write_register_g(BMI08_REG_GYRO_INT_CTRL, 0x80);          //(0x15,0x80) Enable drdy interrupt on new data
 
   // why is this sequence here twice??
-  readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP);         // (0x18)
-  writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_MAP, 0x81);  //(0x18,0x80)
-  readRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF);        // (0x16)
-  writeRegisterG(BMI08_REG_GYRO_INT3_INT4_IO_CONF, 0x05); //(0x16,0x05)
-  writeRegisterG(BMI08_REG_GYRO_INT_CTRL, 0x80);          //(0x15,0x80)
+  read_register_g(BMI08_REG_GYRO_INT3_INT4_IO_MAP);         // (0x18)
+  write_register_g(BMI08_REG_GYRO_INT3_INT4_IO_MAP, 0x81);  //(0x18,0x80)
+  read_register_g(BMI08_REG_GYRO_INT3_INT4_IO_CONF);        // (0x16)
+  write_register_g(BMI08_REG_GYRO_INT3_INT4_IO_CONF, 0x05); //(0x16,0x05)
+  write_register_g(BMI08_REG_GYRO_INT_CTRL, 0x80);          //(0x15,0x80)
 
   return initializationStatus_;
 }
 
 void Bmi088::extiCallback(void)
 {
-  // Start DMA Read
-  drdy_ = time64.Us();
-
-  HAL_StatusTypeDef hal_status = spiA_.startDma(BMI_ACCEL_CMD, BMI_ACCEL_BYTES);
-  if (hal_status == HAL_OK) {
-    seqCount_ = 1;
-  } else {
-    seqCount_ = 0;
+  if (async_bus_ == nullptr) {
+    return;
   }
-  (void) hal_status;
+
+  drdy_ = time64.Us();
+  exti_signal_.trigger();
 }
 
-void Bmi088::spiTxRxCpltCallback(void) // DMA complete routine
+AsyncTask<void> Bmi088::run()
 {
-  static ImuPacket p;
-  double scale_factor;
+  uint8_t tx[BMI_ACCEL_BYTES] = {};
+  uint8_t rx[BMI_ACCEL_BYTES] = {};
 
-  if (seqCount_ == 1) {
-    memset(&p, 0, sizeof(p));
-    uint8_t * rx = spiA_.endDma();
-    scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
+  while (true) {
+    co_await exti_signal_.wait_for_trigger();
+
+    ImuPacket p = {};
+    double scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
+
+    std::memset(tx, 0, BMI_ACCEL_BYTES);
+    std::memset(rx, 0, BMI_ACCEL_BYTES);
+    tx[0] = BMI_ACCEL_CMD;
+    if ((co_await async_bus_->transfer(async_device_accel_, tx, rx, BMI_ACCEL_BYTES)).status != AsyncStatus::OK) {
+      continue;
+    }
 
     p.dataTime = (double) (39.0625e-6 * (double) ((uint32_t) rx[8] | (uint32_t) rx[9] << 8 | (uint32_t) rx[10] << 16));
     p.temperature = (double) ((int16_t) rx[18] << 3 | (((int16_t) rx[19] >> 6) & 0x0003));
@@ -296,35 +341,26 @@ void Bmi088::spiTxRxCpltCallback(void) // DMA complete routine
     data = (int16_t) rx[17] << 8 | (int16_t) rx[16];
     p.accel[1] = scale_factor * (double) data;
 
-    // Launch the Accel read for az
-    HAL_StatusTypeDef hal_status = spiA_.startDma(BMI_ACCEL_SYNC_CMD, BMI_ACCEL_SYNC_BYTES);
-    if (hal_status == HAL_OK) {
-      seqCount_ = 2;
-    } else {
-      seqCount_ = 0;
+    std::memset(tx, 0, BMI_ACCEL_SYNC_BYTES);
+    std::memset(rx, 0, BMI_ACCEL_SYNC_BYTES);
+    tx[0] = BMI_ACCEL_SYNC_CMD;
+    if ((co_await async_bus_->transfer(async_device_accel_, tx, rx, BMI_ACCEL_SYNC_BYTES)).status != AsyncStatus::OK) {
+      continue;
     }
-
-  } else if (seqCount_ == 2) { // We never get here...
-    uint8_t * rx = spiA_.endDma();
-    scale_factor = (double) 9.80665 * accelRange_ / (double) (32768L) / 4.; // m/s^2
 
     int16_t az = (int16_t) rx[3] << 8 | (int16_t) rx[2];
     p.accel[2] = az * scale_factor;
 
-    seqCount_ = 3;
-
-    HAL_StatusTypeDef hal_status = spiG_.startDma(BMI_GYRO_CMD, BMI_GYRO_BYTES);
-    if (hal_status == HAL_OK) {
-      seqCount_ = 3;
-    } else {
-      seqCount_ = 0;
+    std::memset(tx, 0, BMI_GYRO_BYTES);
+    std::memset(rx, 0, BMI_GYRO_BYTES);
+    tx[0] = BMI_GYRO_CMD;
+    if ((co_await async_bus_->transfer(async_device_gyro_, tx, rx, BMI_GYRO_BYTES)).status != AsyncStatus::OK) {
+      continue;
     }
-  } else if (seqCount_ == 3) {
-    uint8_t * rx = spiG_.endDma();
+
     // _gyro_range = 0,1,2,3,4 --> 2000,1000,500,250,125 deg/s
     scale_factor = (double) 1.0 / 8.192 / (double) (0x0001 << (rangeG_ + 1)) * 0.01745329252; // to rad/s
 
-    int16_t data;
     data = (int16_t) rx[2] << 8 | (int16_t) rx[1];
     p.gyro[0] = scale_factor * (double) data;
     data = (int16_t) rx[4] << 8 | (int16_t) rx[3];
@@ -333,51 +369,12 @@ void Bmi088::spiTxRxCpltCallback(void) // DMA complete routine
     p.gyro[2] = scale_factor * (double) data;
 
     p.header.complete = time64.Us();
-    p.header.timestamp = drdy_-groupDelay_;
+    p.header.timestamp = drdy_ - groupDelay_;
 
     rotate(p.gyro);
     rotate(p.accel);
     write((uint8_t *) &p, sizeof(p));
-
-    seqCount_ = 0;
-
-  } else {
-    seqCount_ = 0;
   }
-}
-
-uint8_t Bmi088::readRegisterA(uint8_t reg)
-{
-  uint8_t tx[3] = {0};
-  tx[0] = reg | SPI_READ;
-  uint8_t rx[3] = {0};
-  spiA_.rx(tx, rx, 3, timeoutMs_); // Ignore status
-  return rx[2];
-}
-
-uint8_t Bmi088::readRegisterG(uint8_t reg)
-{
-  uint8_t tx[2] = {0, 0};
-  tx[0] = reg | SPI_READ;
-  uint8_t rx[2] = {0};
-  spiG_.rx(tx, rx, 2, timeoutMs_); // Ignore status
-  return rx[1];
-}
-
-void Bmi088::writeRegisterA(uint8_t reg, uint8_t data)
-{
-  uint8_t tx[2];
-  tx[0] = reg | SPI_WRITE;
-  tx[1] = data;
-  spiA_.tx(tx, 2, timeoutMs_);
-}
-
-void Bmi088::writeRegisterG(uint8_t reg, uint8_t data)
-{
-  uint8_t tx[2];
-  tx[0] = reg | SPI_WRITE;
-  tx[1] = data;
-  spiG_.tx(tx, 2, timeoutMs_);
 }
 
 bool Bmi088::display(void)
@@ -409,6 +406,11 @@ bool Bmi088::display(void)
 void Bmi088::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
   (void) poll_phase_offset;
+  if (async_bus_ == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return;
+  }
+
   board.callbacks().register_exti_client(this);
-  board.callbacks().register_spi_client(this);
+  task_ = run();
 }

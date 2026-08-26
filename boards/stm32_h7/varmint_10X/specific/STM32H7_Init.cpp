@@ -141,6 +141,8 @@ void STM32H7Board::init_board(void)
   // Callbacks initialization
 
   callbacks().clear_all();
+  spi_bus_hspi1().init(&hspi1);
+  callbacks().register_spi_client(&spi_bus_hspi1());
   spi_bus_hspi2().init(&hspi2);
   callbacks().register_spi_client(&spi_bus_hspi2());
   spi_bus_hspi3().init(&hspi3);
@@ -178,6 +180,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu1_;
+  if (init_status == DRIVER_OK) { imu1_.attach_bus(spi_bus_hspi1()); }
   if (init_status == DRIVER_OK) { imu1_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -419,5 +422,6 @@ void STM32H7Board::init_board(void)
 #endif
   // clang-format on
 }
+
 
 

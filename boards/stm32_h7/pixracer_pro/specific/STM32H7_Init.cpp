@@ -179,6 +179,8 @@ void STM32H7Board::init_board(void)
   callbacks().clear_all();
   spi_bus_hspi2().init(&hspi2);
   callbacks().register_spi_client(&spi_bus_hspi2());
+  spi_bus_hspi5().init(&hspi5);
+  callbacks().register_spi_client(&spi_bus_hspi5());
   i2c_bus_hi2c1().init(&hi2c1);
   callbacks().register_i2c_client(&i2c_bus_hi2c1());
   callbacks().register_i2c_txcplt_client(&i2c_bus_hi2c1());
@@ -204,6 +206,7 @@ void STM32H7Board::init_board(void)
   status_list_[status_len_++] = &imu0_;
   if (init_status == DRIVER_OK) { callbacks().register_exti_client(&bmi088_gyro_bridge_set); }
   if (init_status == DRIVER_OK) { callbacks().register_exti_client(&bmi088_accel_bridge_clear); }
+  if (init_status == DRIVER_OK) { imu0_.attach_bus(spi_bus_hspi5()); }
   if (init_status == DRIVER_OK) { imu0_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -439,4 +442,5 @@ void STM32H7Board::init_board(void)
 #endif
 // clang-format on
 }
+
 
