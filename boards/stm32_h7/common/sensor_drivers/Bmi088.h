@@ -73,10 +73,7 @@ public:
   void attach_bus(SpiBus & bus) { async_bus_ = &bus; }
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void extiCallback(void);
   bool display(void);
-
-  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size) == DoubleBufferStatus::OK; }
 
@@ -86,8 +83,6 @@ private:
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   uint64_t groupDelay_;
-  uint16_t drdyPin_;
-  uint64_t drdy_;
 
   // BMI088 Stuff
   uint8_t rangeA_, rangeG_;
@@ -97,8 +92,10 @@ private:
   SpiBus * async_bus_ = nullptr;
   SpiBus::Device async_device_accel_ = {};
   SpiBus::Device async_device_gyro_ = {};
-  AcquisitionSignal exti_signal_;
+  ExtiSignal exti_signal_;
   AsyncTask<void> task_;
 };
 
 #endif /* BMI088_H_ */
+
+

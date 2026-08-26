@@ -35,31 +35,25 @@
  ******************************************************************************
  **/
 #include "Auav.h"
+
 #include "Packets.h"
 #include "Polling.h"
-#include "stm32_h7.hpp"
+#include "Spi.h"
 #include "Time64.h"
 #include "misc.h"
+#include "stm32_h7.hpp"
+
+#include <cstdlib>
+#include <cstring>
 
 extern Time64 time64;
 
 #define AUAV_READ_BYTES 7
 
-DMA_RAM uint8_t auav_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DMA_RAM uint8_t auav_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-
 DTCM_RAM uint8_t auav_pitot_double_buffer[2 * sizeof(PressurePacket)];
 DTCM_RAM uint8_t auav_baro_double_buffer[2 * sizeof(PressurePacket)];
 
 #define ROLLOVER 10000
-
-#define STATUS_BARO_START 1
-#define STATUS_PITOT_START 2
-#define STATUS_PITOT_READ_STATUS 3
-#define STATUS_PITOT_READ 4
-#define STATUS_BARO_READ 5
-#define STATUS_WAITING 0xFF
-#define STATUS_IDLE 0
 
 uint32_t Auav::init(uint16_t sample_rate_hz,                                 // Sample rate
                     GPIO_TypeDef * pitot_drdy_port, uint16_t pitot_drdy_pin, // Pitot DRDY
@@ -68,26 +62,26 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
                     GPIO_TypeDef * baro_cs_port, uint16_t baro_cs_pin,       // Baro CS
                     SPI_HandleTypeDef * hspi)
 {
+  (void) pitot_drdy_port;
+  (void) baro_drdy_port;
+
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "AuavPitotBaro");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPort_[AUAV_PITOT] = pitot_drdy_port;
-  drdyPin_[AUAV_PITOT] = pitot_drdy_pin;
-  drdyPort_[AUAV_BARO] = baro_drdy_port;
-  drdyPin_[AUAV_BARO] = baro_drdy_pin;
-
-  // These do not run at the same time, so can share the dma buffers.
-
-  spiState_ = STATUS_IDLE;
-  dmaRunning_ = false;
+  exti_signal_[AUAV_PITOT].init(pitot_drdy_pin);
+  exti_signal_[AUAV_BARO].init(baro_drdy_pin);
+  async_device_[AUAV_PITOT].cs_port = pitot_cs_port;
+  async_device_[AUAV_PITOT].cs_pin = pitot_cs_pin;
+  async_device_[AUAV_BARO].cs_port = baro_cs_port;
+  async_device_[AUAV_BARO].cs_pin = baro_cs_pin;
 
   // Vent (zero) pressure is at 0.1 *2^24 nominal output for Gauge Sensor
 
   // Time to read vs. cmd_byte_
   //          Pitot (ms) Baro (ms)
   //          ---------- ---------
-  // 0xAA   	  1.88       4.76 (single)
+  // 0xAA        1.88       4.76 (single)
   // 0xAB      11.06     127.02 (repeating)
   // 0xAC       3.63      _9.33_ (avg 2)
   // 0xAD      _7.14_     18.43 (avg 4)
@@ -96,10 +90,17 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   // Start Measurement
   // Send 0xAD 0x00 0x00
 
+  uint8_t init_txbuf_pitot[AUAV_CMD_BYTES] = {};
+  uint8_t init_rxbuf_pitot[AUAV_CMD_BYTES] = {};
+  uint8_t init_txbuf_baro[AUAV_CMD_BYTES] = {};
+  uint8_t init_rxbuf_baro[AUAV_CMD_BYTES] = {};
+  Spi init_spi_pitot;
+  Spi init_spi_baro;
+  init_spi_pitot.init(hspi, init_txbuf_pitot, init_rxbuf_pitot, pitot_cs_port, pitot_cs_pin);
+  init_spi_baro.init(hspi, init_txbuf_baro, init_rxbuf_baro, baro_cs_port, baro_cs_pin);
+
   // Pitot //////////////////////
   {
-    spi_[AUAV_PITOT].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, pitot_cs_port, pitot_cs_pin);
-
     double_buffer_[AUAV_PITOT].init(auav_pitot_double_buffer, sizeof(auav_pitot_double_buffer));
 
     char name[] = "Auav (pitot)";
@@ -126,8 +127,6 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   }
   // Baro //////////////////////
   {
-    spi_[AUAV_BARO].init(hspi, auav_dma_txbuf, auav_dma_rxbuf, baro_cs_port, baro_cs_pin);
-
     double_buffer_[AUAV_BARO].init(auav_baro_double_buffer, sizeof(auav_baro_double_buffer));
 
     char name[] = "Auav (baro) ";
@@ -158,33 +157,35 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_SET); // set high (should be there already)
   time64.dUs(100);
 
-  //	// "Provide a 5-10 us low pulse
-  //	HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_RESET); // low for 20 microseconds
-  //	time64.dUs(20); // 5 to 20 us in data sheet.
-  //	HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_SET); // set high (should be there already)
-  //	// "Delay 5 us
-  //	time64.dUs(5);
-  //	// "Provide a 5-10 us low pulse
-  //	HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_RESET); // low for 20 microseconds
-  //	time64.dUs(20); // 5 to 20 us in data sheet.
-  //	HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_SET); // set high (should be there already)
-  //	// "Delay 5 us
-  //	time64.dUs(25); // > 5
+  //  // "Provide a 5-10 us low pulse
+  //  HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_RESET); // low for 20 microseconds
+  //  time64.dUs(20); // 5 to 20 us in data sheet.
+  //  HAL_GPIO_WritePin(pitot_cs_port, pitot_cs_pin, GPIO_PIN_SET); // set high (should be there already)
+  //  // "Delay 5 us
+  //  time64.dUs(5);
+  //  // "Provide a 5-10 us low pulse
+  //  HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_RESET); // low for 20 microseconds
+  //  time64.dUs(20); // 5 to 20 us in data sheet.
+  //  HAL_GPIO_WritePin(baro_cs_port, baro_cs_pin, GPIO_PIN_SET); // set high (should be there already)
+  //  // "Delay 5 us
+  //  time64.dUs(25); // > 5
 
   // Force SPI Mode.
-  for (int i = 0; i < 2; i++) {
+  {
     uint8_t tx[3] = {0xF0, 0, 0};
     uint8_t junk[3] = {0, 0, 0};
-    spi_[i].rx(tx, junk, 3, 100);
+    init_spi_pitot.rx(tx, junk, 3, 100);
+    init_spi_baro.rx(tx, junk, 3, 100);
   }
 
   for (int i = 0; i < 2; i++) {
     groupDelay_[i] = 0;
+    Spi * init_spi = (i == AUAV_PITOT) ? &init_spi_pitot : &init_spi_baro;
 
     // Read Status
     uint8_t tx = 0xF0;
     uint8_t sensor_status = 0x00;
-    HAL_StatusTypeDef hal_status = spi_[i].rx(&tx, &sensor_status, 1, 200);
+    HAL_StatusTypeDef hal_status = init_spi->rx(&tx, &sensor_status, 1, 200);
     misc_printf("HAL Status = 0x%04X : ", hal_status);
     misc_printf("%s Status = 0x%02X (0x%02X) - ", name_local_[i], sensor_status, sensor_status_ready_[i]);
 
@@ -192,11 +193,13 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
       misc_printf("OK\n");
     } else {
       misc_printf("ERROR\n");
-      if(i==AUAV_PITOT) initializationStatus_ |= AUAV_PITOT_ERROR; //DRIVER_SELF_DIAG_ERROR;
+      if (i == AUAV_PITOT) initializationStatus_ |= AUAV_PITOT_ERROR; //DRIVER_SELF_DIAG_ERROR;
       else initializationStatus_ |= AUAV_BARO_ERROR; //DRIVER_SELF_DIAG_ERROR;
     }
   }
   for (int i = 0; i < 2; i++) {
+    Spi * init_spi = (i == AUAV_PITOT) ? &init_spi_pitot : &init_spi_baro;
+
     // Calibration constants
     int32_t i32A = 0, i32B = 0, i32C = 0, i32D = 0, i32TC50HLE = 0;
     int8_t i8TC50H = 0, i8TC50L = 0, i8Es = 0;
@@ -204,11 +207,11 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
     // These i32 Reads return 2 register values merged as int32
     // i32 then normalized to +/- 1.0
     // Note that Diff data block is shifted 4 down from ABS locations
-    i32A = readCfg(addr_[i], &spi_[i]);
-    i32B = readCfg(addr_[i] + 2, &spi_[i]);
-    i32C = readCfg(addr_[i] + 4, &spi_[i]);
-    i32D = readCfg(addr_[i] + 6, &spi_[i]);
-    i32TC50HLE = readCfg(addr_[i] + 8, &spi_[i]);
+    i32A = readCfg(addr_[i], init_spi);
+    i32B = readCfg(addr_[i] + 2, init_spi);
+    i32C = readCfg(addr_[i] + 4, init_spi);
+    i32D = readCfg(addr_[i] + 6, init_spi);
+    i32TC50HLE = readCfg(addr_[i] + 8, init_spi);
 
     LIN_A_[i] = (double) (i32A) / (double) (0x7FFFFFFF);
     LIN_B_[i] = (double) (i32B) / (double) (0x7FFFFFFF);
@@ -217,7 +220,7 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
 
     i8TC50H = (i32TC50HLE >> 24) & 0xFF;
     i8TC50L = (i32TC50HLE >> 16) & 0xFF;
-    i8Es = (i32TC50HLE) &0xFF;
+    i8Es = (i32TC50HLE) & 0xFF;
 
     Es_[i] = (double) (i8Es) / (double) (0x7F);       // norm to +/- 1.0
     TC50H_[i] = (double) (i8TC50H) / (double) (0x7F); // norm to +/- 1.0
@@ -257,83 +260,99 @@ bool Auav::poll(uint64_t poll_counter)
 {
   uint16_t poll_state;
   if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
+  if (async_bus_ == nullptr) return false;
 
-  if (poll_state == 0) // Start Baro Read
-  {
-    spiState_ = STATUS_IDLE;
-    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_BARO].startDma(cmdBytes_[AUAV_BARO], AUAV_CMD_BYTES)))) {
-      spiState_ = STATUS_BARO_START;
-    }
+  poll_signal_[AUAV_BARO].tick(poll_counter);
+  poll_signal_[AUAV_PITOT].tick(poll_counter);
+  if (poll_state == 0U) {
+    // Preserve the previous start order: baro conversion first, then pitot.
+    poll_signal_[AUAV_BARO].trigger();
+    poll_signal_[AUAV_PITOT].trigger();
   }
   return false;
 }
 
-void Auav::endDma(void)
+AsyncTask<void> Auav::runPitot()
 {
-  if (spiState_ == STATUS_BARO_START) { // Done starting Baro, Start Pitot
-    spi_[AUAV_BARO].endDma();           // close chip select, data ignored
-    spiState_ = STATUS_IDLE;
-    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_PITOT].startDma(cmdBytes_[AUAV_PITOT], AUAV_CMD_BYTES)))) {
-      spiState_ = STATUS_PITOT_START;
+  uint8_t tx_cmd[AUAV_CMD_BYTES] = {};
+  uint8_t rx_cmd[AUAV_CMD_BYTES] = {};
+  uint8_t tx_status[1] = {0xF0};
+  uint8_t rx_status[1] = {};
+  uint8_t tx_read[AUAV_READ_BYTES] = {0xF0};
+  uint8_t rx_read[AUAV_READ_BYTES] = {};
+
+  while (true) {
+    co_await poll_signal_[AUAV_PITOT].wait_for_trigger();
+
+    std::memcpy(tx_cmd, cmdBytes_[AUAV_PITOT], AUAV_CMD_BYTES);
+    std::memset(rx_cmd, 0, sizeof(rx_cmd));
+    if ((co_await async_bus_->transfer(async_device_[AUAV_PITOT], tx_cmd, rx_cmd, AUAV_CMD_BYTES)).status
+        != AsyncStatus::OK) {
+      continue;
     }
 
-  } else if (spiState_ == STATUS_PITOT_START) { // Done starting Pitot, Wait for Pitot Read
-    spi_[AUAV_PITOT].endDma();                  // close chip select, data ignored
-    spiState_ = STATUS_WAITING;
-  } else if (spiState_ == STATUS_PITOT_READ_STATUS) { // Done reading Pitot
-    spi_[AUAV_PITOT].endDma();                        // close chip select, data ignored
-    spiState_ = STATUS_IDLE;
-    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_PITOT].startDma(0xF0, AUAV_READ_BYTES)))) { spiState_ = STATUS_PITOT_READ; }
-  } else if (spiState_ == STATUS_PITOT_READ) {   // Done reading Pitot
-    uint8_t * inbuf = spi_[AUAV_PITOT].endDma(); // close chip select, data ignored
+    co_await exti_signal_[AUAV_PITOT].wait_for_trigger();
+
+    // Read Status, why do I need to do this to make the read work?
+    if ((co_await async_bus_->transfer(async_device_[AUAV_PITOT], tx_status, rx_status, sizeof(tx_status))).status
+        != AsyncStatus::OK) {
+      continue;
+    }
+
+    tx_read[0] = 0xF0;
+    std::memset(rx_read, 0, sizeof(rx_read));
+    if ((co_await async_bus_->transfer(async_device_[AUAV_PITOT], tx_read, rx_read, AUAV_READ_BYTES)).status
+        != AsyncStatus::OK) {
+      continue;
+    }
+
     PressurePacket p;
-    makePacket(&p, inbuf, AUAV_PITOT);
-    spiState_ = STATUS_IDLE;
-    if(p.header.status==sensor_status_ready_[AUAV_PITOT]) // PTT uncomment if needed
+    makePacket(&p, rx_read, exti_signal_[AUAV_PITOT].timestamp_us(), AUAV_PITOT);
+    if (p.header.status == sensor_status_ready_[AUAV_PITOT]) // PTT uncomment if needed
     {
       p.header.complete = time64.Us();
       write2((uint8_t *) &p, sizeof(p), AUAV_PITOT);
     }
-  } else if (spiState_ == STATUS_BARO_READ) {   // Done starting Baro
-    uint8_t * inbuf = spi_[AUAV_BARO].endDma(); // close chip select, data ignored
+  }
+}
+
+AsyncTask<void> Auav::runBaro()
+{
+  uint8_t tx_cmd[AUAV_CMD_BYTES] = {};
+  uint8_t rx_cmd[AUAV_CMD_BYTES] = {};
+  uint8_t tx_read[AUAV_READ_BYTES] = {0xF0};
+  uint8_t rx_read[AUAV_READ_BYTES] = {};
+
+  while (true) {
+    co_await poll_signal_[AUAV_BARO].wait_for_trigger();
+
+    std::memcpy(tx_cmd, cmdBytes_[AUAV_BARO], AUAV_CMD_BYTES);
+    std::memset(rx_cmd, 0, sizeof(rx_cmd));
+    if ((co_await async_bus_->transfer(async_device_[AUAV_BARO], tx_cmd, rx_cmd, AUAV_CMD_BYTES)).status
+        != AsyncStatus::OK) {
+      continue;
+    }
+
+    co_await exti_signal_[AUAV_BARO].wait_for_trigger();
+
+    tx_read[0] = 0xF0;
+    std::memset(rx_read, 0, sizeof(rx_read));
+    if ((co_await async_bus_->transfer(async_device_[AUAV_BARO], tx_read, rx_read, AUAV_READ_BYTES)).status
+        != AsyncStatus::OK) {
+      continue;
+    }
+
     PressurePacket p;
-    makePacket(&p, inbuf, AUAV_BARO);
-    spiState_ = STATUS_IDLE;
-    if(p.header.status==sensor_status_ready_[AUAV_BARO]) // PTT uncomment this when we fix the sensor.
+    makePacket(&p, rx_read, exti_signal_[AUAV_BARO].timestamp_us(), AUAV_BARO);
+    if (p.header.status == sensor_status_ready_[AUAV_BARO]) // PTT uncomment this when we fix the sensor.
     {
       p.header.complete = time64.Us();
       write2((uint8_t *) &p, sizeof(p), AUAV_BARO);
-   }
-  } else {
-    spiState_ = STATUS_IDLE;
-  }
-  dmaRunning_ = false;
-}
-
-void Auav::drdyIsr(uint64_t timestamp, uint16_t exti_pin)
-{
-  if (exti_pin == drdyPin_[AUAV_PITOT]) // Start Pitot Read
-  {
-    drdy_[AUAV_PITOT] = time64.Us();
-    spiState_ = STATUS_IDLE;
-    time64.dUs(20);
-    if ((dmaRunning_ =
-           (HAL_OK
-            == spi_[AUAV_PITOT].startDma(0xF0, 1)))) // Read Status, why do I need to do this to make the read work?
-
-    {
-      spiState_ = STATUS_PITOT_READ_STATUS;
     }
-
-  } else if (exti_pin == drdyPin_[AUAV_BARO]) { // Start Baro Read
-    drdy_[AUAV_BARO] = time64.Us();
-    spiState_ = STATUS_IDLE;
-    if ((dmaRunning_ = (HAL_OK == spi_[AUAV_BARO].startDma(0xF0, AUAV_READ_BYTES)))) { spiState_ = STATUS_BARO_READ; }
   }
-  // else not us.
 }
 
-void Auav::makePacket(PressurePacket * p, uint8_t * inbuf, uint8_t device)
+void Auav::makePacket(PressurePacket * p, const uint8_t * inbuf, uint64_t timestamp, uint8_t device)
 {
 
   int32_t iPraw = ((inbuf[1] << 16) | (inbuf[2] << 8) | inbuf[3]) - 0x800000;
@@ -389,7 +408,7 @@ void Auav::makePacket(PressurePacket * p, uint8_t * inbuf, uint8_t device)
 
   p->temperature = (double) iTemp * 155.0 / 16777216.0 - 45.0 + 273.15;
   p->pressure = off_[device] + 1.25 * ((double) Pdig / 16777216.0 - osDig_[device]) * fss_[device];
-  p->header.timestamp = drdy_[device];
+  p->header.timestamp = timestamp;
 }
 
 bool Auav::display(void)
@@ -421,3 +440,18 @@ bool Auav::display(void)
 
   return 0;
 }
+
+void Auav::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+{
+  if (async_bus_ == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return;
+  }
+
+  board.callbacks().register_poll_client(this, poll_phase_offset);
+  board.callbacks().register_exti_signal(&exti_signal_[AUAV_PITOT]);
+  board.callbacks().register_exti_signal(&exti_signal_[AUAV_BARO]);
+  baro_task_ = runBaro();
+  pitot_task_ = runPitot();
+}
+

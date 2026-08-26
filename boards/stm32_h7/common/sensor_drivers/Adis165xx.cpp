@@ -82,7 +82,7 @@ uint32_t Adis165xx::init(
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPin_ = drdy_pin;
+  exti_signal_.init(drdy_pin);
   async_device_.cs_port = cs_port;
   async_device_.cs_pin = cs_pin;
 
@@ -237,16 +237,6 @@ inline double val(uint8_t * x)
     / ((double) (1 << 16));
 }
 
-void Adis165xx::extiCallback(void)
-{
-  if (async_bus_ == nullptr) {
-    return;
-  }
-
-  drdy_ = time64.Us();
-  exti_signal_.trigger();
-}
-
 AsyncTask<void> Adis165xx::run()
 {
   uint8_t tx[ADIS_BUFFBYTES32] = {};
@@ -306,7 +296,7 @@ AsyncTask<void> Adis165xx::run()
     }
     if (p.header.status == ADIS_OK)
     {
-      p.header.timestamp = drdy_-groupDelay_;
+      p.header.timestamp = exti_signal_.timestamp_us() - groupDelay_;
       rotate(p.gyro);
       rotate(p.accel);
       p.header.complete = time64.Us();
@@ -350,7 +340,9 @@ void Adis165xx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offs
     return;
   }
 
-  board.callbacks().register_exti_client(this);
+  board.callbacks().register_exti_signal(&exti_signal_);
   task_ = run();
 }
+
+
 

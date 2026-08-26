@@ -42,6 +42,7 @@ extern STM32H7Board stm32_h7_board;
 extern Time64 time64;
 
 #include "Callbacks.h"
+#include "Async.h"
 
 #include "BoardConfig.h"
 
@@ -73,8 +74,20 @@ void STM32H7Callbacks::register_poll_client(
   client.phase_offset = phase_offset;
 }
 
+bool STM32H7Callbacks::exti_signal_matches(void * context, uint16_t exti_pin)
+{
+  return static_cast<ExtiSignal *>(context)->is_my(exti_pin);
+}
+
+void STM32H7Callbacks::exti_signal_callback(void * context, uint16_t exti_pin, uint64_t timestamp_us)
+{
+  (void) exti_pin;
+  static_cast<ExtiSignal *>(context)->trigger_from_irq(timestamp_us);
+}
+
 void STM32H7Callbacks::register_exti_client(
-  void * context, bool (*matches)(void * context, uint16_t exti_pin), void (*callback)(void * context))
+  void * context, bool (*matches)(void * context, uint16_t exti_pin),
+  void (*callback)(void * context, uint16_t exti_pin, uint64_t timestamp_us))
 {
   if (exti_client_len_ >= EXTI_CLIENTS_MAX_LEN) return;
 
@@ -82,6 +95,12 @@ void STM32H7Callbacks::register_exti_client(
   client.matches = matches;
   client.callback = callback;
   client.context = context;
+}
+
+void STM32H7Callbacks::register_exti_signal(ExtiSignal * signal)
+{
+  register_exti_client(static_cast<void *>(signal), &STM32H7Callbacks::exti_signal_matches,
+                       &STM32H7Callbacks::exti_signal_callback);
 }
 
 void STM32H7Callbacks::register_spi_client(
@@ -207,12 +226,12 @@ void STM32H7Callbacks::dispatch_poll(uint64_t poll_counter)
   }
 }
 
-void STM32H7Callbacks::dispatch_exti(uint16_t exti_pin)
+void STM32H7Callbacks::dispatch_exti(uint16_t exti_pin, uint64_t timestamp_us)
 {
   for (uint32_t i = 0; i < exti_client_len_; i++) {
     const ExtiClient & client = exti_clients_[i];
     if (!client.matches(client.context, exti_pin)) continue;
-    client.callback(client.context);
+    client.callback(client.context, exti_pin, timestamp_us);
   }
 }
 
@@ -338,7 +357,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t exti_pin)
 {
-  stm32_h7_board.callbacks().dispatch_exti(exti_pin);
+  const uint64_t timestamp_us = time64.Us();
+  stm32_h7_board.callbacks().dispatch_exti(exti_pin, timestamp_us);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -446,5 +466,6 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
 {
   stm32_h7_board.callbacks().dispatch_sd_rxcplt(hsd);
 }
+
 
 

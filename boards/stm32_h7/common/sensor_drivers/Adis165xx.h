@@ -67,9 +67,7 @@ public:
   void attach_bus(SpiBus & bus) { async_bus_ = &bus; }
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void extiCallback(void);
   bool display(void);
-  bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
   void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}
   bool read(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.read(data, size)==DoubleBufferStatus::OK); }
 
@@ -81,13 +79,13 @@ private:
 
   uint16_t sampleRateHz_;
   uint64_t groupDelay_;
-  uint16_t drdyPin_;
-  uint64_t drdy_;
 
   SpiBus * async_bus_ = nullptr;
   SpiBus::Device async_device_ = {};
-  AcquisitionSignal exti_signal_;
+  ExtiSignal exti_signal_;
   AsyncTask<void> task_;
 };
 
 #endif /* ADIS165XX_H_ */
+
+

@@ -40,15 +40,19 @@
 #ifndef AUAV_H_
 #define AUAV_H_
 
-#include "DoubleBuffer.h"
+#include "Async.h"
 #include "BoardConfig.h"
+#include "DoubleBuffer.h"
 #include "Packets.h"
-#include "Spi.h"
+#include "SpiBus.h"
 
 #define AUAV_PITOT 0
 #define AUAV_BARO 1
 
 #define AUAV_CMD_BYTES 3
+
+class STM32H7Board;
+class Spi;
 
 class Auav : public Status
 {
@@ -64,49 +68,44 @@ public:
                 GPIO_TypeDef * baro_drdy_port, uint16_t baro_drdy_pin,   // Baro DRDY
                 GPIO_TypeDef * baro_cs_port, uint16_t baro_cs_pin,       // Baro CS
                 SPI_HandleTypeDef * hspi);
+  void attach_bus(SpiBus & bus) { async_bus_ = &bus; }
+  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool poll(uint64_t poll_counter);
-  void endDma(void);
   bool display(void);
 
-  bool startTxDma(void);
-  void endTxDma(void);
-
-  bool isMy(uint16_t exti_pin) { return (drdyPin_[0] == exti_pin) || (drdyPin_[1] == exti_pin); }
-  bool isMy(SPI_HandleTypeDef * hspi) { return (hspi == spi_[0].hspi()); }
-  SPI_HandleTypeDef * hspi(void) { return spi_[0].hspi(); }
-
-  void drdyIsr(uint64_t timestamp, uint16_t exti_pin);
-
-  bool read2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].read(data, size)==DoubleBufferStatus::OK; }
-  bool write2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].write(data, size)==DoubleBufferStatus::OK; }
+  bool read2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].read(data, size) == DoubleBufferStatus::OK; }
+  bool write2(uint8_t * data, uint16_t size, uint8_t id) { return double_buffer_[id].write(data, size) == DoubleBufferStatus::OK; }
 
   uint8_t sensorOk(uint8_t id) { return sensor_status_ready_[id]; }
-  bool read(uint8_t * data, uint16_t size) { return read2(data,size,AUAV_PITOT); }
+  bool read(uint8_t * data, uint16_t size) { return read2(data, size, AUAV_PITOT); }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return write2(data, size,AUAV_PITOT); }
+  AsyncTask<void> runPitot();
+  AsyncTask<void> runBaro();
+  bool write(uint8_t * data, uint16_t size) { return write2(data, size, AUAV_PITOT); }
 
-  void makePacket(PressurePacket * p, uint8_t * inbuff, uint8_t device);
+  void makePacket(PressurePacket * p, const uint8_t * inbuff, uint64_t timestamp, uint8_t device);
   int32_t readCfg(uint8_t address, Spi * spi);
-  // SPI Stuff
-  Spi spi_[2];
-  uint8_t spiState_;
-  uint8_t cmdBytes_[2][AUAV_CMD_BYTES];
-  uint8_t addr_[2];
 
-  double LIN_A_[2], LIN_B_[2], LIN_C_[2], LIN_D_[2], Es_[2], TC50H_[2], TC50L_[2];
-  double osDig_[2], fss_[2], off_[2];
-  uint8_t sensor_status_ready_[2];
-  char name_local_[2][16]; // for display
+  uint8_t cmdBytes_[2][AUAV_CMD_BYTES] = {};
+  uint8_t addr_[2] = {};
+
+  double LIN_A_[2] = {}, LIN_B_[2] = {}, LIN_C_[2] = {}, LIN_D_[2] = {}, Es_[2] = {}, TC50H_[2] = {}, TC50L_[2] = {};
+  double osDig_[2] = {}, fss_[2] = {}, off_[2] = {};
+  uint8_t sensor_status_ready_[2] = {};
+  char name_local_[2][16] = {}; // for display
 
   DoubleBuffer double_buffer_[2];
-  GPIO_TypeDef * drdyPort_[2];
-  uint16_t drdyPin_[2];
-  uint16_t sampleRateHz_;
+  uint16_t sampleRateHz_ = 0;
+  uint64_t groupDelay_[2] = {};
 
-  uint64_t drdy_[2], timeout_[2];
-  uint64_t groupDelay_[2];
-  bool dmaRunning_;
+  SpiBus * async_bus_ = nullptr;
+  SpiBus::Device async_device_[2] = {};
+  ExtiSignal exti_signal_[2];
+  AcquisitionSignal poll_signal_[2];
+  AsyncTask<void> pitot_task_;
+  AsyncTask<void> baro_task_;
 };
 
 #endif /* AUAV_H_ */
+

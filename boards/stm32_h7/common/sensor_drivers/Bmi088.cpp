@@ -84,10 +84,9 @@ uint32_t Bmi088::init(
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPin_ = drdy_pin;
+  exti_signal_.init(drdy_pin);
   rangeA_ = range_a;
   rangeG_ = range_g;
-  drdy_ = 0;
 
   async_device_accel_.cs_port = cs_port_a;
   async_device_accel_.cs_pin = cs_pin_a;
@@ -301,16 +300,6 @@ uint32_t Bmi088::init(
   return initializationStatus_;
 }
 
-void Bmi088::extiCallback(void)
-{
-  if (async_bus_ == nullptr) {
-    return;
-  }
-
-  drdy_ = time64.Us();
-  exti_signal_.trigger();
-}
-
 AsyncTask<void> Bmi088::run()
 {
   uint8_t tx[BMI_ACCEL_BYTES] = {};
@@ -369,7 +358,7 @@ AsyncTask<void> Bmi088::run()
     p.gyro[2] = scale_factor * (double) data;
 
     p.header.complete = time64.Us();
-    p.header.timestamp = drdy_ - groupDelay_;
+    p.header.timestamp = exti_signal_.timestamp_us() - groupDelay_;
 
     rotate(p.gyro);
     rotate(p.accel);
@@ -411,6 +400,8 @@ void Bmi088::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
     return;
   }
 
-  board.callbacks().register_exti_client(this);
+  board.callbacks().register_exti_signal(&exti_signal_);
   task_ = run();
 }
+
+

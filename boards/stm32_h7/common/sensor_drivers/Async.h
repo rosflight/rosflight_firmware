@@ -189,4 +189,29 @@ private:
   bool trigger_pending_ = false;
 };
 
+class ExtiSignal : public AcquisitionSignal
+{
+public:
+  void init(uint16_t exti_pin)
+  {
+    exti_pin_ = exti_pin;
+    timestamp_us_ = 0;
+  }
+
+  bool is_my(uint16_t exti_pin) const { return exti_pin_ == exti_pin; }
+
+  void trigger_from_irq(uint64_t timestamp_us)
+  {
+    timestamp_us_ = timestamp_us;
+    trigger();
+  }
+
+  uint64_t timestamp_us() const { return timestamp_us_; }
+
+private:
+  uint16_t exti_pin_ = 0;
+  uint64_t timestamp_us_ = 0;
+};
+
 #endif /* DRIVERS_ASYNC_H_ */
+

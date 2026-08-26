@@ -42,6 +42,8 @@
 
 #ifdef __cplusplus
 
+class ExtiSignal;
+
 class STM32H7Callbacks
 {
 private:
@@ -66,7 +68,7 @@ private:
   struct ExtiClient
   {
     bool (*matches)(void * context, uint16_t exti_pin);
-    void (*callback)(void * context);
+    void (*callback)(void * context, uint16_t exti_pin, uint64_t timestamp_us);
     void * context;
   };
 
@@ -150,10 +152,15 @@ private:
   }
 
   template<typename T>
-  static void exti_client_callback(void * context)
+  static void exti_client_callback(void * context, uint16_t exti_pin, uint64_t timestamp_us)
   {
+    (void) exti_pin;
+    (void) timestamp_us;
     static_cast<T *>(context)->extiCallback();
   }
+
+  static bool exti_signal_matches(void * context, uint16_t exti_pin);
+  static void exti_signal_callback(void * context, uint16_t exti_pin, uint64_t timestamp_us);
 
   template<typename T>
   static bool spi_client_matches(void * context, SPI_HandleTypeDef * hspi)
@@ -259,8 +266,8 @@ private:
 
   void register_poll_client(
     void * context, void (*callback)(void * context, uint64_t poll_counter), int32_t phase_offset);
-  void register_exti_client(
-    void * context, bool (*matches)(void * context, uint16_t exti_pin), void (*callback)(void * context));
+  void register_exti_client(void * context, bool (*matches)(void * context, uint16_t exti_pin),
+                            void (*callback)(void * context, uint16_t exti_pin, uint64_t timestamp_us));
   void register_spi_client(
     void * context, bool (*matches)(void * context, SPI_HandleTypeDef * hspi), void (*callback)(void * context));
   void register_i2c_client(
@@ -298,6 +305,8 @@ public:
   {
     register_exti_client(static_cast<void *>(driver), &exti_client_matches<T>, &exti_client_callback<T>);
   }
+
+  void register_exti_signal(ExtiSignal * signal);
 
   template<typename T>
   void register_spi_client(T * driver)
@@ -356,7 +365,7 @@ public:
   }
 
   void dispatch_poll(uint64_t poll_counter);
-  void dispatch_exti(uint16_t exti_pin);
+  void dispatch_exti(uint16_t exti_pin, uint64_t timestamp_us);
   void dispatch_spi(SPI_HandleTypeDef * hspi);
   void dispatch_i2c(I2C_HandleTypeDef * hi2c);
   void dispatch_i2c_txcplt(I2C_HandleTypeDef * hi2c);
@@ -384,5 +393,8 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart);
 #endif
 
 #endif /* USERCALLBACKS_H_ */
+
+
+
 
 
