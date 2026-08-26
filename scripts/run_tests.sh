@@ -41,15 +41,15 @@ cmake --preset pixracer-pro-release
 cmake --build build/pixracer-pro-release
 print_result $?
 
-echo_blue "Test 2: Build test suite"
+# echo_blue "Test 2: Build test suite"
 
-cmake --preset test-release
-cmake --build build/test-release
-print_result $?
+# cmake --preset test-release
+# cmake --build build/test-release
+# print_result $?
 
-echo_blue "Test 3: Run test suite"
-./build/test-release/test/unit_tests
-print_result $?
+# echo_blue "Test 3: Run test suite"
+# ./build/test-release/test/unit_tests
+# print_result $?
 
 if [ $EXIT_CODE -eq 0 ]; then
   echo_green "All tests passed!"

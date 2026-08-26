@@ -80,7 +80,7 @@ function(add_stm32_h7_board board_name board_chip)
     USE_HAL_DRIVER
     "STM32${board_chip}xx"
   )
-  target_compile_features("${target_name}" PRIVATE c_std_11 cxx_std_17)
+  target_compile_features("${target_name}" PRIVATE c_std_11 cxx_std_20)
   target_include_directories("${target_name}" PRIVATE
     "${board_source_dir}/Core/Inc"
     "${board_source_dir}/specific"
@@ -123,3 +123,4 @@ function(add_stm32_h7_board board_name board_chip)
     VERBATIM
   )
 endfunction()
+

@@ -118,6 +118,7 @@ private:
   uint32_t exti_client_len_ = 0;
   uint32_t spi_client_len_ = 0;
   uint32_t i2c_client_len_ = 0;
+  uint32_t i2c_txcplt_client_len_ = 0;
   uint32_t adc_client_len_ = 0;
   uint32_t cdc_client_len_ = 0;
   uint32_t sd_client_len_ = 0;
@@ -128,6 +129,7 @@ private:
   ExtiClient exti_clients_[EXTI_CLIENTS_MAX_LEN] = {};
   SpiClient spi_clients_[SPI_CLIENTS_MAX_LEN] = {};
   I2cClient i2c_clients_[I2C_CLIENTS_MAX_LEN] = {};
+  I2cClient i2c_txcplt_clients_[I2C_CLIENTS_MAX_LEN] = {};
   AdcClient adc_clients_[ADC_CLIENTS_MAX_LEN] = {};
   CdcClient cdc_clients_[CDC_CLIENTS_MAX_LEN] = {};
   SdClient sd_clients_[SD_CLIENTS_MAX_LEN] = {};
@@ -175,6 +177,12 @@ private:
   static void i2c_client_callback(void * context)
   {
     static_cast<T *>(context)->i2cMasterRxCpltCallback();
+  }
+
+  template<typename T>
+  static void i2c_txcplt_client_callback(void * context)
+  {
+    static_cast<T *>(context)->i2cMasterTxCpltCallback();
   }
 
   template<typename T>
@@ -257,6 +265,8 @@ private:
     void * context, bool (*matches)(void * context, SPI_HandleTypeDef * hspi), void (*callback)(void * context));
   void register_i2c_client(
     void * context, bool (*matches)(void * context, I2C_HandleTypeDef * hi2c), void (*callback)(void * context));
+  void register_i2c_txcplt_client(
+    void * context, bool (*matches)(void * context, I2C_HandleTypeDef * hi2c), void (*callback)(void * context));
   void register_adc_client(
     void * context, bool (*matches)(void * context, ADC_HandleTypeDef * hadc),
     void (*callback)(void * context, ADC_HandleTypeDef * hadc));
@@ -302,6 +312,12 @@ public:
   }
 
   template<typename T>
+  void register_i2c_txcplt_client(T * driver)
+  {
+    register_i2c_txcplt_client(static_cast<void *>(driver), &i2c_client_matches<T>, &i2c_txcplt_client_callback<T>);
+  }
+
+  template<typename T>
   void register_adc_client(T * driver)
   {
     register_adc_client(static_cast<void *>(driver), &adc_client_matches<T>, &adc_client_callback<T>);
@@ -343,6 +359,7 @@ public:
   void dispatch_exti(uint16_t exti_pin);
   void dispatch_spi(SPI_HandleTypeDef * hspi);
   void dispatch_i2c(I2C_HandleTypeDef * hi2c);
+  void dispatch_i2c_txcplt(I2C_HandleTypeDef * hi2c);
   void dispatch_adc(ADC_HandleTypeDef * hadc);
   void dispatch_cdc_receive(uint8_t chan, uint8_t * buffer, uint16_t size);
   void dispatch_cdc_transmit_cplt(uint8_t chan);
@@ -367,3 +384,5 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart);
 #endif
 
 #endif /* USERCALLBACKS_H_ */
+
+

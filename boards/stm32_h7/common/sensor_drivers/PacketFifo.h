@@ -38,6 +38,7 @@
 #ifndef PACKETFIFO_H_
 #define PACKETFIFO_H_
 
+#include <atomic>
 #include <stdio.h>
 #include <string.h>
 
@@ -77,18 +78,24 @@ public:
 
   void reset(void)
   {
-    head_ = 0;
-    tail_ = 0;
+    head_.store(0, std::memory_order_relaxed);
+    tail_.store(0, std::memory_order_relaxed);
   }
 
   uint16_t write(uint8_t * data, uint16_t size)
   {
     if (packetCountMax_ == 0) return false;
-    if (tail_ == (head_ + 1) % packetCountMax_) return false;
+
+    uint32_t head = head_.load(std::memory_order_relaxed);
+    uint32_t tail = tail_.load(std::memory_order_acquire);
+    uint32_t next = head + 1;
+    if (next == packetCountMax_) next = 0;
+    if (tail == next) return false;
+
     size = (size > dataSizeMax_) ? dataSizeMax_ : size;
-    packet_[head_].size = size;
-    memcpy(packet_[head_].data, data, size);
-    if (++head_ == packetCountMax_) head_ = 0;
+    packet_[head].size = size;
+    memcpy(packet_[head].data, data, size);
+    head_.store(next, std::memory_order_release);
     return size;
   }
   /**
@@ -101,10 +108,16 @@ public:
      */
   uint16_t read(uint8_t * data, uint16_t size)
   {
-    if (head_ == tail_) return 0; // buffer is empty
-    if (size > packet_[tail_].size) size = packet_[tail_].size;
-    memcpy(data, packet_[tail_].data, size);
-    if (++tail_ == packetCountMax_) tail_ = 0;
+    uint32_t tail = tail_.load(std::memory_order_relaxed);
+    uint32_t head = head_.load(std::memory_order_acquire);
+
+    if (head == tail) return 0; // buffer is empty
+    if (size > packet_[tail].size) size = packet_[tail].size;
+    memcpy(data, packet_[tail].data, size);
+
+    uint32_t next = tail + 1;
+    if (next == packetCountMax_) next = 0;
+    tail_.store(next, std::memory_order_release);
     return size;
   }
   /**
@@ -115,13 +128,17 @@ public:
      * @param size Maximum size of data buffer
      * @return Actual size of data buffer read
      */
-  uint16_t readMostRecent(uint8_t * data, uint16_t size)
-  {
-    if (head_ == tail_) return 0; // buffer is empty
-    if (head_ == 0) tail_ = packetCountMax_ - 1;
-    else tail_ = head_ - 1;
-    return read(data, size);
-  }
+  // uint16_t readMostRecent(uint8_t * data, uint16_t size)
+  // {
+  //   uint32_t tail = tail_.load(std::memory_order_relaxed);
+  //   uint32_t head = head_.load(std::memory_order_acquire);
+
+  //   if (head == tail) return 0; // buffer is empty
+  //   if (head == 0) tail = packetCountMax_ - 1;
+  //   else tail = head - 1;
+  //   tail_.store(tail, std::memory_order_release);
+  //   return read(data, size);
+  // }
 
   /**
      * @fn Packet peek*(void)
@@ -131,17 +148,21 @@ public:
      * @return Pointer to the packet with index dataOut_.
      *
      */
-  Packet * peek(void) { return &(packet_[tail_]); }
+  Packet * peek(void) { return &(packet_[tail_.load(std::memory_order_acquire)]); }
 
   uint16_t packetCount(void)
   {
     if (packetCountMax_ == 0) return 0;
-    return (packetCountMax_ + head_ - tail_) % packetCountMax_;
+
+    uint32_t head = head_.load(std::memory_order_acquire);
+    uint32_t tail = tail_.load(std::memory_order_acquire);
+    return (packetCountMax_ + head - tail) % packetCountMax_;
   }
   uint16_t packetCountMax(void) { return packetCountMax_; }
 
 private:
-  volatile uint32_t head_, tail_;
+  std::atomic<uint32_t> head_{0};
+  std::atomic<uint32_t> tail_{0};
   uint32_t dataSizeMax_;
   uint32_t packetCountMax_ = 0;
 

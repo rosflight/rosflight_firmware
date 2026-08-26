@@ -1,4 +1,4 @@
-﻿/**
+/**
  ******************************************************************************
  * File     : stm32_h7.h
  * Date     : Sep 27, 2023
@@ -54,8 +54,10 @@
 #include "Polling.h"
 #include "Pwm.h"
 #include "Sbus.h"
+#include "SpiBus.h"
 #include "Sd.h"
 #include "Telem.h"
+#include "I2cBus.h"
 #include "Ubx.h"
 #include "Vcp.h"
 #include "interface/board.h"
@@ -78,6 +80,10 @@ private:
   Status * status_list_[STATUS_LIST_MAX_LEN];
   STM32H7Callbacks callbacks_;
   PollingTimer polling_timer_;
+  SpiBus spi_bus_hspi2_;
+  SpiBus spi_bus_hspi3_;
+  SpiBus spi_bus_hspi4_;
+  I2cBus i2c_bus_hi2c1_;
 
   RcPacket rcPacket_;
 
@@ -91,7 +97,15 @@ public:
   STM32H7Callbacks & callbacks() { return callbacks_; }
   const STM32H7Callbacks & callbacks() const { return callbacks_; }
   PollingTimer & polling_timer() { return polling_timer_; }
+  SpiBus & spi_bus_hspi2() { return spi_bus_hspi2_; }
+  SpiBus & spi_bus_hspi3() { return spi_bus_hspi3_; }
+  SpiBus & spi_bus_hspi4() { return spi_bus_hspi4_; }
+  I2cBus & i2c_bus_hi2c1() { return i2c_bus_hi2c1_; }
   const PollingTimer & polling_timer() const { return polling_timer_; }
+  const SpiBus & spi_bus_hspi2() const { return spi_bus_hspi2_; }
+  const SpiBus & spi_bus_hspi3() const { return spi_bus_hspi3_; }
+  const SpiBus & spi_bus_hspi4() const { return spi_bus_hspi4_; }
+  const I2cBus & i2c_bus_hi2c1() const { return i2c_bus_hi2c1_; }
   ////////////////////////////////////////////////////////////////////////////////
   // Required ROSflight Board HAL functions:
 
@@ -170,3 +184,5 @@ public:
 extern STM32H7Board stm32_h7_board;
 
 #endif /* STM32_H7_HPP_ */
+
+

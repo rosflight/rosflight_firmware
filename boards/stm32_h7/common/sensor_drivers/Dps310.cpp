@@ -36,23 +36,18 @@
  **/
 
 #include "Dps310.h"
-#include "stm32_h7.hpp"
+
 #include "Packets.h"
 #include "Time64.h"
 #include "misc.h"
+#include "stm32_h7.hpp"
 
-//#define DPS310_OK (0xE0D0)
+#include <cstring>
 
 #define DPS310_CONTINUOUS_MODE false
 
 #define SPI_WRITE ((uint8_t) 0x00)
 #define SPI_READ ((uint8_t) 0x80)
-
-//#define DPS310_READ_T_CMD		(0x03|SPI_READ)
-//#define	DPS310_READ_T_BUFFBYTES 	(4)
-//
-//#define DPS310_READ_P_CMD		(0x00|SPI_READ)
-//#define	DPS310_READ_P_BUFFBYTES 	(4)
 
 #define DPS310_READ_T_CMD (0x00 | SPI_READ)
 #define DPS310_READ_T_BUFFBYTES (12) // read this may to clear drdy registers
@@ -70,9 +65,6 @@
 
 extern Time64 time64;
 
-DMA_RAM uint8_t dps310_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DMA_RAM uint8_t dps310_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-
 DTCM_RAM uint8_t dps310_double_buffer[2 * sizeof(PressurePacket)];
 
 #define ROLLOVER 20000
@@ -82,8 +74,6 @@ DTCM_RAM uint8_t dps310_double_buffer[2 * sizeof(PressurePacket)];
 #define DPS310_CMD_T 147
 #define DPS310_DRDY_T 177
 #define DPS310_RX_T 178
-#define DPS310_IDLE_STATE 0xFFFF
-#define DPS310_STATE_ERROR 0xFFFE
 
 static int32_t Compliment(int32_t x, int16_t bits)
 {
@@ -110,35 +100,44 @@ static int32_t Compliment(int32_t x, int16_t bits)
 //}
 
 uint32_t Dps310::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-  uint16_t drdy_pin,                                 // Reset GPIO Pin
-  // SPI initializers
-  SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-  uint16_t cs_pin,                                  // Chip Select GPIO Pin
-  // Mode
-  bool three_wire)
+  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, SPI_HandleTypeDef * hspi,
+  GPIO_TypeDef * cs_port, uint16_t cs_pin, bool three_wire)
 {
+  (void) drdy_port;
+  (void) drdy_pin;
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Dps310");
   initializationStatus_ = DRIVER_OK;
 
   sampleRateHz_ = sample_rate_hz;
-
-  drdyPin_ = drdy_pin;
   drdy_ = 0;
 
-  spi_.init(hspi, dps310_dma_txbuf, dps310_dma_rxbuf, cs_port, cs_pin);
-  spiState_ = DPS310_IDLE_STATE;
-  dmaRunning_ = false;
+  uint8_t init_txbuf[2] = {};
+  uint8_t init_rxbuf[2] = {};
+  Spi init_spi;
+  init_spi.init(hspi, init_txbuf, init_rxbuf, cs_port, cs_pin);
+  async_device_.cs_port = cs_port;
+  async_device_.cs_pin = cs_pin;
 
   timeoutMs_ = 100;
   // groupDelay_		= 1000000/sampleRateHz_;
-  HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(init_spi.port_, init_spi.pin_, GPIO_PIN_SET);
 
-  double_buffer_.init(dps310_double_buffer, sizeof(dps310_double_buffer) );
+  double_buffer_.init(dps310_double_buffer, sizeof(dps310_double_buffer));
 
 #define RESET 0x0C
-  writeRegister(RESET, 0x09);
+  const auto write_register = [&](uint8_t address, uint8_t value) {
+    uint8_t tx[2] = {(uint8_t) (address | SPI_WRITE), value};
+    init_spi.tx(tx, 2, timeoutMs_);
+  };
+
+  const auto read_register = [&](uint8_t address) {
+    uint8_t tx[2] = {(uint8_t) (address | SPI_READ), 0};
+    uint8_t rx[2] = {0};
+    init_spi.rx(tx, rx, 2, timeoutMs_);
+    return rx[1];
+  };
+
+  write_register(RESET, 0x09);
   HAL_Delay(40);
 
   // Set to 3-wire SPI mode so we can read registers.
@@ -152,12 +151,12 @@ uint32_t Dps310::init(
   // 1 - 	0, Disable FIFO
   // 0 - 	1, 3-wire SPI interface
 #define CFG_REG 0x09
-  if (three_wire) writeRegister(CFG_REG, 0x01);
-  else writeRegister(CFG_REG, 0x00);
+  if (three_wire) write_register(CFG_REG, 0x01);
+  else write_register(CFG_REG, 0x00);
 
     // Product ID 0x0D
 #define PRODUCT_ID 0x0D
-  uint8_t product_id = readRegister(PRODUCT_ID);
+  uint8_t product_id = read_register(PRODUCT_ID);
   misc_printf("DPS310: PRODUCT ID = 0x%02X  (0x10) -", product_id);
   if (product_id == 0x10) misc_printf(" OK\n");
   else {
@@ -167,11 +166,11 @@ uint32_t Dps310::init(
 
   // Calibration constants
 #define MEAS_CFG 0x08
-  uint8_t coef_rdy = readRegister(MEAS_CFG) & 0x80;
+  uint8_t coef_rdy = read_register(MEAS_CFG) & 0x80;
 
   for (int n = 0; n < 10; n++) // Wait 10 times for Coefficients to be ready
   {
-    coef_rdy = readRegister(MEAS_CFG) & 0x80;
+    coef_rdy = read_register(MEAS_CFG) & 0x80;
     //		misc_printf("DPS310: COEF_RDY   = 0x%02X\n",coef_rdy);
     if ((coef_rdy & 0x80) == 0x80) break;
     time64.dUs(1000);
@@ -190,7 +189,7 @@ uint32_t Dps310::init(
   uint8_t tx[19] = {COEF_REG | SPI_READ, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   uint8_t rx[19];
 
-  spi_.rx(tx, rx, 19, timeoutMs_);
+  init_spi.rx(tx, rx, 19, timeoutMs_);
 
   int32_t buf[18];
   for (int n = 0; n < 18; n++) buf[n] = rx[n + 1];
@@ -225,14 +224,14 @@ uint32_t Dps310::init(
   misc_printf("DPS310: C30      = %10.0f\n", C30_);
 
 #define COEF_SRCE 0x28
-  uint8_t temp_source = readRegister(COEF_SRCE) & 0x80;
+  uint8_t temp_source = read_register(COEF_SRCE) & 0x80;
   misc_printf("DPS310: temp source = 0x%02X\n", temp_source);
 
 #define PRS_CFG 0x06            // Pressure Configuration
-  writeRegister(PRS_CFG, 0x63); // 64 measurements per second, 8x oversampling
+  write_register(PRS_CFG, 0x63); // 64 measurements per second, 8x oversampling
 
 #define TMP_CFG 0x07                          // Temperature Configuration
-  writeRegister(TMP_CFG, temp_source | 0x60); // 64 measurements per second, no oversampling
+  write_register(TMP_CFG, temp_source | 0x60); // 64 measurements per second, no oversampling
 
   // Interrupt and FIFO Config 0x09
   // 7 - 	1, DRDY active high
@@ -245,22 +244,22 @@ uint32_t Dps310::init(
   // 0 - 	1, 3-wire SPI interface
   // 1001 0001 = 0x91
   // 1011 0001 = 0xB1
-#define CFG_REG 0x09
   if (three_wire) {
 #if DPS310_CONTINUOUS_MODE
-    writeRegister(CFG_REG,
-                  0x91); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
+    write_register(CFG_REG,
+                   0x91); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
 #else
-    writeRegister(CFG_REG, 0xB1); // Interrupt on both P and T
+    write_register(CFG_REG, 0xB1); // Interrupt on both P and T
 #endif
   } else {
 #if DPS310_CONTINUOUS_MODE
-    writeRegister(CFG_REG,
-                  0x90); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
+    write_register(CFG_REG,
+                   0x90); // Interrupt on T only 3-wire supports interrupts, 4-wire does not support interrupts
 #else
-    writeRegister(CFG_REG, 0xB0); // Interrupt on both P and T
+    write_register(CFG_REG, 0xB0); // Interrupt on both P and T
 #endif
   }
+
   // Measurement Configuration
   // 7 - 	0, read only
   // 6 - 	0, read only
@@ -269,9 +268,8 @@ uint32_t Dps310::init(
   // 3 - 	0, reserved
   // 2:0 - 	111, pressure and temperature continuous mode
   // 0000 0111 =  0x07
-#define MEAS_CFG 0x08
 #if DPS310_CONTINUOUS_MODE
-  writeRegister(MEAS_CFG, 0x07); // Start background measurement
+  write_register(MEAS_CFG, 0x07); // Start background measurement
 #endif
 
   //PTT need to add
@@ -290,105 +288,85 @@ uint32_t Dps310::init(
   return initializationStatus_;
 }
 
-void Dps310::writeRegister(uint8_t address, uint8_t value)
-{
-  uint8_t tx[2] = {0};
-  tx[0] = (address) | SPI_WRITE;
-  tx[1] = value;
-  spi_.tx(tx, 2, timeoutMs_);
-}
-
-uint8_t Dps310::readRegister(uint8_t address)
-{
-  uint8_t tx[2] = {0};
-  uint8_t rx[2] = {0};
-  tx[0] = (address) | SPI_READ;
-  tx[1] = 0;
-  spi_.rx(tx, rx, 2, timeoutMs_);
-  return rx[1];
-}
-
 bool Dps310::poll(uint64_t poll_counter)
 {
   uint16_t poll_state;
   if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
+  if (async_bus_ == nullptr) return false;
 
-  // Start P measurement sequence
-  if (poll_state == DPS310_CMD_P) // Command Pressure Read
-  {
+  poll_signal_.tick(poll_counter);
+  if (poll_state == DPS310_CMD_P) {
     drdy_ = time64.Us();
-    uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x01};
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = DPS310_CMD_P;
-    else spiState_ = DPS310_STATE_ERROR;
-  }
-  // Get P DRDY
-  else if (poll_state == DPS310_DRDY_P) {
-    uint8_t cmd[2] = {MEAS_CFG | SPI_READ, 0};
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = DPS310_STATE_ERROR;
-  }
-  // Read P data
-  else if (poll_state == DPS310_RX_P) // Start DMA read of Temperature Data 2.41ms after start
-  {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_P_CMD, DPS310_READ_P_BUFFBYTES)))) spiState_ = poll_state;
-    else spiState_ = DPS310_STATE_ERROR;
-  }
-  // Start T measurement sequence
-  else if (poll_state == DPS310_CMD_T) // Command Temperature Daq
-  {
-    uint8_t cmd[2] = {MEAS_CFG | SPI_WRITE, 0x02}; // Temperature
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = DPS310_STATE_ERROR;
-  }
-  // Get T DRDY
-  else if (poll_state == DPS310_DRDY_T) {
-    uint8_t cmd[2] = {MEAS_CFG | SPI_READ, 0};
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = DPS310_STATE_ERROR;
-  }
-  // Read T data
-  else if (poll_state == DPS310_RX_T) // Start DMA read of Pressure Data
-  {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(DPS310_READ_T_CMD, DPS310_READ_T_BUFFBYTES)))) spiState_ = poll_state;
-    else spiState_ = DPS310_STATE_ERROR;
+    poll_signal_.trigger();
   }
   return false;
 }
 
-void Dps310::spiTxRxCpltCallback(void)
+AsyncTask<void> Dps310::run()
 {
-  uint8_t * rx = spi_.endDma();
-  static double Traw;
-  static PressurePacket p;
+  PressurePacket p = {};
+  double Traw = 0.0;
+  uint8_t tx[DPS310_READ_T_BUFFBYTES] = {};
+  uint8_t rx[DPS310_READ_T_BUFFBYTES] = {};
 
-  if (spiState_ == DPS310_DRDY_P) // Pressure DRDY
-  {
+  while (true) {
+    co_await poll_signal_.wait_for_trigger();
+    tx[0] = MEAS_CFG | SPI_WRITE;
+    tx[1] = 0x01;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, 2)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    co_await poll_signal_.delay_ticks(DPS310_DRDY_P - DPS310_CMD_P);
+    tx[0] = MEAS_CFG | SPI_READ;
+    tx[1] = 0;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, 2)).status != AsyncStatus::OK) {
+      continue;
+    }
     if (rx[1] & 0x10) {
       p.header.status |= (uint16_t) rx[1];
       p.header.complete = time64.Us();
     }
-  } else if (spiState_ == DPS310_DRDY_T) // Temperature DRDY
-  {
-    if (rx[1] & 0x20) p.header.status = (uint16_t) rx[1] << 8;
-  } else if (spiState_ == DPS310_RX_T) // Temperature Data
-  {
-    int32_t traw = ((int32_t) rx[4] << 24 | (int32_t) rx[5] << 16 | (int32_t) rx[6] << 8) >> 8;
-    Traw = (double) traw / KT;
-    p.temperature = C0_ * 0.5 + C1_ * Traw + 273.15; // K
-  } else if (spiState_ == DPS310_RX_P)               // Pressure Data
-  {
+
+    co_await poll_signal_.delay_ticks(DPS310_RX_P - DPS310_DRDY_P);
+    std::memset(tx, 0, DPS310_READ_P_BUFFBYTES);
+    tx[0] = DPS310_READ_P_CMD;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, DPS310_READ_P_BUFFBYTES)).status != AsyncStatus::OK) {
+      continue;
+    }
     int32_t praw = ((int32_t) rx[1] << 24 | (int32_t) rx[2] << 16 | (int32_t) rx[3] << 8) >> 8;
     double Praw = (double) praw / KP;
-    p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_)) + Traw * (C01_ + Praw * (C11_ + Praw * C21_)); // Pa
-
+    p.pressure = C00_ + Praw * (C10_ + Praw * (C20_ + Praw * C30_)) + Traw * (C01_ + Praw * (C11_ + Praw * C21_));
     p.header.timestamp = drdy_;
     p.header.complete = time64.Us();
     if (p.header.status == DPS310_OK) write((uint8_t *) &p, sizeof(p));
     p.header.status = 0;
-  }
 
-  spiState_ = DPS310_IDLE_STATE;
-  dmaRunning_ = false;
+    co_await poll_signal_.delay_ticks(DPS310_CMD_T - DPS310_RX_P);
+    tx[0] = MEAS_CFG | SPI_WRITE;
+    tx[1] = 0x02;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, 2)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    co_await poll_signal_.delay_ticks(DPS310_DRDY_T - DPS310_CMD_T);
+    tx[0] = MEAS_CFG | SPI_READ;
+    tx[1] = 0;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, 2)).status != AsyncStatus::OK) {
+      continue;
+    }
+    if (rx[1] & 0x20) p.header.status = (uint16_t) rx[1] << 8;
+
+    co_await poll_signal_.delay_ticks(DPS310_RX_T - DPS310_DRDY_T);
+    std::memset(tx, 0, DPS310_READ_T_BUFFBYTES);
+    tx[0] = DPS310_READ_T_CMD;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, DPS310_READ_T_BUFFBYTES)).status != AsyncStatus::OK) {
+      continue;
+    }
+    int32_t traw = ((int32_t) rx[4] << 24 | (int32_t) rx[5] << 16 | (int32_t) rx[6] << 8) >> 8;
+    Traw = (double) traw / KT;
+    p.temperature = C0_ * 0.5 + C1_ * Traw + 273.15;
+  }
 }
 
 bool Dps310::display(void)
@@ -396,7 +374,7 @@ bool Dps310::display(void)
   PressurePacket p;
 
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name_, p.header );
+    misc_header(name_, p.header);
     misc_f32(98, 101, p.pressure / 1000., "Press", "%6.2f", "kPa");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(DPS310_OK, p.header.status, "Status");
@@ -410,6 +388,13 @@ bool Dps310::display(void)
 
 void Dps310::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
+  if (async_bus_ == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return;
+  }
+
   board.callbacks().register_poll_client(this, poll_phase_offset);
-  board.callbacks().register_spi_client(this);
+  task_ = run();
 }
+
+

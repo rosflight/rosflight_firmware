@@ -1,4 +1,4 @@
-﻿/**
+/**
  ******************************************************************************
  * File     : STM32H7_Init.cpp
  * Date     : June 3, 2024
@@ -177,6 +177,11 @@ void STM32H7Board::init_board(void)
   // Callbacks initialization
 
   callbacks().clear_all();
+  spi_bus_hspi2().init(&hspi2);
+  callbacks().register_spi_client(&spi_bus_hspi2());
+  i2c_bus_hi2c1().init(&hi2c1);
+  callbacks().register_i2c_client(&i2c_bus_hi2c1());
+  callbacks().register_i2c_txcplt_client(&i2c_bus_hi2c1());
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
@@ -212,6 +217,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
+  if (init_status == DRIVER_OK) { pitot_.attach_bus(i2c_bus_hi2c1()); }
   if (init_status == DRIVER_OK) { pitot_.register_callbacks(*this, -5); }
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
@@ -222,6 +228,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
+  if (init_status == DRIVER_OK) { baro_.attach_bus(spi_bus_hspi2()); }
   if (init_status == DRIVER_OK) { baro_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,6 +243,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
+  if (init_status == DRIVER_OK) { mag_.attach_bus(i2c_bus_hi2c1()); }
   if (init_status == DRIVER_OK) { mag_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

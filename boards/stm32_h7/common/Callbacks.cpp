@@ -53,6 +53,7 @@ void STM32H7Callbacks::clear_all()
   exti_client_len_ = 0;
   spi_client_len_ = 0;
   i2c_client_len_ = 0;
+  i2c_txcplt_client_len_ = 0;
   adc_client_len_ = 0;
   cdc_client_len_ = 0;
   sd_client_len_ = 0;
@@ -100,6 +101,17 @@ void STM32H7Callbacks::register_i2c_client(
   if (i2c_client_len_ >= I2C_CLIENTS_MAX_LEN) return;
 
   I2cClient & client = i2c_clients_[i2c_client_len_++];
+  client.matches = matches;
+  client.callback = callback;
+  client.context = context;
+}
+
+void STM32H7Callbacks::register_i2c_txcplt_client(
+  void * context, bool (*matches)(void * context, I2C_HandleTypeDef * hi2c), void (*callback)(void * context))
+{
+  if (i2c_txcplt_client_len_ >= I2C_CLIENTS_MAX_LEN) return;
+
+  I2cClient & client = i2c_txcplt_clients_[i2c_txcplt_client_len_++];
   client.matches = matches;
   client.callback = callback;
   client.context = context;
@@ -222,6 +234,15 @@ void STM32H7Callbacks::dispatch_i2c(I2C_HandleTypeDef * hi2c)
   }
 }
 
+void STM32H7Callbacks::dispatch_i2c_txcplt(I2C_HandleTypeDef * hi2c)
+{
+  for (uint32_t i = 0; i < i2c_txcplt_client_len_; i++) {
+    const I2cClient & client = i2c_txcplt_clients_[i];
+    if (!client.matches(client.context, hi2c)) continue;
+    client.callback(client.context);
+  }
+}
+
 void STM32H7Callbacks::dispatch_adc(ADC_HandleTypeDef * hadc)
 {
   for (uint32_t i = 0; i < adc_client_len_; i++) {
@@ -336,6 +357,11 @@ void HAL_SPI_TxRxCpltCallback(
 //////////////////////////////////////////////////////////////////////////////////////////
 // I2C Rx complete callback
 
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef * hi2c)
+{
+  stm32_h7_board.callbacks().dispatch_i2c_txcplt(hi2c);
+}
+
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef * hi2c)
 {
   stm32_h7_board.callbacks().dispatch_i2c(hi2c);
@@ -420,3 +446,5 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
 {
   stm32_h7_board.callbacks().dispatch_sd_rxcplt(hsd);
 }
+
+

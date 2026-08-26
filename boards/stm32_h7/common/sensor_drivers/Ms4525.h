@@ -38,52 +38,45 @@
 #ifndef MS4525_H_
 #define MS4525_H_
 
-#include "DoubleBuffer.h"
+#include "Async.h"
 #include "BoardConfig.h"
+#include "DoubleBuffer.h"
+#include "I2cBus.h"
 #include "Packets.h"
+#include "Polling.h"
 #include "Time64.h"
-#include  "Polling.h"
 
 #define MS4525_I2C_ADDRESS (0x28)
 
 class STM32H7Board;
-/*
- *
- */
+
 class Ms4525 : public Status
 {
-  /**
-     * \brief
-     *
-     *
-     */
 public:
-  uint32_t init(
-    // Driver initializers
-    uint16_t sample_rate_hz,
-    // I2C initializers
-    I2C_HandleTypeDef * hi2c, // The SPI handle
-    uint16_t i2c_address      // Chip select Port
-  );
+  uint32_t init(uint16_t sample_rate_hz, I2C_HandleTypeDef * hi2c, uint16_t i2c_address);
+
+  void attach_bus(I2cBus & bus) { async_bus_ = &bus; }
+
   bool poll(uint64_t poll_counter);
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
-
-  void i2cMasterRxCpltCallback(void);
   bool display(void);
-  // I2C_HandleTypeDef* hi2c(void) {return hi2c_;}
-  bool isMy(I2C_HandleTypeDef * hi2c) { return hi2c_ == hi2c; }
 
-  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
+  bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size) == DoubleBufferStatus::OK; }
 
 private:
-  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
+  AsyncTask<void> run();
+  bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size) == DoubleBufferStatus::OK; }
+
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
-  I2C_HandleTypeDef * hi2c_;
-  uint16_t i2cState_;
   uint16_t address_;
-  double dtMs_;
   uint64_t drdy_;
+  I2cBus * async_bus_ = nullptr;
+  AcquisitionSignal poll_signal_;
+  AsyncTask<void> task_;
 };
 
 #endif /* DLHRL20G_H_ */
+
+
+

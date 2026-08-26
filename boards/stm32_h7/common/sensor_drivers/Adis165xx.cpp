@@ -36,10 +36,12 @@
  **/
 
 #include "Adis165xx.h"
-#include "stm32_h7.hpp"
+
 #include "Packets.h"
+#include "Spi.h"
 #include "Time64.h"
 #include "misc.h"
+#include "stm32_h7.hpp"
 
 //#define ADIS_OK (0x0000)
 
@@ -58,9 +60,6 @@
 
 extern Time64 time64;
 
-DMA_RAM uint8_t adis165xx_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DMA_RAM uint8_t adis165xx_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-
 DTCM_RAM uint8_t adis165xx_double_buffer[2* sizeof(ImuPacket)];
 
 uint32_t Adis165xx::init(
@@ -77,41 +76,66 @@ uint32_t Adis165xx::init(
   const double *rotation
 )
 {
+  (void) drdy_port;
   memcpy(rotation_, rotation, sizeof(double)*9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Adis165xx");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
   drdyPin_ = drdy_pin;
+  async_device_.cs_port = cs_port;
+  async_device_.cs_pin = cs_pin;
 
-  spi_.init(hspi, adis165xx_dma_txbuf, adis165xx_dma_rxbuf, cs_port, cs_pin);
-
-  timeoutMs_ = 100;
-
-  resetPort_ = reset_port;
-  resetPin_ = reset_pin;
-  htim_ = htim;
-  htimChannel_ = htim_channel;
+  uint8_t init_txbuf[2] = {};
+  uint8_t init_rxbuf[2] = {};
+  Spi init_spi;
+  init_spi.init(hspi, init_txbuf, init_rxbuf, cs_port, cs_pin);
 
   groupDelay_ = (uint64_t) 1510 + (uint64_t) 500000 / sampleRateHz_- 250;
   // us, Approximate, Accel is 1.57ms, Gyro x&y are 1.51ms, and Gyro z is 1.29ms.
 
-  HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(init_spi.port_, init_spi.pin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(reset_port, reset_pin, GPIO_PIN_SET);
 
   double_buffer_.init(adis165xx_double_buffer, sizeof(adis165xx_double_buffer));
+
+  const uint16_t timeout_ms = 100;
+  const auto write_register = [&](uint8_t address, uint16_t value) {
+    uint8_t tx[2] = {0};
+    tx[0] = (address) | SPI_WRITE;
+    tx[1] = value & 0x00FF;
+
+    init_spi.tx(tx, 2, timeout_ms);
+    time64.dUs(ADIS_SPI_PAUSE_US);
+    tx[0] = (++address) | SPI_WRITE;
+    tx[1] = (value >> 8) & 0x00FF;
+    init_spi.tx(tx, 2, timeout_ms);
+    time64.dUs(ADIS_SPI_PAUSE_US);
+  };
+
+  const auto read_register = [&](uint8_t address) {
+    uint8_t tx[2] = {0};
+    uint8_t rx[2] = {0};
+    tx[0] = (address) | SPI_READ;
+    init_spi.rx(tx, rx, 2, timeout_ms);
+    time64.dUs(ADIS_SPI_PAUSE_US);
+    tx[0] = (++address) | SPI_READ;
+    init_spi.rx(tx, rx, 2, timeout_ms);
+    time64.dUs(ADIS_SPI_PAUSE_US);
+    return (uint16_t) rx[1] | (uint16_t) rx[0] << 8;
+  };
 
   // Startup the external clock
 
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
-  htim_->Instance = htim_instance;
-  htim_->Init.Prescaler = 199;
-  htim_->Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim_->Init.Period = htim_period_us - 1;
-  htim_->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim_->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim->Instance = htim_instance;
+  htim->Init.Prescaler = 199;
+  htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim->Init.Period = htim_period_us - 1;
+  htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim12) != HAL_OK) {
     initializationStatus_ = DRIVER_HAL_ERROR;
     return initializationStatus_;
@@ -119,7 +143,7 @@ uint32_t Adis165xx::init(
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(htim_, &sMasterConfig) != HAL_OK) {
+  if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) {
     initializationStatus_ = DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
@@ -128,25 +152,25 @@ uint32_t Adis165xx::init(
   sConfigOC.Pulse = 250;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(htim_, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
+  if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
     initializationStatus_ = DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
 
-  HAL_TIM_MspPostInit(htim_);
+  HAL_TIM_MspPostInit(htim);
 
-  HAL_TIM_PWM_Start(htim_, htimChannel_); //(2kHz) clock source for ADIS165xx
+  HAL_TIM_PWM_Start(htim, htim_channel); //(2kHz) clock source for ADIS165xx
   time64.dUs(100);
 
   // Reset//
-  HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(reset_port, reset_pin, GPIO_PIN_RESET);
   time64.dUs(100); // was 16
-  HAL_GPIO_WritePin(resetPort_, resetPin_, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(reset_port, reset_pin, GPIO_PIN_SET);
   time64.dMs(350); // Data sheet specifies 255ms for power-on startup empirically 300 is required
 
 #define ADIS16500_PROD_ID_ADDR 0x72
 #define ADIS16500_PROD_ID 0x4074
-  uint16_t prod_id = readRegister(ADIS16500_PROD_ID_ADDR);
+  uint16_t prod_id = read_register(ADIS16500_PROD_ID_ADDR);
 
   misc_printf("ADIS165xx Product ID = 0x%04X (0x4074) - ", prod_id);
 
@@ -161,14 +185,14 @@ uint32_t Adis165xx::init(
 #define ADIS16500_FILT_CTRL 0x5C // shift so we can or the data into the first 16 bit packet
   // [15:3] not used
   // [2:0] 0 no digital filter default)
-  writeRegister(ADIS16500_FILT_CTRL, 0);
+  write_register(ADIS16500_FILT_CTRL, 0);
 
 #define ADIS16500_DEC_RATE 0x64 // decimation
   // [15:11] don't care
   // [10:0] decimation rate minus 1, e.g., use 5-1 = 4
 
   uint16_t dec_rate = 2000 / sampleRateHz_ - 1;
-  writeRegister(ADIS16500_DEC_RATE, dec_rate); // 00 for 2000 Hz, 2000/400-1 = 4 for 400 Hz.
+  write_register(ADIS16500_DEC_RATE, dec_rate); // 00 for 2000 Hz, 2000/400-1 = 4 for 400 Hz.
 
   // Miscellaneous Control Register (MSC_CTRL)
 #define ADIS16500_MSC_CTRL 0x60
@@ -188,14 +212,14 @@ uint32_t Adis165xx::init(
 
   if (sampleRateHz_ == 2000) // use 16-bit data mode
   {
-    writeRegister(ADIS16500_MSC_CTRL, 0x0085); // values 0b0000 0000 1000 0101 = 0x0085
+    write_register(ADIS16500_MSC_CTRL, 0x0085); // values 0b0000 0000 1000 0101 = 0x0085
   } else                                       // use 32-bit data mode
   {
-    writeRegister(ADIS16500_MSC_CTRL, 0x0285); // values 0b0000 0010 1000 0101 = 0x0285
+    write_register(ADIS16500_MSC_CTRL, 0x0285); // values 0b0000 0010 1000 0101 = 0x0285
   }
 
 #define ADIS16500_DIAG_STAT 0x02
-  uint16_t diag_stat = readRegister(ADIS16500_DIAG_STAT);
+  uint16_t diag_stat = read_register(ADIS16500_DIAG_STAT);
   misc_printf("ADIS165xx DIAG_STAT  = 0x%04X (0x%04X) - ", diag_stat, ADIS_OK);
   if (diag_stat == 0) {
     misc_printf("OK\n");
@@ -215,95 +239,80 @@ inline double val(uint8_t * x)
 
 void Adis165xx::extiCallback(void)
 {
-  // Start DMA Read
-  HAL_StatusTypeDef hal_Status = HAL_OK;
+  if (async_bus_ == nullptr) {
+    return;
+  }
+
   drdy_ = time64.Us();
-  if (sampleRateHz_ == 2000) hal_Status = spi_.startDma(BURST_READ, ADIS_BUFFBYTES16);
-  else hal_Status = spi_.startDma(BURST_READ, ADIS_BUFFBYTES32);
-  (void) hal_Status;
+  exti_signal_.trigger();
 }
 
-void Adis165xx::spiTxRxCpltCallback(void) // called when DMA data is ready
+AsyncTask<void> Adis165xx::run()
 {
-  uint8_t * rx = spi_.endDma();
-  ImuPacket p = {0};
+  uint8_t tx[ADIS_BUFFBYTES32] = {};
+  uint8_t rx[ADIS_BUFFBYTES32] = {};
 
-  if (sampleRateHz_ == 2000) {
-    // compute checksum
-    uint16_t sum = 0;
-    for (int n = 2; n < (ADIS_BUFFBYTES16 - 2); n++) sum += (uint16_t) rx[n];
+  while (true) {
+    co_await exti_signal_.wait_for_trigger();
 
-    int16_t data[ADIS_BUFFBYTES16 / 2];
-    for (int i = 0; i < ADIS_BUFFBYTES16 / 2; i++)
-      data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
-    if (sum == data[10]) {
-      p.header.status = (uint16_t) data[1];
-      p.gyro[0] = (double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
-      p.gyro[1] = (double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
-      p.gyro[2] = (double) data[4] * 0.001745329251994;  // rad/s, or use 0.1 deg/s
-      p.accel[0] = (double) data[5] * 0.01225;          // m/s^2
-      p.accel[1] = (double) data[6] * 0.01225;          // m/s^2
-      p.accel[2] = (double) data[7] * 0.01225;           // m/s^2
-      p.temperature = (double) data[8] * 0.1 + 273.15;   // K
-      p.dataTime = (double) ((uint16_t) data[9]) / sampleRateHz_;
+    const uint16_t transfer_size = sampleRateHz_ == 2000 ? ADIS_BUFFBYTES16 : ADIS_BUFFBYTES32;
+    std::memset(tx, 0, transfer_size);
+    tx[0] = BURST_READ;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, transfer_size)).status != AsyncStatus::OK) {
+      continue;
     }
-  } else {
-    // compute checksum
-    uint16_t sum = 0;
-    for (int n = 2; n < (ADIS_BUFFBYTES32 - 2); n++) sum += (uint16_t) rx[n];
 
-    int16_t data[ADIS_BUFFBYTES32 / 2];
-    for (int i = 0; i < ADIS_BUFFBYTES32 / 2; i++)
-      data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
+    ImuPacket p = {0};
 
-    if (sum == data[16]) {
-      p.header.status = (uint16_t) data[1];
-      p.gyro[0] = val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.gyro[1] = val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.gyro[2] = val(rx + 12) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
-      p.accel[0] = val(rx + 16) * 0.01225;             // m/s^2
-      p.accel[1] = val(rx + 20) * 0.01225;             // m/s^2
-      p.accel[2] = val(rx + 24) * 0.01225;              // m/s^2
-      p.temperature = (double) data[14] * 0.1 + 273.15; // K
-      p.dataTime = (double) ((uint16_t) data[15]) / sampleRateHz_;
+    if (sampleRateHz_ == 2000) {
+      // compute checksum
+      uint16_t sum = 0;
+      for (int n = 2; n < (ADIS_BUFFBYTES16 - 2); n++) sum += (uint16_t) rx[n];
+
+      int16_t data[ADIS_BUFFBYTES16 / 2];
+      for (int i = 0; i < ADIS_BUFFBYTES16 / 2; i++)
+        data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
+      if (sum == data[10]) {
+        p.header.status = (uint16_t) data[1];
+        p.gyro[0] = (double) data[2] * 0.001745329251994; // rad/s, or use 0.1 deg/s
+        p.gyro[1] = (double) data[3] * 0.001745329251994; // rad/s, or use 0.1 deg/s
+        p.gyro[2] = (double) data[4] * 0.001745329251994;  // rad/s, or use 0.1 deg/s
+        p.accel[0] = (double) data[5] * 0.01225;          // m/s^2
+        p.accel[1] = (double) data[6] * 0.01225;          // m/s^2
+        p.accel[2] = (double) data[7] * 0.01225;           // m/s^2
+        p.temperature = (double) data[8] * 0.1 + 273.15;   // K
+        p.dataTime = (double) ((uint16_t) data[9]) / sampleRateHz_;
+      }
+    } else {
+      // compute checksum
+      uint16_t sum = 0;
+      for (int n = 2; n < (ADIS_BUFFBYTES32 - 2); n++) sum += (uint16_t) rx[n];
+
+      int16_t data[ADIS_BUFFBYTES32 / 2];
+      for (int i = 0; i < ADIS_BUFFBYTES32 / 2; i++)
+        data[i] = (int16_t) rx[2 * i] << 8 | ((int16_t) rx[2 * i + 1] & 0x00FF);
+
+      if (sum == data[16]) {
+        p.header.status = (uint16_t) data[1];
+        p.gyro[0] = val(rx + 4) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
+        p.gyro[1] = val(rx + 8) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
+        p.gyro[2] = val(rx + 12) * 0.001745329251994;     // rad/s, or use 0.1 deg/s
+        p.accel[0] = val(rx + 16) * 0.01225;             // m/s^2
+        p.accel[1] = val(rx + 20) * 0.01225;             // m/s^2
+        p.accel[2] = val(rx + 24) * 0.01225;              // m/s^2
+        p.temperature = (double) data[14] * 0.1 + 273.15; // K
+        p.dataTime = (double) ((uint16_t) data[15]) / sampleRateHz_;
+      }
+    }
+    if (p.header.status == ADIS_OK)
+    {
+      p.header.timestamp = drdy_-groupDelay_;
+      rotate(p.gyro);
+      rotate(p.accel);
+      p.header.complete = time64.Us();
+      write((uint8_t *) &p, sizeof(p));
     }
   }
-  if (p.header.status == ADIS_OK)
-  {
-    p.header.timestamp = drdy_-groupDelay_;
-    rotate(p.gyro);
-    rotate(p.accel);
-    p.header.complete = time64.Us();
-    write((uint8_t *) &p, sizeof(p));
-  }
-
-}
-
-void Adis165xx::writeRegister(uint8_t address, uint16_t value)
-{
-  uint8_t tx[2] = {0};
-  tx[0] = (address) | SPI_WRITE;
-  tx[1] = value & 0x00FF;
-
-  spi_.tx(tx, 2, timeoutMs_);
-  time64.dUs(ADIS_SPI_PAUSE_US);
-  tx[0] = (++address) | SPI_WRITE;
-  tx[1] = (value >> 8) & 0x00FF;
-  spi_.tx(tx, 2, timeoutMs_);
-  time64.dUs(ADIS_SPI_PAUSE_US);
-}
-
-uint16_t Adis165xx::readRegister(uint8_t address)
-{
-  uint8_t tx[2] = {0};
-  uint8_t rx[2] = {0};
-  tx[0] = (address) | SPI_READ;
-  spi_.rx(tx, rx, 2, timeoutMs_);
-  time64.dUs(ADIS_SPI_PAUSE_US);
-  tx[0] = (++address) | SPI_READ;
-  spi_.rx(tx, rx, 2, timeoutMs_);
-  time64.dUs(ADIS_SPI_PAUSE_US);
-  return (uint16_t) rx[1] | (uint16_t) rx[0] << 8;
 }
 
 bool Adis165xx::display(void)
@@ -336,6 +345,12 @@ bool Adis165xx::display(void)
 void Adis165xx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
   (void) poll_phase_offset;
+  if (async_bus_ == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return;
+  }
+
   board.callbacks().register_exti_client(this);
-  board.callbacks().register_spi_client(this);
+  task_ = run();
 }
+

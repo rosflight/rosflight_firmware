@@ -1,4 +1,4 @@
-﻿/**
+/**
  ******************************************************************************
  * File     : STM32H7_Init.cpp
  * Date     : June 3, 2024
@@ -141,6 +141,12 @@ void STM32H7Board::init_board(void)
   // Callbacks initialization
 
   callbacks().clear_all();
+  spi_bus_hspi2().init(&hspi2);
+  callbacks().register_spi_client(&spi_bus_hspi2());
+  spi_bus_hspi3().init(&hspi3);
+  callbacks().register_spi_client(&spi_bus_hspi3());
+  spi_bus_hspi4().init(&hspi4);
+  callbacks().register_spi_client(&spi_bus_hspi4());
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // IMU initialization
@@ -156,6 +162,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &imu0_;
+  if (init_status == DRIVER_OK) { imu0_.attach_bus(spi_bus_hspi4()); }
   if (init_status == DRIVER_OK) { imu0_.register_callbacks(*this); }
 
   misc_printf("\n\nBMI088 (imu1) Initialization\n");
@@ -195,6 +202,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
+  if (init_status == DRIVER_OK) { baro_.attach_bus(spi_bus_hspi3()); }
   if (init_status == DRIVER_OK) { baro_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +218,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
+  if (init_status == DRIVER_OK) { mag_.attach_bus(spi_bus_hspi2()); }
   if (init_status == DRIVER_OK) { mag_.register_callbacks(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,4 +419,5 @@ void STM32H7Board::init_board(void)
 #endif
   // clang-format on
 }
+
 

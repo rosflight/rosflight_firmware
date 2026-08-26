@@ -38,10 +38,10 @@
 #ifndef ADIS165XX_H_
 #define ADIS165XX_H_
 
+#include "Async.h"
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
-
-#include "Spi.h"
+#include "SpiBus.h"
 #include "misc.h"
 
 #define ADIS_OK (0x0000)
@@ -64,37 +64,30 @@ public:
     TIM_HandleTypeDef * htim, TIM_TypeDef * htim_instance, uint32_t htim_channel, uint32_t htim_period_us,
     const double *rotation
   );
+  void attach_bus(SpiBus & bus) { async_bus_ = &bus; }
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void spiTxRxCpltCallback(void);
   void extiCallback(void);
   bool display(void);
   bool isMy(uint16_t exti_pin) { return drdyPin_ == exti_pin; }
-  bool isMy(SPI_HandleTypeDef * hspi) { return hspi == spi_.hspi(); }
-  SPI_HandleTypeDef * hspi(void) { return spi_.hspi(); }
   void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}
   bool read(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.read(data, size)==DoubleBufferStatus::OK); }
 
 private:
+  AsyncTask<void> run();
   bool write(uint8_t * data, uint16_t size) { return (uint16_t)(double_buffer_.write(data, size)==DoubleBufferStatus::OK); }
 
   DoubleBuffer double_buffer_;
 
   uint16_t sampleRateHz_;
   uint64_t groupDelay_;
-  // SPI Stuff
-  Spi spi_;
   uint16_t drdyPin_;
   uint64_t drdy_;
 
-  uint16_t timeoutMs_;
-  // ADIS165xx Stuff
-  GPIO_TypeDef * resetPort_;
-  uint16_t resetPin_;
-  TIM_HandleTypeDef * htim_;
-  uint32_t htimChannel_;
-  void writeRegister(uint8_t address, uint16_t value);
-  uint16_t readRegister(uint8_t address);
+  SpiBus * async_bus_ = nullptr;
+  SpiBus::Device async_device_ = {};
+  AcquisitionSignal exti_signal_;
+  AsyncTask<void> task_;
 };
 
 #endif /* ADIS165XX_H_ */

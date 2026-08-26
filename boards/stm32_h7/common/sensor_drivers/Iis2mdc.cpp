@@ -36,14 +36,16 @@
  **/
 
 #include "Iis2mdc.h"
-#include "stm32_h7.hpp"
+
 #include "Packets.h"
+#include "Spi.h"
 #include "Time64.h"
 #include "misc.h"
+#include "stm32_h7.hpp"
+
+#include <cstring>
 
 extern Time64 time64;
-
-//#define IIS2MDC_OK (0x0F)
 
 #define WHO_AM_I 0x4F
 #define CFG_REG_A 0x60
@@ -51,7 +53,6 @@ extern Time64 time64;
 #define CFG_REG_C 0x62
 #define OFFSET_REG 0x45
 #define STATUS_REG 0x67
-#define OUT_FLUX 0x68
 #define OUT_TEMP 0x6E
 
 #define SPI_WRITE 0x00
@@ -62,44 +63,48 @@ extern Time64 time64;
 #define IIS_TEMP_CMD (OUT_TEMP | SPI_READ)
 #define IIS_TEMP_BYTES 3
 
-DMA_RAM uint8_t iis2mdc_dma_txbuf[SPI_DMA_MAX_BUFFER_SIZE];
-DMA_RAM uint8_t iis2mdc_dma_rxbuf[SPI_DMA_MAX_BUFFER_SIZE];
-
 DTCM_RAM uint8_t iis2mdc_double_buffer[2 * sizeof(MagPacket)];
 
 #define ROLLOVER 10000
 #define IIS2MDC_CMD 0
 #define IIS2MDC_RX_H 97
 #define IIS2MDC_RX_T (IIS2MDC_RX_H + 1)
-#define IIS2MDC_IDLE_STATE 0xFFFF
-#define IIS2MDC_STATE_ERROR 0xFFFF
 
 uint32_t Iis2mdc::init(
-  // Driver initializers
-  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, // Reset GPIO Port
-  uint16_t drdy_pin,                                 // Reset GPIO Pin
-  // SPI initializers
-  SPI_HandleTypeDef * hspi, GPIO_TypeDef * cs_port, // Chip Select GPIO Port
-  uint16_t cs_pin,                                  // Chip Select GPIO Pin
-  const double *rotation
-)
+  uint16_t sample_rate_hz, GPIO_TypeDef * drdy_port, uint16_t drdy_pin, SPI_HandleTypeDef * hspi,
+  GPIO_TypeDef * cs_port, uint16_t cs_pin, const double *rotation)
 {
-  memcpy(rotation_,rotation, sizeof(double)*9);
+  (void) drdy_port;
+  (void) drdy_pin;
+  memcpy(rotation_, rotation, sizeof(double) * 9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Iis2mdc");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  drdyPin_ = drdy_pin;
   drdy_ = 0;
-  spi_.init(hspi, iis2mdc_dma_txbuf, iis2mdc_dma_rxbuf, cs_port, cs_pin);
+  uint8_t init_txbuf[2] = {};
+  uint8_t init_rxbuf[2] = {};
+  Spi init_spi;
+  init_spi.init(hspi, init_txbuf, init_rxbuf, cs_port, cs_pin);
+  async_device_.cs_port = cs_port;
+  async_device_.cs_pin = cs_pin;
 
-  HAL_GPIO_WritePin(spi_.port_, spi_.pin_, GPIO_PIN_SET);
-
+  HAL_GPIO_WritePin(init_spi.port_, init_spi.pin_, GPIO_PIN_SET);
 
   double_buffer_.init(iis2mdc_double_buffer, sizeof(iis2mdc_double_buffer));
 
-  spiState_ = IIS2MDC_IDLE_STATE;
-  dmaRunning_ = false;
+
+  const auto write_register = [&](uint8_t address, uint8_t value) {
+    uint8_t tx[2] = {(uint8_t) (address | SPI_WRITE), value};
+    init_spi.tx(tx, 2, 100);
+  };
+
+  const auto read_register = [&](uint8_t address) {
+    uint8_t tx[2] = {(uint8_t) (address | SPI_READ), 0};
+    uint8_t rx[2] = {0};
+    HAL_StatusTypeDef hal_status = init_spi.rx(tx, rx, 2, 100);
+    return (uint8_t) (rx[1] | hal_status);
+  };
 
   //	uint8_t odr_mode=3;
   //	if( sampleRateHz_ <= 10) 		{sampleRateHz_ =  10; odr_mode = 0; }
@@ -108,7 +113,7 @@ uint32_t Iis2mdc::init(
   //	else if( sampleRateHz_ <= 100) 	{sampleRateHz_ = 100; odr_mode = 3; }
   //	else 			                {sampleRateHz_ = 100; odr_mode = 3; }
 
-  uint8_t id = readRegister(WHO_AM_I);
+  uint8_t id = read_register(WHO_AM_I);
 
   misc_printf("Iis2mdc: WHO_AM_I = 0x%02X (0x40) - ", id);
   if (id == 0x40) misc_printf(" Matches\n");
@@ -125,9 +130,9 @@ uint32_t Iis2mdc::init(
   // 4:  = 0 High resolution Mode (LP=0)
   // 3:2 = 00 10 Hz Data Rate (ODR)
   // 1:0 = 00 Continuous Mode
-  writeRegister(CFG_REG_A, 0x20); // soft reset
+  write_register(CFG_REG_A, 0x20); // soft reset
   time64.dUs(10);                 // Wait at least 5 us
-  writeRegister(CFG_REG_A, 0x40); // reboot
+  write_register(CFG_REG_A, 0x40); // reboot
   time64.dMs(25);                 // wait at least 20 ms for reboot
 
   // Register A (0x60)
@@ -140,9 +145,8 @@ uint32_t Iis2mdc::init(
   // 1:0 = 00 Continuous Mode, 01 = single mode
   //	write_register(0x60,0x81); // 1000 0001 = 0x81 For Single Acq
   // 1000 1100 = 0x8C For 100 Hz.
-  // writeRegister(CFG_REG_A,0x80|(odr_mode<<2)); // continuous mode
-  writeRegister(CFG_REG_A, 0x83); // Set to idle
-
+  // write_register(CFG_REG_A,0x80|(odr_mode<<2)); // continuous mode
+  write_register(CFG_REG_A, 0x83); // Set to idle
   // Register B (0x61)
   // [7:5] 000
   // [4]  1 OFF_CANC_ONE_SHOT 1=Offset Cancellation in single mode
@@ -150,8 +154,7 @@ uint32_t Iis2mdc::init(
   // [2]  0 Set Freq of Set pulse to 63 ODR
   // [1]  1, OFF_CANC 1= enable offset cancellation in single mode
   // [0]  0 LPF disable offset filter (1- enabled)
-  writeRegister(CFG_REG_B, 0x12); // 0001 0010 For Single Mode (alternating set/reset)
-
+  write_register(CFG_REG_B, 0x12); // 0001 0010 For Single Mode (alternating set/reset)
   // Register C (0x62)
   // 7: =0 Unused
   // 6: =0 INT_on_PIN Enable event interrupts
@@ -162,17 +165,17 @@ uint32_t Iis2mdc::init(
   // 2: =0 Unused
   // 1: =0 SELF_TEST
   // 0: =1 DRDY_on_PIN Enable DRDY
-  writeRegister(CFG_REG_C, 0x31); // 0011 0001 = 0x31 // 0011 1001 = 0x39
+  write_register(CFG_REG_C, 0x31); // 0011 0001 = 0x31 // 0011 1001 = 0x39
 
   // INT_CTRL_REG (0x63)
   // Disable Interrupts (this is not DRDY)
-  writeRegister(0x63, 0x00);
-  writeRegister(0x64, 0x00);
-  writeRegister(0x65, 0x00);
-  writeRegister(0x66, 0x00);
+  write_register(0x63, 0x00);
+  write_register(0x64, 0x00);
+  write_register(0x65, 0x00);
+  write_register(0x66, 0x00);
 
   // Read Status Register (0x67)
-  uint8_t sensor_status = readRegister(STATUS_REG);
+  uint8_t sensor_status = read_register(STATUS_REG);
   misc_printf("IIS2MDC: Mag status register = 0x%02X (0x00)\n", sensor_status);
   if (sensor_status != 0x00) initializationStatus_ |= DRIVER_SELF_DIAG_ERROR;
 
@@ -180,7 +183,7 @@ uint32_t Iis2mdc::init(
   uint8_t tx[7], h[7];
   memset(tx, 0, sizeof(tx));
   tx[0] = OFFSET_REG | SPI_READ;
-  spi_.rx(tx, h, 7, 100);
+  init_spi.rx(tx, h, 7, 100);
   misc_printf("H Offsets should be zero %8d %8d %8d mGauss\n", ((int16_t) h[1] | (int16_t) h[2] << 8) * 3 / 2,
               ((int16_t) h[3] | (int16_t) h[4] << 8) * 3 / 2, ((int16_t) h[5] | (int16_t) h[6] << 8) * 3 / 2);
 
@@ -191,67 +194,71 @@ bool Iis2mdc::poll(uint64_t poll_counter)
 {
   uint16_t poll_state;
   if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
+  if (async_bus_ == nullptr) return false;
 
-  // Start measurement sequence
-  if (poll_state == IIS2MDC_CMD) // Command Pressure Read
-  {
+  poll_signal_.tick(poll_counter);
+  if (poll_state == IIS2MDC_CMD) {
     drdy_ = time64.Us();
-    uint8_t cmd[2] = {CFG_REG_A | SPI_WRITE, 0x81}; // CFG_REG_A
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(cmd, 2)))) spiState_ = poll_state;
-    else spiState_ = IIS2MDC_STATE_ERROR;
-  }
-  // Read Status & Flux
-  else if (poll_state == IIS2MDC_RX_H) {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_FLUX_CMD, IIS_FLUX_BYTES)))) spiState_ = poll_state;
-    else spiState_ = IIS2MDC_STATE_ERROR;
-  }
-  // Read Temperature. Chip does not autoincrement into the temperature register, so we have to do separate reads for
-  // flux and temperature
-  else if (poll_state == IIS2MDC_RX_T) {
-    if ((dmaRunning_ = (HAL_OK == spi_.startDma(IIS_TEMP_CMD, IIS_TEMP_BYTES)))) spiState_ = poll_state;
-    else spiState_ = IIS2MDC_STATE_ERROR;
+    poll_signal_.trigger();
   }
   return false;
 }
 
-void Iis2mdc::spiTxRxCpltCallback(void)
+AsyncTask<void> Iis2mdc::run()
 {
-  uint8_t * rx = spi_.endDma();
-  static MagPacket p;
-  static int16_t previous_data[3] = {0};
-  if (spiState_ == IIS2MDC_RX_H) // Flux Data and DRDY
-  {
-    memset(&p, 0, sizeof(p)); // clear p
+  MagPacket p = {};
+  int16_t previous_data[3] = {0, 0, 0};
+  uint8_t tx[IIS_FLUX_BYTES] = {};
+  uint8_t rx[IIS_FLUX_BYTES] = {};
+
+  while (true) {
+    co_await poll_signal_.wait_for_trigger();
+    tx[0] = CFG_REG_A | SPI_WRITE;
+    tx[1] = 0x81;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, 2)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    co_await poll_signal_.delay_ticks(IIS2MDC_RX_H - IIS2MDC_CMD);
+    std::memset(tx, 0, IIS_FLUX_BYTES);
+    tx[0] = IIS_FLUX_CMD;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, IIS_FLUX_BYTES)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    std::memset(&p, 0, sizeof(p));
     p.header.complete = time64.Us();
     p.header.status = rx[1];
 
     int16_t data = (rx[3] << 8) | rx[2];
-    p.flux[0] = (data + previous_data[0]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB, 1mG = 1e-7 T.
+    p.flux[0] = (data + previous_data[0]) / 2. * 1.5e-7;
     previous_data[0] = data;
 
     data = (rx[5] << 8) | rx[4];
-    p.flux[1] = (data + previous_data[1]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
+    p.flux[1] = (data + previous_data[1]) / 2. * 1.5e-7;
     previous_data[1] = data;
 
     data = -((rx[7] << 8) | rx[6]);
-    p.flux[2] = (data + previous_data[2]) / 2. * 1.5e-7; // T, 1.5e-7 T/LSB
+    p.flux[2] = (data + previous_data[2]) / 2. * 1.5e-7;
     previous_data[2] = data;
 
-  } else if (spiState_ == IIS2MDC_RX_T) {
-    int16_t data = (rx[2] << 8) | rx[1];
-    p.temperature = (double) data / 8.0 + 25.0 + 273.15; // K
+    co_await poll_signal_.delay_ticks(IIS2MDC_RX_T - IIS2MDC_RX_H);
+    std::memset(tx, 0, IIS_TEMP_BYTES);
+    tx[0] = IIS_TEMP_CMD;
+    if ((co_await async_bus_->transfer(async_device_, tx, rx, IIS_TEMP_BYTES)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    data = (rx[2] << 8) | rx[1];
+    p.temperature = (double) data / 8.0 + 25.0 + 273.15;
 
     p.header.timestamp = drdy_;
     p.header.complete = time64.Us();
-    if (p.header.status == IIS2MDC_OK)
-    {
+    if (p.header.status == IIS2MDC_OK) {
       rotate(p.flux);
       write((uint8_t *) &p, sizeof(p));
     }
   }
-
-  spiState_ = IIS2MDC_IDLE_STATE;
-  dmaRunning_ = false;
 }
 
 bool Iis2mdc::display()
@@ -259,15 +266,12 @@ bool Iis2mdc::display()
   MagPacket p;
   char name[] = "Iis2mdc (mag)";
   if (read((uint8_t *) &p, sizeof(p))) {
-
     float total_flux = sqrt(p.flux[0] * p.flux[0] + p.flux[1] * p.flux[1] + p.flux[2] * p.flux[2]);
 
-    misc_header(name, p.header );
-
+    misc_header(name, p.header);
     misc_f32(NAN, NAN, p.flux[0] * 1e6, "hx", "%6.2f", "uT");
     misc_f32(NAN, NAN, p.flux[1] * 1e6, "hy", "%6.2f", "uT");
     misc_f32(NAN, NAN, p.flux[2] * 1e6, "hz", "%6.2f", "uT");
-
     misc_f32(20, 100, total_flux * 1e6, "|h|", "%6.2f", "uT");
     misc_f32(18, 50, p.temperature - 273.15, "Temp", "%5.1f", "C");
     misc_x16(IIS2MDC_OK, p.header.status, "Status");
@@ -280,26 +284,16 @@ bool Iis2mdc::display()
   return 0;
 }
 
-void Iis2mdc::writeRegister(uint8_t address, uint8_t value)
-{
-  uint8_t tx[2] = {0};
-  tx[0] = (address) | SPI_WRITE;
-  tx[1] = value;
-  spi_.tx(tx, 2, 100);
-}
-
-uint8_t Iis2mdc::readRegister(uint8_t address)
-{
-  uint8_t tx[2] = {0};
-  uint8_t rx[2] = {0};
-  tx[0] = (address) | SPI_READ;
-  tx[1] = 0;
-  HAL_StatusTypeDef hal_status = spi_.rx(tx, rx, 2, 100);
-  return rx[1] | hal_status;
-}
-
 void Iis2mdc::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
+  if (async_bus_ == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return;
+  }
+
   board.callbacks().register_poll_client(this, poll_phase_offset);
-  board.callbacks().register_spi_client(this);
+  task_ = run();
 }
+
+
+

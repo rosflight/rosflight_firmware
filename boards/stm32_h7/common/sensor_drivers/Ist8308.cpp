@@ -36,9 +36,10 @@
  **/
 
 #include "Ist8308.h"
-#include "stm32_h7.hpp"
+
 #include "Time64.h"
 #include "misc.h"
+#include "stm32_h7.hpp"
 
 extern Time64 time64;
 
@@ -46,10 +47,6 @@ extern Time64 time64;
 #define IST8308_CMD 0
 #define IST8308_TX 89
 #define IST8308_RX 92
-#define IST8308_STATE_ERROR 0xFFFF
-#define IST8308_IDLE_STATE 0xFFFF
-
-DMA_RAM uint8_t ist8308_i2c_dma_buf[I2C_DMA_MAX_BUFFER_SIZE];
 DTCM_RAM uint8_t ist8308_double_buffer[2 * sizeof(MagPacket)];
 
 #define WAI_REG 0x0
@@ -57,86 +54,42 @@ DTCM_RAM uint8_t ist8308_double_buffer[2 * sizeof(MagPacket)];
 
 #define STAT1_REG 0x10
 #define STAT1_VAL_DRDY 0x1
-#define STAT1_VAL_DOR 0x2
-
-#define DATAX_L_REG 0x11
-#define DATAX_H_REG 0x12
-#define DATAY_L_REG 0x13
-#define DATAY_H_REG 0x14
-#define DATAZ_L_REG 0x15
-#define DATAZ_H_REG 0x16
-
-#define CNTL1_REG 0x30
 
 #define CNTL2_REG 0x31
-#define CNTL2_VAL_STANDBY_MODE 0x0
 #define CNTL2_VAL_SINGLE_MODE 0x1
-#define CNTL2_VAL_CONT_ODR10_MODE 0x2
-#define CNTL2_VAL_CONT_ODR20_MODE 0x4
-#define CNTL2_VAL_CONT_ODR50_MODE 0x6
-#define CNTL2_VAL_CONT_ODR100_MODE 0x8
-#define CNTL2_VAL_CONT_ODR200_MODE 0xA
-#define CNTL2_VAL_CONT_ODR8_MODE 0xB
-#define CNTL2_VAL_CONT_ODR1_MODE 0xC
-#define CNTL2_VAL_CONT_ODR0P5_MODE 0xD
-#define CNTL2_VAL_SINGLE_TEST_MODE 0x10
 
 #define CNTL3_REG 0x32
 #define CNTL3_VAL_SRST 1
-#define CNTL3_VAL_DRDY_POLARITY_HIGH (1 << 2)
-#define CNTL3_VAL_DRDY_EN (1 << 3)
 
 #define CNTL4_REG 0x34
 #define CNTL4_VAL_DYNAMIC_RANGE_500 0
-#define CNTL4_VAL_DYNAMIC_RANGE_200 0x1
 
 #define OSRCNTL_REG 0x41
-#define OSRCNTL_VAL_XZ_1 (0)
-#define OSRCNTL_VAL_XZ_2 (1)
-#define OSRCNTL_VAL_XZ_4 (2)
-#define OSRCNTL_VAL_XZ_8 (3)
 #define OSRCNTL_VAL_XZ_16 (4)
-#define OSRCNTL_VAL_XZ_32 (4)
-#define OSRCNTL_VAL_Y_1 (0 << 3)
-#define OSRCNTL_VAL_Y_2 (1 << 3)
-#define OSRCNTL_VAL_Y_4 (2 << 3)
-#define OSRCNTL_VAL_Y_8 (3 << 3)
 #define OSRCNTL_VAL_Y_16 (4 << 3)
-#define OSRCNTL_VAL_Y_32 (5 << 3)
 
-uint32_t Ist8308::init(
-  // Driver initializers
-  uint16_t sample_rate_hz,
-  // I2C initializers
-  I2C_HandleTypeDef * hi2c, uint16_t i2c_address,
-  const double *rotation
-)
+uint32_t Ist8308::init(uint16_t sample_rate_hz, I2C_HandleTypeDef * hi2c, uint16_t i2c_address, const double *rotation)
 {
-  memcpy(rotation_,rotation, sizeof(double)*9);
+  memcpy(rotation_, rotation, sizeof(double) * 9);
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Ist8308");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
 
-  hi2c_ = hi2c;
   address_ = i2c_address << 1;
 
-  i2cState_ = IST8308_IDLE_STATE;
-  dmaRunning_ = false;
 
   double_buffer_.init(ist8308_double_buffer, sizeof(ist8308_double_buffer));
 
   drdy_ = 0;
 
-  dtMs_ = 1000. / (double) sampleRateHz_;
-
   // Check if we are the right chip
   uint8_t reg = WAI_REG;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK) {
+  if (HAL_I2C_Master_Transmit(hi2c, address_, &reg, 1, 1000) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
   uint8_t device_id = 0;
-  if (HAL_I2C_Master_Receive(hi2c_, address_, &device_id, 1, 1000) != HAL_OK) {
+  if (HAL_I2C_Master_Receive(hi2c, address_, &device_id, 1, 1000) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
@@ -145,17 +98,15 @@ uint32_t Ist8308::init(
     misc_printf("OK\n");
   } else {
     misc_printf("ERROR\n");
-    {
-      initializationStatus_ |= DRIVER_ID_MISMATCH;
-      return initializationStatus_;
-    }
+    initializationStatus_ |= DRIVER_ID_MISMATCH;
+    return initializationStatus_;
   }
 
   uint8_t cmd[2];
   // Reset
   cmd[0] = CNTL3_REG;
   cmd[1] = CNTL3_VAL_SRST;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK) {
+  if (HAL_I2C_Master_Transmit(hi2c, address_, cmd, 2, 1000) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
@@ -163,12 +114,12 @@ uint32_t Ist8308::init(
 
   // Write CNTL3_REG (to check status?)
   reg = CNTL3_REG;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, &reg, 1, 1000) != HAL_OK) {
+  if (HAL_I2C_Master_Transmit(hi2c, address_, &reg, 1, 1000) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
   uint8_t cntl3 = 0;
-  if (HAL_I2C_Master_Receive(hi2c_, address_, &cntl3, 1, 1000) != HAL_OK) {
+  if (HAL_I2C_Master_Receive(hi2c, address_, &cntl3, 1, 1000) != HAL_OK) {
     initializationStatus_ |= DRIVER_HAL_ERROR;
     return initializationStatus_;
   }
@@ -185,15 +136,15 @@ uint32_t Ist8308::init(
 
   cmd[0] = CNTL4_REG;
   cmd[1] = CNTL4_VAL_DYNAMIC_RANGE_500;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Transmit(hi2c, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
 
   cmd[0] = OSRCNTL_REG;
   cmd[1] = OSRCNTL_VAL_Y_16 | OSRCNTL_VAL_XZ_16;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Transmit(hi2c, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
 
   cmd[0] = CNTL2_REG;
   cmd[1] = CNTL2_VAL_SINGLE_MODE;
-  if (HAL_I2C_Master_Transmit(hi2c_, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
+  if (HAL_I2C_Master_Transmit(hi2c, address_, cmd, 2, 1000) != HAL_OK) return DRIVER_HAL_ERROR;
 
   return initializationStatus_;
 }
@@ -202,66 +153,69 @@ bool Ist8308::poll(uint64_t poll_counter)
 {
   uint16_t poll_state;
   if (!stm32_h7_board.polling_timer().polling_state(poll_counter, ROLLOVER, poll_state)) return false;
-  if (poll_state == IST8308_CMD) {
-//    drdy_ = time64.Us();
-    ist8308_i2c_dma_buf[0] = CNTL2_REG;
-    ist8308_i2c_dma_buf[1] = CNTL2_VAL_SINGLE_MODE;
+  if (async_bus_ == nullptr) return false;
 
-    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 2))))
-      i2cState_ = poll_state;
-    else i2cState_ = IST8308_STATE_ERROR;
-  } else if (poll_state == IST8308_TX) // Write the register we want to read
-  {
-    drdy_ = time64.Us();
-    ist8308_i2c_dma_buf[0] = STAT1_REG;
-    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Transmit_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 1))))
-      i2cState_ = poll_state;
-    else i2cState_ = IST8308_STATE_ERROR;
-  } else if (poll_state == IST8308_RX) {
-    if ((dmaRunning_ = (HAL_OK == HAL_I2C_Master_Receive_DMA(hi2c_, address_, ist8308_i2c_dma_buf, 7))))
-      i2cState_ = poll_state;
-    else i2cState_ = IST8308_STATE_ERROR;
+  poll_signal_.tick(poll_counter);
+  if (poll_state == IST8308_CMD) {
+    poll_signal_.trigger();
   }
-  return dmaRunning_;
+  return false;
 }
 
-void Ist8308::i2cMasterRxCpltCallback(void)
+AsyncTask<void> Ist8308::run()
 {
-  //	if(i2cState_ == IST8308_CMD) {} // do nothing
-  //	if(i2cState_ == IST8308_TX) {}  // do nothing
-  //  else
-  if (i2cState_ == IST8308_RX) {
+  uint8_t tx[2] = {};
+  uint8_t rx[7] = {};
+
+  while (true) {
+    co_await poll_signal_.wait_for_trigger();
+    tx[0] = CNTL2_REG;
+    tx[1] = CNTL2_VAL_SINGLE_MODE;
+    if ((co_await async_bus_->write(address_, tx, 2)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    co_await poll_signal_.delay_ticks(IST8308_TX - IST8308_CMD);
+    drdy_ = time64.Us();
+    tx[0] = STAT1_REG;
+    if ((co_await async_bus_->write(address_, tx, 1)).status != AsyncStatus::OK) {
+      continue;
+    }
+
+    co_await poll_signal_.delay_ticks(IST8308_RX - IST8308_TX);
+    if ((co_await async_bus_->read(address_, rx, 7)).status != AsyncStatus::OK) {
+      continue;
+    }
+
     MagPacket p;
     p.header.timestamp = drdy_;
     p.header.complete = time64.Us();
-    p.header.status = ist8308_i2c_dma_buf[0];
+    p.header.status = rx[0];
 
-    if (p.header.status == STAT1_VAL_DRDY)
-    {
+    if (p.header.status == STAT1_VAL_DRDY) {
       p.temperature = 0;
 
-      int16_t iflux = ((int16_t) ist8308_i2c_dma_buf[2] << 8) | (int16_t) ist8308_i2c_dma_buf[1];
-      p.flux[0] = (double) iflux * 1.515e-7; // Tesla
+      int16_t iflux = ((int16_t) rx[2] << 8) | (int16_t) rx[1];
+      p.flux[0] = (double) iflux * 1.515e-7;
 
-      iflux = ((int16_t) ist8308_i2c_dma_buf[4] << 8) | (int16_t) ist8308_i2c_dma_buf[3];
-      p.flux[1] = (double) iflux * 1.1515e-7; // Tesla
+      iflux = ((int16_t) rx[4] << 8) | (int16_t) rx[3];
+      p.flux[1] = (double) iflux * 1.1515e-7;
 
-      iflux = ((int16_t) ist8308_i2c_dma_buf[6] << 8) | (int16_t) ist8308_i2c_dma_buf[5];
-      p.flux[2] = -(double) iflux * 1.1515e-7; // Tesla
+      iflux = ((int16_t) rx[6] << 8) | (int16_t) rx[5];
+      p.flux[2] = -(double) iflux * 1.1515e-7;
 
       rotate(p.flux);
       write((uint8_t *) &p, sizeof(p));
     }
   }
-  i2cState_ = IST8308_STATE_ERROR;
-  dmaRunning_ = false;
 }
+
 bool Ist8308::display()
 {
   MagPacket p;
   char name[] = "Ist8308 (mag)";
   if (read((uint8_t *) &p, sizeof(p))) {
-    misc_header(name, p.header );
+    misc_header(name, p.header);
 
     misc_printf("%10.3f %10.3f %10.3f uT   ", p.flux[0] * 1e6 + 10.9, p.flux[1] * 1e6 + 45.0, p.flux[2] * 1e6 - 37.5);
     misc_printf(" |                                       ");
@@ -278,6 +232,13 @@ bool Ist8308::display()
 
 void Ist8308::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
+  if (async_bus_ == nullptr) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    return;
+  }
+
   board.callbacks().register_poll_client(this, poll_phase_offset);
-  board.callbacks().register_i2c_client(this);
+  task_ = run();
 }
+
+
