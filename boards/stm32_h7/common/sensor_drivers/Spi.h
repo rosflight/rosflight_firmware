@@ -78,7 +78,6 @@ public:
     return initializationStatus_;
   }
 
-
   HAL_StatusTypeDef rx(uint8_t * tx_buffer, uint8_t * rx_buffer, uint16_t size, uint16_t timeout_ms)
   {
     bool software_nss = !(hspi_->Init.NSS == SPI_NSS_HARD_OUTPUT);

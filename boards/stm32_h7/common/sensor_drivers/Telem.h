@@ -80,7 +80,6 @@ public:
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
   void poll(uint64_t poll_offset);
-  bool display(void) { return 0; }
   uint16_t byteCount(void) { return rxFifo_.byteCount(); }
   bool readByte(uint8_t * data) { return rxFifo_.read(data); }
 

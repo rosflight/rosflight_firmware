@@ -87,7 +87,6 @@ uint32_t Sbus::init(
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Sbus");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  lol_ = false;
   drdy_ = 0;
   huart_ = huart;
   hdmaUartRx_ = hdma_uart_rx;
@@ -214,8 +213,6 @@ AsyncTask<void> Sbus::run()
       p.header.timestamp = drdy_;
       p.header.complete = time64.Us();
       p.header.status = !(p.frameLost | p.failsafeActivated);
-
-      lol_ = p.frameLost | p.failsafeActivated;
 
       write((uint8_t *) &p, sizeof(p));
     }

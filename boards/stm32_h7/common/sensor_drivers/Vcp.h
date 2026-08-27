@@ -58,7 +58,6 @@ public:
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
   void poll(uint64_t poll_offset);
-  bool display(void) { return false; }
 
   uint16_t writePacket(SerialTxPacket * p);
   bool isMy(uint8_t chan) { return channel_ == chan; }

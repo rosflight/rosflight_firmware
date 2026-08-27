@@ -64,7 +64,6 @@ public:
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool startDma(void);
   bool display(void);
-  bool lol(void) { return lol_; }
 
   UART_HandleTypeDef * huart(void) { return huart_; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
@@ -77,7 +76,6 @@ private:
   bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
-  bool lol_;
   uint64_t drdy_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
