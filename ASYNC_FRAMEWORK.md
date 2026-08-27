@@ -67,7 +67,9 @@ This has a few important consequences:
 
 `ExtiSignal` adds GPIO EXTI matching plus a captured IRQ timestamp.
 
-`UartSignal` adds UART handle matching so UART idle interrupts can wake a specific coroutine.
+`UartSignal` adds UART handle matching so a specific UART event path can wake a specific coroutine.
+
+Today that event path is used for UART idle detection. `UartSignal` itself does not own a buffer or encode completion semantics; it is just a handle-matched wake source layered on top of `AcquisitionSignal`.
 
 ## How interrupts reach coroutines
 
@@ -97,6 +99,12 @@ Examples in `Callbacks.cpp`:
 - `HAL_SPI_TxRxCpltCallback()` calls `dispatch_spi(...)`
 - `HAL_I2C_MasterTxCpltCallback()` and `HAL_I2C_MasterRxCpltCallback()` call the I2C dispatchers
 - UART and CDC callbacks do the same for serial drivers
+
+The UART idle path is slightly special:
+
+- `UART_RxIsrCallback()` checks `UART_FLAG_IDLE`
+- if idle is set, it clears the idle flag, disables RX DMA if present, and calls `dispatch_uart_idle(...)`
+- after that, it still calls `dispatch_uart_rxisr(...)` so legacy RXISR-based drivers continue to work
 
 The critical behavior is that coroutine resumption happens inside these callbacks. There is no deferred "run later on the main loop" step.
 
@@ -219,12 +227,28 @@ Pattern:
 - parse the DMA buffer
 - restart DMA
 
-For `Sbus`, the wake source is `UartSignal` wired to UART idle detection.
+For `Sbus`, the wake source is a dedicated `UartSignal` registered through `register_uart_idle_signal(...)`.
+
+The flow is:
+
+- `start()` registers `uart_idle_signal_` and launches `task_ = run()`
+- `run()` starts UART DMA and then waits on `co_await uart_idle_signal_.wait_for_trigger()`
+- the UART ISR notices an idle gap, disables DMA, and triggers the signal
+- the coroutine resumes, parses the fixed-format SBUS frame from the DMA buffer, publishes it, and restarts DMA
+
+That keeps the IRQ-side work minimal: the interrupt only stops DMA and wakes the coroutine, while packet parsing stays in coroutine context.
+
+This design fits SBUS because packets are fixed-size, well-spaced, and expected to terminate with an idle gap before the DMA buffer fills.
 
 For `Ubx`, the driver uses two async flows:
 
 - `pps_task_` waits on an `ExtiSignal` for PPS timestamps
 - `ubx_task_` waits on a generic `AcquisitionSignal` triggered by UART callbacks
+
+So the async framework currently supports both UART styles:
+
+- a dedicated idle-event awaitable path for protocols like SBUS
+- the older RXISR/RX-complete callback path for streaming or byte-oriented drivers
 
 ### 4. Traditional callback-only drivers
 
@@ -263,6 +287,7 @@ The async framework is a set of long-lived driver coroutines that suspend on sig
 - Signal objects support only one waiter.
 - Signal triggers are not counted; multiple fast events can collapse into one pending trigger.
 - Coroutine code may resume in interrupt context, so it must stay ISR-safe.
+- The dedicated UART idle path is a good fit only when the protocol guarantees a meaningful idle boundary before the DMA buffer fills; otherwise a byte-stream or RX callback path is safer.
 - `AsyncStatus::BUSY` and `AsyncStatus::QUEUE_FULL` exist in the enum but are not currently used by the SPI/I2C bus implementations.
 - The coroutine layer is board-specific; unit-test and core firmware code do not depend on it.
 
@@ -277,4 +302,4 @@ The usual pattern is:
 5. Implement either `poll()` or an IRQ-trigger path that calls `trigger()`.
 6. In `start()`, register the signal or poll client and then start the coroutine with `task_ = run()`.
 
-If the device protocol has several timed stages, prefer the poll-plus-`delay_ticks(...)` model. If the device already provides a data-ready interrupt, prefer an `ExtiSignal`-driven coroutine.
+If the device protocol has several timed stages, prefer the poll-plus-`delay_ticks(...)` model. If the device already provides a data-ready interrupt, prefer an `ExtiSignal`-driven coroutine. If the device emits fixed-size packets with a reliable idle gap, a `UartSignal`-driven coroutine can be a good fit.

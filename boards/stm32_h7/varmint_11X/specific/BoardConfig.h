@@ -40,7 +40,7 @@
 
 #include <CommonConfig.h>
 
-#define SANDBOX true
+#define SANDBOX false
 #define BOARD_STATUS_PRINT (false|SANDBOX)
 #define USE_TELEM 0 // 1 = use UART, 0 = use VCP for link to companion computer.
 
