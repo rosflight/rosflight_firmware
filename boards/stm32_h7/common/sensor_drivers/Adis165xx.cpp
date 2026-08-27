@@ -86,10 +86,8 @@ uint32_t Adis165xx::init(
   async_device_.cs_port = cs_port;
   async_device_.cs_pin = cs_pin;
 
-  uint8_t init_txbuf[2] = {};
-  uint8_t init_rxbuf[2] = {};
   Spi init_spi;
-  init_spi.init(hspi, init_txbuf, init_rxbuf, cs_port, cs_pin);
+  init_spi.init(hspi, cs_port, cs_pin);
 
   groupDelay_ = (uint64_t) 1510 + (uint64_t) 500000 / sampleRateHz_- 250;
   // us, Approximate, Accel is 1.57ms, Gyro x&y are 1.51ms, and Gyro z is 1.29ms.

@@ -111,10 +111,8 @@ uint32_t Dps310::init(
   sampleRateHz_ = sample_rate_hz;
   drdy_ = 0;
 
-  uint8_t init_txbuf[2] = {};
-  uint8_t init_rxbuf[2] = {};
   Spi init_spi;
-  init_spi.init(hspi, init_txbuf, init_rxbuf, cs_port, cs_pin);
+  init_spi.init(hspi, cs_port, cs_pin);
   async_device_.cs_port = cs_port;
   async_device_.cs_pin = cs_pin;
 

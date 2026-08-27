@@ -90,14 +90,10 @@ uint32_t Auav::init(uint16_t sample_rate_hz,                                 // 
   // Start Measurement
   // Send 0xAD 0x00 0x00
 
-  uint8_t init_txbuf_pitot[AUAV_CMD_BYTES] = {};
-  uint8_t init_rxbuf_pitot[AUAV_CMD_BYTES] = {};
-  uint8_t init_txbuf_baro[AUAV_CMD_BYTES] = {};
-  uint8_t init_rxbuf_baro[AUAV_CMD_BYTES] = {};
   Spi init_spi_pitot;
   Spi init_spi_baro;
-  init_spi_pitot.init(hspi, init_txbuf_pitot, init_rxbuf_pitot, pitot_cs_port, pitot_cs_pin);
-  init_spi_baro.init(hspi, init_txbuf_baro, init_rxbuf_baro, baro_cs_port, baro_cs_pin);
+  init_spi_pitot.init(hspi, pitot_cs_port, pitot_cs_pin);
+  init_spi_baro.init(hspi, baro_cs_port, baro_cs_pin);
 
   // Pitot //////////////////////
   {

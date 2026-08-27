@@ -93,14 +93,10 @@ uint32_t Bmi088::init(
   async_device_gyro_.cs_port = cs_port_g;
   async_device_gyro_.cs_pin = cs_pin_g;
 
-  uint8_t init_txbuf_a[2] = {};
-  uint8_t init_rxbuf_a[2] = {};
-  uint8_t init_txbuf_g[2] = {};
-  uint8_t init_rxbuf_g[2] = {};
   Spi init_spi_a;
   Spi init_spi_g;
-  init_spi_a.init(hspi, init_txbuf_a, init_rxbuf_a, cs_port_a, cs_pin_a);
-  init_spi_g.init(hspi, init_txbuf_g, init_rxbuf_g, cs_port_g, cs_pin_g);
+  init_spi_a.init(hspi, cs_port_a, cs_pin_a);
+  init_spi_g.init(hspi, cs_port_g, cs_pin_g);
 
   const uint16_t timeout_ms = 1000;
   double_buffer_.init(bmi088_double_buffer, sizeof(bmi088_double_buffer));
