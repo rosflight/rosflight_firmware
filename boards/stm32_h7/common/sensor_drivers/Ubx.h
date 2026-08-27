@@ -129,7 +129,7 @@ public:
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud_desired);
 
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
   void uartRxCpltCallback(void);
   void uartRxIsrCallback(void);
   bool display(void);

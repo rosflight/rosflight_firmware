@@ -293,7 +293,7 @@ void Adc::setScaleFactor(uint16_t n, float scale_factor)
   if (n < channel_count_) cfg_[n].scaleFactor = scale_factor;
 }
 
-void Adc::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Adc::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   board.callbacks().register_poll_client(this, poll_phase_offset);
   board.callbacks().register_adc_client(this);

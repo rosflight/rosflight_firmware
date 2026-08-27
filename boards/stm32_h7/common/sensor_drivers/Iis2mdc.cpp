@@ -282,7 +282,7 @@ bool Iis2mdc::display()
   return 0;
 }
 
-void Iis2mdc::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Iis2mdc::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   if (async_bus_ == nullptr) {
     initializationStatus_ |= DRIVER_HAL_ERROR;

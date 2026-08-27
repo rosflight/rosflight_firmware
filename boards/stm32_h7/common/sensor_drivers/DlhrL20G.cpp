@@ -210,7 +210,7 @@ bool DlhrL20G::display(void)
   return true;
 }
 
-void DlhrL20G::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void DlhrL20G::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   if (async_bus_ == nullptr) {
     initializationStatus_ |= DRIVER_HAL_ERROR;

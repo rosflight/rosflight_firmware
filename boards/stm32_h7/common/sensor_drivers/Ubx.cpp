@@ -581,7 +581,7 @@ bool Ubx::display(void)
   return 1;
 }
 
-void Ubx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Ubx::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   (void) poll_phase_offset;
   board.callbacks().register_exti_signal(&pps_signal_);

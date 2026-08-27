@@ -330,7 +330,7 @@ bool Adis165xx::display(void)
   return true;
 }
 
-void Adis165xx::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Adis165xx::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   (void) poll_phase_offset;
   if (async_bus_ == nullptr) {

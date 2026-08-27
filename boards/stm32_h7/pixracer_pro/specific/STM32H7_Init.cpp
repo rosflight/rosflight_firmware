@@ -207,7 +207,7 @@ void STM32H7Board::init_board(void)
   if (init_status == DRIVER_OK) { callbacks().register_exti_client(&bmi088_gyro_bridge_set); }
   if (init_status == DRIVER_OK) { callbacks().register_exti_client(&bmi088_accel_bridge_clear); }
   if (init_status == DRIVER_OK) { imu0_.attach_bus(spi_bus_hspi5()); }
-  if (init_status == DRIVER_OK) { imu0_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { imu0_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Pitot/Baro initialization
@@ -221,7 +221,7 @@ void STM32H7Board::init_board(void)
   misc_exit_status(init_status);
   status_list_[status_len_++] = &pitot_;
   if (init_status == DRIVER_OK) { pitot_.attach_bus(i2c_bus_hi2c1()); }
-  if (init_status == DRIVER_OK) { pitot_.register_callbacks(*this, -5); }
+  if (init_status == DRIVER_OK) { pitot_.start(*this, -5); }
 
   misc_printf("\n\nDPS310 (baro) Initialization\n");
   init_status = baro_.init(
@@ -232,7 +232,7 @@ void STM32H7Board::init_board(void)
   misc_exit_status(init_status);
   status_list_[status_len_++] = &baro_;
   if (init_status == DRIVER_OK) { baro_.attach_bus(spi_bus_hspi2()); }
-  if (init_status == DRIVER_OK) { baro_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { baro_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Mag initialization
@@ -247,7 +247,7 @@ void STM32H7Board::init_board(void)
   misc_exit_status(init_status);
   status_list_[status_len_++] = &mag_;
   if (init_status == DRIVER_OK) { mag_.attach_bus(i2c_bus_hi2c1()); }
-  if (init_status == DRIVER_OK) { mag_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { mag_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // GPS initialization
@@ -262,7 +262,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &gps_;
-  if (init_status == DRIVER_OK) { gps_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { gps_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RC/S.Bus initialization
@@ -276,7 +276,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &rc_;
-  if (init_status == DRIVER_OK) { rc_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { rc_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // ADC initialization
@@ -335,7 +335,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &adc_;
-  if (init_status == DRIVER_OK) { adc_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { adc_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // COM initialization
@@ -346,7 +346,7 @@ void STM32H7Board::init_board(void)
   );  
   misc_exit_status(init_status);
   status_list_[status_len_++] = &vcp_;
-  if (init_status == DRIVER_OK) { vcp_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { vcp_.start(*this); }
 
   misc_printf("\n\nTelem (telem) Initialization\n");
   init_status = telem_.init(
@@ -357,7 +357,7 @@ void STM32H7Board::init_board(void)
   );
   misc_exit_status(init_status);
   status_list_[status_len_++] = &telem_;
-  if (init_status == DRIVER_OK) { telem_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { telem_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // PWM initialization
@@ -388,7 +388,7 @@ void STM32H7Board::init_board(void)
   init_status = sd_.init(&hsd1, SDMMC1);
   misc_exit_status(init_status);
   status_list_[status_len_++] = &sd_;
-  if (init_status == DRIVER_OK) { sd_.register_callbacks(*this); }
+  if (init_status == DRIVER_OK) { sd_.start(*this); }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // High Rate Polling Timer initialization
@@ -413,7 +413,6 @@ void STM32H7Board::init_board(void)
   __HAL_UART_ENABLE_IT(gps_.huart(), UART_IT_IDLE);
   __HAL_UART_ENABLE_IT(rc_.huart(), UART_IT_IDLE);
 
-  telem_.rxStart(); // Also enables its interrupts.
 
   RED_LO;
   GRN_LO;

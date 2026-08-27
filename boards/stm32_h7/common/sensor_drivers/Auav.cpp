@@ -437,7 +437,7 @@ bool Auav::display(void)
   return 0;
 }
 
-void Auav::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Auav::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   if (async_bus_ == nullptr) {
     initializationStatus_ |= DRIVER_HAL_ERROR;

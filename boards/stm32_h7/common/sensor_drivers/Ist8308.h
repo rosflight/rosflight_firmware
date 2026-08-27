@@ -57,7 +57,7 @@ public:
   void attach_bus(I2cBus & bus) { async_bus_ = &bus; }
 
   bool poll(uint64_t poll_counter);
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool display(void);
 
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size) == DoubleBufferStatus::OK; }

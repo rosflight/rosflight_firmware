@@ -65,7 +65,7 @@ public:
     const double *rotation
   );
   void attach_bus(SpiBus & bus) { async_bus_ = &bus; }
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
   bool display(void);
   void set_rotation(double rotation[9]) { memcpy(rotation_,&rotation, 9*sizeof(double));}

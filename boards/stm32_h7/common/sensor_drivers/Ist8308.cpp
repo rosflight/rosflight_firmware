@@ -230,7 +230,7 @@ bool Ist8308::display()
   return 0;
 }
 
-void Ist8308::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Ist8308::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   if (async_bus_ == nullptr) {
     initializationStatus_ |= DRIVER_HAL_ERROR;

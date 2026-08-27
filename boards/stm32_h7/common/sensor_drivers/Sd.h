@@ -58,7 +58,7 @@ public:
   bool read(uint8_t * dest, size_t len);
   bool write(uint8_t * src, size_t len);
   bool isMy(SD_HandleTypeDef * hsd) { return hsd == hsd_; }
-  void register_callbacks(STM32H7Board & board);
+  void start(STM32H7Board & board);
   void sdTxCpltCallback(void) { txComplete_ = true; }
   void sdRxCpltCallback(void) { rxComplete_ = true; }
   uint8_t waitForReady(void);

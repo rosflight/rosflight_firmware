@@ -68,7 +68,7 @@ public:
     I2C_HandleTypeDef * hi2c, uint16_t i2c_address     // I2C initializers
   );
   void attach_bus(I2cBus & bus) { async_bus_ = &bus; }
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool poll(uint64_t poll_offset);
   bool display(void);
 

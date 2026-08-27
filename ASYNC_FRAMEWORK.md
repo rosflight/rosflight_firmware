@@ -1,4 +1,4 @@
-﻿# Async Framework in `rosflight_firmware`
+# Async Framework in `rosflight_firmware`
 
 This repository has two layers:
 
@@ -186,7 +186,7 @@ Examples: `Bmi088`, `Adis165xx`
 Pattern:
 
 - driver initializes an `ExtiSignal`
-- `register_callbacks()` registers that signal with the dispatcher
+- `start()` registers that signal with the dispatcher
 - `task_ = run()` starts the coroutine
 - the coroutine waits on `co_await exti_signal_.wait_for_trigger()`
 - after DRDY, it performs one or more async SPI transfers and publishes a packet
@@ -248,8 +248,8 @@ The order is roughly:
 3. register those bus objects with `STM32H7Callbacks`
 4. initialize drivers
 5. attach a driver to a shared async bus, when needed
-6. call `driver.register_callbacks(*this, maybe_phase_offset)`
-7. inside `register_callbacks()`, register the signal or poll client and then start the coroutine with `task_ = run()`
+6. call `driver.start(*this, maybe_phase_offset)`
+7. inside `start()`, register the signal or poll client and then start the coroutine with `task_ = run()`
 
 So the framework becomes active during board bring-up, not from the generic firmware main loop.
 
@@ -275,6 +275,6 @@ The usual pattern is:
 3. If the driver uses SPI or I2C, add `attach_bus(...)` and store a pointer to `SpiBus` or `I2cBus`.
 4. Implement `run()` as a `while (true)` coroutine using `co_await` on signals and bus operations.
 5. Implement either `poll()` or an IRQ-trigger path that calls `trigger()`.
-6. In `register_callbacks()`, register the signal or poll client and then start the coroutine with `task_ = run()`.
+6. In `start()`, register the signal or poll client and then start the coroutine with `task_ = run()`.
 
 If the device protocol has several timed stages, prefer the poll-plus-`delay_ticks(...)` model. If the device already provides a data-ready interrupt, prefer an `ExtiSignal`-driven coroutine.

@@ -3,41 +3,12 @@
  * File     : Vcp.h
  * Date     : Oct 4, 2023
  ******************************************************************************
- *
- * Copyright (c) 2023, AeroVironment, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1.Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * 2.Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * 3.Neither the name of the copyright holder nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- ******************************************************************************
  **/
 
 #ifndef VCP_H_
 #define VCP_H_
 
+#include "Async.h"
 #include "BoardConfig.h"
 #include "ByteFifo.h"
 #include "PacketFifo.h"
@@ -45,39 +16,37 @@
 
 class STM32H7Board;
 
-/**
- * @class Vcp
- * @brief
- *
- */
-
 class Vcp : public Status
 {
 public:
   uint32_t init(uint16_t sample_rate_hz);
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
-
-  void poll(uint64_t poll_offset);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
   uint16_t writePacket(SerialTxPacket * p);
   bool isMy(uint8_t chan) { return channel_ == chan; }
+  void cdcReceiveCallback(uint8_t * buffer, uint16_t size);
   void cdcTransmitCpltCallback(void);
-  void txStart(void);
 
-  void cdcReceiveCallback(uint8_t * buffer, uint16_t size) { rxFifo_.writeBlock(buffer, size); }
   uint16_t byteCount(void) { return rxFifo_.byteCount(); }
   bool readByte(uint8_t * data) { return rxFifo_.read(data); }
 
 private:
-  int16_t sampleRateHz_;
-  uint64_t txTimeout_ = 0;
-  uint64_t txDtimeout_;
+  AsyncTask<void> rxRun();
+  AsyncTask<void> txRun();
+  bool txStart(void);
 
+  int16_t sampleRateHz_;
   PacketFifo txFifo_;
+  PacketFifo rxPacketFifo_;
   bool txIdle_;
   uint16_t retry_;
+  SerialTxPacket pendingTxPacket_ = {};
 
   ByteFifo rxFifo_;
+  AcquisitionSignal rx_signal_;
+  AcquisitionSignal tx_signal_;
+  AsyncTask<void> rx_task_;
+  AsyncTask<void> tx_task_;
   uint8_t channel_ = 0;
 };
 #endif /* VCP_H_ */

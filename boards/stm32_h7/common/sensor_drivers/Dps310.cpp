@@ -384,7 +384,7 @@ bool Dps310::display(void)
   return 0;
 }
 
-void Dps310::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Dps310::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   if (async_bus_ == nullptr) {
     initializationStatus_ |= DRIVER_HAL_ERROR;

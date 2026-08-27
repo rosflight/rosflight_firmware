@@ -80,7 +80,7 @@ public:
                 ADC_HandleTypeDef * hadc_int,
                 ADC_TypeDef * adc_instance_int, // This ADC has the calibration values
                 const AdcStructure * init_structure);
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
   bool poll(uint64_t poll_offset);
   void adcConvCpltCallback(ADC_HandleTypeDef * hadc);
 

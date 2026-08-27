@@ -72,12 +72,8 @@ DATA_RAM uint8_t * telem_fifo_tx_buffer[SERIAL_QOS_FIFOS] =
   {telem_fifo_tx_buffer0, telem_fifo_tx_buffer1, telem_fifo_tx_buffer2};
 
 uint32_t Telem::init(
-  // Driver initializers
   uint16_t sample_rate_hz,
-  // UART initializers
-  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud
-  //,void (*RxISR) (struct __UART_HandleTypeDef *huart)
-)
+  UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud)
 {
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Telem");
   initializationStatus_ = DRIVER_OK;
@@ -87,17 +83,19 @@ uint32_t Telem::init(
   txFrameEndUs_ = 0 + txFrameSizeUs_;
   usPerByte_ = (uint64_t) 1000000 * 10 / baud; // assume 10 bits/byte.
   txFifo_ = telem_tx_fifos;
-  uint32_t serial_tx_fifo_buffer_size[SERIAL_QOS_FIFOS] = {SERIAL_TX_FIFO_BUFFERS0, SERIAL_TX_FIFO_BUFFERS1,
-                                                           SERIAL_TX_FIFO_BUFFERS2};
+  uint32_t serial_tx_fifo_buffer_size[SERIAL_QOS_FIFOS] = {
+    SERIAL_TX_FIFO_BUFFERS0,
+    SERIAL_TX_FIFO_BUFFERS1,
+    SERIAL_TX_FIFO_BUFFERS2,
+  };
 
-  for (int n = 0; n < SERIAL_QOS_FIFOS; n++)
-    txFifo_[n].init(serial_tx_fifo_buffer_size[n], sizeof(SerialTxPacket),
-                    telem_fifo_tx_buffer[n]);               // Packet Fifo
-  rxFifo_.init(TELEM_RX_BUFFER_SIZE, telem_fifo_rx_buffer); // byte Fifo
+  for (int n = 0; n < SERIAL_QOS_FIFOS; n++) {
+    txFifo_[n].init(serial_tx_fifo_buffer_size[n], sizeof(SerialTxPacket), telem_fifo_tx_buffer[n]);
+  }
+  rxFifo_.init(TELEM_RX_BUFFER_SIZE, telem_fifo_rx_buffer);
 
   txIdle_ = true;
-
-  // Telem-specific
+  retry_ = 0;
 
   huart_ = huart;
   hdmaUartRx_ = hdma_uart_rx;
@@ -108,7 +106,7 @@ uint32_t Telem::init(
   huart_->Init.StopBits = UART_STOPBITS_1;
   huart_->Init.Parity = UART_PARITY_NONE;
   huart_->Init.Mode = UART_MODE_TX_RX;
-  huart_->Init.HwFlowCtl = UART_HWCONTROL_NONE; //UART_HWCONTROL_RTS_CTS;
+  huart_->Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart_->Init.OverSampling = UART_OVERSAMPLING_16;
   huart_->Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart_->Init.ClockPrescaler = UART_PRESCALER_DIV1;
@@ -142,37 +140,64 @@ uint32_t Telem::reset_baud(uint32_t baud)
   return DRIVER_OK;
 }
 
-void Telem::poll(uint64_t poll_offset)
+AsyncTask<void> Telem::rxRun()
 {
-  (void) poll_offset;
-  // TX
-  if (txIdle_) { txStart(); }
+  if (!rxStart()) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    co_return;
+  }
+
+  while (true) {
+    co_await rx_signal_.wait_for_trigger();
+
+    while (huart_->Instance->ISR & UART_FLAG_RXNE) {
+      rxFifo_.write(huart_->Instance->RDR);
+    }
+  }
 }
 
-bool Telem::rxStart(void) // RX DMA
+AsyncTask<void> Telem::txRun()
 {
-  // Enable interrupt
-  ATOMIC_SET_BIT(huart_->Instance->CR1, USART_CR1_RXNEIE_RXFNEIE);
+  while (true) {
+    co_await tx_signal_.wait_for_trigger();
 
+    if (!txIdle_) {
+      continue;
+    }
+
+    while (txStart()) {
+      co_await tx_signal_.wait_for_trigger();
+    }
+  }
+}
+
+bool Telem::rxStart(void)
+{
+  ATOMIC_SET_BIT(huart_->Instance->CR1, USART_CR1_RXNEIE_RXFNEIE);
   return true;
 }
 
 void Telem::uartRxIsrCallback(void)
 {
-  if (huart_->Instance->ISR & UART_FLAG_RXNE) {
-    ATOMIC_SET_BIT(huart_->Instance->CR1, USART_CR1_RXNEIE_RXFNEIE);
-    rxFifo_.write(huart_->Instance->RDR);
-  }
+  rx_signal_.trigger();
 }
 
 uint16_t Telem::writePacket(SerialTxPacket * p)
 {
   p->header.timestamp = time64.Us();
   p->packetSize = sizeof(SerialTxPacket) + p->payloadSize - SERIAL_MAX_PAYLOAD_SIZE;
-  if (p->qos < 0x02) return txFifo_[0].write((uint8_t *) p, p->packetSize);
-  else if (p->qos < 0xFF) return txFifo_[1].write((uint8_t *) p, p->packetSize);
-  else return txFifo_[2].write((uint8_t *) p, p->packetSize);
+
+  uint16_t size = 0;
+  if (p->qos < 0x02) size = txFifo_[0].write((uint8_t *) p, p->packetSize);
+  else if (p->qos < 0xFF) size = txFifo_[1].write((uint8_t *) p, p->packetSize);
+  else size = txFifo_[2].write((uint8_t *) p, p->packetSize);
+
+  if (size != 0) {
+    tx_signal_.trigger();
   }
+
+  return size;
+}
 
 bool Telem::newPacket(SerialTxPacket * p)
 {
@@ -189,19 +214,16 @@ bool Telem::newPacket(SerialTxPacket * p)
     size = txFifo_[2].read((uint8_t *) p, sizeof(SerialTxPacket));
   }
 
-  if ((size != 0) && (size == p->packetSize)) {
-    return true;
-  } else {
-    return false;
-  }
+  return (size != 0) && (size == p->packetSize);
 }
 
 void Telem::uartTxCpltCallback(void)
 {
-  txStart();
+  txIdle_ = true;
+  tx_signal_.trigger();
 }
 
-bool Telem::txStart(void) // Transmit complete callback.
+bool Telem::txStart(void)
 {
   txIdle_ = false;
   SerialTxPacket p = {0};
@@ -215,9 +237,11 @@ bool Telem::txStart(void) // Transmit complete callback.
   return !txIdle_;
 }
 
-void Telem::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Telem::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.callbacks().register_poll_client(this, poll_phase_offset);
+  (void) poll_phase_offset;
   board.callbacks().register_uart_rxisr_client(this);
   board.callbacks().register_uart_txcplt_client(this);
+  rx_task_ = rxRun();
+  tx_task_ = txRun();
 }

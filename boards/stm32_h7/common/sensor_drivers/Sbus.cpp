@@ -251,7 +251,7 @@ bool Sbus::display(void)
   return 0;
 }
 
-void Sbus::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
+void Sbus::start(STM32H7Board & board, int32_t poll_phase_offset)
 {
   (void) poll_phase_offset;
   board.callbacks().register_uart_idle_signal(&uart_idle_signal_);

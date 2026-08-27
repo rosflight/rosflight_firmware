@@ -38,11 +38,12 @@
 #ifndef TELEM_H_
 #define TELEM_H_
 
+#include "Async.h"
 #include "BoardConfig.h"
 #include "ByteFifo.h"
+#include "PacketFifo.h"
 #include "Packets.h"
 #include "Time64.h"
-#include "PacketFifo.h"
 
 extern Time64 time64;
 enum DmaItType
@@ -52,34 +53,17 @@ enum DmaItType
   IDLE
 };
 
-
 class STM32H7Board;
 
-/**
- * @class Telem
- * @brief
- *
- */
 class Telem : public Status
 {
-  /**
-     * \brief
-     *
-     *
-     */
-
 public:
   uint32_t init(
-    // Driver initializers
     uint16_t sample_rate_hz,
-    // UART initializers
-    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud
-    //,void (*RxISR) (UART_HandleTypeDef *huart)
-  );
+    UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud);
   uint32_t reset_baud(uint32_t baud);
-  void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
+  void start(STM32H7Board & board, int32_t poll_phase_offset = 0);
 
-  void poll(uint64_t poll_offset);
   uint16_t byteCount(void) { return rxFifo_.byteCount(); }
   bool readByte(uint8_t * data) { return rxFifo_.read(data); }
 
@@ -88,12 +72,15 @@ public:
 
   UART_HandleTypeDef * huart(void) { return huart_; }
   bool isMy(UART_HandleTypeDef * huart) { return huart_ == huart; }
-  bool rxStart(void);
   void uartRxIsrCallback(void);
   void uartTxCpltCallback(void);
-  bool txStart(void);
 
 private:
+  AsyncTask<void> rxRun();
+  AsyncTask<void> txRun();
+  bool rxStart(void);
+  bool txStart(void);
+
   int16_t sampleRateHz_;
   uint32_t baud_;
 
@@ -103,10 +90,13 @@ private:
   uint16_t retry_;
 
   ByteFifo rxFifo_;
+  AcquisitionSignal rx_signal_;
+  AcquisitionSignal tx_signal_;
+  AsyncTask<void> rx_task_;
+  AsyncTask<void> tx_task_;
 
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
 };
-
 
 #endif /* TELEM_H_ */
