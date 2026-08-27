@@ -60,6 +60,7 @@ void STM32H7Callbacks::clear_all()
   sd_client_len_ = 0;
   uart_rxcplt_client_len_ = 0;
   uart_rxisr_client_len_ = 0;
+  uart_idle_client_len_ = 0;
   uart_txcplt_client_len_ = 0;
 }
 
@@ -101,6 +102,22 @@ void STM32H7Callbacks::register_exti_signal(ExtiSignal * signal)
 {
   register_exti_client(static_cast<void *>(signal), &STM32H7Callbacks::exti_signal_matches,
                        &STM32H7Callbacks::exti_signal_callback);
+}
+
+bool STM32H7Callbacks::uart_signal_matches(void * context, UART_HandleTypeDef * huart)
+{
+  return static_cast<UartSignal *>(context)->is_my(huart);
+}
+
+void STM32H7Callbacks::uart_signal_callback(void * context)
+{
+  static_cast<UartSignal *>(context)->trigger();
+}
+
+void STM32H7Callbacks::register_uart_idle_signal(UartSignal * signal)
+{
+  register_uart_idle_client(static_cast<void *>(signal), &STM32H7Callbacks::uart_signal_matches,
+                            &STM32H7Callbacks::uart_signal_callback);
 }
 
 void STM32H7Callbacks::register_spi_client(
@@ -192,6 +209,17 @@ void STM32H7Callbacks::register_uart_rxisr_client(
   if (uart_rxisr_client_len_ >= UART_RXISR_CLIENTS_MAX_LEN) return;
 
   UartClient & client = uart_rxisr_clients_[uart_rxisr_client_len_++];
+  client.matches = matches;
+  client.callback = callback;
+  client.context = context;
+}
+
+void STM32H7Callbacks::register_uart_idle_client(
+  void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context))
+{
+  if (uart_idle_client_len_ >= UART_IDLE_CLIENTS_MAX_LEN) return;
+
+  UartClient & client = uart_idle_clients_[uart_idle_client_len_++];
   client.matches = matches;
   client.callback = callback;
   client.context = context;
@@ -327,6 +355,15 @@ void STM32H7Callbacks::dispatch_uart_rxisr(UART_HandleTypeDef * huart)
   }
 }
 
+void STM32H7Callbacks::dispatch_uart_idle(UART_HandleTypeDef * huart)
+{
+  for (uint32_t i = 0; i < uart_idle_client_len_; i++) {
+    const UartClient & client = uart_idle_clients_[i];
+    if (!client.matches(client.context, huart)) continue;
+    client.callback(client.context);
+  }
+}
+
 void STM32H7Callbacks::dispatch_uart_txcplt(UART_HandleTypeDef * huart)
 {
   for (uint32_t i = 0; i < uart_txcplt_client_len_; i++) {
@@ -401,6 +438,7 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart)
   {
     __HAL_UART_CLEAR_IDLEFLAG(huart);
     if (huart->hdmarx != 0) ((DMA_Stream_TypeDef *) (huart->hdmarx)->Instance)->CR &= ~DMA_SxCR_EN;
+    stm32_h7_board.callbacks().dispatch_uart_idle(huart);
   }
 
   stm32_h7_board.callbacks().dispatch_uart_rxisr(huart);
@@ -466,4 +504,8 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef * hsd)
 {
   stm32_h7_board.callbacks().dispatch_sd_rxcplt(hsd);
 }
+
+
+
+
 

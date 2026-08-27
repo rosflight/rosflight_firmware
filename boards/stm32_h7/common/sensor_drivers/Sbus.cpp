@@ -87,11 +87,11 @@ uint32_t Sbus::init(
   snprintf(name_, STATUS_NAME_MAX_LEN, "%s", "Sbus");
   initializationStatus_ = DRIVER_OK;
   sampleRateHz_ = sample_rate_hz;
-  dtimeout_ = 100000; // 0.1 seconds
-  timeout_ = 0;
+  lol_ = false;
   drdy_ = 0;
   huart_ = huart;
   hdmaUartRx_ = hdma_uart_rx;
+  uart_idle_signal_.init(huart_);
 
   // USART initialization begin (taken from STM32Cube Codegen)
   huart_->Instance = huart_instance;
@@ -133,93 +133,98 @@ uint32_t Sbus::init(
   return initializationStatus_;
 }
 
-bool Sbus::poll(uint64_t poll_offset)
-{
-  (void) poll_offset;
-  // Check if we are timed-out
-  if (time64.Us() > timeout_) {
-    if ((((DMA_Stream_TypeDef *) (hdmaUartRx_)->Instance)->CR & DMA_SxCR_EN) != DMA_SxCR_EN) {
-      __HAL_UART_CLEAR_IDLEFLAG(huart_); // this may be redundant with call to HAL_UART_Abort()
-      __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
-      HAL_UART_Abort(huart_); // flush any leftover crumbs.
-      startDma();
-    }
-  }
-  return 0;
-}
-
 bool Sbus::startDma(void)
 {
   drdy_ = time64.Us();
-  timeout_ = time64.Us() + dtimeout_; // 0.1 second timeout
+  __HAL_UART_CLEAR_IDLEFLAG(huart_);
+  __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
   HAL_StatusTypeDef hal_status = HAL_UART_Receive_DMA(huart_, sbus_dma_rxbuf, SBUS_DMA_BUFFER_SIZE); // start next read
   return HAL_OK == hal_status;
 }
 
-void Sbus::uartRxCpltCallback(void)
+bool Sbus::restartDma(void)
 {
-//  drdy_ = time64.Us();
+  __HAL_UART_CLEAR_IDLEFLAG(huart_); // this may be redundant with call to HAL_UART_Abort()
+  __HAL_UART_ENABLE_IT(huart_, UART_IT_IDLE);
+  HAL_UART_Abort(huart_); // flush any leftover crumbs.
+  return startDma();
+}
 
-  RcPacket p;
-  SbusPacket * sbus = (SbusPacket *) sbus_dma_rxbuf;
 
-  if ((sbus->header == 0x0F) &&
-        (
-          (sbus->footer == 0x00) ||
-          (sbus->footer == 0x04) ||
-          (sbus->footer == 0x14) ||
-          (sbus->footer == 0x24) ||
-          (sbus->footer == 0x34)
-        )
-      ) {
-    p.chan[0] = sbus->chan0;
-    p.chan[1] = sbus->chan1;
-    p.chan[2] = sbus->chan2;
-    p.chan[3] = sbus->chan3;
-    p.chan[4] = sbus->chan4;
-    p.chan[5] = sbus->chan5;
-    p.chan[6] = sbus->chan6;
-    p.chan[7] = sbus->chan7;
-    p.chan[8] = sbus->chan8;
-    p.chan[9] = sbus->chan9;
-    p.chan[10] = sbus->chan10;
-    p.chan[11] = sbus->chan11;
-    p.chan[12] = sbus->chan12;
-    p.chan[13] = sbus->chan13;
-    p.chan[14] = sbus->chan14;
-    p.chan[15] = sbus->chan15;
-
-    if (sbus->dig_chan0) p.chan[16] = 172;
-    else p.chan[16] = 1811;
-    if (sbus->dig_chan1) p.chan[17] = 172;
-    else p.chan[17] = 1811;
-    if (sbus->dig_chan2) p.chan[18] = 172;
-    else p.chan[18] = 1811;
-    if (sbus->dig_chan3) p.chan[19] = 172;
-    else p.chan[19] = 1811;
-    if (sbus->dig_chan4) p.chan[20] = 172;
-    else p.chan[20] = 1811;
-    if (sbus->dig_chan5) p.chan[21] = 172;
-    else p.chan[21] = 1811;
-    if (sbus->dig_chan6) p.chan[22] = 172;
-    else p.chan[22] = 1811;
-    if (sbus->dig_chan7) p.chan[23] = 172;
-    else p.chan[23] = 1811;
-
-    p.frameLost = sbus->dig_chan2;
-    p.failsafeActivated = sbus->dig_chan3;
-    for (int n = 0; n < RC_PACKET_CHANNELS; n++) p.chan[n] = (p.chan[n] - 172) / 1639.0;
-
-    p.header.timestamp = drdy_;
-    p.header.complete = time64.Us();
-    p.header.status = !(p.frameLost | p.failsafeActivated);
-
-    lol_ = p.frameLost | p.failsafeActivated;
-
-    write((uint8_t *) &p, sizeof(p));
-    timeout_ = drdy_ + dtimeout_; // Give it a second before we say it's lost
+AsyncTask<void> Sbus::run()
+{
+  if (!startDma()) {
+    initializationStatus_ |= DRIVER_HAL_ERROR;
+    co_return;
   }
-  startDma();
+
+  while (true) {
+    co_await uart_idle_signal_.wait_for_trigger();
+
+    RcPacket p = {};
+    SbusPacket * sbus = (SbusPacket *) sbus_dma_rxbuf;
+
+    if ((sbus->header == 0x0F) &&
+          (
+            (sbus->footer == 0x00) ||
+            (sbus->footer == 0x04) ||
+            (sbus->footer == 0x14) ||
+            (sbus->footer == 0x24) ||
+            (sbus->footer == 0x34)
+          )
+        ) {
+      p.chan[0] = sbus->chan0;
+      p.chan[1] = sbus->chan1;
+      p.chan[2] = sbus->chan2;
+      p.chan[3] = sbus->chan3;
+      p.chan[4] = sbus->chan4;
+      p.chan[5] = sbus->chan5;
+      p.chan[6] = sbus->chan6;
+      p.chan[7] = sbus->chan7;
+      p.chan[8] = sbus->chan8;
+      p.chan[9] = sbus->chan9;
+      p.chan[10] = sbus->chan10;
+      p.chan[11] = sbus->chan11;
+      p.chan[12] = sbus->chan12;
+      p.chan[13] = sbus->chan13;
+      p.chan[14] = sbus->chan14;
+      p.chan[15] = sbus->chan15;
+
+      if (sbus->dig_chan0) p.chan[16] = 172;
+      else p.chan[16] = 1811;
+      if (sbus->dig_chan1) p.chan[17] = 172;
+      else p.chan[17] = 1811;
+      if (sbus->dig_chan2) p.chan[18] = 172;
+      else p.chan[18] = 1811;
+      if (sbus->dig_chan3) p.chan[19] = 172;
+      else p.chan[19] = 1811;
+      if (sbus->dig_chan4) p.chan[20] = 172;
+      else p.chan[20] = 1811;
+      if (sbus->dig_chan5) p.chan[21] = 172;
+      else p.chan[21] = 1811;
+      if (sbus->dig_chan6) p.chan[22] = 172;
+      else p.chan[22] = 1811;
+      if (sbus->dig_chan7) p.chan[23] = 172;
+      else p.chan[23] = 1811;
+
+      p.frameLost = sbus->dig_chan2;
+      p.failsafeActivated = sbus->dig_chan3;
+      for (int n = 0; n < RC_PACKET_CHANNELS; n++) p.chan[n] = (p.chan[n] - 172) / 1639.0;
+
+      p.header.timestamp = drdy_;
+      p.header.complete = time64.Us();
+      p.header.status = !(p.frameLost | p.failsafeActivated);
+
+      lol_ = p.frameLost | p.failsafeActivated;
+
+      write((uint8_t *) &p, sizeof(p));
+    }
+
+    if (!restartDma()) {
+      initializationStatus_ |= DRIVER_HAL_ERROR;
+      co_return;
+    }
+  }
 }
 
 bool Sbus::display(void)
@@ -251,6 +256,8 @@ bool Sbus::display(void)
 
 void Sbus::register_callbacks(STM32H7Board & board, int32_t poll_phase_offset)
 {
-  board.callbacks().register_poll_client(this, poll_phase_offset);
-  board.callbacks().register_uart_rxcplt_client(this);
+  (void) poll_phase_offset;
+  board.callbacks().register_uart_idle_signal(&uart_idle_signal_);
+  task_ = run();
 }
+

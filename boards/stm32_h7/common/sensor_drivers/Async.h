@@ -11,6 +11,9 @@
 #include <coroutine>
 #include <cstdint>
 
+struct __UART_HandleTypeDef;
+typedef struct __UART_HandleTypeDef UART_HandleTypeDef;
+
 enum class AsyncStatus : uint8_t
 {
   OK = 0,
@@ -189,6 +192,20 @@ private:
   bool trigger_pending_ = false;
 };
 
+class UartSignal : public AcquisitionSignal
+{
+public:
+  void init(UART_HandleTypeDef * huart)
+  {
+    huart_ = huart;
+  }
+
+  bool is_my(UART_HandleTypeDef * huart) const { return huart_ == huart; }
+
+private:
+  UART_HandleTypeDef * huart_ = nullptr;
+};
+
 class ExtiSignal : public AcquisitionSignal
 {
 public:
@@ -214,4 +231,3 @@ private:
 };
 
 #endif /* DRIVERS_ASYNC_H_ */
-

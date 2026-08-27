@@ -38,6 +38,7 @@
 #ifndef SBUS_H_
 #define SBUS_H_
 
+#include "Async.h"
 #include "DoubleBuffer.h"
 #include "BoardConfig.h"
 
@@ -60,9 +61,7 @@ public:
     // UART initializers
     UART_HandleTypeDef * huart, USART_TypeDef * huart_instance, DMA_HandleTypeDef * hdma_uart_rx, uint32_t baud);
 
-  bool poll(uint64_t poll_offset);
   void register_callbacks(STM32H7Board & board, int32_t poll_phase_offset = 0);
-  void uartRxCpltCallback(void);
   bool startDma(void);
   bool display(void);
   bool lol(void) { return lol_; }
@@ -73,16 +72,17 @@ public:
   bool read(uint8_t * data, uint16_t size) { return double_buffer_.read(data, size)==DoubleBufferStatus::OK; }
 
 private:
+  AsyncTask<void> run();
+  bool restartDma(void);
   bool write(uint8_t * data, uint16_t size) { return double_buffer_.write(data, size)==DoubleBufferStatus::OK; }
   DoubleBuffer double_buffer_;
   uint16_t sampleRateHz_;
   bool lol_;
   uint64_t drdy_;
-  uint64_t timeout_;
-
-  uint64_t dtimeout_;
   UART_HandleTypeDef * huart_;
   DMA_HandleTypeDef * hdmaUartRx_;
+  UartSignal uart_idle_signal_;
+  AsyncTask<void> task_;
 };
 
 #endif /* SBUS_H_ */

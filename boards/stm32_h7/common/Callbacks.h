@@ -43,6 +43,7 @@
 #ifdef __cplusplus
 
 class ExtiSignal;
+class UartSignal;
 
 class STM32H7Callbacks
 {
@@ -56,6 +57,7 @@ private:
   static constexpr uint32_t SD_CLIENTS_MAX_LEN = 4;
   static constexpr uint32_t UART_RXCPLT_CLIENTS_MAX_LEN = 16;
   static constexpr uint32_t UART_RXISR_CLIENTS_MAX_LEN = 16;
+  static constexpr uint32_t UART_IDLE_CLIENTS_MAX_LEN = 16;
   static constexpr uint32_t UART_TXCPLT_CLIENTS_MAX_LEN = 16;
 
   struct PollClient
@@ -126,6 +128,7 @@ private:
   uint32_t sd_client_len_ = 0;
   uint32_t uart_rxcplt_client_len_ = 0;
   uint32_t uart_rxisr_client_len_ = 0;
+  uint32_t uart_idle_client_len_ = 0;
   uint32_t uart_txcplt_client_len_ = 0;
   PollClient poll_clients_[POLL_CLIENTS_MAX_LEN] = {};
   ExtiClient exti_clients_[EXTI_CLIENTS_MAX_LEN] = {};
@@ -137,6 +140,7 @@ private:
   SdClient sd_clients_[SD_CLIENTS_MAX_LEN] = {};
   UartClient uart_rxcplt_clients_[UART_RXCPLT_CLIENTS_MAX_LEN] = {};
   UartClient uart_rxisr_clients_[UART_RXISR_CLIENTS_MAX_LEN] = {};
+  UartClient uart_idle_clients_[UART_IDLE_CLIENTS_MAX_LEN] = {};
   UartClient uart_txcplt_clients_[UART_TXCPLT_CLIENTS_MAX_LEN] = {};
 
   template<typename T>
@@ -161,6 +165,8 @@ private:
 
   static bool exti_signal_matches(void * context, uint16_t exti_pin);
   static void exti_signal_callback(void * context, uint16_t exti_pin, uint64_t timestamp_us);
+  static bool uart_signal_matches(void * context, UART_HandleTypeDef * huart);
+  static void uart_signal_callback(void * context);
 
   template<typename T>
   static bool spi_client_matches(void * context, SPI_HandleTypeDef * hspi)
@@ -288,6 +294,8 @@ private:
     void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
   void register_uart_rxisr_client(
     void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
+  void register_uart_idle_client(
+    void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
   void register_uart_txcplt_client(
     void * context, bool (*matches)(void * context, UART_HandleTypeDef * huart), void (*callback)(void * context));
 
@@ -307,6 +315,7 @@ public:
   }
 
   void register_exti_signal(ExtiSignal * signal);
+  void register_uart_idle_signal(UartSignal * signal);
 
   template<typename T>
   void register_spi_client(T * driver)
@@ -376,6 +385,7 @@ public:
   void dispatch_sd_rxcplt(SD_HandleTypeDef * hsd);
   void dispatch_uart_rxcplt(UART_HandleTypeDef * huart);
   void dispatch_uart_rxisr(UART_HandleTypeDef * huart);
+  void dispatch_uart_idle(UART_HandleTypeDef * huart);
   void dispatch_uart_txcplt(UART_HandleTypeDef * huart);
 };
 
@@ -393,8 +403,3 @@ void UART_RxIsrCallback(UART_HandleTypeDef * huart);
 #endif
 
 #endif /* USERCALLBACKS_H_ */
-
-
-
-
-
